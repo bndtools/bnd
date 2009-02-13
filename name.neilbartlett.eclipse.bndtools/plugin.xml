@@ -65,5 +65,16 @@
             targetID="name.neilbartlett.eclipse.bndtools.editorContribution1">
       </editorContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="name.neilbartlett.eclipse.bndtools.editor.BndEditor"
+            default="false"
+            extensions="bnd"
+            icon="icons/bundle_obj.gif"
+            id="name.neilbartlett.eclipse.bndtools.bndEditorNew"
+            name="Bnd Editor (New)">
+      </editor>
+   </extension>
 
 </plugin>

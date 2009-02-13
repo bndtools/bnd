@@ -31,6 +31,8 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.swt.widgets,
  org.eclipse.ui,
  org.eclipse.ui.dialogs,
+ org.eclipse.ui.editors.text,
  org.eclipse.ui.part,
  org.eclipse.ui.plugin,
+ org.eclipse.ui.texteditor,
  org.osgi.framework
