@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="name.neilbartlett.eclipse.bndtools.makeBundleContribution"
+            nameFilter="*.bnd"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
+               enablesFor="+"
+               id="name.neilbartlett.eclipse.bndtools.makeBundle"
+               label="Make Bundle"
+               menubarPath="additions"
+               tooltip="Create a bundle from this definition file">
+         </action>
+      </objectContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="name.neilbartlett.eclipse.bndtools.bndEditorContribution"
+            targetID="name.neilbartlett.eclipse.bndtools.bndEditor">
+         <action
+               class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
+               icon="icons/bundle_obj.gif"
+               id="name.neilbartlett.eclipse.bndtools.makeBundleAction"
+               label="Make Bundle"
+               style="push"
+               toolbarPath="Normal/additions">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor"
+            default="false"
+            extensions="bnd"
+            icon="icons/bundle_obj.gif"
+            id="name.neilbartlett.eclipse.bndtools.bndEditor"
+            name="Bnd Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="name.neilbartlett.eclipse.bndtools.wizardCategory"
+            name="OSGi">
+      </category>
+      <wizard
+            category="name.neilbartlett.eclipse.bndtools.wizardCategory"
+            class="name.neilbartlett.eclipse.bndtools.wizards.newbundle.WizardNewBndDescriptor"
+            icon="icons/bundle_obj.gif"
+            id="name.neilbartlett.eclipse.bndtools.newBndFile"
+            name="Bundle Descriptor">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="name.neilbartlett.eclipse.bndtools.editorContribution1"
+            targetID="name.neilbartlett.eclipse.bndtools.editorContribution1">
+      </editorContribution>
+   </extension>
+
+</plugin>
