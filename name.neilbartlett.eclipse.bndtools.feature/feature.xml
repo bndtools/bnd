@@ -13,10 +13,10 @@
 <feature
       id="name.neilbartlett.eclipse.bndtools.feature"
       label="Bnd Tools Feature"
-      version="1.0.0.qualifier"
+      version="1.0.1.qualifier"
       provider-name="Neil Bartlett">
 
-   <description url="http://neilbartlett.name/downloads/bndtools">
+   <description url="http://bndtools-updates.s3.amazonaws.com/">
       Eclipse tools for OSGi Development tools with Bnd.
    </description>
 
@@ -224,18 +224,18 @@ litigation.
    </license>
 
    <url>
-      <update label="Bnd Tools by Neil Bartlett" url="http://neilbartlett.name/downloads/bndtools"/>
+      <update label="Bnd Tools by Neil Bartlett" url="http://bndtools-updates.s3.amazonaws.com/"/>
    </url>
 
    <plugin
-         id="com.simontuffs.eclipse.jarplug"
+         id="name.neilbartlett.eclipse.bndtools"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="name.neilbartlett.eclipse.bndtools"
+         id="name.neilbartlett.eclipse.jareditor"
          download-size="0"
          install-size="0"
          version="0.0.0"

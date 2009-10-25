@@ -1,2 +1,10 @@
-.metadata
+# Eclipse workspace metadata
+/.metadata
+
+# Eclipse compiler output
+/*/bin
+
+# vi detritus
+*.swp
+*~
 

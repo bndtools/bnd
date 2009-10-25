@@ -13,40 +13,38 @@ package name.neilbartlett.eclipse.bndtools.editor;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.forms.editor.FormEditor;
 
-public class BndEditor extends MultiPageEditorPart {
-
-	@Override
-	protected void createPages() {
-		try {
-			int sourcePageIndex = addPage(new PropertiesFileEditor(), getEditorInput());
-			setPageText(sourcePageIndex, "Source");
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		}
-	}
+public class BndEditor extends FormEditor {
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void doSaveAs() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public boolean isSaveAsAllowed() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	protected void handlePropertyChange(int propertyId) {
 		super.handlePropertyChange(propertyId);
+	}
+
+	@Override
+	protected void addPages() {
+		try {
+			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Details");
+			addPage(detailsPage);
+
+			int sourcePageIndex = addPage(new PropertiesFileEditor(), getEditorInput());
+			setPageText(sourcePageIndex, "Source");
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
 	}
 }
