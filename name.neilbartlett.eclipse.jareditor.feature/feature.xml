@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Copyright (c) 2009 Neil Bartlett.
-  All rights reserved. This program and the accompanying materials
-  are made available under the terms of the Eclipse Public License v1.0
-  which accompanies this distribution, and is available at
-  http://www.eclipse.org/legal/epl-v10.html
-  
-  Contributors:
-      Neil Bartlett - initial API and implementation
-
--->
 <feature
-      id="name.neilbartlett.eclipse.bndtools.feature"
-      label="Bnd Tools"
-      version="1.0.1.qualifier"
+      id="name.neilbartlett.eclipse.jareditor.feature"
+      label="JAR Viewer"
+      version="1.0.0.qualifier"
       provider-name="Neil Bartlett">
 
    <description url="http://bndtools-updates.s3.amazonaws.com/">
-      Eclipse tools for OSGi Development tools with Bnd.
+      A viewer for JAR files
    </description>
 
    <copyright>
@@ -228,7 +217,7 @@ litigation.
    </url>
 
    <plugin
-         id="name.neilbartlett.eclipse.bndtools"
+         id="name.neilbartlett.eclipse.jareditor"
          download-size="0"
          install-size="0"
          version="0.0.0"
