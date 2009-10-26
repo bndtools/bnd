@@ -13,19 +13,3 @@ Installation
 Install using the Eclipse updater with the following update site:
 
 	http://bndtools-updates.s3.amazonaws.com/
-                                          
-
-Screenshots
------------
-        
-### New Bundle Wizard ###
-![New Bundle Wizard](screenshot01.png)
-
-### Make Bundle Action ###
-![Make Bundle Action](screenshot02.png)
-
-### JAR File Viewer ###
-![](screenshot03.png)
-
-### JAR File Viewer - Hex Display ###
-![](screenshot04.png)
