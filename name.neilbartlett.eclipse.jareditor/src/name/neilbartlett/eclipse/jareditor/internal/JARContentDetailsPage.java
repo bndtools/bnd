@@ -90,13 +90,6 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 	public void createContents(Composite parent) {
 		FormToolkit toolkit = getManagedForm().getToolkit();
 		
-		FontRegistry fontRegistry = JFaceResources.getFontRegistry();
-		@SuppressWarnings("unchecked")
-		Set<String> keySet = fontRegistry.getKeySet();
-		for (String fontName : keySet) {
-			System.out.println("fontName: " + fontName);
-		}
-		
 		// Create controls
 		Section textSection = toolkit.createSection(parent, Section.TITLE_BAR);
 		textSection.setText("Entry Content");
