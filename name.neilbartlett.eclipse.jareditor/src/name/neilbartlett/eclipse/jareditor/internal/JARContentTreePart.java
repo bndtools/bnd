@@ -37,7 +37,7 @@ public class JARContentTreePart extends SectionPart {
 		this.managedForm = managedForm;
 		FormToolkit toolkit = managedForm.getToolkit();
 
-		section.setText("JAR Contents");
+		section.setText("Content Tree");
 		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
 		tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 		section.setClient(tree);

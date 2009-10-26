@@ -106,6 +106,7 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 		btnBinary.setSelection(!showAsText);
 		toolkit.createLabel(encodingPanel, "Text Encoding:");
 		final Combo encodingCombo = new Combo(encodingPanel, SWT.READ_ONLY);
+		encodingCombo.setEnabled(showAsText);
 		
 		// Populate with data
 		encodingCombo.setItems(charsets);
@@ -122,6 +123,7 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				showAsText = btnText.getSelection();
+				encodingCombo.setEnabled(showAsText);
 				loadContent();
 			}
 		};
@@ -134,12 +136,11 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 				loadContent();
 			}
 		});
-
 	
 		// Layout
 		parent.setLayout(new GridLayout(1, false));
-		textSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
-		//encodingSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		textSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		encodingSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		textSection.setLayout(new FillLayout());
 		encodingSection.setLayout(new FillLayout());

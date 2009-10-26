@@ -1,19 +1,32 @@
 package name.neilbartlett.eclipse.jareditor.internal;
 
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentPage extends FormPage implements IFormPart {
 	
 	private JARContentMasterDetailsBlock contentMasterDetails = new JARContentMasterDetailsBlock();
+	private Image titleImg;
 	
 	public JARContentPage(FormEditor editor, String id, String title) {
 		super(editor, id, title);
 	}
 	
 	protected void createFormContent(IManagedForm managedForm) {
+		ScrolledForm form = managedForm.getForm();
+		FormToolkit toolkit = managedForm.getToolkit();
+		toolkit.decorateFormHeading(form.getForm());
+
+		form.setText("JAR File Viewer");
+		titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
+		form.setImage(titleImg);
+		
 		contentMasterDetails.createContent(managedForm);
 	}
 
@@ -35,5 +48,10 @@ public class JARContentPage extends FormPage implements IFormPart {
 		contentMasterDetails.setMasterPartInput(input);
 		return false;
 	}
-
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		titleImg.dispose();
+	}
 }
