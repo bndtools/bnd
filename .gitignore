@@ -8,3 +8,5 @@
 *.swp
 *~
 
+# Mac OS detritus
+.DS_Store

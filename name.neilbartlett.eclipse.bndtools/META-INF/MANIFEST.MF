@@ -7,7 +7,7 @@ Bundle-Activator: aQute.bnd.plugin.Activator
 Bundle-Vendor: Neil Bartlett
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: ., bnd-0.0.372.jar
+Bundle-ClassPath: ., bndlib-0.0.377.jar
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.resources,
  org.eclipse.core.internal.resources,
