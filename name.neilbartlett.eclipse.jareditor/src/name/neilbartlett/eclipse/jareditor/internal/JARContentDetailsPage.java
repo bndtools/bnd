@@ -18,14 +18,14 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -186,12 +186,9 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 					readAsHex(stream, writer);
 				
 				content = writer.toString();
-			} catch (ZipException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+				ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
 			} finally {
 				try {
 					if(zipFile != null) zipFile.close();

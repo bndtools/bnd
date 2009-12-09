@@ -19,6 +19,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -99,7 +102,7 @@ public class JARContentTreePart extends SectionPart {
 		}
 	}
 	
-	private static class JARTreeContentProvider implements ITreeContentProvider {
+	private class JARTreeContentProvider implements ITreeContentProvider {
 		
 		Map<String, ZipTreeNode> entryMap;
 		
@@ -120,12 +123,12 @@ public class JARContentTreePart extends SectionPart {
 		public void dispose() {
 		}
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			entryMap = new LinkedHashMap<String, ZipTreeNode>();
 			if(newInput instanceof IFileEditorInput) {
 				IFile file = ((IFileEditorInput) newInput).getFile();
 				try {
 					File ioFile = new File(file.getLocationURI());
 					JarFile jarFile = new JarFile(ioFile);
-					entryMap = new LinkedHashMap<String, ZipTreeNode>();
 					
 					int i=0;
 					for(Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements(); i++) {
@@ -133,7 +136,8 @@ public class JARContentTreePart extends SectionPart {
 					}
 					jarFile.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+					ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
 				}
 			}
 		}

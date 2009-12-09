@@ -6,7 +6,7 @@
       <editor
             class="name.neilbartlett.eclipse.jareditor.internal.JAREditor"
             contributorClass="name.neilbartlett.eclipse.jareditor.internal.JAREditorContributor"
-            extensions="jar"
+            extensions="jar,war,ear,zip"
             icon="icons/jar_obj.gif"
             id="name.neilbartlett.eclipse.jareditor.internal.JAREditor"
             name="JAR Editor">
