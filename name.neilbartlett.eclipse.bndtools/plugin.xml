@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+   <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -64,6 +65,29 @@
             id="name.neilbartlett.eclipse.bndtools.editorContribution1"
             targetID="name.neilbartlett.eclipse.bndtools.editorContribution1">
       </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="name.neilbartlett.eclipse.bndtools.osgiFrameworks">
+      <framework
+            class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxFramework"
+            displayName="Eclipse Equinox"
+            icon="icons/equinox.gif"
+            id="equinox">
+      </framework>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui.FrameworksPreferencePage"
+            id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
+            name="OSGi Frameworks">
+      </page>
    </extension>
 
 </plugin>
