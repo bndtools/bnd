@@ -3,11 +3,16 @@ package name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -26,14 +31,20 @@ import org.eclipse.swt.widgets.Text;
 
 public class FrameworkPathWizardPage extends WizardPage implements PropertyChangeListener {
 	
+	private final Set<IPath> existingInstancePaths = new HashSet<IPath>();
 	private IFramework framework = null;
 	private IFrameworkInstance instance = null;
 	
 	private Shell parentShell;
 	private Text txtPath;
 	
-	public FrameworkPathWizardPage() {
+	public FrameworkPathWizardPage(List<IFrameworkInstance> existingInstances) {
 		super("frameworkPath");
+		
+		for (IFrameworkInstance instance : existingInstances) {
+			IPath path = instance.getInstancePath();
+			existingInstancePaths.add(path);
+		}
 	}
 
 	public void createControl(Composite parent) {
@@ -108,11 +119,16 @@ public class FrameworkPathWizardPage extends WizardPage implements PropertyChang
 			error = "A framework type was not selected";
 		} else {
 			File resource = new File(txtPath.getText());
-			try {
-				instance = framework.createFrameworkInstance(resource);
-				error = instance.getValidationError();
-			} catch (CoreException e) {
-				error = e.getStatus().getMessage();
+			Path path = new Path(resource.getAbsolutePath());
+			if(existingInstancePaths.contains(path)) {
+				error = "This framework instance is already installed.";
+			} else {
+				try {
+					instance = framework.createFrameworkInstance(resource);
+					error = instance.getValidationError();
+				} catch (CoreException e) {
+					error = e.getStatus().getMessage();
+				}
 			}
 		}
 		setErrorMessage(error);

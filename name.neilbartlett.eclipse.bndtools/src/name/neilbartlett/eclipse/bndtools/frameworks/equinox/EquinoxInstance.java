@@ -26,6 +26,7 @@ class EquinoxInstance implements IFrameworkInstance {
 	
 	private static final String DISPLAY_FORMAT = "Eclipse Equinox %s";
 	private static final String EQUINOX_ID = "org.eclipse.osgi";
+	private static final String FRAMEWORK_ID = "equinox";
 
 	private final IPath instancePath;
 	
@@ -71,10 +72,6 @@ class EquinoxInstance implements IFrameworkInstance {
 	}
 	public String getValidationError() {
 		return error;
-	}
-	
-	public String getInstanceURL() {
-		return "equinox:" + instancePath.toString();
 	}
 	
 	private static VersionedPluginFile findEquinoxJar(File resource) throws CoreException {
@@ -136,11 +133,16 @@ class EquinoxInstance implements IFrameworkInstance {
 		return sourceJar;
 	}
 	
+	public Image createIcon(Device device) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/equinox.gif").createImage(false, device);
+	}
+
+	public String getFrameworkId() {
+		return FRAMEWORK_ID;
+	}
+	
 	private static CoreException createError(String message) {
 		return new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
 	}
 	
-	public Image createIcon(Device device) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/equinox.gif").createImage(false, device);
-	}
 }

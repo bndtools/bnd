@@ -1,7 +1,6 @@
 package name.neilbartlett.eclipse.bndtools.frameworks;
 
 import java.io.File;
-import java.lang.annotation.AnnotationFormatError;
 
 import org.eclipse.core.runtime.CoreException;
 

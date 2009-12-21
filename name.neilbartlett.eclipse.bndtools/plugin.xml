@@ -80,6 +80,12 @@
             icon="icons/equinox.gif"
             id="equinox">
       </framework>
+      <framework
+            class="name.neilbartlett.eclipse.bndtools.frameworks.felix.FelixFramework"
+            displayName="Apache Felix"
+            icon="icons/felix.gif"
+            id="felix">
+      </framework>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
@@ -88,6 +94,21 @@
             id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
             name="OSGi Frameworks">
       </page>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+            class="name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer"
+            id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER">
+      </classpathContainerInitializer>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.ui.classpathContainerPage">
+      <classpathContainerPage
+            class="name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathPage"
+            id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER"
+            name="OSGi Framework">
+      </classpathContainerPage>
    </extension>
 
 </plugin>

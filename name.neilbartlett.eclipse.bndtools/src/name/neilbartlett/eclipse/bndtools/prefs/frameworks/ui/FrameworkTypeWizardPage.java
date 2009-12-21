@@ -152,8 +152,10 @@ public class FrameworkTypeWizardPage extends WizardPage {
 			
 			String pluginId = configElem.getContributor().getName();
 			String iconPath = configElem.getAttribute("icon");
-			String key = pluginId + "/" + iconPath;
+			if(iconPath == null)
+				return null;
 			
+			String key = pluginId + "/" + iconPath;
 			Image image = images.get(key);
 			if(image == null) {
 				ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(pluginId, iconPath);

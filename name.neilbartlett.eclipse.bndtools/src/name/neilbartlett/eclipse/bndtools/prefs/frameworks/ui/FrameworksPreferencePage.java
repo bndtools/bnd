@@ -1,9 +1,9 @@
 package name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.classpath.FrameworkInstanceLabelProvider;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 
@@ -14,16 +14,12 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Device;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -73,7 +69,7 @@ public class FrameworksPreferencePage extends PreferencePage implements
 		
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Path");
-		col.setWidth(200);
+		col.setWidth(300);
 		
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -144,52 +140,5 @@ public class FrameworksPreferencePage extends PreferencePage implements
 			ErrorDialog.openError(getShell(), "Error", null, status);
 		}
 		loadFrameworkInstanceList();
-	}
-	
-	class FrameworkInstanceLabelProvider extends LabelProvider implements ITableLabelProvider {
-		
-		private final Device device;
-		private final List<Image> images = new ArrayList<Image>();
-
-		public FrameworkInstanceLabelProvider(Device device) {
-			this.device = device;
-		}
-		
-		public Image getColumnImage(Object element, int columnIndex) {
-			Image icon = null;
-			
-			if(columnIndex == 0) {
-				IFrameworkInstance instance = (IFrameworkInstance) element;
-				icon = instance.createIcon(device);
-				images.add(icon);
-			}
-			
-			return icon;
-		}
-		public String getColumnText(Object element, int columnIndex) {
-			IFrameworkInstance instance = (IFrameworkInstance) element;
-			String text;
-			
-			switch(columnIndex) {
-			case 0:
-				text = instance.getDisplayString();
-				break;
-			case 1:
-				text = instance.getInstancePath().toString();
-				break;
-			default:
-				text = "<<ERROR>>";
-			}
-			
-			return text;
-		}
-		
-		@Override
-		public void dispose() {
-			super.dispose();
-			for (Image image : images) {
-				image.dispose();
-			}
-		}
 	}
 }

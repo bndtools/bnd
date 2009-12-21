@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.service.prefs.BackingStoreException;
@@ -76,7 +75,7 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 				String resourcePath = frameworkUrl.substring(colonIndex + 1);
 				
 				try {
-					IFramework framework = findFramework(frameworkId);
+					IFramework framework = FrameworkUtils.findFramework(frameworkId);
 					IFrameworkInstance instance = framework.createFrameworkInstance(new File(resourcePath));
 					
 					instances.add(instance);
@@ -91,20 +90,11 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 		List<String> urlList = new ArrayList<String>();
 		
 		for (IFrameworkInstance instance : instances) {
-			urlList.add(instance.getInstanceURL());
+			String url = instance.getFrameworkId() + ":" + instance.getInstancePath();
+			urlList.add(url);
 		}
 		
 		saveFrameworkUrls(urlList);
 	}
 	
-	static IFramework findFramework(String id) throws CoreException {
-		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_OSGI_FRAMEWORKS);
-		for (IConfigurationElement element : elements) {
-			String elementId = element.getAttribute("id");
-			if(id.equals(elementId)) {
-				return (IFramework) element.createExecutableExtension("class");
-			}
-		}
-		return null;
-	}
 }

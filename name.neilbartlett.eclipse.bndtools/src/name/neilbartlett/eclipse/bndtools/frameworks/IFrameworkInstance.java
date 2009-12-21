@@ -47,5 +47,5 @@ public interface IFrameworkInstance {
 	 */
 	Image createIcon(Device device);
 
-	String getInstanceURL();
+	String getFrameworkId();
 }

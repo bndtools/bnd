@@ -43,7 +43,7 @@ public class CreateFrameworkInstanceWizard extends Wizard {
 	@Override
 	public void addPages() {
 		frameworkTypePage = new FrameworkTypeWizardPage();
-		frameworkPathPage = new FrameworkPathWizardPage();
+		frameworkPathPage = new FrameworkPathWizardPage(instances);
 		
 		frameworkTypePage.addPropertyChangeListener(FrameworkTypeWizardPage.PROP_FRAMEWORK_TYPE, frameworkPathPage);
 		
