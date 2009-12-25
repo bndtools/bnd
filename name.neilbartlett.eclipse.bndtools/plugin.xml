@@ -2,6 +2,7 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
+   <extension-point id="osgiFrameworkBuildJobs" name="OSGi Framework Build Jobs" schema="schema/osgiFrameworkBuildJobs.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -43,6 +44,14 @@
             icon="icons/bundle_obj.gif"
             id="name.neilbartlett.eclipse.bndtools.bndEditor"
             name="Bnd Editor">
+      </editor>
+      <editor
+            class="org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor"
+            default="false"
+            filenames="config.ini"
+            icon="icons/equinox.gif"
+            id="name.neilbartlett.eclipse.bndtools.equinoxConfigEditor"
+            name="Equinox Config Editor">
       </editor>
    </extension>
    <extension
@@ -86,6 +95,13 @@
             icon="icons/felix.gif"
             id="felix">
       </framework>
+   </extension>
+   <extension
+         point="name.neilbartlett.eclipse.bndtools.osgiFrameworkBuildJobs">
+      <buildJob
+            class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxBuildJob"
+            frameworkId="equinox">
+      </buildJob>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
