@@ -110,5 +110,44 @@
             name="OSGi Framework">
       </classpathContainerPage>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="name.neilbartlett.eclipse.bndtools.launch.LaunchConfigurationDelegate"
+            id="name.neilbartlett.eclipse.bndtools.launchConfigurationType"
+            modes="run,debug,profile"
+            name="OSGi"
+            public="true">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="name.neilbartlett.eclipse.bndtools.launch.ui.LaunchTabGroup"
+            id="name.neilbartlett.eclipse.bndtools.launchConfigurationTabGroup"
+            type="name.neilbartlett.eclipse.bndtools.launchConfigurationType">
+         <launchMode
+               mode="run">
+         </launchMode>
+         <launchMode
+               mode="debug">
+         </launchMode>
+         <launchMode
+               mode="profile">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="name.neilbartlett.eclipse.bndtools.launch.LaunchShortcut"
+            id="name.neilbartlett.eclipse.bndtools.launchShortcut"
+            label="OSGi"
+            modes="run,debug">
+         <configurationType
+               id="name.neilbartlett.eclipse.bndtools.launchConfigurationType">
+         </configurationType>
+      </shortcut>
+   </extension>
 
 </plugin>

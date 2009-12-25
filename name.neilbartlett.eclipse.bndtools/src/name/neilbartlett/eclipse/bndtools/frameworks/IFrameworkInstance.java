@@ -1,5 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.frameworks;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.swt.graphics.Device;
@@ -47,5 +49,36 @@ public interface IFrameworkInstance {
 	 */
 	Image createIcon(Device device);
 
+	/**
+	 * Return the ID of this framework.
+	 * @return
+	 */
 	String getFrameworkId();
+	
+	/**
+	 * Return whether this framework instance is launchable.
+	 */
+	boolean isLaunchable();
+	
+	/**
+	 * Return the standard program arguments for launching this framework
+	 * instance in the specified working directory. Non-launchable framework instances may return {@code null} from this method.
+	 * 
+	 * @param workingDir
+	 *            The working directory in which to launch
+	 * @return The standard program arguments, as a String, with multiple
+	 *         arguments separated by whitespace.
+	 */
+	String getStandardProgramArguments(File workingDir);
+	
+	/**
+	 * Return the standard program arguments for launching this framework
+	 * instance in the specified working directory. Non-launchable framework instances may return {@code null} from this method.
+	 * 
+	 * @param workingDir
+	 *            The working directory in which to launch
+	 * @return The standard program arguments, as a String, with multiple
+	 *         arguments separated by whitespace.
+	 */
+	String getStandardVMArguments(File workingDir);
 }

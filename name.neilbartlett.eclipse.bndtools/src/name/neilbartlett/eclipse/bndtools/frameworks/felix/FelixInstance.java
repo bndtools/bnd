@@ -108,5 +108,18 @@ class FelixInstance implements IFrameworkInstance {
 	public String getValidationError() {
 		return error;
 	}
+	
+	public boolean isLaunchable() {
+		return true;
+	}
 
+	public String getStandardProgramArguments(File workingDir) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getStandardVMArguments(File workingDir) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

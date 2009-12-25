@@ -26,4 +26,15 @@ public interface IFramework {
 	 */
 	IFrameworkInstance createFrameworkInstance(File resource)
 			throws CoreException;
+
+	/**
+	 * Return the main class name used to launch instances of this OSGi
+	 * framework. Non-launchable frameworks may return {@code null}.
+	 * 
+	 * @return The fully qualified "main" class name, or {@code null} if the
+	 *         framework is not launchable.
+	 */
+	String getMainClassName();
+	
+
 }

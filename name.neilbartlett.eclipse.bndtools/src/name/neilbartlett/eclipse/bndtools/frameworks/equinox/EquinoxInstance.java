@@ -27,6 +27,8 @@ class EquinoxInstance implements IFrameworkInstance {
 	private static final String DISPLAY_FORMAT = "Eclipse Equinox %s";
 	private static final String EQUINOX_ID = "org.eclipse.osgi";
 	private static final String FRAMEWORK_ID = "equinox";
+	
+	private static final String PROGRAM_ARGS = "-console -consoleLog -configuration " + FRAMEWORK_ID;
 
 	private final IPath instancePath;
 	
@@ -143,6 +145,17 @@ class EquinoxInstance implements IFrameworkInstance {
 	
 	private static CoreException createError(String message) {
 		return new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
+	}
+	
+	public boolean isLaunchable() {
+		return true;
+	}
+	
+	public String getStandardProgramArguments(File workingDir) {
+		return PROGRAM_ARGS;
+	}
+	public String getStandardVMArguments(File workingDir) {
+		return String.format("-Dosgi.sysPath=\"%s\" -Declipse.ignoreApp=true", workingDir.toString());
 	}
 	
 }
