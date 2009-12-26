@@ -1,7 +1,9 @@
 package name.neilbartlett.eclipse.bndtools.launch;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
@@ -12,12 +14,14 @@ import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
@@ -39,6 +43,23 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		
 		// Launch the VM now
 		super.launch(configuration, mode, launch, monitor);
+	}
+	
+	@Override
+	public String[] getClasspath(ILaunchConfiguration configuration)
+			throws CoreException {
+		List<String> result = new ArrayList<String>();
+		
+		IFramework framework = getFrameworkForConfiguration(configuration);
+		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(framework, configuration);
+		IClasspathEntry[] entries = frameworkInstance.getClasspathEntries();
+		
+		for (IClasspathEntry entry : entries) {
+			IPath path = entry.getPath();
+			result.add(path.toString());
+		}
+		
+		return result.toArray(new String[result.size()]);
 	}
 	
 	@Override
@@ -114,9 +135,8 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		if(instancePath == null)
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
 		IFrameworkInstance frameworkInstance = framework.createFrameworkInstance(new File(instancePath));
-		String error = frameworkInstance.getValidationError();
-		if(error != null)
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework instance: " + error, null));
+		if(!frameworkInstance.getStatus().isOK())
+			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework instance: " + frameworkInstance.getStatus().getMessage(), null));
 		if(!frameworkInstance.isLaunchable())
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "A non-launchable framework instance was selected.", null));
 		return frameworkInstance;

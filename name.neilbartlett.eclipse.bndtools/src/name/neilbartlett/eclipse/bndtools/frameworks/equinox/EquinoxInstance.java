@@ -7,6 +7,7 @@ import java.io.File;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.shared.VersionedBundleFile;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -26,13 +27,14 @@ class EquinoxInstance implements IFrameworkInstance {
 	
 	private static final String DISPLAY_FORMAT = "Eclipse Equinox %s";
 	private static final String EQUINOX_ID = "org.eclipse.osgi";
+	private static final char VERSION_SEPARATOR = '_';
 	private static final String FRAMEWORK_ID = "equinox";
 	
 	private static final String PROGRAM_ARGS = "-console -consoleLog -configuration " + FRAMEWORK_ID;
 
 	private final IPath instancePath;
 	
-	private String error = null;
+	private IStatus status;
 	private Version version = null;
 	private IClasspathEntry classpathEntry = null;
 
@@ -44,20 +46,21 @@ class EquinoxInstance implements IFrameworkInstance {
 		assert instancePath != null;
 		File file = instancePath.toFile();
 		if(!file.exists()) {
-			error = "Selected file or folder does not exist.";
+			this.status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Selected file or folder does not exist.", null);
 			return;
 		}
 		
 		try {
-			VersionedPluginFile equinoxJar = findEquinoxJar(file);
+			VersionedBundleFile equinoxJar = findEquinoxJar(file);
 			this.version = equinoxJar.getVersion();
 			
 			IPath jarPath = new Path(equinoxJar.getFile().getAbsolutePath());
 			File sourceJarFile = findSourceJar(EQUINOX_ID, equinoxJar.getFile());
 			IPath sourcePath = sourceJarFile != null ? new Path(sourceJarFile.getAbsolutePath()) : null;
 			classpathEntry = JavaCore.newLibraryEntry(jarPath, sourcePath, null, new IAccessRule[0], new IClasspathAttribute[0], false);
+			this.status = Status.OK_STATUS;
 		} catch (CoreException e) {
-			this.error = e.getStatus().getMessage();
+			this.status = e.getStatus();
 		}
 	}
 	
@@ -65,33 +68,32 @@ class EquinoxInstance implements IFrameworkInstance {
 		return new IClasspathEntry[] { classpathEntry };
 	}
 	public String getDisplayString() {
-		if(error != null)
-			return error;
-		return String.format(DISPLAY_FORMAT, version);
+		return String.format(DISPLAY_FORMAT, version != null ? version.toString() : "<error>");
 	}
 	public IPath getInstancePath() {
 		return instancePath;
 	}
-	public String getValidationError() {
-		return error;
+	
+	public IStatus getStatus() {
+		return status;
 	}
 	
-	private static VersionedPluginFile findEquinoxJar(File resource) throws CoreException {
+	private static VersionedBundleFile findEquinoxJar(File resource) throws CoreException {
 		if(resource.isDirectory()) {
 			// Check for top-level Equinox/Eclipse directory containing "plugins/org.eclipse.osgi_<version>.jar"
 			File pluginsDir = new File(resource, "plugins");
 			if(!pluginsDir.isDirectory())
 				throw createError("Not a top-level Equinox or Eclipse folder. It does not contain a 'plugins' sub-folder");
 			
-			VersionedPluginFile selectedJar = selectEquinoxJar(pluginsDir);
+			VersionedBundleFile selectedJar = VersionedBundleFile.findHighestVersionBundle(pluginsDir, EQUINOX_ID, VERSION_SEPARATOR);
 			if(selectedJar == null)
 				throw createError("Could not find a file named 'plugins/org.eclipse.osgi_<version>.jar' in the selected folder");
 			
 			return selectedJar;
 		} else if(resource.isFile()) {
-			VersionedPluginFile selectedJar = null;
+			VersionedBundleFile selectedJar = null;
 			try {
-				selectedJar = VersionedPluginFile.fromPluginJar(EQUINOX_ID, resource);
+				selectedJar = VersionedBundleFile.fromBundleJar(EQUINOX_ID, resource, VERSION_SEPARATOR);
 			} catch (IllegalArgumentException e) {
 				// Ignore
 			}
@@ -102,25 +104,6 @@ class EquinoxInstance implements IFrameworkInstance {
 		} else {
 			throw createError("Selected resource does not exist or is not a plain file or directory.");
 		}
-	}
-	
-	private static VersionedPluginFile selectEquinoxJar(File pluginsDir) {
-		VersionedPluginFile selectedJarFile = null;
-		
-		File[] pluginFiles = pluginsDir.listFiles();
-		for (File pluginFile : pluginFiles) {
-			try {
-				VersionedPluginFile versionedPluginFile = VersionedPluginFile.fromPluginJar(EQUINOX_ID, pluginFile);
-				if(versionedPluginFile != null) {
-					if(selectedJarFile == null || selectedJarFile.getVersion().compareTo(versionedPluginFile.getVersion()) < 0) {
-						selectedJarFile = versionedPluginFile;
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				// Ignore plugin JARs with invalid version strings.
-			}
-		}
-		return selectedJarFile;
 	}
 	
 	private static File findSourceJar(String id, File jar) {
@@ -155,7 +138,7 @@ class EquinoxInstance implements IFrameworkInstance {
 		return PROGRAM_ARGS;
 	}
 	public String getStandardVMArguments(File workingDir) {
-		return String.format("-Dosgi.sysPath=\"%s\" -Declipse.ignoreApp=true", workingDir.toString());
+		return String.format("-Dosgi.syspath=\"%s\" -Declipse.ignoreApp=true", workingDir.toString());
 	}
 	
 }

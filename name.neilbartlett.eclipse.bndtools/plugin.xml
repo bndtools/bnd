@@ -102,6 +102,10 @@
             class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxBuildJob"
             frameworkId="equinox">
       </buildJob>
+      <buildJob
+            class="name.neilbartlett.eclipse.bndtools.frameworks.felix.FelixBuildJob"
+            frameworkId="felix">
+      </buildJob>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

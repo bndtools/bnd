@@ -39,7 +39,7 @@ public class EquinoxBuildJob implements IFrameworkBuildJob {
 					equinoxFolder.refreshLocal(IResource.DEPTH_ONE, subMonitor.newChild(1));
 				}
 				
-				// Create the empty 'config.ini' file
+				// Create the 'equinox/config.ini' file
 				IFile configIniFile = equinoxFolder.getFile("config.ini");
 				if(!configIniFile.exists()) {
 					InputStream inputStream;

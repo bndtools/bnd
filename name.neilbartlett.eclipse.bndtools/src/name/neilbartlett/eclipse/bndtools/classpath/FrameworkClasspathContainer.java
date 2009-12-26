@@ -8,17 +8,21 @@ import org.eclipse.jdt.core.IClasspathEntry;
 
 class FrameworkClasspathContainer implements IClasspathContainer {
 	
+	private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
 	private final IPath path;
-	private final IClasspathEntry[] entries;
 	private final IFrameworkInstance frameworkInstance;
 
-	FrameworkClasspathContainer(IPath path, IClasspathEntry[] entries, IFrameworkInstance frameworkInstance) {
+	FrameworkClasspathContainer(IPath path, IFrameworkInstance frameworkInstance) {
 		this.path = path;
-		this.entries = entries;
 		this.frameworkInstance = frameworkInstance;
 	}
 
 	public IClasspathEntry[] getClasspathEntries() {
+		IClasspathEntry[] entries = EMPTY_ENTRIES;
+		
+		if(frameworkInstance != null && frameworkInstance.getStatus().isOK())
+			entries = frameworkInstance.getClasspathEntries();
+		
 		return entries;
 	}
 

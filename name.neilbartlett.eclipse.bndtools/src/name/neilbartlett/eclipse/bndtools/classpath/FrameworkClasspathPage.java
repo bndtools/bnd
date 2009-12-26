@@ -52,16 +52,16 @@ public class FrameworkClasspathPage extends WizardPage implements
 	}
 
 	public void setSelection(IClasspathEntry containerEntry) {
-		try {
+//		try {
 			if(containerEntry == null) {
 				selector.setSelectedFramework(null);
 			} else {
 				IPath containerPath = containerEntry.getPath();
 				selector.setSelectedFramework(FrameworkClasspathContainerInitializer.getFrameworkInstanceForContainerPath(containerPath));
 			}
-		} catch (CoreException e) {
-			ErrorDialog.openError(getShell(), "Error", "Unable to set classpath selection", e.getStatus());
-		}
+//		} catch (CoreException e) {
+//			ErrorDialog.openError(getShell(), "Error", "Unable to set classpath selection", e.getStatus());
+//		}
 	}
 	
 	public void createControl(Composite parent) {
@@ -76,6 +76,7 @@ public class FrameworkClasspathPage extends WizardPage implements
 			}
 		});
 
+		// Layout
 		Control selectorControl = selector.getControl();
 		selectorControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 		

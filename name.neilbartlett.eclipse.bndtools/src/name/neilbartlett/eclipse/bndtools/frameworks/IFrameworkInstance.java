@@ -3,6 +3,7 @@ package name.neilbartlett.eclipse.bndtools.frameworks;
 import java.io.File;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
@@ -11,9 +12,10 @@ public interface IFrameworkInstance {
 	/**
 	 * Check whether the instance is valid for the selected framework type.
 	 * 
-	 * @return {@code null} if valid, otherwise an error message.
+	 * @return An {@link IStatus} object, which should have a severity of
+	 *         {@code OK} if this framework instance is valid.
 	 */
-	String getValidationError();
+	IStatus getStatus();
 
 	/**
 	 * Get logical installation path of this instance, which may be a directory

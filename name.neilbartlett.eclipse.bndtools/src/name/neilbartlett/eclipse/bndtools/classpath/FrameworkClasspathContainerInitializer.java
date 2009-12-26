@@ -17,6 +17,8 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
+import aQute.bnd.plugin.Activator;
+
 public class FrameworkClasspathContainerInitializer extends
 		ClasspathContainerInitializer {
 	
@@ -26,25 +28,30 @@ public class FrameworkClasspathContainerInitializer extends
 	public void initialize(IPath containerPath, IJavaProject project)
 			throws CoreException {
 		IFrameworkInstance instance = getFrameworkInstanceForContainerPath(containerPath);
-		FrameworkClasspathContainer container = new FrameworkClasspathContainer(containerPath, instance.getClasspathEntries(), instance);
+		IClasspathContainer container = new FrameworkClasspathContainer(containerPath, instance);
 		JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { container } , null);
 	}
 	
-	public static IFrameworkInstance getFrameworkInstanceForContainerPath(IPath containerPath) throws CoreException {
+	public static IFrameworkInstance getFrameworkInstanceForContainerPath(IPath containerPath) {
 		if(containerPath == null || containerPath.segmentCount() != 3)
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework container path.", null));
+			return null;
+			//throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework container path.", null));
 		
 		String frameworkId = containerPath.segment(1);
-		IFramework framework = FrameworkUtils.findFramework(frameworkId);
-		String instancePathEncoded = containerPath.segment(2);
 		try {
+			IFramework framework = FrameworkUtils.findFramework(frameworkId);
+			String instancePathEncoded = containerPath.segment(2);
 			String instancePath = URLDecoder.decode(instancePathEncoded, "UTF-8");
 			
 			File frameworkPath = new File(instancePath);
-			
-			return framework.createFrameworkInstance(frameworkPath);
+			IFrameworkInstance instance = framework.createFrameworkInstance(frameworkPath);
+			return instance;
 		} catch (UnsupportedEncodingException e) {
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error decoding OSGi framework instance path.", null));
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising OSGi framework classpath.", e));
+			return null;
+		} catch (CoreException e) {
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising OSGi framework classpath.", e));
+			return null;
 		}
 	}
 }

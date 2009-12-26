@@ -15,4 +15,6 @@ public class Plugin {
 	public static final String BND_EDITOR_ID = "name.neilbartlett.eclipse.bndtools.bndEditor";
 	public static final String EXTPOINT_OSGI_FRAMEWORKS = "osgiFrameworks";
 	public static final String EXTPOINT_OSGI_FRAMEWORK_BUILD_JOBS = "osgiFrameworkBuildJobs";
+	
+	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
 }

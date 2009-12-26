@@ -85,7 +85,8 @@ public class OSGiMainTab extends JavaLaunchTab {
 					&& frameworkInstancePath != null && frameworkInstancePath.length() > 0) {
 				IFramework framework = FrameworkUtils.findFramework(frameworkId);
 				frameworkInstance = framework.createFrameworkInstance(new File(frameworkInstancePath));
-				setErrorMessage(frameworkInstance.getValidationError());
+				IStatus status = frameworkInstance.getStatus();
+				setErrorMessage(status.isOK() ? null : status.getMessage());
 			}
 		}
 		catch (CoreException ce) {
@@ -141,7 +142,9 @@ public class OSGiMainTab extends JavaLaunchTab {
 		});
 		
 		// Layout
-		group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridData groupLayoutData = new GridData(GridData.FILL_HORIZONTAL);
+		groupLayoutData.heightHint = 200;
+		group.setLayoutData(groupLayoutData);
 		group.setLayout(new GridLayout(1, false));
 		frameworkSelectorControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 	}
@@ -209,9 +212,9 @@ public class OSGiMainTab extends JavaLaunchTab {
 			setErrorMessage("No OSGi Framework was specified");
 			return false;
 		}
-		String frameworkError = selectedFramework.getValidationError();
-		if(frameworkError != null) {
-			setErrorMessage(frameworkError);
+		IStatus status = selectedFramework.getStatus();
+		if(!status.isOK()) {
+			setErrorMessage(status.getMessage());
 			return false;
 		}
 		

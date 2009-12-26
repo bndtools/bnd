@@ -12,6 +12,7 @@ import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -125,7 +126,8 @@ public class FrameworkPathWizardPage extends WizardPage implements PropertyChang
 			} else {
 				try {
 					instance = framework.createFrameworkInstance(resource);
-					error = instance.getValidationError();
+					IStatus status = instance.getStatus();
+					error = status.isOK() ? null : status.getMessage();
 				} catch (CoreException e) {
 					error = e.getStatus().getMessage();
 				}
@@ -141,7 +143,7 @@ public class FrameworkPathWizardPage extends WizardPage implements PropertyChang
 	
 	@Override
 	public boolean isPageComplete() {
-		return instance != null && instance.getValidationError() == null;
+		return instance != null && instance.getStatus().isOK();
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
