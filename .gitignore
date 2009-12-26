@@ -3,6 +3,7 @@
 
 # Eclipse compiler output
 /*/bin
+/*feature/compile*.xml
 
 # vi detritus
 *.swp

@@ -10,6 +10,10 @@
  ******************************************************************************/
 package name.neilbartlett.eclipse.bndtools;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
+
 public class Plugin {
 	public static final String PLUGIN_ID = "name.neilbartlett.eclipse.bndtools";
 	public static final String BND_EDITOR_ID = "name.neilbartlett.eclipse.bndtools.bndEditor";
@@ -17,4 +21,22 @@ public class Plugin {
 	public static final String EXTPOINT_OSGI_FRAMEWORK_BUILD_JOBS = "osgiFrameworkBuildJobs";
 	
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
+	
+	public static final <R,S,E extends Throwable> R usingService(Class<S> clazz, ServiceOperation<R,S,E> operation) throws E {
+		BundleContext context = FrameworkUtil.getBundle(Plugin.class).getBundleContext();
+		
+		ServiceReference reference = context.getServiceReference(clazz.getName());
+		if(reference != null) {
+			@SuppressWarnings("unchecked")
+			S service = (S) context.getService(reference);
+			if(service != null) {
+				try {
+					return operation.execute(service);
+				} finally {
+					context.ungetService(reference);
+				}
+			}
+		}
+		return null;
+	}
 }

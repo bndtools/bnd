@@ -93,6 +93,7 @@ public class FrameworkSelector {
 		// Layout
 		composite.setLayout(new GridLayout(1, false));
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		configFrameworksLink.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
 	}
 	
 	
