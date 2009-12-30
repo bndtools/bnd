@@ -107,11 +107,9 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 
 	public void setActive(boolean active) {
 		if(active) {
-			System.out.println("!! Setting edit page ACTIVE");
 			if(stale)
 				refresh();
 		} else {
-			System.out.println("!! Setting edit page INACTIVE");
 			if(isDirty())
 				commit(false);
 		}

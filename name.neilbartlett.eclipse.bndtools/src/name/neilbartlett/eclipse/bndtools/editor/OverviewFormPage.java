@@ -38,6 +38,7 @@ public class OverviewFormPage extends FormPage {
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
 		form.setText("Overview");
+		toolkit.decorateFormHeading(form.getForm());
 		
 		Composite body = form.getBody();
 		
@@ -52,8 +53,10 @@ public class OverviewFormPage extends FormPage {
         body.setLayout(layout);
         body.setLayoutData(new TableWrapData(TableWrapData.FILL));
         
-        GeneralInfoSectionPart bundleDetailsSection = new GeneralInfoSectionPart(body, toolkit);
+        GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit);
         managedForm.addPart(bundleDetailsSection);
+        
+        new PackagesPart(body, toolkit);
 	}
 	
 	@Override

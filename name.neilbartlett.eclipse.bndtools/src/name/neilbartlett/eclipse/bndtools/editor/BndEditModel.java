@@ -23,7 +23,8 @@ public class BndEditModel {
 	
 	private static final String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
-		Constants.BUNDLE_VERSION
+		Constants.BUNDLE_VERSION,
+		Constants.BUNDLE_ACTIVATOR
 	};
 	
 	private final Properties properties;
@@ -82,6 +83,14 @@ public class BndEditModel {
 	
 	public void setBundleVersion(String bundleVersion) {
 		genericSet(Constants.BUNDLE_VERSION, bundleVersion);
+	}
+	
+	public String getBundleActivator() {
+		return properties.getProperty(Constants.BUNDLE_ACTIVATOR);
+	}
+	
+	public void setBundleActivator(String bundleActivator) {
+		genericSet(Constants.BUNDLE_ACTIVATOR, bundleActivator);
 	}
 	
 	// BEGIN: PropertyChangeSupport delegate methods

@@ -57,9 +57,6 @@ public class BndEditor extends FormEditor {
 			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Details");
 			addPage(detailsPage);
 
-			OverviewFormPage detailsPage2 = new OverviewFormPage(this, "detailsPage2", "Details2");
-			addPage(detailsPage2);
-
 			sourcePage = new BndSourceEditorPage("bndSourcePage", this);
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());
 			setPageText(sourcePageIndex, "Source");
