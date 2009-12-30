@@ -53,6 +53,14 @@
             id="name.neilbartlett.eclipse.bndtools.equinoxConfigEditor"
             name="Equinox Config Editor">
       </editor>
+      <editor
+            class="name.neilbartlett.eclipse.bndtools.editor.BndEditor"
+            default="false"
+            extensions="bnd"
+            icon="icons/bundle_obj.gif"
+            id="name.neilbartlett.eclipse.bndtools.newEditor"
+            name="New Bnd Editor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">

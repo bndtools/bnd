@@ -10,15 +10,31 @@
  ******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.editor;
 
+import java.io.IOException;
+
+import name.neilbartlett.eclipse.bndtools.Plugin;
+
+import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 
 public class BndEditor extends FormEditor {
-
+	
+	private BndEditModel model = null;
+	private BndSourceEditorPage sourcePage;
+	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
+		commitPages(true);
+		sourcePage.refresh();
+		sourcePage.doSave(monitor);
 	}
 
 	@Override
@@ -41,10 +57,40 @@ public class BndEditor extends FormEditor {
 			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Details");
 			addPage(detailsPage);
 
-			int sourcePageIndex = addPage(new PropertiesFileEditor(), getEditorInput());
+			OverviewFormPage detailsPage2 = new OverviewFormPage(this, "detailsPage2", "Details2");
+			addPage(detailsPage2);
+
+			sourcePage = new BndSourceEditorPage("bndSourcePage", this);
+			int sourcePageIndex = addPage(sourcePage, getEditorInput());
 			setPageText(sourcePageIndex, "Source");
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+		super.init(site, input);
+		
+		if(!IStorageEditorInput.class.isInstance(input)) {
+			throw new PartInitException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid editor input type.", null));
+		}
+		
+		try {
+			IStorageEditorInput storageInput = (IStorageEditorInput) input;
+			IStorage storage = storageInput.getStorage();
+			setPartName(storage.getName());
+			
+			model = new BndEditModel();
+			model.loadFrom(storage.getContents());
+		} catch (CoreException e) {
+			throw new PartInitException("Error accessing editor input.", e);
+		} catch (IOException e) {
+			throw new PartInitException("Error reading editor input.", e);
+		}
+	}
+
+	public BndEditModel getBndModel() {
+		return this.model;
 	}
 }

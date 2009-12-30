@@ -14,13 +14,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 public class OverviewFormPage extends FormPage {
+
+	private BndEditModel bndModel;
 
 	public OverviewFormPage(FormEditor editor, String id, String title) {
 		super(editor, id, title);
@@ -32,6 +33,8 @@ public class OverviewFormPage extends FormPage {
 
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
+		managedForm.setInput(bndModel);
+		
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
 		form.setText("Overview");
@@ -51,6 +54,12 @@ public class OverviewFormPage extends FormPage {
         
         GeneralInfoSectionPart bundleDetailsSection = new GeneralInfoSectionPart(body, toolkit);
         managedForm.addPart(bundleDetailsSection);
+	}
+	
+	@Override
+	public void initialize(FormEditor editor) {
+		super.initialize(editor);
+		bndModel = ((BndEditor) editor).getBndModel();
 	}
 
 
