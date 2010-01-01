@@ -18,6 +18,7 @@ import java.util.Set;
 
 import name.neilbartlett.eclipse.bndtools.internal.libs.MutableRefCell;
 import name.neilbartlett.eclipse.bndtools.internal.libs.RefCell;
+import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageFilter;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageLister;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.PackageNameLabelProvider;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.PackageSelectionDialog;
@@ -100,13 +101,19 @@ public class PackageListGroup {
 		}
 		addButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Set<String> excludeFromAdd = packages;
-				if(excludes != null && excludes.size() > 0) {
-					excludeFromAdd = new HashSet<String>();
+				final Set<String> excludeFromAdd = new HashSet<String>();
+				if(packages != null) {
 					excludeFromAdd.addAll(packages);
+				}
+				if(excludes != null) {
 					excludeFromAdd.addAll(excludes);
 				}
-				PackageSelectionDialog dialog = new PackageSelectionDialog(addButton.getShell(), packageListerRef.getValue(), includeNonSource, excludeFromAdd);
+				IPackageFilter filter = new IPackageFilter() {
+					public boolean select(String packageName) {
+						return !"java".equals(packageName) && !packageName.startsWith("java.") && !excludeFromAdd.contains(packageName);
+					}
+				};
+				PackageSelectionDialog dialog = new PackageSelectionDialog(addButton.getShell(), packageListerRef.getValue(), filter, "");
 				dialog.setMultipleSelection(true);
 				
 				if(dialog.open() == Window.OK) {

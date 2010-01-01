@@ -13,17 +13,22 @@ package name.neilbartlett.eclipse.bndtools.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
@@ -36,35 +41,43 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleActivator;
@@ -74,23 +87,50 @@ import org.osgi.framework.Version;
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 	
 	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._";
+	private static final String[] INTERESTED_PROPERTIES = new String[] {
+		Constants.BUNDLE_SYMBOLICNAME,
+		Constants.BUNDLE_VERSION,
+		Constants.BUNDLE_ACTIVATOR,
+		Constants.EXPORT_PACKAGE,
+		aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
+		aQute.lib.osgi.Constants.SOURCES,
+	};
+	private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
+	private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
 
+	private final Set<String> interestedPropertySet;
+	
 	private BndEditModel model;
+	private IJavaProject javaProject;
 	
 	private Text txtBSN;
 	private Text txtVersion;
-	
-	private AtomicBoolean inRefresh = new AtomicBoolean(false);
-
 	private Text txtActivator;
+	private Button btnSources;
+	
+	private AtomicInteger refreshers = new AtomicInteger(0);
 
 	public GeneralInfoPart(Composite parent, FormToolkit toolkit) {
 		super(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 		createSection(getSection(), toolkit);
+		
+		interestedPropertySet = new HashSet<String>();
+		for (String prop : INTERESTED_PROPERTIES) {
+			interestedPropertySet.add(prop);
+		}
 	}
 
 	private void createSection(Section section, FormToolkit toolkit) {
 		section.setText("General Information");
+		
+		KeyStroke assistKeyStroke = null;
+		try {
+			assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
+		} catch (ParseException x) {
+			// Ignore
+		}
+		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -101,45 +141,116 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		toolkit.createLabel(composite, "Version:");
 		txtVersion = toolkit.createText(composite, "");
 		
-		toolkit.createLabel(composite, "Activator:");
+		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
 		txtActivator = toolkit.createText(composite, "");
-		
-		KeyStroke keyStroke = null;
-		try {
-			keyStroke = KeyStroke.getInstance("Ctrl+Space");
-		} catch (ParseException x) {
-			// Ignore
-		}
 		ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.TOP, composite);
-		FieldDecoration contentAssist = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
-		decorActivator.setImage(contentAssist.getImage());
-		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", keyStroke.format()));
+		decorActivator.setImage(contentAssistDecoration.getImage());
+		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
-
-		ContentProposalAdapter activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), new ActivatorProposalProvider(), keyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		
+		ContentProposalAdapter activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), new ActivatorProposalProvider(), assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
 		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		activatorProposalAdapter.setLabelProvider(new ActivatorLabelProvider());
+		activatorProposalAdapter.setAutoActivationDelay(500);
+		
+		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
+		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
+		decorSources.setImage(infoDecoration.getImage());
+		decorSources.setDescriptionText("If checked, the source code files will be included in the bundle under 'OSGI-OPT/src'.");
+		decorSources.setShowHover(true);
 		
 		// Listeners
-		Listener markDirtyListener = new Listener() {
-			public void handleEvent(Event event) {
-				if(!inRefresh.get())
-					markDirty();
+		txtBSN.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				markDirty();
+				IMessageManager msgs = getManagedForm().getMessageManager();
+				String text = txtBSN.getText();
+				if(text == null || text.length() == 0)
+					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the filename, without the .bnd extension.", null, IMessageProvider.INFORMATION, txtBSN);
+				else
+					msgs.removeMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, txtBSN);
 			}
-		};
-		txtBSN.addListener(SWT.Modify, markDirtyListener);
-		txtVersion.addListener(SWT.Modify, markDirtyListener);
-		
+		});
 		txtVersion.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
+				markDirty();
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				try {
-					new Version(txtVersion.getText());
+					String text = txtVersion.getText();
+					if(text.length() > 0)
+						new Version(text);
 					msgs.removeMessage("ERROR_" + Constants.BUNDLE_VERSION, txtVersion);
 				} catch (IllegalArgumentException x) {
 					msgs.addMessage("ERROR_" + Constants.BUNDLE_VERSION, "Invalid version format.", null, IMessageProvider.ERROR, txtVersion);
 				}
+			}
+		});
+		txtActivator.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent ev) {
+				markDirty();
+				IMessageManager msgs = getManagedForm().getMessageManager();
+				String unknownError = null;
+				
+				String activatorClassName = txtActivator.getText();
+				if(activatorClassName != null && activatorClassName.length() > 0) {
+					try {
+						IType activatorType = javaProject.findType(activatorClassName);
+						if(activatorType == null) {
+							unknownError = "The activator class name is not known in this project.";
+						}
+					} catch (JavaModelException e) {
+						// TODO: report exception
+						e.printStackTrace();
+					}
+				}
+				
+				if(unknownError != null) {
+					msgs.addMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, unknownError, null, IMessageProvider.ERROR, txtActivator);
+				} else {
+					msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
+				}
+				
+				checkActivatorIncluded();
+			}
+		});
+		linkActivator.addHyperlinkListener(new HyperlinkAdapter() {
+			@Override
+			public void linkActivated(HyperlinkEvent ev) {
+				String activatorClassName = txtActivator.getText();
+				if(activatorClassName != null && activatorClassName.length() > 0) {
+					try {
+						IType activatorType = javaProject.findType(activatorClassName);
+						if(activatorType != null) {
+							JavaUI.openInEditor(activatorType, true, true);
+						}
+					} catch (PartInitException e) {
+						ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
+					} catch (JavaModelException e) {
+						ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
+					}
+				}
+			}
+		});
+		activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+			public void proposalAccepted(IContentProposal proposal) {
+				if(proposal instanceof JavaClassContentProposal) {
+					IType selectedType = ((JavaClassContentProposal) proposal).element;
+					String selectedPackageName = selectedType.getPackageFragment().getElementName();
+					
+					if(!isIncludedPackage(selectedPackageName)) {
+						Collection<String> privatePackages = model.getPrivatePackages();
+						privatePackages.add(selectedPackageName);
+						commit(false);
+						model.setPrivatePackages(privatePackages);
+					}
+				}
+			}
+		});
+		btnSources.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				markDirty();
 			}
 		});
 		
@@ -162,64 +273,131 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
+		
+		gd = new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1);
+		btnSources.setLayoutData(gd);
+	}
+	
+	boolean isIncludedPackage(String packageName) {
+		final Collection<String> privatePackages = model.getPrivatePackages();
+		for (String pkg : privatePackages) {
+			if(packageName.equals(pkg)) {
+				return true;
+			}
+		}
+		final Collection<ExportedPackage> exportedPackages = model.getExportedPackages();
+		for (ExportedPackage pkg : exportedPackages) {
+			if(packageName.equals(pkg.getPackageName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	void checkActivatorIncluded() {
+		String warningMessage = null;
+		
+		String activatorClassName = txtActivator.getText();
+		if(activatorClassName != null && activatorClassName.length() > 0) {
+			int dotIndex = activatorClassName.lastIndexOf('.');
+			if(dotIndex == -1) {
+				warningMessage = "Cannot use an activator in the default package.";
+			} else {
+				String packageName = activatorClassName.substring(0, dotIndex);
+				if(!isIncludedPackage(packageName)) {
+					warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
+				}
+			}
+		}
+		
+		IMessageManager msgs = getManagedForm().getMessageManager();
+		if(warningMessage != null)
+			msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, null, IMessageProvider.WARNING, txtActivator);
+		else
+			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
+	}
+	
+	@Override
+	public void markDirty() {
+		if(refreshers.get() == 0)
+			super.markDirty();
 	}
 	
 	@Override
 	public void commit(boolean onSave) {
-		// TODO Auto-generated method stub
 		super.commit(onSave);
 		
-		String bsn = txtBSN.getText();
-		if(bsn != null && bsn.length() == 0) bsn = null;
-		model.setBundleSymbolicName(bsn);
-		
-		String version = txtVersion.getText();
-		if(version != null && version.length() == 0) version = null;
-		model.setBundleVersion(version);
+		try {
+			// Stop listening to property changes during the commit only
+			model.removePropertyChangeListener(this);
+			
+			String bsn = txtBSN.getText();
+			if(bsn != null && bsn.length() == 0) bsn = null;
+			model.setBundleSymbolicName(bsn);
+			
+			String version = txtVersion.getText();
+			if(version != null && version.length() == 0) version = null;
+			model.setBundleVersion(version);
+			
+			String activator = txtActivator.getText();
+			if(activator != null && activator.length() == 0) activator = null;
+			model.setBundleActivator(activator);
+			
+			model.setIncludeSources(btnSources.getSelection());
+		} finally {
+			// Restore property change listening
+			model.addPropertyChangeListener(this);
+		}
 	}
 	
 	@Override
 	public void refresh() {
 		super.refresh();
-		
-		if(inRefresh.compareAndSet(false, true)) {
-			try {
-				String bsn = model.getBundleSymbolicName();
-				txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
-				
-				String bundleVersion = model.getBundleVersionString();
-				txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
-			} finally {
-				inRefresh.set(false);
-			}
+		try {
+			refreshers.incrementAndGet();
+			String bsn = model.getBundleSymbolicName();
+			txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
+			
+			String bundleVersion = model.getBundleVersionString();
+			txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
+			
+			String bundleActivator = model.getBundleActivator();
+			txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
+			
+			btnSources.setSelection(model.isIncludeSources());
+		} finally {
+			refreshers.decrementAndGet();
 		}
 	}
 	
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
+		
 		this.model = (BndEditModel) form.getInput();
-		model.addPropertyChangeListener(this);
+		this.model.addPropertyChangeListener(this);
 		
-		IMessageManager msgs = form.getMessageManager();
 		
-		msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the filename, without the .bnd extension.", null, IMessageProvider.INFORMATION, txtBSN);
+		IEditorInput editorInput = ((IFormPage) getManagedForm().getContainer()).getEditorInput();
+		if(editorInput instanceof IFileEditorInput) {
+			IFile file = ((IFileEditorInput) editorInput).getFile();
+			IProject project = file.getProject();
+			this.javaProject = JavaCore.create(project);
+		} else {
+			this.javaProject = null;
+		}
+
 	}
 	
-	@Override
-	public boolean setFormInput(Object input) {
-		super.setFormInput(input);
-		
-		if(this.model != null) {
-			this.model.removePropertyChangeListener(this);
-		}
-		this.model = (BndEditModel) input;
-		this.model.addPropertyChangeListener(this);
-		return false;
-	}
-
 	public void propertyChange(PropertyChangeEvent evt) {
-		markStale();
+		if(interestedPropertySet.contains(evt.getPropertyName())) {
+			IFormPage page = (IFormPage) getManagedForm().getContainer();
+			if(page.isActive()) {
+				refresh();
+			} else {
+				markStale();
+			}
+		}
 	}
 	
 	@Override
@@ -229,25 +407,12 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			this.model.removePropertyChangeListener(this);
 	}
 	
-	private IProject getProject() {
-		IProject project = null;
-		
-		IEditorInput editorInput = ((IFormPage) getManagedForm().getContainer()).getEditorInput();
-		if(editorInput instanceof IFileEditorInput) {
-			IFile file = ((IFileEditorInput) editorInput).getFile();
-			project = file.getProject();
-		}
-		
-		return project;
-	}
-	
 	private class ActivatorProposalProvider implements IContentProposalProvider {
 		public IContentProposal[] getProposals(String contents, int position) {
 			String substring = contents.substring(0, position).toLowerCase();
 			
 			final List<IContentProposal> proposals = new LinkedList<IContentProposal>();
 			try {
-				IJavaProject javaProject = JavaCore.create(getProject());
 				if(javaProject == null) {
 					proposals.add(new ErrorContentProposal("Not a java project"));
 				} else {

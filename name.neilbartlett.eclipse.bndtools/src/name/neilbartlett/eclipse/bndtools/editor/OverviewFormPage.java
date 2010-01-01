@@ -10,6 +10,7 @@
  ******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.editor;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -34,29 +35,34 @@ public class OverviewFormPage extends FormPage {
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
 		managedForm.setInput(bndModel);
-		
+
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
-		form.setText("Overview");
+		form.setText("General");
 		toolkit.decorateFormHeading(form.getForm());
-		
+
+		// Create Controls
 		Composite body = form.getBody();
-		
+		GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit);
+		managedForm.addPart(bundleDetailsSection);
+		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(body, toolkit);
+		managedForm.addPart(exportedPackagesPart);
+		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(body, toolkit);
+		managedForm.addPart(privatePackagesPart);
+
+		// Layout
+		body.setLayoutData(new TableWrapData(TableWrapData.FILL));
+
 		TableWrapLayout layout = new TableWrapLayout();
-        layout.bottomMargin = 10;
-        layout.topMargin = 5;
-        layout.leftMargin = 10;
-        layout.rightMargin = 10;
-        layout.numColumns = 2;
-        layout.horizontalSpacing = 10;
-        
-        body.setLayout(layout);
-        body.setLayoutData(new TableWrapData(TableWrapData.FILL));
-        
-        GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit);
-        managedForm.addPart(bundleDetailsSection);
-        
-        new PackagesPart(body, toolkit);
+		layout.bottomMargin = 10;
+		layout.topMargin = 5;
+		layout.leftMargin = 10;
+		layout.rightMargin = 10;
+		layout.numColumns = 2;
+		layout.horizontalSpacing = 10;
+		body.setLayout(layout);
+		
+		bundleDetailsSection.getSection().setLayoutData(new TableWrapData(SWT.FILL, SWT.TOP, 2, 1));
 	}
 	
 	@Override

@@ -41,7 +41,7 @@ public class JavaSearchScopePackageLister implements IPackageLister {
 		this.runContext = runContext;
 	}
 
-	public String[] getPackages(boolean includeNonSource, Set<String> excludes) throws PackageListException {
+	public String[] getPackages(boolean includeNonSource, IPackageFilter filter) throws PackageListException {
 		final List<IJavaElement> packageList = new LinkedList<IJavaElement>();
 		final SearchRequestor requestor = new SearchRequestor() {
 			public void acceptSearchMatch(SearchMatch match)
@@ -96,7 +96,9 @@ public class JavaSearchScopePackageLister implements IPackageLister {
 				} catch (JavaModelException e) {
 					throw new PackageListException(e);
 				}
-			} else if(excludes != null && excludes.contains(element.getElementName())) {
+			}
+			
+			if(filter != null && !filter.select(element.getElementName())) {
 				omit = true;
 			}
 			if(!omit) {

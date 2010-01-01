@@ -32,8 +32,12 @@ public class BndEditor extends FormEditor {
 	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		commitPages(true);
-		sourcePage.refresh();
+		if(sourcePage.isActive() && sourcePage.isDirty()) {
+			sourcePage.commit(true);
+		} else {
+			commitPages(true);
+			sourcePage.refresh();
+		}
 		sourcePage.doSave(monitor);
 	}
 

@@ -23,8 +23,20 @@
    <extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
-            id="name.neilbartlett.eclipse.bndtools.bndEditorContribution"
+            id="name.neilbartlett.eclipse.bndtools.bndEditorContribution1"
             targetID="name.neilbartlett.eclipse.bndtools.bndEditor">
+         <action
+               class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
+               icon="icons/bundle_obj.gif"
+               id="name.neilbartlett.eclipse.bndtools.makeBundleAction"
+               label="Make Bundle"
+               style="push"
+               toolbarPath="Normal/additions">
+         </action>
+      </editorContribution>
+      <editorContribution
+            id="name.neilbartlett.eclipse.bndtools.bndEditorContribution2"
+            targetID="name.neilbartlett.eclipse.bndtools.newBndEditor">
          <action
                class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
                icon="icons/bundle_obj.gif"
@@ -58,7 +70,7 @@
             default="false"
             extensions="bnd"
             icon="icons/bundle_obj.gif"
-            id="name.neilbartlett.eclipse.bndtools.newEditor"
+            id="name.neilbartlett.eclipse.bndtools.newBndEditor"
             name="New Bnd Editor">
       </editor>
    </extension>
@@ -75,13 +87,6 @@
             id="name.neilbartlett.eclipse.bndtools.newBndFile"
             name="Bundle Descriptor">
       </wizard>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editorActions">
-      <editorContribution
-            id="name.neilbartlett.eclipse.bndtools.editorContribution1"
-            targetID="name.neilbartlett.eclipse.bndtools.editorContribution1">
-      </editorContribution>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

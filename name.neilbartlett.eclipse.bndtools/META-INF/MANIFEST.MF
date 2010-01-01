@@ -7,7 +7,8 @@ Bundle-Activator: aQute.bnd.plugin.Activator
 Bundle-Vendor: Neil Bartlett
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: ., bndlib-0.0.384.jar
+Bundle-ClassPath: .,
+ bnd-0.0.384.jar
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.internal.resources,
  org.eclipse.core.resources,
@@ -54,6 +55,7 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.ui.editors.text,
  org.eclipse.ui.forms,
  org.eclipse.ui.forms.editor,
+ org.eclipse.ui.forms.events,
  org.eclipse.ui.forms.widgets,
  org.eclipse.ui.ide,
  org.eclipse.ui.part,
