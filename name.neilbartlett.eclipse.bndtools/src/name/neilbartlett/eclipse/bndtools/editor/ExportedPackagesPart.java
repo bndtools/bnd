@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import name.neilbartlett.eclipse.bndtools.editor.ExportedPackageSelectionDialog.ExportVersionPolicy;
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageFilter;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 

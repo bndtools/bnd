@@ -23,7 +23,7 @@ public class IncludedResourcesPart extends SectionPart implements
 	}
 
 	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Included Resources");
+		section.setText("Import Patterns");
 		section.setDescription("Resources matching the listed patterns will be included in the bundle.");
 		
 		Composite composite = toolkit.createComposite(section);
@@ -44,5 +44,4 @@ public class IncludedResourcesPart extends SectionPart implements
 
 	public void propertyChange(PropertyChangeEvent evt) {
 	}
-
 }

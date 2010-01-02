@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;

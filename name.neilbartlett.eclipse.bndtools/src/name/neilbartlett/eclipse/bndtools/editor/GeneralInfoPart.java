@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -375,7 +377,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(this);
-		
 		
 		IEditorInput editorInput = ((IFormPage) getManagedForm().getContainer()).getEditorInput();
 		if(editorInput instanceof IFileEditorInput) {

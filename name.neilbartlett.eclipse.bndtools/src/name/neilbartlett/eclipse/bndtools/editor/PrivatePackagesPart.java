@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageFilter;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.PackageSelectionDialog;

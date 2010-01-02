@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.editor.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -32,6 +32,7 @@ public class BndEditModel {
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
 		Constants.EXPORT_PACKAGE,
+		Constants.IMPORT_PACKAGE,
 		aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
 		aQute.lib.osgi.Constants.SOURCES,
 		aQute.lib.osgi.Constants.VERSIONPOLICY
@@ -40,15 +41,15 @@ public class BndEditModel {
 	private final Properties properties;
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	
-	BndEditModel() {
+	public BndEditModel() {
 		this(new Properties());
 	}
 	
-	BndEditModel(Properties properties) {
+	public BndEditModel(Properties properties) {
 		this.properties = properties;
 	}
 	
-	void loadFrom(InputStream stream) throws IOException {
+	public void loadFrom(InputStream stream) throws IOException {
 		// Save the old properties, if any
 		Map<String, String> oldValues = new HashMap<String, String>();
 		for (String name : KNOWN_PROPERTIES) {
@@ -64,8 +65,7 @@ public class BndEditModel {
 			propChangeSupport.firePropertyChange(entry.getKey(), entry.getValue(), properties.get(entry.getKey()));
 		}
 	}
-	
-	void saveTo(OutputStream stream) throws IOException {
+	public void saveTo(OutputStream stream) throws IOException {
 		properties.store(stream, null);
 	}
 	private void genericSet(String name, Object oldValue, Object newValue, String newString) {
@@ -155,6 +155,25 @@ public class BndEditModel {
 		}
 		return result;
 	}
+	public Collection<ImportPattern> getImportPatterns() {
+		List<ImportPattern> result = new LinkedList<ImportPattern>();
+		String importsStr = properties.getProperty(Constants.IMPORT_PACKAGE);
+		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(importsStr);
+		for(Entry<String, Map<String,String>> entry : header.entrySet()) {
+			String pattern = entry.getKey();
+			boolean optional = false;
+			Map<String, String> attribs = entry.getValue();
+			if(attribs != null) {
+				String resolutionDirective = attribs.remove(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
+				if(Constants.RESOLUTION_OPTIONAL.equals(resolutionDirective)) {
+					optional = true;
+				}
+			}
+			result.add(new ImportPattern(pattern, optional, attribs));
+		}
+		
+		return result;
+	}
 	public Collection<String> getPrivatePackages() {
 		List<String> packages = new LinkedList<String>();
 		
@@ -187,6 +206,29 @@ public class BndEditModel {
 			properties.setProperty(Constants.EXPORT_PACKAGE, buffer.toString());
 		}
 		propChangeSupport.firePropertyChange(Constants.EXPORT_PACKAGE, oldPackages, packages);
+	}
+	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
+		Collection<ImportPattern> oldPatterns = getImportPatterns();
+		StringBuilder buffer = new StringBuilder();
+		
+		if(patterns == null || patterns.isEmpty()) {
+			properties.remove(Constants.IMPORT_PACKAGE);
+		} else {
+			for(Iterator<? extends ImportPattern> iter = patterns.iterator(); iter.hasNext(); ) {
+				ImportPattern pattern = iter.next();
+				buffer.append(pattern.getPattern());
+				if(pattern.isOptional()) {
+					buffer.append(';').append(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE).append('=').append(Constants.RESOLUTION_OPTIONAL);
+				}
+				for (Entry <String,String> attribEntry : pattern.getAttributes().entrySet()) {
+					buffer.append(';').append(attribEntry.getKey()).append('=').append(attribEntry.getValue());
+				}
+				if(iter.hasNext())
+					buffer.append('.');
+			}
+			properties.setProperty(Constants.IMPORT_PACKAGE, buffer.toString());
+		}
+		propChangeSupport.firePropertyChange(Constants.IMPORT_PACKAGE, oldPatterns, patterns);
 	}
 	public void setPrivatePackages(Collection<? extends String> packages) {
 		Collection<String> oldPackages = getPrivatePackages();
@@ -229,3 +271,4 @@ public class BndEditModel {
 	// END: PropertyChangeSupport delegate methods
 	
 }
+

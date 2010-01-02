@@ -1,11 +1,12 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.editor.model;
+
 
 public class VersionPolicy {
 	private final LowerVersionMatchType lowerMatch;
 	private final UpperVersionMatchType upperMatch;
 	private final boolean upperInclusive;
 
-	VersionPolicy(LowerVersionMatchType lowerMatch, UpperVersionMatchType upperMatch, boolean upperInclusive) {
+	public VersionPolicy(LowerVersionMatchType lowerMatch, UpperVersionMatchType upperMatch, boolean upperInclusive) {
 		assert lowerMatch != null;
 		this.lowerMatch = lowerMatch;
 		this.upperMatch = upperMatch;

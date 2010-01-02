@@ -10,6 +10,8 @@
  ******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.editor;
 
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
@@ -53,9 +55,6 @@ public class OverviewFormPage extends FormPage {
 //		IncludedResourcesPart includedResourcesPart = new IncludedResourcesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
 //		includedResourcesPart.getSection().setExpanded(false);
 //		managedForm.addPart(includedResourcesPart);
-		VersionPolicyPart versionPolicyPart = new VersionPolicyPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
-		versionPolicyPart.getSection().setExpanded(false);
-		managedForm.addPart(versionPolicyPart);
 
 		// Layout
 		body.setLayoutData(new TableWrapData(TableWrapData.FILL));
@@ -70,7 +69,6 @@ public class OverviewFormPage extends FormPage {
 		body.setLayout(layout);
 		
 		bundleDetailsSection.getSection().setLayoutData(new TableWrapData(SWT.FILL, SWT.TOP, 3, 1));
-		versionPolicyPart.getSection().setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
 	}
 	
 	@Override

@@ -1,8 +1,13 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.editor.imports;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.LowerVersionMatchType;
+import name.neilbartlett.eclipse.bndtools.editor.model.UpperVersionMatchType;
+import name.neilbartlett.eclipse.bndtools.editor.model.VersionPolicy;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
