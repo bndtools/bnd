@@ -34,6 +34,7 @@ public class BndEditModel {
 		Constants.EXPORT_PACKAGE,
 		aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
 		aQute.lib.osgi.Constants.SOURCES,
+		aQute.lib.osgi.Constants.VERSIONPOLICY
 	};
 	
 	private final Properties properties;
@@ -67,15 +68,13 @@ public class BndEditModel {
 	void saveTo(OutputStream stream) throws IOException {
 		properties.store(stream, null);
 	}
-	
-	private void genericSet(String name, String value) {
-		String oldValue = properties.getProperty(name);
-		if(value == null) {
+	private void genericSet(String name, Object oldValue, Object newValue, String newString) {
+		if(newValue == null) {
 			properties.remove(name);
 		} else {
-			properties.setProperty(name, value);
+			properties.setProperty(name, newString);
 		}
-		propChangeSupport.firePropertyChange(name, oldValue, value);
+		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 	
 	public String getBundleSymbolicName() {
@@ -83,7 +82,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleSymbolicName(String bundleSymbolicName) {
-		genericSet(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
+		genericSet(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName, bundleSymbolicName); 
 	}
 	
 	public String getBundleVersionString() {
@@ -91,7 +90,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleVersion(String bundleVersion) {
-		genericSet(Constants.BUNDLE_VERSION, bundleVersion);
+		genericSet(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion, bundleVersion);
 	}
 	
 	public String getBundleActivator() {
@@ -99,16 +98,37 @@ public class BndEditModel {
 	}
 	
 	public void setBundleActivator(String bundleActivator) {
-		genericSet(Constants.BUNDLE_ACTIVATOR, bundleActivator);
+		genericSet(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator, bundleActivator);
 	}
 	
 	public void setIncludeSources(boolean includeSources) {
-		String string = includeSources ? Boolean.toString(true) : null;
-		genericSet(aQute.lib.osgi.Constants.SOURCES, string);
+		boolean oldValue = isIncludeSources();
+		if(includeSources) {
+			properties.setProperty(aQute.lib.osgi.Constants.SOURCES, Boolean.TRUE.toString());
+		} else {
+			properties.remove(aQute.lib.osgi.Constants.SOURCES);
+		}
+		propChangeSupport.firePropertyChange(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources);
 	}
 	
 	public boolean isIncludeSources() {
 		return Boolean.parseBoolean(properties.getProperty(aQute.lib.osgi.Constants.SOURCES));
+	}
+	
+	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
+		String string = properties.getProperty(aQute.lib.osgi.Constants.VERSIONPOLICY);
+		return string != null ? VersionPolicy.parse(string) : null;
+	}
+	
+	public void setVersionPolicy(VersionPolicy versionPolicy) {
+		String string = versionPolicy != null ? versionPolicy.toString() : null;
+		VersionPolicy oldValue;
+		try {
+			oldValue = getVersionPolicy();
+		} catch (IllegalArgumentException e) {
+			oldValue = null;
+		}
+		genericSet(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
 	}
 	/**
 	 * Get the exported packages; the returned collection will have been newly

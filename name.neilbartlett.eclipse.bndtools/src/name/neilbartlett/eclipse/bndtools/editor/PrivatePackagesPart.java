@@ -56,12 +56,12 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	private Button btnAdd;
 	private Button btnRemove;
 
-	public PrivatePackagesPart(Composite parent, FormToolkit toolkit) {
-		super(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
+	public PrivatePackagesPart(Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 	}
 
-	private void createSection(Section section, FormToolkit toolkit) {
+	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Private Packages");
 		section.setDescription("The listed packages will be included in the bundle but not exported.");
 		

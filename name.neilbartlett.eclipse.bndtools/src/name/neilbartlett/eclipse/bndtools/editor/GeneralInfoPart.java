@@ -75,7 +75,6 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
@@ -110,8 +109,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	
 	private AtomicInteger refreshers = new AtomicInteger(0);
 
-	public GeneralInfoPart(Composite parent, FormToolkit toolkit) {
-		super(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+	public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 		
 		interestedPropertySet = new HashSet<String>();

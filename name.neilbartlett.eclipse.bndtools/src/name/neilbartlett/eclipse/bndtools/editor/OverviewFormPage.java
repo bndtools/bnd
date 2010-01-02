@@ -17,6 +17,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
@@ -43,12 +44,18 @@ public class OverviewFormPage extends FormPage {
 
 		// Create Controls
 		Composite body = form.getBody();
-		GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit);
+		GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit, Section.TITLE_BAR);
 		managedForm.addPart(bundleDetailsSection);
-		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(body, toolkit);
+		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(exportedPackagesPart);
-		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(body, toolkit);
+		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(privatePackagesPart);
+//		IncludedResourcesPart includedResourcesPart = new IncludedResourcesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
+//		includedResourcesPart.getSection().setExpanded(false);
+//		managedForm.addPart(includedResourcesPart);
+		VersionPolicyPart versionPolicyPart = new VersionPolicyPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		versionPolicyPart.getSection().setExpanded(false);
+		managedForm.addPart(versionPolicyPart);
 
 		// Layout
 		body.setLayoutData(new TableWrapData(TableWrapData.FILL));
@@ -62,7 +69,8 @@ public class OverviewFormPage extends FormPage {
 		layout.horizontalSpacing = 10;
 		body.setLayout(layout);
 		
-		bundleDetailsSection.getSection().setLayoutData(new TableWrapData(SWT.FILL, SWT.TOP, 2, 1));
+		bundleDetailsSection.getSection().setLayoutData(new TableWrapData(SWT.FILL, SWT.TOP, 3, 1));
+		versionPolicyPart.getSection().setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
 	}
 	
 	@Override

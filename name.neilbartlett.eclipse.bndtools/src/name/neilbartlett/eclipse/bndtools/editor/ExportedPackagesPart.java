@@ -41,7 +41,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
@@ -58,8 +57,8 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 	private Button btnAdd;
 	private Button btnRemove;
 
-	public ExportedPackagesPart(Composite parent, FormToolkit toolkit) {
-		super(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
+	public ExportedPackagesPart(Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 	}
 
