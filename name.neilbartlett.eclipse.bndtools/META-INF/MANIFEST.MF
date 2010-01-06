@@ -65,4 +65,5 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.ui.texteditor,
  org.osgi.framework,
  org.osgi.service.prefs;version="[1.1.0,2.0.0)"
-Export-Package: name.neilbartlett.eclipse.bndtools.prefs.frameworks;version="1.0.0.qualifier"
+Export-Package: aQute.lib.osgi;version="0.0.384",
+ name.neilbartlett.eclipse.bndtools.prefs.frameworks;version="1.0.0.qualifier"

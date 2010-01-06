@@ -1,11 +1,9 @@
-package name.neilbartlett.eclipse.bndtools.editor.imports;
+package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
-import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -23,21 +21,22 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.osgi.framework.Constants;
 
-public class ImportPatternsPart extends SectionPart implements PropertyChangeListener {
+import aQute.lib.osgi.Constants;
+
+public class ComponentListPart extends SectionPart implements PropertyChangeListener {
 
 	private IManagedForm managedForm;
 	private TableViewer viewer;
 	private BndEditModel model;
-
-	public ImportPatternsPart(Composite parent, FormToolkit toolkit, int style) {
+	
+	public ComponentListPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 	}
-	
+
 	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Import Package Patterns");
+		section.setText("Service Components");
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -61,7 +60,6 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new ImportPatternTableLabelProvider());
 		
 		final Button btnAdd = toolkit.createButton(composite, "Add", SWT.PUSH);
 		final Button btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
@@ -69,7 +67,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				managedForm.fireSelectionChanged(ImportPatternsPart.this, event.getSelection());
+				managedForm.fireSelectionChanged(ComponentListPart.this, event.getSelection());
 				btnRemove.setEnabled(!event.getSelection().isEmpty());
 			}
 		});
@@ -80,29 +78,27 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		btnRemove.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
-
+	
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
 		this.managedForm = form;
 		this.model = (BndEditModel) form.getInput();
-		this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+		this.model.addPropertyChangeListener(Constants.SERVICE_COMPONENT, this);
 	}
 	
 	@Override
 	public void dispose() {
 		super.dispose();
-		this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+		this.model.removePropertyChangeListener(Constants.SERVICE_COMPONENT, this);
 	}
 	
 	@Override
 	public void refresh() {
 		super.refresh();
-		Collection<ImportPattern> patterns = model.getImportPatterns();
-		viewer.setInput(patterns);
+		// TODO: implement ComponentListPart.refresh()
 	}
-
+	
 	public void propertyChange(PropertyChangeEvent evt) {
 		IFormPage page = (IFormPage) managedForm.getContainer();
 		if(page.isActive())

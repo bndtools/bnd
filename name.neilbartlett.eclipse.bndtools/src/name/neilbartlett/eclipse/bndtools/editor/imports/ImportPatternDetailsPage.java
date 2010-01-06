@@ -98,6 +98,7 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 
 	void updateFields() {
 		txtPattern.setText(pattern != null ? pattern.getPattern() : "");
+		btnOptional.setSelection(pattern != null && pattern.isOptional());
 	}
 	
 	@Override
