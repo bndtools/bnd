@@ -189,6 +189,11 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	}
 	
 	@Override
+	public void commit(boolean onSave) {
+		super.commit(onSave);
+	}
+	
+	@Override
 	public void refresh() {
 		viewer.setInput(model.getPrivatePackages());
 		super.refresh();

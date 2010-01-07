@@ -100,6 +100,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
 
 	private final Set<String> interestedPropertySet;
+	private final Set<String> dirtySet = new HashSet<String>();
 	
 	private BndEditModel model;
 	private IJavaProject javaProject;
@@ -164,7 +165,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		// Listeners
 		txtBSN.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				markDirty();
+				addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtBSN.getText();
 				if(text == null || text.length() == 0)
@@ -175,7 +176,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		});
 		txtVersion.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				markDirty();
+				addDirtyProperty(Constants.BUNDLE_VERSION);
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				try {
 					String text = txtVersion.getText();
@@ -189,7 +190,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		});
 		txtActivator.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent ev) {
-				markDirty();
+				addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String unknownError = null;
 				
@@ -251,7 +252,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		btnSources.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				markDirty();
+				addDirtyProperty(aQute.lib.osgi.Constants.SOURCES);
 			}
 		});
 		
@@ -318,36 +319,50 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
 	}
 	
+	protected void addDirtyProperty(String property) {
+		if(refreshers.get() == 0) {
+			dirtySet.add(property);
+			getManagedForm().dirtyStateChanged();
+		}
+	}
+	
 	@Override
 	public void markDirty() {
-		if(refreshers.get() == 0)
-			super.markDirty();
+		throw new UnsupportedOperationException("Do not call markDirty directly, instead call addDirtyProperty.");
+	}
+	
+	@Override
+	public boolean isDirty() {
+		return !dirtySet.isEmpty();
 	}
 	
 	@Override
 	public void commit(boolean onSave) {
-		super.commit(onSave);
-		
 		try {
 			// Stop listening to property changes during the commit only
 			model.removePropertyChangeListener(this);
-			
-			String bsn = txtBSN.getText();
-			if(bsn != null && bsn.length() == 0) bsn = null;
-			model.setBundleSymbolicName(bsn);
-			
-			String version = txtVersion.getText();
-			if(version != null && version.length() == 0) version = null;
-			model.setBundleVersion(version);
-			
-			String activator = txtActivator.getText();
-			if(activator != null && activator.length() == 0) activator = null;
-			model.setBundleActivator(activator);
-			
-			model.setIncludeSources(btnSources.getSelection());
+			if(dirtySet.contains(Constants.BUNDLE_SYMBOLICNAME)) {
+				String bsn = txtBSN.getText();
+				if(bsn != null && bsn.length() == 0) bsn = null;
+				model.setBundleSymbolicName(bsn);
+			}
+			if(dirtySet.contains(Constants.BUNDLE_VERSION)) {
+				String version = txtVersion.getText();
+				if(version != null && version.length() == 0) version = null;
+				model.setBundleVersion(version);
+			}
+			if(dirtySet.contains(Constants.BUNDLE_ACTIVATOR)) {
+				String activator = txtActivator.getText();
+				if(activator != null && activator.length() == 0) activator = null;
+					model.setBundleActivator(activator);
+			}
+			if(dirtySet.contains(aQute.lib.osgi.Constants.SOURCES)) {
+				model.setIncludeSources(btnSources.getSelection());
+			}
 		} finally {
 			// Restore property change listening
 			model.addPropertyChangeListener(this);
+			dirtySet.clear();
 		}
 	}
 	
@@ -369,6 +384,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		} finally {
 			refreshers.decrementAndGet();
 		}
+		dirtySet.clear();
 	}
 	
 	@Override

@@ -2,18 +2,24 @@ package name.neilbartlett.eclipse.bndtools.editor.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Map.Entry;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
 import aQute.libg.header.OSGiHeader;
@@ -27,6 +33,10 @@ import aQute.libg.header.OSGiHeader;
  */
 public class BndEditModel {
 	
+	private static final String LIST_SEPARATOR = ",\\\t";
+	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
+	private final Set<String> touchedProperties = new HashSet<String>();
+	
 	private static final String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
@@ -38,18 +48,10 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.VERSIONPOLICY
 	};
 	
-	private final Properties properties;
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+	private final Properties properties = new Properties();;
 	
-	public BndEditModel() {
-		this(new Properties());
-	}
-	
-	public BndEditModel(Properties properties) {
-		this.properties = properties;
-	}
-	
-	public void loadFrom(InputStream stream) throws IOException {
+	public void loadFrom(IDocument document) throws IOException {
 		// Save the old properties, if any
 		Map<String, String> oldValues = new HashMap<String, String>();
 		for (String name : KNOWN_PROPERTIES) {
@@ -58,22 +60,107 @@ public class BndEditModel {
 		
 		// Clear and load
 		properties.clear();
+		InputStream stream = new ByteArrayInputStream(document.get().getBytes(ISO_8859_1));
 		properties.load(stream);
+		touchedProperties.clear();
 		
 		// Fire property changes on known property names
 		for(Entry<String, String> entry : oldValues.entrySet()) {
 			propChangeSupport.firePropertyChange(entry.getKey(), entry.getValue(), properties.get(entry.getKey()));
 		}
 	}
-	public void saveTo(OutputStream stream) throws IOException {
-		properties.store(stream, null);
+	
+	public void saveChangesTo(IDocument document) {
+		for(Iterator<String> iter = touchedProperties.iterator(); iter.hasNext(); ) {
+			String property = iter.next();
+			iter.remove();
+			
+			String value = properties.getProperty(property);
+			updateDocument(document, property, value);
+		}
 	}
-	private void genericSet(String name, Object oldValue, Object newValue, String newString) {
+	
+	private static IRegion findEntry(IDocument document, String name) throws BadLocationException {
+		int lineCount = document.getNumberOfLines();
+		
+		int entryStart = -1;
+		int entryLength = 0;
+		
+		for(int i=0; i<lineCount; i++) {
+			IRegion lineRegion = document.getLineInformation(i);
+			String line = document.get(lineRegion.getOffset(), lineRegion.getLength());
+			if(line.startsWith(name)) {
+				entryStart = lineRegion.getOffset();
+				entryLength = lineRegion.getLength();
+				
+				// Handle continuation lines, where the current line ends with a blackslash.
+				while(document.getChar(lineRegion.getOffset() + lineRegion.getLength() - 1) == '\\') {
+					if(++i >= lineCount) {
+						break;
+					}
+					lineRegion = document.getLineInformation(i);
+					entryLength += lineRegion.getLength() + 1; // Extra 1 is required for the newline
+				}
+				
+				return new Region(entryStart, entryLength);
+			}
+		}
+		
+		return null;
+	}
+	
+	private static void updateDocument(IDocument document, String name, String value) {
+		String newEntry;
+		if(value != null) {
+			StringBuilder buffer = new StringBuilder();
+			buffer.append(name).append(": ").append(value);
+			newEntry = buffer.toString();
+		} else {
+			newEntry = "";
+		}
+		
+		try {
+			IRegion region = findEntry(document, name);
+			if(region != null) {
+				// Replace an existing entry
+				int offset = region.getOffset();
+				int length = region.getLength();
+				
+				// If the replacement is empty, remove one extra character to the left, i.e. the newline
+				if(newEntry.length() == 0) {
+					offset--; length++;
+				}
+				document.replace(offset, length, newEntry);
+			} else if(newEntry.length() > 0) {
+				// This is a new entry, put it at the end of the file
+				if(document.getChar(document.getLength() - 1) != '\n')
+					newEntry = "\n" + newEntry;
+				document.replace(document.getLength(), 0, newEntry);
+			}
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void doSetBoolean(String name, boolean defaultValue, boolean newValue) {
+		boolean oldValue = Boolean.parseBoolean(properties.getProperty(name, Boolean.toString(defaultValue)));
+		if(newValue != defaultValue) {
+			properties.setProperty(name, Boolean.toString(newValue));
+		} else {
+			properties.remove(name);
+		}
+		touchedProperties.add(name);
+		propChangeSupport.firePropertyChange(name, oldValue, newValue);
+	}
+	
+	private void doSetObject(String name, Object oldValue, Object newValue, String newString) {
 		if(newValue == null) {
 			properties.remove(name);
 		} else {
 			properties.setProperty(name, newString);
 		}
+		touchedProperties.add(name);
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 	
@@ -82,7 +169,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleSymbolicName(String bundleSymbolicName) {
-		genericSet(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName, bundleSymbolicName); 
+		doSetObject(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName, bundleSymbolicName); 
 	}
 	
 	public String getBundleVersionString() {
@@ -90,7 +177,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleVersion(String bundleVersion) {
-		genericSet(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion, bundleVersion);
+		doSetObject(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion, bundleVersion);
 	}
 	
 	public String getBundleActivator() {
@@ -98,17 +185,11 @@ public class BndEditModel {
 	}
 	
 	public void setBundleActivator(String bundleActivator) {
-		genericSet(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator, bundleActivator);
+		doSetObject(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator, bundleActivator);
 	}
 	
 	public void setIncludeSources(boolean includeSources) {
-		boolean oldValue = isIncludeSources();
-		if(includeSources) {
-			properties.setProperty(aQute.lib.osgi.Constants.SOURCES, Boolean.TRUE.toString());
-		} else {
-			properties.remove(aQute.lib.osgi.Constants.SOURCES);
-		}
-		propChangeSupport.firePropertyChange(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources);
+		doSetBoolean(aQute.lib.osgi.Constants.SOURCES, false, includeSources);
 	}
 	
 	public boolean isIncludeSources() {
@@ -128,7 +209,7 @@ public class BndEditModel {
 		} catch (IllegalArgumentException e) {
 			oldValue = null;
 		}
-		genericSet(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
+		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
 	}
 	/**
 	 * Get the exported packages; the returned collection will have been newly
@@ -191,7 +272,7 @@ public class BndEditModel {
 		StringBuilder buffer = new StringBuilder();
 		
 		if(packages == null || packages.isEmpty()) {
-			properties.remove(Constants.EXPORT_PACKAGE);
+			doSetObject(Constants.EXPORT_PACKAGE, oldPackages, null, null);
 		} else {
 			for(Iterator<? extends ExportedPackage> iter = packages.iterator(); iter.hasNext(); ) {
 				ExportedPackage pkg = iter.next();
@@ -201,18 +282,17 @@ public class BndEditModel {
 					buffer.append(";version=\"").append(pkg.getVersion()).append("\"");
 				
 				if(iter.hasNext())
-					buffer.append(',');
+					buffer.append(LIST_SEPARATOR);
 			}
-			properties.setProperty(Constants.EXPORT_PACKAGE, buffer.toString());
+			doSetObject(Constants.EXPORT_PACKAGE, oldPackages, packages, buffer.toString());
 		}
-		propChangeSupport.firePropertyChange(Constants.EXPORT_PACKAGE, oldPackages, packages);
 	}
 	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
 		Collection<ImportPattern> oldPatterns = getImportPatterns();
 		StringBuilder buffer = new StringBuilder();
 		
 		if(patterns == null || patterns.isEmpty()) {
-			properties.remove(Constants.IMPORT_PACKAGE);
+			doSetObject(Constants.IMPORT_PACKAGE, oldPatterns, null, null);
 		} else {
 			for(Iterator<? extends ImportPattern> iter = patterns.iterator(); iter.hasNext(); ) {
 				ImportPattern pattern = iter.next();
@@ -224,28 +304,26 @@ public class BndEditModel {
 					buffer.append(';').append(attribEntry.getKey()).append('=').append(attribEntry.getValue());
 				}
 				if(iter.hasNext())
-					buffer.append('.');
+					buffer.append(LIST_SEPARATOR);
 			}
-			properties.setProperty(Constants.IMPORT_PACKAGE, buffer.toString());
+			doSetObject(Constants.IMPORT_PACKAGE, oldPatterns, patterns, buffer.toString());
 		}
-		propChangeSupport.firePropertyChange(Constants.IMPORT_PACKAGE, oldPatterns, patterns);
 	}
 	public void setPrivatePackages(Collection<? extends String> packages) {
 		Collection<String> oldPackages = getPrivatePackages();
 		
 		StringBuilder buffer = new StringBuilder();
 		if(packages == null || packages.isEmpty()) {
-			properties.remove(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+			doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, null, null);
 		} else {
 			for(Iterator<? extends String> iter = packages.iterator(); iter.hasNext(); ) {
 				String pkg = iter.next();
 				buffer.append(pkg);
 				if(iter.hasNext())
-					buffer.append(',');
+					buffer.append(LIST_SEPARATOR);
 			}
-			properties.setProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, buffer.toString());
+			doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, buffer.toString());
 		}
-		propChangeSupport.firePropertyChange(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages);
 	}
 	
 	// BEGIN: PropertyChangeSupport delegate methods

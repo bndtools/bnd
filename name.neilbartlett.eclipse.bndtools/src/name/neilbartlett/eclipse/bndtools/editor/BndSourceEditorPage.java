@@ -2,15 +2,11 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension2;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -23,7 +19,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 @SuppressWarnings("restriction")
 public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
 
-	private static final String ISO_8859_1 = "ISO-8859-1";
 	private final BndEditor formEditor;
 	private final String id;
 	
@@ -41,7 +36,6 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	public BndSourceEditorPage(String id, BndEditor formEditor) {
 		this.id = id;
 		this.formEditor = formEditor;
-		this.formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
 	}
 	
 	@Override
@@ -77,6 +71,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	@Override
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
+		this.formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
 
 		Control[] children = parent.getChildren();
 		control = children[children.length - 1];
@@ -110,17 +105,13 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 			if(stale)
 				refresh();
 		} else {
-			if(isDirty())
-				commit(false);
+			commit(false);
 		}
 	}
 	
 	void commit(boolean onSave) {
 		try {
-			String text = getDocument().get();
-			ByteArrayInputStream stream = new ByteArrayInputStream(text
-					.getBytes(ISO_8859_1));
-			formEditor.getBndModel().loadFrom(stream);
+			formEditor.getBndModel().loadFrom(getDocument());
 		} catch (IOException e) {
 			// TODO
 			e.printStackTrace();
@@ -128,28 +119,9 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	}
 
 	void refresh() {
-		IDocument document = null;
-		try {
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			formEditor.getBndModel().saveTo(buffer);
-			String text = buffer.toString(ISO_8859_1);
-			
-			Point selected = getSourceViewer().getSelectedRange();
-			document = getDocument();
-			if(document instanceof IDocumentExtension2) {
-				((IDocumentExtension2) document).stopListenerNotification();
-			}
-			document.set(text);
-			getSourceViewer().setSelectedRange(selected.x, 0);
-			stale = false;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(document != null && document instanceof IDocumentExtension2) {
-				((IDocumentExtension2) document).resumeListenerNotification();
-			}
-		}
+		IDocument document = getDocument();
+		formEditor.getBndModel().saveChangesTo(document);
+		stale = false;
 	}
 
 	private IDocument getDocument() {
