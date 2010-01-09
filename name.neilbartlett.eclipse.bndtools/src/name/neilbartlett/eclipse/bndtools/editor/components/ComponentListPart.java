@@ -15,7 +15,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -42,24 +41,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		section.setClient(composite);
 		
 		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
-		
-		TableColumn col;
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Pattern");
-		col.setWidth(170);
-		
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Optional");
-		col.setWidth(60);
-		
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Attributes");
-		col.setWidth(170);
-		
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
+		viewer.setLabelProvider(new ServiceComponentLabelProvider());
 		
 		final Button btnAdd = toolkit.createButton(composite, "Add", SWT.PUSH);
 		final Button btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
@@ -96,7 +80,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	@Override
 	public void refresh() {
 		super.refresh();
-		// TODO: implement ComponentListPart.refresh()
+		viewer.setInput(model.getServiceComponents());
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {

@@ -12,6 +12,7 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.io.IOException;
 
+import name.neilbartlett.eclipse.bndtools.editor.components.ComponentsPage;
 import name.neilbartlett.eclipse.bndtools.editor.imports.ImportsPage;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
@@ -59,9 +60,12 @@ public class BndEditor extends FormEditor {
 			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Details");
 			addPage(detailsPage);
 
+			ComponentsPage componentsPage = new ComponentsPage(this, "componentsPage", "Components");
+			addPage(componentsPage);
+			
 			ImportsPage importsPage = new ImportsPage(this, "importsPage", "Imports");
 			addPage(importsPage);
-
+			
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());
 			setPageText(sourcePageIndex, "Source");
 		} catch (PartInitException e) {

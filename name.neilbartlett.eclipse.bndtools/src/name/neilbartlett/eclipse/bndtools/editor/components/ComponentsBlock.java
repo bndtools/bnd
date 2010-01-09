@@ -1,5 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
+import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
+
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -33,7 +35,7 @@ public class ComponentsBlock extends MasterDetailsBlock {
 
 	@Override
 	protected void registerPages(DetailsPart detailsPart) {
-		//detailsPart.registerPage(ServiceComponentDeclaration.class, new ComponentDetailsPage());
+		detailsPart.registerPage(ServiceComponent.class, new ComponentDetailsPage());
 	}
 
 }

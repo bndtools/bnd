@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
+import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 
 /**
@@ -45,7 +47,8 @@ public class BndEditModel {
 		Constants.IMPORT_PACKAGE,
 		aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
 		aQute.lib.osgi.Constants.SOURCES,
-		aQute.lib.osgi.Constants.VERSIONPOLICY
+		aQute.lib.osgi.Constants.VERSIONPOLICY,
+		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
 	};
 	
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
@@ -324,6 +327,22 @@ public class BndEditModel {
 			}
 			doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, buffer.toString());
 		}
+	}
+	
+	public Collection<ServiceComponent> getServiceComponents(){
+		List<ServiceComponent> result = new ArrayList<ServiceComponent>();
+		
+		Processor processor = new Processor(properties);
+		String scHeaderStr = processor.getProperty(aQute.lib.osgi.Constants.SERVICE_COMPONENT);
+		Map<String, Map<String, String>> scHeader = processor.parseHeader(scHeaderStr);
+		for (Entry<String, Map<String, String>> entry : scHeader.entrySet()) {
+			String scName = entry.getKey();
+			Map<String, String> attribsMap = entry.getValue();
+			ServiceComponentAttribs scAttribs = ServiceComponentAttribs.loadFrom(attribsMap);
+			result.add(new ServiceComponent(scName, scAttribs));
+		}
+		
+		return result;
 	}
 	
 	// BEGIN: PropertyChangeSupport delegate methods
