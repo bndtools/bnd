@@ -2,6 +2,7 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -122,7 +123,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	
 	private void doAddPackages() {
 		// Prepare the exclusion list based on existing private packages
-		final Collection<String> packages = model.getPrivatePackages();
+		final Collection<String> packages = new ArrayList<String>(model.getPrivatePackages());
 		final Set<String> packageNameSet = new HashSet<String>(packages);
 		
 		// Create a filter from the exclusion list and packages matching "java.*", which must not be included in a bundle
@@ -170,7 +171,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	private void doRemovePackages() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
-			Collection<String> packages = model.getPrivatePackages();
+			Collection<String> packages = new ArrayList<String>(model.getPrivatePackages());
 			
 			@SuppressWarnings("unchecked")
 			Iterator elements = selection.iterator();

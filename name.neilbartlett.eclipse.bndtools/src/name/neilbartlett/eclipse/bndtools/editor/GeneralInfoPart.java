@@ -12,11 +12,11 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,12 +24,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
+import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
+import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposalLabelProvider;
+import name.neilbartlett.eclipse.bndtools.utils.JavaTypeContentProposal;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -40,9 +42,9 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jdt.internal.corext.util.SearchUtils;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
@@ -56,20 +58,18 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -80,14 +80,16 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
+import aQute.bnd.plugin.Activator;
+
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 	
-	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._";
+	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._"; //$NON-NLS-1$
 	private static final String[] INTERESTED_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
@@ -103,7 +105,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private final Set<String> dirtySet = new HashSet<String>();
 	
 	private BndEditModel model;
-	private IJavaProject javaProject;
 	
 	private Text txtBSN;
 	private Text txtVersion;
@@ -111,7 +112,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private Button btnSources;
 	
 	private AtomicInteger refreshers = new AtomicInteger(0);
-
+	
 	public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
@@ -133,6 +134,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		}
 		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
+		FieldDecoration errorDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -145,16 +147,21 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		
 		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
 		txtActivator = toolkit.createText(composite, "");
+		
+		// Content Proposal for the Activator field
+		ContentProposalAdapter activatorProposalAdapter = null;
+		
+		IContentProposalProvider proposalProvider = new ActivatorClassProposalProvider();
+		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
+		activatorProposalAdapter.setAutoActivationDelay(500);
+		
 		ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.TOP, composite);
 		decorActivator.setImage(contentAssistDecoration.getImage());
 		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
-		
-		ContentProposalAdapter activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), new ActivatorProposalProvider(), assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
-		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
-		activatorProposalAdapter.setLabelProvider(new ActivatorLabelProvider());
-		activatorProposalAdapter.setAutoActivationDelay(500);
 		
 		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
 		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
@@ -197,13 +204,12 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				String activatorClassName = txtActivator.getText();
 				if(activatorClassName != null && activatorClassName.length() > 0) {
 					try {
-						IType activatorType = javaProject.findType(activatorClassName);
+						IType activatorType = getJavaProject().findType(activatorClassName);
 						if(activatorType == null) {
 							unknownError = "The activator class name is not known in this project.";
 						}
 					} catch (JavaModelException e) {
-						// TODO: report exception
-						e.printStackTrace();
+						Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
 					}
 				}
 				
@@ -222,7 +228,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				String activatorClassName = txtActivator.getText();
 				if(activatorClassName != null && activatorClassName.length() > 0) {
 					try {
-						IType activatorType = javaProject.findType(activatorClassName);
+						IType activatorType = getJavaProject().findType(activatorClassName);
 						if(activatorType != null) {
 							JavaUI.openInEditor(activatorType, true, true);
 						}
@@ -234,21 +240,21 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				}
 			}
 		});
-		activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
-			public void proposalAccepted(IContentProposal proposal) {
-				if(proposal instanceof JavaClassContentProposal) {
-					IType selectedType = ((JavaClassContentProposal) proposal).element;
-					String selectedPackageName = selectedType.getPackageFragment().getElementName();
-					
-					if(!isIncludedPackage(selectedPackageName)) {
-						Collection<String> privatePackages = model.getPrivatePackages();
-						privatePackages.add(selectedPackageName);
-						commit(false);
-						model.setPrivatePackages(privatePackages);
+		if(activatorProposalAdapter != null) {
+			activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+				public void proposalAccepted(IContentProposal proposal) {
+					if(proposal instanceof JavaContentProposal) {
+						String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
+						if(!isIncludedPackage(selectedPackageName)) {
+							Collection<String> privatePackages = new ArrayList<String>(model.getPrivatePackages());
+							privatePackages.add(selectedPackageName);
+							commit(false);
+							model.setPrivatePackages(privatePackages);
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 		btnSources.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -282,15 +288,19 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	
 	boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = model.getPrivatePackages();
-		for (String pkg : privatePackages) {
-			if(packageName.equals(pkg)) {
-				return true;
+		if(privatePackages != null) {
+			for (String pkg : privatePackages) {
+				if(packageName.equals(pkg)) {
+					return true;
+				}
 			}
 		}
 		final Collection<ExportedPackage> exportedPackages = model.getExportedPackages();
-		for (ExportedPackage pkg : exportedPackages) {
-			if(packageName.equals(pkg.getPackageName())) {
-				return true;
+		if(exportedPackages != null) {
+			for (ExportedPackage pkg : exportedPackages) {
+				if(packageName.equals(pkg.getPackageName())) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -393,16 +403,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(this);
-		
-		IEditorInput editorInput = ((IFormPage) getManagedForm().getContainer()).getEditorInput();
-		if(editorInput instanceof IFileEditorInput) {
-			IFile file = ((IFileEditorInput) editorInput).getFile();
-			IProject project = file.getProject();
-			this.javaProject = JavaCore.create(project);
-		} else {
-			this.javaProject = null;
-		}
-
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -423,135 +423,52 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			this.model.removePropertyChangeListener(this);
 	}
 	
-	private class ActivatorProposalProvider implements IContentProposalProvider {
+	IJavaProject getJavaProject() {
+		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
+		IFile file = ResourceUtil.getFile(formPage.getEditorInput());
+		return JavaCore.create(file.getProject());
+	}
+	
+	private class ActivatorClassProposalProvider implements IContentProposalProvider {
 		public IContentProposal[] getProposals(String contents, int position) {
-			String substring = contents.substring(0, position).toLowerCase();
-			
-			final List<IContentProposal> proposals = new LinkedList<IContentProposal>();
+			IJavaProject javaProject = getJavaProject();
 			try {
-				if(javaProject == null) {
-					proposals.add(new ErrorContentProposal("Not a java project"));
-				} else {
-					IType activatorType = javaProject.findType(BundleActivator.class.getName());
-					
-					final SearchRequestor requestor = new SearchRequestor() {
-						public void acceptSearchMatch(SearchMatch match) throws CoreException {
-							IType element = (IType) match.getElement();
-							proposals.add(new JavaClassContentProposal(element));
-						}
-					};
-					
-					SearchPattern pattern = SearchPattern.createPattern(activatorType, IJavaSearchConstants.IMPLEMENTORS);
-					try {
-						NullProgressMonitor monitor = new NullProgressMonitor();
-						IJavaSearchScope searchScope = javaProject != null ? SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject }) : null;
-						if(searchScope != null) {
-							new SearchEngine().search(pattern, SearchUtils.getDefaultSearchParticipants(), searchScope,
-									requestor, monitor);
-						}
-					} catch (CoreException e) {
-						e.printStackTrace();
+				IType activatorType = javaProject.findType(BundleActivator.class.getName());
+				final SearchPattern searchPattern = SearchPattern.createPattern(activatorType, IJavaSearchConstants.IMPLEMENTORS);
+				final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+				final List<IContentProposal> result = new ArrayList<IContentProposal>();
+				final SearchRequestor requestor = new SearchRequestor() {
+					@Override
+					public void acceptSearchMatch(SearchMatch match) throws CoreException {
+						IType type = (IType) match.getElement();
+						result.add(new JavaTypeContentProposal(type));
 					}
-				}
+				};
+				final IRunnableWithProgress runnable = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							new SearchEngine().search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope, requestor, monitor);
+						} catch (CoreException e) {
+							throw new InvocationTargetException(e);
+						}
+					}
+				};
+				
+				IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
+				window.run(false, false, runnable);
+				return result.toArray(new IContentProposal[result.size()]);
 			} catch (JavaModelException e) {
-				proposals.clear();
-				proposals.add(new ErrorContentProposal("Error"));
+				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e);
+				Activator.getDefault().getLog().log(status);
+				return new IContentProposal[0];
+			} catch (InvocationTargetException e) {
+				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
+				Activator.getDefault().getLog().log(status);
+				return new IContentProposal[0];
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return new IContentProposal[0];
 			}
-			
-			// Remove proposals that don't match what the user has typed
-			for (Iterator<IContentProposal> iter = proposals.iterator(); iter.hasNext();) {
-				IContentProposal proposal = iter.next();
-				if(proposal.getContent().toLowerCase().indexOf(substring) == -1) {
-					iter.remove();
-				}
-			}
-			
-			return proposals
-					.toArray(new IContentProposal[proposals.size()]);
 		}
 	}
-	private class JavaClassContentProposal implements IContentProposal {
-		
-		private final IType element;
-
-		public JavaClassContentProposal(IType element) {
-			this.element = element;
-		}
-
-		public String getContent() {
-			return element.getFullyQualifiedName();
-		}
-
-		public int getCursorPosition() {
-			return getContent().length();
-		}
-
-		public String getDescription() {
-			return null;
-		}
-
-		public String getLabel() {
-			return element.getElementName() + " - " + element.getPackageFragment().getElementName();
-		}
-		
-		public IType getType() {
-			return element;
-		}
-		
-	}
-	private class ErrorContentProposal implements IContentProposal {
-
-		private final String message;
-
-		public ErrorContentProposal(String message) {
-			this.message = message;
-		}
-
-		public String getContent() {
-			return "";
-		}
-
-		public String getDescription() {
-			return null;
-		}
-
-		public String getLabel() {
-			return message;
-		}
-
-		public int getCursorPosition() {
-			return 0;
-		}
-	}
-	
-	private class ActivatorLabelProvider extends LabelProvider {
-		
-		private Image classImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/class_obj.gif").createImage();
-		
-		@Override
-		public Image getImage(Object element) {
-			Image result = null;
-			
-			if(element instanceof JavaClassContentProposal) {
-				result = classImg;
-			}
-			
-			return result;
-		}
-		
-		@Override
-		public String getText(Object element) {
-			IContentProposal proposal = (IContentProposal) element;
-			
-			return proposal.getLabel();
-		}
-		
-		@Override
-		public void dispose() {
-			super.dispose();
-			classImg.dispose();
-		}
-	}
-	
-	
 }

@@ -77,4 +77,73 @@ public class ServiceComponentAttribs {
 		
 		return result;
 	}
+	
+	// Getters and Setters
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getFactory() {
+		return factory;
+	}
+	public void setFactory(String factory) {
+		this.factory = factory;
+	}
+	public Boolean getServiceFactory() {
+		return serviceFactory;
+	}
+	public void setServiceFactory(Boolean serviceFactory) {
+		this.serviceFactory = serviceFactory;
+	}
+	public Boolean getImmediate() {
+		return immediate;
+	}
+	public void setImmediate(Boolean immediate) {
+		this.immediate = immediate;
+	}
+	public Boolean getEnabled() {
+		return enabled;
+	}
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+	public List<String> getProvide() {
+		return provide;
+	}
+	public void setProvide(List<String> provide) {
+		this.provide = provide;
+	}
+	public String getImplementation() {
+		return implementation;
+	}
+	public void setImplementation(String implementation) {
+		this.implementation = implementation;
+	}
+	public ServiceComponentConfigurationPolicy getConfigurationPolicy() {
+		return configurationPolicy;
+	}
+	public void setConfigurationPolicy(
+			ServiceComponentConfigurationPolicy configurationPolicy) {
+		this.configurationPolicy = configurationPolicy;
+	}
+	public String getActivate() {
+		return activate;
+	}
+	public void setActivate(String activate) {
+		this.activate = activate;
+	}
+	public String getDeactivate() {
+		return deactivate;
+	}
+	public void setDeactivate(String deactivate) {
+		this.deactivate = deactivate;
+	}
+	public String getModified() {
+		return modified;
+	}
+	public void setModified(String modified) {
+		this.modified = modified;
+	}
 }

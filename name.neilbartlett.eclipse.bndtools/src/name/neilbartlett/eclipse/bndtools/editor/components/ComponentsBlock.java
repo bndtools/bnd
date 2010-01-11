@@ -2,8 +2,8 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.DetailsPart;
 import org.eclipse.ui.forms.IManagedForm;
@@ -22,7 +22,7 @@ public class ComponentsBlock extends MasterDetailsBlock {
 		
 		Composite container = toolkit.createComposite(parent);
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
-		container.setLayout(new FillLayout());
+		container.setLayout(new GridLayout(1, false));
 		
 		compListPart = new ComponentListPart(container, toolkit, Section.TITLE_BAR | Section.EXPANDED);
 		managedForm.addPart(compListPart);
@@ -35,7 +35,7 @@ public class ComponentsBlock extends MasterDetailsBlock {
 
 	@Override
 	protected void registerPages(DetailsPart detailsPart) {
-		detailsPart.registerPage(ServiceComponent.class, new ComponentDetailsPage());
+		detailsPart.registerPage(ServiceComponent.class, new ComponentDetailsPage(compListPart));
 	}
 
 }

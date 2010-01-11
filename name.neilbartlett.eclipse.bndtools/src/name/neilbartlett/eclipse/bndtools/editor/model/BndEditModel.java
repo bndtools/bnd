@@ -8,13 +8,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -35,9 +33,8 @@ import aQute.libg.header.OSGiHeader;
  */
 public class BndEditModel {
 	
-	private static final String LIST_SEPARATOR = ",\\\t";
+	private static final String LIST_SEPARATOR = ",\\\n\t";
 	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
-	private final Set<String> touchedProperties = new HashSet<String>();
 	
 	private static final String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
@@ -51,8 +48,18 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
 	};
 	
+	private interface Converter<T> {
+		T convert(String string) throws IllegalArgumentException;
+	}
+	
+	private interface Formatter<T> {
+		String format(T object);
+	}
+	
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
+	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
+	private final Map<String, String> changesToSave = new HashMap<String, String>();
 	
 	public void loadFrom(IDocument document) throws IOException {
 		// Save the old properties, if any
@@ -65,7 +72,8 @@ public class BndEditModel {
 		properties.clear();
 		InputStream stream = new ByteArrayInputStream(document.get().getBytes(ISO_8859_1));
 		properties.load(stream);
-		touchedProperties.clear();
+		objectProperties.clear();
+		changesToSave.clear();
 		
 		// Fire property changes on known property names
 		for(Entry<String, String> entry : oldValues.entrySet()) {
@@ -74,12 +82,14 @@ public class BndEditModel {
 	}
 	
 	public void saveChangesTo(IDocument document) {
-		for(Iterator<String> iter = touchedProperties.iterator(); iter.hasNext(); ) {
-			String property = iter.next();
+		for(Iterator<Entry<String,String>> iter = changesToSave.entrySet().iterator(); iter.hasNext(); ) {
+			Entry<String, String> entry = iter.next();
 			iter.remove();
 			
-			String value = properties.getProperty(property);
-			updateDocument(document, property, value);
+			String propertyName = entry.getKey();
+			String stringValue = entry.getValue();
+			
+			updateDocument(document, propertyName, stringValue);
 		}
 	}
 	
@@ -145,30 +155,44 @@ public class BndEditModel {
 			e.printStackTrace();
 		}
 	}
-	
-	private void doSetBoolean(String name, boolean defaultValue, boolean newValue) {
-		boolean oldValue = Boolean.parseBoolean(properties.getProperty(name, Boolean.toString(defaultValue)));
-		if(newValue != defaultValue) {
-			properties.setProperty(name, Boolean.toString(newValue));
+	private String doGetString(String name) {
+		String result;
+		if(objectProperties.containsKey(name)) {
+			result = (String) objectProperties.get(name);
 		} else {
-			properties.remove(name);
+			if(properties.containsKey(name)) {
+				result = properties.getProperty(name);
+				objectProperties.put(name, result);
+			} else {
+				result = null;
+			}
 		}
-		touchedProperties.add(name);
-		propChangeSupport.firePropertyChange(name, oldValue, newValue);
+		return result;
 	}
-	
-	private void doSetObject(String name, Object oldValue, Object newValue, String newString) {
-		if(newValue == null) {
-			properties.remove(name);
+	private <T> T doGetObject(String name, Converter<? extends T> converter) {
+		T result;
+		if(objectProperties.containsKey(name)) {
+			@SuppressWarnings("unchecked")
+			T temp = (T) objectProperties.get(name);
+			result = temp;
 		} else {
-			properties.setProperty(name, newString);
+			if(properties.containsKey(name)) {
+				result = converter.convert(properties.getProperty(name));
+				objectProperties.put(name, result);
+			} else {
+				result = null;
+			}
 		}
-		touchedProperties.add(name);
+		return result;
+	}
+	private void doSetObject(String name, Object oldValue, Object newValue, String formattedString) {
+		objectProperties.put(name, newValue);
+		changesToSave.put(name, formattedString);
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 	
 	public String getBundleSymbolicName() {
-		return properties.getProperty(Constants.BUNDLE_SYMBOLICNAME);
+		return doGetString(Constants.BUNDLE_SYMBOLICNAME);
 	}
 	
 	public void setBundleSymbolicName(String bundleSymbolicName) {
@@ -176,7 +200,7 @@ public class BndEditModel {
 	}
 	
 	public String getBundleVersionString() {
-		return properties.getProperty(Constants.BUNDLE_VERSION);
+		return doGetString(Constants.BUNDLE_VERSION); 
 	}
 	
 	public void setBundleVersion(String bundleVersion) {
@@ -184,7 +208,7 @@ public class BndEditModel {
 	}
 	
 	public String getBundleActivator() {
-		return properties.getProperty(Constants.BUNDLE_ACTIVATOR);
+		return doGetString(Constants.BUNDLE_ACTIVATOR); 
 	}
 	
 	public void setBundleActivator(String bundleActivator) {
@@ -192,16 +216,26 @@ public class BndEditModel {
 	}
 	
 	public void setIncludeSources(boolean includeSources) {
-		doSetBoolean(aQute.lib.osgi.Constants.SOURCES, false, includeSources);
+		boolean oldValue = isIncludeSources();
+		String formattedString = includeSources ? Boolean.TRUE.toString() : null;
+		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, formattedString);
 	}
 	
 	public boolean isIncludeSources() {
-		return Boolean.parseBoolean(properties.getProperty(aQute.lib.osgi.Constants.SOURCES));
+		Boolean objValue = doGetObject(aQute.lib.osgi.Constants.SOURCES, new Converter<Boolean>() {
+			public Boolean convert(String string) throws IllegalArgumentException {
+				return Boolean.valueOf(string);
+			}
+		});
+		return objValue != null ? objValue.booleanValue() : false;
 	}
 	
 	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
-		String string = properties.getProperty(aQute.lib.osgi.Constants.VERSIONPOLICY);
-		return string != null ? VersionPolicy.parse(string) : null;
+		return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, new Converter<VersionPolicy>() {
+			public VersionPolicy convert(String string) throws IllegalArgumentException {
+				return VersionPolicy.parse(string);
+			}
+		});
 	}
 	
 	public void setVersionPolicy(VersionPolicy versionPolicy) {
@@ -222,53 +256,58 @@ public class BndEditModel {
 	 * @return A new collection containing the exported packages of the model.
 	 */
 	public Collection<ExportedPackage> getExportedPackages() {
-		List<ExportedPackage> result = new LinkedList<ExportedPackage>();
-		
-		String exportsStr = properties.getProperty(Constants.EXPORT_PACKAGE);
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(exportsStr, null);
-		
-		for (Entry<String, Map<String,String>> entry : header.entrySet()) {
-			String packageName = entry.getKey();
-			String version = null;
-			Map<String, String> attribs = entry.getValue();
-			if(attribs != null) {
-				version = attribs.get(Constants.VERSION_ATTRIBUTE);
+		return doGetObject(Constants.EXPORT_PACKAGE, new Converter<Collection<ExportedPackage>>() {
+			public Collection<ExportedPackage> convert(String string) throws IllegalArgumentException {
+				List<ExportedPackage> result = new LinkedList<ExportedPackage>();
+				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string, null);
+				for (Entry<String, Map<String,String>> entry : header.entrySet()) {
+					String packageName = entry.getKey();
+					String version = null;
+					Map<String, String> attribs = entry.getValue();
+					if(attribs != null) {
+						version = attribs.get(Constants.VERSION_ATTRIBUTE);
+					}
+					
+					result.add(new ExportedPackage(packageName, version));
+				}
+				return result;
 			}
-			
-			result.add(new ExportedPackage(packageName, version));
-		}
-		return result;
+		});
 	}
 	public Collection<ImportPattern> getImportPatterns() {
-		List<ImportPattern> result = new LinkedList<ImportPattern>();
-		String importsStr = properties.getProperty(Constants.IMPORT_PACKAGE);
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(importsStr);
-		for(Entry<String, Map<String,String>> entry : header.entrySet()) {
-			String pattern = entry.getKey();
-			boolean optional = false;
-			Map<String, String> attribs = entry.getValue();
-			if(attribs != null) {
-				String resolutionDirective = attribs.remove(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
-				if(Constants.RESOLUTION_OPTIONAL.equals(resolutionDirective)) {
-					optional = true;
+		return doGetObject(Constants.IMPORT_PACKAGE, new Converter<Collection<ImportPattern>>() {
+			public Collection<ImportPattern> convert(String string)
+					throws IllegalArgumentException {
+				List<ImportPattern> result = new LinkedList<ImportPattern>();
+				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
+				for(Entry<String, Map<String,String>> entry : header.entrySet()) {
+					String pattern = entry.getKey();
+					boolean optional = false;
+					Map<String, String> attribs = entry.getValue();
+					if(attribs != null) {
+						String resolutionDirective = attribs.remove(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
+						if(Constants.RESOLUTION_OPTIONAL.equals(resolutionDirective)) {
+							optional = true;
+						}
+					}
+					result.add(new ImportPattern(pattern, optional, attribs));
 				}
+				return result;
 			}
-			result.add(new ImportPattern(pattern, optional, attribs));
-		}
-		
-		return result;
+		});
 	}
 	public Collection<String> getPrivatePackages() {
-		List<String> packages = new LinkedList<String>();
-		
-		String pkgsStr = properties.getProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(pkgsStr);
-		
-		for(Entry<String, Map<String,String>> entry : header.entrySet()) {
-			String packageName = entry.getKey();
-			packages.add(packageName);
-		}
-		return packages;
+		return doGetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, new Converter<Collection<String>>() {
+			public Collection<String> convert(String string) {
+				List<String> packages = new LinkedList<String>();
+				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
+				for(Entry<String, Map<String,String>> entry : header.entrySet()) {
+					String packageName = entry.getKey();
+					packages.add(packageName);
+				}
+				return packages;
+			}
+		});
 	}
 	public void setExportedPackages(Collection<? extends ExportedPackage> packages) {
 		Collection<ExportedPackage> oldPackages = getExportedPackages();
@@ -329,20 +368,36 @@ public class BndEditModel {
 		}
 	}
 	
-	public Collection<ServiceComponent> getServiceComponents(){
-		List<ServiceComponent> result = new ArrayList<ServiceComponent>();
+	public List<ServiceComponent> getServiceComponents(){
+		return doGetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<List<ServiceComponent>>() {
+			public List<ServiceComponent> convert(String string) throws IllegalArgumentException {
+				List<ServiceComponent> result = new ArrayList<ServiceComponent>();
+				Processor processor = new Processor(properties);
+				Map<String, Map<String, String>> scHeader = processor.parseHeader(string);
+				for (Entry<String, Map<String, String>> entry : scHeader.entrySet()) {
+					String scName = entry.getKey();
+					Map<String, String> attribsMap = entry.getValue();
+					result.add(new ServiceComponent(scName, attribsMap));
+				}
+				return result;
+			}
+		});
+	}
+	public void setServiceComponents(Collection<? extends ServiceComponent> components) {
+		List<ServiceComponent> oldValue = getServiceComponents();
 		
-		Processor processor = new Processor(properties);
-		String scHeaderStr = processor.getProperty(aQute.lib.osgi.Constants.SERVICE_COMPONENT);
-		Map<String, Map<String, String>> scHeader = processor.parseHeader(scHeaderStr);
-		for (Entry<String, Map<String, String>> entry : scHeader.entrySet()) {
-			String scName = entry.getKey();
-			Map<String, String> attribsMap = entry.getValue();
-			ServiceComponentAttribs scAttribs = ServiceComponentAttribs.loadFrom(attribsMap);
-			result.add(new ServiceComponent(scName, scAttribs));
+		StringBuilder buffer = new StringBuilder();
+		if(components == null || components.isEmpty()) {
+			doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, null, null);
+		} else {
+			for(Iterator<? extends ServiceComponent> iter = components.iterator(); iter.hasNext(); ) {
+				ServiceComponent component = iter.next();
+				component.formatTo(buffer);
+				if(iter.hasNext())
+					buffer.append(LIST_SEPARATOR);
+			}
+			doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components, buffer.toString());
 		}
-		
-		return result;
 	}
 	
 	// BEGIN: PropertyChangeSupport delegate methods

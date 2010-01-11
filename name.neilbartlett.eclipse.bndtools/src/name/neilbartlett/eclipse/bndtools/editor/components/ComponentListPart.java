@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -33,7 +34,6 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 	}
-
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Service Components");
 		
@@ -57,12 +57,16 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		});
 		
 		// Layout
+		GridData gd;
+		
+		section.setLayoutData(new GridData(GridData.FILL_BOTH));
 		composite.setLayout(new GridLayout(2, false));
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+		gd.widthHint = 250;
+		table.setLayoutData(gd);
 		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		btnRemove.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
-	
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
@@ -70,24 +74,24 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(Constants.SERVICE_COMPONENT, this);
 	}
-	
 	@Override
 	public void dispose() {
 		super.dispose();
 		this.model.removePropertyChangeListener(Constants.SERVICE_COMPONENT, this);
 	}
-	
 	@Override
 	public void refresh() {
 		super.refresh();
 		viewer.setInput(model.getServiceComponents());
 	}
-	
 	public void propertyChange(PropertyChangeEvent evt) {
 		IFormPage page = (IFormPage) managedForm.getContainer();
 		if(page.isActive())
 			refresh();
 		else
 			markStale();
+	}
+	public void updateLabel(ServiceComponent component) {
+		viewer.update(component, null);
 	}
 }

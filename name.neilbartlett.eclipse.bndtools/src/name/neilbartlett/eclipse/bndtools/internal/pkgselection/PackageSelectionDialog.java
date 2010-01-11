@@ -27,7 +27,6 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
 	
 	private boolean sourceOnly = true;
 
-
 	public PackageSelectionDialog(Shell parentShell, IPackageLister packageLister, IPackageFilter filter, String message) {
 		super(parentShell, new PackageNameLabelProvider());
 		this.packageLister = packageLister;
