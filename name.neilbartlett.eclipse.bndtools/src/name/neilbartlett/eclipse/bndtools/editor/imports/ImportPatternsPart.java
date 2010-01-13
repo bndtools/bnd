@@ -49,7 +49,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		TableColumn col;
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Pattern");
-		col.setWidth(170);
+		col.setWidth(130);
 		
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Optional");
@@ -57,7 +57,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Attributes");
-		col.setWidth(170);
+		col.setWidth(130);
 		
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -75,7 +75,11 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		});
 		
 		// Layout
-		composite.setLayout(new GridLayout(2, false));
+		GridLayout layout;
+		layout = new GridLayout(2, false);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		composite.setLayout(layout);
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
 		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		btnRemove.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

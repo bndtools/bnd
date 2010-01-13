@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -84,6 +85,84 @@ public class ServiceComponent implements Cloneable {
 		List<String> list = getListAttrib(attrib);
 		return list != null ? new HashSet<String>(list) : new HashSet<String>();
 	}
+	public void setSvcRefs(List<? extends ComponentSvcReference> refs) {
+		// First remove all existing references, i.e. non-directives
+		for(Iterator<String> iter = attribs.keySet().iterator(); iter.hasNext(); ) {
+			String name = iter.next();
+			if(!name.endsWith(":")) {
+				iter.remove();
+			}
+		}
+		
+		// Add in the references
+		Set<String> dynamic = new HashSet<String>();
+		Set<String> optional = new HashSet<String>();
+		Set<String> multiple = new HashSet<String>();
+		for (ComponentSvcReference ref : refs) {
+			// Build the reference name with bind and unbind
+			String expandedRefName = ref.getName();
+			if(ref.getBind() != null) {
+				expandedRefName += "/" + ref.getBind();
+				if(ref.getUnbind() != null) {
+					expandedRefName += "/" + ref.getUnbind();
+				}
+			}
+			
+			// Start building the map value
+			StringBuilder buffer = new StringBuilder();
+			buffer.append(ref.getServiceClass());
+			
+			// Add the target filter
+			if(ref.getTargetFilter() != null) {
+				buffer.append('(').append(ref.getTargetFilter()).append(')');
+			}
+			
+			// Work out the cardinality suffix (i.e. *, +, ? org ~).
+			// Adding to the dynamic/multiple/optional lists for non-standard cases
+			String cardinalitySuffix;
+			if(ref.isDynamic()) {
+				if(ref.isOptional()) {
+					if(ref.isMultiple()) //0..n dynamic
+						cardinalitySuffix = "*";
+					else // 0..1 dynamic
+						cardinalitySuffix = "?";
+				} else {
+					if(ref.isMultiple()) // 1..n dynamic
+						cardinalitySuffix = "+";
+					else { // 1..1 dynamic, not a normal combination
+						cardinalitySuffix = null;
+						dynamic.add(ref.getName());
+					}
+				}
+			} else {
+				if(ref.isOptional()) {
+					if(ref.isMultiple()) { // 0..n static, not a normal combination
+						cardinalitySuffix = null;
+						optional.add(ref.getName());
+						multiple.add(ref.getName());
+					} else { // 0..1 static
+						cardinalitySuffix = "~";
+					}
+				} else {
+					if(ref.isMultiple()) { // 1..n static, not a normal combination
+						multiple.add(ref.getName());
+						cardinalitySuffix = null;
+					} else { // 1..1 static
+						cardinalitySuffix = null;
+					}
+				}
+			}
+			
+			if(cardinalitySuffix != null)
+				buffer.append(cardinalitySuffix);
+			
+			// Write to the map
+			attribs.put(expandedRefName, buffer.toString());
+		}
+		setListAttrib(COMPONENT_OPTIONAL, optional);
+		setListAttrib(COMPONENT_MULTIPLE, multiple);
+		setListAttrib(COMPONENT_DYNAMIC, dynamic);
+	}
 	public List<ComponentSvcReference> getSvcRefs() {
 		List<ComponentSvcReference> result = new ArrayList<ComponentSvcReference>();
 		
@@ -98,15 +177,18 @@ public class ServiceComponent implements Cloneable {
 			if(referenceName.endsWith(":"))//$NON-NLS-1$
 				continue;
 			
+			ComponentSvcReference svcRef = new ComponentSvcReference();
+			
 			String bind = null;
 			String unbind = null;
-		
+			
 			if (referenceName.indexOf('/') >= 0) {
 				String parts[] = referenceName.split("/");
 				referenceName = parts[0];
 				bind = parts[1];
 				if (parts.length > 2)
 					unbind = parts[2];
+			/*
 				else if (bind.startsWith("add"))
 					unbind = bind.replaceAll("add(.+)", "remove$1");
 				else
@@ -115,13 +197,18 @@ public class ServiceComponent implements Cloneable {
 				bind = "set" + Character.toUpperCase(referenceName.charAt(0))
 						+ referenceName.substring(1);
 				unbind = "un" + bind;
+			*/
 			}
+			svcRef.setName(referenceName);
+			svcRef.setBind(bind);
+			svcRef.setUnbind(unbind);
 			
 			String interfaceName = entry.getValue();
 			if (interfaceName == null || interfaceName.length() == 0) {
 				logError("Invalid Interface Name for references in Service Component: " + referenceName + "=" + interfaceName, null);
 				continue;
 			}
+			svcRef.setServiceClass(interfaceName);
 			
 			// Check the cardinality by looking at the last
 			// character of the value
@@ -135,6 +222,9 @@ public class ServiceComponent implements Cloneable {
 					dynamicSet.add(referenceName);
 				interfaceName = interfaceName.substring(0, interfaceName.length() - 1);
 			}
+			svcRef.setOptional(optionalSet.contains(referenceName));
+			svcRef.setMultiple(multipleSet.contains(referenceName));
+			svcRef.setDynamic(dynamicSet.contains(referenceName));
 			
 			// Parse the target from the interface name
 			// The target is a filter.
@@ -144,11 +234,8 @@ public class ServiceComponent implements Cloneable {
 				interfaceName = m.group(1);
 				target = m.group(2);
 			}
-
-			boolean optional = optionalSet.contains(referenceName);
-			boolean multiple = multipleSet.contains(referenceName);
-			boolean dynamic = dynamicSet.contains(referenceName);
-			ComponentSvcReference svcRef = new ComponentSvcReference(referenceName, bind, unbind, interfaceName, optional, multiple, dynamic, target);
+			svcRef.setTargetFilter(target);
+			
 			result.add(svcRef);
 		}
 		
@@ -157,16 +244,20 @@ public class ServiceComponent implements Cloneable {
 	private void logError(String message, Throwable t) {
 		Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
 	}
-	public void setListAttrib(String attrib, List<? extends String> value) {
-		StringBuilder buffer = new StringBuilder();
-		boolean first = true;
-		for (String string : value) {
-			if(!first)
-				buffer.append(',');
-			buffer.append(string);
-			first = false;
+	public void setListAttrib(String attrib, Collection<? extends String> value) {
+		if(value == null || value.isEmpty())
+			attribs.remove(attrib);
+		else {
+			StringBuilder buffer = new StringBuilder();
+			boolean first = true;
+			for (String string : value) {
+				if(!first)
+					buffer.append(',');
+				buffer.append(string);
+				first = false;
+			}
+			attribs.put(attrib, buffer.toString());
 		}
-		attribs.put(attrib, buffer.toString());
 	}
 	
 	@Override

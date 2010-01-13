@@ -2,9 +2,10 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import java.text.MessageFormat;
 
+import name.neilbartlett.eclipse.bndtools.UIConstants;
+import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposalLabelProvider;
 
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -12,9 +13,7 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,15 +22,11 @@ import org.eclipse.swt.widgets.Text;
 
 public class SvcInterfaceSelectionDialog extends InputDialog {
 	
-	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._"; //$NON-NLS-1$
+	private final IJavaSearchContext searchContext;
 	
-	private final IJavaProject javaProject;
-	private final IRunnableContext context;
-	
-	public SvcInterfaceSelectionDialog(Shell parentShell, String dialogTitle, String dialogMessage, IJavaProject javaProject, IRunnableContext context) {
+	public SvcInterfaceSelectionDialog(Shell parentShell, String dialogTitle, String dialogMessage, IJavaSearchContext searchContext) {
 		super(parentShell, dialogTitle, dialogMessage, "", null);
-		this.javaProject = javaProject;
-		this.context = context;
+		this.searchContext = searchContext;
 	}
 
 	@Override
@@ -54,9 +49,9 @@ public class SvcInterfaceSelectionDialog extends InputDialog {
 		decor.setShowHover(true);
 		decor.setShowOnlyOnFocus(true);
 		
-		IContentProposalProvider proposalProvider = new SvcInterfaceProposalProvider(javaProject, context);
-		
-		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(textField, new TextContentAdapter(), proposalProvider, assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		SvcInterfaceProposalProvider proposalProvider = new SvcInterfaceProposalProvider(searchContext);
+		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(textField, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		proposalAdapter.addContentProposalListener(proposalProvider);
 		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		proposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
 		proposalAdapter.setAutoActivationDelay(1500);

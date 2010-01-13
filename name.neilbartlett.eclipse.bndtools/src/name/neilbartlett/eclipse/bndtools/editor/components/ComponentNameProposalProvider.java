@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.CachingContentProposalProvider;
 import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
 
@@ -27,7 +28,6 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -37,7 +37,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.plugin.Activator;
 
-public class ComponentNameProposalProvider implements IContentProposalProvider {
+public class ComponentNameProposalProvider extends CachingContentProposalProvider {
 	
 	protected static final String XML_SUFFIX = ".xml";
 	private final IJavaSearchContext searchContext;
@@ -56,9 +56,21 @@ public class ComponentNameProposalProvider implements IContentProposalProvider {
 			}
 		});
 	}
-	public IContentProposal[] getProposals(String contents, int position) {
-		final String prefix = contents.substring(0, position).toLowerCase();
-
+	
+	@Override
+	protected boolean match(String prefix, IContentProposal proposal) {
+		String lowerCasePrefix = prefix.toLowerCase();
+		if(proposal instanceof ResourceProposal) {
+			return ((ResourceProposal) proposal).getName().toLowerCase().startsWith(lowerCasePrefix);
+		}
+		if(proposal instanceof JavaContentProposal) {
+			return ((JavaContentProposal) proposal).getTypeName().toLowerCase().startsWith(lowerCasePrefix);
+		}
+		return false;
+	}
+	
+	@Override
+	protected List<IContentProposal> doGenerateProposals(final String prefix) {
 		IJavaProject javaProject = searchContext.getJavaProject();
 		final List<IContentProposal> result = new ArrayList<IContentProposal>(100);
 		
@@ -112,7 +124,7 @@ public class ComponentNameProposalProvider implements IContentProposalProvider {
 			// Reset the interruption status and continue
 			Thread.currentThread().interrupt();
 		}
-		return result.toArray(new IContentProposal[result.size()]);
+		return result;
 	}
 	
 	ILabelProvider createLabelProvider() {
@@ -121,28 +133,30 @@ public class ComponentNameProposalProvider implements IContentProposalProvider {
 	
 	private static class ResourceProposal implements IContentProposal {
 		
-		String name;
-		String fullPath;
+		final String name;
+		final String fullPath;
 		
 		public ResourceProposal(IResource resource) {
 			name = resource.getName();
 			fullPath = resource.getProjectRelativePath().toString();
 		}
-
 		public String getContent() {
 			return fullPath;
 		}
-
 		public int getCursorPosition() {
 			return name.length();
 		}
-
 		public String getDescription() {
 			return null;
 		}
-
 		public String getLabel() {
+			return name + " (" + fullPath + ")";
+		}
+		public String getName() {
 			return name;
+		}
+		public String getFullPath() {
+			return fullPath;
 		}
 	}
 	

@@ -61,8 +61,9 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 		section.setLayoutData(new GridData(GridData.FILL_BOTH));
 		composite.setLayout(new GridLayout(2, false));
 
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		GridData gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.horizontalIndent = 5;
+		gd.widthHint = 100;
 		txtPattern.setLayoutData(gd);
 		btnOptional.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
 	}

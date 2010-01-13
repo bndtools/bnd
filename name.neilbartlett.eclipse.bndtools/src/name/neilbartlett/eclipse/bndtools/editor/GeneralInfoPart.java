@@ -16,12 +16,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
@@ -56,7 +58,6 @@ import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
@@ -89,7 +90,6 @@ import aQute.bnd.plugin.Activator;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 	
-	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._"; //$NON-NLS-1$
 	private static final String[] INTERESTED_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
@@ -134,7 +134,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		}
 		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
-		FieldDecoration errorDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -151,8 +150,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		// Content Proposal for the Activator field
 		ContentProposalAdapter activatorProposalAdapter = null;
 		
-		IContentProposalProvider proposalProvider = new ActivatorClassProposalProvider();
-		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		ActivatorClassProposalProvider proposalProvider = new ActivatorClassProposalProvider();
+		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		activatorProposalAdapter.addContentProposalListener(proposalProvider);
 		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
 		activatorProposalAdapter.setAutoActivationDelay(500);
@@ -429,8 +429,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		return JavaCore.create(file.getProject());
 	}
 	
-	private class ActivatorClassProposalProvider implements IContentProposalProvider {
-		public IContentProposal[] getProposals(String contents, int position) {
+	private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
+		@Override
+		protected List<IContentProposal> doGenerateProposals(String prefix) {
 			IJavaProject javaProject = getJavaProject();
 			try {
 				IType activatorType = javaProject.findType(BundleActivator.class.getName());
@@ -456,19 +457,24 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				
 				IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
 				window.run(false, false, runnable);
-				return result.toArray(new IContentProposal[result.size()]);
+				return result;
 			} catch (JavaModelException e) {
 				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e);
 				Activator.getDefault().getLog().log(status);
-				return new IContentProposal[0];
+				return Collections.emptyList();
 			} catch (InvocationTargetException e) {
 				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
 				Activator.getDefault().getLog().log(status);
-				return new IContentProposal[0];
+				return Collections.emptyList();
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				return new IContentProposal[0];
+				return Collections.emptyList();
 			}
+		}
+
+		@Override
+		protected boolean match(String prefix, IContentProposal proposal) {
+			return ((JavaTypeContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
 		}
 	}
 }

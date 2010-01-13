@@ -137,10 +137,14 @@ public class VersionPolicyPart extends SectionPart implements
 		});
 		 
 		// Layout
+		GridLayout layout;
 		GridData gd;
 		
 		mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		editComposite.setLayout(new GridLayout(2, false));
+		layout = new GridLayout(2, false);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		editComposite.setLayout(layout);
 		btnCustomize.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
 		groupFrom.setLayoutData(new GridData(GridData.FILL_BOTH));
 		groupFrom.setLayout(new GridLayout(1, false));
@@ -155,7 +159,7 @@ public class VersionPolicyPart extends SectionPart implements
 		
 		errorComposite.setLayout(new GridLayout(1, false));
 		gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-		gd.widthHint = 400;
+		gd.widthHint = 300;
 		lblUnparseable.setLayoutData(gd);
 	}
 	

@@ -2,8 +2,12 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.CachingContentProposalProvider;
+import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -20,30 +24,38 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import aQute.bnd.plugin.Activator;
 
-public class SvcInterfaceProposalProvider implements IContentProposalProvider {
+public class SvcInterfaceProposalProvider extends CachingContentProposalProvider {
 	
-	private final IJavaProject javaProject;
-	private final IRunnableContext context;
+	private IJavaSearchContext searchContext;
 	
-	public SvcInterfaceProposalProvider(IJavaProject javaProject) {
-		this(javaProject, null);
+	public SvcInterfaceProposalProvider(IJavaSearchContext searchContext) {
+		this.searchContext = searchContext;
 	}
-
-	public SvcInterfaceProposalProvider(IJavaProject javaProject, IRunnableContext context) {
-		this.javaProject = javaProject;
-		this.context = context;
+	
+	public SvcInterfaceProposalProvider(final IJavaProject javaProject) {
+		this(new IJavaSearchContext() {
+			public IJavaProject getJavaProject() {
+				return javaProject;
+			}
+			public IRunnableContext getRunContext() {
+				return null;
+			}
+		});
 	}
-
-	public IContentProposal[] getProposals(String contents, int position) {
-		final String prefix = contents.substring(0, position).toLowerCase();
-		
-		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+	
+	@Override
+	protected boolean match(String prefix, IContentProposal proposal) {
+		return ((JavaContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
+	}
+	
+	@Override
+	protected List<IContentProposal> doGenerateProposals(final String prefix) {
+		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { searchContext.getJavaProject() });
 		final ArrayList<IContentProposal> result = new ArrayList<IContentProposal>(100);
 		final TypeNameRequestor typeNameRequestor = new TypeNameRequestor() {
 			@Override
@@ -63,21 +75,20 @@ public class SvcInterfaceProposalProvider implements IContentProposalProvider {
 		};
 		
 		try {
-			if(context == null) {
+			if(searchContext.getRunContext() == null) {
 				runnable.run(new NullProgressMonitor());
 			} else {
-				context.run(false, false, runnable);
+				searchContext.getRunContext().run(false, false, runnable);
 			}
 		} catch (InvocationTargetException e) {
 			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for Java types.", e.getTargetException()));
-			return new IContentProposal[0];
+			return Collections.emptyList();
 		} catch (InterruptedException e) {
 			// Reset interrupted status and return empty
 			Thread.currentThread().interrupt();
-			return new IContentProposal[0];
+			return Collections.emptyList();
 		}
-		
-		return result.toArray(new IContentProposal[result.size()]);
+		return result;
 	}
 
 }

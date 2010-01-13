@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.FormPartJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponentConfigurationPolicy;
@@ -35,6 +37,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,11 +47,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IDetailsPage;
@@ -64,8 +67,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPage {
 
-	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._"; //$NON-NLS-1$
-	private static final String PROP_COMPONENT_PATH = "COMPONENT_PATH";
+	private static final String PROP_COMPONENT_NAME = "_COMPONENT_NAME";
+	private static final String PROP_REFERENCES = "_COMPONENT_REFS";
 	
 	private final ComponentListPart listPart;
 	
@@ -206,7 +209,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			// Ignore
 		}
 		ComponentNameProposalProvider proposalProvider = new ComponentNameProposalProvider(new FormPartJavaSearchContext(this));
-		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		proposalAdapter.addContentProposalListener(proposalProvider);
 		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		proposalAdapter.setAutoActivationDelay(1500);
 		proposalAdapter.setLabelProvider(proposalProvider.createLabelProvider());
@@ -226,7 +230,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 				if(refreshers.get() == 0) {
 					selected.setName(txtName.getText());
 					listPart.updateLabel(selected);
-					markDirty(PROP_COMPONENT_PATH);
+					markDirty(PROP_COMPONENT_NAME);
 					updateVisibility();
 				}
 			}
@@ -335,10 +339,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		btnRemoveProvide.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
 	void doAddProvide() {
-		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
-		IWorkbenchWindow window = formPage.getEditorSite().getWorkbenchWindow();
-		
-		SvcInterfaceSelectionDialog dialog = new SvcInterfaceSelectionDialog(formPage.getEditorSite().getShell(), "Add Service Interface", "Interface:", getJavaProject(), window);
+		IJavaSearchContext searchContext = new FormPartJavaSearchContext(this);
+		SvcInterfaceSelectionDialog dialog = new SvcInterfaceSelectionDialog(getManagedForm().getForm().getShell(), "Add Service Interface", "Interface:", searchContext);
 		if(dialog.open() == Window.OK) {
 			String svcName = dialog.getValue();
 			if(!provides.contains(svcName)) {
@@ -367,11 +369,11 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		
 		TableColumn col;
 		col = new TableColumn(tableReferences, SWT.NONE);
-		col.setWidth(150);
+		col.setWidth(100);
 		col.setText("Name");
 		
 		col = new TableColumn(tableReferences, SWT.NONE);
-		col.setWidth(150);
+		col.setWidth(200);
 		col.setText("Interface");
 		
 		col = new TableColumn(tableReferences, SWT.NONE);
@@ -399,6 +401,16 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 				btnEditReference.setEnabled(selection.size() == 1);
 				btnRemoveReference.setEnabled(!selection.isEmpty());
 			}
+		});
+		btnAddReference.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				doAddReference();
+			};
+		});
+		btnEditReference.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				doEditReference();
+			};
 		});
 		btnRemoveReference.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -434,13 +446,46 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		btnEditReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnRemoveReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
+	Set<String> getExistingReferenceNames() {
+		Set<String> result = new HashSet<String>();
+		for (ComponentSvcReference ref : references) {
+			String name = ref.getName();
+			result.add(name);
+		}
+		return result;
+	}
+	void doAddReference() {
+		ComponentSvcRefWizard wizard = new ComponentSvcRefWizard(getExistingReferenceNames(), getJavaProject(), txtName.getText());
+		
+		Shell shell = getManagedForm().getForm().getShell();
+		WizardDialog dialog = new WizardDialog(shell, wizard);
+		if(dialog.open() == Window.OK) {
+			ComponentSvcReference newSvcRef = wizard.getResult();
+			references.add(newSvcRef);
+			viewerReferences.add(newSvcRef);
+			markDirty(PROP_REFERENCES);
+		}
+	}
+	void doEditReference() {
+		ComponentSvcReference selected = (ComponentSvcReference) ((IStructuredSelection) viewerReferences.getSelection()).getFirstElement();
+		Set<String> existingNames = getExistingReferenceNames();
+		existingNames.remove(selected.getName());
+		
+		ComponentSvcRefWizard wizard = new ComponentSvcRefWizard(selected, existingNames, getJavaProject(), txtName.getText());
+		Shell shell = getManagedForm().getForm().getShell();
+		WizardDialog dialog = new WizardDialog(shell, wizard);
+		if(dialog.open() == Window.OK) {
+			viewerReferences.update(selected, null);
+			markDirty(PROP_REFERENCES);
+		}
+	}
 	void doRemoveReference() {
 		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerReferences.getSelection()).iterator();
 		while(iter.hasNext()) {
 			ComponentSvcReference svcRef = (ComponentSvcReference) iter.next();
 			references.remove(svcRef);
 			viewerReferences.remove(svcRef);
-			markDirty(svcRef.getName());
+			markDirty(PROP_REFERENCES);
 		}
 	}
 	void fillLifecycleSection(FormToolkit toolkit, Section section) {
@@ -559,6 +604,11 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			selected.setListAttrib(ServiceComponent.COMPONENT_PROVIDE, provides);
 		}
 		setStringAttribIfDirty(ServiceComponent.COMPONENT_FACTORY, txtFactoryId.getText());
+		
+		// References section
+		if(dirtySet.contains(PROP_REFERENCES)) {
+			selected.setSvcRefs(references);
+		}
 		
 		// Config Policy Section
 		String configPolicy;

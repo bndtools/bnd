@@ -27,7 +27,7 @@ public class ComponentSvcRefTableLabelProvider extends StyledCellLabelProvider {
 			String unbind = svcRef.getUnbind();
 			if(bind != null) {
 				StringBuilder buffer = new StringBuilder();
-				buffer.append('{').append(bind).append('/');
+				buffer.append(" {").append(bind).append('/');
 				if(unbind != null) {
 					buffer.append(unbind);
 				}

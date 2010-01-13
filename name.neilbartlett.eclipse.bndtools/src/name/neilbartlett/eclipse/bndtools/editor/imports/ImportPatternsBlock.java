@@ -23,17 +23,18 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 		FormToolkit toolkit = managedForm.getToolkit();
 		
 		Composite container = toolkit.createComposite(parent);
-		container.setLayoutData(new GridData(GridData.FILL_BOTH));
-		container.setLayout(new GridLayout(1, false));
 		
 		importPatternsPart = new ImportPatternsPart(container, toolkit, Section.TITLE_BAR | Section.EXPANDED);
 		managedForm.addPart(importPatternsPart);
-		importPatternsPart.getSection().setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		VersionPolicyPart versionPolicyPart = new VersionPolicyPart(container, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		versionPolicyPart.getSection().setExpanded(false);
 		managedForm.addPart(versionPolicyPart);
 
+		container.setLayoutData(new GridData(GridData.FILL_BOTH));
+		container.setLayout(new GridLayout(1, false));
+		importPatternsPart.getSection().setLayoutData(new GridData(GridData.FILL_BOTH));
+		versionPolicyPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 
 	@Override
