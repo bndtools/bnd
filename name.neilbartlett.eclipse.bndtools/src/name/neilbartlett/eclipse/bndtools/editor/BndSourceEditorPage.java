@@ -4,7 +4,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
+
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Composite;
@@ -16,11 +20,14 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import aQute.bnd.plugin.Activator;
+
 @SuppressWarnings("restriction")
 public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
 
 	private final BndEditor formEditor;
 	private final String id;
+	private String lastLoaded;
 	
 	private int index;
 	private boolean stale = false;
@@ -104,6 +111,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 		if(active) {
 			if(stale)
 				refresh();
+			lastLoaded = getDocument().get();
 		} else {
 			commit(false);
 		}
@@ -111,10 +119,17 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	
 	void commit(boolean onSave) {
 		try {
-			formEditor.getBndModel().loadFrom(getDocument());
+			// Only commit changes to the model if the document text has
+			// actually changed since we switched to the page; this prevents us
+			// losing selection in the Components and Imports tabs.
+			// We can't use the dirty flag for this because "undo" will clear
+			// the dirty flag.
+			IDocument doc = getDocument();
+			String currentContent = doc.get();
+			if(!currentContent.equals(lastLoaded))
+				formEditor.getBndModel().loadFrom(getDocument());
 		} catch (IOException e) {
-			// TODO
-			e.printStackTrace();
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
 		}
 	}
 

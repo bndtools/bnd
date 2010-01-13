@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -44,12 +45,9 @@ public class SvcInterfaceProposalProvider implements IContentProposalProvider {
 		
 		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 		final ArrayList<IContentProposal> result = new ArrayList<IContentProposal>(100);
-		final TypeNameRequestor requestor = new TypeNameRequestor() {
+		final TypeNameRequestor typeNameRequestor = new TypeNameRequestor() {
 			@Override
 			public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path) {
-				if(!new String(simpleTypeName).toLowerCase().startsWith(prefix))
-					if(!new String(packageName).toLowerCase().startsWith(prefix))
-						return;
 				boolean isInterface = Flags.isInterface(modifiers);
 				result.add(new JavaContentProposal(new String(packageName), new String(simpleTypeName), isInterface));
 			}
@@ -57,7 +55,7 @@ public class SvcInterfaceProposalProvider implements IContentProposalProvider {
 		IRunnableWithProgress runnable = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 				try {
-					new SearchEngine().searchAllTypeNames(null, 0, null, 0, IJavaSearchConstants.CLASS_AND_INTERFACE, scope, requestor, IJavaSearchConstants.CANCEL_IF_NOT_READY_TO_SEARCH, monitor);
+					new SearchEngine().searchAllTypeNames(null, 0, prefix.toCharArray(), SearchPattern.R_PREFIX_MATCH, IJavaSearchConstants.CLASS_AND_INTERFACE, scope, typeNameRequestor, IJavaSearchConstants.CANCEL_IF_NOT_READY_TO_SEARCH, monitor);
 				} catch (JavaModelException e) {
 					throw new InvocationTargetException(e);
 				}

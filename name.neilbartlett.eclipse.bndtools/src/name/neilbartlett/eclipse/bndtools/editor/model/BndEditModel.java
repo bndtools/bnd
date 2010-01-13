@@ -62,12 +62,6 @@ public class BndEditModel {
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 	
 	public void loadFrom(IDocument document) throws IOException {
-		// Save the old properties, if any
-		Map<String, String> oldValues = new HashMap<String, String>();
-		for (String name : KNOWN_PROPERTIES) {
-			oldValues.put(name, properties.getProperty(name));
-		}
-		
 		// Clear and load
 		properties.clear();
 		InputStream stream = new ByteArrayInputStream(document.get().getBytes(ISO_8859_1));
@@ -75,9 +69,10 @@ public class BndEditModel {
 		objectProperties.clear();
 		changesToSave.clear();
 		
-		// Fire property changes on known property names
-		for(Entry<String, String> entry : oldValues.entrySet()) {
-			propChangeSupport.firePropertyChange(entry.getKey(), entry.getValue(), properties.get(entry.getKey()));
+		// Fire property changes on all known property names
+		for (String prop : KNOWN_PROPERTIES) {
+			// null values for old and new forced the change to be fired
+			propChangeSupport.firePropertyChange(prop, null, null);
 		}
 	}
 	

@@ -1,6 +1,5 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,16 +8,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.FormPartJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponentConfigurationPolicy;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -36,27 +45,37 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IDetailsPage;
 import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 
 public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPage {
 
+	private static final String AUTO_ACTIVATE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890._"; //$NON-NLS-1$
 	private static final String PROP_COMPONENT_PATH = "COMPONENT_PATH";
 	
 	private final ComponentListPart listPart;
 	
 	private ServiceComponent selected;
-	private ServiceComponent editClone;
 	
-	private Text txtPath;
+	private Section provideSection;
+	private Section referenceSection;
+	private Section lifecycleSection;
+	private Section configPolicySection;
+	
 	private Text txtName;
 	private Button btnEnabled;
 
@@ -67,6 +86,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	private Button btnSvcFactory;
 	private Text txtFactoryId;
 
+	private List<String> provides;
 	private Table tableProvide;
 	private TableViewer viewerProvide;
 	private Button btnAddProvide;
@@ -76,6 +96,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	private Button btnConfigPolicyRequire;
 	private Button btnConfigPolicyIgnore;
 
+	private List<ComponentSvcReference> references;
 	private Table tableReferences;
 	private TableViewer viewerReferences;
 	private Button btnAddReference;
@@ -102,7 +123,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	
 	// Override the default dirtiness behaviour to track individual properties, not just a single flag for everything.
 	private final Set<String> dirtySet = new HashSet<String>();
-
 	@Override
 	public boolean isDirty() {
 		return !dirtySet.isEmpty();
@@ -115,16 +135,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		dirtySet.add(property);
 		getManagedForm().dirtyStateChanged();
 	}
-	ServiceComponent getEditClone() {
-		ServiceComponent result;
-		if(editClone != null) {
-			result = editClone;
-		} else {
-			editClone = (selected != null) ? selected.clone() : null;
-			result = editClone;
-		}
-		return result;
-	}
 	public void createContents(Composite parent) {
 		FormToolkit toolkit = getManagedForm().getToolkit();
 		
@@ -133,19 +143,19 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		mainSection.setText("Component Details");
 		fillMainSection(toolkit, mainSection);
 
-		Section provideSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		provideSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		provideSection.setText("Provided Services");
 		fillProvideSection(toolkit, provideSection);
 		
-		Section referenceSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		referenceSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		referenceSection.setText("Service References");
 		fillReferenceSection(toolkit, referenceSection);
 		
-		Section lifecycleSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		lifecycleSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		lifecycleSection.setText("Lifecycle");
 		fillLifecycleSection(toolkit, lifecycleSection);
 		
-		Section configPolicySection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
+		configPolicySection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
 		configPolicySection.setText("Configuration Policy");
 		fillConfigPolicySection(toolkit, configPolicySection);
 		
@@ -176,37 +186,51 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	}
 	void fillMainSection(FormToolkit toolkit, Section section) {
 		FieldDecoration contentProposalDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
-		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
 		ControlDecoration decor;
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 		
-		toolkit.createLabel(composite, "Path:");
-		txtPath = toolkit.createText(composite, "");
-		decor = new ControlDecoration(txtPath, SWT.LEFT | SWT.TOP, composite);
+		Hyperlink lnkName = toolkit.createHyperlink(composite, "Name:", SWT.NONE);
+		txtName = toolkit.createText(composite, "");
+		decor = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, composite);
 		decor.setImage(contentProposalDecoration.getImage());
 		decor.setDescriptionText("Content assist available"); // TODO: keystrokes
 		decor.setShowHover(true);
 		decor.setShowOnlyOnFocus(true);
 		
-		toolkit.createLabel(composite, "Name:");
-		txtName = toolkit.createText(composite, "");
+		KeyStroke assistKeyStroke = null;
+		try {
+			assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
+		} catch (ParseException x) {
+			// Ignore
+		}
+		ComponentNameProposalProvider proposalProvider = new ComponentNameProposalProvider(new FormPartJavaSearchContext(this));
+		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, AUTO_ACTIVATE_CHARS.toCharArray());
+		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+		proposalAdapter.setAutoActivationDelay(1500);
+		proposalAdapter.setLabelProvider(proposalProvider.createLabelProvider());
+		
 		toolkit.createLabel(composite, ""); // Spacer
 		btnEnabled = toolkit.createButton(composite, "Enabled", SWT.CHECK);
 		
 		// Listeners
-		txtPath.addListener(SWT.Modify, new Listener() {
+		lnkName.addHyperlinkListener(new HyperlinkAdapter() {
+			@Override
+			public void linkActivated(HyperlinkEvent e) {
+				doOpenPattern();
+			}
+		});
+		txtName.addListener(SWT.Modify, new Listener() {
 			public void handleEvent(Event event) {
 				if(refreshers.get() == 0) {
-					selected.setPattern(txtPath.getText());
-					getEditClone().setPattern(txtPath.getText());
+					selected.setName(txtName.getText());
 					listPart.updateLabel(selected);
 					markDirty(PROP_COMPONENT_PATH);
+					updateVisibility();
 				}
 			}
 		});
-		txtName.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_NAME));
 		btnEnabled.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_ENABLED));
 		
 		// Layout
@@ -215,15 +239,40 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalIndent = 5;
-		txtPath.setLayoutData(gd);
-
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalIndent = 5;
 		txtName.setLayoutData(gd);
 
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalIndent = 5;
-		txtFactoryId.setLayoutData(gd);
+		txtName.setLayoutData(gd);
+	}
+	void doOpenPattern() {
+		if(selected.isPath()) {
+			IFormPage page = (IFormPage) getManagedForm().getContainer();
+			IResource resource = ResourceUtil.getResource(page.getEditorInput());
+			IProject project = resource.getProject();
+			IResource member = project.findMember(selected.getName());
+			if(member != null && member.getType() == IResource.FILE) {
+				try {
+					IDE.openEditor(page.getEditorSite().getPage(), (IFile) member);
+				} catch (PartInitException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} else if(!selected.getName().endsWith("*")) {
+			try {
+				IType type = getJavaProject().findType(selected.getName());
+				if(type != null) {
+					JavaUI.openInEditor(type, true, true);
+				}
+			} catch (JavaModelException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (PartInitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	void fillProvideSection(FormToolkit toolkit, Section section) {
 		// Create controls
@@ -235,8 +284,9 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		viewerProvide.setContentProvider(new ArrayContentProvider());
 		viewerProvide.setLabelProvider(new ProvideLabelProvider());
 		
-		btnAddProvide = toolkit.createButton(composite, "Add", SWT.PUSH);
-		btnRemoveProvide = toolkit.createButton(composite, "Remove", SWT.PUSH);
+		Composite pnlButtons = toolkit.createComposite(composite);
+		btnAddProvide = toolkit.createButton(pnlButtons, "Add", SWT.PUSH);
+		btnRemoveProvide = toolkit.createButton(pnlButtons, "Remove", SWT.PUSH);
 		btnRemoveProvide.setEnabled(false);
 		
 		// Listeners
@@ -260,12 +310,27 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		
 		// Layout
 		GridData gd;
+		GridLayout layout;
 		
-		composite.setLayout(new GridLayout(2, false));
+		layout = new GridLayout(1, false);
+		layout.verticalSpacing = 5;
+		layout.horizontalSpacing = 0;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		composite.setLayout(layout);
+		
 		gd = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 3);
 		gd.widthHint = 200;
-		gd.heightHint = 75;
+		gd.heightHint = 60;
 		tableProvide.setLayoutData(gd);
+		pnlButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		
+		layout = new GridLayout(2, true);
+		layout.verticalSpacing = 0;
+		layout.horizontalSpacing = 5;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		pnlButtons.setLayout(layout);
 		btnAddProvide.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnRemoveProvide.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
@@ -276,28 +341,20 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		SvcInterfaceSelectionDialog dialog = new SvcInterfaceSelectionDialog(formPage.getEditorSite().getShell(), "Add Service Interface", "Interface:", getJavaProject(), window);
 		if(dialog.open() == Window.OK) {
 			String svcName = dialog.getValue();
-			
-			ServiceComponent sc = getEditClone();
-			List<String> list = sc.getListAttrib(ServiceComponent.COMPONENT_PROVIDE);
-			if(!list.contains(svcName)) {
-				list.add(svcName);
+			if(!provides.contains(svcName)) {
+				provides.add(svcName);
 				viewerProvide.add(svcName);
-				sc.setListAttrib(ServiceComponent.COMPONENT_PROVIDE, list);
 				markDirty(ServiceComponent.COMPONENT_PROVIDE);
 			}
 		}
 	}
 	void doRemoveProvide() {
-		ServiceComponent sc = getEditClone();
-		List<String> list = sc.getListAttrib(ServiceComponent.COMPONENT_PROVIDE);
-		
 		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerProvide.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
-			list.remove(item);
+			provides.remove(item);
 			viewerProvide.remove(item);
 		}
-		sc.setListAttrib(ServiceComponent.COMPONENT_PROVIDE, list);
 		markDirty(ServiceComponent.COMPONENT_PROVIDE);
 	}
 	void fillReferenceSection(FormToolkit toolkit, Section section) {
@@ -305,11 +362,34 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		section.setClient(composite);
 		
 		tableReferences = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
-		viewerReferences = new TableViewer(tableReferences);
+		tableReferences.setHeaderVisible(true);
+		tableReferences.setLinesVisible(true);
 		
-		btnAddReference = toolkit.createButton(composite, "Add", SWT.PUSH);
-		btnEditReference = toolkit.createButton(composite, "Edit", SWT.PUSH);
-		btnRemoveReference = toolkit.createButton(composite, "Remove", SWT.PUSH);
+		TableColumn col;
+		col = new TableColumn(tableReferences, SWT.NONE);
+		col.setWidth(150);
+		col.setText("Name");
+		
+		col = new TableColumn(tableReferences, SWT.NONE);
+		col.setWidth(150);
+		col.setText("Interface");
+		
+		col = new TableColumn(tableReferences, SWT.NONE);
+		col.setWidth(35);
+		col.setText("Card.");
+		
+		col = new TableColumn(tableReferences, SWT.NONE);
+		col.setWidth(100);
+		col.setText("Target");
+		
+		viewerReferences = new TableViewer(tableReferences);
+		viewerReferences.setContentProvider(new ArrayContentProvider());
+		viewerReferences.setLabelProvider(new ComponentSvcRefTableLabelProvider());
+		
+		Composite pnlButtons = toolkit.createComposite(composite, SWT.NONE);
+		btnAddReference = toolkit.createButton(pnlButtons, "Add", SWT.PUSH);
+		btnEditReference = toolkit.createButton(pnlButtons, "Edit", SWT.PUSH);
+		btnRemoveReference = toolkit.createButton(pnlButtons, "Remove", SWT.PUSH);
 		btnRemoveReference.setEnabled(false);
 		
 		// Listeners
@@ -320,18 +400,48 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 				btnRemoveReference.setEnabled(!selection.isEmpty());
 			}
 		});
+		btnRemoveReference.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				doRemoveReference();
+			}
+		});
 		
 		// Layout
 		GridData gd;
-		composite.setLayout(new GridLayout(2, false));
+		GridLayout layout;
+		
+		layout = new GridLayout(1, false);
+		layout.verticalSpacing = 5;
+		layout.horizontalSpacing = 0;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		composite.setLayout(layout);
 		
 		gd = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 3);
-		gd.widthHint = 200;
-		gd.heightHint = 75;
+		gd.widthHint = 250;
+		gd.heightHint = 70;
 		tableReferences.setLayoutData(gd);
+		pnlButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+
+		layout = new GridLayout(3, true);
+		layout.verticalSpacing = 0;
+		layout.horizontalSpacing = 5;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		pnlButtons.setLayout(layout);
 		btnAddReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnEditReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnRemoveReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+	}
+	void doRemoveReference() {
+		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerReferences.getSelection()).iterator();
+		while(iter.hasNext()) {
+			ComponentSvcReference svcRef = (ComponentSvcReference) iter.next();
+			references.remove(svcRef);
+			viewerReferences.remove(svcRef);
+			markDirty(svcRef.getName());
+		}
 	}
 	void fillLifecycleSection(FormToolkit toolkit, Section section) {
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
@@ -371,14 +481,27 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		decor.setDescriptionText("Makes the component a 'factory component', published\nunder the ComponentFactory service, with the specified ID.");
 		
 		// Listeners
+		txtActivate.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_ACTIVATE));
+		txtDeactivate.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_DEACTIVATE));
+		txtModified.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_MODIFIED));
 		txtFactoryId.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_FACTORY));
-
 		
 		// Layout
 		composite.setLayout(new GridLayout(2, false));
-		txtActivate.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		txtDeactivate.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		txtModified.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		GridData gd;
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalIndent = 5;
+		txtActivate.setLayoutData(gd);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalIndent = 5;
+		txtDeactivate.setLayoutData(gd);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalIndent = 5;
+		txtModified.setLayoutData(gd);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalIndent = 5;
+		txtFactoryId.setLayoutData(gd);
 	}
 	void fillConfigPolicySection(FormToolkit toolkit, Section section) {
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
@@ -402,35 +525,56 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		decor.setDescriptionText("The component will not receive configuration\ndata from Configuration Admin.");
 		decor.setShowHover(true);
 		
+		// Listeners
+		MarkDirtyListener configPolicyDirtyListener = new MarkDirtyListener(ServiceComponent.COMPONENT_CONFIGURATION_POLICY);
+		btnConfigPolicyOptional.addListener(SWT.Selection, configPolicyDirtyListener);
+		btnConfigPolicyRequire.addListener(SWT.Selection, configPolicyDirtyListener);
+		btnConfigPolicyIgnore.addListener(SWT.Selection, configPolicyDirtyListener);
+		
 		// Layout
 		composite.setLayout(new GridLayout(1, false));
 	}
 	public void selectionChanged(IFormPart part, ISelection selection) {
-		System.out.println("ComponentDetailsPage#selectionChanged");
-		
-		// Clone the service component before we edit it.
 		Object element = ((IStructuredSelection) selection).getFirstElement();
 		this.selected = ((ServiceComponent) element);
-		this.editClone = null;
 		
 		loadSelection();
+		setFocus();
 	}
 	@Override
 	public void commit(boolean onSave) {
-		setStringAttribIfDirty(ServiceComponent.COMPONENT_NAME, txtName.getText());
+		// Main section
 		setBooleanAttribIfDirty(ServiceComponent.COMPONENT_ENABLED, btnEnabled.getSelection());
+		
+		// Lifecycle section
+		setStringAttribIfDirty(ServiceComponent.COMPONENT_ACTIVATE, txtActivate.getText());
+		setStringAttribIfDirty(ServiceComponent.COMPONENT_DEACTIVATE, txtDeactivate.getText());
+		setStringAttribIfDirty(ServiceComponent.COMPONENT_MODIFIED, txtModified.getText());
+		setBooleanAttribIfDirty(ServiceComponent.COMPONENT_IMMEDIATE, btnImmediate.getSelection());
+		setBooleanAttribIfDirty(ServiceComponent.COMPONENT_SERVICEFACTORY, btnSvcFactory.getSelection());
+		setStringAttribIfDirty(ServiceComponent.COMPONENT_FACTORY, txtFactoryId.getText());
+
+		// Provides section
+		if(dirtySet.contains(ServiceComponent.COMPONENT_PROVIDE)) {
+			selected.setListAttrib(ServiceComponent.COMPONENT_PROVIDE, provides);
+		}
 		setStringAttribIfDirty(ServiceComponent.COMPONENT_FACTORY, txtFactoryId.getText());
 		
-		BndEditModel model = (BndEditModel) getManagedForm().getInput();
-		List<ServiceComponent> list = new ArrayList<ServiceComponent>(model.getServiceComponents());
-		int index = list.indexOf(selected);
-		if(index > -1 && editClone != null) {
-			list.set(index, editClone);
-			model.setServiceComponents(list);
+		// Config Policy Section
+		String configPolicy;
+		if(btnConfigPolicyOptional.getSelection()) {
+			configPolicy = ServiceComponentConfigurationPolicy.optional.toString();
+		} else if(btnConfigPolicyRequire.getSelection()) {
+			configPolicy = ServiceComponentConfigurationPolicy.require.toString();
+		} else if(btnConfigPolicyIgnore.getSelection()) {
+			configPolicy = ServiceComponentConfigurationPolicy.ignore.toString();
+		} else {
+			configPolicy = null;
 		}
+		selected.getAttribs().put(ServiceComponent.COMPONENT_CONFIGURATION_POLICY, configPolicy);
+		
 		dirtySet.clear();
-		editClone = null;
-		super.commit(onSave);
+		listPart.commit(onSave);
 	}
 	@Override
 	public void refresh() {
@@ -446,15 +590,22 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			setBooleanAttrib(attrib, value);
 		}
 	}
+	private void updateVisibility() {
+		boolean enable = !selected.isPath();
+		btnEnabled.setVisible(enable);
+		provideSection.setVisible(enable);
+		referenceSection.setVisible(enable);
+		configPolicySection.setVisible(enable);
+		lifecycleSection.setVisible(enable);
+	}
 	private void loadSelection() {
 		try {
 			refreshers.incrementAndGet();
 			
 			// Main Section
-			txtPath.setText(selected != null ? selected.getPattern() : "");
-			loadTextField(txtName, ServiceComponent.COMPONENT_NAME, "");
+			txtName.setText(selected != null ? selected.getName() : "");
 			loadCheckBox(btnEnabled, ServiceComponent.COMPONENT_ENABLED, true);
-			loadTextField(txtFactoryId, ServiceComponent.COMPONENT_FACTORY, "");
+			updateVisibility();
 			
 			// Lifecycle Section
 			loadTextField(txtActivate, ServiceComponent.COMPONENT_ACTIVATE, "");
@@ -462,9 +613,15 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			loadTextField(txtModified, ServiceComponent.COMPONENT_MODIFIED, "");
 			loadCheckBox(btnImmediate, ServiceComponent.COMPONENT_IMMEDIATE, false);
 			loadCheckBox(btnSvcFactory, ServiceComponent.COMPONENT_SERVICEFACTORY, false);
+			loadTextField(txtFactoryId, ServiceComponent.COMPONENT_FACTORY, "");
 			
 			// Provides Section
-			viewerProvide.setInput(selected == null ? Collections.emptyList() : selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE));
+			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : Collections.<String>emptyList();
+			viewerProvide.setInput(provides);
+			
+			// References section
+			references = selected.getSvcRefs();
+			viewerReferences.setInput(references);
 			
 			// Config Policy Section
 			ServiceComponentConfigurationPolicy configPolicy;
@@ -505,7 +662,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		return value != null ? value : defaultValue;
 	}
 	private void setStringAttrib(String attrib, String value) {
-		getEditClone().getAttribs().put(attrib, value);
+		selected.getAttribs().put(attrib, value);
 	}
 	private boolean getBooleanAttrib(String attrib, boolean defaultValue) {
 		String string = getStringAttrib(attrib, Boolean.toString(defaultValue));
@@ -532,5 +689,9 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			return null;
 		}
 	}
-
+	@Override
+	public void setFocus() {
+		txtName.setFocus();
+		txtName.setSelection(txtName.getText().length());
+	}
 }
