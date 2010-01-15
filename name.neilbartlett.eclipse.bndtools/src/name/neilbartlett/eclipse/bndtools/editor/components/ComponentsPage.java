@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import name.neilbartlett.eclipse.bndtools.editor.BndEditor;
+import name.neilbartlett.eclipse.bndtools.editor.MessageHyperlinkAdapter;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
 import org.eclipse.ui.forms.IManagedForm;
@@ -24,6 +25,7 @@ public class ComponentsPage extends FormPage {
 		ScrolledForm form = managedForm.getForm();
 		FormToolkit toolkit = managedForm.getToolkit();
 		toolkit.decorateFormHeading(form.getForm());
+		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter());
 		
 		form.setText("Components");
 		block.createContent(managedForm);

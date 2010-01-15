@@ -1,14 +1,12 @@
 package name.neilbartlett.eclipse.bndtools.editor.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +18,7 @@ import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.plugin.Activator;
 
-public class ServiceComponent implements Cloneable {
+public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	// v1.0.0 attributes
     // public final static String       COMPONENT_NAME                 = "name:";
@@ -45,41 +43,11 @@ public class ServiceComponent implements Cloneable {
     
     private final static Pattern REFERENCE_PATTERN = Pattern.compile("([^(]+)(\\(.+\\))?");
 
-	
-	private String name;
-	private final Map<String,String> attribs;
-
 	public ServiceComponent(String name, Map<String,String> attribs) {
-		assert name != null;
-		assert attribs != null;
-		
-		this.name = name;
-		this.attribs = attribs;
-	}
-	public void  setName(String name) {
-		this.name = name;
-	}
-	public String getName() {
-		return name;
+		super(name, attribs);
 	}
 	public boolean isPath() {
 		return name.indexOf('/') >= 0 || name.endsWith(".xml");
-	}
-	public Map<String, String> getAttribs() {
-		return attribs;
-	}
-	public List<String> getListAttrib(String attrib) {
-		String string = attribs.get(attrib);
-		if(string == null)
-			return null;
-		
-		List<String> result = new ArrayList<String>();	
-		StringTokenizer tokenizer = new StringTokenizer(string, ",");
-		while(tokenizer.hasMoreTokens()) {
-			result.add(tokenizer.nextToken().trim());
-		}
-		
-		return result;
 	}
 	private Set<String> getStringSet(String attrib) {
 		List<String> list = getListAttrib(attrib);
@@ -244,43 +212,12 @@ public class ServiceComponent implements Cloneable {
 	private void logError(String message, Throwable t) {
 		Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
 	}
-	public void setListAttrib(String attrib, Collection<? extends String> value) {
-		if(value == null || value.isEmpty())
-			attribs.remove(attrib);
-		else {
-			StringBuilder buffer = new StringBuilder();
-			boolean first = true;
-			for (String string : value) {
-				if(!first)
-					buffer.append(',');
-				buffer.append(string);
-				first = false;
-			}
-			attribs.put(attrib, buffer.toString());
-		}
-	}
-	
 	@Override
 	public ServiceComponent clone() {
 		return new ServiceComponent(this.name, new HashMap<String, String>(this.attribs));
 	}
-	
-	private static final String INTERNAL_LIST_SEPARATOR = ";\\\n\t\t";
-	
-	public void formatTo(StringBuilder buffer) {
-		buffer.append(name);
-		for(Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext(); ) {
-			Entry<String, String> entry = iter.next();
-			String name = entry.getKey();
-			String value = entry.getValue();
-			
-			if(value != null && value.length() > 0) {
-				buffer.append(INTERNAL_LIST_SEPARATOR);
-			
-				// Quote commas in the value
-				value = value.replaceAll(",", "','");
-				buffer.append(name).append('=').append(value);
-			}
-		}
+	@Override
+	protected boolean newlinesBetweenAttributes() {
+		return true;
 	}
 }

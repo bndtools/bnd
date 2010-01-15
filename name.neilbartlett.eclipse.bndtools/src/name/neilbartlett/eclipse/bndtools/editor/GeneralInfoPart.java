@@ -15,7 +15,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +47,8 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -124,7 +125,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	}
 
 	private void createSection(Section section, FormToolkit toolkit) {
-		section.setText("General Information");
+		section.setText("Basic Information");
 		
 		KeyStroke assistKeyStroke = null;
 		try {
@@ -245,11 +246,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				public void proposalAccepted(IContentProposal proposal) {
 					if(proposal instanceof JavaContentProposal) {
 						String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
-						if(!isIncludedPackage(selectedPackageName)) {
-							Collection<String> privatePackages = new ArrayList<String>(model.getPrivatePackages());
-							privatePackages.add(selectedPackageName);
+						if(!model.isIncludedPackage(selectedPackageName)) {
 							commit(false);
-							model.setPrivatePackages(privatePackages);
+							model.addPrivatePackage(selectedPackageName);
 						}
 					}
 				}
@@ -286,28 +285,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		btnSources.setLayoutData(gd);
 	}
 	
-	boolean isIncludedPackage(String packageName) {
-		final Collection<String> privatePackages = model.getPrivatePackages();
-		if(privatePackages != null) {
-			for (String pkg : privatePackages) {
-				if(packageName.equals(pkg)) {
-					return true;
-				}
-			}
-		}
-		final Collection<ExportedPackage> exportedPackages = model.getExportedPackages();
-		if(exportedPackages != null) {
-			for (ExportedPackage pkg : exportedPackages) {
-				if(packageName.equals(pkg.getPackageName())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	void checkActivatorIncluded() {
 		String warningMessage = null;
+		IAction[] fixes = null;
 		
 		String activatorClassName = txtActivator.getText();
 		if(activatorClassName != null && activatorClassName.length() > 0) {
@@ -315,16 +295,30 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			if(dotIndex == -1) {
 				warningMessage = "Cannot use an activator in the default package.";
 			} else {
-				String packageName = activatorClassName.substring(0, dotIndex);
-				if(!isIncludedPackage(packageName)) {
+				final String packageName = activatorClassName.substring(0, dotIndex);
+				if(!model.isIncludedPackage(packageName)) {
 					warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
+					fixes = new Action[] {
+						new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
+							public void run() {
+								model.addPrivatePackage(packageName);
+								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+							};
+						},
+						new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
+							public void run() {
+								model.addExportedPackage(new ExportedPackage(packageName, null));
+								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+							};
+						}
+					};
 				}
 			}
 		}
 		
 		IMessageManager msgs = getManagedForm().getMessageManager();
 		if(warningMessage != null)
-			msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, null, IMessageProvider.WARNING, txtActivator);
+			msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, fixes, IMessageProvider.WARNING, txtActivator);
 		else
 			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
 	}
@@ -431,7 +425,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	
 	private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
 		@Override
-		protected List<IContentProposal> doGenerateProposals(String prefix) {
+		protected List<IContentProposal> doGenerateProposals(String contents, int position) {
+			final String prefix = contents.substring(0, position);
 			IJavaProject javaProject = getJavaProject();
 			try {
 				IType activatorType = javaProject.findType(BundleActivator.class.getName());
@@ -442,7 +437,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 					@Override
 					public void acceptSearchMatch(SearchMatch match) throws CoreException {
 						IType type = (IType) match.getElement();
-						result.add(new JavaTypeContentProposal(type));
+						if(type.getElementName().toLowerCase().contains(prefix.toLowerCase()))
+							result.add(new JavaTypeContentProposal(type));
 					}
 				};
 				final IRunnableWithProgress runnable = new IRunnableWithProgress() {
@@ -473,7 +469,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		}
 
 		@Override
-		protected boolean match(String prefix, IContentProposal proposal) {
+		protected boolean match(String contents, int position, IContentProposal proposal) {
+			String prefix = contents.substring(0, position);
 			return ((JavaTypeContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
 		}
 	}

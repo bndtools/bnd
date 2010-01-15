@@ -28,7 +28,8 @@ public class MethodProposalProvider extends CachingContentProposalProvider {
 		this.searchContext = searchContext;
 	}
 
-	public List<IContentProposal> doGenerateProposals(final String prefix) {
+	public List<IContentProposal> doGenerateProposals(String contents, int position) {
+		final String prefix = contents.substring(0, position);
 		final List<IContentProposal> result = new ArrayList<IContentProposal>();
 		
 		try {
@@ -81,8 +82,9 @@ public class MethodProposalProvider extends CachingContentProposalProvider {
 	}
 	
 	@Override
-	protected boolean match(String prefix, IContentProposal proposal) {
+	protected boolean match(String contents, int position, IContentProposal proposal) {
+		final String prefix = contents.substring(0, position).toLowerCase();
 		IMethod method = ((MethodContentProposal) proposal).getMethod();
-		return method.getElementName().toLowerCase().startsWith(prefix.toLowerCase());
+		return method.getElementName().toLowerCase().startsWith(prefix);
 	}
 }

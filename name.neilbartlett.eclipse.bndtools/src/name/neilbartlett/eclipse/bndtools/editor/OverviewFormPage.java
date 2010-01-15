@@ -13,6 +13,8 @@ package name.neilbartlett.eclipse.bndtools.editor;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -43,32 +45,59 @@ public class OverviewFormPage extends FormPage {
 		ScrolledForm form = managedForm.getForm();
 		form.setText("General");
 		toolkit.decorateFormHeading(form.getForm());
+		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter());
 
 		// Create Controls
 		Composite body = form.getBody();
-		GeneralInfoPart bundleDetailsSection = new GeneralInfoPart(body, toolkit, Section.TITLE_BAR);
-		managedForm.addPart(bundleDetailsSection);
-		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+		Composite pnlBasicColumn = toolkit.createComposite(body);
+		
+		GeneralInfoPart basicSection = new GeneralInfoPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
+		managedForm.addPart(basicSection);
+		
+		BuildFormPart buildPart = new BuildFormPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
+		managedForm.addPart(buildPart);
+		
+		Composite pnlPackagesColumn = toolkit.createComposite(body);
+		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(pnlPackagesColumn, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(exportedPackagesPart);
-		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+		
+		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(pnlPackagesColumn, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(privatePackagesPart);
+		
 //		IncludedResourcesPart includedResourcesPart = new IncludedResourcesPart(body, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
 //		includedResourcesPart.getSection().setExpanded(false);
 //		managedForm.addPart(includedResourcesPart);
 
 		// Layout
-		body.setLayoutData(new TableWrapData(TableWrapData.FILL));
-
-		TableWrapLayout layout = new TableWrapLayout();
-		layout.bottomMargin = 10;
-		layout.topMargin = 5;
-		layout.leftMargin = 10;
-		layout.rightMargin = 10;
-		layout.numColumns = 2;
-		layout.horizontalSpacing = 10;
+//		TableWrapLayout layout = new TableWrapLayout();
+//		layout.bottomMargin = 10;
+//		layout.topMargin = 5;
+//		layout.leftMargin = 10;
+//		layout.rightMargin = 10;
+//		layout.numColumns = 2;
+//		layout.horizontalSpacing = 10;
+		GridLayout layout;
+		GridData gd;
+		
+		layout = new GridLayout(2, false);
 		body.setLayout(layout);
 		
-		bundleDetailsSection.getSection().setLayoutData(new TableWrapData(SWT.FILL, SWT.TOP, 3, 1));
+		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		pnlBasicColumn.setLayoutData(gd);
+		
+		layout = new GridLayout(1, false);
+		pnlBasicColumn.setLayout(layout);
+
+		basicSection.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		buildPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		pnlPackagesColumn.setLayoutData(gd);
+		
+		layout = new GridLayout(1, false);
+		pnlPackagesColumn.setLayout(layout);
+		privatePackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		exportedPackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 	
 	@Override

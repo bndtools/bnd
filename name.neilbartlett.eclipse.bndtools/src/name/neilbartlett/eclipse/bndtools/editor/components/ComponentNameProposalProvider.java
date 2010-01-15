@@ -58,8 +58,8 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 	}
 	
 	@Override
-	protected boolean match(String prefix, IContentProposal proposal) {
-		String lowerCasePrefix = prefix.toLowerCase();
+	protected boolean match(String contents, int position, IContentProposal proposal) {
+		String lowerCasePrefix = contents.substring(0, position).toLowerCase();
 		if(proposal instanceof ResourceProposal) {
 			return ((ResourceProposal) proposal).getName().toLowerCase().startsWith(lowerCasePrefix);
 		}
@@ -70,7 +70,8 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 	}
 	
 	@Override
-	protected List<IContentProposal> doGenerateProposals(final String prefix) {
+	protected List<IContentProposal> doGenerateProposals(String contents, int position) {
+		final String prefix = contents.substring(0, position);
 		IJavaProject javaProject = searchContext.getJavaProject();
 		final List<IContentProposal> result = new ArrayList<IContentProposal>(100);
 		

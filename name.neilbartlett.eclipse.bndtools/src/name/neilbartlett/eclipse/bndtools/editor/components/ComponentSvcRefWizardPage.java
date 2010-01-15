@@ -103,7 +103,6 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		interfaceProposalAdapter.setAutoActivationDelay(1500);
 		interfaceProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		interfaceProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
-		interfaceProposalAdapter.setPropagateKeys(true);
 		
 		new Label(composite, SWT.NONE).setText("Bind:");
 		txtBind = new Text(composite, SWT.BORDER);
@@ -118,7 +117,6 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		bindProposalAdapter.addContentProposalListener(bindProposalProvider);
 		bindProposalAdapter.setAutoActivationDelay(1500);
 		bindProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
-		bindProposalAdapter.setPropagateKeys(true);
 		bindProposalAdapter.setLabelProvider(new MethodProposalLabelProvider());
 		
 		new Label(composite, SWT.NONE).setText("Unbind:");
@@ -134,6 +132,7 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		unbindProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		unbindProposalAdapter.setLabelProvider(new MethodProposalLabelProvider());
 		
+		new Label(composite, SWT.NONE); // Spacer
 		Composite pnlButtons = new Composite(composite, SWT.NONE);
 		btnOptional = new Button(pnlButtons, SWT.CHECK);
 		btnOptional.setText("Optional");
@@ -141,7 +140,6 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		btnMultiple.setText("Multiple");
 		btnDynamic = new Button(pnlButtons, SWT.CHECK);
 		btnDynamic.setText("Dynamic");
-		new Label(composite, SWT.NONE); // Spacer
 		
 		new Label(composite, SWT.NONE).setText("Target Filter:");
 		txtTargetFilter = new Text(composite, SWT.BORDER);
@@ -215,12 +213,12 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		txtUnbind.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		txtTargetFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
-		pnlButtons.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 4, 1));
-		layout = new GridLayout(3, true);
-		layout.horizontalSpacing = 0;
-		layout.verticalSpacing = 0;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
+		pnlButtons.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false, 3, 1));
+		layout = new GridLayout(1, true);
+//		layout.horizontalSpacing = 0;
+//		layout.verticalSpacing = 0;
+//		layout.marginHeight = 0;
+//		layout.marginWidth = 0;
 		pnlButtons.setLayout(layout);
 		
 		setControl(composite);

@@ -49,12 +49,14 @@ public class SvcInterfaceProposalProvider extends CachingContentProposalProvider
 	}
 	
 	@Override
-	protected boolean match(String prefix, IContentProposal proposal) {
-		return ((JavaContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
+	protected boolean match(String contents, int position, IContentProposal proposal) {
+		final String prefix = contents.substring(0, position).toLowerCase();
+		return ((JavaContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix);
 	}
 	
 	@Override
-	protected List<IContentProposal> doGenerateProposals(final String prefix) {
+	protected List<IContentProposal> doGenerateProposals(String contents, int position) {
+		final String prefix = contents.substring(0, position);
 		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { searchContext.getJavaProject() });
 		final ArrayList<IContentProposal> result = new ArrayList<IContentProposal>(100);
 		final TypeNameRequestor typeNameRequestor = new TypeNameRequestor() {

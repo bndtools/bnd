@@ -1,11 +1,16 @@
 package name.neilbartlett.eclipse.bndtools.editor.imports;
 
 import name.neilbartlett.eclipse.bndtools.editor.BndEditor;
+import name.neilbartlett.eclipse.bndtools.editor.MessageHyperlinkAdapter;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
@@ -20,12 +25,17 @@ public class ImportsPage extends FormPage {
 
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
-		managedForm.setInput(model);
-		ScrolledForm form = managedForm.getForm();
-		FormToolkit toolkit = managedForm.getToolkit();
-		toolkit.decorateFormHeading(form.getForm());
 		
-		form.setText("Import Patterns");
+		FormToolkit toolkit = managedForm.getToolkit();
+		managedForm.setInput(model);
+		
+		ScrolledForm scrolledForm = managedForm.getForm();
+		scrolledForm.setText("Import Patterns");
+		
+		Form form = scrolledForm.getForm();
+		toolkit.decorateFormHeading(form);
+		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter());
+		
 		block.createContent(managedForm);
 	}
 	

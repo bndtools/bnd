@@ -57,7 +57,7 @@ public class BndEditor extends FormEditor {
 	@Override
 	protected void addPages() {
 		try {
-			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Details");
+			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Overview");
 			addPage(detailsPage);
 
 			ComponentsPage componentsPage = new ComponentsPage(this, "componentsPage", "Components");

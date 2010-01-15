@@ -1,5 +1,6 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,20 +12,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.FormPartJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponentConfigurationPolicy;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
@@ -52,17 +53,16 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IDetailsPage;
 import org.eclipse.ui.forms.IFormPart;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 
 public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPage {
@@ -222,7 +222,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		lnkName.addHyperlinkListener(new HyperlinkAdapter() {
 			@Override
 			public void linkActivated(HyperlinkEvent e) {
-				doOpenPattern();
+				listPart.doOpenComponent(selected);
 			}
 		});
 		txtName.addListener(SWT.Modify, new Listener() {
@@ -248,35 +248,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalIndent = 5;
 		txtName.setLayoutData(gd);
-	}
-	void doOpenPattern() {
-		if(selected.isPath()) {
-			IFormPage page = (IFormPage) getManagedForm().getContainer();
-			IResource resource = ResourceUtil.getResource(page.getEditorInput());
-			IProject project = resource.getProject();
-			IResource member = project.findMember(selected.getName());
-			if(member != null && member.getType() == IResource.FILE) {
-				try {
-					IDE.openEditor(page.getEditorSite().getPage(), (IFile) member);
-				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		} else if(!selected.getName().endsWith("*")) {
-			try {
-				IType type = getJavaProject().findType(selected.getName());
-				if(type != null) {
-					JavaUI.openInEditor(type, true, true);
-				}
-			} catch (JavaModelException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (PartInitException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 	}
 	void fillProvideSection(FormToolkit toolkit, Section section) {
 		// Create controls

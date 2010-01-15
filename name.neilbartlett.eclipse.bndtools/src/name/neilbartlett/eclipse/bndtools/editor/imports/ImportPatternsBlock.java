@@ -16,7 +16,6 @@ import org.eclipse.ui.forms.widgets.Section;
 public class ImportPatternsBlock extends MasterDetailsBlock {
 
 	private ImportPatternsPart importPatternsPart;
-	private ImportPatternDetailsPage patternDetailsPage;
 
 	@Override
 	protected void createMasterPart(IManagedForm managedForm, Composite parent) {
@@ -56,7 +55,6 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 			}
 		});
 		
-		patternDetailsPage = new ImportPatternDetailsPage();
-		detailsPart.registerPage(ImportPattern.class, patternDetailsPage);
+		detailsPart.registerPage(ImportPattern.class, new ImportPatternDetailsPage(importPatternsPart));
 	}
 }

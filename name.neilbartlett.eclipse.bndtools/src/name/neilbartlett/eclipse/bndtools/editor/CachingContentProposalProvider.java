@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -11,31 +12,31 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 public abstract class CachingContentProposalProvider implements IContentProposalProvider, IContentProposalListener2 {
 	
 	protected String initialContent = null;
-	protected List<IContentProposal> initialProposals = null;
+	protected Collection<? extends IContentProposal> initialProposals = null;
 
 	public final IContentProposal[] getProposals(String contents, int position) {
-		String prefix = contents.substring(0, position);
-		List<IContentProposal> currentProposals;
+		Collection<? extends IContentProposal> currentProposals;
 		
-		if(initialProposals == null || initialContent == null || prefix.length() < initialContent.length()) {
-			currentProposals = doGenerateProposals(prefix);
-			initialContent = prefix;
+		if(initialProposals == null || initialContent == null || contents.length() < initialContent.length()) {
+			currentProposals = doGenerateProposals(contents, position);
+			initialContent = contents;
 			initialProposals = currentProposals;
 		} else {
-			currentProposals = new ArrayList<IContentProposal>(initialProposals.size());
+			List<IContentProposal> temp = new ArrayList<IContentProposal>(initialProposals.size());
 			for (IContentProposal proposal : initialProposals) {
-				if(match(prefix, proposal)) {
-					currentProposals.add(proposal);
+				if(match(contents, position, proposal)) {
+					temp.add(proposal);
 				}
 			}
+			currentProposals = temp;
 		}
 		
 		return currentProposals.toArray(new IContentProposal[currentProposals.size()]);
 	}
 
-	protected abstract List<IContentProposal> doGenerateProposals(String prefix);
+	protected abstract Collection<? extends IContentProposal> doGenerateProposals(String contents, int position);
 	
-	protected abstract boolean match(String prefix, IContentProposal proposal);
+	protected abstract boolean match(String contents, int position, IContentProposal proposal);
 	
 	public void reset() {
 		initialContent = null;
