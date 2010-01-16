@@ -43,7 +43,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
@@ -123,7 +122,12 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	
 	private void doAddPackages() {
 		// Prepare the exclusion list based on existing private packages
-		final Collection<String> packages = new ArrayList<String>(model.getPrivatePackages());
+		Collection<String> modelPackages = model.getPrivatePackages();
+		final Collection<String> packages;
+		if(modelPackages == null)
+			packages = new ArrayList<String>();
+		else
+			packages = new ArrayList<String>(modelPackages);
 		final Set<String> packageNameSet = new HashSet<String>(packages);
 		
 		// Create a filter from the exclusion list and packages matching "java.*", which must not be included in a bundle
@@ -171,20 +175,23 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	private void doRemovePackages() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
-			Collection<String> packages = new ArrayList<String>(model.getPrivatePackages());
-			
-			@SuppressWarnings("unchecked")
-			Iterator elements = selection.iterator();
-			boolean changed = false;
-			while(elements.hasNext()) {
-				Object pkg = elements.next();
-				if(packages.remove(pkg))
-					changed = true;
-			}
-			
-			if(changed) {
-				model.setPrivatePackages(packages);
-				markDirty();
+			Collection<String> modelPackages = model.getPrivatePackages();
+			if(modelPackages != null) {
+				Collection<String> packages = new ArrayList<String>(modelPackages);
+				
+				@SuppressWarnings("unchecked")
+				Iterator elements = selection.iterator();
+				boolean changed = false;
+				while(elements.hasNext()) {
+					Object pkg = elements.next();
+					if(packages.remove(pkg))
+						changed = true;
+				}
+				
+				if(changed) {
+					model.setPrivatePackages(packages);
+					markDirty();
+				}
 			}
 		}
 	}

@@ -16,15 +16,20 @@ import name.neilbartlett.eclipse.bndtools.editor.components.ComponentsPage;
 import name.neilbartlett.eclipse.bndtools.editor.imports.ImportsPage;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-public class BndEditor extends FormEditor {
+public class BndEditor extends FormEditor implements IResourceChangeListener {
 	
 	private BndEditModel model = null;
 	private BndSourceEditorPage sourcePage = new BndSourceEditorPage("bndSourcePage", this);;
@@ -88,9 +93,38 @@ public class BndEditor extends FormEditor {
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}
+		
+		
+		IResource resource = ResourceUtil.getResource(input);
+		if(resource != null) {
+			resource.getWorkspace().addResourceChangeListener(this);
+		}
+	}
+	@Override
+	public void dispose() {
+		IResource resource = ResourceUtil.getResource(getEditorInput());
+		
+		super.dispose();
+		
+		if(resource != null) {
+			resource.getWorkspace().removeResourceChangeListener(this);
+		}
 	}
 
 	public BndEditModel getBndModel() {
 		return this.model;
+	}
+
+	public void resourceChanged(IResourceChangeEvent event) {
+		IResource myResource = ResourceUtil.getResource(getEditorInput());
+		
+		IResourceDelta delta = event.getDelta();
+		delta = delta.findMember(myResource.getFullPath());
+		if(delta == null)
+			return;
+		
+		if(delta.getKind() == IResourceDelta.REMOVED) {
+			close(false);
+		}
 	}
 }

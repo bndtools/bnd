@@ -224,9 +224,13 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		
 		// Deep-copy the model
 		List<ServiceComponent> original= model.getServiceComponents();
-		componentList = new ArrayList<ServiceComponent>(original.size());
-		for (ServiceComponent component : original) {
-			componentList.add(component.clone());
+		if(original != null) {
+			componentList = new ArrayList<ServiceComponent>(original.size());
+			for (ServiceComponent component : original) {
+				componentList.add(component.clone());
+			}
+		} else {
+			componentList = new ArrayList<ServiceComponent>();
 		}
 		
 		viewer.setInput(componentList);
@@ -236,7 +240,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	public void commit(boolean onSave) {
 		try {
 			model.removePropertyChangeListener(this);
-			model.setServiceComponents(componentList);
+			model.setServiceComponents(componentList.isEmpty() ? null : componentList);
 		} finally {
 			super.commit(onSave);
 			model.addPropertyChangeListener(this);

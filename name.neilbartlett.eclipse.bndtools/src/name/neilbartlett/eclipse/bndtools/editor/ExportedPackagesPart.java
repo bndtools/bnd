@@ -2,6 +2,7 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -129,6 +130,7 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 	private void doAddPackages() {
 		// Prepare the exclusion list based on existing exported packages
 		Collection<ExportedPackage> packages = model.getExportedPackages();
+		if(packages == null) packages = new ArrayList<ExportedPackage>();
 		final Set<String> excludePkgNames = new HashSet<String>(packages.size());
 		for (ExportedPackage pkg : packages) {
 			excludePkgNames.add(pkg.getPackageName());
@@ -191,19 +193,20 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
 			Collection<ExportedPackage> packages = model.getExportedPackages();
-			
-			@SuppressWarnings("unchecked")
-			Iterator elements = selection.iterator();
-			boolean changed = false;
-			while(elements.hasNext()) {
-				Object pkg = elements.next();
-				if(packages.remove(pkg))
-					changed = true;
-			}
-			
-			if(changed) {
-				model.setExportedPackages(packages);
-				markDirty();
+			if(packages != null) {
+				@SuppressWarnings("unchecked")
+				Iterator elements = selection.iterator();
+				boolean changed = false;
+				while(elements.hasNext()) {
+					Object pkg = elements.next();
+					if(packages.remove(pkg))
+						changed = true;
+				}
+				
+				if(changed) {
+					model.setExportedPackages(packages);
+					markDirty();
+				}
 			}
 		}
 	}

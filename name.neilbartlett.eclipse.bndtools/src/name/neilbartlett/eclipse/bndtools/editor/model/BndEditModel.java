@@ -142,7 +142,10 @@ public class BndEditModel {
 				document.replace(offset, length, newEntry);
 			} else if(newEntry.length() > 0) {
 				// This is a new entry, put it at the end of the file
-				if(document.getChar(document.getLength() - 1) != '\n')
+				
+				// Does the last line of the document have a newline? If not,
+				// we need to add one.
+				if(document.getLength() > 0 && document.getChar(document.getLength() - 1) != '\n')
 					newEntry = "\n" + newEntry;
 				document.replace(document.getLength(), 0, newEntry);
 			}
@@ -334,7 +337,7 @@ public class BndEditModel {
 		packages.add(packageName);
 		setPrivatePackages(packages);
 	}
-	private <R> List<R> getHeaderClauses(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
+	<R> List<R> getHeaderClauses(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
 		return doGetObject(name, new Converter<List<R>,String>() {
 			public List<R> convert(String string) throws IllegalArgumentException {
 				List<R> result = new ArrayList<R>();
