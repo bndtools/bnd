@@ -52,10 +52,6 @@ public class BndEditModel {
 		R convert(T input) throws IllegalArgumentException;
 	}
 	
-	private interface Formatter<T> {
-		String format(T object);
-	}
-	
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
@@ -154,48 +150,12 @@ public class BndEditModel {
 			e.printStackTrace();
 		}
 	}
-	private String doGetString(String name) {
-		String result;
-		if(objectProperties.containsKey(name)) {
-			result = (String) objectProperties.get(name);
-		} else {
-			if(properties.containsKey(name)) {
-				result = properties.getProperty(name);
-				objectProperties.put(name, result);
-			} else {
-				result = null;
-			}
-		}
-		return result;
-	}
-	private <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
-		R result;
-		if(objectProperties.containsKey(name)) {
-			@SuppressWarnings("unchecked")
-			R temp = (R) objectProperties.get(name);
-			result = temp;
-		} else {
-			if(properties.containsKey(name)) {
-				result = converter.convert(properties.getProperty(name));
-				objectProperties.put(name, result);
-			} else {
-				result = null;
-			}
-		}
-		return result;
-	}
-	private void doSetObject(String name, Object oldValue, Object newValue, String formattedString) {
-		objectProperties.put(name, newValue);
-		changesToSave.put(name, formattedString);
-		propChangeSupport.firePropertyChange(name, oldValue, newValue);
-	}
-	
 	public String getBundleSymbolicName() {
 		return doGetString(Constants.BUNDLE_SYMBOLICNAME);
 	}
 	
 	public void setBundleSymbolicName(String bundleSymbolicName) {
-		doSetObject(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName, bundleSymbolicName); 
+		doSetString(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName); 
 	}
 	
 	public String getBundleVersionString() {
@@ -203,7 +163,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleVersion(String bundleVersion) {
-		doSetObject(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion, bundleVersion);
+		doSetString(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion);
 	}
 	
 	public String getBundleActivator() {
@@ -211,13 +171,7 @@ public class BndEditModel {
 	}
 	
 	public void setBundleActivator(String bundleActivator) {
-		doSetObject(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator, bundleActivator);
-	}
-	
-	public void setIncludeSources(boolean includeSources) {
-		boolean oldValue = isIncludeSources();
-		String formattedString = includeSources ? Boolean.TRUE.toString() : null;
-		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, formattedString);
+		doSetString(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator);
 	}
 	
 	public boolean isIncludeSources() {
@@ -227,6 +181,12 @@ public class BndEditModel {
 			}
 		});
 		return objValue != null ? objValue.booleanValue() : false;
+	}
+	
+	public void setIncludeSources(boolean includeSources) {
+		boolean oldValue = isIncludeSources();
+		String formattedString = includeSources ? Boolean.TRUE.toString() : null;
+		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, formattedString);
 	}
 	
 	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
@@ -247,34 +207,131 @@ public class BndEditModel {
 		}
 		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
 	}
-	/**
-	 * Get the exported packages; the returned collection will have been newly
-	 * allocated, and may be manipulated by clients without fear of affecting
-	 * other clients.
-	 * 
-	 * @return A new collection containing the exported packages of the model.
-	 */
-	public Collection<ExportedPackage> getExportedPackages() {
-		return doGetObject(Constants.EXPORT_PACKAGE, new Converter<Collection<ExportedPackage>,String>() {
-			public Collection<ExportedPackage> convert(String string) throws IllegalArgumentException {
-				List<ExportedPackage> result = new LinkedList<ExportedPackage>();
-				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string, null);
-				for (Entry<String, Map<String,String>> entry : header.entrySet()) {
-					String packageName = entry.getKey();
-					String version = null;
-					Map<String, String> attribs = entry.getValue();
-					if(attribs != null) {
-						version = attribs.get(Constants.VERSION_ATTRIBUTE);
-					}
-					
-					result.add(new ExportedPackage(packageName, version));
-				}
-				return result;
+	public Collection<String> getPrivatePackages() {
+		return doGetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+	}
+	public void setPrivatePackages(Collection<? extends String> packages) {
+		Collection<String> oldPackages = getPrivatePackages();
+		doSetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages);
+	}
+	public void addPrivatePackage(String packageName) {
+		Collection<String> packages = getPrivatePackages();
+		if(packages == null)
+			packages = new ArrayList<String>();
+		else
+			packages = new ArrayList<String>(packages);
+		packages.add(packageName);
+		setPrivatePackages(packages);
+	}
+
+	public Collection<String> getClasspath() {
+		return doGetStringList(aQute.lib.osgi.Constants.CLASSPATH);
+	}
+
+	public void setClasspath(Collection<? extends String> paths) {
+		Collection<String> oldClasspath = getClasspath();
+		doSetStringList(aQute.lib.osgi.Constants.CLASSPATH, oldClasspath, paths);
+	}
+
+	public List<ExportedPackage> getExportedPackages() {
+		return doSetClauseList(Constants.EXPORT_PACKAGE, new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
+			public ExportedPackage convert(Entry<String, Map<String, String>> input) {
+				return new ExportedPackage(input.getKey(), input.getValue());
 			}
 		});
 	}
-	public Collection<String> getPrivatePackages() {
-		return doGetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, new Converter<Collection<String>,String>() {
+
+	public void setExportedPackages(Collection<? extends ExportedPackage> exports) {
+		List<ExportedPackage> oldValue = getExportedPackages();
+		doSetClauseList(Constants.EXPORT_PACKAGE, oldValue, exports);
+	}
+
+	public void addExportedPackage(ExportedPackage export) {
+		Collection<ExportedPackage> exports = getExportedPackages();
+		exports = (exports == null) ? new ArrayList<ExportedPackage>() : new ArrayList<ExportedPackage>(exports);
+		exports.add(export);
+		setExportedPackages(exports);
+	}
+	public List<ServiceComponent> getServiceComponents() {
+		return doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
+			public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+				return new ServiceComponent(input.getKey(), input.getValue());
+			}
+		});
+	}
+
+	public void setServiceComponents(Collection<? extends ServiceComponent> components) {
+		List<ServiceComponent> oldValue = getServiceComponents();
+		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
+	}
+
+	public List<ImportPattern> getImportPatterns() {
+		return doSetClauseList(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
+			public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+				return new ImportPattern(input.getKey(), input.getValue());
+			}
+		});
+	}
+
+	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
+		List<ImportPattern> oldValue = getImportPatterns();
+		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
+	}
+
+	public boolean isIncludedPackage(String packageName) {
+		final Collection<String> privatePackages = getPrivatePackages();
+		if(privatePackages != null) {
+			if(privatePackages.contains(packageName))
+				return true;
+		}
+		final Collection<ExportedPackage> exportedPackages = getExportedPackages();
+		if(exportedPackages != null) {
+			for (ExportedPackage pkg : exportedPackages) {
+				if(packageName.equals(pkg.getName())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
+		R result;
+		if(objectProperties.containsKey(name)) {
+			@SuppressWarnings("unchecked")
+			R temp = (R) objectProperties.get(name);
+			result = temp;
+		} else {
+			if(properties.containsKey(name)) {
+				result = converter.convert(properties.getProperty(name));
+				objectProperties.put(name, result);
+			} else {
+				result = null;
+			}
+		}
+		return result;
+	}
+	
+	void doSetObject(String name, Object oldValue, Object newValue, String formattedString) {
+		objectProperties.put(name, newValue);
+		changesToSave.put(name, formattedString);
+		propChangeSupport.firePropertyChange(name, oldValue, newValue);
+	}
+
+	String doGetString(String name) {
+		return doGetObject(name, new Converter<String, String>() {
+			public String convert(String input) throws IllegalArgumentException {
+				return input;
+			}
+		});
+	}
+	
+	void doSetString(String name, String oldValue, String newValue) {
+		doSetObject(name, oldValue, newValue, newValue);
+	}
+
+	Collection<String> doGetStringList(String name) {
+		return doGetObject(name, new Converter<Collection<String>,String>() {
 			public Collection<String> convert(String string) {
 				List<String> packages = new LinkedList<String>();
 				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
@@ -286,58 +343,24 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setExportedPackages(Collection<? extends ExportedPackage> packages) {
-		Collection<ExportedPackage> oldPackages = getExportedPackages();
+
+	void doSetStringList(String name, Collection<? extends String> oldValue, Collection<? extends String> newValue) {
 		StringBuilder buffer = new StringBuilder();
-		
-		if(packages == null || packages.isEmpty()) {
-			doSetObject(Constants.EXPORT_PACKAGE, oldPackages, null, null);
+		if(newValue == null || newValue.isEmpty()) {
+			doSetObject(name, oldValue, null, null);
 		} else {
-			for(Iterator<? extends ExportedPackage> iter = packages.iterator(); iter.hasNext(); ) {
-				ExportedPackage pkg = iter.next();
-				buffer.append(pkg.getPackageName());
-				
-				if(pkg.getVersion() != null)
-					buffer.append(";version=\"").append(pkg.getVersion()).append("\"");
-				
-				if(iter.hasNext())
-					buffer.append(LIST_SEPARATOR);
-			}
-			doSetObject(Constants.EXPORT_PACKAGE, oldPackages, packages, buffer.toString());
-		}
-	}
-	public void addExportedPackage(ExportedPackage export) {
-		Collection<ExportedPackage> exports = getExportedPackages();
-		exports = (exports == null) ? new ArrayList<ExportedPackage>() : new ArrayList<ExportedPackage>(exports);
-		exports.add(export);
-		setExportedPackages(exports);
-	}
-	public void setPrivatePackages(Collection<? extends String> packages) {
-		Collection<String> oldPackages = getPrivatePackages();
-		
-		StringBuilder buffer = new StringBuilder();
-		if(packages == null || packages.isEmpty()) {
-			doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, null, null);
-		} else {
-			for(Iterator<? extends String> iter = packages.iterator(); iter.hasNext(); ) {
+			for(Iterator<? extends String> iter = newValue.iterator(); iter.hasNext(); ) {
 				String pkg = iter.next();
 				buffer.append(pkg);
 				if(iter.hasNext())
 					buffer.append(LIST_SEPARATOR);
 			}
-			doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, buffer.toString());
+			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
+	
 	}
-	public void addPrivatePackage(String packageName) {
-		Collection<String> packages = getPrivatePackages();
-		if(packages == null)
-			packages = new ArrayList<String>();
-		else
-			packages = new ArrayList<String>(packages);
-		packages.add(packageName);
-		setPrivatePackages(packages);
-	}
-	<R> List<R> getHeaderClauses(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
+
+	<R> List<R> doSetClauseList(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
 		return doGetObject(name, new Converter<List<R>,String>() {
 			public List<R> convert(String string) throws IllegalArgumentException {
 				List<R> result = new ArrayList<R>();
@@ -350,21 +373,8 @@ public class BndEditModel {
 			}
 		});
 	}
-	public List<ServiceComponent> getServiceComponents() {
-		return getHeaderClauses(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
-			public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new ServiceComponent(input.getKey(), input.getValue());
-			}
-		});
-	}
-	public List<ImportPattern> getImportPatterns() {
-		return getHeaderClauses(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
-			public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new ImportPattern(input.getKey(), input.getValue());
-			}
-		});
-	}
-	private void doSetClauseList(String name, Collection<? extends HeaderClause> oldValue, Collection<? extends HeaderClause> newValue) {
+	
+	void doSetClauseList(String name, Collection<? extends HeaderClause> oldValue, Collection<? extends HeaderClause> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
 			doSetObject(name, oldValue, null, null);
@@ -378,33 +388,6 @@ public class BndEditModel {
 			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
 	}
-	public void setServiceComponents(Collection<? extends ServiceComponent> components) {
-		List<ServiceComponent> oldValue = getServiceComponents();
-		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
-	}
-	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
-		List<ImportPattern> oldValue = getImportPatterns();
-		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
-	}
-	public boolean isIncludedPackage(String packageName) {
-		final Collection<String> privatePackages = getPrivatePackages();
-		if(privatePackages != null) {
-			if(privatePackages.contains(packageName))
-				return true;
-		}
-		final Collection<ExportedPackage> exportedPackages = getExportedPackages();
-		if(exportedPackages != null) {
-			for (ExportedPackage pkg : exportedPackages) {
-				if(packageName.equals(pkg.getPackageName())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	// BEGIN: PropertyChangeSupport delegate methods
-
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propChangeSupport.addPropertyChangeListener(listener);
 	}

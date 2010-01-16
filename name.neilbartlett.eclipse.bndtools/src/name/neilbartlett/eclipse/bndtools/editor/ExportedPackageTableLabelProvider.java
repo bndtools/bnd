@@ -19,18 +19,16 @@ public class ExportedPackageTableLabelProvider extends LabelProvider implements
 			image = packageImg;
 		return image;
 	}
-
 	public String getColumnText(Object element, int columnIndex) {
 		String text = null;
 		ExportedPackage pkg = (ExportedPackage) element;
 		if(columnIndex == 0) {
-			text = pkg.getPackageName();
+			text = pkg.getName();
 		} else if(columnIndex == 1) {
-			text =  pkg.getVersion();
+			text =  pkg.getVersionString();
 		}
 		return text;
 	}
-	
 	@Override
 	public void dispose() {
 		super.dispose();

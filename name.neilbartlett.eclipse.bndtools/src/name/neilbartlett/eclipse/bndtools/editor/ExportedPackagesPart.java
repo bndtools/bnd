@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -133,7 +134,7 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 		if(packages == null) packages = new ArrayList<ExportedPackage>();
 		final Set<String> excludePkgNames = new HashSet<String>(packages.size());
 		for (ExportedPackage pkg : packages) {
-			excludePkgNames.add(pkg.getPackageName());
+			excludePkgNames.add(pkg.getName());
 		}
 		
 		// Create a filter from the exclusion list and packages matching "java.*", which must not be exported.
@@ -175,7 +176,8 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
-				ExportedPackage newPackage = new ExportedPackage(newPackageName, version);
+				ExportedPackage newPackage = new ExportedPackage(newPackageName, new HashMap<String, String>());
+				newPackage.setVersionString(version);
 				if(packages.add(newPackage)) {
 					added.add(newPackage);
 				}

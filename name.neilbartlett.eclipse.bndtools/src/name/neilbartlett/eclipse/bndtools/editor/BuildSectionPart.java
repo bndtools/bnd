@@ -24,12 +24,12 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public class BuildFormPart extends SectionPart {
+public class BuildSectionPart extends SectionPart {
 
 	private MakeBundleWithRefreshAction buildBundleAction;
 	private Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
 
-	public BuildFormPart(Composite parent, FormToolkit toolkit, int style) {
+	public BuildSectionPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 	
 		buildBundleAction = new MakeBundleWithRefreshAction();
@@ -43,7 +43,7 @@ public class BuildFormPart extends SectionPart {
 		section.setClient(composite);
 		
 		ImageHyperlink lnkBuild = toolkit.createImageHyperlink(composite, SWT.LEFT);
-		lnkBuild.setText("Build Bundle");
+		lnkBuild.setText("Build the Bundle");
 		lnkBuild.setImage(jarImg);
 
 		lnkBuild.addHyperlinkListener(new HyperlinkAdapter() {

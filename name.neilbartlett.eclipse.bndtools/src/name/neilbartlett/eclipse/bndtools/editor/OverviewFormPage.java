@@ -54,7 +54,7 @@ public class OverviewFormPage extends FormPage {
 		GeneralInfoPart basicSection = new GeneralInfoPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
 		managedForm.addPart(basicSection);
 		
-		BuildFormPart buildPart = new BuildFormPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
+		BuildSectionPart buildPart = new BuildSectionPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
 		managedForm.addPart(buildPart);
 		
 		Composite pnlPackagesColumn = toolkit.createComposite(body);
