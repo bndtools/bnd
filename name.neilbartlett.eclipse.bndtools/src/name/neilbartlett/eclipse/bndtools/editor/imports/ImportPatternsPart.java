@@ -8,10 +8,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.BndEditor;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
+import name.neilbartlett.eclipse.bndtools.jobs.analyse.AnalyseImportsJob;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -24,6 +28,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -33,8 +38,13 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 public class ImportPatternsPart extends SectionPart implements PropertyChangeListener {
@@ -43,6 +53,8 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 	private TableViewer viewer;
 	private BndEditModel model;
 	private List<ImportPattern> patterns;
+	
+	private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
 	
 	private final IAction fixMissingStarPatternAction = new Action("Append missing \"*\" pattern.") {
 		public void run() {
@@ -75,8 +87,27 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		final Button btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
 		final Button btnMoveUp = toolkit.createButton(composite, "Up", SWT.PUSH);
 		final Button btnMoveDown = toolkit.createButton(composite, "Down", SWT.PUSH);
+		toolkit.createLabel(composite, ""); // Spacer
+		
+		ImageHyperlink lnkAnalyse = toolkit.createImageHyperlink(composite, SWT.LEFT);
+		lnkAnalyse.setText("Analyse Imports");
+		lnkAnalyse.setImage(imgAnalyse);
+
 		
 		// Listeners
+		lnkAnalyse.addHyperlinkListener(new HyperlinkAdapter() {
+			@Override
+			public void linkActivated(HyperlinkEvent e) {
+				IFormPage formPage = (IFormPage) getManagedForm().getContainer();
+				IFile file = ResourceUtil.getFile(formPage.getEditorInput());
+				
+				BndEditor editor = (BndEditor) formPage.getEditor();
+				if(editor.saveIfDirty("Analyse Imports", "The editor content must be saved before continuing.")) {
+					AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, formPage.getEditorSite().getPage());
+					job.schedule();
+				}
+			}
+		});
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				managedForm.fireSelectionChanged(ImportPatternsPart.this, event.getSelection());
@@ -125,6 +156,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		composite.setLayout(layout);
+		lnkAnalyse.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6));
 		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnInsert.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
@@ -220,6 +252,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 	public void dispose() {
 		super.dispose();
 		this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+		imgAnalyse.dispose();
 	}
 	@Override
 	public void refresh() {

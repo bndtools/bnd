@@ -69,15 +69,15 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 			// Ignore
 		}
 
-		Section section = toolkit.createSection(parent, Section.TITLE_BAR);
-		section.setText("Import Pattern Detail");
+		Section mainSection = toolkit.createSection(parent, Section.TITLE_BAR);
+		mainSection.setText("Import Pattern Detail");
 		
-		Composite composite = toolkit.createComposite(section);
-		section.setClient(composite);
+		Composite mainComposite = toolkit.createComposite(mainSection);
+		mainSection.setClient(mainComposite);
 		
-		toolkit.createLabel(composite, "Pattern:");
-		txtPattern = toolkit.createText(composite, "");
-		ControlDecoration decPattern = new ControlDecoration(txtPattern, SWT.LEFT | SWT.TOP, composite);
+		toolkit.createLabel(mainComposite, "Pattern:");
+		txtPattern = toolkit.createText(mainComposite, "");
+		ControlDecoration decPattern = new ControlDecoration(txtPattern, SWT.LEFT | SWT.TOP, mainComposite);
 		decPattern.setImage(assistDecor.getImage());
 		decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decPattern.setShowHover(true);
@@ -100,11 +100,17 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 			}
 		});
 		
-		toolkit.createLabel(composite, ""); // Spacer
-		btnOptional = toolkit.createButton(composite, "Optional resolution", SWT.CHECK);
+		toolkit.createLabel(mainComposite, ""); // Spacer
+		btnOptional = toolkit.createButton(mainComposite, "Optional resolution", SWT.CHECK);
 		
-		toolkit.createLabel(composite, "Version Range:");
-		txtVersionRange = toolkit.createText(composite, "");
+		toolkit.createLabel(mainComposite, "Version Range:");
+		txtVersionRange = toolkit.createText(mainComposite, "");
+		
+		/*
+		Section attribsSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
+		attribsSection.setText("Extra Attributes");
+		Composite attribsComposite = toolkit.createComposite(attribsSection);
+		*/
 		
 		// Listeners
 		txtPattern.addModifyListener(new ModifyListener() {
@@ -146,8 +152,8 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 		GridData gd;
 		
 		parent.setLayout(new GridLayout(1, false));
-		section.setLayoutData(new GridData(GridData.FILL_BOTH));
-		composite.setLayout(new GridLayout(2, false));
+		mainSection.setLayoutData(new GridData(GridData.FILL_BOTH));
+		mainComposite.setLayout(new GridLayout(2, false));
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.horizontalIndent = 5;

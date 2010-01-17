@@ -42,7 +42,6 @@ public class ImportPatternProposalProvider extends
 	@Override
 	protected Collection<? extends IContentProposal> doGenerateProposals(String contents, int position) {
 		String prefix = contents.substring(0, position);
-		System.out.println("#prefix: '" + prefix + "'");
 		
 		final int replaceFromPos;
 		if(prefix.startsWith("!")) { //$NON-NLS-1$

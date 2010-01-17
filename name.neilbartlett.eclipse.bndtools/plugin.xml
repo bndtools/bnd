@@ -127,7 +127,7 @@
             delegate="name.neilbartlett.eclipse.bndtools.launch.LaunchConfigurationDelegate"
             id="name.neilbartlett.eclipse.bndtools.launchConfigurationType"
             modes="run,debug,profile"
-            name="OSGi"
+            name="Bnd OSGi"
             public="true">
       </launchConfigurationType>
    </extension>
@@ -152,8 +152,9 @@
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             class="name.neilbartlett.eclipse.bndtools.launch.LaunchShortcut"
+            icon="icons/bricks.png"
             id="name.neilbartlett.eclipse.bndtools.launchShortcut"
-            label="OSGi"
+            label="Bnd OSGi Launch"
             modes="run,debug">
          <configurationType
                id="name.neilbartlett.eclipse.bndtools.launchConfigurationType">
@@ -183,5 +184,20 @@
             name="Bnd OSGi Project"
             project="true">
       </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="name.neilbartlett.eclipse.bndtools.viewCategory"
+            name="Bnd OSGi">
+      </category>
+      <view
+            category="name.neilbartlett.eclipse.bndtools.viewCategory"
+            class="name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsView"
+            icon="icons/packages.gif"
+            id="name.neilbartlett.eclipse.bndtools.impExpView"
+            name="Imports/Exports"
+            restorable="true">
+      </view>
    </extension>
 </plugin>
