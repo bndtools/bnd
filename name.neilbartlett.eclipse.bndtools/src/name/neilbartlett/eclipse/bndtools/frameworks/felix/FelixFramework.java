@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.frameworks.felix;
 
 import java.io.File;
+import java.util.Collection;
 
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
@@ -19,6 +20,11 @@ public class FelixFramework implements IFramework {
 
 	public String getMainClassName() {
 		return FELIX_MAIN;
+	}
+
+	public Collection<File> getAutoConfiguredLocations() {
+		// Not supported
+		return null;
 	}
 
 }

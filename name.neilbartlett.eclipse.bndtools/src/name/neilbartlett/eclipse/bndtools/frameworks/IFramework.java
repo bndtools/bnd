@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.frameworks;
 
 import java.io.File;
+import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -36,5 +37,15 @@ public interface IFramework {
 	 */
 	String getMainClassName();
 	
-
+	/**
+	 * Provides a list of framework locations, suitable to be passed into
+	 * {@link #createFrameworkInstance(File)}, that have been automatically
+	 * configured or detected by this framework type. This method will only be
+	 * called if the {@code supportsAutoConfig} attribute is present as set to
+	 * true on the contributed {@code osgiFrameworks} extension.
+	 * 
+	 * @return A collection of locations, or {@code null} if auto-configuration
+	 *         is not supported or unavailable.
+	 */
+	Collection<File> getAutoConfiguredLocations();
 }

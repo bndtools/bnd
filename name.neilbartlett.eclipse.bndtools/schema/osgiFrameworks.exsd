@@ -86,6 +86,13 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="supportsAutoConfig" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

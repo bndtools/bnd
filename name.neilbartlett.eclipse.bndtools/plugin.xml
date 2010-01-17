@@ -27,7 +27,7 @@
             targetID="name.neilbartlett.eclipse.bndtools.bndEditor">
          <action
                class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
-               icon="icons/bundle_obj.gif"
+               icon="icons/brick.png"
                id="name.neilbartlett.eclipse.bndtools.makeBundleAction"
                label="Make Bundle"
                style="push"
@@ -39,7 +39,7 @@
             targetID="name.neilbartlett.eclipse.bndtools.newBndEditor">
          <action
                class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
-               icon="icons/bundle_obj.gif"
+               icon="icons/brick.png"
                id="name.neilbartlett.eclipse.bndtools.makeBundleAction"
                label="Make Bundle"
                style="push"
@@ -53,9 +53,9 @@
             class="name.neilbartlett.eclipse.bndtools.editor.BndEditor"
             default="false"
             extensions="bnd"
-            icon="icons/bundle_obj.gif"
+            icon="icons/brick.png"
             id="name.neilbartlett.eclipse.bndtools.newBndEditor"
-            name="New Bnd Editor">
+            name="Bnd Editor">
       </editor>
       <editor
             class="org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor"
@@ -78,7 +78,8 @@
             class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxFramework"
             displayName="Eclipse Equinox"
             icon="icons/equinox.gif"
-            id="equinox">
+            id="equinox"
+            supportsAutoConfig="true">
       </framework>
       <framework
             class="name.neilbartlett.eclipse.bndtools.frameworks.felix.FelixFramework"
@@ -132,6 +133,14 @@
       </launchConfigurationType>
    </extension>
    <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="name.neilbartlett.eclipse.bndtools.launchConfigurationType"
+            icon="icons/bricks.png"
+            id="name.neilbartlett.eclipse.bndtools.launchConfigurationTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             class="name.neilbartlett.eclipse.bndtools.launch.ui.LaunchTabGroup"
@@ -170,7 +179,7 @@
       <wizard
             category="name.neilbartlett.eclipse.bndtools.wizardCategory"
             class="name.neilbartlett.eclipse.bndtools.wizards.BndFileWizard"
-            icon="icons/bundle_obj.gif"
+            icon="icons/brick_add.png"
             id="name.neilbartlett.eclipse.bndtools.newBndFile"
             name="Empty Bundle Descriptor (Bnd) File"
             project="false">

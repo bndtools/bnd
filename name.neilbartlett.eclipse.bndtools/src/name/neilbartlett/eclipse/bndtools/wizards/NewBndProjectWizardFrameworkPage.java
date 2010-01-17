@@ -17,7 +17,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -43,9 +42,7 @@ public class NewBndProjectWizardFrameworkPage extends WizardPage {
 		grpFramework.setText("Installed Frameworks");
 		frameworkSelector.createControl(grpFramework);
 		
-		Group grpExtras = new Group(composite, SWT.NONE);
-		grpExtras.setText("Extra Compilation Libraries");
-		final Button annotationsCheck = new Button(grpExtras, SWT.CHECK);
+		final Button annotationsCheck = new Button(grpFramework, SWT.CHECK);
 		annotationsCheck.setText("Include Bnd Annotations library");
 		
 		// Init controls
@@ -76,13 +73,12 @@ public class NewBndProjectWizardFrameworkPage extends WizardPage {
 		
 		GridData gd;
 		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.heightHint = 200;
 		grpFramework.setLayoutData(gd);
-		grpFramework.setLayout(new FillLayout());
-		
+		grpFramework.setLayout(new GridLayout(1, false));
+
 		gd = new GridData(GridData.FILL_HORIZONTAL);
-		grpExtras.setLayoutData(gd);
-		grpExtras.setLayout(new FillLayout());
+		gd.heightHint = 200;
+		frameworkSelector.getControl().setLayoutData(gd);
 
 		setControl(composite);
 	}

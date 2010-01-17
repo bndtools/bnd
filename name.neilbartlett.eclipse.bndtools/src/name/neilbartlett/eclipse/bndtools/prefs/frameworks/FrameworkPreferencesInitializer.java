@@ -2,7 +2,9 @@ package name.neilbartlett.eclipse.bndtools.prefs.frameworks;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -12,10 +14,16 @@ import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
+
+import aQute.bnd.plugin.Activator;
 
 
 public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializer {
@@ -25,8 +33,29 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	
 	@Override
 	public void initializeDefaultPreferences() {
-		Preferences node = new InstanceScope().getNode(Plugin.PLUGIN_ID);
-		node.put(PROP_FRAMEWORK_LIST, "");
+		List<String> autoConfigUrls = new LinkedList<String>();
+		
+		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_OSGI_FRAMEWORKS);
+		for (IConfigurationElement element : elements) {
+			String id = element.getAttribute("id");
+			if(Boolean.parseBoolean(element.getAttribute("supportsAutoConfig"))) {
+				try {
+					IFramework framework = (IFramework) element.createExecutableExtension("class");
+					Collection<File> locations = framework.getAutoConfiguredLocations();
+					if(locations != null) for (File location : locations) {
+						String url = id + ":" + location.getAbsolutePath();
+						autoConfigUrls.add(url);
+					}
+				} catch (CoreException e) {
+					Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error instantiating framework type \"" + id + "\"", e));
+				}
+			}
+		}
+		try {
+			saveFrameworkUrls(autoConfigUrls);
+		} catch (BackingStoreException e) {
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising default framework preferences.", e));
+		}
 	}
 
 	/**
@@ -34,7 +63,7 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	 * @param list The list into which to load the framework URLs.
 	 */
 	public static synchronized void loadFrameworkUrls(List<? super String> list) {
-		Preferences node = new InstanceScope().getNode(Plugin.PLUGIN_ID);
+		Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
 		String listStr = node.get(PROP_FRAMEWORK_LIST, ""); //$NON-NLS-1$
 		StringTokenizer tokenizer = new StringTokenizer(listStr, ","); //$NON-NLS-1$
 		while(tokenizer.hasMoreTokens()) {
@@ -48,7 +77,7 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	}
 	
 	public static synchronized final void saveFrameworkUrls(List<? extends String> list) throws BackingStoreException {
-		Preferences node = new InstanceScope().getNode(Plugin.PLUGIN_ID);
+		Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
 		node.clear();
 		
 		StringBuilder frameworkListStr = new StringBuilder();
@@ -61,6 +90,7 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 			node.put(PROP_FRAMEWORK_PREFIX + i, frameworkUrl);
 		}
 		node.put(PROP_FRAMEWORK_LIST, frameworkListStr.toString());
+		node.sync();
 	}
 	
 	public static List<IFrameworkInstance> loadFrameworkInstanceList() {
