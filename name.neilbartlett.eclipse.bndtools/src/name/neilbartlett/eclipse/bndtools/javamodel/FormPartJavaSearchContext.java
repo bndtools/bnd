@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.javamodel;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;

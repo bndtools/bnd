@@ -11,6 +11,7 @@
 package name.neilbartlett.eclipse.bndtools.editor;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.utils.MessageHyperlinkAdapter;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -22,24 +23,19 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 public class OverviewFormPage extends FormPage {
 
-	private BndEditModel bndModel;
+	private final BndEditModel model;
 
-	public OverviewFormPage(FormEditor editor, String id, String title) {
+	public OverviewFormPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
-	}
-
-	public OverviewFormPage(String id, String title) {
-		super(id, title);
+		this.model = model;
 	}
 
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
-		managedForm.setInput(bndModel);
+		managedForm.setInput(model);
 
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
@@ -99,12 +95,4 @@ public class OverviewFormPage extends FormPage {
 		privatePackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		exportedPackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
-	
-	@Override
-	public void initialize(FormEditor editor) {
-		super.initialize(editor);
-		bndModel = ((BndEditor) editor).getBndModel();
-	}
-
-
 }

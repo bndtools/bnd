@@ -1,8 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
-import name.neilbartlett.eclipse.bndtools.editor.BndEditor;
-import name.neilbartlett.eclipse.bndtools.editor.MessageHyperlinkAdapter;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.utils.MessageHyperlinkAdapter;
 
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -13,10 +12,11 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 public class ComponentsPage extends FormPage {
 
 	private final ComponentsBlock block = new ComponentsBlock();
-	private BndEditModel model;
+	private final BndEditModel model;
 
-	public ComponentsPage(BndEditor editor, String id, String title) {
+	public ComponentsPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
+		this.model = model;
 	}
 	
 	@Override
@@ -29,11 +29,5 @@ public class ComponentsPage extends FormPage {
 		
 		form.setText("Components");
 		block.createContent(managedForm);
-	}
-	
-	@Override
-	public void initialize(FormEditor editor) {
-		super.initialize(editor);
-		this.model = ((BndEditor) editor).getBndModel();
 	}
 }

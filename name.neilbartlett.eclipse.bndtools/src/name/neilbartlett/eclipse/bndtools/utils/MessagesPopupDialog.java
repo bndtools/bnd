@@ -1,4 +1,5 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.utils;
+
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 

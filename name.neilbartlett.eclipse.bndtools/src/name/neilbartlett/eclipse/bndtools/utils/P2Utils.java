@@ -2,20 +2,11 @@ package name.neilbartlett.eclipse.bndtools.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.ServiceOperation;
-
-import org.osgi.framework.Version;
-
-import org.eclipse.equinox.internal.provisional.frameworkadmin.BundleInfo;
-import org.eclipse.equinox.internal.provisional.simpleconfigurator.manipulator.SimpleConfiguratorManipulator;
-import org.eclipse.osgi.service.datalocation.Location;
-import org.eclipse.osgi.service.resolver.VersionRange;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.FileLocator;
@@ -25,6 +16,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.URIUtil;
+import org.eclipse.equinox.internal.provisional.frameworkadmin.BundleInfo;
+import org.eclipse.equinox.internal.provisional.simpleconfigurator.manipulator.SimpleConfiguratorManipulator;
+import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.service.resolver.VersionRange;
+import org.osgi.framework.Version;
 
 import aQute.bnd.plugin.Activator;
 
@@ -106,7 +102,7 @@ public class P2Utils {
 	private static BundleInfo[] getBundlesFromFile(URL bundlesLocation, final URL fileURL) throws IOException {
 		final File home= new File(bundlesLocation.getFile());
 		
-		return Plugin.usingService(SimpleConfiguratorManipulator.class, new ServiceOperation<BundleInfo[], SimpleConfiguratorManipulator, IOException>() {
+		return ServiceUtils.usingService(SimpleConfiguratorManipulator.class, new ServiceOperation<BundleInfo[], SimpleConfiguratorManipulator, IOException>() {
 			public BundleInfo[] execute(SimpleConfiguratorManipulator service) throws IOException {
 				return service.loadConfiguration(fileURL, home);
 			}

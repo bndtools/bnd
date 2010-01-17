@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.javamodel;
 
 
 public interface IJavaMethodSearchContext extends IJavaSearchContext {

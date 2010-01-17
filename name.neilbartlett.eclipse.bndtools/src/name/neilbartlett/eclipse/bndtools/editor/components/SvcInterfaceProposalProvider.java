@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.editor.CachingContentProposalProvider;
-import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.javamodel.IJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.utils.CachingContentProposalProvider;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
 
 import org.eclipse.core.runtime.IProgressMonitor;

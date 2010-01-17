@@ -3,8 +3,8 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 import java.util.Set;
 
 import name.neilbartlett.eclipse.bndtools.UIConstants;
-import name.neilbartlett.eclipse.bndtools.editor.IJavaMethodSearchContext;
 import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
+import name.neilbartlett.eclipse.bndtools.javamodel.IJavaMethodSearchContext;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposalLabelProvider;
 
 import org.eclipse.jdt.core.IJavaProject;

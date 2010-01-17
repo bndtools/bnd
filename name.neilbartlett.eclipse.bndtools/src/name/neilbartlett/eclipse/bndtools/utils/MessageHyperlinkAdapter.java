@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.utils;
 
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.swt.graphics.Point;

@@ -3,8 +3,8 @@ package name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.classpath.FrameworkInstanceLabelProvider;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkInstanceLabelProvider;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 
 import org.eclipse.core.runtime.IStatus;

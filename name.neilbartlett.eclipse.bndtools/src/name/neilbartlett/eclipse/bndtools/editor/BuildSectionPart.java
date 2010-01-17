@@ -2,6 +2,7 @@ package name.neilbartlett.eclipse.bndtools.editor;
 
 import name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction;
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -10,6 +11,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -44,8 +46,8 @@ public class BuildSectionPart extends SectionPart {
 			@Override
 			public void linkActivated(HyperlinkEvent e) {
 				IFormPage page = (IFormPage) getManagedForm().getContainer();
-				BndEditor editor = (BndEditor) page.getEditor();
-				if(editor.saveIfDirty("Build Bundle", "The editor content must be saved before building.")) {
+				FormEditor editor = page.getEditor();
+				if(EditorUtils.saveEditorIfDirty(editor, "Build Bundle", "The editor content must be saved before building.")) {
 					buildBundleAction.run(null);
 				} else {
 					MessageDialog.openError(section.getShell(), "Build Bundle", "Bundle not built due to error during save.");

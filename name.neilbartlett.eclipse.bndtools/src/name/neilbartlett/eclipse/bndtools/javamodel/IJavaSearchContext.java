@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.javamodel;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.operation.IRunnableContext;

@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.classpath;
+package name.neilbartlett.eclipse.bndtools.classpath.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 

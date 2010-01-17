@@ -3,7 +3,7 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 import java.text.MessageFormat;
 
 import name.neilbartlett.eclipse.bndtools.UIConstants;
-import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.javamodel.IJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposalLabelProvider;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;

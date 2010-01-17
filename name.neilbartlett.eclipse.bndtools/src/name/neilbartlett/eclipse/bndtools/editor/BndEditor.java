@@ -35,8 +35,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 	
-	private BndEditModel model = null;
-	private BndSourceEditorPage sourcePage = new BndSourceEditorPage("bndSourcePage", this);;
+	private final BndEditModel model = new BndEditModel();
+	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage("bndSourcePage", this);;
 	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -66,13 +66,13 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	protected void addPages() {
 		try {
-			OverviewFormPage detailsPage = new OverviewFormPage(this, "detailsPage", "Overview");
+			OverviewFormPage detailsPage = new OverviewFormPage(this, model, "detailsPage", "Overview");
 			addPage(detailsPage);
 
-			ComponentsPage componentsPage = new ComponentsPage(this, "componentsPage", "Components");
+			ComponentsPage componentsPage = new ComponentsPage(this, model, "componentsPage", "Components");
 			addPage(componentsPage);
 			
-			ImportsPage importsPage = new ImportsPage(this, "importsPage", "Imports");
+			ImportsPage importsPage = new ImportsPage(this, model, "importsPage", "Imports");
 			addPage(importsPage);
 			
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());
@@ -90,8 +90,6 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		
 		IDocumentProvider docProvider = sourcePage.getDocumentProvider();
 		IDocument document = docProvider.getDocument(input);
-		model = new BndEditModel();
-		
 		try {
 			model.loadFrom(document);
 		} catch (IOException e) {
@@ -130,25 +128,5 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		if(delta.getKind() == IResourceDelta.REMOVED) {
 			close(false);
 		}
-	}
-
-	public boolean saveIfDirty(String dialogTitle, String message) {
-		if(isDirty()) {
-			if(MessageDialog.openConfirm(getEditorSite().getShell(), dialogTitle, message)) {
-				IRunnableWithProgress saveRunnable = new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						doSave(monitor);
-					}
-				};
-				IWorkbenchWindow window = getSite().getWorkbenchWindow();
-				try {
-					window.run(false, false, saveRunnable);
-				} catch (InvocationTargetException e1) {
-				} catch (InterruptedException e1) {
-					Thread.currentThread().interrupt();
-				}
-			}
-		}
-		return !isDirty();
 	}
 }

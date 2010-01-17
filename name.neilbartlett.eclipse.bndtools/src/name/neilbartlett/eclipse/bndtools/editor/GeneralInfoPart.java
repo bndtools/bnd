@@ -25,6 +25,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
+import name.neilbartlett.eclipse.bndtools.utils.CachingContentProposalProvider;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposal;
 import name.neilbartlett.eclipse.bndtools.utils.JavaContentProposalLabelProvider;
 import name.neilbartlett.eclipse.bndtools.utils.JavaTypeContentProposal;

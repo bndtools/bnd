@@ -1,6 +1,5 @@
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,22 +9,17 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import name.neilbartlett.eclipse.bndtools.UIConstants;
-import name.neilbartlett.eclipse.bndtools.editor.FormPartJavaSearchContext;
-import name.neilbartlett.eclipse.bndtools.editor.IJavaSearchContext;
-import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
-import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponentConfigurationPolicy;
+import name.neilbartlett.eclipse.bndtools.javamodel.FormPartJavaSearchContext;
+import name.neilbartlett.eclipse.bndtools.javamodel.IJavaSearchContext;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
@@ -56,7 +50,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IDetailsPage;
 import org.eclipse.ui.forms.IFormPart;
-import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;

@@ -6,9 +6,9 @@ import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import name.neilbartlett.eclipse.bndtools.UIConstants;
-import name.neilbartlett.eclipse.bndtools.editor.FormPartJavaSearchContext;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
+import name.neilbartlett.eclipse.bndtools.javamodel.FormPartJavaSearchContext;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;

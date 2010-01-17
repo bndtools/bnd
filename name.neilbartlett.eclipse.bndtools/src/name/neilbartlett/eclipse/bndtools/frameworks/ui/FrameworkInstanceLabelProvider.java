@@ -1,7 +1,7 @@
 /**
  * 
  */
-package name.neilbartlett.eclipse.bndtools.classpath;
+package name.neilbartlett.eclipse.bndtools.frameworks.ui;
 
 import java.util.ArrayList;
 import java.util.List;

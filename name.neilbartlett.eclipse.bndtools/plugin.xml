@@ -117,7 +117,7 @@
    <extension
          point="org.eclipse.jdt.ui.classpathContainerPage">
       <classpathContainerPage
-            class="name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathPage"
+            class="name.neilbartlett.eclipse.bndtools.classpath.ui.FrameworkClasspathPage"
             id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER"
             name="OSGi Framework">
       </classpathContainerPage>

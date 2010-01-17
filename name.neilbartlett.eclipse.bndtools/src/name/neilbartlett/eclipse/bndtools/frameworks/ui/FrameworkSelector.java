@@ -5,7 +5,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.classpath.FrameworkInstanceLabelProvider;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 

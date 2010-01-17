@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor;
+package name.neilbartlett.eclipse.bndtools.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;

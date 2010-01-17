@@ -9,11 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.editor.BndEditor;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
 import name.neilbartlett.eclipse.bndtools.jobs.analyse.AnalyseImportsJob;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
+import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -101,8 +102,8 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 				IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 				IFile file = ResourceUtil.getFile(formPage.getEditorInput());
 				
-				BndEditor editor = (BndEditor) formPage.getEditor();
-				if(editor.saveIfDirty("Analyse Imports", "The editor content must be saved before continuing.")) {
+				FormEditor editor = formPage.getEditor();
+				if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
 					AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, formPage.getEditorSite().getPage());
 					job.schedule();
 				}
