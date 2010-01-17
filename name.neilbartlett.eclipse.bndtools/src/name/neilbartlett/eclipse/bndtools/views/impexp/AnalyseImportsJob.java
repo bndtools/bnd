@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.jobs.analyse;
+package name.neilbartlett.eclipse.bndtools.views.impexp;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +10,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsView;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -18,10 +17,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
@@ -80,11 +78,12 @@ public class AnalyseImportsJob extends Job {
 				Display display = page.getWorkbenchWindow().getShell().getDisplay();
 				display.asyncExec(new Runnable() {
 					public void run() {
-						try {
-							final ImportsExportsView view = (ImportsExportsView) page.showView(ImportsExportsView.VIEW_ID);
-							view.setInput(imports, exports);
-						} catch (PartInitException e) {
-							ErrorDialog.openError(page.getWorkbenchWindow().getShell(), "Imports/Exports", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening Imports/Exports view.", e));
+						IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID);
+						if(viewRef != null) {
+							ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
+							if(view != null) {
+								view.setInput(file, imports, exports);
+							}
 						}
 					}
 				});

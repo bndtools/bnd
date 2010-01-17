@@ -23,6 +23,7 @@ import org.osgi.framework.Constants;
 
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
+import aQute.libg.version.Version;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -47,6 +48,8 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.VERSIONPOLICY,
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
 	};
+	
+	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 	
 	private interface Converter<R,T> {
 		R convert(T input) throws IllegalArgumentException;
@@ -242,8 +245,21 @@ public class BndEditModel {
 	}
 
 	public void setExportedPackages(Collection<? extends ExportedPackage> exports) {
+		boolean referencesBundleVersion = false;
+		
+		for (ExportedPackage pkg : exports) {
+			String versionString = pkg.getVersionString();
+			if(versionString.indexOf(BUNDLE_VERSION_MACRO) > -1) {
+				referencesBundleVersion = true;
+			}
+		}
+		
 		List<ExportedPackage> oldValue = getExportedPackages();
 		doSetClauseList(Constants.EXPORT_PACKAGE, oldValue, exports);
+		
+		if(referencesBundleVersion && getBundleVersionString() == null) {
+			setBundleVersion(new Version(0, 0, 0).toString());
+		}
 	}
 
 	public void addExportedPackage(ExportedPackage export) {

@@ -17,6 +17,7 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 	}
 
 	public void linkEntered(final HyperlinkEvent e) {
+		/*
 		// Ignore keyboard focus, only show on mouse-over
 		Hyperlink hyperlink = (Hyperlink) e.getSource();
 		
@@ -29,6 +30,7 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 		if(linkBounds.contains(mouse)) {
 			showPopup(e);
 		}
+		*/
 	}
 	
 	private void showPopup(final HyperlinkEvent e) {

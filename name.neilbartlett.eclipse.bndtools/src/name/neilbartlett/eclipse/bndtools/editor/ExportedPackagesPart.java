@@ -52,8 +52,6 @@ import aQute.lib.osgi.Constants;
 
 public class ExportedPackagesPart extends SectionPart implements PropertyChangeListener {
 
-	private static final String VERSION_LINK_BUNDLE_VERSION = "${" + Constants.BUNDLE_VERSION + "}";
-
 	private BndEditModel model;
 	
 	private Table table;
@@ -168,7 +166,7 @@ public class ExportedPackagesPart extends SectionPart implements PropertyChangeL
 			ExportVersionPolicy versionPolicy = dialog.getExportVersionPolicy();
 			String version = null;
 			if(versionPolicy == ExportVersionPolicy.linkWithBundle) {
-				version = VERSION_LINK_BUNDLE_VERSION;
+				version = BndEditModel.BUNDLE_VERSION_MACRO;
 			} else if(versionPolicy == ExportVersionPolicy.specified) {
 				version = dialog.getSpecifiedVersion();
 			}

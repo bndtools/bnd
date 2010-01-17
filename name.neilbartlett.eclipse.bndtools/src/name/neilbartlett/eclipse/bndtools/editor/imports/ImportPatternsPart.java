@@ -11,9 +11,9 @@ import java.util.List;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
-import name.neilbartlett.eclipse.bndtools.jobs.analyse.AnalyseImportsJob;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
 import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
+import name.neilbartlett.eclipse.bndtools.views.impexp.AnalyseImportsJob;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;

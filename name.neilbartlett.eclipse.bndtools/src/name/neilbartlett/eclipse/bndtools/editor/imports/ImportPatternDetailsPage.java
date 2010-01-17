@@ -218,7 +218,6 @@ public class ImportPatternDetailsPage extends AbstractFormPart implements
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object container = getManagedForm().getContainer();
-		
 		System.out.println(container);
 	}
 	
