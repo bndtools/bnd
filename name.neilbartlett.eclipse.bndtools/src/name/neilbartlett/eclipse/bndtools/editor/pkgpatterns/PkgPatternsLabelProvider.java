@@ -1,8 +1,8 @@
-package name.neilbartlett.eclipse.bndtools.editor.imports;
+package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
-import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -10,27 +10,28 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public class ImportPatternLabelProvider extends StyledCellLabelProvider {
+import aQute.lib.osgi.Constants;
+
+public class PkgPatternsLabelProvider extends StyledCellLabelProvider {
 	
 	private final Image packageImg;
 	
-	public ImportPatternLabelProvider() {
+	public PkgPatternsLabelProvider() {
 		packageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
 	}
-	
 	@Override
 	public void update(ViewerCell cell) {
-		ImportPattern pattern = (ImportPattern) cell.getElement();
-		
+		HeaderClause clause = (HeaderClause) cell.getElement();
 		cell.setImage(packageImg);
 		
-		StyledString styledString = new StyledString(pattern.getName());
-		if(pattern.isOptional()) {
+		StyledString styledString = new StyledString(clause.getName());
+		String resolution = clause.getAttribs().get(Constants.RESOLUTION_DIRECTIVE);
+		if(org.osgi.framework.Constants.RESOLUTION_OPTIONAL.equals(resolution)) {
 			styledString.append(" <optional>", UIConstants.ITALIC_QUALIFIER_STYLER);
 		}
-		String versionRange = pattern.getVersionRange();
-		if(versionRange != null) {
-			styledString.append(": " + versionRange, StyledString.COUNTER_STYLER);
+		String version = clause.getAttribs().get(org.osgi.framework.Constants.VERSION_ATTRIBUTE);
+		if(version != null) {
+			styledString.append(": " + version, StyledString.COUNTER_STYLER);
 		}
 		cell.setText(styledString.getString());
 		cell.setStyleRanges(styledString.getStyleRanges());

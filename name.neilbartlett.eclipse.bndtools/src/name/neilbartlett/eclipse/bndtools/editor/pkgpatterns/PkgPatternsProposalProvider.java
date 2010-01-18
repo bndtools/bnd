@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor.imports;
+package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -30,12 +30,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import aQute.bnd.plugin.Activator;
 
-public class ImportPatternProposalProvider extends
-		CachingContentProposalProvider {
+public class PkgPatternsProposalProvider extends CachingContentProposalProvider {
 	
 	private final IJavaSearchContext searchContext;
 
-	public ImportPatternProposalProvider(IJavaSearchContext searchContext) {
+	public PkgPatternsProposalProvider(IJavaSearchContext searchContext) {
 		this.searchContext = searchContext;
 	}
 
@@ -51,8 +50,8 @@ public class ImportPatternProposalProvider extends
 			replaceFromPos = 0;
 		}
 
-		Comparator<ImportPatternProposal> comparator = new Comparator<ImportPatternProposal>() {
-			public int compare(ImportPatternProposal o1, ImportPatternProposal o2) {
+		Comparator<PkgPatternProposal> comparator = new Comparator<PkgPatternProposal>() {
+			public int compare(PkgPatternProposal o1, PkgPatternProposal o2) {
 				int result = o1.getPackageFragment().getElementName().compareTo(o2.getPackageFragment().getElementName());
 				if(result == 0) {
 					result = Boolean.valueOf(o1.isWildcard()).compareTo(Boolean.valueOf(o2.isWildcard()));
@@ -60,7 +59,7 @@ public class ImportPatternProposalProvider extends
 				return result;
 			}
 		};
-		final TreeSet<ImportPatternProposal> result = new TreeSet<ImportPatternProposal>(comparator);
+		final TreeSet<PkgPatternProposal> result = new TreeSet<PkgPatternProposal>(comparator);
 		
 		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { searchContext.getJavaProject() });
 		final SearchPattern pattern = SearchPattern.createPattern("*" + prefix + "*", IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
@@ -72,8 +71,8 @@ public class ImportPatternProposalProvider extends
 				if(pkg.isDefaultPackage() || pkg.getElementName().startsWith("java."))
 					return;
 	
-				result.add(new ImportPatternProposal(pkg, false, replaceFromPos));
-				result.add(new ImportPatternProposal(pkg, true, replaceFromPos));
+				result.add(new PkgPatternProposal(pkg, false, replaceFromPos));
+				result.add(new PkgPatternProposal(pkg, true, replaceFromPos));
 			}
 		};
 		IRunnableWithProgress runnable = new IRunnableWithProgress() {
@@ -106,7 +105,7 @@ public class ImportPatternProposalProvider extends
 	@Override
 	protected boolean match(String contents, int position, IContentProposal proposal) {
 		final String prefix = contents.substring(0, position);
-		return ((ImportPatternProposal) proposal).getPackageFragment().getElementName().toLowerCase().indexOf(prefix.toLowerCase()) > -1;
+		return ((PkgPatternProposal) proposal).getPackageFragment().getElementName().toLowerCase().indexOf(prefix.toLowerCase()) > -1;
 	}
 
 }

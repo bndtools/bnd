@@ -237,7 +237,7 @@ public class BndEditModel {
 	}
 
 	public List<ExportedPackage> getExportedPackages() {
-		return doSetClauseList(Constants.EXPORT_PACKAGE, new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
+		return doGetClauseList(Constants.EXPORT_PACKAGE, new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
 			public ExportedPackage convert(Entry<String, Map<String, String>> input) {
 				return new ExportedPackage(input.getKey(), input.getValue());
 			}
@@ -269,7 +269,7 @@ public class BndEditModel {
 		setExportedPackages(exports);
 	}
 	public List<ServiceComponent> getServiceComponents() {
-		return doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
+		return doGetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
 			public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
 				return new ServiceComponent(input.getKey(), input.getValue());
 			}
@@ -281,8 +281,21 @@ public class BndEditModel {
 		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
 	}
 
+	public List<HeaderClause> getHeaderClauses(String name) {
+		return doGetClauseList(name, new Converter<HeaderClause, Entry<String,Map<String,String>>>() {
+			public HeaderClause convert(Entry<String, Map<String, String>> input) {
+				return new HeaderClause(input.getKey(), input.getValue());
+			}
+		}); 
+	}
+
+	public void setHeaderClauses(String name, Collection<? extends HeaderClause> clauses) {
+		List<HeaderClause> oldValue = getHeaderClauses(name);
+		doSetClauseList(name, oldValue, clauses);
+	}
+
 	public List<ImportPattern> getImportPatterns() {
-		return doSetClauseList(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
+		return doGetClauseList(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
 			public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
 				return new ImportPattern(input.getKey(), input.getValue());
 			}
@@ -376,7 +389,7 @@ public class BndEditModel {
 	
 	}
 
-	<R> List<R> doSetClauseList(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
+	<R> List<R> doGetClauseList(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
 		return doGetObject(name, new Converter<List<R>,String>() {
 			public List<R> convert(String string) throws IllegalArgumentException {
 				List<R> result = new ArrayList<R>();

@@ -2,13 +2,14 @@ package name.neilbartlett.eclipse.bndtools.editor.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-public abstract class HeaderClause {
+public class HeaderClause implements Cloneable {
 	
 	private static final String INTERNAL_LIST_SEPARATOR = ";";
 	private static final String INTERNAL_LIST_SEPARATOR_NEWLINES = INTERNAL_LIST_SEPARATOR + "\\\n\t\t";
@@ -23,19 +24,15 @@ public abstract class HeaderClause {
 		this.name = name;
 		this.attribs = attribs;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	public String getName() {
 		return name;
 	}
-
 	public Map<String, String> getAttribs() {
 		return attribs;
 	}
-
 	public List<String> getListAttrib(String attrib) {
 		String string = attribs.get(attrib);
 		if(string == null)
@@ -49,7 +46,6 @@ public abstract class HeaderClause {
 		
 		return result;
 	}
-
 	public void setListAttrib(String attrib, Collection<? extends String> value) {
 		if(value == null || value.isEmpty())
 			attribs.remove(attrib);
@@ -65,7 +61,6 @@ public abstract class HeaderClause {
 			attribs.put(attrib, buffer.toString());
 		}
 	}
-
 	public void formatTo(StringBuilder buffer) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 		buffer.append(name);
@@ -83,6 +78,11 @@ public abstract class HeaderClause {
 			}
 		}
 	}
-	
-	protected abstract boolean newlinesBetweenAttributes();
+	protected boolean newlinesBetweenAttributes() {
+		return false;
+	}
+	@Override
+	public HeaderClause clone() {
+		return new HeaderClause(this.name, new HashMap<String, String>(this.attribs));
+	}
 }

@@ -1,16 +1,16 @@
-package name.neilbartlett.eclipse.bndtools.editor.imports;
+package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.fieldassist.IContentProposal;
 
-public class ImportPatternProposal implements IContentProposal {
+public class PkgPatternProposal implements IContentProposal {
 	
 	private final IPackageFragment pkg;
 	private final boolean wildcard;
 	
 	private final int replaceFromPos;
 
-	public ImportPatternProposal(IPackageFragment pkg, boolean wildcard, int replaceFromPos) {
+	public PkgPatternProposal(IPackageFragment pkg, boolean wildcard, int replaceFromPos) {
 		this.pkg = pkg;
 		this.wildcard = wildcard;
 		

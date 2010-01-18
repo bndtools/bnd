@@ -1,13 +1,11 @@
 package name.neilbartlett.eclipse.bndtools.editor.imports;
 
-import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.DetailsPart;
-import org.eclipse.ui.forms.IDetailsPage;
-import org.eclipse.ui.forms.IDetailsPageProvider;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.MasterDetailsBlock;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -15,7 +13,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 public class ImportPatternsBlock extends MasterDetailsBlock {
 
-	private ImportPatternsPart importPatternsPart;
+	private ImportPatternsListPart listPart;
 
 	@Override
 	protected void createMasterPart(IManagedForm managedForm, Composite parent) {
@@ -23,8 +21,8 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 		
 		Composite container = toolkit.createComposite(parent);
 		
-		importPatternsPart = new ImportPatternsPart(container, toolkit, Section.TITLE_BAR | Section.EXPANDED);
-		managedForm.addPart(importPatternsPart);
+		listPart = new ImportPatternsListPart(container, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+		managedForm.addPart(listPart);
 		
 		VersionPolicyPart versionPolicyPart = new VersionPolicyPart(container, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		versionPolicyPart.getSection().setExpanded(false);
@@ -32,7 +30,7 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
 		container.setLayout(new GridLayout(1, false));
-		importPatternsPart.getSection().setLayoutData(new GridData(GridData.FILL_BOTH));
+		listPart.getSection().setLayoutData(new GridData(GridData.FILL_BOTH));
 		versionPolicyPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 
@@ -43,18 +41,7 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 
 	@Override
 	protected void registerPages(DetailsPart detailsPart) {
-		detailsPart.setPageProvider(new IDetailsPageProvider() {
-			public Object getPageKey(Object object) {
-				if(object instanceof ImportPattern)
-					return ImportPattern.class;
-				
-				return object.getClass();
-			}
-			public IDetailsPage getPage(Object key) {
-				return null;
-			}
-		});
-		
-		detailsPart.registerPage(ImportPattern.class, new ImportPatternDetailsPage(importPatternsPart));
+		ImportPatternsDetailsPage page = new ImportPatternsDetailsPage(listPart);
+		detailsPart.registerPage(HeaderClause.class, page);
 	}
 }

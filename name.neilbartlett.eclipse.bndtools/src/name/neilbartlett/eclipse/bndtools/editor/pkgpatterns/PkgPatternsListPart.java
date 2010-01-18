@@ -1,4 +1,4 @@
-package name.neilbartlett.eclipse.bndtools.editor.imports;
+package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -10,15 +10,16 @@ import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
-import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
 import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
 import name.neilbartlett.eclipse.bndtools.views.impexp.AnalyseImportsJob;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsView;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,8 +35,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -48,27 +50,22 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
-public class ImportPatternsPart extends SectionPart implements PropertyChangeListener {
+public abstract class PkgPatternsListPart extends SectionPart implements PropertyChangeListener {
 
+	private final String propertyName;
+	
+	protected List<HeaderClause> clauses;
+	
 	private IManagedForm managedForm;
 	private TableViewer viewer;
 	private BndEditModel model;
-	private List<ImportPattern> patterns;
+	
 	
 	private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
 	
-	private final IAction fixMissingStarPatternAction = new Action("Append missing \"*\" pattern.") {
-		public void run() {
-			ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>());
-			patterns.add(starPattern);
-			viewer.add(starPattern);
-			validate();
-			markDirty();
-		}
-	};
-
-	public ImportPatternsPart(Composite parent, FormToolkit toolkit, int style) {
+	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName) {
 		super(parent, toolkit, style);
+		this.propertyName = propertyName;
 		createSection(getSection(), toolkit);
 	}
 	
@@ -81,7 +78,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new ImportPatternLabelProvider());
+		viewer.setLabelProvider(new PkgPatternsLabelProvider());
 		
 		final Button btnAdd = toolkit.createButton(composite, "Add...", SWT.PUSH);
 		final Button btnInsert = toolkit.createButton(composite, "Insert", SWT.PUSH);
@@ -91,27 +88,33 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		toolkit.createLabel(composite, ""); // Spacer
 		
 		ImageHyperlink lnkAnalyse = toolkit.createImageHyperlink(composite, SWT.LEFT);
-		lnkAnalyse.setText("Analyse Imports");
+		lnkAnalyse.setText("Analyse Packages");
 		lnkAnalyse.setImage(imgAnalyse);
 
 		
 		// Listeners
 		lnkAnalyse.addHyperlinkListener(new HyperlinkAdapter() {
 			@Override
-			public void linkActivated(HyperlinkEvent e) {
+			public void linkActivated(HyperlinkEvent event) {
 				IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 				IFile file = ResourceUtil.getFile(formPage.getEditorInput());
+				final IWorkbenchPage workbenchPage = formPage.getEditorSite().getPage();
 				
-				FormEditor editor = formPage.getEditor();
-				if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
-					AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, formPage.getEditorSite().getPage());
-					job.schedule();
+				try {
+					workbenchPage.showView(ImportsExportsView.VIEW_ID);
+					FormEditor editor = formPage.getEditor();
+					if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
+						AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, workbenchPage);
+						job.schedule();
+					}
+				} catch (PartInitException e) {
+					ErrorDialog.openError(workbenchPage.getWorkbenchWindow().getShell(), "Analyse Packages", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening Imports/Exports view", e));
 				}
 			}
 		});
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				managedForm.fireSelectionChanged(ImportPatternsPart.this, event.getSelection());
+				managedForm.fireSelectionChanged(PkgPatternsListPart.this, event.getSelection());
 				boolean enabled = !viewer.getSelection().isEmpty();
 				btnInsert.setEnabled(enabled);
 				btnRemove.setEnabled(enabled);
@@ -165,18 +168,26 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		btnMoveUp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnMoveDown.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
-	void doAdd() {
-		boolean appendStar = patterns.isEmpty();
+	protected List<HeaderClause> getClauses() {
+		return clauses;
+	}
+	protected void doAddClause(HeaderClause clause) {
+		clauses.add(clause);
+		viewer.add(clause);
 		
-		ImportPattern newPattern = new ImportPattern("", new HashMap<String, String>());
-		patterns.add(newPattern);
-		viewer.add(newPattern);
-		
-		if(appendStar) {
-			ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>());
-			patterns.add(starPattern);
-			viewer.add(starPattern);
-		}
+		validate();
+		markDirty();
+	}
+	protected void doRemoveClause(Object clause) {
+		clauses.remove(clause);
+		viewer.remove(clause);
+
+		validate();
+		markDirty();
+	}
+	protected void doAdd() {
+		HeaderClause newPattern = new HeaderClause("", new HashMap<String, String>());
+		doAddClause(newPattern);
 		
 		viewer.setSelection(new StructuredSelection(newPattern));
 		validate();
@@ -188,10 +199,10 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		if(selection.isEmpty())
 			return;
 		
-		selectedIndex = patterns.indexOf(selection.getFirstElement());
-		ImportPattern pattern = new ImportPattern("", new HashMap<String, String>());
+		selectedIndex = clauses.indexOf(selection.getFirstElement());
+		HeaderClause pattern = new HeaderClause("", new HashMap<String, String>());
 
-		patterns.add(selectedIndex, pattern);
+		clauses.add(selectedIndex, pattern);
 		viewer.insert(pattern, selectedIndex);
 		
 		viewer.setSelection(new StructuredSelection(pattern));
@@ -203,25 +214,22 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		Iterator iter = ((IStructuredSelection) viewer.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
-			patterns.remove(item);
-			viewer.remove(item);
+			doRemoveClause(item);
 		}
 		validate();
 		markDirty();
 	}
 	void doMoveUp() {
 		int[] selectedIndexes = findSelectedIndexes();
-		int[] newSelection = CollectionUtils.moveUp(patterns, selectedIndexes);
+		CollectionUtils.moveUp(clauses, selectedIndexes);
 		viewer.refresh();
-		//resetSelection(newSelection);
 		validate();
 		markDirty();
 	}
 	void doMoveDown() {
 		int[] selectedIndexes = findSelectedIndexes();
-		int[] newSelection = CollectionUtils.moveDown(patterns, selectedIndexes);
+		CollectionUtils.moveDown(clauses, selectedIndexes);
 		viewer.refresh();
-		//resetSelection(newSelection);
 		validate();
 		markDirty();
 	}
@@ -230,10 +238,11 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		int[] selectionIndexes = new int[selection.length];
 		
 		for(int i=0; i<selection.length; i++) {
-			selectionIndexes[i] = patterns.indexOf(selection[i]);
+			selectionIndexes[i] = clauses.indexOf(selection[i]);
 		}
 		return selectionIndexes;
 	}
+	/*
 	void resetSelection(int[] selectedIndexes) {
 		ArrayList<ImportPattern> selection = new ArrayList<ImportPattern>(selectedIndexes.length);
 		for (int index : selectedIndexes) {
@@ -241,6 +250,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		}
 		viewer.setSelection(new StructuredSelection(selection), true);
 	}
+	*/
 ;	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
@@ -260,44 +270,29 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		super.refresh();
 		
 		// Deep-copy the model
-		Collection<ImportPattern> original = model.getImportPatterns();
+		Collection<HeaderClause> original = model.getHeaderClauses(propertyName);
 		if(original != null) {
-			patterns = new ArrayList<ImportPattern>(original.size());
-			for (ImportPattern pattern : original) {
-				patterns.add(pattern.clone());
+			clauses = new ArrayList<HeaderClause>(original.size());
+			for (HeaderClause clause : original) {
+				clauses.add(clause.clone());
 			}
 		} else {
-			patterns = new ArrayList<ImportPattern>();
+			clauses = new ArrayList<HeaderClause>();
 		}
-		viewer.setInput(patterns);
+		viewer.setInput(clauses);
 		validate();
 	}
-	
 	public void validate() {
-		IMessageManager msgs = getManagedForm().getMessageManager();
-		msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);
-		
-		String noStarWarning = null;
-		if(!patterns.isEmpty()) {
-			ImportPattern last = patterns.get(patterns.size() - 1);
-			if(!last.getName().equals("*"))
-				noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
-		}
-		if(noStarWarning != null) {
-			msgs.addMessage("_warning_no_star", noStarWarning, fixMissingStarPatternAction, IMessageProvider.WARNING);
-		} else {
-			msgs.removeMessage("_warning_no_star");
-		}
+		// Do nothing.
 	}
-	
 	@Override
 	public void commit(boolean onSave) {
 		try {
-			model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
-			model.setImportPatterns(patterns.isEmpty() ? null : patterns);
+			model.removePropertyChangeListener(propertyName, this);
+			model.setHeaderClauses(propertyName, clauses.isEmpty() ? null : clauses);
 		} finally {
 			super.commit(onSave);
-			model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+			model.addPropertyChangeListener(propertyName, this);
 		}
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -307,7 +302,7 @@ public class ImportPatternsPart extends SectionPart implements PropertyChangeLis
 		else
 			markStale();
 	}
-	public void updateLabel(ImportPattern pattern) {
-		viewer.update(pattern, null);
+	public void updateLabels(Object[] elements) {
+		viewer.update(elements, null);
 	}
 }
