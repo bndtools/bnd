@@ -10,12 +10,12 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
-public class ImportsPage extends FormPage {
+public class ImportPatternsPage extends FormPage {
 
 	private final ImportPatternsBlock block = new ImportPatternsBlock();
 	private final BndEditModel model;
 
-	public ImportsPage(FormEditor editor, BndEditModel model, String id, String title) {
+	public ImportPatternsPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
 		this.model = model;
 	}

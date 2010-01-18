@@ -3,6 +3,7 @@ package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -178,6 +179,15 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		validate();
 		markDirty();
 	}
+	protected void doAddClauses(Collection<? extends HeaderClause> clauses) {
+		if(clauses != null && !clauses.isEmpty()) {
+			this.clauses.addAll(clauses);
+			viewer.add(clauses.toArray(new HeaderClause[0]));
+			
+			validate();
+			markDirty();
+		}
+	}
 	protected void doRemoveClause(Object clause) {
 		clauses.remove(clause);
 		viewer.remove(clause);
@@ -193,23 +203,27 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		validate();
 		markDirty();
 	}
-	void doInsert() {
-		int selectedIndex;
-		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-		if(selection.isEmpty())
-			return;
-		
-		selectedIndex = clauses.indexOf(selection.getFirstElement());
-		HeaderClause pattern = new HeaderClause("", new HashMap<String, String>());
-
-		clauses.add(selectedIndex, pattern);
-		viewer.insert(pattern, selectedIndex);
-		
-		viewer.setSelection(new StructuredSelection(pattern));
-		validate();
-		markDirty();
+	protected void doInsertClauses(Collection<? extends HeaderClause> newClauses) {
+		if(newClauses != null && !newClauses.isEmpty()) {
+			int selectedIndex;
+			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+			if(selection.isEmpty())
+				return;
+			selectedIndex = this.clauses.indexOf(selection.getFirstElement());
+	
+			this.clauses.addAll(selectedIndex, newClauses);
+			viewer.setInput(this.clauses);
+			viewer.setSelection(new StructuredSelection(newClauses.iterator().next()));
+			
+			validate();
+			markDirty();
+		}
 	}
-	void doRemove() {
+	protected void doInsert() {
+		HeaderClause pattern = new HeaderClause("", new HashMap<String, String>());
+		doInsertClauses(Arrays.asList(pattern));
+	}
+	protected void doRemove() {
 		@SuppressWarnings("unchecked")
 		Iterator iter = ((IStructuredSelection) viewer.getSelection()).iterator();
 		while(iter.hasNext()) {

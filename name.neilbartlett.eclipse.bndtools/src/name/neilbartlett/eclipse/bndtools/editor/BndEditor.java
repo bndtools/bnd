@@ -11,10 +11,10 @@
 package name.neilbartlett.eclipse.bndtools.editor;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import name.neilbartlett.eclipse.bndtools.editor.components.ComponentsPage;
-import name.neilbartlett.eclipse.bndtools.editor.imports.ImportsPage;
+import name.neilbartlett.eclipse.bndtools.editor.exports.ExportPatternsPage;
+import name.neilbartlett.eclipse.bndtools.editor.imports.ImportPatternsPage;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
 import org.eclipse.core.resources.IResource;
@@ -22,12 +22,9 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -72,7 +69,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 			ComponentsPage componentsPage = new ComponentsPage(this, model, "componentsPage", "Components");
 			addPage(componentsPage);
 			
-			ImportsPage importsPage = new ImportsPage(this, model, "importsPage", "Imports");
+			ExportPatternsPage exportsPage = new ExportPatternsPage(this, model, "exportsPage", "Exports");
+			addPage(exportsPage);
+			
+			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, "importsPage", "Imports");
 			addPage(importsPage);
 			
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());

@@ -54,8 +54,6 @@ public class OverviewFormPage extends FormPage {
 		managedForm.addPart(buildPart);
 		
 		Composite pnlPackagesColumn = toolkit.createComposite(body);
-		ExportedPackagesPart exportedPackagesPart = new ExportedPackagesPart(pnlPackagesColumn, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
-		managedForm.addPart(exportedPackagesPart);
 		
 		PrivatePackagesPart privatePackagesPart = new PrivatePackagesPart(pnlPackagesColumn, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(privatePackagesPart);
@@ -93,6 +91,5 @@ public class OverviewFormPage extends FormPage {
 		layout = new GridLayout(1, false);
 		pnlPackagesColumn.setLayout(layout);
 		privatePackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		exportedPackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 }
