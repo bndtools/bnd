@@ -73,10 +73,17 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
 				} catch (PackageListException e1) {
 					setListElements(new Object[0]);
 				}
+				updateOkState();
 			}
 		});
 		
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		btnSourceOnly.setLayoutData(gd);
+	}
+	
+	@Override
+	protected void handleEmptyList() {
+		// Replace super implemenentation; don't disable the fields when the initial list is empty
+		updateOkState();
 	}
 }

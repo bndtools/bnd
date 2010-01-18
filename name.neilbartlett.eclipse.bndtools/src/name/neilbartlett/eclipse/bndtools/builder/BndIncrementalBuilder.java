@@ -15,12 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -28,8 +27,10 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,19 +45,19 @@ import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Instruction;
 import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.eclipse.EclipseClasspath;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	
 	public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
-	public static final String MARKER_BND_ERROR = Plugin.PLUGIN_ID + ".bndproblem";
+	public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
 
 	private static final String BND_SUFFIX = ".bnd";
 	private static final String CLASS_SUFFIX = ".class";
 
 	
 	private final Map<IPath, BndBuildModel> buildModels = new HashMap<IPath, BndBuildModel>();
-	private List<IPath> classFileLocations = null;
+	private List<IPath> classpathLocations = null;
+	private List<IPath> sourceLocations = null;
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
@@ -74,17 +75,23 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	void getProjectClasspaths() {
 		// Look for class file locations
-		classFileLocations = new ArrayList<IPath>();
+		classpathLocations = new ArrayList<IPath>();
+		sourceLocations = new ArrayList<IPath>(3);
+		
 		IJavaProject javaProject = JavaCore.create(getProject());
 		try {
-			classFileLocations.add(javaProject.getOutputLocation());
+			classpathLocations.add(javaProject.getOutputLocation());
 			IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
 			for (IClasspathEntry entry : classpathEntries) {
 				switch (entry.getEntryKind()) {
 				case IClasspathEntry.CPE_SOURCE:
+					sourceLocations.add(entry.getPath());
 					IPath outputLocation = entry.getOutputLocation();
 					if(outputLocation != null)
-						classFileLocations.add(outputLocation);
+						classpathLocations.add(outputLocation);
+					break;
+				case IClasspathEntry.CPE_LIBRARY:
+					classpathLocations.add(entry.getPath());
 					break;
 				default:
 					break;
@@ -124,7 +131,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 		// Clear markers
-		getProject().deleteMarkers(MARKER_BND_ERROR, true, IResource.DEPTH_INFINITE);
+		getProject().deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
 		
 		// Delete target files
 		List<IPath> paths = new ArrayList<IPath>();
@@ -176,18 +183,31 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		
 		// Clear markers
-		bndFile.deleteMarkers(MARKER_BND_ERROR, true, IResource.DEPTH_INFINITE);
+		bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
 		
 		// Create the builder
 		final Builder builder = new Builder();
 		builder.setPedantic(Activator.getDefault().isPedantic() || Activator.getDefault().isDebugging());
 		
 		// Initialise the builder classpath
-		File projectDir = getProject().getLocation().toFile();
 		try {
-			EclipseClasspath eclipseClasspath = new EclipseClasspath(builder, projectDir.getParentFile(), projectDir);
-			builder.setClasspath((File[]) eclipseClasspath.getClasspath().toArray(new File[0]));
-			builder.setSourcepath((File[]) eclipseClasspath.getSourcepath().toArray(new File[0]));
+			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+			
+			List<File> classpath = new ArrayList<File>(classpathLocations.size());
+			for (IPath path : classpathLocations) {
+				IResource resource = root.findMember(path);
+				if(resource != null)
+					classpath.add(resource.getLocation().toFile());
+			}
+			List<File> sourcepath = new ArrayList<File>(sourceLocations.size());
+			for (IPath path : sourceLocations) {
+				IResource resource = root.findMember(path);
+				if(resource != null)
+					sourcepath.add(resource.getLocation().toFile());
+			}
+			
+			builder.setClasspath((File[]) classpath.toArray(new File[0]));
+			builder.setSourcepath((File[]) sourcepath.toArray(new File[0]));
 		} catch (Exception e) {
 			// TODO report exception
 			e.printStackTrace();
@@ -219,9 +239,10 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		
 		// Report errors
-		if(!builder.getErrors().isEmpty()) {
-			// TODO report errors
-			return;
+		for (String errorMessage : builder.getErrors()) {
+			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
+			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			marker.setAttribute(IMarker.MESSAGE, errorMessage);
 		}
 		
 		// Check the output file path
@@ -250,19 +271,23 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					progress.setWorkRemaining(9);
 				}
 				
-				ByteArrayOutputStream jarBits = new ByteArrayOutputStream();
-				Jar jar = builder.getJar();
-				try {
-					jar.write(jarBits);
-					ByteArrayInputStream inputStream = new ByteArrayInputStream(jarBits.toByteArray());
-					if(targetFile.exists())
-						targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
-					else
-						targetFile.create(inputStream, IResource.NONE, progress.newChild(9));
-					targetFile.setDerived(true);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if(!builder.getErrors().isEmpty() && targetFile.exists()) {
+					targetFile.delete(false, progress.newChild(9));
+				} else {
+					ByteArrayOutputStream jarBits = new ByteArrayOutputStream();
+					Jar jar = builder.getJar();
+					try {
+						jar.write(jarBits);
+						ByteArrayInputStream inputStream = new ByteArrayInputStream(jarBits.toByteArray());
+						if(targetFile.exists())
+							targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
+						else
+							targetFile.create(inputStream, IResource.NONE, progress.newChild(9));
+						targetFile.setDerived(true);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		};
@@ -318,7 +343,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			Set<String> affectedPackages = new HashSet<String>();
 			
 			// Check if it's in any of the classpath class file locations
-			for (IPath location : classFileLocations) {
+			for (IPath location : classpathLocations) {
 				if(location.isPrefixOf(classFile.getFullPath())) {
 					// Yes it is; check the package name
 					IPath relativePath = classFile.getFullPath().makeRelativeTo(location);
