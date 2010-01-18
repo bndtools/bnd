@@ -1,15 +1,31 @@
 package name.neilbartlett.eclipse.bndtools.editor.imports;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.AnalyseToolbarAction;
+import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
+import name.neilbartlett.eclipse.bndtools.views.impexp.AnalyseImportsJob;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsView;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.DetailsPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.MasterDetailsBlock;
+import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.ResourceUtil;
 
 public class ImportPatternsBlock extends MasterDetailsBlock {
 
@@ -35,8 +51,13 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 	}
 
 	@Override
-	protected void createToolBarActions(IManagedForm managedForm) {
-		// TODO Auto-generated method stub
+	protected void createToolBarActions(final IManagedForm managedForm) {
+		ScrolledForm form = managedForm.getForm();
+		
+		AnalyseToolbarAction analyseAction = new AnalyseToolbarAction((IFormPage) managedForm.getContainer());
+		analyseAction.setToolTipText("Analyse Imports/Exports");
+		
+		form.getToolBarManager().add(analyseAction);
 	}
 
 	@Override

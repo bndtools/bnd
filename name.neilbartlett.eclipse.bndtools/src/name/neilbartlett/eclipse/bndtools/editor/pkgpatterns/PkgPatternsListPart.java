@@ -88,31 +88,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		final Button btnMoveDown = toolkit.createButton(composite, "Down", SWT.PUSH);
 		toolkit.createLabel(composite, ""); // Spacer
 		
-		ImageHyperlink lnkAnalyse = toolkit.createImageHyperlink(composite, SWT.LEFT);
-		lnkAnalyse.setText("Analyse Packages");
-		lnkAnalyse.setImage(imgAnalyse);
-
-		
 		// Listeners
-		lnkAnalyse.addHyperlinkListener(new HyperlinkAdapter() {
-			@Override
-			public void linkActivated(HyperlinkEvent event) {
-				IFormPage formPage = (IFormPage) getManagedForm().getContainer();
-				IFile file = ResourceUtil.getFile(formPage.getEditorInput());
-				final IWorkbenchPage workbenchPage = formPage.getEditorSite().getPage();
-				
-				try {
-					workbenchPage.showView(ImportsExportsView.VIEW_ID);
-					FormEditor editor = formPage.getEditor();
-					if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
-						AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, workbenchPage);
-						job.schedule();
-					}
-				} catch (PartInitException e) {
-					ErrorDialog.openError(workbenchPage.getWorkbenchWindow().getShell(), "Analyse Packages", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening Imports/Exports view", e));
-				}
-			}
-		});
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				managedForm.fireSelectionChanged(PkgPatternsListPart.this, event.getSelection());
@@ -161,7 +137,6 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		composite.setLayout(layout);
-		lnkAnalyse.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6));
 		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnInsert.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));

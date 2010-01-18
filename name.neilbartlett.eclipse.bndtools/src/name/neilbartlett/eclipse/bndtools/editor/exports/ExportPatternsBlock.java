@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.exports;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.AnalyseToolbarAction;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 
 import org.eclipse.swt.layout.GridData;
@@ -9,7 +10,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.DetailsPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.MasterDetailsBlock;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
 public class ExportPatternsBlock extends MasterDetailsBlock {
@@ -31,8 +34,13 @@ public class ExportPatternsBlock extends MasterDetailsBlock {
 	}
 
 	@Override
-	protected void createToolBarActions(IManagedForm managedForm) {
-		// TODO Auto-generated method stub
+	protected void createToolBarActions(final IManagedForm managedForm) {
+		ScrolledForm form = managedForm.getForm();
+		
+		AnalyseToolbarAction analyseAction = new AnalyseToolbarAction((IFormPage) managedForm.getContainer());
+		analyseAction.setToolTipText("Analyse Imports/Exports");
+		
+		form.getToolBarManager().add(analyseAction);
 	}
 
 	@Override

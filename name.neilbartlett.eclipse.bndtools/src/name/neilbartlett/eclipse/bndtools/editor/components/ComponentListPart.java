@@ -115,8 +115,8 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
 		gd.widthHint = 250;
 		table.setLayoutData(gd);
-		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		btnRemove.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
 	void doAdd() {
 		ServiceComponent component = new ServiceComponent("", new HashMap<String, String>());
