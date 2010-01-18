@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.utils.ClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -27,18 +28,13 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 
 import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
@@ -56,12 +52,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 	
 	private final Map<IPath, BndBuildModel> buildModels = new HashMap<IPath, BndBuildModel>();
-	private List<IPath> classpathLocations = null;
-	private List<IPath> sourceLocations = null;
+	private ClasspathCalculator classpathCalculator;
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-		getProjectClasspaths();
+		classpathCalculator = new ClasspathCalculator(JavaCore.create(getProject()));
 		if(kind == FULL_BUILD) {
 			fullBuild(monitor);
 		} else {
@@ -73,35 +68,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		return null;
 	}
-	void getProjectClasspaths() {
-		// Look for class file locations
-		classpathLocations = new ArrayList<IPath>();
-		sourceLocations = new ArrayList<IPath>(3);
-		
-		IJavaProject javaProject = JavaCore.create(getProject());
-		try {
-			classpathLocations.add(javaProject.getOutputLocation());
-			IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
-			for (IClasspathEntry entry : classpathEntries) {
-				switch (entry.getEntryKind()) {
-				case IClasspathEntry.CPE_SOURCE:
-					sourceLocations.add(entry.getPath());
-					IPath outputLocation = entry.getOutputLocation();
-					if(outputLocation != null)
-						classpathLocations.add(outputLocation);
-					break;
-				case IClasspathEntry.CPE_LIBRARY:
-					classpathLocations.add(entry.getPath());
-					break;
-				default:
-					break;
-				}
-			}
-		} catch (JavaModelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+
 	protected void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		
@@ -191,23 +158,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		// Initialise the builder classpath
 		try {
-			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-			
-			List<File> classpath = new ArrayList<File>(classpathLocations.size());
-			for (IPath path : classpathLocations) {
-				IResource resource = root.findMember(path);
-				if(resource != null)
-					classpath.add(resource.getLocation().toFile());
-			}
-			List<File> sourcepath = new ArrayList<File>(sourceLocations.size());
-			for (IPath path : sourceLocations) {
-				IResource resource = root.findMember(path);
-				if(resource != null)
-					sourcepath.add(resource.getLocation().toFile());
-			}
-			
-			builder.setClasspath((File[]) classpath.toArray(new File[0]));
-			builder.setSourcepath((File[]) sourcepath.toArray(new File[0]));
+			builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
+			builder.setSourcepath(classpathCalculator.sourcepathAsFiles().toArray(new File[0]));
 		} catch (Exception e) {
 			// TODO report exception
 			e.printStackTrace();
@@ -343,7 +295,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			Set<String> affectedPackages = new HashSet<String>();
 			
 			// Check if it's in any of the classpath class file locations
-			for (IPath location : classpathLocations) {
+			for (IPath location : classpathCalculator.classpathAsPaths()) {
 				if(location.isPrefixOf(classFile.getFullPath())) {
 					// Yes it is; check the package name
 					IPath relativePath = classFile.getFullPath().makeRelativeTo(location);

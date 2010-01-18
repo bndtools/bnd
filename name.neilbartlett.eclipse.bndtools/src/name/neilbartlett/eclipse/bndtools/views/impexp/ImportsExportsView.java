@@ -113,7 +113,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		if(selection instanceof IStructuredSelection) {
 			IFile file = getFileSelection((IStructuredSelection) selection);
-			if(file != null && file.getName().endsWith(".bnd")) {
+			if(file != null && (file.getName().endsWith(".bnd") || file.getName().endsWith(".jar"))) {
 				boolean changed = !file.equals(this.selectedFile);
 				this.selectedFile = file;
 				

@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.utils.ClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -17,14 +17,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Processor;
-import aQute.lib.osgi.eclipse.EclipseClasspath;
 
 public class AnalyseImportsJob extends Job {
 
@@ -39,61 +41,65 @@ public class AnalyseImportsJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		Builder builder = new Builder();
-		
-		// Set up the builder classpath
 		try {
-			File projectDir = file.getProject().getLocation().toFile();
-			EclipseClasspath eclipseClasspath = new EclipseClasspath(null, projectDir.getParentFile(), projectDir);
-			Set<File> classpath = eclipseClasspath.getClasspath();
-			
-			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
-		} catch (Exception e) {
-			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error setting up analyser classpath.", e);
-		}
-		
-		// Read the properties
-		try {
-			Properties props = new Properties();
-			InputStream content = file.getContents();
-			props.load(content);
-			builder.setProperties(props);
+			Jar jar;
+			if(file.getName().endsWith(".bnd")) {
+				jar = getJarForBndfile();
+			} else {
+				jar = new Jar(file.getName(), file.getLocation().toFile());
+			}
+			showManifest(jar);
+			return Status.OK_STATUS;
 		} catch (CoreException e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading properties.", e);
 		} catch (IOException e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading properties.", e);
 		}
+	}
+	
+	Jar getJarForBndfile() throws IOException, CoreException {
+		Builder builder = new Builder();
+		
+		// Set up the builder classpath
+		IJavaProject javaProject = JavaCore.create(file.getProject());
+		ClasspathCalculator classpathCalculator = new ClasspathCalculator(javaProject);
+		builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
+		
+		// Read the properties
+		Properties props = new Properties();
+		InputStream content = file.getContents();
+		props.load(content);
+		builder.setProperties(props);
 		
 		// Calculate the manifest
 		try {
 			builder.build();
-			Manifest manifest = builder.getJar().getManifest();
-			if(manifest != null) {
-				Attributes attribs = manifest.getMainAttributes();
-				final Map<String, Map<String, String>> imports = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
-				final Map<String, Map<String, String>> exports = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
-				
-				imports.keySet().removeAll(exports.keySet());
-				
-				Display display = page.getWorkbenchWindow().getShell().getDisplay();
-				display.asyncExec(new Runnable() {
-					public void run() {
-						IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID);
-						if(viewRef != null) {
-							ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
-							if(view != null) {
-								view.setInput(file, imports, exports);
-							}
-						}
-					}
-				});
-			}
-			return Status.OK_STATUS;
+			return builder.getJar();
 		} catch (Exception e) {
-			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error calculating imports/exports.", e);
+			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
 	}
-	
-
-
+	protected void showManifest(Jar jar) throws IOException {
+		Manifest manifest = jar.getManifest();
+		if(manifest != null) {
+			Attributes attribs = manifest.getMainAttributes();
+			final Map<String, Map<String, String>> imports = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
+			final Map<String, Map<String, String>> exports = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
+			
+			imports.keySet().removeAll(exports.keySet());
+			
+			Display display = page.getWorkbenchWindow().getShell().getDisplay();
+			display.asyncExec(new Runnable() {
+				public void run() {
+					IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID);
+					if(viewRef != null) {
+						ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
+						if(view != null) {
+							view.setInput(file, imports, exports);
+						}
+					}
+				}
+			});
+		}
+	}
 }
