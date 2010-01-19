@@ -43,13 +43,19 @@ public class AnalyseImportsJob extends Job {
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		try {
-			Jar jar;
+			Manifest manifest;
 			if(file.getName().endsWith(".bnd")) {
-				jar = getJarForBndfile();
+				manifest = getManifestForBndfile();
 			} else {
-				jar = new Jar(file.getName(), file.getLocation().toFile());
+				Jar jar = null;
+				try {
+					jar = new Jar(file.getName(), file.getLocation().toFile());
+					manifest = jar.getManifest();
+				} finally {
+					if(jar != null) jar.close();
+				}
 			}
-			showManifest(jar);
+			showManifest(manifest);
 			return Status.OK_STATUS;
 		} catch (CoreException e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading properties.", e);
@@ -58,7 +64,7 @@ public class AnalyseImportsJob extends Job {
 		}
 	}
 	
-	Jar getJarForBndfile() throws IOException, CoreException {
+	Manifest getManifestForBndfile() throws IOException, CoreException {
 		Builder builder = new Builder();
 		
 		// Read the properties
@@ -80,15 +86,15 @@ public class AnalyseImportsJob extends Job {
 		// Calculate the manifest
 		try {
 			builder.build();
-			return builder.getJar();
+			Jar jar = builder.getJar();
+			return jar.getManifest();
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		} finally {
 			builder.close();
 		}
 	}
-	protected void showManifest(Jar jar) throws IOException {
-		Manifest manifest = jar.getManifest();
+	protected void showManifest(Manifest manifest) throws IOException {
 		if(manifest != null) {
 			Attributes attribs = manifest.getMainAttributes();
 			final Map<String, Map<String, String>> imports = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
