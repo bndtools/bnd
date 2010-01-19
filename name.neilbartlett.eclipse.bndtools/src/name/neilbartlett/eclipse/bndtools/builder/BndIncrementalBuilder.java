@@ -17,7 +17,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.utils.ClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.ProjectClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -33,6 +35,8 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -52,11 +56,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 	
 	private final Map<IPath, BndBuildModel> buildModels = new HashMap<IPath, BndBuildModel>();
-	private ClasspathCalculator classpathCalculator;
+	private IClasspathCalculator projectClasspathCalculator;
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-		classpathCalculator = new ClasspathCalculator(JavaCore.create(getProject()));
+		projectClasspathCalculator = new ProjectClasspathCalculator(JavaCore.create(getProject()));
 		if(kind == FULL_BUILD) {
 			fullBuild(monitor);
 		} else {
@@ -156,23 +160,27 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		final Builder builder = new Builder();
 		builder.setPedantic(Activator.getDefault().isPedantic() || Activator.getDefault().isDebugging());
 		
-		// Initialise the builder classpath
-		try {
-			builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
-			builder.setSourcepath(classpathCalculator.sourcepathAsFiles().toArray(new File[0]));
-		} catch (Exception e) {
-			// TODO report exception
-			e.printStackTrace();
-			return;
-		}
-		
 		// Set the initial properties for the builder
 		try {
 			builder.setProperties(bndFile.getLocation().toFile());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
+			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading Bnd properties.", e));
+		}
+		
+		// Initialise the builder classpath
+		String classpathStr = builder.getProperty(Constants.CLASSPATH);
+		try {
+			if(classpathStr == null) {
+				buildModel.setClasspath(null);
+				builder.setClasspath(projectClasspathCalculator.classpathAsFiles().toArray(new File[0]));
+			} else {
+				BndFileClasspathCalculator calculator = new BndFileClasspathCalculator(classpathStr, getProject().getWorkspace().getRoot(), bndFile.getFullPath());
+				buildModel.setClasspath(calculator.classpathAsPaths());
+				builder.setClasspath(calculator.classpathAsFiles().toArray(new File[0]));
+			}
+			builder.setSourcepath(projectClasspathCalculator.sourcepathAsFiles().toArray(new File[0]));
+		} catch (IOException e) {
+			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error setting bundle classpath", e));
 		}
 		
 		// Analyse the bundle
@@ -292,19 +300,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 
 		void checkClassFile(IFile classFile) {
-			Set<String> affectedPackages = new HashSet<String>();
-			
-			// Check if it's in any of the classpath class file locations
-			for (IPath location : classpathCalculator.classpathAsPaths()) {
-				if(location.isPrefixOf(classFile.getFullPath())) {
-					// Yes it is; check the package name
-					IPath relativePath = classFile.getFullPath().makeRelativeTo(location);
-					IPath packagePath = relativePath.removeLastSegments(1);
-					
-					String packageName = packagePath.toString().replace('/', '.');
-					affectedPackages.add(packageName);
-					break;
-				}
+			// Find the package name for this classfile, if it is in the project classpath
+			String packageNameInProject = null;
+			for(IPath classFolder : projectClasspathCalculator.classpathAsPaths()) {
+				packageNameInProject = packageNameForClassFilePath(classFolder, classFile.getFullPath());
+				if(packageNameInProject != null) break;
 			}
 			
 			// Which bundles are affected?
@@ -314,10 +314,29 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				IPath bndPath = entry.getKey();
 				BndBuildModel bundle = entry.getValue();
 				
-				if(bundle.containsAny(affectedPackages)) {
+				String packageName = null;
+				if(bundle.getClasspath() == null) {
+					packageName = packageNameInProject;
+				} else {
+					for (IPath classFolder : bundle.getClasspath()) {
+						packageName = packageNameForClassFilePath(classFolder, classFile.getFullPath());
+						if(packageName != null) break;
+					}
+				}
+				if(packageName != null && bundle.containsPackage(packageName)) {
 					bndFiles.add(getProject().getWorkspace().getRoot().getFile(bndPath));
 				}
 			}
+		}
+		
+		String packageNameForClassFilePath(IPath folderPath, IPath classFilePath) {
+			if(folderPath.isPrefixOf(classFilePath)) {
+				IPath relativePath = classFilePath.makeRelativeTo(folderPath);
+				IPath packagePath = relativePath.removeLastSegments(1);
+				String packageName = packagePath.toString().replace('/', '.');
+				return packageName;
+			}
+			return null;
 		}
 	}
 	

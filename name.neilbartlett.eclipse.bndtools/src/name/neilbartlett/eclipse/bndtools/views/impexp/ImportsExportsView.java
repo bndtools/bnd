@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import name.neilbartlett.eclipse.bndtools.utils.PartAdapter;
+import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -19,6 +20,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IEditorInput;
@@ -33,6 +35,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	
 	public static String VIEW_ID = "name.neilbartlett.eclipse.bndtools.impExpView";
 
+	private Display display = null;
 	private Tree tree = null;
 	private TreeViewer viewer;
 	
@@ -51,9 +54,12 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		}
 	};
+
 	
 	@Override
 	public void createPartControl(Composite parent) {
+		this.display = parent.getDisplay();
+		
 		tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
@@ -137,8 +143,12 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 				}
 			});
 		} else {
-			setInput(null, Collections.<String,Map<String,String>>emptyMap(),
-					Collections.<String,Map<String,String>>emptyMap());
+			SWTConcurrencyUtil.execForDisplay(display, new Runnable() {;
+				public void run() {
+					setInput(null, Collections.<String,Map<String,String>>emptyMap(),
+							Collections.<String,Map<String,String>>emptyMap());
+				}
+			});
 		}
 	}
 	IFile getFileSelection(IStructuredSelection selection) {

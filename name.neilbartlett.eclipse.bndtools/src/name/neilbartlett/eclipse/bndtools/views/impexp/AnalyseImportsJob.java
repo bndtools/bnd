@@ -9,7 +9,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.utils.ClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.ProjectClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -17,7 +19,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewReference;
@@ -60,16 +61,21 @@ public class AnalyseImportsJob extends Job {
 	Jar getJarForBndfile() throws IOException, CoreException {
 		Builder builder = new Builder();
 		
-		// Set up the builder classpath
-		IJavaProject javaProject = JavaCore.create(file.getProject());
-		ClasspathCalculator classpathCalculator = new ClasspathCalculator(javaProject);
-		builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
-		
 		// Read the properties
 		Properties props = new Properties();
 		InputStream content = file.getContents();
 		props.load(content);
 		builder.setProperties(props);
+		
+		// Set up the builder classpath
+		IClasspathCalculator classpathCalculator;
+		String classpathStr = builder.getProperty(Constants.CLASSPATH);
+		if(classpathStr != null) {
+			classpathCalculator = new BndFileClasspathCalculator(classpathStr, file.getWorkspace().getRoot(), file.getFullPath());
+		} else {
+			classpathCalculator = new ProjectClasspathCalculator(JavaCore.create(file.getProject()));
+		}
+		builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
 		
 		// Calculate the manifest
 		try {
@@ -77,6 +83,8 @@ public class AnalyseImportsJob extends Job {
 			return builder.getJar();
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
+		} finally {
+			builder.close();
 		}
 	}
 	protected void showManifest(Jar jar) throws IOException {

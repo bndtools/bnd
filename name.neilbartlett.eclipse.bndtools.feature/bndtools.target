@@ -6,4 +6,9 @@
 <location path="${eclipse_home}" type="Profile"/>
 <location path="${workspace_loc:/name.neilbartlett.eclipse.bndtools.feature/target_extras}" type="Directory"/>
 </locations>
+<environment>
+<os>macosx</os>
+<ws>cocoa</ws>
+<arch>x86_64</arch>
+</environment>
 </target>
