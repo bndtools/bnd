@@ -1,12 +1,12 @@
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
-import java.util.Map;
+import java.util.Collection;
 
 class ImportsAndExports {
-	final Map<String, Map<String, String>> imports;
-	final Map<String, Map<String, String>> exports;
+	final Collection<? extends ImportPackage> imports;
+	final Collection<? extends ExportPackage> exports;
 
-	public ImportsAndExports(Map<String,Map<String,String>> imports, Map<String,Map<String,String>> exports) {
+	public ImportsAndExports(Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
 		this.imports = imports;
 		this.exports = exports;
 	}

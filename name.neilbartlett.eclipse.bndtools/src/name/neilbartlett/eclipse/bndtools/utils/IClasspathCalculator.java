@@ -11,11 +11,11 @@ import org.eclipse.core.runtime.IPath;
 
 public interface IClasspathCalculator {
 
-	public List<IPath> classpathAsPaths();
+	public List<IPath> classpathAsWorkspacePaths();
 
 	public List<File> classpathAsFiles();
 
-	public List<IPath> sourcepathAsPaths();
+	public List<IPath> sourcepathAsWorkspacePaths();
 
 	public List<File> sourcepathAsFiles();
 

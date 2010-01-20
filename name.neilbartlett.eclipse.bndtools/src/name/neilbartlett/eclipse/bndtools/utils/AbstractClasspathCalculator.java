@@ -12,9 +12,13 @@ public abstract class AbstractClasspathCalculator implements IClasspathCalculato
 	protected static List<File> pathsToFiles(IWorkspaceRoot root, List<IPath> paths) {
 		List<File> result = new ArrayList<File>(paths.size());
 		for (IPath path : paths) {
-			IResource resource = root.findMember(path);
-			if(resource != null)
-				result.add(resource.getLocation().toFile());
+			if(path.isAbsolute()) {
+				result.add(path.toFile());
+			} else {
+				IResource resource = root.findMember(path);
+				if(resource != null)
+					result.add(resource.getLocation().toFile());
+			}
 		}
 		return result;
 	}

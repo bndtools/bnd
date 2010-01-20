@@ -1,8 +1,8 @@
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
+import java.util.Collection;
+
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -15,14 +15,13 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 	private ImportsAndExports importsAndExports = null;
 
 	public Object[] getChildren(Object parentElement) {
-		Map<String, Map<String, String>> result;
+		Collection<? extends HeaderClause> result;
 		if(parentElement == IMPORTS_PLACEHOLDER)
 			result = importsAndExports.imports;
 		else
 			result = importsAndExports.exports;
 		
-		Set<Entry<String,Map<String,String>>> entrySet = result.entrySet();
-		return entrySet.toArray(new Entry[entrySet.size()]);
+		return result.toArray(new HeaderClause[result.size()]);
 	}
 
 	public Object getParent(Object element) {

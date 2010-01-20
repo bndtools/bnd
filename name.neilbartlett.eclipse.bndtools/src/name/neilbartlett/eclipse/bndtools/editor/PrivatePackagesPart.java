@@ -14,6 +14,7 @@ import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageFilter;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.PackageSelectionDialog;
+import name.neilbartlett.eclipse.bndtools.utils.PackageDropAdapter;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
@@ -29,6 +30,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -51,6 +54,7 @@ import aQute.lib.osgi.Constants;
 public class PrivatePackagesPart extends SectionPart implements PropertyChangeListener {
 
 	private BndEditModel model;
+	private List<String> packages;
 	
 	private Table table;
 	private TableViewer viewer;
@@ -92,6 +96,16 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				btnRemove.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { }, new PackageDropAdapter<String>(viewer, packages) {
+			@Override
+			protected String createNew(String packageName) {
+				return packageName;
+			}
+			@Override
+			protected void rowsAdded(Collection<String> rows) {
+				markDirty();
+			}
+		});
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -122,12 +136,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	
 	private void doAddPackages() {
 		// Prepare the exclusion list based on existing private packages
-		Collection<String> modelPackages = model.getPrivatePackages();
-		final Collection<String> packages;
-		if(modelPackages == null)
-			packages = new ArrayList<String>();
-		else
-			packages = new ArrayList<String>(modelPackages);
 		final Set<String> packageNameSet = new HashSet<String>(packages);
 		
 		// Create a filter from the exclusion list and packages matching "java.*", which must not be included in a bundle
@@ -166,7 +174,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 			
 			// Update the model and view
 			if(!added.isEmpty()) {
-				model.setPrivatePackages(packages);
 				markDirty();
 			}
 		}
@@ -175,23 +182,17 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	private void doRemovePackages() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
-			Collection<String> modelPackages = model.getPrivatePackages();
-			if(modelPackages != null) {
-				Collection<String> packages = new ArrayList<String>(modelPackages);
-				
-				@SuppressWarnings("unchecked")
-				Iterator elements = selection.iterator();
-				boolean changed = false;
-				while(elements.hasNext()) {
-					Object pkg = elements.next();
-					if(packages.remove(pkg))
-						changed = true;
-				}
-				
-				if(changed) {
-					model.setPrivatePackages(packages);
-					markDirty();
-				}
+			Iterator<?> elements = selection.iterator();
+			List<Object> removed = new LinkedList<Object>();
+			while(elements.hasNext()) {
+				Object pkg = elements.next();
+				if(packages.remove(pkg))
+					removed.add(pkg);
+			}
+			
+			if(!removed.isEmpty()) {
+				viewer.remove(removed.toArray(new String[removed.size()]));
+				markDirty();
 			}
 		}
 	}
@@ -199,11 +200,15 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
+		model.setPrivatePackages(packages);
 	}
 	
 	@Override
 	public void refresh() {
-		viewer.setInput(model.getPrivatePackages());
+		packages = model.getPrivatePackages();
+		if(packages.isEmpty())
+			packages = new ArrayList<String>();
+		viewer.setInput(packages);
 		super.refresh();
 	}
 	

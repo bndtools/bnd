@@ -210,7 +210,7 @@ public class BndEditModel {
 		}
 		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
 	}
-	public Collection<String> getPrivatePackages() {
+	public List<String> getPrivatePackages() {
 		return doGetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
 	}
 	public void setPrivatePackages(Collection<? extends String> packages) {
@@ -359,9 +359,9 @@ public class BndEditModel {
 		doSetObject(name, oldValue, newValue, newValue);
 	}
 
-	Collection<String> doGetStringList(String name) {
-		return doGetObject(name, new Converter<Collection<String>,String>() {
-			public Collection<String> convert(String string) {
+	List<String> doGetStringList(String name) {
+		return doGetObject(name, new Converter<List<String>,String>() {
+			public List<String> convert(String string) {
 				List<String> packages = new LinkedList<String>();
 				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
 				for(Entry<String, Map<String,String>> entry : header.entrySet()) {

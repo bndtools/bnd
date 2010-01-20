@@ -26,31 +26,36 @@ public class ProjectClasspathCalculator extends AbstractClasspathCalculator {
 		calculateClasspaths();
 	}
 	private void calculateClasspaths() throws JavaModelException {
-		classpathLocations.add(javaProject.getOutputLocation());
+		classpathLocations.add(javaProject.getOutputLocation().makeRelative());
 		IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
 		for (IClasspathEntry entry : classpathEntries) {
 			switch (entry.getEntryKind()) {
 			case IClasspathEntry.CPE_SOURCE:
-				sourceLocations.add(entry.getPath());
+				sourceLocations.add(entry.getPath().makeRelative());
 				IPath outputLocation = entry.getOutputLocation();
 				if(outputLocation != null)
-					classpathLocations.add(outputLocation);
+					classpathLocations.add(outputLocation.makeRelative());
 				break;
 			case IClasspathEntry.CPE_LIBRARY:
-				classpathLocations.add(entry.getPath());
+				IPath path = entry.getPath();
+				if(javaProject.getProject().getFullPath().isPrefixOf(path)) {
+					classpathLocations.add(path.makeRelative());
+				} else {
+					classpathLocations.add(path);
+				}
 				break;
 			default:
 				break;
 			}
 		}
 	}
-	public List<IPath> classpathAsPaths() {
+	public List<IPath> classpathAsWorkspacePaths() {
 		return Collections.unmodifiableList(classpathLocations);
 	}
 	public List<File> classpathAsFiles() {
 		return pathsToFiles(javaProject.getProject().getWorkspace().getRoot(), classpathLocations);
 	}
-	public List<IPath> sourcepathAsPaths() {
+	public List<IPath> sourcepathAsWorkspacePaths() {
 		return Collections.unmodifiableList(sourceLocations);
 	}
 	public List<File> sourcepathAsFiles() {

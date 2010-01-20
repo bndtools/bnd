@@ -1,8 +1,10 @@
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.Iterator;
 
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.PartAdapter;
 import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
 
@@ -19,6 +21,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DragSourceListener;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
@@ -74,13 +81,42 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		col.setWidth(100);
 		
 		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Attributes");
+		col.setText("Uses/Used By");
+		col.setWidth(200);
+		
+		col = new TreeColumn(tree, SWT.NONE);
+		col.setText("Other Attributes");
 		col.setWidth(200);
 		
 		viewer = new TreeViewer(tree);
 		viewer.setContentProvider(new ImportsExportsTreeContentProvider());
+		viewer.setSorter(new ImportsAndExportsViewerSorter());
 		viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
 		viewer.setAutoExpandLevel(2);
+		
+		viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
+			public void dragStart(DragSourceEvent event) {
+			}
+			public void dragSetData(DragSourceEvent event) {
+				if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+					StringBuilder builder = new StringBuilder();
+					Iterator<?> iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
+					while(iterator.hasNext()) {
+						Object item = iterator.next();
+						if(item instanceof HeaderClause) {
+							HeaderClause clause = (HeaderClause) item;
+							builder.append(clause.getName());
+							if(iterator.hasNext()) {
+								builder.append(",\n");
+							}
+						}
+					}
+					event.data = builder.toString();
+				}
+			}
+			public void dragFinished(DragSourceEvent event) {
+			}
+		});
 		
 		getSite().getPage().addPostSelectionListener(this);
 		getSite().getPage().addPartListener(partAdapter);
@@ -104,7 +140,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		super.dispose();
 	};
 	
-	public void setInput(IFile sourceFile, Map<String, Map<String,String>> imports, Map<String, Map<String,String>> exports) {
+	public void setInput(IFile sourceFile, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
 		if(tree != null && !tree.isDisposed()) {
 			viewer.setInput(new ImportsAndExports(imports, exports));
 			
@@ -145,8 +181,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		} else {
 			SWTConcurrencyUtil.execForDisplay(display, new Runnable() {;
 				public void run() {
-					setInput(null, Collections.<String,Map<String,String>>emptyMap(),
-							Collections.<String,Map<String,String>>emptyMap());
+					setInput(null, Collections.<ImportPackage>emptyList(), Collections.<ExportPackage>emptyList());
 				}
 			});
 		}

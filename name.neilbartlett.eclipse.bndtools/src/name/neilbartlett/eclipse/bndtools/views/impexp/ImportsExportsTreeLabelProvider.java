@@ -3,11 +3,14 @@ package name.neilbartlett.eclipse.bndtools.views.impexp;
 import static name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.EXPORTS_PLACEHOLDER;
 import static name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.IMPORTS_PLACEHOLDER;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
+import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
@@ -56,11 +59,11 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 			}
 		} else {
 			@SuppressWarnings("unchecked")
-			Entry<String, Map<String,String>> entry = (Entry<String, Map<String, String>>) cell.getElement();
+			HeaderClause entry = (HeaderClause) cell.getElement();
 			switch(cell.getColumnIndex()) {
 			case 0:
-				StyledString styledString = new StyledString(entry.getKey());
-				String resolution = entry.getValue().get(Constants.RESOLUTION_DIRECTIVE);
+				StyledString styledString = new StyledString(entry.getName());
+				String resolution = entry.getAttribs().get(Constants.RESOLUTION_DIRECTIVE);
 				if(resolution != null)
 					styledString.append(" <" + resolution + ">", UIConstants.ITALIC_QUALIFIER_STYLER);
 				cell.setText(styledString.getString());
@@ -68,17 +71,35 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 				cell.setImage(packageImg);
 				break;
 			case 1:
-				cell.setText(entry.getValue().get(Constants.VERSION_ATTRIBUTE));
+				cell.setText(entry.getAttribs().get(Constants.VERSION_ATTRIBUTE));
 				break;
 			case 2:
+				Collection<? extends String> uses = null;
+				if(entry instanceof ImportPackage) {
+					uses = ((ImportPackage) entry).getUsedBy();
+				} else if(entry instanceof ExportPackage) {
+					uses = ((ExportPackage) entry).getUses();
+				}
+				if(uses != null) {
+					StringBuilder builder = new StringBuilder();
+					for(Iterator<? extends String> iter = uses.iterator(); iter.hasNext(); ) {
+						builder.append(iter.next());
+						if(iter.hasNext())
+							builder.append(',');
+					}
+					cell.setText(builder.toString());
+				}
+				break;
+			case 3:
 				// Show the attributes excluding "resolution:" and "version"
-				Map<String, String> attribs = entry.getValue();
+				Map<String, String> attribs = entry.getAttribs();
 				StringBuilder builder = new StringBuilder();
 				boolean first = true;
 				for (Entry<String,String> attribEntry : attribs.entrySet()) {
 					if(!first) builder.append(';');
 					if(!Constants.VERSION_ATTRIBUTE.equals(attribEntry.getKey())
-							&& !Constants.RESOLUTION_DIRECTIVE.equals(attribEntry.getKey())) {
+							&& !Constants.RESOLUTION_DIRECTIVE.equals(attribEntry.getKey())
+							&& !Constants.USES_DIRECTIVE.equals(attribEntry.getKey())) {
 						builder.append(attribEntry.getKey()).append('=').append(attribEntry.getValue());
 					}
 				}

@@ -1,6 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.launch.ui;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
+import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab;
@@ -13,6 +14,7 @@ public class LaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 				new OSGiMainTab(),
 				new JavaArgumentsTab(),
 				new JavaJRETab(),
+				new CommonTab()
 		};
 		setTabs(tabs);
 	}

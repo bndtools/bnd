@@ -175,7 +175,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				builder.setClasspath(projectClasspathCalculator.classpathAsFiles().toArray(new File[0]));
 			} else {
 				BndFileClasspathCalculator calculator = new BndFileClasspathCalculator(classpathStr, getProject().getWorkspace().getRoot(), bndFile.getFullPath());
-				buildModel.setClasspath(calculator.classpathAsPaths());
+				buildModel.setClasspath(calculator.classpathAsWorkspacePaths());
 				builder.setClasspath(calculator.classpathAsFiles().toArray(new File[0]));
 			}
 			builder.setSourcepath(projectClasspathCalculator.sourcepathAsFiles().toArray(new File[0]));
@@ -302,7 +302,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		void checkClassFile(IFile classFile) {
 			// Find the package name for this classfile, if it is in the project classpath
 			String packageNameInProject = null;
-			for(IPath classFolder : projectClasspathCalculator.classpathAsPaths()) {
+			for(IPath classFolder : projectClasspathCalculator.classpathAsWorkspacePaths()) {
 				packageNameInProject = packageNameForClassFilePath(classFolder, classFile.getFullPath());
 				if(packageNameInProject != null) break;
 			}

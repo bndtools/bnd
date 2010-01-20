@@ -13,14 +13,8 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
-import name.neilbartlett.eclipse.bndtools.utils.EditorUtils;
-import name.neilbartlett.eclipse.bndtools.views.impexp.AnalyseImportsJob;
-import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsView;
+import name.neilbartlett.eclipse.bndtools.utils.PackageDropAdapter;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -28,6 +22,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -36,18 +33,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
-import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
-import org.eclipse.ui.forms.events.HyperlinkAdapter;
-import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
@@ -69,7 +60,6 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		this.propertyName = propertyName;
 		createSection(getSection(), toolkit);
 	}
-	
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Import Package Patterns");
 		
@@ -97,6 +87,17 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 				btnRemove.setEnabled(enabled);
 				btnMoveUp.setEnabled(enabled);
 				btnMoveDown.setEnabled(enabled);
+			}
+		});
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<HeaderClause>(viewer, clauses) {
+			@Override
+			protected HeaderClause createNew(String packageName) {
+				return new HeaderClause(packageName, new HashMap<String, String>());
+			}
+			@Override
+			protected void rowsAdded(Collection<HeaderClause> rows) {
+				validate();
+				markDirty();
 			}
 		});
 		btnAdd.addSelectionListener(new SelectionAdapter() {
@@ -148,16 +149,27 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		return clauses;
 	}
 	protected void doAddClause(HeaderClause clause) {
-		clauses.add(clause);
-		viewer.add(clause);
-		
-		validate();
-		markDirty();
+		doAddClauses(Arrays.asList(clause));
 	}
 	protected void doAddClauses(Collection<? extends HeaderClause> clauses) {
 		if(clauses != null && !clauses.isEmpty()) {
-			this.clauses.addAll(clauses);
-			viewer.add(clauses.toArray(new HeaderClause[0]));
+			int selectedIndex = -1;
+			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+			if(!selection.isEmpty()) {
+				// find the highest selected index
+				for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
+					int index = this.clauses.indexOf(iter.next());
+					if(index > selectedIndex) selectedIndex = index;
+				}
+			}
+			
+			if(selectedIndex == -1 || selectedIndex + 1 == this.clauses.size()) {
+				this.clauses.addAll(clauses);
+				viewer.add(clauses.toArray(new HeaderClause[0]));
+			} else {
+				this.clauses.addAll(selectedIndex + 1, clauses);
+				viewer.refresh();
+			}
 			
 			validate();
 			markDirty();
@@ -187,7 +199,9 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 			selectedIndex = this.clauses.indexOf(selection.getFirstElement());
 	
 			this.clauses.addAll(selectedIndex, newClauses);
-			viewer.setInput(this.clauses);
+			viewer.refresh();
+			
+			// Select the first of the newly inserted clauses
 			viewer.setSelection(new StructuredSelection(newClauses.iterator().next()));
 			
 			validate();
@@ -294,4 +308,5 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	public void updateLabels(Object[] elements) {
 		viewer.update(elements, null);
 	}
+	
 }

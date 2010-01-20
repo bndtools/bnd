@@ -10,6 +10,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 import aQute.lib.osgi.Processor;
 
@@ -30,20 +31,24 @@ public class BndFileClasspathCalculator extends AbstractClasspathCalculator {
 		calculatePaths();
 	}
 	private void calculatePaths() throws IOException, CoreException {
-		IPath parentPath = bndFullPath.removeLastSegments(1);
+		IPath parentPath = bndFullPath.removeLastSegments(1).makeRelative();
 		
 		Map<String, Map<String, String>> header = Processor.parseHeader(classpathStr, null);
 		for (String pathStr : header.keySet()) {
-			classpathLocations.add(parentPath.append(pathStr));
+			IPath path = new Path(pathStr);
+			if(path.isAbsolute())
+				classpathLocations.add(path);
+			else
+				classpathLocations.add(parentPath.append(path));
 		}
 	}
-	public List<IPath> classpathAsPaths() {
+	public List<IPath> classpathAsWorkspacePaths() {
 		return Collections.unmodifiableList(classpathLocations);
 	}
 	public List<File> classpathAsFiles() {
 		return pathsToFiles(root, classpathLocations);
 	}
-	public List<IPath> sourcepathAsPaths() {
+	public List<IPath> sourcepathAsWorkspacePaths() {
 		return Collections.emptyList();
 	}
 	public List<File> sourcepathAsFiles() {

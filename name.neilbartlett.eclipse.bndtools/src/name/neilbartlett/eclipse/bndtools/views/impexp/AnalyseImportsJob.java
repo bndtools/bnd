@@ -3,8 +3,14 @@ package name.neilbartlett.eclipse.bndtools.views.impexp;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -97,10 +103,37 @@ public class AnalyseImportsJob extends Job {
 	protected void showManifest(Manifest manifest) throws IOException {
 		if(manifest != null) {
 			Attributes attribs = manifest.getMainAttributes();
-			final Map<String, Map<String, String>> imports = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
-			final Map<String, Map<String, String>> exports = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
+			final Map<String, Map<String, String>> importsMap = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
+			final Map<String, Map<String, String>> exportsMap = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
+			importsMap.keySet().removeAll(exportsMap.keySet());
 			
-			imports.keySet().removeAll(exports.keySet());
+			
+			// Work out the exports, remembering their using-imports as we go.
+			Map<String, Set<String>> usedByMap = new HashMap<String, Set<String>>();
+			final List<ExportPackage> exports = new ArrayList<ExportPackage>(exportsMap.size());
+			for (Entry<String,Map<String,String>> entry : exportsMap.entrySet()) {
+				ExportPackage export = new ExportPackage(entry.getKey(), entry.getValue());
+				exports.add(export);
+				List<String> uses = export.getUses();
+				if(uses != null) {
+					for (String importName : uses) {
+						Set<String> importUsedBy = usedByMap.get(importName);
+						if(importUsedBy == null ) {
+							importUsedBy = new TreeSet<String>();
+							usedByMap.put(importName, importUsedBy);
+						}
+						importUsedBy.add(export.getName());
+					}
+				}
+			}
+			
+			// Now do the imports
+			final List<ImportPackage> imports = new ArrayList<ImportPackage>();
+			for(Entry<String,Map<String,String>> entry : importsMap.entrySet()) {
+				Set<String> usedBy = usedByMap.get(entry.getKey());
+				imports.add(new ImportPackage(entry.getKey(), entry.getValue(), usedBy));
+			}
+			
 			
 			Display display = page.getWorkbenchWindow().getShell().getDisplay();
 			display.asyncExec(new Runnable() {
