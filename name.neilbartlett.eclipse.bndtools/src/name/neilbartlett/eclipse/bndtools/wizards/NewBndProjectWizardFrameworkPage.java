@@ -2,11 +2,11 @@ package name.neilbartlett.eclipse.bndtools.wizards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
+import name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainer;
 import name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 
 import org.eclipse.core.runtime.IPath;
@@ -23,11 +23,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
+import com.sun.jdi.connect.Connector.SelectedArgument;
+
 public class NewBndProjectWizardFrameworkPage extends WizardPage {
 	
-	private final FrameworkSelector frameworkSelector = new FrameworkSelector();
+	private final FrameworkSelector selector = new FrameworkSelector();
 	
-	private IFrameworkInstance framework = null;
+	private boolean useSpec = true;
+	private OSGiSpecLevel specLevel = null;
+	private IFrameworkInstance frameworkInstance = null;
 	private boolean includeAnnotations = true;
 	
 	NewBndProjectWizardFrameworkPage() {
@@ -40,21 +44,23 @@ public class NewBndProjectWizardFrameworkPage extends WizardPage {
 
 		Group grpFramework = new Group(composite, SWT.NONE);
 		grpFramework.setText("Installed Frameworks");
-		frameworkSelector.createControl(grpFramework);
+		selector.createControl(grpFramework);
 		
 		final Button annotationsCheck = new Button(grpFramework, SWT.CHECK);
 		annotationsCheck.setText("Include Bnd Annotations library");
 		
 		// Init controls
-		frameworkSelector.setSelectedFramework(framework);
+		selector.setUseSpecLevel(useSpec);
+		selector.setSelection(useSpec ? specLevel : frameworkInstance);
 		annotationsCheck.setSelection(includeAnnotations);
 		
 		// Listeners
-		frameworkSelector.addPropertyChangeListener(new PropertyChangeListener() {
+		selector.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				if(FrameworkSelector.PROP_SELECTED_FRAMEWORK.equals(evt.getPropertyName())) {
-					framework = frameworkSelector.getSelectedFramework();
-				}
+				useSpec = selector.isUseSpecLevel();
+				specLevel = selector.getSelectedSpecLevel();
+				frameworkInstance = selector.getSelectedFramework();
+				
 				getContainer().updateButtons();
 				getContainer().updateMessage();
 			}
@@ -78,42 +84,31 @@ public class NewBndProjectWizardFrameworkPage extends WizardPage {
 
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.heightHint = 200;
-		frameworkSelector.getControl().setLayoutData(gd);
+		selector.getControl().setLayoutData(gd);
 
 		setControl(composite);
 	}
 	
 	@Override
 	public String getErrorMessage() {
-		return frameworkSelector.getErrorMessage();
+		return selector.getErrorMessage();
 	}
 	@Override
 	public boolean isPageComplete() {
-		return framework != null && frameworkSelector.getErrorMessage() == null;
+		boolean result = selector.getErrorMessage() == null;
+		result &= (useSpec && specLevel != null) || frameworkInstance != null;
+		return result;
 	}
 	
 	public IClasspathEntry getFrameworkClasspathEntry() {
-		if(framework == null)
-			return null;
-		
-		IPath path = new Path(FrameworkClasspathContainerInitializer.FRAMEWORK_CONTAINER_ID);
-		path = path.append(framework.getFrameworkId());
-		
-		IPath instancePath = framework.getInstancePath();
-		String encodedPath;
-		try {
-			encodedPath = URLEncoder.encode(instancePath.toString(), "UTF-8");  //$NON-NLS-1$
-			path = path.append(encodedPath);
-			
-			if(includeAnnotations) {
-				path = path.append(FrameworkClasspathContainerInitializer.PROP_ANNOTATIONS_LIB + "=true");
-			}
-			
-			return JavaCore.newContainerEntry(path);
-		} catch (UnsupportedEncodingException e) {
-			// TODO
-			e.printStackTrace();
-			return null;
+		FrameworkClasspathContainer classpathContainer;
+		if(useSpec) {
+			classpathContainer = FrameworkClasspathContainer.createForSpecLevel(specLevel, includeAnnotations);
+		} else {
+			classpathContainer = FrameworkClasspathContainer.createForSpecificFramework(frameworkInstance, includeAnnotations);
 		}
+		
+		IPath path = FrameworkClasspathContainerInitializer.createPathForContainer(classpathContainer);
+		return JavaCore.newContainerEntry(path);
 	}
 }

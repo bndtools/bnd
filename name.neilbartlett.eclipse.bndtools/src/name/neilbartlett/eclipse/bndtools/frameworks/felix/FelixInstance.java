@@ -8,6 +8,7 @@ import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.shared.VersionedBundleFile;
 
 import org.eclipse.core.runtime.IPath;
@@ -26,13 +27,17 @@ import org.osgi.framework.Version;
 
 class FelixInstance implements IFrameworkInstance {
 	
-	private static final String DISPLAY_FORMAT = "Apache Felix %s";
 	private static final String FRAMEWORK_ID = "felix";
+	private static final String DISPLAY_FORMAT = "Apache Felix %s";
+	
 	private static final String FELIX_SYMBOLIC_NAME = "org.apache.felix.main";
 	private static final Version FELIX_MINIMUM = new Version(1, 4, 0);
+	private static final char VERSION_SEPARATOR = '-';
+	
 	private static final String SHELL_BUNDLE_ID = "org.apache.felix.shell";
 	private static final String SHELL_TUI_BUNDLE_ID = "org.apache.felix.shell.tui";
-	private static final char VERSION_SEPARATOR = '-';
+	
+	private static final String FELIX_MAIN = "org.apache.felix.main.Main";
 	
 	private final IPath instancePath;
 	private IStatus status = Status.OK_STATUS;
@@ -44,6 +49,11 @@ class FelixInstance implements IFrameworkInstance {
 	public FelixInstance(IPath instancePath) {
 		this.instancePath = instancePath;
 		loadFromInstancePath();
+	}
+	
+	public OSGiSpecLevel getOSGiSpecLevel() {
+		// TODO
+		return OSGiSpecLevel.r4_2;
 	}
 	
 	private final void loadFromInstancePath() {
@@ -150,5 +160,9 @@ class FelixInstance implements IFrameworkInstance {
 	
 	public String getShellTuiVersion() {
 		return shellTuiVersion;
+	}
+
+	public String getMainClassName() {
+		return FELIX_MAIN;
 	}
 }

@@ -2,16 +2,13 @@ package name.neilbartlett.eclipse.bndtools.classpath.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Map;
 
+import name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainer;
 import name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer;
-import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
@@ -37,46 +34,38 @@ public class FrameworkClasspathPage extends WizardPage implements
 	}
 
 	public boolean finish() {
-		return selector.getSelectedFramework() != null;
+		return (selector.isUseSpecLevel() && selector.getSelectedSpecLevel() != null) || selector.getSelectedFramework() != null;
 	}
 
 	public IClasspathEntry getSelection() {
-		IPath path = new Path(FrameworkClasspathContainerInitializer.FRAMEWORK_CONTAINER_ID);
-		IFrameworkInstance selectedFramework = selector.getSelectedFramework();
-		path = path.append(selectedFramework.getFrameworkId());
-		
-		IPath instancePath = selectedFramework.getInstancePath();
-		String encodedPath;
-		try {
-			encodedPath = URLEncoder.encode(instancePath.toString(), "UTF-8");  //$NON-NLS-1$
-			path = path.append(encodedPath);
-			
-			if(includeAnnotations) {
-				path = path.append(FrameworkClasspathContainerInitializer.PROP_ANNOTATIONS_LIB + "=true");
-			}
-			
-			return JavaCore.newContainerEntry(path);
-		} catch (UnsupportedEncodingException e) {
-			// TODO
-			e.printStackTrace();
-			return null;
+		FrameworkClasspathContainer classpathContainer;
+		if(selector.isUseSpecLevel()) {
+			classpathContainer = FrameworkClasspathContainer.createForSpecLevel(selector.getSelectedSpecLevel(), includeAnnotations);
+		} else {
+			classpathContainer = FrameworkClasspathContainer.createForSpecificFramework(selector.getSelectedFramework(), includeAnnotations);
 		}
+		if(classpathContainer == null)
+			return null;
+			
+		IPath path = FrameworkClasspathContainerInitializer.createPathForContainer(classpathContainer);
+		return JavaCore.newContainerEntry(path);
 	}
 
 	public void setSelection(IClasspathEntry containerEntry) {
 		if(containerEntry == null) {
-			selector.setSelectedFramework(null);
+			selector.setSelection(null);
 		} else {
 			IPath containerPath = containerEntry.getPath();
-			IFrameworkInstance frameworkInstance = FrameworkClasspathContainerInitializer.getFrameworkInstanceForContainerPath(containerPath);
-			selector.setSelectedFramework(frameworkInstance);
-			
-			Map<String, String> properties = FrameworkClasspathContainerInitializer.getPropertiesForContainerPath(containerPath);
-			if(properties != null && Boolean.TRUE.toString().equals(properties.get(FrameworkClasspathContainerInitializer.PROP_ANNOTATIONS_LIB))) {
-				includeAnnotations = true;
+			FrameworkClasspathContainer classpathContainer = FrameworkClasspathContainerInitializer.createClasspathContainerForPath(containerPath);
+			OSGiSpecLevel specLevel = classpathContainer.getSpecLevel();
+			if(specLevel != null) {
+				selector.setUseSpecLevel(true);
+				selector.setSelection(specLevel);
 			} else {
-				includeAnnotations = false;
+				selector.setUseSpecLevel(false);
+				selector.setSelection(classpathContainer.getFrameworkInstance());
 			}
+			includeAnnotations = classpathContainer.isUseAnnotations();
 		}
 	}
 	

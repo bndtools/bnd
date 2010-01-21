@@ -1,63 +1,109 @@
 package name.neilbartlett.eclipse.bndtools.classpath;
 
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
+import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
+import name.neilbartlett.eclipse.bndtools.utils.P2Utils;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.equinox.internal.provisional.frameworkadmin.BundleInfo;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.Version;
 
-class FrameworkClasspathContainer implements IClasspathContainer {
+public class FrameworkClasspathContainer implements IClasspathContainer {
 	
+	private static final Version ANNOTATIONS_VERSION = new Version(0, 0, 384);
+	private static final String ANNOTATIONS_SYMBOLIC_NAME = "biz.aQute.annotation";
 	private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
 	
-	private final IPath path;
+	private IPath path;
+	
+	private final OSGiSpecLevel specLevel;
 	private final IFrameworkInstance frameworkInstance;
-	private final IClasspathEntry annotationsEntry;
-
-	public FrameworkClasspathContainer(IPath path, IFrameworkInstance frameworkInstance) {
-		this(path, frameworkInstance, null);
-	}
+	private final boolean useAnnotations;
 	
-	IFrameworkInstance getFrameworkInstance() {
-		return frameworkInstance;
-	}
+	private IClasspathEntry annotationsEntry = null;
 	
-	FrameworkClasspathContainer(IPath path, IFrameworkInstance frameworkInstance, IPath annotationsPath) {
-		this.path = path;
+	private FrameworkClasspathContainer(OSGiSpecLevel specLevel, IFrameworkInstance frameworkInstance, boolean annotations) {
+		this.specLevel = specLevel;
 		this.frameworkInstance = frameworkInstance;
-		
-		if(annotationsPath != null) {
-			annotationsEntry = JavaCore.newLibraryEntry(annotationsPath, null, null, new IAccessRule[0], new IClasspathAttribute[0], false);
-		} else {
-			annotationsEntry = null;
-		}
+		this.useAnnotations = annotations;
 	}
-
+	
+	private static IPath getAnnotationsPath() {
+		@SuppressWarnings("restriction")
+		BundleInfo annotationsBundle = P2Utils.findBundle(ANNOTATIONS_SYMBOLIC_NAME, ANNOTATIONS_VERSION, false);
+		IPath annotsPath = P2Utils.getBundleLocationPath(annotationsBundle);
+		return annotsPath;
+	}
+	
+	public static final FrameworkClasspathContainer createForSpecLevel(OSGiSpecLevel specLevel, boolean annotations) {
+		IFrameworkInstance frameworkInstance = FrameworkPreferencesInitializer.getFrameworkInstance(specLevel);
+		if(frameworkInstance == null)
+			return null;
+		
+		return new FrameworkClasspathContainer(specLevel, frameworkInstance, annotations);
+	}
+	
+	public static final FrameworkClasspathContainer createForSpecificFramework(IFrameworkInstance instance, boolean annotations) {
+		return new FrameworkClasspathContainer(null, instance, annotations);
+	}
+	
+	private IClasspathEntry getAnnotationsEntry() {
+		if(useAnnotations && annotationsEntry == null) {
+			IPath path = getAnnotationsPath();
+			annotationsEntry = JavaCore.newLibraryEntry(path, null, null, new IAccessRule[0], new IClasspathAttribute[0], false);
+		}
+		return annotationsEntry;
+	}
+	
 	public IClasspathEntry[] getClasspathEntries() {
 		IClasspathEntry[] entries = EMPTY_ENTRIES;
 		
 		if(frameworkInstance != null && frameworkInstance.getStatus().isOK())
 			entries = frameworkInstance.getClasspathEntries();
 		
-		if(annotationsEntry != null) {
+		IClasspathEntry annotations = getAnnotationsEntry();
+		if(annotations != null) {
 			IClasspathEntry[] copy = new IClasspathEntry[entries.length + 1];
 			System.arraycopy(entries, 0, copy, 0, entries.length);
-			copy[entries.length] = annotationsEntry;
+			copy[entries.length] = annotations;
 			entries = copy;
 		}
 		
 		return entries;
 	}
-
+	
+	public OSGiSpecLevel getSpecLevel() {
+		return specLevel;
+	}
+	
+	public IFrameworkInstance getFrameworkInstance() {
+		return frameworkInstance;
+	}
+	
+	public boolean isUseAnnotations() {
+		return useAnnotations;
+	}
+	
 	public String getDescription() {
-		return String.format("OSGi Framework (%s)", frameworkInstance.getDisplayString());
+		if(specLevel != null) {
+			return "OSGi Framework " + specLevel.getFormattedName();
+		} else {
+			return String.format("OSGi Framework (%s)", frameworkInstance.getDisplayString());
+		}
 	}
 
 	public int getKind() {
 		return IClasspathContainer.K_APPLICATION;
+	}
+	
+	void setPath(IPath path) {
+		this.path = path;
 	}
 
 	public IPath getPath() {

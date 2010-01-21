@@ -4,7 +4,7 @@ import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
-import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkInstanceLabelProvider;
+import name.neilbartlett.eclipse.bndtools.frameworks.ui.OSGiFrameworkLabelProvider;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 
 import org.eclipse.core.runtime.IStatus;
@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.osgi.service.prefs.BackingStoreException;
@@ -59,21 +58,9 @@ public class FrameworksPreferencePage extends PreferencePage implements
 		new Label(composite, SWT.NONE); // Spacer
 		
 		Table table = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
-		
-		TableColumn col;
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Name");
-		col.setWidth(300);
-		
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Path");
-		col.setWidth(300);
-		
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new FrameworkInstanceLabelProvider(parent.getDisplay()));
+		viewer.setLabelProvider(new OSGiFrameworkLabelProvider(parent.getDisplay(), null));
 		
 		btnAdd = new Button(composite, SWT.PUSH);
 		btnAdd.setText("Add");
@@ -102,7 +89,9 @@ public class FrameworksPreferencePage extends PreferencePage implements
 		});
 		
 		composite.setLayout(new GridLayout(2, false));
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+		gd.widthHint = 350;
+		table.setLayoutData(gd);
 		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		

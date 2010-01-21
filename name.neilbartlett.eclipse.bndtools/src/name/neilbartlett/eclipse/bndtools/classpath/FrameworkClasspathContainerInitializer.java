@@ -3,6 +3,7 @@ package name.neilbartlett.eclipse.bndtools.classpath;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -10,52 +11,34 @@ import java.util.StringTokenizer;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
-import name.neilbartlett.eclipse.bndtools.utils.P2Utils;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.equinox.internal.provisional.frameworkadmin.BundleInfo;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.osgi.framework.Version;
 
 import aQute.bnd.plugin.Activator;
 
 public class FrameworkClasspathContainerInitializer extends
 		ClasspathContainerInitializer {
 	
-	public static final String FRAMEWORK_CONTAINER_ID = "name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER";
-	public static final String PROP_ANNOTATIONS_LIB = "annotations";
+	private static final String FRAMEWORK_CONTAINER_ID = "name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER";
+	private static final String PROP_ANNOTATIONS_LIB = "annotations";
+	private static final String PROP_INSTANCE_URL = "url"; 
 	
-	private static final Version ANNOTATIONS_VERSION = new Version(0, 0, 384);
-	private static final String ANNOTATIONS_SYMBOLIC_NAME = "biz.aQute.annotation";
-
 	@Override
-	public void initialize(IPath containerPath, IJavaProject project)
-			throws CoreException {
-		IFrameworkInstance instance = getFrameworkInstanceForContainerPath(containerPath);
-		
-		// Read additional properties & check the annotation property
-		Map<String, String> properties = getPropertiesForContainerPath(containerPath);
-		IPath annotationsPath = null;
-		if(properties != null && Boolean.TRUE.toString().equals(properties.get(PROP_ANNOTATIONS_LIB))) {
-			annotationsPath = getAnnotationsPath();
-		}
-		
-		IClasspathContainer container = new FrameworkClasspathContainer(containerPath, instance, annotationsPath);
-		JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { container } , null);
+	public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
+		FrameworkClasspathContainer classpathContainer = createClasspathContainerForPath(containerPath);
+		JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { classpathContainer } , null);
 	}
 	
-	private static IPath getAnnotationsPath() {
-		BundleInfo annotationsBundle = P2Utils.findBundle(ANNOTATIONS_SYMBOLIC_NAME, ANNOTATIONS_VERSION, false);
-		IPath annotsPath = P2Utils.getBundleLocationPath(annotationsBundle);
-		return annotsPath;
-	}
-	
+
 	private static Map<String, String> readProperties(String propsString) {
 		Map<String, String> properties = new HashMap<String, String>();
 		
@@ -85,35 +68,75 @@ public class FrameworkClasspathContainerInitializer extends
 		return properties;
 	}
 	
-	public static Map<String, String> getPropertiesForContainerPath(IPath containerPath) {
+	private static Map<String, String> getPropertiesForContainerPath(IPath containerPath) {
 		Map<String, String> properties = null;
-		if(containerPath.segmentCount() == 4) {
-			String propsSegment = containerPath.segment(3);
+		if(containerPath.segmentCount() == 3) {
+			String propsSegment = containerPath.segment(2);
 			properties = readProperties(propsSegment);
 		}
 		return properties;
 	}
 	
-	public static IFrameworkInstance getFrameworkInstanceForContainerPath(IPath containerPath) {
-		if(containerPath == null || containerPath.segmentCount() < 3)
-			return null;
-			//throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework container path.", null));
+	public static IPath createPathForContainer(FrameworkClasspathContainer container) {
+		IPath path = new Path(FRAMEWORK_CONTAINER_ID);
 		
-		String frameworkId = containerPath.segment(1);
-		try {
-			IFramework framework = FrameworkUtils.findFramework(frameworkId);
-			String instancePathEncoded = containerPath.segment(2);
-			String instancePath = URLDecoder.decode(instancePathEncoded, "UTF-8");
+		OSGiSpecLevel specLevel = container.getSpecLevel();
+		if(specLevel != null) {
+			path = path.append(specLevel.toString());
+			if(container.isUseAnnotations()) {
+				path = path.append(PROP_ANNOTATIONS_LIB + "=true");
+			}
+		} else {
+			IFrameworkInstance instance = container.getFrameworkInstance();
+			path = path.append(instance.getFrameworkId());
 			
-			File frameworkPath = new File(instancePath);
-			IFrameworkInstance instance = framework.createFrameworkInstance(frameworkPath);
-			return instance;
-		} catch (UnsupportedEncodingException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising OSGi framework classpath.", e));
-			return null;
-		} catch (CoreException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising OSGi framework classpath.", e));
+			StringBuilder builder = new StringBuilder();
+			if(container.isUseAnnotations()) {
+				builder.append(PROP_ANNOTATIONS_LIB).append("=true;");
+			}
+			
+			try {
+				builder.append(PROP_INSTANCE_URL).append('=');
+				builder.append(URLEncoder.encode(instance.getInstancePath().toString(), "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				// Can't happen
+			}
+			path = path.append(builder.toString());
+		}
+		return path;
+	}
+	public static FrameworkClasspathContainer createClasspathContainerForPath(IPath containerPath) {
+		FrameworkClasspathContainer result = null;
+		
+		if(containerPath == null || containerPath.segmentCount() < 1) {
 			return null;
 		}
+		
+		Map<String, String> properties = getPropertiesForContainerPath(containerPath);
+		boolean useAnnotations = (properties != null && Boolean.TRUE.toString().equals(properties.get(PROP_ANNOTATIONS_LIB)));
+		
+		try {
+			OSGiSpecLevel specLevel = Enum.valueOf(OSGiSpecLevel.class, containerPath.segment(1));
+			result = FrameworkClasspathContainer.createForSpecLevel(specLevel, useAnnotations);
+			result.setPath(containerPath);
+		} catch (IllegalArgumentException e) {
+			String frameworkId = containerPath.segment(1);
+			
+			String instanceUrl = properties.get(PROP_INSTANCE_URL);
+			if(instanceUrl == null) return null;
+			
+			try {
+				IFramework framework = FrameworkUtils.findFramework(frameworkId);
+				if(framework == null) return null;
+				
+				IFrameworkInstance instance = framework.createFrameworkInstance(new File(instanceUrl));
+				result = FrameworkClasspathContainer.createForSpecificFramework(instance, useAnnotations);
+				result.setPath(containerPath);
+			} catch (CoreException ce) {
+				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating framework instance.", ce));
+				return null;
+			}
+		}
+		return result;
 	}
 }

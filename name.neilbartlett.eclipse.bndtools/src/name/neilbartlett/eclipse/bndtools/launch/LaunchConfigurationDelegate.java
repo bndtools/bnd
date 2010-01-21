@@ -10,6 +10,8 @@ import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkBuildJob;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
+import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,8 +34,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		// because we want them to *actually* be executed.
 		IProject project = getProjectForConfiguration(configuration);
 		
-		IFramework framework = getFrameworkForConfiguration(configuration);
-		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(framework, configuration);
+		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(configuration);
 		
 		Collection<IFrameworkBuildJob> jobs = FrameworkUtils.findFrameworkBuildJob(frameworkInstance.getFrameworkId(), null);
 		SubMonitor subMonitor = SubMonitor.convert(monitor, jobs.size() * 10);
@@ -50,8 +51,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 			throws CoreException {
 		List<String> result = new ArrayList<String>();
 		
-		IFramework framework = getFrameworkForConfiguration(configuration);
-		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(framework, configuration);
+		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(configuration);
 		IClasspathEntry[] entries = frameworkInstance.getClasspathEntries();
 		
 		for (IClasspathEntry entry : entries) {
@@ -65,7 +65,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 	@Override
 	public String getMainTypeName(ILaunchConfiguration configuration)
 			throws CoreException {
-		return getFrameworkForConfiguration(configuration).getMainClassName();
+		return getFrameworkInstanceForConfiguration(configuration).getMainClassName();
 	}
 	
 	@Override
@@ -73,8 +73,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 			throws CoreException {
 		File workingDir = getWorkingDirectory(configuration);
 		
-		IFramework framework = getFrameworkForConfiguration(configuration);
-		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(framework, configuration);
+		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(configuration);
 		String standardArgs = frameworkInstance.getStandardProgramArguments(workingDir);
 		if(standardArgs == null)
 			standardArgs = "";
@@ -91,8 +90,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 			throws CoreException {
 		File workingDir = getWorkingDirectory(configuration);
 		
-		IFramework framework = getFrameworkForConfiguration(configuration);
-		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(framework, configuration);
+		IFrameworkInstance frameworkInstance = getFrameworkInstanceForConfiguration(configuration);
 		String standardArgs = frameworkInstance.getStandardVMArguments(workingDir);
 		if(standardArgs == null)
 			standardArgs = "";
@@ -118,6 +116,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		return project;
 	}
 
+	/*
 	private IFramework getFrameworkForConfiguration(ILaunchConfiguration configuration) throws CoreException {
 		String frameworkId = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
 		if(frameworkId == null)
@@ -129,12 +128,36 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		
 		return framework;
 	}
+	*/
 	
-	private final IFrameworkInstance getFrameworkInstanceForConfiguration(IFramework framework, ILaunchConfiguration configuration) throws CoreException {
+	private final IFrameworkInstance getFrameworkInstanceForConfiguration(ILaunchConfiguration configuration) throws CoreException {
+		OSGiSpecLevel specLevel = null;
+		try {
+			String specLevelStr = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
+			if(specLevelStr != null)
+				specLevel = Enum.valueOf(OSGiSpecLevel.class, specLevelStr);
+		} catch (IllegalArgumentException e) {}
 		String instancePath = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
-		if(instancePath == null)
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
-		IFrameworkInstance frameworkInstance = framework.createFrameworkInstance(new File(instancePath));
+		
+		IFrameworkInstance frameworkInstance = null;
+		if(specLevel != null) {
+			frameworkInstance = FrameworkPreferencesInitializer.getFrameworkInstance(specLevel);
+			if(frameworkInstance == null) {
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
+			}
+		} else {
+			// Get the framework
+			String frameworkId = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
+			if(frameworkId == null)
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework was specified", null));
+			IFramework framework = FrameworkUtils.findFramework(frameworkId);
+			if(framework == null)
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("No OSGi framework could be found with as ID of %s.", frameworkId), null));
+			// Get the instance
+			if(instancePath == null)
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
+			frameworkInstance = framework.createFrameworkInstance(new File(instancePath));
+		}
 		if(!frameworkInstance.getStatus().isOK())
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid OSGi framework instance: " + frameworkInstance.getStatus().getMessage(), null));
 		if(!frameworkInstance.isLaunchable())

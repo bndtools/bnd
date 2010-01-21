@@ -7,6 +7,7 @@ import java.io.File;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.shared.VersionedBundleFile;
 
 import org.eclipse.core.runtime.CoreException;
@@ -25,11 +26,13 @@ import org.osgi.framework.Version;
 
 class EquinoxInstance implements IFrameworkInstance {
 	
+	private static final String FRAMEWORK_ID = "equinox";
 	private static final String DISPLAY_FORMAT = "Eclipse Equinox %s";
+	
 	private static final String EQUINOX_ID = "org.eclipse.osgi";
 	private static final char VERSION_SEPARATOR = '_';
-	private static final String FRAMEWORK_ID = "equinox";
 	
+	private static final String EQUINOX_STARTER = "org.eclipse.core.runtime.adaptor.EclipseStarter";
 	private static final String PROGRAM_ARGS = "-console -consoleLog -configuration " + FRAMEWORK_ID;
 
 	private final IPath instancePath;
@@ -42,6 +45,12 @@ class EquinoxInstance implements IFrameworkInstance {
 		this.instancePath = instancePath;
 		loadFromInstancePath();
 	}
+	
+	public OSGiSpecLevel getOSGiSpecLevel() {
+		// TODO: calculate correctly
+		return OSGiSpecLevel.r4_2;
+	}
+	
 	private final void loadFromInstancePath() {
 		assert instancePath != null;
 		File file = instancePath.toFile();
@@ -139,6 +148,10 @@ class EquinoxInstance implements IFrameworkInstance {
 	}
 	public String getStandardVMArguments(File workingDir) {
 		return String.format("-Dosgi.syspath=\"%s\" -Declipse.ignoreApp=true", workingDir.toString());
+	}
+
+	public String getMainClassName() {
+		return EQUINOX_STARTER;
 	}
 	
 }

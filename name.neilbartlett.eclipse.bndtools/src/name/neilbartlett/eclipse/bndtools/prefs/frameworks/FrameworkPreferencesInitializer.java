@@ -12,6 +12,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -126,5 +127,14 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 		
 		saveFrameworkUrls(urlList);
 	}
-	
+
+	public static IFrameworkInstance getFrameworkInstance(OSGiSpecLevel specLevel) {
+		// TODO: add preferences for mapping spec levels to a preferred instance
+		List<IFrameworkInstance> list = loadFrameworkInstanceList();
+		for (IFrameworkInstance instance : list) {
+			if(instance.getOSGiSpecLevel() == specLevel)
+				return instance;
+		}
+		return null;
+	}
 }

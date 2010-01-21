@@ -19,6 +19,7 @@ public class FrameworkUtils {
 	
 	private FrameworkUtils() {}
 	
+	
 	/**
 	 * Find and instantiate a framework object representing the framework with
 	 * the specified ID.

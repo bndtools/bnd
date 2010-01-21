@@ -8,6 +8,7 @@ import java.text.MessageFormat;
 import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
+import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 import name.neilbartlett.eclipse.bndtools.launch.IFrameworkLaunchConstants;
 
@@ -75,37 +76,70 @@ public class OSGiMainTab extends JavaLaunchTab {
 
 	private void updateProjectFromConfig(ILaunchConfiguration config) {
 		String projectName = "";
+		
+		OSGiSpecLevel specLevel = null;
 		IFrameworkInstance frameworkInstance = null;
+		
 		try {
 			projectName = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
 			
+			String specLevelStr = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
 			String frameworkId = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, "");
 			String frameworkInstancePath = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, "");
-			if(frameworkId != null && frameworkId.length() > 0
-					&& frameworkInstancePath != null && frameworkInstancePath.length() > 0) {
-				IFramework framework = FrameworkUtils.findFramework(frameworkId);
-				frameworkInstance = framework.createFrameworkInstance(new File(frameworkInstancePath));
-				IStatus status = frameworkInstance.getStatus();
-				setErrorMessage(status.isOK() ? null : status.getMessage());
+			
+			try {
+				if(specLevelStr != null)
+					specLevel = Enum.valueOf(OSGiSpecLevel.class, specLevelStr);
+			} catch (IllegalArgumentException e) {
+				if(frameworkId != null && frameworkId.length() > 0 && frameworkInstancePath != null && frameworkInstancePath.length() > 0) {
+					IFramework framework = FrameworkUtils.findFramework(frameworkId);
+					frameworkInstance = framework.createFrameworkInstance(new File(frameworkInstancePath));
+					IStatus status = frameworkInstance.getStatus();
+					setErrorMessage(status.isOK() ? null : status.getMessage());
+				}
 			}
 		}
 		catch (CoreException ce) {
 			setErrorMessage(ce.getStatus().getMessage());
 		}
 		fProjText.setText(projectName);
-		frameworkSelector.setSelectedFramework(frameworkInstance);
+
+		boolean useSpec;
+		if(specLevel != null) {
+			useSpec = true;
+		} else {
+			useSpec = frameworkInstance == null;
+		}
+		frameworkSelector.setUseSpecLevel(useSpec);
+		frameworkSelector.setSelection(useSpec ? specLevel : frameworkInstance);
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
 		
-		IFrameworkInstance frameworkInstance = frameworkSelector.getSelectedFramework();
-		if(frameworkInstance == null) {
-			config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
-			config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
+		boolean useSpec = frameworkSelector.isUseSpecLevel();
+		if(useSpec) {
+			OSGiSpecLevel specLevel = frameworkSelector.getSelectedSpecLevel();
+			if(specLevel == null) {
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
+			} else {
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, specLevel.toString());
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
+			}
 		} else {
-			config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, frameworkInstance.getFrameworkId());
-			config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, frameworkInstance.getInstancePath().toString());
+			IFrameworkInstance frameworkInstance = frameworkSelector.getSelectedFramework();
+			if(frameworkInstance == null) {
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
+			} else {
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, frameworkInstance.getFrameworkId());
+				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, frameworkInstance.getInstancePath().toString());
+			}
 		}
 	}
 
@@ -135,7 +169,7 @@ public class OSGiMainTab extends JavaLaunchTab {
 		Control frameworkSelectorControl = frameworkSelector.getControl();
 		
 		// Events
-		frameworkSelector.addPropertyChangeListener(FrameworkSelector.PROP_SELECTED_FRAMEWORK, new PropertyChangeListener() {
+		frameworkSelector.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				updateLaunchConfigurationDialog();
 			}
@@ -207,17 +241,28 @@ public class OSGiMainTab extends JavaLaunchTab {
 				return false;
 			}
 		}
-		IFrameworkInstance selectedFramework = frameworkSelector.getSelectedFramework();
-		if(selectedFramework == null) {
-			setErrorMessage("No OSGi Framework was specified");
-			return false;
+		if(frameworkSelector.isUseSpecLevel()) {
+			if(frameworkSelector.getSelectedSpecLevel() == null) {
+				setErrorMessage("No OSGi Framework was specified");
+				return false;
+			}
+			String selectorError = frameworkSelector.getErrorMessage();
+			if(selectorError != null) {
+				setErrorMessage(selectorError);
+				return false;
+			}
+		} else {
+			IFrameworkInstance selectedFramework = frameworkSelector.getSelectedFramework();
+			if(selectedFramework == null) {
+				setErrorMessage("No OSGi Framework was specified");
+				return false;
+			}
+			IStatus status = selectedFramework.getStatus();
+			if(!status.isOK()) {
+				setErrorMessage(status.getMessage());
+				return false;
+			}
 		}
-		IStatus status = selectedFramework.getStatus();
-		if(!status.isOK()) {
-			setErrorMessage(status.getMessage());
-			return false;
-		}
-		
 		return true;
 	}
 	

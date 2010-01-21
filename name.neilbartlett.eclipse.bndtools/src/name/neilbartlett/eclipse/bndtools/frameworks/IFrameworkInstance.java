@@ -9,6 +9,9 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 
 public interface IFrameworkInstance {
+	
+	OSGiSpecLevel getOSGiSpecLevel();
+	
 	/**
 	 * Check whether the instance is valid for the selected framework type.
 	 * 
@@ -62,6 +65,15 @@ public interface IFrameworkInstance {
 	 */
 	boolean isLaunchable();
 	
+	/**
+	 * Return the main class name used to launch instances of this OSGi
+	 * framework. Non-launchable frameworks may return {@code null}.
+	 * 
+	 * @return The fully qualified "main" class name, or {@code null} if the
+	 *         framework is not launchable.
+	 */
+	String getMainClassName();
+
 	/**
 	 * Return the standard program arguments for launching this framework
 	 * instance in the specified working directory. Non-launchable framework instances may return {@code null} from this method.
