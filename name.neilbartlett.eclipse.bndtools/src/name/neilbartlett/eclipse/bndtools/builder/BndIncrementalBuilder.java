@@ -54,14 +54,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	private static final String BND_SUFFIX = ".bnd";
 	private static final String CLASS_SUFFIX = ".class";
 
-	
-	private final Map<IPath, BndBuildModel> buildModels = new HashMap<IPath, BndBuildModel>();
+	private Map<IPath, BndBuildModel> buildModels = null;
 	private IClasspathCalculator projectClasspathCalculator;
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
 		projectClasspathCalculator = new ProjectClasspathCalculator(JavaCore.create(getProject()));
-		if(kind == FULL_BUILD) {
+		if(buildModels == null || kind == FULL_BUILD) {
 			fullBuild(monitor);
 		} else {
 			IResourceDelta delta = getDelta(getProject());
@@ -90,6 +89,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	protected void fullBuild(IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor);
+		if(buildModels == null)
+			buildModels = new HashMap<IPath, BndBuildModel>();
 		
 		List<IFile> bndFiles = new LinkedList<IFile>();
 		getProject().accept(new ResourceVisitor(bndFiles), 0);
