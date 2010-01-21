@@ -123,10 +123,12 @@ public class ClasspathEditorWizardPage extends WizardPage {
 				dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
 				String res = dialog.open();
 				if (res != null) {
+					IPath filterPath = new Path(dialog.getFilterPath());
+					
 					String[] fileNames = dialog.getFileNames();
 					List<IPath> added = new ArrayList<IPath>(fileNames.length);
 					for (String fileName : fileNames) {
-						added.add(new Path(fileName));
+						added.add(filterPath.append(fileName));
 					}
 					if(!added.isEmpty()) {
 						paths.addAll(added);

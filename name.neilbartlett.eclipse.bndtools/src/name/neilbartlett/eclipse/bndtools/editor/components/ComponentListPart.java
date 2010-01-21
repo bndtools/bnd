@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
@@ -15,6 +16,12 @@ import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -31,7 +38,13 @@ import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -49,11 +62,14 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.part.ResourceTransfer;
 
+import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Constants;
 
 public class ComponentListPart extends SectionPart implements PropertyChangeListener {
 
+	private static final String XML_SUFFIX = ".xml";
 	private List<ServiceComponent> componentList;
 	
 	private IManagedForm managedForm;
@@ -95,6 +111,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 				}
 			}
 		});
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance() }, new ComponentListDropAdapter(viewer));
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -127,7 +144,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		markDirty();
 	}
 	void doRemove() {
-		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewer.getSelection()).iterator();
+		Iterator<?> iter = ((IStructuredSelection) viewer.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
 			componentList.remove(item);
@@ -274,6 +291,81 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 			return JavaCore.create(file.getProject());
 		} else {
 			return null;
+		}
+	}
+	
+	private class ComponentListDropAdapter extends ViewerDropAdapter {
+		
+		protected ComponentListDropAdapter(Viewer viewer) {
+			super(viewer);
+		}
+		
+		@Override
+		public void dragEnter(DropTargetEvent event) {
+			event.detail = DND.DROP_COPY;
+			super.dragEnter(event);
+		}
+		@Override
+		public boolean validateDrop(Object target, int operation, TransferData transferType) {
+			return ResourceTransfer.getInstance().isSupportedType(transferType);
+		}
+		@Override
+		public boolean performDrop(Object data) {
+			Object target = getCurrentTarget();
+			int loc = getCurrentLocation();
+			
+			int insertionIndex = -1;
+			if(target != null) {
+				insertionIndex = componentList.indexOf(target);
+				if(insertionIndex > -1 && loc == LOCATION_ON || loc == LOCATION_AFTER)
+					insertionIndex ++;
+			}
+			
+			List<ServiceComponent> added = new ArrayList<ServiceComponent>();
+			if(data instanceof IResource[]) {
+				IResource[] resources = (IResource[]) data;
+				for (IResource resource : resources) {
+					IJavaElement javaElement = JavaCore.create(resource);
+					if(javaElement != null) {
+						try {
+							if(javaElement instanceof IType) {
+								IType type = (IType) javaElement;
+								if(type.isClass() && Flags.isPublic(type.getFlags()))
+									added.add(new ServiceComponent(type.getPackageFragment().getElementName() + "." + type.getElementName(), new HashMap<String, String>()));
+							} else if(javaElement instanceof ICompilationUnit) {
+								IType[] allTypes = ((ICompilationUnit) javaElement).getAllTypes();
+								for (IType type : allTypes) {
+									if(type.isClass() && Flags.isPublic(type.getFlags()))
+										added.add(new ServiceComponent(type.getPackageFragment().getElementName() + "." + type.getElementName(), new HashMap<String, String>()));
+								}
+							}
+						} catch (JavaModelException e) {
+							Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing Java type information", e));
+						}
+					} else if(resource.getName().endsWith(XML_SUFFIX)) {
+						IFormPage formPage = (IFormPage) getManagedForm().getContainer();
+						IFile bndFile = ResourceUtil.getFile(formPage.getEditorInput());
+						
+						IPath relativePath = resource.getFullPath().makeRelativeTo(bndFile.getFullPath());
+						
+						added.add(new ServiceComponent(relativePath.toString(), new HashMap<String, String>()));
+					}
+				}
+			}
+			
+			if(!added.isEmpty()) {
+				if(insertionIndex == -1 || insertionIndex == componentList.size()) {
+					componentList.addAll(added);
+					viewer.add(added.toArray(new ServiceComponent[added.size()]));
+				} else {
+					componentList.addAll(insertionIndex, added);
+					viewer.refresh();
+				}
+			}
+			viewer.setSelection(new StructuredSelection(added), true);
+			checkComponentPackagesIncluded();
+			markDirty();
+			return true;
 		}
 	}
 }
