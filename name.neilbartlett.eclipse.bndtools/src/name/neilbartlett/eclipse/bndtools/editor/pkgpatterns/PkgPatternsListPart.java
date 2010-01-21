@@ -45,8 +45,7 @@ import org.osgi.framework.Constants;
 public abstract class PkgPatternsListPart extends SectionPart implements PropertyChangeListener {
 
 	private final String propertyName;
-	
-	protected List<HeaderClause> clauses;
+	protected ArrayList<HeaderClause> clauses = new ArrayList<HeaderClause>();
 	
 	private IManagedForm managedForm;
 	private TableViewer viewer;
@@ -88,33 +87,38 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 				btnMoveDown.setEnabled(enabled);
 			}
 		});
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<HeaderClause>(viewer, clauses) {
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<HeaderClause>(viewer) {
 			@Override
-			protected HeaderClause createNew(String packageName) {
+			protected HeaderClause createNewEntry(String packageName) {
 				return new HeaderClause(packageName, new HashMap<String, String>());
 			}
 			@Override
-			protected void rowsAdded(Collection<HeaderClause> rows) {
+			protected void addRows(int index, Collection<HeaderClause> rows) {
+				doAddClauses(rows, index, true);
 				validate();
 				markDirty();
+			}
+			@Override
+			protected int indexOf(Object object) {
+				return clauses.indexOf(object);
 			}
 		});
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doAdd();
+				doAddClausesAfterSelection(generateClauses());
 			}
 		});
 		btnInsert.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doInsert();
+				doInsertClausesAtSelection(generateClauses());
 			}
 		});
 		btnRemove.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doRemove();
+				doRemoveSelectedClauses();
 			}
 		});
 		btnMoveUp.addSelectionListener(new SelectionAdapter() {
@@ -147,11 +151,32 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	protected List<HeaderClause> getClauses() {
 		return clauses;
 	}
-	protected void doAddClause(HeaderClause clause) {
-		doAddClauses(Arrays.asList(clause));
+	protected Collection<? extends HeaderClause> generateClauses() {
+		return Arrays.asList(new HeaderClause("", new HashMap<String, String>()));
 	}
-	protected void doAddClauses(Collection<? extends HeaderClause> clauses) {
-		if(clauses != null && !clauses.isEmpty()) {
+	/**
+	 * Add the specified clauses to the view.
+	 * @param newClauses The new clauses.
+	 * @param index The index at which to insert the new clauses OR -1 to append at the end.
+	 */
+	protected void doAddClauses(Collection<? extends HeaderClause> newClauses, int index, boolean select) {
+		HeaderClause[] newClausesArray = newClauses.toArray(new HeaderClause[newClauses.size()]);
+		
+		if(index == -1 || index == this.clauses.size()) {
+			clauses.addAll(newClauses);
+			viewer.add(newClausesArray);
+		} else {
+			clauses.addAll(index, newClauses);
+			viewer.refresh();
+		}
+		
+		if(select)
+			viewer.setSelection(new StructuredSelection(newClausesArray), true);
+		validate();
+		markDirty();
+	}
+	private void doAddClausesAfterSelection(Collection<? extends HeaderClause> newClauses) {
+		if(newClauses != null && !newClauses.isEmpty()) {
 			int selectedIndex = -1;
 			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 			if(!selection.isEmpty()) {
@@ -161,63 +186,29 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 					if(index > selectedIndex) selectedIndex = index;
 				}
 			}
-			
-			if(selectedIndex == -1 || selectedIndex + 1 == this.clauses.size()) {
-				this.clauses.addAll(clauses);
-				viewer.add(clauses.toArray(new HeaderClause[0]));
-			} else {
-				this.clauses.addAll(selectedIndex + 1, clauses);
-				viewer.refresh();
-			}
-			
-			validate();
-			markDirty();
+			doAddClauses(newClauses, selectedIndex, true);
 		}
 	}
-	protected void doRemoveClause(Object clause) {
-		clauses.remove(clause);
-		viewer.remove(clause);
-
-		validate();
-		markDirty();
-	}
-	protected void doAdd() {
-		HeaderClause newPattern = new HeaderClause("", new HashMap<String, String>());
-		doAddClause(newPattern);
-		
-		viewer.setSelection(new StructuredSelection(newPattern));
-		validate();
-		markDirty();
-	}
-	protected void doInsertClauses(Collection<? extends HeaderClause> newClauses) {
+	private void doInsertClausesAtSelection(Collection<? extends HeaderClause> newClauses) {
 		if(newClauses != null && !newClauses.isEmpty()) {
 			int selectedIndex;
 			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 			if(selection.isEmpty())
 				return;
 			selectedIndex = this.clauses.indexOf(selection.getFirstElement());
-	
-			this.clauses.addAll(selectedIndex, newClauses);
-			viewer.refresh();
 			
-			// Select the first of the newly inserted clauses
-			viewer.setSelection(new StructuredSelection(newClauses.iterator().next()));
-			
-			validate();
-			markDirty();
+			doAddClauses(newClauses, selectedIndex, true);
 		}
 	}
-	protected void doInsert() {
-		HeaderClause pattern = new HeaderClause("", new HashMap<String, String>());
-		doInsertClauses(Arrays.asList(pattern));
+	protected void doRemoveClauses(List<?> toRemove) {
+		clauses.removeAll(toRemove);
+		viewer.remove(toRemove.toArray());
+
+		validate();
+		markDirty();
 	}
-	protected void doRemove() {
-		@SuppressWarnings("unchecked")
-		Iterator iter = ((IStructuredSelection) viewer.getSelection()).iterator();
-		while(iter.hasNext()) {
-			Object item = iter.next();
-			doRemoveClause(item);
-		}
+	private void doRemoveSelectedClauses() {
+		doRemoveClauses(((IStructuredSelection) viewer.getSelection()).toList());
 		validate();
 		markDirty();
 	}
@@ -272,10 +263,10 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		super.refresh();
 		
 		// Deep-copy the model
-		Collection<HeaderClause> original = model.getHeaderClauses(propertyName);
-		if(original != null) {
-			clauses = new ArrayList<HeaderClause>(original.size());
-			for (HeaderClause clause : original) {
+		Collection<HeaderClause> tmp = model.getHeaderClauses(propertyName);
+		if(tmp != null) {
+			clauses = new ArrayList<HeaderClause>(tmp.size());
+			for (HeaderClause clause : tmp) {
 				clauses.add(clause.clone());
 			}
 		} else {
@@ -307,5 +298,4 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	public void updateLabels(Object[] elements) {
 		viewer.update(elements, null);
 	}
-	
 }

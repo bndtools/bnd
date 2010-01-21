@@ -172,38 +172,40 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		
 		int index = 0;
 		
-		for (ServiceComponent component : componentList) {
-			if(component.getName().length() > 0 && !component.isPath()) {
-				String classOrWildcard = component.getName();
-				if(classOrWildcard != null && classOrWildcard.length() > 0) {
-					int dotIndex = classOrWildcard.lastIndexOf('.');
-					if(dotIndex == -1) {
-						msgs.addMessage("_comp_default_pkg" + index, "Cannot use classes in the default package.", null, IMessageProvider.WARNING);
-					} else {
-						final String packageName = classOrWildcard.substring(0, dotIndex);
-						final BndEditModel model = (BndEditModel) getManagedForm().getInput();
-						if(!model.isIncludedPackage(packageName)) {
-							String message = MessageFormat.format("Package \"{0}\" is not included in the bundle. It will be imported instead.", packageName);
-							IAction[] fixes = new Action[] {
-								new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
-									public void run() {
-										model.addPrivatePackage(packageName);
-										markDirty();
-									};
-								},
-								new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
-									public void run() {
-										model.addExportedPackage(new ExportedPackage(packageName, null));
-										markDirty();
-									};
-								}
-							};
-							msgs.addMessage("_comp_nonincluded_pkg" + index, message, fixes, IMessageProvider.WARNING);
+		if(componentList != null) {
+			for (ServiceComponent component : componentList) {
+				if(component.getName().length() > 0 && !component.isPath()) {
+					String classOrWildcard = component.getName();
+					if(classOrWildcard != null && classOrWildcard.length() > 0) {
+						int dotIndex = classOrWildcard.lastIndexOf('.');
+						if(dotIndex == -1) {
+							msgs.addMessage("_comp_default_pkg" + index, "Cannot use classes in the default package.", null, IMessageProvider.WARNING);
+						} else {
+							final String packageName = classOrWildcard.substring(0, dotIndex);
+							final BndEditModel model = (BndEditModel) getManagedForm().getInput();
+							if(!model.isIncludedPackage(packageName)) {
+								String message = MessageFormat.format("Package \"{0}\" is not included in the bundle. It will be imported instead.", packageName);
+								IAction[] fixes = new Action[] {
+									new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
+										public void run() {
+											model.addPrivatePackage(packageName);
+											markDirty();
+										};
+									},
+									new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
+										public void run() {
+											model.addExportedPackage(new ExportedPackage(packageName, null));
+											markDirty();
+										};
+									}
+								};
+								msgs.addMessage("_comp_nonincluded_pkg" + index, message, fixes, IMessageProvider.WARNING);
+							}
 						}
 					}
 				}
+				index++;
 			}
-			index++;
 		}
 	}
 	@Override

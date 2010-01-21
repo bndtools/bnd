@@ -1,5 +1,6 @@
 package name.neilbartlett.eclipse.bndtools.editor.exports;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,16 +36,9 @@ public class ExportPatternsListPart extends PkgPatternsListPart {
 		super(parent, toolkit, style, Constants.EXPORT_PACKAGE);
 	}
 	
-	/*
-	 * Replaces the default add method to use the enhanced export package selection dialog.
-	 */
 	@Override
-	protected void doAdd() {
-		doAddClauses(selectPackagesToAdd());
-	};
-	@Override
-	protected void doInsert() {
-		doInsertClauses(selectPackagesToAdd());
+	protected Collection<HeaderClause> generateClauses() {
+		return selectPackagesToAdd();
 	}
 	protected List<HeaderClause> selectPackagesToAdd() {
 		List<HeaderClause> added = null;

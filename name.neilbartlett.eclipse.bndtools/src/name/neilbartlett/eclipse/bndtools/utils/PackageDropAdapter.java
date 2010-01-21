@@ -9,8 +9,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
@@ -20,14 +19,15 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 	
-	private final TableViewer viewer;
-	private final List<T> modelList;
-	
-	public PackageDropAdapter(TableViewer viewer, List<T> modelList) {
+	public PackageDropAdapter(Viewer viewer) {
 		super(viewer);
-		this.viewer = viewer;
-		this.modelList = modelList;
 	}
+	
+	protected abstract T createNewEntry(String packageName);
+	
+	protected abstract void addRows(int index, Collection<T> rows);
+	
+	protected abstract int indexOf(Object object);
 	
 	@Override
 	public void dragEnter(DropTargetEvent event) {
@@ -41,6 +41,7 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 	}
 	@Override
 	public void dropAccept(DropTargetEvent event) {
+		/*
 		if (event.data instanceof IResource[]) {
 			// Fail if there is not at least one IPackageFragment in the selection
 			IResource[] resources = (IResource[]) event.data;
@@ -51,18 +52,16 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 			}
 			event.detail = DND.DROP_NONE;
 		}
+		*/
+		super.dropAccept(event);
 	}
-	
-	protected abstract T createNew(String packageName);
-	
-	protected abstract void rowsAdded(Collection<T> rows);
 	
 	@Override
 	public boolean performDrop(Object data) {
 		int insertionIndex = -1;
 		Object target = getCurrentTarget();
 		if(target != null) {
-			insertionIndex = modelList.indexOf(target);
+			insertionIndex = indexOf(target);
 			int loc = getCurrentLocation();
 			if(loc == LOCATION_ON || loc == LOCATION_AFTER)
 				insertionIndex++;
@@ -74,27 +73,17 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 			StringTokenizer tok = new StringTokenizer(stringData, ",");
 			while(tok.hasMoreTokens()) {
 				String pkgName = tok.nextToken().trim();
-				newEntries.add(createNew(pkgName));
+				newEntries.add(createNewEntry(pkgName));
 			}
 		} else if(data instanceof IResource[]) {
 			for (IResource resource : (IResource[]) data) {
 				IJavaElement javaElement = JavaCore.create(resource);
 				if(javaElement instanceof IPackageFragment) {
-					newEntries.add(createNew(javaElement.getElementName()));
+					newEntries.add(createNewEntry(javaElement.getElementName()));
 				}
 			}
 		}
-
-		if(insertionIndex == -1) {
-			modelList.addAll(newEntries);
-			viewer.add(newEntries.toArray());
-		} else {
-			modelList.addAll(insertionIndex, newEntries);
-			viewer.refresh();
-		}
-		viewer.setSelection(new StructuredSelection(newEntries));
-		
-		rowsAdded(newEntries);
+		addRows(insertionIndex, newEntries);
 		return true;
 	}
 }

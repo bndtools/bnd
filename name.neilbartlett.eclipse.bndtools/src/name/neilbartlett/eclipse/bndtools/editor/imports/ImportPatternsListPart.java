@@ -1,5 +1,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.imports;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,22 +23,23 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 	private final IAction fixMissingStarPatternAction = new Action("Append missing \"*\" pattern.") {
 		public void run() {
 			HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>());
-			doAddClause(starPattern);
+			ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
 		}
 	};
 	public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style, Constants.IMPORT_PACKAGE);
 	}
-	protected void doAdd() {
+	@Override
+	protected void doAddClauses(Collection<? extends HeaderClause> clauses, int index, boolean select) {
 		boolean appendStar = getClauses().isEmpty();
 		
-		super.doAdd();
+		super.doAddClauses(clauses, index, select);
 		
 		if(appendStar) {
-			HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>());
-			doAddClause(starPattern);
+			HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>()); //$NON-NLS-1$
+			super.doAddClauses(Arrays.asList(starPattern), -1, false);
 		}
-	};
+	}
 	public void validate() {
 		IMessageManager msgs = getManagedForm().getMessageManager();
 		msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);

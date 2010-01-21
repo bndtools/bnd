@@ -27,10 +27,12 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -48,13 +50,14 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.lib.osgi.Constants;
 
 public class PrivatePackagesPart extends SectionPart implements PropertyChangeListener {
 
 	private BndEditModel model;
-	private List<String> packages;
+	private List<String> packages = new ArrayList<String>();
 	
 	private Table table;
 	private TableViewer viewer;
@@ -96,14 +99,27 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				btnRemove.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { }, new PackageDropAdapter<String>(viewer, packages) {
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { TextTransfer.getInstance(), ResourceTransfer.getInstance() }, new PackageDropAdapter<String>(viewer) {
 			@Override
-			protected String createNew(String packageName) {
+			protected String createNewEntry(String packageName) {
 				return packageName;
 			}
 			@Override
-			protected void rowsAdded(Collection<String> rows) {
+			protected void addRows(int index, Collection<String> rows) {
+				if(index == -1) {
+					packages.addAll(rows);
+					viewer.add(rows.toArray());
+				} else {
+					packages.addAll(index, rows);
+					viewer.refresh();
+				}
+				viewer.setSelection(new StructuredSelection(rows));
 				markDirty();
+			}
+			@Override
+			protected int indexOf(Object object) {
+				// TODO Auto-generated method stub
+				return 0;
 			}
 		});
 		btnAdd.addSelectionListener(new SelectionAdapter() {
@@ -205,8 +221,10 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	
 	@Override
 	public void refresh() {
-		packages = model.getPrivatePackages();
-		if(packages == null)
+		List<String> tmp = model.getPrivatePackages();
+		if(tmp != null)
+			packages = new ArrayList<String>(tmp);
+		else
 			packages = new ArrayList<String>();
 		viewer.setInput(packages);
 		super.refresh();
