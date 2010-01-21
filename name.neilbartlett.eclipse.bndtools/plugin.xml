@@ -178,11 +178,18 @@
       </category>
       <wizard
             category="name.neilbartlett.eclipse.bndtools.wizardCategory"
-            class="name.neilbartlett.eclipse.bndtools.wizards.BndFileWizard"
+            class="name.neilbartlett.eclipse.bndtools.wizards.EmptyBndFileWizard"
             icon="icons/brick_add.png"
             id="name.neilbartlett.eclipse.bndtools.newBndFile"
-            name="Empty Bundle Descriptor (Bnd) File"
+            name="New Bnd Bundle Descriptor"
             project="false">
+      </wizard>
+      <wizard
+            category="name.neilbartlett.eclipse.bndtools.wizardCategory"
+            class="name.neilbartlett.eclipse.bndtools.wizards.WrappingBndFileWizard"
+            icon="icons/package_add.png"
+            id="name.neilbartlett.eclipse.bndtools.wrappingBndWizard"
+            name="New Bnd Wrapper Script for Existing JARs">
       </wizard>
       <wizard
             category="name.neilbartlett.eclipse.bndtools.wizardCategory"

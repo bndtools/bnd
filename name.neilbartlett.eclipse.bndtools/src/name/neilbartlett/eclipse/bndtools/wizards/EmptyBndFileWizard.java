@@ -15,7 +15,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
-public class BndFileWizard extends Wizard implements INewWizard {
+public class EmptyBndFileWizard extends Wizard implements INewWizard {
 	
 	private IStructuredSelection selection;
 	private NewBndFileWizardPage mainPage;

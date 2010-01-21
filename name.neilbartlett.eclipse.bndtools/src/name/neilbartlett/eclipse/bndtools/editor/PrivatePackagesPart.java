@@ -206,7 +206,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	@Override
 	public void refresh() {
 		packages = model.getPrivatePackages();
-		if(packages.isEmpty())
+		if(packages == null)
 			packages = new ArrayList<String>();
 		viewer.setInput(packages);
 		super.refresh();

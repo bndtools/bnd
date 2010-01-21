@@ -52,7 +52,6 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	private TableViewer viewer;
 	private BndEditModel model;
 	
-	
 	private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
 	
 	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName) {
