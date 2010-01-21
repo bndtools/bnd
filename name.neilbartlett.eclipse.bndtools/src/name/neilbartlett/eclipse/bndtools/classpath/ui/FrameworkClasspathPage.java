@@ -33,8 +33,13 @@ public class FrameworkClasspathPage extends WizardPage implements
 		super("frameworkClasspathPage");
 	}
 
+	@Override
+	public boolean isPageComplete() {
+		return selector.getErrorMessage() == null;
+	}
+	
 	public boolean finish() {
-		return (selector.isUseSpecLevel() && selector.getSelectedSpecLevel() != null) || selector.getSelectedFramework() != null;
+		return isPageComplete();
 	}
 
 	public IClasspathEntry getSelection() {

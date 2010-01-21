@@ -17,6 +17,7 @@ import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -140,7 +141,6 @@ public class FrameworkSelector {
 					return;
 				}
 			}
-			
 			// Wasn't found
 			setSelection(null);
 		}
@@ -153,12 +153,6 @@ public class FrameworkSelector {
 			viewer.setInput(installedFrameworks);
 		}
 		showSelectionInViewer();
-		
-		String error = null;
-		if(installedFrameworks == null || installedFrameworks.isEmpty()) {
-			error = "No OSGi frameworks are installed";
-		}
-		setErrorMessage(error);
 	}
 	
 	public Control getControl() {
@@ -182,22 +176,34 @@ public class FrameworkSelector {
 	}
 
 	public void setSelection(Object selection) {
+		String error = null;
 		if(selection instanceof OSGiSpecLevel) {
 			OSGiSpecLevel specLevel = (OSGiSpecLevel) selection;
 			
 			OSGiSpecLevel oldValue = this.selectedSpecLevel;
 			this.selectedSpecLevel = specLevel;
 			propertySupport.firePropertyChange(PROP_SELECTED_SPEC_LEVEL, oldValue, specLevel);
+			
+			IFrameworkInstance instance = FrameworkPreferencesInitializer.getFrameworkInstance(specLevel);
+			if(instance == null) {
+				error = "No framework instances are available for the selected specification level.";
+			}
 		} else if(selection instanceof IFrameworkInstance) {
 			IFrameworkInstance instance = (IFrameworkInstance) selection;
 			
 			IFrameworkInstance oldValue = this.selectedFramework;
 			this.selectedFramework = instance;
 			propertySupport.firePropertyChange(PROP_SELECTED_FRAMEWORK, oldValue, instance);
+			
+			IStatus status = instance.getStatus();
+			if(!status.isOK()) {
+				error = status.getMessage();
+			}
 		}
 		if(viewer != null && table != null && !table.isDisposed()) {
 			showSelectionInViewer();
 		}
+		setErrorMessage(error);
 	}
 	
 	private void setErrorMessage(String errorMessage) {
