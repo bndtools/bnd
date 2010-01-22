@@ -350,7 +350,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 								}
 							}
 						} catch (JavaModelException e) {
-							Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing Java type information", e));
+							Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing Java type information", e));
 						}
 					} else if(resource.getName().endsWith(XML_SUFFIX)) {
 						IFormPage formPage = (IFormPage) getManagedForm().getContainer();

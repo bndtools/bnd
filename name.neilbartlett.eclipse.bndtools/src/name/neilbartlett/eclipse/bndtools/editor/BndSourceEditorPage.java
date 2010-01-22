@@ -139,7 +139,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 			if(!currentContent.equals(lastLoaded))
 				formEditor.getBndModel().loadFrom(getDocument());
 		} catch (IOException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
 		}
 	}
 

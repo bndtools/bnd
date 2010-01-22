@@ -68,7 +68,7 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
 			public void run() {
 				if(selectedClauses.length == 0) {
 					btnOptional.setEnabled(false);
-					btnOptional.setGrayed(true);
+					btnOptional.setGrayed(false);
 				} else if(selectedClauses.length == 1) {
 					btnOptional.setEnabled(true);
 					btnOptional.setGrayed(false);
@@ -87,6 +87,7 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
 					if(differs) {
 						btnOptional.setGrayed(true);
 					} else {
+						btnOptional.setGrayed(false);
 						btnOptional.setSelection(first);
 					}
 				}

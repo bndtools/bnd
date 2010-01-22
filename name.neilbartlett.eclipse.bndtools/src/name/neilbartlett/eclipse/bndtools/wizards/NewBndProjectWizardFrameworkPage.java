@@ -20,7 +20,6 @@ import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.wizard.WizardPage;
@@ -32,8 +31,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-
-import com.sun.jdi.connect.Connector.SelectedArgument;
 
 public class NewBndProjectWizardFrameworkPage extends WizardPage {
 	

@@ -220,7 +220,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		return result;
 	}
 	private void logError(String message, Throwable t) {
-		Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
+		Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
 	}
 	@Override
 	public ServiceComponent clone() {

@@ -20,11 +20,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
+import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -39,6 +41,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
@@ -53,6 +56,7 @@ public class FrameworkSelector {
 	public static final String PROP_ERROR_MESSAGE = "errorMessage";
 
 	private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+	private final AtomicBoolean updating = new AtomicBoolean(false);
 	
 	private List<IFrameworkInstance> installedFrameworks;
 	private final Map<OSGiSpecLevel, List<IFrameworkInstance>> specMappings = new HashMap<OSGiSpecLevel, List<IFrameworkInstance>>();
@@ -62,20 +66,22 @@ public class FrameworkSelector {
 	private OSGiSpecLevel selectedSpecLevel;
 	private String errorMessage = null;
 	
+	private Display display;
 	private Composite composite;
+	private Button btnUseSpecLevel;
+	private Button btnUseInstance;
 	private Table table;
 	private CheckboxTableViewer viewer;
 	
 	public void createControl(final Composite parent) {
+		this.display = parent.getDisplay();
 		composite = new Composite(parent, SWT.NONE);
 		
-		final Button btnUseSpecLevel = new Button(composite, SWT.RADIO);
+		btnUseSpecLevel = new Button(composite, SWT.RADIO);
 		btnUseSpecLevel.setText("OSGi Specification");
-		btnUseSpecLevel.setSelection(useSpec);
 		
-		Button btnUseInstance = new Button(composite, SWT.RADIO);
+		btnUseInstance = new Button(composite, SWT.RADIO);
 		btnUseInstance.setText("Installed Framework");
-		btnUseInstance.setSelection(!useSpec);
 		
 		table = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
 		
@@ -103,8 +109,10 @@ public class FrameworkSelector {
 		});
 		Listener btnUseSpecListener = new Listener() {
 			public void handleEvent(Event event) {
-				useSpec = btnUseSpecLevel.getSelection();
-				updateUI();
+				if(!updating.get()) {
+					useSpec = btnUseSpecLevel.getSelection();
+					updateUI();
+				}
 			}
 		};
 		btnUseSpecLevel.addListener(SWT.Selection, btnUseSpecListener);
@@ -157,12 +165,21 @@ public class FrameworkSelector {
 	}
 	
 	private void updateUI() {
-		if(useSpec) {
-			viewer.setInput(new OSGiSpecLevel[] { r4_0, r4_1, r4_2 });
-		} else {
-			viewer.setInput(installedFrameworks);
+		if(updating.compareAndSet(false, true)) {
+			try {
+				btnUseSpecLevel.setSelection(useSpec);
+				btnUseInstance.setSelection(!useSpec);
+				
+				if(useSpec) {
+					viewer.setInput(new OSGiSpecLevel[] { r4_0, r4_1, r4_2 });
+				} else {
+					viewer.setInput(installedFrameworks);
+				}
+				showSelectionInViewer();
+			} finally {
+				updating.set(false);
+			}
 		}
-		showSelectionInViewer();
 	}
 	
 	public Control getControl() {
@@ -171,6 +188,11 @@ public class FrameworkSelector {
 	
 	public void setUseSpecLevel(boolean useSpec) {
 		this.useSpec = useSpec;
+		SWTConcurrencyUtil.execForDisplay(display, new Runnable() {
+			public void run() {
+				updateUI();
+			}
+		});
 	}
 	
 	public boolean isUseSpecLevel() {

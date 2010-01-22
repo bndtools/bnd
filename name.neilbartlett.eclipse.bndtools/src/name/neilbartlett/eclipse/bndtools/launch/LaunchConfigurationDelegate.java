@@ -126,46 +126,33 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		return project;
 	}
 
-	/*
-	private IFramework getFrameworkForConfiguration(ILaunchConfiguration configuration) throws CoreException {
-		String frameworkId = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
-		if(frameworkId == null)
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework was specified", null));
-		
-		IFramework framework = FrameworkUtils.findFramework(frameworkId);
-		if(framework == null)
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("No OSGi framework could be found with as ID of %s.", frameworkId), null));
-		
-		return framework;
-	}
-	*/
-	
 	private final IFrameworkInstance getFrameworkInstanceForConfiguration(ILaunchConfiguration configuration) throws CoreException {
-		OSGiSpecLevel specLevel = null;
-		try {
-			String specLevelStr = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
-			if(specLevelStr != null)
-				specLevel = Enum.valueOf(OSGiSpecLevel.class, specLevelStr);
-		} catch (IllegalArgumentException e) {}
-		String instancePath = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
-		
-		IFrameworkInstance frameworkInstance = null;
-		if(specLevel != null) {
+		IFrameworkInstance frameworkInstance;
+		boolean useSpec = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_USE_FRAMEWORK_SPEC_LEVEL, true);
+		if(useSpec) {
+			OSGiSpecLevel specLevel = null;
+			try {
+				String specLevelStr = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
+				if(specLevelStr != null) specLevel = Enum.valueOf(OSGiSpecLevel.class, specLevelStr);
+			} catch (IllegalArgumentException e) {
+			}
+			if(specLevel == null) {
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework specification level specified", null));
+			}
+			
 			frameworkInstance = FrameworkPreferencesInitializer.getFrameworkInstance(specLevel);
 			if(frameworkInstance == null) {
-				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance could be found for the specified specification level.", null));
 			}
 		} else {
-			// Get the framework
 			String frameworkId = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
-			if(frameworkId == null)
-				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework was specified", null));
+			String instancePath = configuration.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
+			if(frameworkId == null || instancePath == null) {
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance was specified.", null));
+			}
 			IFramework framework = FrameworkUtils.findFramework(frameworkId);
 			if(framework == null)
 				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("No OSGi framework could be found with as ID of %s.", frameworkId), null));
-			// Get the instance
-			if(instancePath == null)
-				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No OSGi framework instance path was specified", null));
 			frameworkInstance = framework.createFrameworkInstance(new File(instancePath));
 		}
 		if(!frameworkInstance.getStatus().isOK())

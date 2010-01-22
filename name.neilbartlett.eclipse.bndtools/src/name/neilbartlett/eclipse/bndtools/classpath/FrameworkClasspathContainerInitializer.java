@@ -143,7 +143,7 @@ public class FrameworkClasspathContainerInitializer extends
 				result = FrameworkClasspathContainer.createForSpecificFramework(instance, useAnnotations);
 				result.setPath(containerPath);
 			} catch (CoreException ce) {
-				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating framework instance.", ce));
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating framework instance.", ce));
 				return null;
 			}
 		}

@@ -95,7 +95,7 @@ public class P2Utils {
 			}
 			return bundles;
 		} catch (IOException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading bundles location", e));
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading bundles location", e));
 			return null;
 		}
 	}
@@ -134,7 +134,7 @@ public class P2Utils {
 		Assert.isLegal(symbolicName != null);
 		Assert.isLegal(version != null);
 
-		return findBundle(symbolicName, new VersionRange(version, true, version, true), isSourceBundle);
+		return findBundle(symbolicName, new VersionRange(version, true, null, true), isSourceBundle);
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class P2Utils {
 			fileStr= URLDecoder.decode(fileStr, "UTF-8"); //$NON-NLS-1$
 			return new Path(fileStr);
 		} catch (IOException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting bundle location path.", e));
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting bundle location path.", e));
 			return null;
 		}
 	}

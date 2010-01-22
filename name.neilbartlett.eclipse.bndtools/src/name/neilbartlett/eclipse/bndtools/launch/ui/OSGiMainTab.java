@@ -90,17 +90,18 @@ public class OSGiMainTab extends JavaLaunchTab {
 		OSGiSpecLevel specLevel = null;
 		IFrameworkInstance frameworkInstance = null;
 		
+		boolean useSpec = true;
 		try {
+			useSpec = config.getAttribute(IFrameworkLaunchConstants.ATTR_USE_FRAMEWORK_SPEC_LEVEL, true);
 			projectName = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
 			
-			String specLevelStr = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
-			String frameworkId = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, "");
-			String frameworkInstancePath = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, "");
-			
-			try {
+			if(useSpec) {
+				String specLevelStr = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
 				if(specLevelStr != null)
 					specLevel = Enum.valueOf(OSGiSpecLevel.class, specLevelStr);
-			} catch (IllegalArgumentException e) {
+			} else {
+				String frameworkId = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
+				String frameworkInstancePath = config.getAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
 				if(frameworkId != null && frameworkId.length() > 0 && frameworkInstancePath != null && frameworkInstancePath.length() > 0) {
 					IFramework framework = FrameworkUtils.findFramework(frameworkId);
 					frameworkInstance = framework.createFrameworkInstance(new File(frameworkInstancePath));
@@ -112,14 +113,8 @@ public class OSGiMainTab extends JavaLaunchTab {
 		catch (CoreException ce) {
 			setErrorMessage(ce.getStatus().getMessage());
 		}
+		
 		fProjText.setText(projectName);
-
-		boolean useSpec;
-		if(specLevel != null) {
-			useSpec = true;
-		} else {
-			useSpec = frameworkInstance == null;
-		}
 		frameworkSelector.setUseSpecLevel(useSpec);
 		frameworkSelector.setSelection(useSpec ? specLevel : frameworkInstance);
 	}
@@ -128,25 +123,20 @@ public class OSGiMainTab extends JavaLaunchTab {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
 		
 		boolean useSpec = frameworkSelector.isUseSpecLevel();
+		config.setAttribute(IFrameworkLaunchConstants.ATTR_USE_FRAMEWORK_SPEC_LEVEL, useSpec);
 		if(useSpec) {
 			OSGiSpecLevel specLevel = frameworkSelector.getSelectedSpecLevel();
 			if(specLevel == null) {
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
 			} else {
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, specLevel.toString());
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
 			}
 		} else {
 			IFrameworkInstance frameworkInstance = frameworkSelector.getSelectedFramework();
 			if(frameworkInstance == null) {
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, (String) null);
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, (String) null);
 			} else {
-				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_SPEC_LEVEL, (String) null);
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_ID, frameworkInstance.getFrameworkId());
 				config.setAttribute(IFrameworkLaunchConstants.ATTR_FRAMEWORK_INSTANCE_PATH, frameworkInstance.getInstancePath().toString());
 			}

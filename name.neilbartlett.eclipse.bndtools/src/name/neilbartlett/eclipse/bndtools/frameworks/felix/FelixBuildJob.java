@@ -81,7 +81,7 @@ public class FelixBuildJob implements IFrameworkBuildJob {
 						}
 						content = new ByteArrayInputStream(buffer.toString().getBytes(ISO_8859_1));
 					} catch (IOException e) {
-						Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing sample 'config.properties' resource.", e));
+						Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing sample 'config.properties' resource.", e));
 						content = new ByteArrayInputStream(new byte[0]);
 					}
 					configFile.create(content, IResource.NONE, progress.newChild(1));
@@ -99,7 +99,7 @@ public class FelixBuildJob implements IFrameworkBuildJob {
 					if(!readmeFile.exists())
 						readmeFile.create(new ByteArrayInputStream(README_TXT.getBytes()), false, progress.newChild(1));
 				} catch (CoreException e) {
-					Activator.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Problem creating 'felix/bundle' directory or 'felix/bundle/README.txt' file, skipping", e));
+					Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Problem creating 'felix/bundle' directory or 'felix/bundle/README.txt' file, skipping", e));
 					progress.worked(1);
 				}
 			}

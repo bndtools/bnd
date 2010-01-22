@@ -211,7 +211,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 							unknownError = "The activator class name is not known in this project.";
 						}
 					} catch (JavaModelException e) {
-						Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
+						Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
 					}
 				}
 				
@@ -457,11 +457,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				return result;
 			} catch (JavaModelException e) {
 				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e);
-				Activator.getDefault().getLog().log(status);
+				Plugin.getDefault().getLog().log(status);
 				return Collections.emptyList();
 			} catch (InvocationTargetException e) {
 				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
-				Activator.getDefault().getLog().log(status);
+				Plugin.getDefault().getLog().log(status);
 				return Collections.emptyList();
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

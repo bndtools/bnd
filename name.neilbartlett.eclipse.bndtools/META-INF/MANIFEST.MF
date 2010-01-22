@@ -3,12 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Bnd Tools Plug-in
 Bundle-SymbolicName: name.neilbartlett.eclipse.bndtools;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: aQute.bnd.plugin.Activator
+Bundle-Activator: name.neilbartlett.eclipse.bndtools.Plugin
 Bundle-Vendor: Neil Bartlett
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
- bnd-0.0.384.jar
+ bnd-0.0.393.jar
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.internal.resources,
  org.eclipse.core.resources,

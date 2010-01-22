@@ -50,23 +50,6 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 			|| ResourceTransfer.getInstance().isSupportedType(transferType);
 	}
 	@Override
-	public void dropAccept(DropTargetEvent event) {
-		/*
-		if (event.data instanceof IResource[]) {
-			// Fail if there is not at least one IPackageFragment in the selection
-			IResource[] resources = (IResource[]) event.data;
-			for (IResource resource : resources) {
-				IJavaElement element = JavaCore.create(resource);
-				if(element != null && element instanceof IPackageFragment)
-					return;
-			}
-			event.detail = DND.DROP_NONE;
-		}
-		*/
-		super.dropAccept(event);
-	}
-	
-	@Override
 	public boolean performDrop(Object data) {
 		int insertionIndex = -1;
 		Object target = getCurrentTarget();

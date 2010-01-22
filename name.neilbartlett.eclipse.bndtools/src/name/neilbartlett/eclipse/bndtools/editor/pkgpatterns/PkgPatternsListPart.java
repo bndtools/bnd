@@ -69,7 +69,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		createSection(getSection(), toolkit);
 	}
 	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Import Package Patterns");
+		section.setText("Package Patterns");
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);

@@ -30,11 +30,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
-
-import aQute.bnd.plugin.Activator;
 
 
 public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializer {
@@ -44,28 +41,31 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	
 	@Override
 	public void initializeDefaultPreferences() {
-		List<String> autoConfigUrls = new LinkedList<String>();
+		List<String> urls = new LinkedList<String>();
+		loadFrameworkUrlsInto(urls);
 		
-		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_OSGI_FRAMEWORKS);
-		for (IConfigurationElement element : elements) {
-			String id = element.getAttribute("id");
-			if(Boolean.parseBoolean(element.getAttribute("supportsAutoConfig"))) {
-				try {
-					IFramework framework = (IFramework) element.createExecutableExtension("class");
-					Collection<File> locations = framework.getAutoConfiguredLocations();
-					if(locations != null) for (File location : locations) {
-						String url = id + ":" + location.getAbsolutePath();
-						autoConfigUrls.add(url);
+		if(urls.isEmpty()) {
+			IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_OSGI_FRAMEWORKS);
+			for (IConfigurationElement element : elements) {
+				String id = element.getAttribute("id");
+				if(Boolean.parseBoolean(element.getAttribute("supportsAutoConfig"))) {
+					try {
+						IFramework framework = (IFramework) element.createExecutableExtension("class");
+						Collection<File> locations = framework.getAutoConfiguredLocations();
+						if(locations != null) for (File location : locations) {
+							String url = id + ":" + location.getAbsolutePath();
+							urls.add(url);
+						}
+					} catch (CoreException e) {
+						Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error instantiating framework type \"" + id + "\"", e));
 					}
-				} catch (CoreException e) {
-					Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error instantiating framework type \"" + id + "\"", e));
 				}
 			}
-		}
-		try {
-			saveFrameworkUrls(autoConfigUrls);
-		} catch (BackingStoreException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising default framework preferences.", e));
+			try {
+				saveFrameworkUrls(urls);
+			} catch (BackingStoreException e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising default framework preferences.", e));
+			}
 		}
 	}
 
@@ -73,14 +73,15 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	 * Load the list of framework URLs into the specified list
 	 * @param list The list into which to load the framework URLs.
 	 */
-	public static synchronized void loadFrameworkUrls(List<? super String> list) {
-		Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
-		String listStr = node.get(PROP_FRAMEWORK_LIST, ""); //$NON-NLS-1$
+	public static synchronized void loadFrameworkUrlsInto(Collection<? super String> list) {
+		IPreferenceStore prefStore = Plugin.getDefault().getPreferenceStore();
+		//Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
+		String listStr = prefStore.getString(PROP_FRAMEWORK_LIST);
 		StringTokenizer tokenizer = new StringTokenizer(listStr, ","); //$NON-NLS-1$
 		while(tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken().trim();
 			
-			String frameworkUrl = node.get(PROP_FRAMEWORK_PREFIX + token, ""); //$NON-NLS-1$ 
+			String frameworkUrl = prefStore.getString(PROP_FRAMEWORK_PREFIX + token); 
 			if(frameworkUrl != null && frameworkUrl.length() > 0) {
 				list.add(frameworkUrl);
 			}
@@ -88,8 +89,9 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	}
 	
 	public static synchronized final void saveFrameworkUrls(List<? extends String> list) throws BackingStoreException {
-		Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
-		node.clear();
+		//Preferences node = new DefaultScope().getNode(Plugin.PLUGIN_ID);
+		IPreferenceStore prefStore = Plugin.getDefault().getPreferenceStore();
+		//prefStore.
 		
 		StringBuilder frameworkListStr = new StringBuilder();
 		int i = 0;
@@ -98,15 +100,15 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 			frameworkListStr.append(i);
 			if(iterator.hasNext()) frameworkListStr.append(',');
 			
-			node.put(PROP_FRAMEWORK_PREFIX + i, frameworkUrl);
+			prefStore.setValue(PROP_FRAMEWORK_PREFIX + i, frameworkUrl);
 		}
-		node.put(PROP_FRAMEWORK_LIST, frameworkListStr.toString());
-		node.sync();
+		prefStore.setValue(PROP_FRAMEWORK_LIST, frameworkListStr.toString());
+		//prefStore.sync();
 	}
 	
 	public static List<IFrameworkInstance> loadFrameworkInstanceList() {
 		List<String> frameworkUrls = new ArrayList<String>();
-		loadFrameworkUrls(frameworkUrls);
+		loadFrameworkUrlsInto(frameworkUrls);
 		List<IFrameworkInstance> instances = new ArrayList<IFrameworkInstance>(frameworkUrls.size());
 		
 		for (String frameworkUrl : frameworkUrls) {

@@ -1,17 +1,30 @@
 package aQute.bnd.plugin.popup.actions;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Iterator;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.ui.*;
+import name.neilbartlett.eclipse.bndtools.Plugin;
 
-import aQute.bnd.build.*;
-import aQute.bnd.plugin.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.eclipse.*;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.eclipse.EclipseClasspath;
 
 public class MakeBundle implements IObjectActionDelegate {
     IFile[] locations;
@@ -24,7 +37,7 @@ public class MakeBundle implements IObjectActionDelegate {
      * @see IActionDelegate#run(IAction)
      */
     public void run(IAction action) {
-        Activator activator = Activator.getDefault();
+        Plugin plugin = Plugin.getDefault();
 
         try {
             if (locations != null) {
@@ -42,10 +55,10 @@ public class MakeBundle implements IObjectActionDelegate {
                                     
                                 }
                             }
-                            activator.report(true, true, project, "Building "
+                            plugin.report(true, true, project, "Building "
                                     + project, "Created files " + target );
                         } else {
-                            Builder builder = setBuilder(activator,
+                            Builder builder = setBuilder(plugin,
                                     locations[i].getProject(), mf);
 
                             File cwd = mf.getAbsoluteFile().getParentFile();
@@ -70,51 +83,42 @@ public class MakeBundle implements IObjectActionDelegate {
 
                             target.delete();
                             if (builder.getErrors().size() > 0) {
-                                activator.error(builder.getErrors());
+                                plugin.error(builder.getErrors());
                             } else {
                                 jar.write(target);
 
-                                File copy = activator.getCopy();
-                                if (copy != null) {
-                                    copy = new File(copy, target.getName());
-                                    jar.write(copy);
-                                }
                                 if (builder.getWarnings().size() > 0) {
-                                    activator.warning(builder.getWarnings());
+                                    plugin.warning(builder.getWarnings());
                                 } else {
-                                    if (activator.getReportDone()) {
-                                        String p = target.getPath();
-                                        if (p.startsWith(cwd.getAbsolutePath()))
-                                            p = p
-                                                    .substring(cwd
-                                                            .getAbsolutePath()
-                                                            .length() + 1);
-                                        String msg = "Saved as " + p;
-                                        if (copy != null)
-                                            msg += " and copied to " + copy;
-                                        showOnStatusLine(msg);
-                                    }
+                                    String p = target.getPath();
+                                    if (p.startsWith(cwd.getAbsolutePath()))
+                                        p = p
+                                                .substring(cwd
+                                                        .getAbsolutePath()
+                                                        .length() + 1);
+                                    String msg = "Saved as " + p;
+                                    showOnStatusLine(msg);
                                 }
                             }
                             builder.close();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        activator.error("While generating JAR " + locations[i],
+                        plugin.error("While generating JAR " + locations[i],
                                 e);
                     }
                     locations[i].getParent().refreshLocal(1, null);
                 }
             }
         } catch (Exception e) {
-            activator.error("Error in bnd", e);
+            plugin.error("Error in bnd", e);
         }
     }
 
-    static public Builder setBuilder(Activator activator, IProject project,
+    static public Builder setBuilder(Plugin plugin, IProject project,
             File mf) throws Exception, IOException, FileNotFoundException {
         Builder builder = new Builder();
-        builder.setPedantic(activator.isPedantic() || activator.isDebugging());
+        //builder.setPedantic(activator.isPedantic() || activator.isDebugging());
 
         // TODO of course we should get the classpath from
         // inside API ...
@@ -168,7 +172,7 @@ public class MakeBundle implements IObjectActionDelegate {
     		IStatusLineManager statusLineManager = ((IEditorSite) site).getActionBars().getStatusLineManager();
     		statusLineManager.setMessage(message);
     	} else {
-    		Activator.getDefault().message(message);
+    		Plugin.getDefault().message(message);
     	}
     }
 

@@ -169,7 +169,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		// Create the builder
 		final Builder builder = new Builder();
-		builder.setPedantic(Activator.getDefault().isPedantic() || Activator.getDefault().isDebugging());
+		//builder.setPedantic(Plugin.getDefault().isPedantic() || Plugin.getDefault().isDebugging());
 		
 		// Set the initial properties for the builder
 		try {

@@ -93,7 +93,7 @@ public class SvcInterfaceProposalProvider extends CachingContentProposalProvider
 				searchContext.getRunContext().run(false, false, runnable);
 			}
 		} catch (InvocationTargetException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for Java types.", e.getTargetException()));
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for Java types.", e.getTargetException()));
 			return Collections.emptyList();
 		} catch (InterruptedException e) {
 			// Reset interrupted status and return empty

@@ -57,7 +57,7 @@ public class EquinoxBuildJob implements IFrameworkBuildJob {
 						URL sampleConfigIni = EquinoxBuildJob.class.getResource("sample_config.ini");
 						inputStream = sampleConfigIni.openStream();
 					} catch (IOException e) {
-						Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing sample 'config.ini' resource.", e));
+						Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing sample 'config.ini' resource.", e));
 						inputStream = new ByteArrayInputStream(new byte[0]);
 					}
 					configIniFile.create(inputStream, IResource.NONE, subMonitor.newChild(1));
