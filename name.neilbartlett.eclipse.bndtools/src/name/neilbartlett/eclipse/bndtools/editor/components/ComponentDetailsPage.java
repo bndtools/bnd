@@ -10,14 +10,15 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.editor.components;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.model.ComponentSvcReference;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
@@ -46,6 +47,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -56,7 +58,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IDetailsPage;
 import org.eclipse.ui.forms.IFormPart;
@@ -67,12 +73,14 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPage {
 
 	private static final String PROP_COMPONENT_NAME = "_COMPONENT_NAME";
 	private static final String PROP_REFERENCES = "_COMPONENT_REFS";
 	
+	private final Image imgEdit = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png").createImage();
 	private final ComponentListPart listPart;
 	
 	private ServiceComponent selected;
@@ -95,8 +103,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	private List<String> provides;
 	private Table tableProvide;
 	private TableViewer viewerProvide;
-	private Button btnAddProvide;
-	private Button btnRemoveProvide;
 	
 	private Button btnConfigPolicyOptional;
 	private Button btnConfigPolicyRequire;
@@ -105,9 +111,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	private List<ComponentSvcReference> references;
 	private Table tableReferences;
 	private TableViewer viewerReferences;
-	private Button btnAddReference;
-	private Button btnEditReference;
-	private Button btnRemoveReference;
 	
 	// Used to ignore events that occur in response to programmatic changes
 	private final AtomicInteger refreshers = new AtomicInteger(0);
@@ -254,63 +257,57 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	}
 	void fillProvideSection(FormToolkit toolkit, Section section) {
 		// Create controls
-		Composite composite = toolkit.createComposite(section);
-		section.setClient(composite);
+		ToolBar toolbar = new ToolBar(section, SWT.FLAT | SWT.HORIZONTAL);
+		section.setTextClient(toolbar);
 		
+		final ToolItem addItem = new ToolItem(toolbar, SWT.NULL);
+		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+		addItem.setToolTipText("Add");
+
+		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+		removeItem.setToolTipText("Remove");
+		removeItem.setEnabled(false);
+		
+		Composite composite = toolkit.createComposite(section, SWT.NONE);
+		section.setClient(composite);
 		tableProvide = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+		
 		viewerProvide = new TableViewer(tableProvide);
 		viewerProvide.setContentProvider(new ArrayContentProvider());
 		viewerProvide.setLabelProvider(new ProvideLabelProvider());
 		
-		Composite pnlButtons = toolkit.createComposite(composite);
-		btnAddProvide = toolkit.createButton(pnlButtons, "Add", SWT.PUSH);
-		btnRemoveProvide = toolkit.createButton(pnlButtons, "Remove", SWT.PUSH);
-		btnRemoveProvide.setEnabled(false);
+		// Layout
+		GridLayout layout = new GridLayout(1, false);
+		layout.horizontalSpacing = 0;
+		layout.verticalSpacing = 0;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		composite.setLayout(layout);
+		
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 70;
+		tableProvide.setLayoutData(gd);
 		
 		// Listeners
 		viewerProvide.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				btnRemoveProvide.setEnabled(!viewerProvide.getSelection().isEmpty());
+				removeItem.setEnabled(!viewerProvide.getSelection().isEmpty());
 			}
 		});
-		btnAddProvide.addSelectionListener(new SelectionAdapter() {
+		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doAddProvide();
 			}
 		});
-		btnRemoveProvide.addSelectionListener(new SelectionAdapter() {
+		removeItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doRemoveProvide();
 			}
 		});
-		
-		// Layout
-		GridData gd;
-		GridLayout layout;
-		
-		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 5;
-		layout.horizontalSpacing = 0;
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
-		composite.setLayout(layout);
-		
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 3);
-		gd.widthHint = 200;
-		gd.heightHint = 60;
-		tableProvide.setLayoutData(gd);
-		pnlButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
-		
-		layout = new GridLayout(2, true);
-		layout.verticalSpacing = 0;
-		layout.horizontalSpacing = 5;
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
-		pnlButtons.setLayout(layout);
-		btnAddProvide.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnRemoveProvide.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
 	void doAddProvide() {
 		IJavaSearchContext searchContext = new FormPartJavaSearchContext(this);
@@ -334,6 +331,25 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		markDirty(ServiceComponent.COMPONENT_PROVIDE);
 	}
 	void fillReferenceSection(FormToolkit toolkit, Section section) {
+		
+		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+		section.setTextClient(toolbar);
+		
+		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
+		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+		
+		final ToolItem editItem = new ToolItem(toolbar, SWT.PUSH);
+		editItem.setImage(imgEdit);
+		editItem.setToolTipText("Edit");
+		editItem.setEnabled(false);
+
+		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+		removeItem.setToolTipText("Remove");
+		removeItem.setEnabled(false);
+
+		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 		
@@ -362,31 +378,25 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		viewerReferences.setContentProvider(new ArrayContentProvider());
 		viewerReferences.setLabelProvider(new ComponentSvcRefTableLabelProvider());
 		
-		Composite pnlButtons = toolkit.createComposite(composite, SWT.NONE);
-		btnAddReference = toolkit.createButton(pnlButtons, "Add", SWT.PUSH);
-		btnEditReference = toolkit.createButton(pnlButtons, "Edit", SWT.PUSH);
-		btnRemoveReference = toolkit.createButton(pnlButtons, "Remove", SWT.PUSH);
-		btnRemoveReference.setEnabled(false);
-		
 		// Listeners
 		viewerReferences.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				IStructuredSelection selection = (IStructuredSelection) viewerReferences.getSelection();
-				btnEditReference.setEnabled(selection.size() == 1);
-				btnRemoveReference.setEnabled(!selection.isEmpty());
+				editItem.setEnabled(selection.size() == 1);
+				removeItem.setEnabled(!selection.isEmpty());
 			}
 		});
-		btnAddReference.addSelectionListener(new SelectionAdapter() {
+		addItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				doAddReference();
 			};
 		});
-		btnEditReference.addSelectionListener(new SelectionAdapter() {
+		editItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				doEditReference();
 			};
 		});
-		btnRemoveReference.addSelectionListener(new SelectionAdapter() {
+		removeItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doRemoveReference();
@@ -408,17 +418,6 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		gd.widthHint = 250;
 		gd.heightHint = 70;
 		tableReferences.setLayoutData(gd);
-		pnlButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
-
-		layout = new GridLayout(3, true);
-		layout.verticalSpacing = 0;
-		layout.horizontalSpacing = 5;
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
-		pnlButtons.setLayout(layout);
-		btnAddReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnEditReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnRemoveReference.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
 	Set<String> getExistingReferenceNames() {
 		Set<String> result = new HashSet<String>();
@@ -640,7 +639,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			loadTextField(txtFactoryId, ServiceComponent.COMPONENT_FACTORY, "");
 			
 			// Provides Section
-			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : Collections.<String>emptyList();
+			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : null;
+			if(provides == null) provides = new LinkedList<String>();
 			viewerProvide.setInput(provides);
 			
 			// References section
@@ -716,6 +716,12 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	@Override
 	public void setFocus() {
 		txtName.setFocus();
-		txtName.setSelection(txtName.getText().length());
+		txtName.setSelection(0, txtName.getText().length());
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		imgEdit.dispose();
 	}
 }
