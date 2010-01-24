@@ -18,6 +18,23 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 
+/**
+ * <p>
+ * Represents a specific installation of an OSGi framework based on a resource
+ * path, which may be either an installation directory or a JAR file.
+ * </p>
+ * 
+ * <p>
+ * <strong>NB:</strong> Implementations of this interface must provide working
+ * {@link #hashCode()} and {@link #equals(Object)} methods based on the {@code
+ * instancePath} property. I.e., two instances that are the same concrete type
+ * and return the same path from {@link #getInstancePath()} should be considered
+ * equal and return the same hash code.
+ * </p>
+ * 
+ * @author Neil Bartlett
+ * 
+ */
 public interface IFrameworkInstance {
 	
 	OSGiSpecLevel getOSGiSpecLevel();
@@ -105,4 +122,8 @@ public interface IFrameworkInstance {
 	 *         arguments separated by whitespace.
 	 */
 	String getStandardVMArguments(File workingDir);
+	
+	public int hashCode();
+	
+	public boolean equals(Object obj);
 }

@@ -116,6 +116,12 @@
             id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
             name="OSGi Frameworks">
       </page>
+      <page
+            category="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
+            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui.PreferredInstancesPreferencePage"
+            id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks.specLevels"
+            name="Preferred Frameworks">
+      </page>
    </extension>
    <extension
          point="org.eclipse.jdt.core.classpathContainerInitializer">

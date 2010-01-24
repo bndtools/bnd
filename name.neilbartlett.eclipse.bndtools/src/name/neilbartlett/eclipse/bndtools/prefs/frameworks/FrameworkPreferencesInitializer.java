@@ -39,6 +39,8 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 	static final String PROP_FRAMEWORK_LIST = "frameworks";
 	static final String PROP_FRAMEWORK_PREFIX = "framework_";
 	
+	static final String PROP_PREFERRED_FRAMEWORK_PREFIX = "preferred_";
+	
 	@Override
 	public void initializeDefaultPreferences() {
 		List<String> urls = new LinkedList<String>();
@@ -106,47 +108,85 @@ public class FrameworkPreferencesInitializer extends AbstractPreferenceInitializ
 		//prefStore.sync();
 	}
 	
+	private static IFrameworkInstance getFrameworkInstanceFromUrl(String url) throws CoreException, IllegalArgumentException {
+		int colonIndex = url.indexOf(':');
+		if(colonIndex <= 0) {
+			throw new IllegalArgumentException("Invalid framework URL format");
+		}
+		String frameworkId = url.substring(0, colonIndex);
+		String resourcePath = url.substring(colonIndex + 1);
+		
+		IFramework framework = FrameworkUtils.findFramework(frameworkId);
+		return framework.createFrameworkInstance(new File(resourcePath));
+	}
+	
 	public static List<IFrameworkInstance> loadFrameworkInstanceList() {
 		List<String> frameworkUrls = new ArrayList<String>();
 		loadFrameworkUrlsInto(frameworkUrls);
 		List<IFrameworkInstance> instances = new ArrayList<IFrameworkInstance>(frameworkUrls.size());
 		
 		for (String frameworkUrl : frameworkUrls) {
-			int colonIndex = frameworkUrl.indexOf(':');
-			if(colonIndex > 0) {
-				String frameworkId = frameworkUrl.substring(0, colonIndex);
-				String resourcePath = frameworkUrl.substring(colonIndex + 1);
-				
-				try {
-					IFramework framework = FrameworkUtils.findFramework(frameworkId);
-					IFrameworkInstance instance = framework.createFrameworkInstance(new File(resourcePath));
-					
-					instances.add(instance);
-				} catch (CoreException e) {
-				}
+			try {
+				IFrameworkInstance instance = getFrameworkInstanceFromUrl(frameworkUrl);
+				instances.add(instance);
+			} catch (IllegalArgumentException e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error processing framework URL.", e));
+			} catch (CoreException e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error instantiating framework.", e));
 			}
 		}
 		return instances;
+	}
+	
+	private static String getFrameworkUrl(IFrameworkInstance instance) {
+		return instance.getFrameworkId() + ":" + instance.getInstancePath(); 
 	}
 	
 	public static void saveFrameworkInstancesList(List<IFrameworkInstance> instances) throws BackingStoreException {
 		List<String> urlList = new ArrayList<String>();
 		
 		for (IFrameworkInstance instance : instances) {
-			String url = instance.getFrameworkId() + ":" + instance.getInstancePath();
-			urlList.add(url);
+			urlList.add(getFrameworkUrl(instance));
 		}
 		
 		saveFrameworkUrls(urlList);
 	}
 
 	public static IFrameworkInstance getFrameworkInstance(OSGiSpecLevel specLevel) {
-		// TODO: add preferences for mapping spec levels to a preferred instance
+		IFrameworkInstance preferredInstance = loadPreferredFrameworkMapping(specLevel);
+		if(preferredInstance != null)
+			return preferredInstance;
+		
 		List<IFrameworkInstance> list = loadFrameworkInstanceList();
 		for (IFrameworkInstance instance : list) {
 			if(instance.getOSGiSpecLevel() == specLevel)
 				return instance;
 		}
 		return null;
+	}
+	
+	public static final void savePreferredFrameworkMapping(OSGiSpecLevel specLevel, IFrameworkInstance instance) {
+		IPreferenceStore prefStore = Plugin.getDefault().getPreferenceStore();
+
+		prefStore.setValue(PROP_PREFERRED_FRAMEWORK_PREFIX + specLevel.toString(), getFrameworkUrl(instance));
+	}
+	
+	public static final IFrameworkInstance loadPreferredFrameworkMapping(OSGiSpecLevel specLevel) {
+		IPreferenceStore prefStore = Plugin.getDefault().getPreferenceStore();
+		
+		String url = prefStore.getString(PROP_PREFERRED_FRAMEWORK_PREFIX + specLevel.toString());
+		if(url == null || url.length() == 0) {
+			return null;
+		}
+		
+		try {
+			return getFrameworkInstanceFromUrl(url);
+		} catch (IllegalArgumentException e) {
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error processing framework URL.", e));
+			return null;
+		} catch (CoreException e) {
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error instantiating framework.", e));
+			return null;
+		}
 	}
 }

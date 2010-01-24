@@ -10,12 +10,9 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.frameworks.ui;
 
-import static name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel.r4_0;
-import static name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel.r4_1;
-import static name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel.r4_2;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +25,6 @@ import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
 import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -152,6 +148,7 @@ public class FrameworkSelector {
 		if(useSpec && selectedSpecLevel != null) {
 			viewer.setChecked(selectedSpecLevel, true);
 		} else if(selectedFramework != null) {
+			/*
 			IPath instancePath = selectedFramework.getInstancePath();
 			for (IFrameworkInstance installedInstance : installedFrameworks) {
 				if(instancePath.equals(installedInstance.getInstancePath())) {
@@ -161,6 +158,10 @@ public class FrameworkSelector {
 			}
 			// Wasn't found
 			setSelection(null);
+			*/
+			viewer.setChecked(selectedFramework, true);
+		} else {
+			viewer.setAllChecked(false);
 		}
 	}
 	
@@ -171,7 +172,7 @@ public class FrameworkSelector {
 				btnUseInstance.setSelection(!useSpec);
 				
 				if(useSpec) {
-					viewer.setInput(new OSGiSpecLevel[] { r4_0, r4_1, r4_2 });
+					viewer.setInput(EnumSet.allOf(OSGiSpecLevel.class));
 				} else {
 					viewer.setInput(installedFrameworks);
 				}

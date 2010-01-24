@@ -16,7 +16,7 @@ import java.util.Collection;
 import org.eclipse.core.runtime.CoreException;
 
 /**
- * Represents an instance of an OSGi framework
+ * Represents an OSGi framework kind (e.g. Equinox, Felix...)
  * 
  * @author Neil Bartlett
  */

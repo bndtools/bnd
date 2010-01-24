@@ -163,5 +163,30 @@ class EquinoxInstance implements IFrameworkInstance {
 	public String getMainClassName() {
 		return EQUINOX_STARTER;
 	}
-	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((instancePath == null) ? 0 : instancePath.toString().hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EquinoxInstance other = (EquinoxInstance) obj;
+		if (instancePath == null) {
+			if (other.instancePath != null)
+				return false;
+		} else if (!instancePath.toString().equals(other.instancePath.toString()))
+			return false;
+		return true;
+	}
 }
