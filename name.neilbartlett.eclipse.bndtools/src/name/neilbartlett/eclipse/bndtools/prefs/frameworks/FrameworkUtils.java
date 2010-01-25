@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package name.neilbartlett.eclipse.bndtools.classpath;
+package name.neilbartlett.eclipse.bndtools.prefs.frameworks;
 
 import java.util.Collection;
 import java.util.LinkedList;

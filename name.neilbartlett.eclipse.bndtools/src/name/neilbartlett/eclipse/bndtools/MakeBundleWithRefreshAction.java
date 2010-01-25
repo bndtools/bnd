@@ -38,7 +38,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 
-import aQute.bnd.plugin.popup.actions.MakeBundle;
 
 public class MakeBundleWithRefreshAction extends MakeBundle implements IEditorActionDelegate {
 	

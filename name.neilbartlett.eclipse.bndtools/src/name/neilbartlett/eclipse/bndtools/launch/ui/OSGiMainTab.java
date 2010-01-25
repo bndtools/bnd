@@ -15,12 +15,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
 
-import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.frameworks.ui.FrameworkSelector;
 import name.neilbartlett.eclipse.bndtools.launch.IFrameworkLaunchConstants;
+import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkUtils;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

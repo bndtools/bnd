@@ -81,7 +81,9 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 		} else if(cell.getElement() instanceof ImportUsedByClass) {
 			if(cell.getColumnIndex() == 0) {
 				ImportUsedByClass importUsedBy = (ImportUsedByClass) cell.getElement();
-				cell.setText(importUsedBy.clazz.getFQN());
+				String fqn = importUsedBy.clazz.getFQN();
+				String className = fqn.substring(fqn.lastIndexOf('.') + 1);
+				cell.setText(className);
 				cell.setImage(classImg);
 			}
 		} else if(cell.getElement() instanceof ExportUsesPackage) {

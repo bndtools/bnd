@@ -16,12 +16,12 @@ import java.util.Collection;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkBuildJob;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
+import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkUtils;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;

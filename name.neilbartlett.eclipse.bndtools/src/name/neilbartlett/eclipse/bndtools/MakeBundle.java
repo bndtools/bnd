@@ -1,11 +1,10 @@
-package aQute.bnd.plugin.popup.actions;
+package name.neilbartlett.eclipse.bndtools;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 
-import name.neilbartlett.eclipse.bndtools.Plugin;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;

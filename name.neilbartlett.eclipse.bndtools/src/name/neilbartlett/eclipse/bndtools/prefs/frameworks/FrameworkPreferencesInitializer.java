@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.classpath.FrameworkUtils;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFramework;
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
