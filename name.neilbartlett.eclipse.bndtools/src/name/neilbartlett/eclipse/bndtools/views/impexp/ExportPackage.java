@@ -10,31 +10,22 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.Set;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
-import aQute.lib.osgi.Constants;
 
-public class ExportPackage extends HeaderClause {
+class ExportPackage extends HeaderClause {
 
-	public ExportPackage(String name, Map<String, String> attribs) {
+	private final Set<String> uses;
+
+	public ExportPackage(String name, Map<String, String> attribs, Set<String> uses) {
 		super(name, attribs);
+		this.uses = uses;
 	}
 	
-	public List<String> getUses() {
-		String usesStr = attribs.get(Constants.USES_DIRECTIVE);
-		if(usesStr == null)
-			return null;
-		
-		List<String> result = new ArrayList<String>();
-		StringTokenizer tokenizer = new StringTokenizer(usesStr,",");
-		while(tokenizer.hasMoreTokens()) {
-			result.add(tokenizer.nextToken().trim());
-		}
-		return result;
+	public Set<String> getUses() {
+		return uses;
 	}
 
 }

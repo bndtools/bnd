@@ -13,14 +13,15 @@ package name.neilbartlett.eclipse.bndtools.views.impexp;
 import static name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.EXPORTS_PLACEHOLDER;
 import static name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.IMPORTS_PLACEHOLDER;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.ExportUsesPackage;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByPackage;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
@@ -36,23 +37,26 @@ import aQute.lib.osgi.Constants;
 public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 	
 	private final Image pkgFolderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/packagefolder_obj.gif").createImage();
+	private final Image classImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/class_obj.gif").createImage();
 	
-	private final Image packageImg;
-	private final Image packageOptImg;
+	private final ImageDescriptor packageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif");
+	private final Image packageImg = packageDescriptor.createImage();
+	
+//	private final ImageDescriptor questionOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/question_overlay.gif");
+//	private final Image packageOptImg = new DecorationOverlayIcon(packageImg, questionOverlay, IDecoration.TOP_LEFT).createImage();
+	private final Image packageOptImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_opt.gif").createImage();
+	private final Image packageImpExpImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_impexp.gif").createImage();
 	
 	public ImportsExportsTreeLabelProvider() {
-		ImageDescriptor packageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif");
-		packageImg = packageDescriptor.createImage();
-		
-		ImageDescriptor questionOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/question_overlay.gif");
-		packageOptImg = new DecorationOverlayIcon(packageImg, questionOverlay, IDecoration.TOP_LEFT).createImage();
 	}
 	
 	public void dispose() {
 		super.dispose();
 		pkgFolderImg.dispose();
+		classImg.dispose();
 		packageImg.dispose();
 		packageOptImg.dispose();
+		packageImpExpImg.dispose();
 	};
 	
 	@Override
@@ -67,41 +71,63 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 				cell.setImage(pkgFolderImg);
 				cell.setText("Export Packages");
 			}
-		} else {
-			@SuppressWarnings("unchecked")
+		} else if(cell.getElement() instanceof ImportUsedByPackage) {
+			if(cell.getColumnIndex() == 0) {
+				StyledString styledString = new StyledString("Used By: ", UIConstants.ITALIC_QUALIFIER_STYLER);
+				styledString.append(((ImportUsedByPackage) cell.getElement()).usedByName);
+				cell.setText(styledString.getString());
+				cell.setStyleRanges(styledString.getStyleRanges());
+			}
+		} else if(cell.getElement() instanceof ImportUsedByClass) {
+			if(cell.getColumnIndex() == 0) {
+				ImportUsedByClass importUsedBy = (ImportUsedByClass) cell.getElement();
+				cell.setText(importUsedBy.clazz.getFQN());
+				cell.setImage(classImg);
+			}
+		} else if(cell.getElement() instanceof ExportUsesPackage) {
+			if(cell.getColumnIndex() == 0) {
+				StyledString styledString = new StyledString("Uses: ", UIConstants.ITALIC_QUALIFIER_STYLER);
+				styledString.append(((ExportUsesPackage) cell.getElement()).name);
+				cell.setText(styledString.getString());
+				cell.setStyleRanges(styledString.getStyleRanges());
+			}
+		} else if(cell.getElement() instanceof HeaderClause) {
 			HeaderClause entry = (HeaderClause) cell.getElement();
 			switch(cell.getColumnIndex()) {
 			case 0:
-				StyledString styledString = new StyledString(entry.getName());
+				boolean selfImport = false;
+				if(entry instanceof ImportPackage) {
+					selfImport =  ((ImportPackage) entry).isSelfImport();
+				}
+				
+				StyledString styledString;
+				if(selfImport) {
+					styledString = new StyledString(entry.getName(), StyledString.QUALIFIER_STYLER);
+				} else {
+					styledString = new StyledString(entry.getName());
+				}
+				
+				String version = entry.getAttribs().get(Constants.VERSION_ATTRIBUTE);
+				if(version != null)
+					styledString.append(" " + version, StyledString.COUNTER_STYLER);
+				
 				String resolution = entry.getAttribs().get(Constants.RESOLUTION_DIRECTIVE);
+				boolean optional = org.osgi.framework.Constants.RESOLUTION_OPTIONAL.equals(resolution);
 				if(resolution != null)
 					styledString.append(" <" + resolution + ">", UIConstants.ITALIC_QUALIFIER_STYLER);
+				
 				cell.setText(styledString.getString());
 				cell.setStyleRanges(styledString.getStyleRanges());
-				cell.setImage(packageImg);
+				if(optional) {
+					cell.setImage(packageOptImg);
+				} else if(selfImport) {
+					cell.setImage(packageImpExpImg);
+				} else {
+					cell.setImage(packageImg);
+				}
 				break;
 			case 1:
-				cell.setText(entry.getAttribs().get(Constants.VERSION_ATTRIBUTE));
-				break;
-			case 2:
-				Collection<? extends String> uses = null;
-				if(entry instanceof ImportPackage) {
-					uses = ((ImportPackage) entry).getUsedBy();
-				} else if(entry instanceof ExportPackage) {
-					uses = ((ExportPackage) entry).getUses();
-				}
-				if(uses != null) {
-					StringBuilder builder = new StringBuilder();
-					for(Iterator<? extends String> iter = uses.iterator(); iter.hasNext(); ) {
-						builder.append(iter.next());
-						if(iter.hasNext())
-							builder.append(',');
-					}
-					cell.setText(builder.toString());
-				}
-				break;
-			case 3:
-				// Show the attributes excluding "resolution:" and "version"
+				// Show the attributes excluding "resolution:", "version" and "uses:"
 				Map<String, String> attribs = entry.getAttribs();
 				StringBuilder builder = new StringBuilder();
 				boolean first = true;

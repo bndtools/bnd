@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.PartAdapter;
 import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
@@ -27,9 +28,14 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
@@ -38,6 +44,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IEditorInput;
@@ -47,6 +54,7 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 	
@@ -55,6 +63,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	private Display display = null;
 	private Tree tree = null;
 	private TreeViewer viewer;
+	private ViewerFilter hideSelfImportsFilter;
 	
 	private IFile selectedFile;
 	private Job analysisJob = null;
@@ -71,7 +80,6 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		}
 	};
-
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -84,25 +92,27 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		TreeColumn col;
 		col = new TreeColumn(tree, SWT.NONE);
 		col.setText("Package");
-		col.setWidth(300);
+		col.setWidth(400);
 		
 		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Version");
+		col.setText("Attribs");
 		col.setWidth(100);
-		
-		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Uses/Used By");
-		col.setWidth(200);
-		
-		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Other Attributes");
-		col.setWidth(200);
 		
 		viewer = new TreeViewer(tree);
 		viewer.setContentProvider(new ImportsExportsTreeContentProvider());
 		viewer.setSorter(new ImportsAndExportsViewerSorter());
 		viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
 		viewer.setAutoExpandLevel(2);
+		
+		hideSelfImportsFilter = new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				if(element instanceof ImportPackage) {
+					return !((ImportPackage) element).isSelfImport();
+				}
+				return true;
+			}
+		};
+		viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
 		
 		viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
 			public void dragStart(DragSourceEvent event) {
@@ -128,6 +138,8 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		});
 		
+		fillActionBars();
+		
 		getSite().getPage().addPostSelectionListener(this);
 		getSite().getPage().addPartListener(partAdapter);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
@@ -136,6 +148,25 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		IWorkbenchPart activePart = getSite().getPage().getActivePart();
 		ISelection activeSelection = getSite().getWorkbenchWindow().getSelectionService().getSelection();
 		selectionChanged(activePart, activeSelection);
+	}
+
+	void fillActionBars() {
+		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				if(isChecked()) {
+					viewer.removeFilter(hideSelfImportsFilter);
+				} else {
+					viewer.addFilter(hideSelfImportsFilter);
+				}
+			}
+		};
+		toggleShowSelfImports.setChecked(false);
+		toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
+		toggleShowSelfImports.setToolTipText("Show self-imported packages");
+		
+		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+		toolBarManager.add(toggleShowSelfImports);
 	}
 
 	@Override

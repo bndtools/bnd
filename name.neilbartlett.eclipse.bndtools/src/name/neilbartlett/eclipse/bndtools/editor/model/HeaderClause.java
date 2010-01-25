@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-public class HeaderClause implements Cloneable {
+public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	
 	private static final String INTERNAL_LIST_SEPARATOR = ";";
 	private static final String INTERNAL_LIST_SEPARATOR_NEWLINES = INTERNAL_LIST_SEPARATOR + "\\\n\t\t";
@@ -94,5 +94,9 @@ public class HeaderClause implements Cloneable {
 	@Override
 	public HeaderClause clone() {
 		return new HeaderClause(this.name, new HashMap<String, String>(this.attribs));
+	}
+	
+	public int compareTo(HeaderClause other) {
+		return this.name.compareTo(other.name);
 	}
 }

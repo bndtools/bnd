@@ -14,18 +14,28 @@ import java.util.Collection;
 import java.util.Map;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import aQute.lib.osgi.Clazz;
 
-public class ImportPackage extends HeaderClause {
+class ImportPackage extends HeaderClause {
 
-	private final Collection<? extends String> usedBy;
+	private final Collection<String> usedBy;
+	private final Map<String, ? extends Collection<Clazz>> classes;
+	private final boolean selfImport;
 
-	public ImportPackage(String name, Map<String, String> attribs, Collection<? extends String> usedBy) {
+	public ImportPackage(String name, boolean selfImport, Map<String, String> attribs, Collection<String> usedBy, Map<String, ? extends Collection<Clazz>> classes) {
 		super(name, attribs);
+		this.selfImport = selfImport;
 		this.usedBy = usedBy;
+		this.classes = classes;
 	}
-	
-	public Collection<? extends String> getUsedBy() {
+	public boolean isSelfImport() {
+		return selfImport;
+	}
+	public Collection<String> getUsedBy() {
 		return usedBy;
 	};
-
+	
+	public Collection<Clazz> getImportingClasses(String importingPackage) {
+		return classes.get(importingPackage);
+	}
 }
