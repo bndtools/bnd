@@ -42,10 +42,9 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 		}
 	}
 	@Override
-	public void configureJavaProject(String newProjectCompliance,
-			IProgressMonitor monitor) throws CoreException,
+	public void configureJavaProject(IProgressMonitor monitor) throws CoreException,
 			InterruptedException {
-		super.configureJavaProject(newProjectCompliance, monitor);
+		super.configureJavaProject(monitor);
 		
 		IProject project = getJavaProject().getProject();
 		IProjectDescription desc = project.getDescription();

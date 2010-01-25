@@ -10,23 +10,30 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.classpath;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 import name.neilbartlett.eclipse.bndtools.frameworks.IFrameworkInstance;
 import name.neilbartlett.eclipse.bndtools.frameworks.OSGiSpecLevel;
 import name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer;
-import name.neilbartlett.eclipse.bndtools.utils.P2Utils;
+import name.neilbartlett.eclipse.bndtools.utils.BundleUtils;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.equinox.internal.provisional.frameworkadmin.BundleInfo;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
+
+import aQute.libg.version.VersionRange;
 
 public class FrameworkClasspathContainer implements IClasspathContainer {
 	
-	private static final Version ANNOTATIONS_VERSION = new Version(0, 0, 384);
 	private static final String ANNOTATIONS_SYMBOLIC_NAME = "biz.aQute.annotation";
 	private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
 	
@@ -45,10 +52,14 @@ public class FrameworkClasspathContainer implements IClasspathContainer {
 	}
 	
 	private static IPath getAnnotationsPath() {
+		IPath bundleLocation = BundleUtils.getBundleLocation(ANNOTATIONS_SYMBOLIC_NAME, new VersionRange("[0.0.384,1)"));
+		return bundleLocation;
+		/*
 		@SuppressWarnings("restriction")
 		BundleInfo annotationsBundle = P2Utils.findBundle(ANNOTATIONS_SYMBOLIC_NAME, ANNOTATIONS_VERSION, false);
 		IPath annotsPath = P2Utils.getBundleLocationPath(annotationsBundle);
 		return annotsPath;
+		*/
 	}
 	
 	public static final FrameworkClasspathContainer createForSpecLevel(OSGiSpecLevel specLevel, boolean annotations) {
@@ -66,7 +77,8 @@ public class FrameworkClasspathContainer implements IClasspathContainer {
 	private IClasspathEntry getAnnotationsEntry() {
 		if(useAnnotations && annotationsEntry == null) {
 			IPath path = getAnnotationsPath();
-			annotationsEntry = JavaCore.newLibraryEntry(path, null, null, new IAccessRule[0], new IClasspathAttribute[0], false);
+			if(path != null)
+				annotationsEntry = JavaCore.newLibraryEntry(path, null, null, new IAccessRule[0], new IClasspathAttribute[0], false);
 		}
 		return annotationsEntry;
 	}
@@ -119,4 +131,5 @@ public class FrameworkClasspathContainer implements IClasspathContainer {
 	public IPath getPath() {
 		return path;
 	}
+
 }

@@ -22,6 +22,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.model.ServiceComponent;
+import name.neilbartlett.eclipse.bndtools.utils.PathUtils;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -356,7 +357,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 						IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 						IFile bndFile = ResourceUtil.getFile(formPage.getEditorInput());
 						
-						IPath relativePath = resource.getFullPath().makeRelativeTo(bndFile.getFullPath());
+						IPath relativePath = PathUtils.makeRelativeTo(resource.getFullPath(), bndFile.getFullPath());
 						
 						added.add(new ServiceComponent(relativePath.toString(), new HashMap<String, String>()));
 					}

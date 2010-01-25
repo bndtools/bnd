@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
+import name.neilbartlett.eclipse.bndtools.utils.PathUtils;
 import name.neilbartlett.eclipse.bndtools.utils.ProjectClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
@@ -342,7 +343,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		String packageNameForClassFilePath(IPath folderPath, IPath classFilePath) {
 			if(folderPath.isPrefixOf(classFilePath)) {
-				IPath relativePath = classFilePath.makeRelativeTo(folderPath);
+				IPath relativePath = PathUtils.makeRelativeTo(classFilePath, folderPath); //classFilePath.makeRelativeTo(folderPath);
 				IPath packagePath = relativePath.removeLastSegments(1);
 				String packageName = packagePath.toString().replace('/', '.');
 				return packageName;

@@ -62,6 +62,12 @@ class FelixInstance implements IFrameworkInstance {
 	}
 	
 	public OSGiSpecLevel getOSGiSpecLevel() {
+		/*
+		 * Marrs: njbartlett: you asked about the Felix versions and what spec versions they support, I made a list:
+[09:31] Marrs: Felix 1.0.0, 1.0.1, 1.0.3 and 1.0.4 all support fw version 1.3.0 (that's 4.0)
+[09:31] Marrs: Felix 1.2.0, 1.2.1, 1.2.2, 1.4.0, 1.4.1, 1.8.0 and 1.8.1 support fw version 1.4.0 (4.1)
+[09:32] Marrs: Felix 2.0.0, 2.0.1 and 2.0.2 support fw version 1.5.0 (4.2)
+		 */
 		// TODO
 		return OSGiSpecLevel.r4_2;
 	}

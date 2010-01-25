@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
+import name.neilbartlett.eclipse.bndtools.utils.PathUtils;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -126,7 +128,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 			if(path.isAbsolute()) {
 				builder.append(path.toString());
 			} else {
-				IPath relative = path.makeRelativeTo(containerPath);
+				IPath relative = PathUtils.makeRelativeTo(path, containerPath); //path.makeRelativeTo(containerPath);
 				builder.append(relative.toString());
 			}
 			if(iterator.hasNext())

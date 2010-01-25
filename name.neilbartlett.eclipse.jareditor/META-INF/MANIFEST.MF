@@ -11,4 +11,4 @@ Require-Bundle: org.eclipse.jface.text,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.core.runtime,
- org.eclipse.ui.forms;bundle-version="3.3.103"
+ org.eclipse.ui.forms;bundle-version="[3.3,4)"

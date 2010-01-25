@@ -33,19 +33,26 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
 	
 	private static Plugin plugin;
+	private BundleContext bundleContext;
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		this.bundleContext = context;
 	}
 
 	public void stop(BundleContext context) throws Exception {
+		this.bundleContext = null;
 		plugin = null;
 		super.stop(context);
 	}
 
 	public static Plugin getDefault() {
 		return plugin;
+	}
+	
+	public BundleContext getBundleContext() {
+		return bundleContext;
 	}
 	
     public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
