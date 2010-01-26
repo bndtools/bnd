@@ -57,6 +57,7 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.SOURCES,
 		aQute.lib.osgi.Constants.VERSIONPOLICY,
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
+		aQute.lib.osgi.Constants.CLASSPATH
 	};
 	
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -227,6 +228,9 @@ public class BndEditModel {
 		Collection<String> oldPackages = getPrivatePackages();
 		doSetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages);
 	}
+	public List<String> getClassPath() {
+		return doGetStringList(aQute.lib.osgi.Constants.CLASSPATH);
+	}
 	public void addPrivatePackage(String packageName) {
 		Collection<String> packages = getPrivatePackages();
 		if(packages == null)
@@ -236,16 +240,10 @@ public class BndEditModel {
 		packages.add(packageName);
 		setPrivatePackages(packages);
 	}
-
-	public Collection<String> getClasspath() {
-		return doGetStringList(aQute.lib.osgi.Constants.CLASSPATH);
+	public void setClassPath(Collection<? extends String> classPath) {
+		List<String> oldClassPath = getClassPath();
+		doSetStringList(aQute.lib.osgi.Constants.CLASSPATH, oldClassPath, classPath);
 	}
-
-	public void setClasspath(Collection<? extends String> paths) {
-		Collection<String> oldClasspath = getClasspath();
-		doSetStringList(aQute.lib.osgi.Constants.CLASSPATH, oldClasspath, paths);
-	}
-
 	public List<ExportedPackage> getExportedPackages() {
 		return doGetClauseList(Constants.EXPORT_PACKAGE, new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
 			public ExportedPackage convert(Entry<String, Map<String, String>> input) {

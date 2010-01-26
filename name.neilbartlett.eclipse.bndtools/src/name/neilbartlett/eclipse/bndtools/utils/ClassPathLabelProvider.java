@@ -18,21 +18,26 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public class JarPathLabelProvider extends StyledCellLabelProvider {
+public class ClassPathLabelProvider extends StyledCellLabelProvider {
 	
 	private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
+	private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
 	
 	@Override
 	public void update(ViewerCell cell) {
 		IPath path = (IPath) cell.getElement();
 		
 		cell.setText(path.toString());
-		cell.setImage(jarImg);
+		if(path.hasTrailingSeparator())
+			cell.setImage(folderImg);
+		else
+			cell.setImage(jarImg);
 	}
 	
 	@Override
 	public void dispose() {
 		super.dispose();
 		jarImg.dispose();
+		folderImg.dispose();
 	}
 }

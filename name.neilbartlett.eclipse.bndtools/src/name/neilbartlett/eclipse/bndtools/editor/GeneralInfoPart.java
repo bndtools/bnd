@@ -76,6 +76,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
+import org.eclipse.ui.forms.ManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -369,6 +370,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			// Restore property change listening
 			model.addPropertyChangeListener(this);
 			dirtySet.clear();
+			getManagedForm().dirtyStateChanged();
 		}
 	}
 	
@@ -391,6 +393,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			refreshers.decrementAndGet();
 		}
 		dirtySet.clear();
+		getManagedForm().dirtyStateChanged();
 	}
 	
 	@Override

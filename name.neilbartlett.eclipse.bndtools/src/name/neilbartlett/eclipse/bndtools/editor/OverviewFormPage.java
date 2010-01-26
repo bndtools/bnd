@@ -45,10 +45,13 @@ public class OverviewFormPage extends FormPage {
 
 		// Create Controls
 		Composite body = form.getBody();
-		Composite pnlBasicColumn = toolkit.createComposite(body);
+		final Composite pnlBasicColumn = toolkit.createComposite(body);
 		
 		GeneralInfoPart basicSection = new GeneralInfoPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
 		managedForm.addPart(basicSection);
+		
+		ClassPathPart classPathPart = new ClassPathPart(pnlBasicColumn, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
+		managedForm.addPart(classPathPart);
 		
 		BuildSectionPart buildPart = new BuildSectionPart(pnlBasicColumn, toolkit, Section.TITLE_BAR);
 		managedForm.addPart(buildPart);
@@ -82,14 +85,18 @@ public class OverviewFormPage extends FormPage {
 		layout = new GridLayout(1, false);
 		pnlBasicColumn.setLayout(layout);
 
-		basicSection.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		buildPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		basicSection.getSection().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		classPathPart.getSection().setLayoutData(gd);
+		
+		buildPart.getSection().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
 		pnlPackagesColumn.setLayoutData(gd);
 		
 		layout = new GridLayout(1, false);
 		pnlPackagesColumn.setLayout(layout);
-		privatePackagesPart.getSection().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		privatePackagesPart.getSection().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 	}
 }

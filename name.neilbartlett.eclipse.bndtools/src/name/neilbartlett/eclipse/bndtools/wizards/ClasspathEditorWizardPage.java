@@ -17,7 +17,7 @@ import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.utils.FileExtensionFilter;
-import name.neilbartlett.eclipse.bndtools.utils.JarPathLabelProvider;
+import name.neilbartlett.eclipse.bndtools.utils.ClassPathLabelProvider;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -70,7 +70,7 @@ public class ClasspathEditorWizardPage extends WizardPage {
 		final Table table = new Table(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new JarPathLabelProvider());
+		viewer.setLabelProvider(new ClassPathLabelProvider());
 		
 		btnAdd = new Button(composite, SWT.PUSH);
 		btnAdd.setText("Add");
