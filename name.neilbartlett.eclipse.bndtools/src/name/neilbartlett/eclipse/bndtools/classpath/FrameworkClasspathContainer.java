@@ -54,12 +54,6 @@ public class FrameworkClasspathContainer implements IClasspathContainer {
 	private static IPath getAnnotationsPath() {
 		IPath bundleLocation = BundleUtils.getBundleLocation(ANNOTATIONS_SYMBOLIC_NAME, new VersionRange("[0.0.384,1)"));
 		return bundleLocation;
-		/*
-		@SuppressWarnings("restriction")
-		BundleInfo annotationsBundle = P2Utils.findBundle(ANNOTATIONS_SYMBOLIC_NAME, ANNOTATIONS_VERSION, false);
-		IPath annotsPath = P2Utils.getBundleLocationPath(annotationsBundle);
-		return annotsPath;
-		*/
 	}
 	
 	public static final FrameworkClasspathContainer createForSpecLevel(OSGiSpecLevel specLevel, boolean annotations) {

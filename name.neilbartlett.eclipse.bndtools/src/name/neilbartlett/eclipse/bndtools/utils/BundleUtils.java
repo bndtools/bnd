@@ -1,15 +1,10 @@
 package name.neilbartlett.eclipse.bndtools.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 import name.neilbartlett.eclipse.bndtools.Plugin;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.osgi.framework.internal.core.AbstractBundle;
+import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
@@ -38,13 +33,33 @@ public class BundleUtils {
 		return matched;
 	}
 	public static IPath getBundleLocation(String symbolicName, VersionRange range) {
+		IPath installPath = new Path(Platform.getInstallLocation().getURL().getFile());
+		IPath configPath = new Path(Platform.getConfigurationLocation().getURL().getFile());
+		
 		Bundle bundle= findBundle(symbolicName, range);
+		if(bundle == null)
+			return null;
+		
 		String location = bundle.getLocation();
 		if(location.startsWith("file:")) { //$NON-NLS-1$
 			location = location.substring(5);
 		} else if(location.startsWith("reference:file:")) { //$NON-NLS-1$
 			location = location.substring(15);
 		}
-		return Path.fromOSString(location);
+		IPath bundlePath = new Path(location);
+		if(bundlePath.isAbsolute())
+			return bundlePath;
+		
+		// Try install location
+		IPath installedBundlePath = installPath.append(bundlePath);
+		if(installedBundlePath.toFile().exists())
+			return installedBundlePath;
+		
+		// Try config location
+		IPath configuredBundlePath = configPath.append(bundlePath);
+		if(configuredBundlePath.toFile().exists())
+			return configuredBundlePath;
+		
+		return null;
 	}
 }

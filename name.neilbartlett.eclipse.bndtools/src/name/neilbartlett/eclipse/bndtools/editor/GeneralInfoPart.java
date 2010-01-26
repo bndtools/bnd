@@ -88,22 +88,18 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
-import aQute.bnd.plugin.Activator;
-
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 	
-	private static final String[] INTERESTED_PROPERTIES = new String[] {
+	private static final String[] EDITABLE_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
-		Constants.EXPORT_PACKAGE,
-		aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
 		aQute.lib.osgi.Constants.SOURCES,
 	};
 	private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
 	private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
 
-	private final Set<String> interestedPropertySet;
+	private final Set<String> editablePropertySet;
 	private final Set<String> dirtySet = new HashSet<String>();
 	
 	private BndEditModel model;
@@ -119,9 +115,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
 		
-		interestedPropertySet = new HashSet<String>();
-		for (String prop : INTERESTED_PROPERTIES) {
-			interestedPropertySet.add(prop);
+		editablePropertySet = new HashSet<String>();
+		for (String prop : EDITABLE_PROPERTIES) {
+			editablePropertySet.add(prop);
 		}
 	}
 
@@ -174,7 +170,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		// Listeners
 		txtBSN.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
+				if(refreshers.get() == 0) {
+					addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
+				}
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtBSN.getText();
 				if(text == null || text.length() == 0)
@@ -185,7 +183,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		});
 		txtVersion.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				addDirtyProperty(Constants.BUNDLE_VERSION);
+				if(refreshers.get() == 0) {
+					addDirtyProperty(Constants.BUNDLE_VERSION);
+				}
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				try {
 					String text = txtVersion.getText();
@@ -199,7 +199,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		});
 		txtActivator.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent ev) {
-				addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
+				if(refreshers.get() == 0) {
+					addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
+				}
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String unknownError = null;
 				
@@ -248,7 +250,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 					if(proposal instanceof JavaContentProposal) {
 						String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
 						if(!model.isIncludedPackage(selectedPackageName)) {
-							commit(false);
 							model.addPrivatePackage(selectedPackageName);
 						}
 					}
@@ -401,13 +402,15 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(interestedPropertySet.contains(evt.getPropertyName())) {
+		if(editablePropertySet.contains(evt.getPropertyName())) {
 			IFormPage page = (IFormPage) getManagedForm().getContainer();
 			if(page.isActive()) {
 				refresh();
 			} else {
 				markStale();
 			}
+		} else if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.lib.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
+			checkActivatorIncluded();
 		}
 	}
 	

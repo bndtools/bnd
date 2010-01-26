@@ -55,11 +55,15 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		} else if(parentElement instanceof ImportUsedByPackage) {
 			ImportUsedByPackage importUsedBy = (ImportUsedByPackage) parentElement;
 			Collection<Clazz> importingClasses = importUsedBy.importPackage.getImportingClasses(importUsedBy.usedByName);
-			List<ImportUsedByClass> temp = new ArrayList<ImportUsedByClass>(importingClasses.size());
-			for (Clazz clazz : importingClasses) {
-				temp.add(new ImportUsedByClass(importUsedBy, clazz));
+			if(importingClasses != null) {
+				List<ImportUsedByClass> temp = new ArrayList<ImportUsedByClass>(importingClasses.size());
+				for (Clazz clazz : importingClasses) {
+					temp.add(new ImportUsedByClass(importUsedBy, clazz));
+				}
+				result = temp;
+			} else {
+				result = Collections.emptyList();
 			}
-			result = temp;
 		} else {
 			result = Collections.emptyList();
 		}
