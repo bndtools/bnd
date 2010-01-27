@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import name.neilbartlett.eclipse.bndtools.BndConstants;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -187,6 +189,15 @@ public class BndEditModel {
 	public void setBundleActivator(String bundleActivator) {
 		doSetString(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator);
 	}
+	
+	public String getOutputFile() {
+		return doGetString(BndConstants.OUTPUT);
+	}
+	
+	public void setOutputFile(String name) {
+		doSetString(BndConstants.OUTPUT, getOutputFile(), name);
+	}
+
 	
 	public boolean isIncludeSources() {
 		Boolean objValue = doGetObject(aQute.lib.osgi.Constants.SOURCES, new Converter<Boolean,String>() {

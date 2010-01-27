@@ -10,6 +10,8 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools;
 
-public final class BndConstants {
-	public static final String PRIVATE_PACKAGE = "Private-Package";
+import aQute.lib.osgi.Constants;
+
+public interface BndConstants extends Constants {
+	public static final String OUTPUT = "-output";
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import name.neilbartlett.eclipse.bndtools.BndConstants;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
@@ -76,7 +77,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
-import org.eclipse.ui.forms.ManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -95,7 +95,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
-		aQute.lib.osgi.Constants.SOURCES,
+		BndConstants.SOURCES,
+		BndConstants.OUTPUT
 	};
 	private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
 	private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
@@ -108,6 +109,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private Text txtBSN;
 	private Text txtVersion;
 	private Text txtActivator;
+	private Text txtOutput;
 	private Button btnSources;
 	
 	private AtomicInteger refreshers = new AtomicInteger(0);
@@ -162,6 +164,10 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
 		
+		
+		toolkit.createLabel(composite, "Output File:", SWT.NONE);
+		txtOutput = toolkit.createText(composite, "");
+		
 		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
 		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
 		decorSources.setImage(infoDecoration.getImage());
@@ -177,9 +183,24 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtBSN.getText();
 				if(text == null || text.length() == 0)
-					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the filename, without the .bnd extension.", null, IMessageProvider.INFORMATION, txtBSN);
+					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the file name, without the .bnd extension.", null, IMessageProvider.INFORMATION, txtBSN);
 				else
 					msgs.removeMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, txtBSN);
+			}
+		});
+		txtOutput.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				if(refreshers.get() == 0) {
+					addDirtyProperty(BndConstants.OUTPUT);
+				}
+				
+				IMessageManager msgs = getManagedForm().getMessageManager();
+				String text = txtOutput.getText();
+				if(text == null || text.length() == 0) {
+					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the Bnd file name, with the extension replaced by '.jar'.", null, IMessageProvider.INFORMATION, txtOutput);
+				} else {
+					msgs.removeMessage("INFO_" + BndConstants.OUTPUT, txtOutput);
+				}
 			}
 		});
 		txtVersion.addModifyListener(new ModifyListener() {
@@ -284,6 +305,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
 		
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+		gd.widthHint = 150;
+		gd.horizontalIndent = 5;
+		txtOutput.setLayoutData(gd);
+		
 		gd = new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1);
 		btnSources.setLayoutData(gd);
 	}
@@ -361,9 +387,14 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			if(dirtySet.contains(Constants.BUNDLE_ACTIVATOR)) {
 				String activator = txtActivator.getText();
 				if(activator != null && activator.length() == 0) activator = null;
-					model.setBundleActivator(activator);
+				model.setBundleActivator(activator);
 			}
-			if(dirtySet.contains(aQute.lib.osgi.Constants.SOURCES)) {
+			if(dirtySet.contains(BndConstants.OUTPUT)) {
+				String outputFile = txtOutput.getText();
+				if(outputFile != null && outputFile.length() == 0) outputFile = null;
+				model.setOutputFile(outputFile);
+			}
+			if(dirtySet.contains(BndConstants.SOURCES)) {
 				model.setIncludeSources(btnSources.getSelection());
 			}
 		} finally {
@@ -384,6 +415,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			
 			String bundleVersion = model.getBundleVersionString();
 			txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
+			
+			String outputFile = model.getOutputFile();
+			txtOutput.setText(outputFile != null ? outputFile : ""); //$NON-NLS-1$
 			
 			String bundleActivator = model.getBundleActivator();
 			txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
