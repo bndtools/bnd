@@ -353,6 +353,7 @@
    </extension>
    <extension
          id="bndbuilder"
+         name="Bnd OSGi Builder"
          point="org.eclipse.core.resources.builders">
       <builder
             callOnEmptyDelta="false"

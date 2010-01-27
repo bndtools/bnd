@@ -118,13 +118,15 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		// Delete target files
 		List<IPath> paths = new ArrayList<IPath>();
-		for(Iterator<Entry<IPath, BndBuildModel>> iter = buildModels.entrySet().iterator(); iter.hasNext(); ) {
-			Entry<IPath, BndBuildModel> entry = iter.next();
-			iter.remove();
-			
-			IPath targetPath = entry.getValue().getTargetPath();
-			if(targetPath != null)
-				paths.add(targetPath);
+		if(buildModels != null) {
+			for(Iterator<Entry<IPath, BndBuildModel>> iter = buildModels.entrySet().iterator(); iter.hasNext(); ) {
+				Entry<IPath, BndBuildModel> entry = iter.next();
+				iter.remove();
+				
+				IPath targetPath = entry.getValue().getTargetPath();
+				if(targetPath != null)
+					paths.add(targetPath);
+			}
 		}
 		deletePaths(paths, monitor);
 	}
