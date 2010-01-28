@@ -45,6 +45,9 @@ public class FrameworkClasspathPage extends WizardPage implements
 
 	@Override
 	public boolean isPageComplete() {
+		boolean useSpec = selector.isUseSpecLevel();
+		if(useSpec && selector.getSelectedSpecLevel() == null) return false;
+		if(!useSpec && selector.getSelectedFramework() == null) return false;
 		return selector.getErrorMessage() == null;
 	}
 	

@@ -40,14 +40,14 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 	protected abstract int indexOf(Object object);
 	
 	@Override
-	public void dragEnter(DropTargetEvent event) {
-		event.detail = DND.DROP_COPY;
-		super.dragEnter(event);
-	}
-	@Override
 	public boolean validateDrop(Object target, int operation, TransferData transferType) {
 		return TextTransfer.getInstance().isSupportedType(transferType)
 			|| ResourceTransfer.getInstance().isSupportedType(transferType);
+	}
+	@Override
+	public void dropAccept(DropTargetEvent event) {
+		super.dropAccept(event);
+		event.detail = DND.DROP_COPY;
 	}
 	@Override
 	public boolean performDrop(Object data) {

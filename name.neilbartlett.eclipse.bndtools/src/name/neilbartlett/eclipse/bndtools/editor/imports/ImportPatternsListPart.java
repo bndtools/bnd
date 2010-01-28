@@ -13,13 +13,14 @@ package name.neilbartlett.eclipse.bndtools.editor.imports;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.PkgPatternsListPart;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -30,10 +31,29 @@ import aQute.lib.osgi.Constants;
 
 public class ImportPatternsListPart extends PkgPatternsListPart {
 
-	private final IAction fixMissingStarPatternAction = new Action("Append missing \"*\" pattern.") {
+	private class FixMissingStarsAction extends Action {
+		public FixMissingStarsAction(String message) {
+			super(message);
+		}
 		public void run() {
-			HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>());
-			ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
+			// Remove existing "*" patterns that are not in the last place
+			List<HeaderClause> toRemove = new LinkedList<HeaderClause>();
+			for (Iterator<HeaderClause> iter = getClauses().iterator(); iter.hasNext(); ) {
+				HeaderClause clause = iter.next();
+				if(clause.getName().equals("*") && iter.hasNext()) {
+					toRemove.add(clause);
+				}
+			}
+			if(!toRemove.isEmpty()) {
+				doRemoveClauses(toRemove);
+			}
+			
+			// Add a "*" at the end, if not already present
+			List<HeaderClause> clauses = getClauses();
+			if(clauses.size() != 0 && !clauses.get(clauses.size() - 1).getName().equals("*")) {
+				HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>());
+				ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
+			}
 		}
 	};
 	public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
@@ -55,14 +75,28 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 		msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);
 		
 		String noStarWarning = null;
+		String actionMessage = null;
 		List<HeaderClause> clauses = getClauses();
 		if(!clauses.isEmpty()) {
-			HeaderClause last = clauses.get(clauses.size() - 1);
-			if(!last.getName().equals("*"))
-				noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
+			for(Iterator<HeaderClause> iter = clauses.iterator(); iter.hasNext();) {
+				HeaderClause clause = iter.next();
+				if(clause.getName().equals("*") && iter.hasNext()) {
+					noStarWarning = "The catch-all pattern \"*\" should be in the last position.";
+					actionMessage = "Move \"*\" pattern to the last position.";
+					break;
+				}
+			}
+			
+			if(noStarWarning == null) {
+				HeaderClause last = clauses.get(clauses.size() - 1);
+				if(!last.getName().equals("*")) {
+					noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
+					actionMessage = "Add missing \"*\" pattern.";
+				}
+			}
 		}
 		if(noStarWarning != null) {
-			msgs.addMessage("_warning_no_star", noStarWarning, fixMissingStarPatternAction, IMessageProvider.WARNING);
+			msgs.addMessage("_warning_no_star", noStarWarning, new FixMissingStarsAction(actionMessage) , IMessageProvider.WARNING);
 		} else {
 			msgs.removeMessage("_warning_no_star");
 		}

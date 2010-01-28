@@ -103,7 +103,7 @@ public class NewBndProjectWizardFrameworkPage extends WizardPage {
 	@Override
 	public boolean isPageComplete() {
 		boolean result = selector.getErrorMessage() == null;
-		result &= (useSpec && specLevel != null) || frameworkInstance != null;
+		result &= (useSpec && specLevel != null) || (!useSpec && frameworkInstance != null);
 		return result;
 	}
 	

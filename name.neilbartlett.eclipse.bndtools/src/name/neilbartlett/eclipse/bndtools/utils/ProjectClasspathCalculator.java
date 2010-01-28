@@ -83,7 +83,8 @@ public class ProjectClasspathCalculator extends AbstractClasspathCalculator {
 				case IClasspathEntry.CPE_PROJECT:
 					IPath projectPath = entry.getPath();
 					IProject referencedProject = javaProject.getProject().getWorkspace().getRoot().getProject(projectPath.segment(0));
-					calculateClasspathsForProject(JavaCore.create(referencedProject), true);
+					if(referencedProject.isOpen())
+						calculateClasspathsForProject(JavaCore.create(referencedProject), true);
 					break;
 				default:
 					break;

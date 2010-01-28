@@ -46,9 +46,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 public class FrameworkSelector {
 	
-	public static final String PROP_USE_SPEC_LEVEL = "useSpecLevel";
-	public static final String PROP_SELECTED_SPEC_LEVEL = "selectedSpecLevel";
-	public static final String PROP_SELECTED_FRAMEWORK = "selectedFramework";
+	public static final String PROP_SELECTION = "selection";
 	public static final String PROP_ERROR_MESSAGE = "errorMessage";
 
 	private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
@@ -100,6 +98,8 @@ public class FrameworkSelector {
 					viewer.setChecked(event.getElement(), true);
 					
 					setSelection(event.getElement());
+				} else {
+					setSelection(null);
 				}
 			}
 		});
@@ -107,6 +107,7 @@ public class FrameworkSelector {
 			public void handleEvent(Event event) {
 				if(!updating.get()) {
 					useSpec = btnUseSpecLevel.getSelection();
+					propertySupport.firePropertyChange(PROP_SELECTION, null, null);
 					updateUI();
 				}
 			}
@@ -123,8 +124,8 @@ public class FrameworkSelector {
 		});
 		
 		// Layout
-		composite.setLayout(new GridLayout(1, false));
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		composite.setLayout(new GridLayout(2, false));
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		configFrameworksLink.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
 	}
 	
@@ -210,12 +211,16 @@ public class FrameworkSelector {
 
 	public void setSelection(Object selection) {
 		String error = null;
-		if(selection instanceof OSGiSpecLevel) {
+		if(selection == null) {
+			if(useSpec)
+				this.selectedSpecLevel = null;
+			else
+				this.selectedFramework = null;
+			propertySupport.firePropertyChange(PROP_SELECTION, null, null);
+		} else if(selection instanceof OSGiSpecLevel) {
 			OSGiSpecLevel specLevel = (OSGiSpecLevel) selection;
-			
-			OSGiSpecLevel oldValue = this.selectedSpecLevel;
 			this.selectedSpecLevel = specLevel;
-			propertySupport.firePropertyChange(PROP_SELECTED_SPEC_LEVEL, oldValue, specLevel);
+			propertySupport.firePropertyChange(PROP_SELECTION, null, null);
 			
 			IFrameworkInstance instance = FrameworkPreferencesInitializer.getFrameworkInstance(specLevel);
 			if(instance == null) {
@@ -223,10 +228,8 @@ public class FrameworkSelector {
 			}
 		} else if(selection instanceof IFrameworkInstance) {
 			IFrameworkInstance instance = (IFrameworkInstance) selection;
-			
-			IFrameworkInstance oldValue = this.selectedFramework;
 			this.selectedFramework = instance;
-			propertySupport.firePropertyChange(PROP_SELECTED_FRAMEWORK, oldValue, instance);
+			propertySupport.firePropertyChange(PROP_SELECTION, null, null);
 			
 			IStatus status = instance.getStatus();
 			if(!status.isOK()) {

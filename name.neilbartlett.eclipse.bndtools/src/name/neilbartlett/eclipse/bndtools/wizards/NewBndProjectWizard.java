@@ -21,6 +21,7 @@ class NewBndProjectWizard extends JavaProjectWizard {
 
 	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardFrameworkPage frameworkPage, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
+		setWindowTitle("New Bnd OSGi Project");
 		
 		this.pageOne = pageOne;
 		this.frameworkPage = frameworkPage;
