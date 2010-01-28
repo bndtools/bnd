@@ -197,7 +197,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtOutput.getText();
 				if(text == null || text.length() == 0) {
-					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the Bnd file name, with the extension replaced by '.jar'.", null, IMessageProvider.INFORMATION, txtOutput);
+					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the bundle symbolic name, with the extension '.jar' appended.", null, IMessageProvider.INFORMATION, txtOutput);
 				} else {
 					msgs.removeMessage("INFO_" + BndConstants.OUTPUT, txtOutput);
 				}
