@@ -39,7 +39,7 @@ import aQute.bnd.plugin.Activator;
 public class FrameworkClasspathContainerInitializer extends
 		ClasspathContainerInitializer {
 	
-	private static final String FRAMEWORK_CONTAINER_ID = "name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER";
+	private static final String FRAMEWORK_CONTAINER_ID = Plugin.PLUGIN_ID + ".FRAMEWORK_CONTAINER";
 	private static final String PROP_ANNOTATIONS_LIB = "annotations";
 	private static final String PROP_INSTANCE_URL = "url"; 
 	

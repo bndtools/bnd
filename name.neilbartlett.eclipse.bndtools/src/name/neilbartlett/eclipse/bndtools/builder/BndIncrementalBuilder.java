@@ -17,16 +17,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
+import name.neilbartlett.eclipse.bndtools.BndProject;
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializer;
 import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.PathUtils;
@@ -51,7 +50,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
 
-import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Instruction;
@@ -65,51 +63,54 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	private static final String BND_SUFFIX = ".bnd";
 	private static final String CLASS_SUFFIX = ".class";
 
-	private Map<IPath, BndBuildModel> buildModels = null;
 	private IClasspathCalculator projectClasspathCalculator;
 
 	@Override
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-		projectClasspathCalculator = new ProjectClasspathCalculator(JavaCore.create(getProject()));
-		if(buildModels == null || kind == FULL_BUILD) {
-			fullBuild(monitor);
+	protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
+		IProject project = getProject();
+		BndProject bndProject = BndProject.create(project);
+		
+		projectClasspathCalculator = new ProjectClasspathCalculator(JavaCore.create(project));
+		
+		if(bndProject.getLastBuildTime() == -1 || kind == FULL_BUILD) {
+			fullBuild(bndProject, monitor);
 		} else {
-			IResourceDelta delta = getDelta(getProject());
+			IResourceDelta delta = getDelta(project);
 			if(delta == null)
-				fullBuild(monitor);
+				fullBuild(bndProject, monitor);
 			else
-				incrementalBuild(delta, monitor);
+				incrementalBuild(bndProject, delta, monitor);
 		}
+		bndProject.markBuilt();
 		return null;
 	}
-
-	protected void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
+	protected void fullBuild(BndProject bndProject, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor);
-		
-		List<IFile> addedOrChanged = new LinkedList<IFile>();
-		List<IFile> deleted = new LinkedList<IFile>();
-		
-		delta.accept(new DeltaVisitor(addedOrChanged, deleted), 0);
-		int deletedSize = deleted.size();
-		progress.setWorkRemaining(addedOrChanged.size() + deletedSize);
-		
-		processBndFileDeletions(deleted, progress.newChild(deletedSize));
-		for (IFile file : addedOrChanged) {
-			rebuildBndFile(file, progress.newChild(1));
-		}
-	}
-	protected void fullBuild(IProgressMonitor monitor) throws CoreException {
-		SubMonitor progress = SubMonitor.convert(monitor);
-		if(buildModels == null)
-			buildModels = new HashMap<IPath, BndBuildModel>();
 		
 		List<IFile> bndFiles = new LinkedList<IFile>();
 		getProject().accept(new ResourceVisitor(bndFiles), 0);
 		
 		progress.setWorkRemaining(bndFiles.size());
 		for (IFile file : bndFiles) {
-			rebuildBndFile(file, progress.newChild(1));
+			rebuildBndFile(bndProject, file, progress.newChild(1));
 		}
+		WorkspaceRepositoryClasspathContainerInitializer.getInstance().bndFilesChanged(bndProject.getProject(), null, bndFiles, progress.newChild(1));
+	}
+	protected void incrementalBuild(BndProject bndProject, IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
+		SubMonitor progress = SubMonitor.convert(monitor);
+		
+		List<IFile> addedOrChanged = new LinkedList<IFile>();
+		List<IFile> deleted = new LinkedList<IFile>();
+		
+		delta.accept(new DeltaVisitor(bndProject, addedOrChanged, deleted), 0);
+		int deletedSize = deleted.size();
+		progress.setWorkRemaining(addedOrChanged.size() + deletedSize);
+		
+		processBndFileDeletions(bndProject, deleted, progress.newChild(deletedSize));
+		for (IFile file : addedOrChanged) {
+			rebuildBndFile(bndProject, file, progress.newChild(1));
+		}
+		WorkspaceRepositoryClasspathContainerInitializer.getInstance().bndFilesChanged(bndProject.getProject(), deleted, addedOrChanged, progress.newChild(1));
 	}
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
@@ -117,23 +118,20 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		getProject().deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
 		
 		// Delete target files
+		BndProject bndProject = BndProject.create(getProject());
 		List<IPath> paths = new ArrayList<IPath>();
-		if(buildModels != null) {
-			for(Iterator<Entry<IPath, BndBuildModel>> iter = buildModels.entrySet().iterator(); iter.hasNext(); ) {
-				Entry<IPath, BndBuildModel> entry = iter.next();
-				iter.remove();
-				
-				IPath targetPath = entry.getValue().getTargetPath();
-				if(targetPath != null)
-					paths.add(targetPath);
-			}
+		for (BndFileModel fileModel : bndProject.getAllFileModels()) {
+			IPath targetPath = fileModel.getTargetPath();
+			if(targetPath != null)
+				paths.add(targetPath);
 		}
 		deletePaths(paths, monitor);
+		bndProject.clearAll();
 	}
-	void processBndFileDeletions(Collection<? extends IFile> bndFiles, IProgressMonitor monitor) throws CoreException {
+	void processBndFileDeletions(BndProject bndProject, Collection<? extends IFile> bndFiles, IProgressMonitor monitor) throws CoreException {
 		final Collection<IPath> deletions = new ArrayList<IPath>(bndFiles.size());
 		for (IFile file : bndFiles) {
-			BndBuildModel model = buildModels.remove(file.getFullPath());
+			BndFileModel model = bndProject.removeFileModel(file.getFullPath());
 			if(model != null) {
 				IPath targetPath = model.getTargetPath();
 				if(targetPath != null)
@@ -157,15 +155,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 		}, monitor);
 	}
-	void rebuildBndFile(IFile bndFile, IProgressMonitor monitor) throws CoreException {
+	void rebuildBndFile(BndProject bndProject, final IFile bndFile, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		
 		// Get or create the build model for this bnd file
-		BndBuildModel buildModel = buildModels.get(bndFile.getFullPath());
-		if(buildModel == null) {
-			buildModel = new BndBuildModel(bndFile.getFullPath());
-			buildModels.put(bndFile.getFullPath(), buildModel);
-		}
+		BndFileModel fileModel = bndProject.getFileModel(bndFile.getFullPath());
 		
 		// Clear markers
 		bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
@@ -185,11 +179,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		String classpathStr = builder.getProperty(Constants.CLASSPATH);
 		try {
 			if(classpathStr == null) {
-				buildModel.setClasspath(null);
+				fileModel.setClasspath(null);
 				builder.setClasspath(projectClasspathCalculator.classpathAsFiles().toArray(new File[0]));
 			} else {
 				BndFileClasspathCalculator calculator = new BndFileClasspathCalculator(classpathStr, getProject().getWorkspace().getRoot(), bndFile.getFullPath());
-				buildModel.setClasspath(calculator.classpathAsWorkspacePaths());
+				fileModel.setClasspath(calculator.classpathAsWorkspacePaths());
 				builder.setClasspath(calculator.classpathAsFiles().toArray(new File[0]));
 			}
 			builder.setSourcepath(projectClasspathCalculator.sourcepathAsFiles().toArray(new File[0]));
@@ -202,7 +196,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			Set<Instruction> includes = new HashSet<Instruction>();
 			includes.addAll(getInstructionsFromHeader(builder, Constants.PRIVATE_PACKAGE).keySet());
 			includes.addAll(getInstructionsFromHeader(builder, Constants.EXPORT_PACKAGE).keySet());
-			buildModel.setIncludes(includes);
+			fileModel.setIncludes(includes);
 			
 			Jar jar = builder.build();
 			progress.worked(1);
@@ -220,7 +214,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		
 		// Check the output file path
-		final IPath oldTargetPath = buildModel.getTargetPath();
+		final IPath oldTargetPath = fileModel.getTargetPath();
 		final IPath targetPath;
 		String targetPathStr = builder.getProperty("-output");
 		if(targetPathStr == null) {
@@ -228,7 +222,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		} else {
 			targetPath = bndFile.getFullPath().removeLastSegments(1).append(targetPathStr);
 		}
-		buildModel.setTargetPath(targetPath);
+		fileModel.setTargetPath(targetPath);
 		
 		// Perform the delete of the old bundle and write of the new bundle in a single
 		// workspace operation
@@ -251,12 +245,18 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					ByteArrayOutputStream jarBits = new ByteArrayOutputStream();
 					Jar jar = builder.getJar();
 					try {
+						long bndTimestamp = bndFile.getLocalTimeStamp();
+						
 						jar.write(jarBits);
 						ByteArrayInputStream inputStream = new ByteArrayInputStream(jarBits.toByteArray());
-						if(targetFile.exists())
-							targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
-						else
+						if(targetFile.exists()) {
+							long targetTimestamp = targetFile.getLocalTimeStamp();
+							if(bndTimestamp >= targetTimestamp) {
+								targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
+							}
+						} else {
 							targetFile.create(inputStream, IResource.NONE, progress.newChild(9));
+						}
 						targetFile.setDerived(true);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -267,7 +267,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		};
 		workspace.run(workspaceOp, progress.newChild(1));
 	}
-
 	private Map<Instruction, Map<String, String>> getInstructionsFromHeader(Builder builder, String name) {
 		Map<Instruction, Map<String, String>> result;
 		Map<String,Map<String,String>> map;
@@ -279,13 +278,14 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		result = Instruction.replaceWithInstruction(map);
 		return result;
 	}
-	
 	class DeltaVisitor implements IResourceDeltaVisitor {
 		
+		private final BndProject bndProject;
 		private final Collection<? super IFile> bndFiles;
 		private final Collection<? super IFile> deleted;
 
-		public DeltaVisitor(Collection<? super IFile> addedOrChanged, Collection<? super IFile> deleted) {
+		public DeltaVisitor(BndProject bndProject, Collection<? super IFile> addedOrChanged, Collection<? super IFile> deleted) {
+			this.bndProject = bndProject;
 			this.bndFiles = addedOrChanged;
 			this.deleted = deleted;
 		}
@@ -307,13 +307,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 			
 			if(resource.getType() == IResource.FILE && resource.getName().endsWith(CLASS_SUFFIX)) {
-				checkClassFile((IFile) resource);
+				checkClassFile(bndProject, (IFile) resource);
 			}
 			
 			return false;
 		}
 
-		void checkClassFile(IFile classFile) {
+		void checkClassFile(BndProject bndProject, IFile classFile) {
 			// Find the package name for this classfile, if it is in the project classpath
 			String packageNameInProject = null;
 			for(IPath classFolder : projectClasspathCalculator.classpathAsWorkspacePaths()) {
@@ -322,23 +322,19 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 			
 			// Which bundles are affected?
-			Iterator<Entry<IPath, BndBuildModel>> iter = buildModels.entrySet().iterator();
-			while(iter.hasNext()) {
-				Entry<IPath, BndBuildModel> entry = iter.next();
-				IPath bndPath = entry.getKey();
-				BndBuildModel bundle = entry.getValue();
-				
+			Collection<BndFileModel> fileModels = bndProject.getAllFileModels();
+			for (BndFileModel model : fileModels) {
 				String packageName = null;
-				if(bundle.getClasspath() == null) {
+				if(model.getClasspath() == null) {
 					packageName = packageNameInProject;
 				} else {
-					for (IPath classFolder : bundle.getClasspath()) {
+					for (IPath classFolder : model.getClasspath()) {
 						packageName = packageNameForClassFilePath(classFolder, classFile.getFullPath());
 						if(packageName != null) break;
 					}
 				}
-				if(packageName != null && bundle.containsPackage(packageName)) {
-					bndFiles.add(getProject().getWorkspace().getRoot().getFile(bndPath));
+				if(packageName != null && model.containsPackage(packageName)) {
+					bndFiles.add(getProject().getWorkspace().getRoot().getFile(model.getPath()));
 				}
 			}
 		}
@@ -353,7 +349,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			return null;
 		}
 	}
-	
 	class ResourceVisitor implements IResourceProxyVisitor {
 		private final Collection<? super IFile> bndFiles;
 		public ResourceVisitor(Collection<? super IFile> bndFiles) {

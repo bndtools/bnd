@@ -18,14 +18,14 @@ import org.eclipse.core.runtime.IPath;
 
 import aQute.lib.osgi.Instruction;
 
-public class BndBuildModel {
+public class BndFileModel {
 	
 	private final IPath path;
 	private IPath targetPath;
 	private Set<Instruction> includes;
 	private Collection<? extends IPath> classpath;
 
-	public BndBuildModel(IPath path) {
+	public BndFileModel(IPath path) {
 		this.path = path;
 	}
 	public IPath getTargetPath() {

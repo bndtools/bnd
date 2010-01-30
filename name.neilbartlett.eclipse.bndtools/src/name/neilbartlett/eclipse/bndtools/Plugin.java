@@ -29,7 +29,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String BND_EDITOR_ID = "name.neilbartlett.eclipse.bndtools.bndEditor";
 	public static final String EXTPOINT_OSGI_FRAMEWORKS = "osgiFrameworks";
 	public static final String EXTPOINT_OSGI_FRAMEWORK_BUILD_JOBS = "osgiFrameworkBuildJobs";
-	
+
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
 	
 	private static Plugin plugin;
@@ -39,6 +39,10 @@ public class Plugin extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		this.bundleContext = context;
+		
+		BuildAllBndProjectsJob buildJob = new BuildAllBndProjectsJob("Build Bnd Projects...");
+		buildJob.setSystem(false);
+		buildJob.schedule(2000);
 	}
 
 	public void stop(BundleContext context) throws Exception {

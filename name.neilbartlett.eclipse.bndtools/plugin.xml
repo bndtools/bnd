@@ -129,6 +129,10 @@
             class="name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer"
             id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER">
       </classpathContainerInitializer>
+      <classpathContainerInitializer
+            class="name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializerFactory"
+            id="name.neilbartlett.eclipse.bndtools.WORKSPACE_REPOSITORY">
+      </classpathContainerInitializer>
    </extension>
    <extension
          point="org.eclipse.jdt.ui.classpathContainerPage">
@@ -356,7 +360,7 @@
          name="Bnd OSGi Builder"
          point="org.eclipse.core.resources.builders">
       <builder
-            callOnEmptyDelta="false"
+            callOnEmptyDelta="true"
             hasNature="true">
          <run
                class="name.neilbartlett.eclipse.bndtools.builder.BndIncrementalBuilder">
