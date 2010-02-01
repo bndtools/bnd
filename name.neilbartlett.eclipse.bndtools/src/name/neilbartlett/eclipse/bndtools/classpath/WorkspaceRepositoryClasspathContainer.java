@@ -1,13 +1,12 @@
 package name.neilbartlett.eclipse.bndtools.classpath;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import name.neilbartlett.eclipse.bndtools.BndProject;
-import name.neilbartlett.eclipse.bndtools.builder.BndFileModel;
-
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -21,46 +20,64 @@ class WorkspaceRepositoryClasspathContainer implements
 	
 	private final IPath containerPath;
 	private final IJavaProject javaProject;
-	private final String[] depends;
+	private final Collection<BundleDependency> dependencies;
+	private final Map<BundleDependency, ExportedBundle> bindings;
 
-	WorkspaceRepositoryClasspathContainer(IPath containerPath, IJavaProject javaProject, String[] depends) {
+	private AtomicReference<IClasspathEntry[]> entriesRef = new AtomicReference<IClasspathEntry[]>(null);
+
+	WorkspaceRepositoryClasspathContainer(IPath containerPath, IJavaProject javaProject, Collection<BundleDependency> dependencies, Map<BundleDependency,ExportedBundle> bindings) {
 		this.containerPath = containerPath;
 		this.javaProject = javaProject;
-		this.depends = depends;
-	}
-	String[] getDepends() {
-		return this.depends;
+		this.dependencies = dependencies;
+		this.bindings = bindings;
 	}
 	public IClasspathEntry[] getClasspathEntries() {
-		List<IClasspathEntry> result = new LinkedList<IClasspathEntry>();
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		for (String projectName : depends) {
-			IProject project = root.getProject(projectName);
-			if(project.exists() && project.isOpen()) {
-				BndProject bndProject = BndProject.create(project);
-
-				Collection<BndFileModel> fileModels = bndProject.getAllFileModels();
-				for (BndFileModel fileModel : fileModels) {
-					IPath targetPath = fileModel.getTargetPath();
-
-					IClasspathEntry newEntry = JavaCore.newLibraryEntry(targetPath, null, null, false);
-					result.add(newEntry);
-				}
+		
+		IClasspathEntry[] result = entriesRef.get();
+		if(result != null) return result;
+		
+		result = new IClasspathEntry[bindings.size()];
+		int i = 0;
+		for(Iterator<ExportedBundle> iter = bindings.values().iterator(); iter.hasNext(); i++) {
+			ExportedBundle bundle = iter.next();
+			
+			IPath bndFilePath = bundle.getSourceBndFilePath();
+			IPath srcProjectPath = null;
+			if(bndFilePath != null) {
+				IResource bndFile = root.findMember(bndFilePath);
+				srcProjectPath = bndFile.getProject().getFullPath();
 			}
+			
+			result[i] = JavaCore.newLibraryEntry(bundle.getPath(), srcProjectPath, null, false);
 		}
-		return (IClasspathEntry[]) result.toArray(new IClasspathEntry[result.size()]);
+		entriesRef.compareAndSet(null, result);
+		return entriesRef.get();
 	}
-
 	public String getDescription() {
 		return "Workspace Bundle Repository";
 	}
-
 	public int getKind() {
 		return K_APPLICATION;
 	}
-
 	public IPath getPath() {
 		return containerPath;
 	}
-
+	public Collection<BundleDependency> getDependencies() {
+		return Collections.unmodifiableCollection(dependencies);
+	}
+	public ExportedBundle getBinding(BundleDependency dependency) {
+		return bindings.get(dependency);
+	}
+	public boolean isBoundToPath(IPath path) {
+		for (ExportedBundle bundle : bindings.values()) {
+			if(bundle.getPath().equals(path)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public IJavaProject getJavaProject() {
+		return javaProject;
+	}
 }

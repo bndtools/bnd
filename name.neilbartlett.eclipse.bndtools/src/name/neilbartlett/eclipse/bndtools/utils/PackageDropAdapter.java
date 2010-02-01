@@ -45,8 +45,8 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 			|| ResourceTransfer.getInstance().isSupportedType(transferType);
 	}
 	@Override
-	public void dropAccept(DropTargetEvent event) {
-		super.dropAccept(event);
+	public void dragEnter(DropTargetEvent event) {
+		super.dragEnter(event);
 		event.detail = DND.DROP_COPY;
 	}
 	@Override
