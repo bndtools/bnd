@@ -3,12 +3,14 @@ package name.neilbartlett.eclipse.bndtools;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import name.neilbartlett.eclipse.bndtools.builder.BndFileModel;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
 // @ThreadSafe
@@ -31,6 +33,8 @@ public class BndProject {
 	
 	// @GuardedBy("this")
 	private long lastBuilt = NEVER;
+
+	private List<IResource> exportDirs;
 
 	// Prevent direct instantiation
 	private BndProject(IProject project) {
@@ -73,5 +77,11 @@ public class BndProject {
 		synchronized(fileModelMap) {
 			return fileModelMap.get(fullPath);
 		}
+	}
+	public List<IResource> getExportDirs() {
+		return exportDirs;
+	}
+	public void setExportDirs(List<IResource> exportDirs) {
+		this.exportDirs = exportDirs;
 	}
 }

@@ -30,6 +30,7 @@ import name.neilbartlett.eclipse.bndtools.BndProject;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.classpath.ExportedBundle;
 import name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializer;
+import name.neilbartlett.eclipse.bndtools.project.BndProjectProperties;
 import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.PathUtils;
@@ -50,6 +51,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
@@ -93,36 +95,99 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	protected void fullBuild(BndProject bndProject, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor);
-		
+
+		// Check the export dirs
+		BndProjectProperties projProps = new BndProjectProperties(bndProject.getProject());
+		List<IResource> exportDirs;
+		try {
+			projProps.load();
+			exportDirs = projProps.getExportedBundleDirs();
+		} catch (IOException e) {
+			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading Bnd project properties.", e));
+		}
+
+		// Search for files to process
 		List<IFile> bndFiles = new LinkedList<IFile>();
-		List<IFile> deletedBundles = new LinkedList<IFile>();
 		List<ExportedBundle> bundleFiles = new LinkedList<ExportedBundle>();
-		getProject().accept(new ResourceVisitor(bndFiles, bundleFiles), 0);
 		
+		CompositeResourceProxyVisitor resourceVisitor = new CompositeResourceProxyVisitor();
+		resourceVisitor.addDelegate(new AllFoldersVisitor());
+		resourceVisitor.addDelegate(new BndFileVisitor(bndFiles));
+		resourceVisitor.addDelegate(new BundleJarVisitor(bundleFiles, exportDirs));
+		getProject().accept(resourceVisitor, 0);
+		
+		// Build the Bnd files
 		progress.setWorkRemaining(bndFiles.size());
 		for (IFile file : bndFiles) {
-			rebuildBndFile(bndProject, file, deletedBundles, bundleFiles, progress.newChild(1));
+			rebuildBndFile(bndProject, file, null, bundleFiles, progress.newChild(1));
 		}
-		WorkspaceRepositoryClasspathContainerInitializer.getInstance().bundlesChanged(bndProject.getProject(), deletedBundles, bundleFiles, progress.newChild(1));
+		
+		// Notify the workspace repository that some exports may have changed.
+		WorkspaceRepositoryClasspathContainerInitializer.getInstance().resetProjectExports(bndProject.getProject(), bundleFiles, progress.newChild(1));
 	}
 	protected void incrementalBuild(BndProject bndProject, IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		
-		List<IFile> changedBndFiles = new LinkedList<IFile>();
+		// Set up some buckets for the changes we are about to detect
 		List<IFile> deletedBndFiles = new LinkedList<IFile>();
+		List<IFile> changedBndFiles = new LinkedList<IFile>();
 		List<ExportedBundle> changedBundles = new LinkedList<ExportedBundle>();
 		List<IFile> deletedJarFiles = new LinkedList<IFile>();
 		
-		delta.accept(new DeltaVisitor(bndProject, changedBndFiles, deletedBndFiles, changedBundles, deletedJarFiles), 0);
+		// Does the delta contain the bnd.properties file, meaning we will have to reprocess the exported bundles entirely?
+		IResourceDelta bndPropertiesDelta = delta.findMember(new Path(BndProjectProperties.BND_PROPERTIES_FILE));
+		
+		// Get the export dirs from the cached project metadata, if not changed, otherwise read it again from the file
+		List<IResource> exportDirs;
+		if(bndPropertiesDelta == null) {
+			exportDirs = bndProject.getExportDirs();
+		} else {
+			try {
+				BndProjectProperties projProps = new BndProjectProperties(bndProject.getProject());
+				projProps.load();
+				exportDirs = projProps.getExportedBundleDirs();
+				bndProject.setExportDirs(exportDirs);
+			} catch (IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading Bnd project properties.", e));
+			}
+		}
+
+		// Create the delta visitor
+		CompositeResourceDeltaVisitor deltaVisitor = new CompositeResourceDeltaVisitor();
+		deltaVisitor.addDelegate(new AllFoldersVisitor());
+		deltaVisitor.addDelegate(new BndFileVisitor(deletedBndFiles, changedBndFiles));
+		deltaVisitor.addDelegate(new ClassFileVisitor(bndProject, changedBndFiles));
+		
+		// If the export dirs changed when we need to do a full scan of bundles, otherwise just a delta scan is fine
+		if(bndPropertiesDelta == null) {
+			deltaVisitor.addDelegate(new BundleJarVisitor(deletedJarFiles, changedBundles, exportDirs));
+		} else {
+			CompositeResourceProxyVisitor resourceVisitor = new CompositeResourceProxyVisitor();
+			resourceVisitor.addDelegate(new AllFoldersVisitor());
+			resourceVisitor.addDelegate(new BundleJarVisitor(changedBundles, exportDirs));
+			
+			getProject().accept(resourceVisitor, 0);
+		}
+		
+		// Examine the delta
+		delta.accept(deltaVisitor, 0);
+		
+		// Process the bnd file deletions
 		int deletedSize = deletedBndFiles.size();
 		progress.setWorkRemaining(changedBndFiles.size() + deletedSize);
-		
 		processBndFileDeletions(bndProject, deletedBndFiles, progress.newChild(deletedSize));
+		
+		// Process the changed bnd files
 		for (IFile file : changedBndFiles) {
 			rebuildBndFile(bndProject, file, deletedJarFiles, changedBundles, progress.newChild(1));
 		}
-		
-		WorkspaceRepositoryClasspathContainerInitializer.getInstance().bundlesChanged(bndProject.getProject(), deletedJarFiles, changedBundles, progress.newChild(1));
+
+		// Inform the workspace repository about changed bundle files
+		if(bndPropertiesDelta == null) {
+			WorkspaceRepositoryClasspathContainerInitializer.getInstance().bundlesChanged(bndProject.getProject(), deletedJarFiles, changedBundles, progress.newChild(1));
+		} else {
+			WorkspaceRepositoryClasspathContainerInitializer.getInstance().resetProjectExports(bndProject.getProject(), changedBundles, progress.newChild(1));
+		}
 	}
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
@@ -262,14 +327,14 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				if(oldTargetPath != null && !oldTargetPath.equals(targetPath)) {
 					IFile oldTargetFile = workspace.getRoot().getFile(oldTargetPath);
 					oldTargetFile.delete(false, progress.newChild(1));
-					deletedJarFiles.add(oldTargetFile);
+					if(deletedJarFiles != null) deletedJarFiles.add(oldTargetFile);
 				} else {
 					progress.setWorkRemaining(9);
 				}
 				
 				if(!builder.getErrors().isEmpty() && targetFile.exists()) {
 					targetFile.delete(false, progress.newChild(9));
-					deletedJarFiles.add(targetFile);
+					if(deletedJarFiles != null) deletedJarFiles.add(targetFile);
 				} else {
 					ByteArrayOutputStream jarBits = new ByteArrayOutputStream();
 					Jar jar = builder.getJar();
@@ -373,56 +438,19 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		return null;
 	}
-	class DeltaVisitor implements IResourceDeltaVisitor {
+	class ClassFileVisitor implements IResourceDeltaVisitor {
 		
 		private final BndProject bndProject;
 		private final Collection<? super IFile> changedBndFiles;
-		private final Collection<? super IFile> deletedBndFiles;
 		
-		private final Collection<? super ExportedBundle> changedBundles;
-		private final Collection<? super IFile> deletedJarFiles;
-
-		public DeltaVisitor(BndProject bndProject, Collection<? super IFile> changedBndFiles, Collection<? super IFile> deletedBndFiles, Collection<? super ExportedBundle> changedBundles, Collection<? super IFile> deletedJarFiles) {
+		ClassFileVisitor(BndProject bndProject, Collection<? super IFile> changedBndFiles) {
 			this.bndProject = bndProject;
 			this.changedBndFiles = changedBndFiles;
-			this.deletedBndFiles = deletedBndFiles;
-			
-			this.changedBundles = changedBundles;
-			this.deletedJarFiles = deletedJarFiles;
 		}
 		public boolean visit(IResourceDelta delta) throws CoreException {
-			IResource resource = delta.getResource();
-			
-			// Recurse into folders
-			if(resource.getType() == IResource.FOLDER || resource.getType() == IResource.PROJECT)
-				return true;
-			
-			if(resource.getType() == IResource.FILE) {
-				IFile file = (IFile) resource;
-				
-				// Check for Bnd files
-				if(file.getName().endsWith(BND_SUFFIX)) {
-					if(delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
-						changedBndFiles.add(file);
-					} else if(delta.getKind() == IResourceDelta.REMOVED) {
-						deletedBndFiles.add(file);
-					}
-				}
-				// Check for bundle JARs
-				if(resource.getName().endsWith(JAR_SUFFIX)) {
-					if(delta.getKind() == IResourceDelta.REMOVED) {
-						deletedJarFiles.add(file);
-					} else if(delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
-						ExportedBundle bundle = getBundleFromJar(file);
-						if(bundle != null) {
-							changedBundles.add(bundle);
-						}
-					}
-				}
-				// Check for classes that may be included in one or more bnd files
-				if(resource.getType() == IResource.FILE && resource.getName().endsWith(CLASS_SUFFIX)) {
-					checkClassFile(bndProject, file);
-				}
+			// Check for classes that may be included in one or more bnd files
+			if(delta.getResource().getType() == IResource.FILE && delta.getResource().getName().endsWith(CLASS_SUFFIX)) {
+				checkClassFile(bndProject, (IFile) delta.getResource());
 			}
 			return false;
 		}
@@ -451,7 +479,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				}
 			}
 		}
-		
 		String packageNameForClassFilePath(IPath folderPath, IPath classFilePath) {
 			if(folderPath.isPrefixOf(classFilePath)) {
 				IPath relativePath = PathUtils.makeRelativeTo(classFilePath, folderPath); //classFilePath.makeRelativeTo(folderPath);
@@ -462,32 +489,99 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			return null;
 		}
 	}
-	class ResourceVisitor implements IResourceProxyVisitor {
-		private final Collection<? super IFile> bndFiles;
+	class BundleJarVisitor implements IResourceProxyVisitor, IResourceDeltaVisitor {
+
+		private final Collection<? super IFile> deletedJarFiles;
 		private final Collection<? super ExportedBundle> bundles;
-		public ResourceVisitor(Collection<? super IFile> bndFiles, Collection<? super ExportedBundle> bundles) {
-			this.bndFiles = bndFiles;
+		private final Collection<? extends IResource> exportDirs;
+		
+		BundleJarVisitor(Collection<? super ExportedBundle> bundles, Collection<? extends IResource> exportDirs) {
+			this(new LinkedList<IFile>(), bundles, exportDirs);
+		}
+		BundleJarVisitor(Collection<? super IFile> deletedJarFiles, Collection<? super ExportedBundle> bundles, Collection<? extends IResource> exportDirs) {
+			this.deletedJarFiles = deletedJarFiles;
 			this.bundles = bundles;
+			this.exportDirs = exportDirs;
 		}
 		public boolean visit(IResourceProxy proxy) throws CoreException {
-			// Recurse into folders
-			if(proxy.getType() == IResource.PROJECT || proxy.getType() == IResource.FOLDER)
-				return true;
-			
-			// Check for Bnd files
-			if(proxy.getType() == IResource.FILE && proxy.getName().toLowerCase().endsWith(BND_SUFFIX)) {
-				bndFiles.add((IFile) proxy.requestResource());
-			}
-			
-			// Check for Bundles
+			// Check for JAR files...
 			if(proxy.getType() == IResource.FILE && proxy.getName().toLowerCase().endsWith(JAR_SUFFIX)) {
 				IFile file = (IFile) proxy.requestResource();
-				ExportedBundle bundle = getBundleFromJar(file);
-				if(bundle != null) {
-					bundles.add(bundle);
+				
+				// Now check it's in the exported bundles dir
+				boolean exported = false;
+				for (IResource exportDir : exportDirs) {
+					if(exportDir.getProjectRelativePath().isPrefixOf(file.getProjectRelativePath())) {
+						exported = true;
+						break;
+					}
+				}
+				
+				// Crack it open and see if it's really a bundle
+				if(exported) {
+					ExportedBundle bundle = getBundleFromJar(file);
+					if(bundle != null) {
+						bundles.add(bundle);
+					}
 				}
 			}
-			
+			return false;
+		}
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			// Check for bundle JARs
+			IResource resource = delta.getResource();
+			if(resource.getType() == IResource.FILE && resource.getName().endsWith(JAR_SUFFIX)) {
+				IFile file = (IFile) resource;
+				if(delta.getKind() == IResourceDelta.REMOVED) {
+					deletedJarFiles.add(file);
+				} else if(delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
+					ExportedBundle bundle = getBundleFromJar(file);
+					if(bundle != null) {
+						bundles.add(bundle);
+					}
+				}
+			}
+			return false;
+		}
+	}
+	class AllFoldersVisitor implements IResourceProxyVisitor, IResourceDeltaVisitor {
+		public boolean visit(IResourceProxy proxy) throws CoreException {
+			return proxy.getType() == IResource.PROJECT || proxy.getType() == IResource.FOLDER;
+		}
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			return delta.getResource().getType() == IResource.PROJECT || delta.getResource().getType() == IResource.FOLDER;
+		}
+	}
+	class BndFileVisitor implements IResourceProxyVisitor, IResourceDeltaVisitor {
+		private final Collection<? super IFile> deletedBndFiles;
+		private final Collection<? super IFile> changedBndFiles;
+		
+		BndFileVisitor(Collection<? super IFile> changedBndFiles) {
+			this(new LinkedList<IFile>(), changedBndFiles);
+		}
+		BndFileVisitor(Collection<? super IFile> deletedBndFiles, Collection<? super IFile> changedBndFiles) {
+			this.deletedBndFiles = deletedBndFiles;
+			this.changedBndFiles = changedBndFiles;
+		}
+		public boolean visit(IResourceProxy proxy) throws CoreException {
+			// Check for Bnd files
+			if(proxy.getType() == IResource.FILE && proxy.getName().toLowerCase().endsWith(BND_SUFFIX)) {
+				changedBndFiles.add((IFile) proxy.requestResource());
+			}
+			return false;
+		}
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			if(delta.getResource() instanceof IFile) {
+				IFile file = (IFile) delta.getResource();
+				// Check for Bnd files
+				if(file.getName().endsWith(BND_SUFFIX)) {
+					if(delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
+						changedBndFiles.add(file);
+					} else if(delta.getKind() == IResourceDelta.REMOVED) {
+						deletedBndFiles.add(file);
+					}
+				}
+			}
 			return false;
 		}
 	}

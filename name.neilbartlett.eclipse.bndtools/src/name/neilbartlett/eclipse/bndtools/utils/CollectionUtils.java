@@ -10,6 +10,8 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,6 @@ public class CollectionUtils {
 					}
 					j++;
 				}
-				
 				// Swap with it
 				if(nextUnselected != -1) {
 					list.set(i, list.get(nextUnselected));
@@ -69,7 +70,6 @@ public class CollectionUtils {
 					}
 					j--;
 				}
-				
 				// Swap with it
 				if(nextUnselected != -1) {
 					list.set(i, list.get(nextUnselected));
@@ -107,6 +107,19 @@ public class CollectionUtils {
 			}
 		}
 		
+		return result;
+	}
+	public static <T> List<T> asList(Object[] array) {
+		@SuppressWarnings("unchecked") List<T> list = (List<T>) Arrays.asList(array);
+		return list;
+	}
+	public static <T> List<T> newArrayList(Object[] array) {
+		List<T> result = new ArrayList<T>(array.length);
+		for (Object obj : array) {
+			@SuppressWarnings("unchecked")
+			T item = (T) obj;
+			result.add(item);
+		}
 		return result;
 	}
 }

@@ -213,48 +213,45 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 	 *            user. It is the caller's responsibility to call done() on the
 	 *            given monitor. Accepts null, indicating that no progress
 	 *            should be reported and that the operation cannot be cancelled.
-	 *            * @return
+	 * @return
 	 */
 	public IStatus bundlesChanged(IProject project, List<IFile> deletedJarFiles, List<ExportedBundle> changedBundles, IProgressMonitor monitor) {
-		MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Error(s) occurred processing change to exported bundles.", null);
-		
 		Set<String> affectedProjects = new HashSet<String>();
-		Map<IPath, ExportedBundle> exportedBundles = exportsMap.get(project.getName());
+
+		processDeletedJarFiles(project, deletedJarFiles, affectedProjects);
+		processChangedBundles(project, changedBundles, affectedProjects);
 		
-		// Process the deletions
-		if(deletedJarFiles != null) {
-			for (IFile deletedJarFile : deletedJarFiles) {
-				if(exportedBundles != null) {
-					ExportedBundle removedBundle = exportedBundles.remove(deletedJarFile.getFullPath());
-					if(removedBundle != null) {
-						Set<String> projects = removeBundle(removedBundle);
-						if(projects != null) {
-							affectedProjects.addAll(projects);
-						}
-					}
-				}
-			}
-		}
-		// Process the additions/changes and calculate the affected projects
-		if(changedBundles != null && !changedBundles.isEmpty()) {
-			if(exportedBundles == null) {
-				exportedBundles = new HashMap<IPath, ExportedBundle>();
-				exportsMap.put(project.getName(), exportedBundles);
-			}
-			for(ExportedBundle changedBundle : changedBundles) {
-				ExportedBundle priorEntry = exportedBundles.put(changedBundle.getPath(), changedBundle);
-				if(priorEntry == null) {
-					affectedProjects.addAll(addBundle(changedBundle));
-				} else {
-					if(!priorEntry.getSymbolicName().equals(changedBundle.getSymbolicName()) || !priorEntry.getVersion().equals(changedBundle.getVersion())) {
-						affectedProjects.addAll(removeBundle(priorEntry));
-						affectedProjects.addAll(addBundle(changedBundle));
-					}
-				}
-			}
-		}
+		return updateClasspathContainers(affectedProjects, monitor);
+	}
+	
+	/**
+	 * Set or reset the exports for the specified project.
+	 * 
+	 * @param project
+	 *            The project whose exported bundles are being reset.
+	 * @param bundles
+	 *            A list of changed or added bundles in the project
+	 * @param monitor
+	 *            the progress monitor to use for reporting progress to the
+	 *            user. It is the caller's responsibility to call done() on the
+	 *            given monitor. Accepts null, indicating that no progress
+	 *            should be reported and that the operation cannot be cancelled.
+	 * @return The status of the operation.
+	 */
+	public IStatus resetProjectExports(IProject project, List<ExportedBundle> bundles, IProgressMonitor monitor) {
+		Set<String> affectedProjects = new HashSet<String>();
+
+		removeAllExports(project, affectedProjects);
+		processChangedBundles(project, bundles, affectedProjects);
 		
-		// Fix the classpath containers for the affected projects
+		return updateClasspathContainers(affectedProjects, monitor);
+		
+	}
+
+	// Fix the classpath containers for the affected projects
+	private IStatus updateClasspathContainers(Collection<String> affectedProjects, IProgressMonitor monitor) {
+		MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Error(s) occurred processing change to exported bundles.", null);
+
 		SubMonitor progress = SubMonitor.convert(monitor, affectedProjects.size());
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		for (String projectName : affectedProjects) {
@@ -276,6 +273,56 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 		}
 		
 		return status;
+	}
+	private void removeAllExports(IProject project, Collection<? super String> affectedProjects) {
+		Map<IPath, ExportedBundle> exportedBundles = exportsMap.remove(project.getName());
+		if(exportedBundles != null) {
+			for (Entry<IPath, ExportedBundle> entry : exportedBundles.entrySet()) {
+				Set<String> projects = removeBundle(entry.getValue());
+				if(projects != null) {
+					affectedProjects.addAll(projects);
+				}
+			}
+		}
+	}
+	private void processDeletedJarFiles(IProject project, List<IFile> deletedJarFiles, Collection<? super String> affectedProjects) {
+		Map<IPath, ExportedBundle> exportedBundles = exportsMap.get(project.getName());
+		if(deletedJarFiles != null) {
+			for (IFile deletedJarFile : deletedJarFiles) {
+				if(exportedBundles != null) {
+					ExportedBundle removedBundle = exportedBundles.remove(deletedJarFile.getFullPath());
+					if(removedBundle != null) {
+						Set<String> projects = removeBundle(removedBundle);
+						if(projects != null) {
+							affectedProjects.addAll(projects);
+						}
+					}
+					if(exportedBundles.isEmpty()) {
+						exportsMap.remove(project.getName());
+					}
+				}
+			}
+		}
+	}
+	private void processChangedBundles(IProject project, List<ExportedBundle> changedBundles, Collection<? super String> affectedProjects) {
+		Map<IPath, ExportedBundle> exportedBundles = exportsMap.get(project.getName());
+		if(changedBundles != null && !changedBundles.isEmpty()) {
+			if(exportedBundles == null) {
+				exportedBundles = new HashMap<IPath, ExportedBundle>();
+				exportsMap.put(project.getName(), exportedBundles);
+			}
+			for(ExportedBundle changedBundle : changedBundles) {
+				ExportedBundle priorEntry = exportedBundles.put(changedBundle.getPath(), changedBundle);
+				if(priorEntry == null) {
+					affectedProjects.addAll(addBundle(changedBundle));
+				} else {
+					if(!priorEntry.getSymbolicName().equals(changedBundle.getSymbolicName()) || !priorEntry.getVersion().equals(changedBundle.getVersion())) {
+						affectedProjects.addAll(removeBundle(priorEntry));
+						affectedProjects.addAll(addBundle(changedBundle));
+					}
+				}
+			}
+		}
 	}
 	
 	/**
