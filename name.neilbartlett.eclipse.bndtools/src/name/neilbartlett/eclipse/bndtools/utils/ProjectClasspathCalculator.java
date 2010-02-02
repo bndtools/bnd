@@ -73,12 +73,16 @@ public class ProjectClasspathCalculator extends AbstractClasspathCalculator {
 					break;
 				case IClasspathEntry.CPE_VARIABLE:
 					IClasspathEntry resolvedEntry = JavaCore.getResolvedClasspathEntry(entry);
-					stack.add(0, new IClasspathEntry[] { resolvedEntry });
+					if(resolvedEntry != null) {
+						stack.add(0, new IClasspathEntry[] { resolvedEntry });
+					}
 					break;
 				case IClasspathEntry.CPE_CONTAINER:
 					IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(), currentProject);
-					IClasspathEntry[] containerEntries = container.getClasspathEntries();
-					stack.add(0, containerEntries);
+					if(container != null) {
+						IClasspathEntry[] containerEntries = container.getClasspathEntries();
+						stack.add(0, containerEntries);
+					}
 					break;
 				case IClasspathEntry.CPE_PROJECT:
 					IPath projectPath = entry.getPath();

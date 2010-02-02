@@ -64,6 +64,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	
 	public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
 	public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
+	public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
 
 	private static final String BND_SUFFIX = ".bnd";
 	private static final String CLASS_SUFFIX = ".class";

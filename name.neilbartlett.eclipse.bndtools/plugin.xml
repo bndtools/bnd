@@ -230,67 +230,6 @@
                </iterate>
             </with>
          </enablement>
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <or>
-                     <test
-                           args="name.neilbartlett.eclipse.bndtools.bndnature"
-                           property="org.eclipse.jdt.launching.hasProjectNature">
-                     </test>
-                     <test
-                           property="org.eclipse.debug.ui.matchesPattern"
-                           value="*.bnd">
-                     </test>
-                  </or>
-               </iterate>
-            </with>
-         </enablement>
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <or>
-                     <test
-                           args="name.neilbartlett.eclipse.bndtools.bndnature"
-                           property="org.eclipse.jdt.launching.hasProjectNature">
-                     </test>
-                     <test
-                           property="name.neilbartlett.eclipse.bndtools.test2">
-                     </test>
-                  </or>
-               </iterate>
-            </with>
-         </enablement>
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-               <iterate></iterate>
-            </with>
-         </enablement>
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-            </with>
-         </enablement>
-         <enablement>
-            <with
-                  variable="selection">
-            </with>
-         </enablement>
       </shortcut>
    </extension>
    <extension
@@ -443,5 +382,31 @@
                id="name.neilbartlett.eclipse.bndtools.impExpView">
          </viewShortcut>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="true"
+            class="name.neilbartlett.eclipse.bndtools.project.ui.BndProjectPropertyPage"
+            icon="icons/bricks.png"
+            id="name.neilbartlett.eclipse.bndtools.projectPropertyPage"
+            name="Bnd OSGi Properties"
+            objectClass="org.eclipse.core.resources.IProject">
+         <filter
+               name="nature"
+               value="name.neilbartlett.eclipse.bndtools.bndnature">
+         </filter>
+      </page>
+   </extension>
+   <extension
+         id="bnd_classpath_problem"
+         name="Bnd Repository Resolution Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.jdt.core.buildpath_problem">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
    </extension>
 </plugin>

@@ -9,7 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,7 +20,6 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -85,7 +86,7 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			for (Entry<String, Map<String,String>> entry : parsedDepList.entrySet()) {
 				dependencies.add(parsedEntryToDependency(entry));
 			}
-			Map<BundleDependency, ExportedBundle> bindings = calculateBindings(dependencies);
+			Map<BundleDependency, ExportedBundle> bindings = calculateBindings(project, dependencies);
 			WorkspaceRepositoryClasspathContainer newContainer = new WorkspaceRepositoryClasspathContainer(containerPath, project, dependencies, bindings);
 			projectContainerMap.put(project.getProject().getName(), newContainer);
 			
@@ -93,49 +94,97 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { newContainer }, null);
 		}
 	}
-	private Map<BundleDependency, ExportedBundle> calculateBindings(Collection<? extends BundleDependency> dependencies) {
+	private Map<BundleDependency, ExportedBundle> calculateBindings(IJavaProject project, Collection<? extends BundleDependency> dependencies) {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+	
+		ClasspathProblemReporterJob markerUpdateJob = new ClasspathProblemReporterJob(project);
 		
 		Map<BundleDependency,ExportedBundle> bindings = new HashMap<BundleDependency,ExportedBundle>();
 		for (BundleDependency dependency : dependencies) {
 			String symbolicName = dependency.getSymbolicName();
 			Map<Version, SortedSet<IPath>> versionToPathsMap = workspaceBundleMap.get(symbolicName);
 			if(versionToPathsMap != null) {
-				Entry<Version, SortedSet<IPath>> bestMatch = null;
+				// Record all the possible matches and rank them by version
+				List<RejectedExportCandidate> rejections = new LinkedList<RejectedExportCandidate>();
+				SortedMap<Version, ExportedBundle> matches = new TreeMap<Version, ExportedBundle>();
 				for (Entry<Version,SortedSet<IPath>> entry : versionToPathsMap.entrySet()) {
 					Version entryVersion = entry.getKey();
 					SortedSet<IPath> paths = entry.getValue();
-					
 					if(paths != null && !paths.isEmpty() && dependency.getVersionRange().includes(entryVersion)) {
-						if(bestMatch == null || entryVersion.compareTo(bestMatch.getKey()) > 0) {
-							bestMatch = entry;
+						// Iterate over the paths and pick the first one that does not give us a cycle
+						ExportedBundle selectedExport = null;
+						for (IPath path : paths) {
+							ExportedBundle export = findExport(root, path);
+							if(!checkForCycles(project.getProject().getName(), export)) {
+								selectedExport = export;
+								break;
+							} else {
+								rejections.add(new RejectedExportCandidate(export, "Possible dependency cycle", true));
+							}
+						}
+						if(selectedExport != null) {
+							matches.put(entryVersion, selectedExport);
 						}
 					}
 				}
-				if(bestMatch != null) {
-					SortedSet<IPath> paths = bestMatch.getValue();
-					if(paths != null && !paths.isEmpty()) {
-						IPath path = paths.first();
-						ExportedBundle export = null;
-						
-						// Find the export so we can get it source info
-						IResource bundleResource = root.findMember(path);
-						Map<IPath, ExportedBundle> exports = exportsMap.get(path.segment(0));
-						if(exports != null) {
-							export = exports.get(path);
-						}
-						
-						// Not found, reconstruct from the info we have (i.e. losing the source info)
-						if(export == null) {
-							export = new ExportedBundle(path, null, symbolicName, bestMatch.getKey());
-						}
-						bindings.put(dependency, export);
+				// Take the highest-version available export
+				if(!matches.isEmpty()) {
+					Version highestVersion = matches.lastKey();
+					ExportedBundle bestExport = matches.get(highestVersion);
+					
+					bindings.put(dependency, bestExport);
+				} else {
+					String message = MessageFormat.format("No available exports matching the version range \"{0}\". {1,choice,0#One candidate|1<{1} candidates} rejected.", dependency.getVersionRange(), rejections.size());
+					ResolutionProblem problem = new ResolutionProblem(message, dependency);
+					problem.addRejectedCandidates(rejections);
+					
+					markerUpdateJob.addResolutionProblem(problem);
+				}
+			} else {
+				String message = MessageFormat.format("No exported bundles match symbolic name \"{0}\".", dependency.getSymbolicName());
+				ResolutionProblem problem = new ResolutionProblem(message, dependency);
+				markerUpdateJob.addResolutionProblem(problem);
+			}
+		}
+		markerUpdateJob.schedule();
+		return bindings;
+	}
+
+	// Find the export so we can get its source bnd file (if any)
+	private ExportedBundle findExport(IWorkspaceRoot root, IPath path) {
+		Map<IPath, ExportedBundle> exports = exportsMap.get(path.segment(0));
+		return exports != null ? exports.get(path) : null;
+	}
+	
+	private boolean checkForCycles(String startingProject, ExportedBundle export) {
+		IPath bndPath = export.getSourceBndFilePath();
+		
+		// If no source bnd file then this cannot be part of a cycle, since it is not built by us.
+		if(bndPath == null) {
+			return false;
+		}
+		
+		// If the bndFile is the starting project, then this export would directly result in a cycle
+		if(startingProject.equals(bndPath.segment(0))) {
+			return true;
+		}
+
+		// Find the dependencies of the project exporting the bundle, and recurse
+		WorkspaceRepositoryClasspathContainer container = projectContainerMap.get(bndPath.segment(0));
+		if(container != null) {
+			for (BundleDependency transitiveDep : container.getDependencies()) {
+				ExportedBundle transitiveBinding = container.getBinding(transitiveDep);
+				if(transitiveBinding != null) {
+					if(checkForCycles(startingProject, transitiveBinding)) {
+						return true;
 					}
 				}
 			}
 		}
-		return bindings;
+		return false;
 	}
+	
+	
 	private BundleDependency parsedEntryToDependency(Entry<String, Map<String, String>> entry) {
 		String symbolicName = entry.getKey();
 		String versionRangeStr = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
@@ -214,7 +263,7 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			
 			WorkspaceRepositoryClasspathContainer oldContainer = projectContainerMap.get(projectName);
 			Collection<BundleDependency> dependencies = oldContainer.getDependencies();
-			Map<BundleDependency, ExportedBundle> newBindings = calculateBindings(dependencies);
+			Map<BundleDependency, ExportedBundle> newBindings = calculateBindings(javaProject, dependencies);
 			
 			WorkspaceRepositoryClasspathContainer newContainer = new WorkspaceRepositoryClasspathContainer(oldContainer.getPath(), oldContainer.getJavaProject(), dependencies, newBindings);
 			projectContainerMap.put(projectName, newContainer);
