@@ -102,6 +102,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		try {
 			projProps.load();
 			exportDirs = projProps.getExportedBundleDirs();
+			bndProject.setExportDirs(exportDirs);
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading Bnd project properties.", e));
 		}
@@ -138,7 +139,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		IResourceDelta bndPropertiesDelta = delta.findMember(new Path(BndProjectProperties.BND_PROPERTIES_FILE));
 		
 		// Get the export dirs from the cached project metadata, if not changed, otherwise read it again from the file
-		List<IResource> exportDirs;
+		Collection<IResource> exportDirs;
 		if(bndPropertiesDelta == null) {
 			exportDirs = bndProject.getExportDirs();
 		} else {

@@ -3,8 +3,9 @@ package name.neilbartlett.eclipse.bndtools;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import name.neilbartlett.eclipse.bndtools.builder.BndFileModel;
@@ -34,7 +35,7 @@ public class BndProject {
 	// @GuardedBy("this")
 	private long lastBuilt = NEVER;
 
-	private List<IResource> exportDirs;
+	private final Set<IResource> exportDirs = new HashSet<IResource>();
 
 	// Prevent direct instantiation
 	private BndProject(IProject project) {
@@ -78,10 +79,11 @@ public class BndProject {
 			return fileModelMap.get(fullPath);
 		}
 	}
-	public List<IResource> getExportDirs() {
+	public Set<IResource> getExportDirs() {
 		return exportDirs;
 	}
-	public void setExportDirs(List<IResource> exportDirs) {
-		this.exportDirs = exportDirs;
+	public void setExportDirs(Collection<? extends IResource> exportDirs) {
+		this.exportDirs.clear();
+		this.exportDirs.addAll(exportDirs);
 	}
 }
