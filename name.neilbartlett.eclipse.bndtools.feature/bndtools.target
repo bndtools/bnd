@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
 <target name="BndTools Target Platform">
@@ -8,7 +8,7 @@
 </locations>
 <environment>
 <os>macosx</os>
-<ws>cocoa</ws>
-<arch>x86_64</arch>
+<ws>carbon</ws>
+<arch>ppc</arch>
 </environment>
 </target>

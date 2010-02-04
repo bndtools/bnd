@@ -33,18 +33,6 @@
    <extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
-            id="name.neilbartlett.eclipse.bndtools.bndEditorContribution1"
-            targetID="name.neilbartlett.eclipse.bndtools.bndEditor">
-         <action
-               class="name.neilbartlett.eclipse.bndtools.MakeBundleWithRefreshAction"
-               icon="icons/brick.png"
-               id="name.neilbartlett.eclipse.bndtools.makeBundleAction"
-               label="Make Bundle"
-               style="push"
-               toolbarPath="Normal/additions">
-         </action>
-      </editorContribution>
-      <editorContribution
             id="name.neilbartlett.eclipse.bndtools.bndEditorContribution2"
             targetID="name.neilbartlett.eclipse.bndtools.newBndEditor">
          <action
@@ -140,6 +128,11 @@
             class="name.neilbartlett.eclipse.bndtools.classpath.ui.FrameworkClasspathPage"
             id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER"
             name="OSGi Framework">
+      </classpathContainerPage>
+      <classpathContainerPage
+            class="name.neilbartlett.eclipse.bndtools.classpath.ui.WorkspaceBundlesClasspathPage"
+            id="name.neilbartlett.eclipse.bndtools.WORKSPACE_REPOSITORY"
+            name="Workspace Bundles">
       </classpathContainerPage>
    </extension>
    <extension

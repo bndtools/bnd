@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import name.neilbartlett.eclipse.bndtools.classpath.BundleDependency;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -23,6 +25,7 @@ public class BndProjectProperties {
 	
 	public static final String BND_PROPERTIES_FILE = "bnd.properties";
 	public static final String BUNDLE_EXPORT_DIRS = "bundle.export.dirs";
+	public static final String BUNDLE_IMPORTS = "import.bundles";
 	
 	private final Properties properties = new Properties();
 	private final IProject project;

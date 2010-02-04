@@ -1,7 +1,9 @@
 package name.neilbartlett.eclipse.bndtools.classpath;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,14 +80,9 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 	
 	@Override
 	public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
-		if(containerPath.segmentCount() == 2) {
+		if(containerPath.segmentCount() >= 1) {
 			// Construct the new container
-			List<BundleDependency> dependencies = new LinkedList<BundleDependency>();
-			String bundleListStr = containerPath.segment(1);
-			Map<String, Map<String, String>> parsedDepList = OSGiHeader.parseHeader(bundleListStr);
-			for (Entry<String, Map<String,String>> entry : parsedDepList.entrySet()) {
-				dependencies.add(parsedEntryToDependency(entry));
-			}
+			List<BundleDependency> dependencies = parseBundleDependencies(containerPath);
 			Map<BundleDependency, ExportedBundle> bindings = calculateBindings(project, dependencies);
 			WorkspaceRepositoryClasspathContainer newContainer = new WorkspaceRepositoryClasspathContainer(containerPath, project, dependencies, bindings);
 			projectContainerMap.put(project.getProject().getName(), newContainer);
@@ -93,6 +90,20 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			// Rebind the container path for the project
 			JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { newContainer }, null);
 		}
+	}
+	/**
+	 * Parse the bundle dependencies of the specified container path.
+	 * @param containerPath
+	 * @return A list of bundle dependencies
+	 */
+	public static List<BundleDependency> parseBundleDependencies(IPath containerPath) {
+		List<BundleDependency> dependencies = new LinkedList<BundleDependency>();
+		String bundleListStr = containerPath.segment(1);
+		Map<String, Map<String, String>> parsedDepList = OSGiHeader.parseHeader(bundleListStr);
+		for (Entry<String, Map<String,String>> entry : parsedDepList.entrySet()) {
+			dependencies.add(parsedEntryToDependency(entry));
+		}
+		return dependencies;
 	}
 	private Map<BundleDependency, ExportedBundle> calculateBindings(IJavaProject project, Collection<? extends BundleDependency> dependencies) {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -184,8 +195,33 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 		return false;
 	}
 	
-	
-	private BundleDependency parsedEntryToDependency(Entry<String, Map<String, String>> entry) {
+	/**
+	 * Get all the dependency bindings for the specified project
+	 * 
+	 * @param project
+	 *            The project to examine
+	 * @return A map of dependencies to bindings for those dependencies. The map
+	 *         will not contain any entries for unbound dependencies, so they
+	 *         must be discovered by another means.
+	 */
+	public Map<BundleDependency, ExportedBundle> getBindingsForProject(IProject project) {
+		WorkspaceRepositoryClasspathContainer container = projectContainerMap.get(project.getName());
+		if(container == null) {
+			return Collections.emptyMap();
+		}
+		return container.getAllBindings();
+	}
+	public List<ExportedBundle> getAllWorkspaceExports() {
+		List<ExportedBundle> result = new ArrayList<ExportedBundle>();
+		for(Entry<String, Map<IPath, ExportedBundle>> entry : exportsMap.entrySet()) {
+			Map<IPath, ExportedBundle> pathMap = entry.getValue();
+			for (Entry<IPath, ExportedBundle> pathEntry : pathMap.entrySet()) {
+				result.add(pathEntry.getValue());
+			}
+		}
+		return result;
+	}
+	private static BundleDependency parsedEntryToDependency(Entry<String, Map<String, String>> entry) {
 		String symbolicName = entry.getKey();
 		String versionRangeStr = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
 		VersionRange versionRange;

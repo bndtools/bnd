@@ -69,6 +69,9 @@ class WorkspaceRepositoryClasspathContainer implements
 	public ExportedBundle getBinding(BundleDependency dependency) {
 		return bindings.get(dependency);
 	}
+	public Map<BundleDependency, ExportedBundle> getAllBindings() {
+		return Collections.unmodifiableMap(bindings);
+	}
 	public boolean isBoundToPath(IPath path) {
 		for (ExportedBundle bundle : bindings.values()) {
 			if(bundle.getPath().equals(path)) {
