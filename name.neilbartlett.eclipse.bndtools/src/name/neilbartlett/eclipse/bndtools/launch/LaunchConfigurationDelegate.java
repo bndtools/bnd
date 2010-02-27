@@ -38,6 +38,9 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
+	
+	public static final String LAUNCH_CONFIG_TYPE = "name.neilbartlett.eclipse.bndtools.launchConfigurationType";
+	
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		// Pre-launch build steps. Placed here rather than in buildForLaunch,
@@ -112,7 +115,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 		return standardArgs + " " + additionalArgs;
 	}
 	
-	private IProject getProjectForConfiguration(
+	static IProject getProjectForConfiguration(
 			ILaunchConfiguration configuration) throws CoreException {
 		String projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
 		if(projectName == null)

@@ -46,7 +46,9 @@ class WorkspaceRepositoryClasspathContainer implements
 			IPath srcProjectPath = null;
 			if(bndFilePath != null) {
 				IResource bndFile = root.findMember(bndFilePath);
-				srcProjectPath = bndFile.getProject().getFullPath();
+				if(bndFile != null) {
+					srcProjectPath = bndFile.getProject().getFullPath();
+				}
 			}
 			
 			result[i] = JavaCore.newLibraryEntry(bundle.getPath(), srcProjectPath, null, false);

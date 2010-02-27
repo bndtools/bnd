@@ -40,9 +40,9 @@ public class Plugin extends AbstractUIPlugin {
 		plugin = this;
 		this.bundleContext = context;
 		
-		BuildAllBndProjectsJob buildJob = new BuildAllBndProjectsJob("Build Bnd Projects...");
+		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 		buildJob.setSystem(false);
-		buildJob.schedule(2000);
+		buildJob.schedule();
 	}
 
 	public void stop(BundleContext context) throws Exception {

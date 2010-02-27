@@ -79,7 +79,7 @@ public class OverviewFormPage extends FormPage {
 		layout = new GridLayout(2, false);
 		body.setLayout(layout);
 		
-		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		gd = new GridData(SWT.FILL, SWT.FILL, false, true);
 		pnlBasicColumn.setLayoutData(gd);
 		
 		layout = new GridLayout(1, false);
@@ -92,7 +92,7 @@ public class OverviewFormPage extends FormPage {
 		
 		buildPart.getSection().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
-		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		gd = new GridData(SWT.FILL, SWT.FILL, false, true);
 		pnlPackagesColumn.setLayoutData(gd);
 		
 		layout = new GridLayout(1, false);

@@ -418,4 +418,14 @@
          </enablement>
       </decorator>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchGroups">
+      <launchGroup
+            id="name.neilbartlett.eclipse.bndtools.launchRunGroup"
+            image="icons/bricks.png"
+            bannerImage="icons/bricks.png"
+            label="Run OSGi Framework"
+            mode="run">
+      </launchGroup>
+   </extension>
 </plugin>

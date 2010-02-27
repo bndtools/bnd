@@ -5,6 +5,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
@@ -33,8 +34,8 @@ public class BundleUtils {
 		return matched;
 	}
 	public static IPath getBundleLocation(String symbolicName, VersionRange range) {
-		IPath installPath = new Path(Platform.getInstallLocation().getURL().getFile());
-		IPath configPath = new Path(Platform.getConfigurationLocation().getURL().getFile());
+		Location installLocation = Platform.getInstallLocation();
+		Location configLocation = Platform.getConfigurationLocation();
 		
 		Bundle bundle= findBundle(symbolicName, range);
 		if(bundle == null)
@@ -51,14 +52,18 @@ public class BundleUtils {
 			return bundlePath;
 		
 		// Try install location
-		IPath installedBundlePath = installPath.append(bundlePath);
+		if(installLocation != null) {
+		IPath installedBundlePath = new Path(installLocation.getURL().getFile()).append(bundlePath);
 		if(installedBundlePath.toFile().exists())
 			return installedBundlePath;
+		}
 		
 		// Try config location
-		IPath configuredBundlePath = configPath.append(bundlePath);
+		if(configLocation != null) {
+		IPath configuredBundlePath = new Path(configLocation.getURL().getFile()).append(bundlePath);
 		if(configuredBundlePath.toFile().exists())
 			return configuredBundlePath;
+		}
 		
 		return null;
 	}

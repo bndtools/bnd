@@ -503,6 +503,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		txtDeactivate.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_DEACTIVATE));
 		txtModified.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_MODIFIED));
 		txtFactoryId.addListener(SWT.Modify, new MarkDirtyListener(ServiceComponent.COMPONENT_FACTORY));
+		btnImmediate.addListener(SWT.Selection, new MarkDirtyListener(ServiceComponent.COMPONENT_IMMEDIATE));
+		btnSvcFactory.addListener(SWT.Selection, new MarkDirtyListener(ServiceComponent.COMPONENT_SERVICEFACTORY));
 		
 		// Layout
 		composite.setLayout(new GridLayout(2, false));

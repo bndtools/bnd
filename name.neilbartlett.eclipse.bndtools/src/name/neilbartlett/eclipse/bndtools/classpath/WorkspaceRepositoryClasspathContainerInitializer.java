@@ -1,5 +1,6 @@
 package name.neilbartlett.eclipse.bndtools.classpath;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.project.BndProjectProperties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -37,10 +39,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import aQute.lib.osgi.Constants;
-import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
 
 public class WorkspaceRepositoryClasspathContainerInitializer extends
 		ClasspathContainerInitializer {
@@ -80,9 +79,16 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 	
 	@Override
 	public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
-		if(containerPath.segmentCount() >= 1) {
+		if(containerPath.segmentCount() >= 1 && CONTAINER_ID.equals(containerPath.segment(0))) {
 			// Construct the new container
-			List<BundleDependency> dependencies = parseBundleDependencies(containerPath);
+			BndProjectProperties projectProps = new BndProjectProperties(project.getProject());
+			try {
+				projectProps.load();
+			} catch (IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading Bnd project properties.", e));
+			}
+			
+			List<BundleDependency> dependencies = projectProps.getBundleDependencies();
 			Map<BundleDependency, ExportedBundle> bindings = calculateBindings(project, dependencies);
 			WorkspaceRepositoryClasspathContainer newContainer = new WorkspaceRepositoryClasspathContainer(containerPath, project, dependencies, bindings);
 			projectContainerMap.put(project.getProject().getName(), newContainer);
@@ -90,20 +96,6 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			// Rebind the container path for the project
 			JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { newContainer }, null);
 		}
-	}
-	/**
-	 * Parse the bundle dependencies of the specified container path.
-	 * @param containerPath
-	 * @return A list of bundle dependencies
-	 */
-	public static List<BundleDependency> parseBundleDependencies(IPath containerPath) {
-		List<BundleDependency> dependencies = new LinkedList<BundleDependency>();
-		String bundleListStr = containerPath.segment(1);
-		Map<String, Map<String, String>> parsedDepList = OSGiHeader.parseHeader(bundleListStr);
-		for (Entry<String, Map<String,String>> entry : parsedDepList.entrySet()) {
-			dependencies.add(parsedEntryToDependency(entry));
-		}
-		return dependencies;
 	}
 	private Map<BundleDependency, ExportedBundle> calculateBindings(IJavaProject project, Collection<? extends BundleDependency> dependencies) {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -220,18 +212,6 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			}
 		}
 		return result;
-	}
-	private static BundleDependency parsedEntryToDependency(Entry<String, Map<String, String>> entry) {
-		String symbolicName = entry.getKey();
-		String versionRangeStr = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
-		VersionRange versionRange;
-		if(versionRangeStr != null) {
-			versionRange = new VersionRange(versionRangeStr);
-		} else {
-			versionRange = new VersionRange("0.0.0");
-		}
-		BundleDependency dependency = new BundleDependency(symbolicName, versionRange);
-		return dependency;
 	}
 
 	/**

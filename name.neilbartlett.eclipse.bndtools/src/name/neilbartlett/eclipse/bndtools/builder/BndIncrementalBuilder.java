@@ -54,7 +54,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
@@ -130,8 +133,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		
 		// Set up some buckets for the changes we are about to detect
-		List<IFile> deletedBndFiles = new LinkedList<IFile>();
-		List<IFile> changedBndFiles = new LinkedList<IFile>();
+		Set<IFile> deletedBndFiles = new HashSet<IFile>();
+		Set<IFile> changedBndFiles = new HashSet<IFile>();
 		List<ExportedBundle> changedBundles = new LinkedList<ExportedBundle>();
 		List<IFile> deletedJarFiles = new LinkedList<IFile>();
 		
@@ -184,11 +187,29 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 
 		// Inform the workspace repository about changed bundle files
+		WorkspaceRepositoryClasspathContainerInitializer classpathInitializer = WorkspaceRepositoryClasspathContainerInitializer.getInstance();
 		if(bndPropertiesDelta == null) {
-			WorkspaceRepositoryClasspathContainerInitializer.getInstance().bundlesChanged(bndProject.getProject(), deletedJarFiles, changedBundles, progress.newChild(1));
+			classpathInitializer.bundlesChanged(bndProject.getProject(), deletedJarFiles, changedBundles, progress.newChild(1));
 		} else {
-			WorkspaceRepositoryClasspathContainerInitializer.getInstance().resetProjectExports(bndProject.getProject(), changedBundles, progress.newChild(1));
+			classpathInitializer.resetProjectExports(bndProject.getProject(), changedBundles, progress.newChild(1));
+			
+			// Update the workspace repository classpath container
+			IJavaProject javaProject = JavaCore.create(getProject());
+			IPath containerPath = getWorkspaceRepositoryClasspathContainerPath(javaProject);
+			if(containerPath != null) {
+				classpathInitializer.initialize(containerPath, javaProject);
+			}
 		}
+	}
+	private IPath getWorkspaceRepositoryClasspathContainerPath(IJavaProject javaProject) throws JavaModelException {
+		IClasspathEntry[] classpath = javaProject.getRawClasspath();
+		for (IClasspathEntry entry : classpath) {
+			IPath path = entry.getPath();
+			if(entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && WorkspaceRepositoryClasspathContainerInitializer.CONTAINER_ID.equals(path.segment(0))) {
+				return path;
+			}
+		}
+		return null;
 	}
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
@@ -240,7 +261,9 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		BndFileModel fileModel = bndProject.getFileModel(bndFile.getFullPath());
 		
 		// Clear markers
-		bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+		if(bndFile.exists()) {
+			bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+		}
 		
 		// Create the builder
 		final Builder builder = new Builder();
@@ -304,6 +327,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
 			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 			marker.setAttribute(IMarker.MESSAGE, errorMessage);
+			marker.setAttribute(IMarker.LINE_NUMBER, 1);
 		}
 		
 		// Check the output file path
@@ -340,29 +364,35 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					ByteArrayOutputStream jarBits = new ByteArrayOutputStream();
 					Jar jar = builder.getJar();
 					try {
-						long bndTimestamp = bndFile.getLocalTimeStamp();
-						
 						jar.write(jarBits);
 						ByteArrayInputStream inputStream = new ByteArrayInputStream(jarBits.toByteArray());
 						if(targetFile.exists()) {
-							long targetTimestamp = targetFile.getLocalTimeStamp();
-							if(bndTimestamp >= targetTimestamp) {
-								targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
-							}
+							targetFile.setContents(inputStream, IResource.NONE, progress.newChild(9));
 							exports.add(new ExportedBundle(targetFile.getFullPath(), bndFile.getFullPath(), symbolicName, version));
 						} else {
 							targetFile.create(inputStream, IResource.NONE, progress.newChild(9));
 							exports.add(new ExportedBundle(targetFile.getFullPath(), bndFile.getFullPath(), symbolicName, version));
 						}
-						targetFile.setDerived(true);
+						setTargetDerived(targetFile);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 			}
+			@SuppressWarnings("deprecation")
+			private void setTargetDerived(IFile targetFile) throws CoreException {
+				targetFile.setDerived(true);
+			}
 		};
-		workspace.run(workspaceOp, progress.newChild(1));
+		try {
+			workspace.run(workspaceOp, progress.newChild(1));
+		} catch (CoreException e) {
+			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
+			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			marker.setAttribute(IMarker.MESSAGE, e.getStatus().getMessage());
+			marker.setAttribute(IMarker.LINE_NUMBER, 1);
+		}
 	}
 	private Map<Instruction, Map<String, String>> getInstructionsFromHeader(Builder builder, String name) {
 		Map<Instruction, Map<String, String>> result;
@@ -375,7 +405,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		result = Instruction.replaceWithInstruction(map);
 		return result;
 	}
-
+	
 	/**
 	 * Get the specified file as an exported bundle, IFF it is a bundle,
 	 * otherwise returns {@code null}.

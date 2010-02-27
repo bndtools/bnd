@@ -10,7 +10,16 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.wizards;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializer;
+
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
@@ -25,17 +34,20 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	
 	@Override
 	public IClasspathEntry[] getDefaultClasspathEntries() {
-		IClasspathEntry[] result = super.getDefaultClasspathEntries();
-		IClasspathEntry frameworkEntry = frameworkPage.getFrameworkClasspathEntry();
+		IClasspathEntry[] entries = super.getDefaultClasspathEntries();
+		List<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.length + 2);
+		result.addAll(Arrays.asList(entries));
 		
+		// Add the framework
+		IClasspathEntry frameworkEntry = frameworkPage.getFrameworkClasspathEntry();
 		if(frameworkEntry != null) {
-			IClasspathEntry[] tmp = new IClasspathEntry[result.length + 1];
-			System.arraycopy(result, 0, tmp, 0, result.length);
-			tmp[result.length] = frameworkEntry;
-			
-			result = tmp;
+			result.add(frameworkEntry);
 		}
 		
-		return result;
+		// Add the workspace bundle repository classpath container
+		IPath bundleRepoContainerPath = new Path(WorkspaceRepositoryClasspathContainerInitializer.CONTAINER_ID);
+		result.add(JavaCore.newContainerEntry(bundleRepoContainerPath, false));
+		
+		return (IClasspathEntry[]) result.toArray(new IClasspathEntry[result.size()]);
 	}
 }

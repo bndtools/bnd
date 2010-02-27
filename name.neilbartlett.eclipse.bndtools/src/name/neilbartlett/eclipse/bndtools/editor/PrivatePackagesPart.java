@@ -153,7 +153,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
 		gd.widthHint = 300;
-		gd.heightHint = 100;
+		gd.heightHint = 180;
 		table.setLayoutData(gd);
 		
 		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -200,6 +200,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 			
 			// Update the model and view
 			if(!added.isEmpty()) {
+				viewer.add((String[]) added.toArray(new String[added.size()]));
 				markDirty();
 			}
 		}

@@ -3,9 +3,11 @@ package name.neilbartlett.eclipse.bndtools.classpath;
 import java.util.LinkedList;
 import java.util.List;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.builder.BndIncrementalBuilder;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
@@ -32,13 +34,23 @@ class ClasspathProblemReporterJob extends WorkspaceJob {
 	}
 
 	@Override
-	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-		javaProject.getProject().deleteMarkers(BndIncrementalBuilder.MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
-		
-		for (ResolutionProblem problem : problems) {
-			createMissingDependencyMarker(problem);
+	public IStatus runInWorkspace(IProgressMonitor monitor) {
+		IProject project = javaProject.getProject();
+		if(project.isOpen()) {
+			try {
+				project.deleteMarkers(BndIncrementalBuilder.MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
+			} catch (CoreException e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error deleting Bnd Classpath Problem markers", e));
+			}
+			
+			for (ResolutionProblem problem : problems) {
+				try {
+					createMissingDependencyMarker(problem);
+				} catch (CoreException e) {
+					Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating Bnd Classpath Problem marker", e));
+				}
+			}
 		}
-		
 		return Status.OK_STATUS;
 	}
 
