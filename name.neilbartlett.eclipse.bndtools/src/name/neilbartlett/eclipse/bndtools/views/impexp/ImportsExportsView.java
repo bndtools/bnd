@@ -10,6 +10,7 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -18,6 +19,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.PartAdapter;
 import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
+import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -25,14 +27,24 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -52,6 +64,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -80,6 +93,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		}
 	};
+
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -138,6 +152,29 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		});
 		
+		viewer.addOpenListener(new IOpenListener() {
+			public void open(OpenEvent event) {
+				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+				for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
+					Object item = iter.next();
+					if(item instanceof ImportUsedByClass) {
+						String className = ((ImportUsedByClass) item).clazz.getFQN();
+						if(selectedFile != null) {
+							IJavaProject javaProject = JavaCore.create(selectedFile.getProject());
+							try {
+								IType type = javaProject.findType(className);
+								JavaUI.openInEditor(type, true, true);
+							} catch (JavaModelException e) {
+								ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+							} catch (PartInitException e) {
+								ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
+							}
+						}
+					}
+				}
+			}
+		});
+		
 		fillActionBars();
 		
 		getSite().getPage().addPostSelectionListener(this);
@@ -182,6 +219,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	};
 	
 	public void setInput(IFile sourceFile, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
+		selectedFile = sourceFile;
 		if(tree != null && !tree.isDisposed()) {
 			viewer.setInput(new ImportsAndExports(imports, exports));
 			
