@@ -12,6 +12,7 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	
 	private ServiceComponent selected;
 	
+	private Section propertiesSection;
 	private Section provideSection;
 	private Section referenceSection;
 	private Section lifecycleSection;
@@ -100,6 +102,11 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 	private Button btnSvcFactory;
 	private Text txtFactoryId;
 
+	private Map<String,String> properties;
+	private Table tableProperties;
+	private TableViewer viewerProperties;
+	private MapEntryCellModifier<String, String> modifierProperties;
+	
 	private List<String> provides;
 	private Table tableProvide;
 	private TableViewer viewerProvide;
@@ -151,16 +158,20 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		Section mainSection = toolkit.createSection(parent, Section.TITLE_BAR);
 		mainSection.setText("Component Details");
 		fillMainSection(toolkit, mainSection);
+		
+		propertiesSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		propertiesSection.setText("Properties");
+		fillPropertiesSection(toolkit, propertiesSection);
 
-		provideSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		provideSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
 		provideSection.setText("Provided Services");
 		fillProvideSection(toolkit, provideSection);
 		
-		referenceSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		referenceSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
 		referenceSection.setText("Service References");
 		fillReferenceSection(toolkit, referenceSection);
 		
-		lifecycleSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		lifecycleSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
 		lifecycleSection.setText("Lifecycle");
 		fillLifecycleSection(toolkit, lifecycleSection);
 		
@@ -177,6 +188,10 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		gd.widthHint = 100;
 		mainSection.setLayoutData(gd);
 		
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.widthHint = 100;
+		propertiesSection.setLayoutData(gd);
+
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.widthHint = 100;
 		provideSection.setLayoutData(gd);
@@ -254,6 +269,88 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalIndent = 5;
 		txtName.setLayoutData(gd);
+	}
+	
+	void fillPropertiesSection(FormToolkit toolkit, Section section) {
+		// Create controls
+		ToolBar toolbar = new ToolBar(section, SWT.FLAT | SWT.HORIZONTAL);
+		section.setTextClient(toolbar);
+		
+		final ToolItem addItem = new ToolItem(toolbar, SWT.NULL);
+		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+		addItem.setToolTipText("Add");
+
+		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+		removeItem.setToolTipText("Remove");
+		removeItem.setEnabled(false);
+		
+		Composite composite = toolkit.createComposite(section, SWT.NONE);
+		section.setClient(composite);
+		tableProperties = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+		viewerProperties = new TableViewer(tableProperties);
+		modifierProperties = new MapEntryCellModifier<String, String>(viewerProperties);
+		
+		tableProperties.setHeaderVisible(true);
+		tableProperties.setLinesVisible(false);
+		
+		modifierProperties.addColumnsToTable();
+
+		viewerProperties.setUseHashlookup(true);
+		viewerProperties.setColumnProperties(modifierProperties.getColumnProperties());
+		modifierProperties.addCellEditorsToViewer();
+		viewerProperties.setCellModifier(modifierProperties);
+		
+		viewerProperties.setContentProvider(new MapContentProvider());
+		viewerProperties.setLabelProvider(new PropertiesTableLabelProvider());
+		
+		// Layout
+		GridLayout layout = new GridLayout(1, false);
+		layout.horizontalSpacing = 0;
+		layout.verticalSpacing = 0;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		composite.setLayout(layout);
+		
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 70;
+		tableProperties.setLayoutData(gd);
+		
+		// Listeners
+		viewerProperties.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				removeItem.setEnabled(!viewerProperties.getSelection().isEmpty());
+			}
+		});
+		addItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				doAddProperty();
+			}
+		});
+		removeItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				doRemoveProperty();
+			}
+		});
+	}
+	void doAddProperty() {
+		properties.put("name", "value");
+		viewerProperties.add("name");
+		markDirty(ServiceComponent.COMPONENT_PROPERTIES);
+		
+		viewerProperties.editElement("name", 0);
+	}
+	void doRemoveProperty() {
+		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerProperties.getSelection()).iterator();
+		while(iter.hasNext()) {
+			Object item = iter.next();
+			properties.remove(item);
+			viewerProperties.remove(item);
+		}
+		markDirty(ServiceComponent.COMPONENT_PROVIDE);
 	}
 	void fillProvideSection(FormToolkit toolkit, Section section) {
 		// Create controls
@@ -355,7 +452,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		
 		tableReferences = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 		tableReferences.setHeaderVisible(true);
-		tableReferences.setLinesVisible(true);
+		tableReferences.setLinesVisible(false);
 		
 		TableColumn col;
 		col = new TableColumn(tableReferences, SWT.NONE);
@@ -552,7 +649,9 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		btnConfigPolicyIgnore.addListener(SWT.Selection, configPolicyDirtyListener);
 		
 		// Layout
-		composite.setLayout(new GridLayout(1, false));
+		GridLayout layout = new GridLayout(3, false);
+		layout.horizontalSpacing = 15;
+		composite.setLayout(layout);
 	}
 	public void selectionChanged(IFormPart part, ISelection selection) {
 		Object element = ((IStructuredSelection) selection).getFirstElement();
@@ -573,12 +672,16 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		setBooleanAttribIfDirty(ServiceComponent.COMPONENT_IMMEDIATE, btnImmediate.getSelection());
 		setBooleanAttribIfDirty(ServiceComponent.COMPONENT_SERVICEFACTORY, btnSvcFactory.getSelection());
 		setStringAttribIfDirty(ServiceComponent.COMPONENT_FACTORY, txtFactoryId.getText());
+		
+		// Properties section
+		if(dirtySet.contains(ServiceComponent.COMPONENT_PROPERTIES)) {
+			selected.setPropertiesMap(properties);
+		}
 
 		// Provides section
 		if(dirtySet.contains(ServiceComponent.COMPONENT_PROVIDE)) {
 			selected.setListAttrib(ServiceComponent.COMPONENT_PROVIDE, provides);
 		}
-		setStringAttribIfDirty(ServiceComponent.COMPONENT_FACTORY, txtFactoryId.getText());
 		
 		// References section
 		if(dirtySet.contains(PROP_REFERENCES)) {
@@ -640,13 +743,16 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			loadCheckBox(btnSvcFactory, ServiceComponent.COMPONENT_SERVICEFACTORY, false);
 			loadTextField(txtFactoryId, ServiceComponent.COMPONENT_FACTORY, "");
 			
+			// Properties section
+			properties = (selected != null) ? selected.getPropertiesMap() : new LinkedHashMap<String, String>();
+			viewerProperties.setInput(properties);
+			
 			// Provides Section
-			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : null;
-			if(provides == null) provides = new LinkedList<String>();
+			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : new LinkedList<String>();
 			viewerProvide.setInput(provides);
 			
 			// References section
-			references = selected.getSvcRefs();
+			references = (selected != null) ? selected.getSvcRefs() : new LinkedList<ComponentSvcReference>();
 			viewerReferences.setInput(references);
 			
 			// Config Policy Section

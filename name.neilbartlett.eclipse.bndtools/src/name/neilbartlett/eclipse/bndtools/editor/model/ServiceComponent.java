@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +26,6 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-
-import aQute.bnd.plugin.Activator;
 
 public class ServiceComponent extends HeaderClause implements Cloneable {
 
@@ -62,6 +61,38 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	private Set<String> getStringSet(String attrib) {
 		List<String> list = getListAttrib(attrib);
 		return list != null ? new HashSet<String>(list) : new HashSet<String>();
+	}
+	public void setPropertiesMap(Map<String, String> properties) {
+		List<String> strings = new ArrayList<String>(properties.size());
+		for (Entry<String,String> entry : properties.entrySet()) {
+			String line = new StringBuilder().append(entry.getKey()).append("'='").append(entry.getValue()).toString();
+			strings.add(line);
+		}
+		setListAttrib(COMPONENT_PROPERTIES, strings);
+	}
+	public Map<String, String> getPropertiesMap() {
+		Map<String,String> result = new LinkedHashMap<String, String>();
+		
+		List<String> list = getListAttrib(COMPONENT_PROPERTIES);
+		if(list != null) {
+			for (String entryStr : list) {
+				String name;
+				String value;
+				
+				int index = entryStr.lastIndexOf('=');
+				if(index == -1) {
+					name = entryStr;
+					value = null;
+				} else {
+					name = entryStr.substring(0, index);
+					value = entryStr.substring(index + 1);
+				}
+				
+				result.put(name, value);
+			}
+		}
+		
+		return result;
 	}
 	public void setSvcRefs(List<? extends ComponentSvcReference> refs) {
 		// First remove all existing references, i.e. non-directives
