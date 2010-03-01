@@ -266,13 +266,14 @@ public class BndEditModel {
 	public void setExportedPackages(Collection<? extends ExportedPackage> exports) {
 		boolean referencesBundleVersion = false;
 		
-		for (ExportedPackage pkg : exports) {
-			String versionString = pkg.getVersionString();
-			if(versionString.indexOf(BUNDLE_VERSION_MACRO) > -1) {
-				referencesBundleVersion = true;
+		if(exports != null) {
+			for (ExportedPackage pkg : exports) {
+				String versionString = pkg.getVersionString();
+				if(versionString != null && versionString.indexOf(BUNDLE_VERSION_MACRO) > -1) {
+					referencesBundleVersion = true;
+				}
 			}
 		}
-		
 		List<ExportedPackage> oldValue = getExportedPackages();
 		doSetClauseList(Constants.EXPORT_PACKAGE, oldValue, exports);
 		

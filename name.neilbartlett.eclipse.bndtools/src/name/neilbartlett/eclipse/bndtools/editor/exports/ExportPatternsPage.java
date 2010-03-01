@@ -11,6 +11,7 @@
 package name.neilbartlett.eclipse.bndtools.editor.exports;
 
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.utils.MessageHyperlinkAdapter;
 
 import org.eclipse.ui.forms.IManagedForm;
@@ -43,5 +44,9 @@ public class ExportPatternsPage extends FormPage {
 		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter());
 		
 		block.createContent(managedForm);
+	}
+
+	public void setSelectedExport(ExportedPackage export) {
+		block.setSelectedExport(export);
 	}
 }

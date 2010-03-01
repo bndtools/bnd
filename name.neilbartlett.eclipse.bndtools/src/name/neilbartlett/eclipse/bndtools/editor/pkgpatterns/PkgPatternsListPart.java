@@ -13,9 +13,7 @@ package name.neilbartlett.eclipse.bndtools.editor.pkgpatterns;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -52,10 +50,10 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
-public abstract class PkgPatternsListPart extends SectionPart implements PropertyChangeListener {
+public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {
 
 	private final String propertyName;
-	protected ArrayList<HeaderClause> clauses = new ArrayList<HeaderClause>();
+	protected ArrayList<C> clauses = new ArrayList<C>();
 	
 	private IManagedForm managedForm;
 	private TableViewer viewer;
@@ -76,6 +74,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		
 		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
+		viewer.setUseHashlookup(true);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PkgPatternsLabelProvider());
 		
@@ -97,13 +96,13 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 				btnMoveDown.setEnabled(enabled);
 			}
 		});
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<HeaderClause>(viewer) {
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<C>(viewer) {
 			@Override
-			protected HeaderClause createNewEntry(String packageName) {
-				return new HeaderClause(packageName, new HashMap<String, String>());
+			protected C createNewEntry(String packageName) {
+				return newHeaderClause(packageName);
 			}
 			@Override
-			protected void addRows(int index, Collection<HeaderClause> rows) {
+			protected void addRows(int index, Collection<C> rows) {
 				doAddClauses(rows, index, true);
 				validate();
 				markDirty();
@@ -158,19 +157,24 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		btnMoveUp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnMoveDown.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
-	protected List<HeaderClause> getClauses() {
+	protected abstract C newHeaderClause(String text);
+	protected abstract Collection<C> loadFromModel(BndEditModel model);
+	protected abstract void saveToModel(BndEditModel model, Collection<? extends C> clauses);
+	protected List<C> getClauses() {
 		return clauses;
 	}
-	protected Collection<? extends HeaderClause> generateClauses() {
-		return Arrays.asList(new HeaderClause("", new HashMap<String, String>()));
+	protected Collection<? extends C> generateClauses() {
+		Collection<C> result = new ArrayList<C>();
+		result.add(newHeaderClause(""));
+		return result;
 	}
 	/**
 	 * Add the specified clauses to the view.
 	 * @param newClauses The new clauses.
 	 * @param index The index at which to insert the new clauses OR -1 to append at the end.
 	 */
-	protected void doAddClauses(Collection<? extends HeaderClause> newClauses, int index, boolean select) {
-		HeaderClause[] newClausesArray = newClauses.toArray(new HeaderClause[newClauses.size()]);
+	protected void doAddClauses(Collection<? extends C> newClauses, int index, boolean select) {
+		Object[] newClausesArray = newClauses.toArray(new Object[newClauses.size()]);
 		
 		if(index == -1 || index == this.clauses.size()) {
 			clauses.addAll(newClauses);
@@ -185,7 +189,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		validate();
 		markDirty();
 	}
-	private void doAddClausesAfterSelection(Collection<? extends HeaderClause> newClauses) {
+	private void doAddClausesAfterSelection(Collection<? extends C> newClauses) {
 		if(newClauses != null && !newClauses.isEmpty()) {
 			int selectedIndex = -1;
 			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -199,7 +203,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 			doAddClauses(newClauses, selectedIndex, true);
 		}
 	}
-	private void doInsertClausesAtSelection(Collection<? extends HeaderClause> newClauses) {
+	private void doInsertClausesAtSelection(Collection<? extends C> newClauses) {
 		if(newClauses != null && !newClauses.isEmpty()) {
 			int selectedIndex;
 			IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -273,14 +277,16 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 		super.refresh();
 		
 		// Deep-copy the model
-		Collection<HeaderClause> tmp = model.getHeaderClauses(propertyName);
+		Collection<C> tmp = loadFromModel(model);
 		if(tmp != null) {
-			clauses = new ArrayList<HeaderClause>(tmp.size());
-			for (HeaderClause clause : tmp) {
-				clauses.add(clause.clone());
+			clauses = new ArrayList<C>(tmp.size());
+			for (C clause : tmp) {
+				@SuppressWarnings("unchecked")
+				C clone = (C) clause.clone();
+				clauses.add(clone);
 			}
 		} else {
-			clauses = new ArrayList<HeaderClause>();
+			clauses = new ArrayList<C>();
 		}
 		viewer.setInput(clauses);
 		validate();
@@ -292,7 +298,7 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	public void commit(boolean onSave) {
 		try {
 			model.removePropertyChangeListener(propertyName, this);
-			model.setHeaderClauses(propertyName, clauses.isEmpty() ? null : clauses);
+			saveToModel(model, clauses.isEmpty() ? null : clauses);
 		} finally {
 			super.commit(onSave);
 			model.addPropertyChangeListener(propertyName, this);
@@ -307,5 +313,8 @@ public abstract class PkgPatternsListPart extends SectionPart implements Propert
 	}
 	public void updateLabels(Object[] elements) {
 		viewer.update(elements, null);
+	}
+	public void setSelectedClause(C clause) {
+		viewer.setSelection(new StructuredSelection(clause));
 	}
 }

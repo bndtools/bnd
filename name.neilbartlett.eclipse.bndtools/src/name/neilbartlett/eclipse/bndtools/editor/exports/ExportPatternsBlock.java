@@ -10,6 +10,7 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.editor.exports;
 
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.AnalyseToolbarAction;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
@@ -56,6 +57,9 @@ public class ExportPatternsBlock extends MasterDetailsBlock {
 	@Override
 	protected void registerPages(DetailsPart detailsPart) {
 		PkgPatternsDetailsPage page = new PkgPatternsDetailsPage(listPart, "Export Pattern Details");
-		detailsPart.registerPage(HeaderClause.class, page);
+		detailsPart.registerPage(ExportedPackage.class, page);
+	}
+	void setSelectedExport(ExportedPackage export) {
+		listPart.setSelectedClause(export);
 	}
 }

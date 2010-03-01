@@ -42,5 +42,5 @@ public class ImportPattern extends HeaderClause implements Cloneable {
 	@Override
 	protected boolean newlinesBetweenAttributes() {
 		return false;
-	} 
+	}
 }

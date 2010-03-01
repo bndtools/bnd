@@ -29,11 +29,18 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 	
+	static final String OVERVIEW_PAGE = "__overview_page";
+	static final String COMPONENTS_PAGE = "__components_page";
+	static final String EXPORTS_PAGE = "__exports_page";
+	static final String IMPORTS_PAGE = "__imports_page";
+	static final String SOURCE_PAGE = "__source_page";
+	
 	private final BndEditModel model = new BndEditModel();
-	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage("bndSourcePage", this);;
+	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);;
 	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -63,16 +70,16 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	protected void addPages() {
 		try {
-			OverviewFormPage detailsPage = new OverviewFormPage(this, model, "detailsPage", "Overview");
+			OverviewFormPage detailsPage = new OverviewFormPage(this, model, OVERVIEW_PAGE, "Overview");
 			addPage(detailsPage);
 
-			ComponentsPage componentsPage = new ComponentsPage(this, model, "componentsPage", "Components");
+			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
 			addPage(componentsPage);
 			
-			ExportPatternsPage exportsPage = new ExportPatternsPage(this, model, "exportsPage", "Exports");
+			ExportPatternsPage exportsPage = new ExportPatternsPage(this, model, EXPORTS_PAGE, "Exports");
 			addPage(exportsPage);
 			
-			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, "importsPage", "Imports");
+			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, IMPORTS_PAGE, "Imports");
 			addPage(importsPage);
 			
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());
@@ -128,5 +135,13 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		if(delta.getKind() == IResourceDelta.REMOVED) {
 			close(false);
 		}
+	}
+	
+	@Override
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+		if(IContentOutlinePage.class == adapter) {
+			return new BndEditorContentOutlinePage(this, model);
+		}
+		return super.getAdapter(adapter);
 	}
 }

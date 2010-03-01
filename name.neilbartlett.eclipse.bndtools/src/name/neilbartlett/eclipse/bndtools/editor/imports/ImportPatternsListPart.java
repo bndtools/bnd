@@ -17,7 +17,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.model.ImportPattern;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.PkgPatternsListPart;
 
 import org.eclipse.jface.action.Action;
@@ -29,7 +30,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import aQute.lib.osgi.Constants;
 
-public class ImportPatternsListPart extends PkgPatternsListPart {
+public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
 	private class FixMissingStarsAction extends Action {
 		public FixMissingStarsAction(String message) {
@@ -37,11 +38,11 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 		}
 		public void run() {
 			// Remove existing "*" patterns that are not in the last place
-			List<HeaderClause> toRemove = new LinkedList<HeaderClause>();
-			for (Iterator<HeaderClause> iter = getClauses().iterator(); iter.hasNext(); ) {
-				HeaderClause clause = iter.next();
-				if(clause.getName().equals("*") && iter.hasNext()) {
-					toRemove.add(clause);
+			List<ImportPattern> toRemove = new LinkedList<ImportPattern>();
+			for (Iterator<ImportPattern> iter = getClauses().iterator(); iter.hasNext(); ) {
+				ImportPattern pattern = iter.next();
+				if(pattern.getName().equals("*") && iter.hasNext()) {
+					toRemove.add(pattern);
 				}
 			}
 			if(!toRemove.isEmpty()) {
@@ -49,9 +50,9 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 			}
 			
 			// Add a "*" at the end, if not already present
-			List<HeaderClause> clauses = getClauses();
-			if(clauses.size() != 0 && !clauses.get(clauses.size() - 1).getName().equals("*")) {
-				HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>());
+			List<ImportPattern> patterns = getClauses();
+			if(patterns.size() != 0 && !patterns.get(patterns.size() - 1).getName().equals("*")) {
+				ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>());
 				ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
 			}
 		}
@@ -60,13 +61,13 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 		super(parent, toolkit, style, Constants.IMPORT_PACKAGE);
 	}
 	@Override
-	protected void doAddClauses(Collection<? extends HeaderClause> clauses, int index, boolean select) {
+	protected void doAddClauses(Collection<? extends ImportPattern> clauses, int index, boolean select) {
 		boolean appendStar = getClauses().isEmpty();
 		
 		super.doAddClauses(clauses, index, select);
 		
 		if(appendStar) {
-			HeaderClause starPattern = new HeaderClause("*", new HashMap<String, String>()); //$NON-NLS-1$
+			ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>()); //$NON-NLS-1$
 			super.doAddClauses(Arrays.asList(starPattern), -1, false);
 		}
 	}
@@ -76,11 +77,11 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 		
 		String noStarWarning = null;
 		String actionMessage = null;
-		List<HeaderClause> clauses = getClauses();
-		if(!clauses.isEmpty()) {
-			for(Iterator<HeaderClause> iter = clauses.iterator(); iter.hasNext();) {
-				HeaderClause clause = iter.next();
-				if(clause.getName().equals("*") && iter.hasNext()) {
+		List<ImportPattern> patterns = getClauses();
+		if(!patterns.isEmpty()) {
+			for(Iterator<ImportPattern> iter = patterns.iterator(); iter.hasNext();) {
+				ImportPattern pattern = iter.next();
+				if(pattern.getName().equals("*") && iter.hasNext()) {
 					noStarWarning = "The catch-all pattern \"*\" should be in the last position.";
 					actionMessage = "Move \"*\" pattern to the last position.";
 					break;
@@ -88,7 +89,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 			}
 			
 			if(noStarWarning == null) {
-				HeaderClause last = clauses.get(clauses.size() - 1);
+				ImportPattern last = patterns.get(patterns.size() - 1);
 				if(!last.getName().equals("*")) {
 					noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
 					actionMessage = "Add missing \"*\" pattern.";
@@ -100,5 +101,17 @@ public class ImportPatternsListPart extends PkgPatternsListPart {
 		} else {
 			msgs.removeMessage("_warning_no_star");
 		}
+	}
+	@Override
+	protected ImportPattern newHeaderClause(String text) {
+		return new ImportPattern(text, new HashMap<String, String>());
+	}
+	@Override
+	protected Collection<ImportPattern> loadFromModel(BndEditModel model) {
+		return model.getImportPatterns();
+	}
+	@Override
+	protected void saveToModel(BndEditModel model, Collection<? extends ImportPattern> clauses) {
+		model.setImportPatterns(clauses);
 	}
 }

@@ -31,4 +31,9 @@ public class ExportedPackage extends HeaderClause {
 	public String getVersionString() {
 		return attribs.get(Constants.VERSION_ATTRIBUTE);
 	}
+	
+	@Override
+	public ExportedPackage clone() {
+		return new ExportedPackage(this.name, this.attribs);
+	}
 }

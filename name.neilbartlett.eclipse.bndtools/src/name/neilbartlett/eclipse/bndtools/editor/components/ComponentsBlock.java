@@ -48,4 +48,8 @@ public class ComponentsBlock extends MasterDetailsBlock {
 		detailsPart.registerPage(ServiceComponent.class, new ComponentDetailsPage(compListPart));
 	}
 
+	void setSelectedComponent(ServiceComponent component) {
+		compListPart.setSelectedComponent(component);
+	}
+
 }

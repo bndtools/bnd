@@ -17,7 +17,7 @@ import java.util.List;
 
 import name.neilbartlett.eclipse.bndtools.editor.exports.ExportedPackageSelectionDialog.ExportVersionPolicy;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
-import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
+import name.neilbartlett.eclipse.bndtools.editor.model.ExportedPackage;
 import name.neilbartlett.eclipse.bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.IPackageFilter;
 import name.neilbartlett.eclipse.bndtools.internal.pkgselection.JavaSearchScopePackageLister;
@@ -38,7 +38,7 @@ import org.osgi.framework.Version;
 
 import aQute.lib.osgi.Constants;
 
-public class ExportPatternsListPart extends PkgPatternsListPart {
+public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
 
 	public static final Version DEFAULT_BUNDLE_VERSION = new Version(0, 0, 0);
 	
@@ -47,11 +47,11 @@ public class ExportPatternsListPart extends PkgPatternsListPart {
 	}
 	
 	@Override
-	protected Collection<HeaderClause> generateClauses() {
+	protected Collection<ExportedPackage> generateClauses() {
 		return selectPackagesToAdd();
 	}
-	protected List<HeaderClause> selectPackagesToAdd() {
-		List<HeaderClause> added = null;
+	protected List<ExportedPackage> selectPackagesToAdd() {
+		List<ExportedPackage> added = null;
 		
 		final IPackageFilter filter = new IPackageFilter() {
 			public boolean select(String packageName) {
@@ -80,7 +80,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart {
 		dialog.setMultipleSelection(true);
 		if(dialog.open() == Window.OK) {
 			Object[] results = dialog.getResult();
-			added = new LinkedList<HeaderClause>();
+			added = new LinkedList<ExportedPackage>();
 			boolean usedBundleVersionMacro = false;
 			
 			// Get the version string
@@ -96,7 +96,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart {
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
-				HeaderClause newPackage = new HeaderClause(newPackageName, new HashMap<String, String>());
+				ExportedPackage newPackage = new ExportedPackage(newPackageName, new HashMap<String, String>());
 				newPackage.getAttribs().put(org.osgi.framework.Constants.VERSION_ATTRIBUTE, version);
 				added.add(newPackage);
 			}
@@ -111,5 +111,17 @@ public class ExportPatternsListPart extends PkgPatternsListPart {
 			}
 		}
 		return added;
+	}
+	@Override
+	protected ExportedPackage newHeaderClause(String text) {
+		return new ExportedPackage(text, new HashMap<String, String>());
+	}
+	@Override
+	protected Collection<ExportedPackage> loadFromModel(BndEditModel model) {
+		return model.getExportedPackages();
+	}
+	@Override
+	protected void saveToModel(BndEditModel model, Collection<? extends ExportedPackage> clauses) {
+		model.setExportedPackages(clauses);
 	}
 }

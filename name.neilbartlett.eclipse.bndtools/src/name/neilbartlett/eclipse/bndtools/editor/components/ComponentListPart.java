@@ -75,7 +75,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Constants;
 
 public class ComponentListPart extends SectionPart implements PropertyChangeListener {
@@ -101,6 +100,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		
 		table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
+		viewer.setUseHashlookup(true);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new ServiceComponentLabelProvider());
 		
@@ -378,5 +378,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 			markDirty();
 			return true;
 		}
+	}
+
+	void setSelectedComponent(ServiceComponent component) {
+		viewer.setSelection(new StructuredSelection(component));
 	}
 }
