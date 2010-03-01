@@ -65,7 +65,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	public void setPropertiesMap(Map<String, String> properties) {
 		List<String> strings = new ArrayList<String>(properties.size());
 		for (Entry<String,String> entry : properties.entrySet()) {
-			String line = new StringBuilder().append(entry.getKey()).append("'='").append(entry.getValue()).toString();
+			String line = new StringBuilder().append(entry.getKey()).append("=").append(entry.getValue()).toString();
 			strings.add(line);
 		}
 		setListAttrib(COMPONENT_PROPERTIES, strings);

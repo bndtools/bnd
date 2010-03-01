@@ -84,6 +84,9 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 			
 				// Quote commas in the value
 				value = value.replaceAll(",", "','");
+				// Quote equals in the value
+				value = value.replaceAll("=", "'='");
+				
 				buffer.append(name).append('=').append(value);
 			}
 		}

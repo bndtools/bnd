@@ -350,7 +350,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			properties.remove(item);
 			viewerProperties.remove(item);
 		}
-		markDirty(ServiceComponent.COMPONENT_PROVIDE);
+		markDirty(ServiceComponent.COMPONENT_PROPERTIES);
 	}
 	void fillProvideSection(FormToolkit toolkit, Section section) {
 		// Create controls
