@@ -1,8 +1,9 @@
 package name.neilbartlett.eclipse.bndtools.classpath;
 
+import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 
-public class BundleDependency {
+public class BundleDependency implements Comparable<BundleDependency> {
 	private final VersionRange versionRange;
 	private final String symbolicName;
 
@@ -56,8 +57,17 @@ public class BundleDependency {
 			return false;
 		return true;
 	}
-	
-	
-	
 
+	public int compareTo(BundleDependency other) {
+		int diff = this.getSymbolicName().compareTo(other.getSymbolicName());
+		if(diff == 0) {
+			Version version1 = this.getVersionRange().getLow();
+			if(version1 == null) version1 = new Version(0);
+			Version version2 = other.getVersionRange().getLow();
+			if(version2 == null) version2 = new Version(0);
+			
+			diff = version1.compareTo(version2);
+		}
+		return diff;
+	}
 }

@@ -74,15 +74,16 @@ public class BndProjectProperties {
 	public void setBundleDependencies(List<? extends BundleDependency> dependencies) {
 		StringBuilder builder = new StringBuilder();
 		if(dependencies != null) {
-			boolean first = true;
-			for (BundleDependency dependency : dependencies) {
-				if(!first) builder.append(',');
+			for(Iterator<? extends  BundleDependency> iter = dependencies.iterator(); iter.hasNext(); ) {
+				BundleDependency dependency = iter.next();
 				builder.append(dependency.getSymbolicName());
 				
 				VersionRange versionRange = dependency.getVersionRange();
 				if(versionRange != null && !versionRange.toString().equals("0.0.0")) {
 					builder.append(';').append(Constants.VERSION_ATTRIBUTE).append("=\"").append(versionRange.toString()).append('"');
 				}
+				if(iter.hasNext())
+					builder.append(',');
 			}
 		}
 		properties.setProperty(BUNDLE_IMPORTS, builder.toString());

@@ -4,7 +4,17 @@ import org.eclipse.core.runtime.IPath;
 
 import aQute.libg.version.Version;
 
-public class ExportedBundle {
+/**
+ * <p>A bundle exported by a project.</p>
+ * 
+ * <p>This class implements the {@link Comparable} interface. Instances are
+ * compared first on the lexical ordering of their symbolic names, and if these
+ * are equal then on their version.</p>
+ * 
+ * @author Neil Bartlett
+ * 
+ */
+public class ExportedBundle implements Comparable<ExportedBundle> {
 	
 	private final IPath path;
 	private final String symbolicName;
@@ -33,5 +43,17 @@ public class ExportedBundle {
 	public String toString() {
 		return "ExportedBundle [symbolicName=" + symbolicName + ", version="
 				+ version + ", path=" + path + "]";
+	}
+	public int compareTo(ExportedBundle other) {
+		int diff = this.getSymbolicName().compareTo(other.getSymbolicName());
+		if(diff == 0) {
+			Version version1 = this.getVersion();
+			if(version1 == null) version1 = new Version(0);
+			Version version2 = other.getVersion();
+			if(version2 == null) version2 = new Version(0);
+			
+			diff = version1.compareTo(version2);
+		}
+		return diff;
 	}
 }
