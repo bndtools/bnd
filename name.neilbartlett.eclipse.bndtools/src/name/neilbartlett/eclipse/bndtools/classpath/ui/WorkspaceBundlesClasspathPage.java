@@ -1,12 +1,16 @@
 package name.neilbartlett.eclipse.bndtools.classpath.ui;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import name.neilbartlett.eclipse.bndtools.UIConstants;
 import name.neilbartlett.eclipse.bndtools.classpath.BundleDependency;
 import name.neilbartlett.eclipse.bndtools.classpath.ExportedBundle;
 import name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializer;
+import name.neilbartlett.eclipse.bndtools.project.BndProjectProperties;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
@@ -40,6 +44,7 @@ public class WorkspaceBundlesClasspathPage extends WizardPage implements IClassp
 	private TableViewer viewer;
 	
 	private IJavaProject project;
+	private BndProjectProperties projectProperties;
 	private List<BundleDependency> dependencies = null;
 	private Map<BundleDependency, ExportedBundle> bindings;
 
@@ -55,23 +60,25 @@ public class WorkspaceBundlesClasspathPage extends WizardPage implements IClassp
 		return null;
 	}
 	public void setSelection(IClasspathEntry containerEntry) {
-		/*
-		if(containerEntry == null) {
-			dependencies = null;
-			bindings = null;
-		} else {
-			IPath containerPath = containerEntry.getPath();
-			dependencies = WorkspaceRepositoryClasspathContainerInitializer.parseBundleDependencies(containerPath);
-			bindings = WorkspaceRepositoryClasspathContainerInitializer.getInstance().getBindingsForProject(project.getProject());
-		}
-		
 		if(table != null && !table.isDisposed()) {
 			viewer.setInput(dependencies);
 		}
-		*/
 	}
 	public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
 		this.project = project;
+		
+		projectProperties = new BndProjectProperties(project.getProject());
+		try {
+			projectProperties.load();
+			dependencies = projectProperties.getBundleDependencies();
+			bindings = WorkspaceRepositoryClasspathContainerInitializer.getInstance().getBindingsForProject(project.getProject());
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	public void createControl(Composite parent) {
 		setTitle("Imported Workspace Bundles");
@@ -155,6 +162,17 @@ public class WorkspaceBundlesClasspathPage extends WizardPage implements IClassp
 		
 		dependencies.removeAll(toRemove);
 		viewer.remove(toRemove.toArray());
+		
+		projectProperties.setBundleDependencies(dependencies);
+		try {
+			projectProperties.save();
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	class BundleDependencyLabelProvider extends StyledCellLabelProvider {
 		@Override
@@ -163,20 +181,16 @@ public class WorkspaceBundlesClasspathPage extends WizardPage implements IClassp
 			ExportedBundle bundle = bindings.get(dependency);
 			
 			if(cell.getColumnIndex() == 0) {
-				if(bundle != null) {
-					StyledString styledString = new StyledString(dependency.getSymbolicName());
-					styledString.append(" " + dependency.getVersionRange().toString(), StyledString.COUNTER_STYLER);
-					cell.setText(styledString.getString());
-					cell.setStyleRanges(styledString.getStyleRanges());
-				} else {
-					StyledString styledString = new StyledString(dependency.getSymbolicName(), StyledString.QUALIFIER_STYLER);
-					styledString.append(" " + dependency.getVersionRange().toString(), StyledString.QUALIFIER_STYLER);
-					cell.setText(styledString.getString());
-					cell.setStyleRanges(styledString.getStyleRanges());
-				}
+				StyledString styledString = new StyledString(dependency.getSymbolicName());
+				styledString.append("; " + dependency.getVersionRange().toString(), StyledString.COUNTER_STYLER);
+				cell.setText(styledString.getString());
+				cell.setStyleRanges(styledString.getStyleRanges());
 			} else if(cell.getColumnIndex() == 1){
 				if(bundle != null) {
-					StyledString styledString = new StyledString(bundle.getPath().makeRelative().toString(), StyledString.DECORATIONS_STYLER);
+					String boundPath = bundle.getPath().makeRelative().toString();
+					cell.setText(boundPath);
+				} else {
+					StyledString styledString = new StyledString("No matching bundle found", UIConstants.ERROR_STYLER);
 					cell.setText(styledString.getString());
 					cell.setStyleRanges(styledString.getStyleRanges());
 				}

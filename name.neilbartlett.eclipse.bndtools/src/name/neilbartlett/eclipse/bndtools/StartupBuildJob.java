@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.JavaCore;
 
 public class StartupBuildJob extends Job {
 
@@ -24,6 +25,8 @@ public class StartupBuildJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
+		SubMonitor progress = SubMonitor.convert(monitor);
+		
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		final IProject[] projects = workspace.getRoot().getProjects();
 
@@ -39,7 +42,11 @@ public class StartupBuildJob extends Job {
 		};
 		ISchedulingRule rule = workspace.getRuleFactory().buildRule();
 		try {
-			workspace.run(operation, rule, 0, monitor);
+			System.out.println("--> Initialising JavaCore before startup build job...");
+			JavaCore.initializeAfterLoad(progress.newChild(1));
+			
+			System.out.println("--> Beginning startup build job");
+			workspace.run(operation, rule, 0, progress.newChild(1));
 			return Status.OK_STATUS;
 		} catch (CoreException e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building Bnd projects.", e);

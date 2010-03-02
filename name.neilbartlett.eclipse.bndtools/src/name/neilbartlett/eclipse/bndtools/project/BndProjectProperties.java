@@ -30,7 +30,8 @@ import aQute.libg.version.VersionRange;
 public class BndProjectProperties {
 	
 	public static final String BND_PROPERTIES_FILE = "bnd.properties";
-	public static final String BUNDLE_EXPORT_DIRS = "bundle.export.dirs";
+	
+	public static final String BUNDLE_EXPORT_DIRS = "export.dirs";
 	public static final String BUNDLE_IMPORTS = "import.bundles";
 	
 	private final Properties properties = new Properties();
@@ -69,6 +70,22 @@ public class BndProjectProperties {
 			}
 		}
 		return dependencies;
+	}
+	public void setBundleDependencies(List<? extends BundleDependency> dependencies) {
+		StringBuilder builder = new StringBuilder();
+		if(dependencies != null) {
+			boolean first = true;
+			for (BundleDependency dependency : dependencies) {
+				if(!first) builder.append(',');
+				builder.append(dependency.getSymbolicName());
+				
+				VersionRange versionRange = dependency.getVersionRange();
+				if(versionRange != null && !versionRange.toString().equals("0.0.0")) {
+					builder.append(';').append(Constants.VERSION_ATTRIBUTE).append("=\"").append(versionRange.toString()).append('"');
+				}
+			}
+		}
+		properties.setProperty(BUNDLE_IMPORTS, builder.toString());
 	}
 	public void load() throws CoreException, IOException {
 		properties.clear();

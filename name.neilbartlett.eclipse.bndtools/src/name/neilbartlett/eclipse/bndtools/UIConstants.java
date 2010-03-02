@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.TextStyle;
 public class UIConstants {
 	public static final char[] AUTO_ACTIVATION_CLASSNAME = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._".toCharArray(); //$NON-NLS-1$
 	public static final Styler ITALIC_QUALIFIER_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.QUALIFIER_COLOR, null);
+	public static final Styler ERROR_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.ERROR_COLOR, null);
 
 	private static class ItalicStyler extends Styler {
 		private final String fontName;

@@ -130,10 +130,10 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 						}
 					}
 				}
-				// Take the highest-version available export
+				// Take the lowest-version available export
 				if(!matches.isEmpty()) {
-					Version highestVersion = matches.lastKey();
-					ExportedBundle bestExport = matches.get(highestVersion);
+					Version lowestVersion = matches.firstKey();
+					ExportedBundle bestExport = matches.get(lowestVersion);
 					
 					bindings.put(dependency, bestExport);
 				} else {
@@ -237,7 +237,10 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 		processDeletedJarFiles(project, deletedJarFiles, affectedProjects);
 		processChangedBundles(project, changedBundles, affectedProjects);
 		
-		return updateClasspathContainers(affectedProjects, monitor);
+		if(!affectedProjects.isEmpty())
+			return updateClasspathContainers(affectedProjects, monitor);
+		
+		return Status.OK_STATUS;
 	}
 	
 	/**
@@ -260,8 +263,10 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 		removeAllExports(project, affectedProjects);
 		processChangedBundles(project, bundles, affectedProjects);
 		
-		return updateClasspathContainers(affectedProjects, monitor);
+		if(!affectedProjects.isEmpty())
+			return updateClasspathContainers(affectedProjects, monitor);
 		
+		return Status.OK_STATUS;
 	}
 
 	// Fix the classpath containers for the affected projects
@@ -374,9 +379,9 @@ public class WorkspaceRepositoryClasspathContainerInitializer extends
 			WorkspaceRepositoryClasspathContainer container = projectEntry.getValue();
 			for (BundleDependency dependency : container.getDependencies()) {
 				if(dependency.getSymbolicName().equals(bundle.getSymbolicName()) && dependency.getVersionRange().includes(bundle.getVersion())) {
-					// Interesting if not already bound to an equal or higher version
+					// Interesting if not already bound to an equal or lower version
 					ExportedBundle boundExport = container.getBinding(dependency);
-					if(boundExport == null || boundExport.getVersion().compareTo(bundle.getVersion()) <= 0) {
+					if(boundExport == null || boundExport.getVersion().compareTo(bundle.getVersion()) >= 0) {
 						affectedProjects.add(projectName);
 						break;
 					}
