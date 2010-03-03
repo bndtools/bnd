@@ -11,6 +11,7 @@
 package name.neilbartlett.eclipse.bndtools.views.impexp;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -18,15 +19,15 @@ import java.util.Iterator;
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.HeaderClause;
 import name.neilbartlett.eclipse.bndtools.utils.PartAdapter;
+import name.neilbartlett.eclipse.bndtools.utils.Predicate;
 import name.neilbartlett.eclipse.bndtools.utils.SWTConcurrencyUtil;
+import name.neilbartlett.eclipse.bndtools.utils.SelectionUtils;
 import name.neilbartlett.eclipse.bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -78,7 +79,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	private TreeViewer viewer;
 	private ViewerFilter hideSelfImportsFilter;
 	
-	private IFile selectedFile;
+	private IFile[] selectedFiles;
 	private Job analysisJob = null;
 	
 	private IPartListener partAdapter = new PartAdapter() {
@@ -87,7 +88,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 				IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
 				IFile file = ResourceUtil.getFile(editorInput);
 				if(file != null && file.getName().endsWith(".bnd")) {
-					selectedFile = file;
+					selectedFiles = new IFile[] { file };
 					executeAnalysis();
 				}
 			}
@@ -158,17 +159,28 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 				for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
 					Object item = iter.next();
 					if(item instanceof ImportUsedByClass) {
-						String className = ((ImportUsedByClass) item).clazz.getFQN();
-						if(selectedFile != null) {
-							IJavaProject javaProject = JavaCore.create(selectedFile.getProject());
-							try {
-								IType type = javaProject.findType(className);
-								JavaUI.openInEditor(type, true, true);
-							} catch (JavaModelException e) {
-								ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
-							} catch (PartInitException e) {
-								ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
+						ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
+						String className = importUsedBy.clazz.getFQN();
+						IType type = null;
+						if(selectedFiles != null) {
+							for (IFile selectedFile : selectedFiles) {
+								IJavaProject javaProject = JavaCore.create(selectedFile.getProject());
+								try {
+									type = javaProject.findType(className);
+									if(type != null)
+										break;
+								} catch (JavaModelException e) {
+									ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+								}
 							}
+						}
+						try {
+							if(type != null)
+								JavaUI.openInEditor(type, true, true);
+						} catch (PartInitException e) {
+							ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
+						} catch (JavaModelException e) {
+							ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
 						}
 					}
 				}
@@ -218,28 +230,36 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		super.dispose();
 	};
 	
-	public void setInput(IFile sourceFile, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
-		selectedFile = sourceFile;
+	public void setInput(IFile[] sourceFiles, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
+		selectedFiles = sourceFiles;
 		if(tree != null && !tree.isDisposed()) {
 			viewer.setInput(new ImportsAndExports(imports, exports));
 			
 			String label;
-			if(sourceFile != null)
-				label = sourceFile.getFullPath().toString();
-			else
+			if(sourceFiles != null) {
+				StringBuilder builder = new StringBuilder();
+				for(int i = 0; i < sourceFiles.length; i++) {
+					if(i > 0) builder.append(", ");
+					builder.append(sourceFiles[i].getFullPath().toString());
+				}
+				label = builder.toString();
+			} else {
 				label = "<no input>";
+			}
 			setContentDescription(label);
 		}
 	}
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		if(selection instanceof IStructuredSelection) {
-			IFile file = getFileSelection((IStructuredSelection) selection);
-			if(file != null && (file.getName().endsWith(".bnd") || file.getName().endsWith(".jar"))) {
-				boolean changed = !file.equals(this.selectedFile);
-				this.selectedFile = file;
-				
-				if(changed)
-					executeAnalysis();
+			Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
+				public boolean select(IFile item) {
+					return item.getName().endsWith(".bnd") || item.getName().endsWith(".jar");
+				}
+			});
+			IFile[] files = fileList.toArray(new IFile[fileList.size()]);
+			if(!Arrays.equals(files, selectedFiles)) {
+				this.selectedFiles = files;
+				executeAnalysis();
 			}
 		}
 	}
@@ -247,8 +267,8 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		if(analysisJob != null) {
 			analysisJob.cancel();
 		}
-		if(selectedFile != null && selectedFile.exists()) {
-			analysisJob = new AnalyseImportsJob("importExportAnalysis", selectedFile, getSite().getPage());
+		if(selectedFiles != null) {
+			analysisJob = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
 			analysisJob.setSystem(true);
 			analysisJob.schedule(500);
 			analysisJob.addJobChangeListener(new JobChangeAdapter() {
@@ -265,22 +285,13 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			});
 		}
 	}
-	IFile getFileSelection(IStructuredSelection selection) {
-		Object element = selection.getFirstElement();
-		if(element instanceof IFile) {
-			return (IFile) element;
-		}
-		
-		if(element instanceof IAdaptable) {
-			return (IFile) ((IAdaptable) element).getAdapter(IFile.class);
-		}
-		return null;
-	}
 	public void resourceChanged(IResourceChangeEvent event) {
-		if(selectedFile != null) {
-			IResourceDelta myDelta = event.getDelta().findMember(selectedFile.getFullPath());
-			if(myDelta != null) {
-				executeAnalysis();
+		if(selectedFiles != null) {
+			for (IFile file : selectedFiles) {
+				if(event.getDelta().findMember(file.getFullPath()) != null) {
+					executeAnalysis();
+					break;
+				}
 			}
 		}
 	}

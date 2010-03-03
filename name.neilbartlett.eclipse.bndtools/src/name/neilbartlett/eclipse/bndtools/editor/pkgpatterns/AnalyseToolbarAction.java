@@ -44,7 +44,7 @@ public class AnalyseToolbarAction extends Action {
 			workbenchPage.showView(ImportsExportsView.VIEW_ID);
 			FormEditor editor = formPage.getEditor();
 			if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
-				AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", file, workbenchPage);
+				AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file }, workbenchPage);
 				job.schedule();
 			}
 		} catch (PartInitException e) {
