@@ -334,6 +334,16 @@
             id="name.neilbartlett.eclipse.bndtools.bndProjectContribution"
             objectClass="org.eclipse.core.resources.IProject">
          <action
+               class="name.neilbartlett.eclipse.bndtools.classpath.ui.ManageImportsAction"
+               id="name.neilbartlett.eclipse.bndtools.manageImportsAction"
+               label="Manage Imported Bundles"
+               menubarPath="additions"
+               icon="icons/brick_edit.png"
+               enablesFor="1"
+               style="push"
+               >
+         </action>
+         <action
                class="name.neilbartlett.eclipse.bndtools.builder.ToggleNatureAction"
                enablesFor="1"
                icon="icons/bnd_nature_remove.png"
