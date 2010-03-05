@@ -111,7 +111,7 @@ public class LaunchShortcut implements ILaunchShortcut, ILaunchShortcut2 {
 		ILaunchManager mgr = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType configType = mgr.getLaunchConfigurationType(LaunchConfigurationDelegate.LAUNCH_CONFIG_TYPE);
 		
-		ILaunchConfigurationWorkingCopy wc = configType.newInstance(null, mgr.generateLaunchConfigurationName(project.getName()));
+		ILaunchConfigurationWorkingCopy wc = configType.newInstance(null, mgr.generateUniqueLaunchConfigurationNameFrom(project.getName()));
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName());
 		
 		return wc.doSave();
