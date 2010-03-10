@@ -28,16 +28,17 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 	
-	private final NewBndProjectWizardFrameworkPage frameworkPage;
+	private final NewJavaProjectWizardPageOne pageOne;
 
-	public NewBndProjectWizardPageTwo(NewJavaProjectWizardPageOne pageOne, NewBndProjectWizardFrameworkPage frameworkPage) {
+	public NewBndProjectWizardPageTwo(NewJavaProjectWizardPageOne pageOne) {
 		super(pageOne);
-		this.frameworkPage = frameworkPage;
+		this.pageOne = pageOne;
 	}
+	
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(!visible && getContainer().getCurrentPage() == frameworkPage) {
+		if(!visible && getContainer().getCurrentPage() == pageOne) {
 			removeProvisonalProject();
 		}
 	}

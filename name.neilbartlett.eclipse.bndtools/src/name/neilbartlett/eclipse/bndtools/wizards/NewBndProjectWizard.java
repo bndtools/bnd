@@ -16,22 +16,19 @@ import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
-	private final NewBndProjectWizardFrameworkPage frameworkPage;
 	private final NewJavaProjectWizardPageTwo pageTwo;
 
-	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardFrameworkPage frameworkPage, NewJavaProjectWizardPageTwo pageTwo) {
+	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
 		setWindowTitle("New Bnd OSGi Project");
 		
 		this.pageOne = pageOne;
-		this.frameworkPage = frameworkPage;
 		this.pageTwo = pageTwo;
 	}
 	
 	@Override
 	public void addPages() {
 		addPage(pageOne);
-		addPage(frameworkPage);
 		addPage(pageTwo);
 	}
 

@@ -14,20 +14,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializer;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	
-	private final NewBndProjectWizardFrameworkPage frameworkPage;
-
-	NewBndProjectWizardPageOne(NewBndProjectWizardFrameworkPage frameworkPage) {
-		this.frameworkPage = frameworkPage;
+	NewBndProjectWizardPageOne() {
 		setTitle("Create a Bnd OSGi Project");
 		setDescription("Create a Bnd OSGi Project in the workspace or an external location.");
 	}
@@ -38,15 +30,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		List<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.length + 2);
 		result.addAll(Arrays.asList(entries));
 		
-		// Add the framework
-		IClasspathEntry frameworkEntry = frameworkPage.getFrameworkClasspathEntry();
-		if(frameworkEntry != null) {
-			result.add(frameworkEntry);
-		}
-		
-		// Add the workspace bundle repository classpath container
-		IPath bundleRepoContainerPath = new Path(WorkspaceRepositoryClasspathContainerInitializer.CONTAINER_ID);
-		result.add(JavaCore.newContainerEntry(bundleRepoContainerPath, false));
+		// TODO: add the bnd classpath container
 		
 		return (IClasspathEntry[]) result.toArray(new IClasspathEntry[result.size()]);
 	}

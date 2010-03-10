@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
-package name.neilbartlett.eclipse.bndtools.classpath;
+package name.neilbartlett.eclipse.bndtools.builder;
 
 import org.eclipse.core.runtime.IPath;
 
@@ -24,7 +24,7 @@ import aQute.libg.version.Version;
  * @author Neil Bartlett
  * 
  */
-public class ExportedBundle implements Comparable<ExportedBundle> {
+class ExportedBundle implements Comparable<ExportedBundle> {
 	
 	private final IPath path;
 	private final String symbolicName;

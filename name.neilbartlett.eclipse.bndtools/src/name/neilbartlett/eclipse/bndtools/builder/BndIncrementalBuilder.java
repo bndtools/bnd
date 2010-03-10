@@ -16,7 +16,6 @@ import java.util.jar.*;
 
 import name.neilbartlett.eclipse.bndtools.*;
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.classpath.*;
 import name.neilbartlett.eclipse.bndtools.utils.*;
 
 import org.eclipse.core.resources.*;
