@@ -12,26 +12,23 @@ package name.neilbartlett.eclipse.bndtools.views.impexp;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
-import name.neilbartlett.eclipse.bndtools.utils.BndFileClasspathCalculator;
 import name.neilbartlett.eclipse.bndtools.utils.CollectionUtils;
-import name.neilbartlett.eclipse.bndtools.utils.IClasspathCalculator;
-import name.neilbartlett.eclipse.bndtools.utils.ProjectClasspathCalculator;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,7 +39,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 
-import aQute.lib.osgi.Analyzer;
+import aQute.bnd.build.Project;
+import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Clazz;
 import aQute.lib.osgi.Constants;
@@ -71,14 +69,13 @@ public class AnalyseImportsJob extends Job {
 		Map<String, Set<String>> usedBy = new HashMap<String, Set<String>>();
 		for (IFile inputFile : files) {
 			try {
-				Builder builder = new Builder();
+				Builder builder;
 				if(inputFile.getName().endsWith(".bnd")) {
-					setupBuilderForBndFile(inputFile, builder);
+					builder = setupBuilderForBndFile(inputFile);
 				} else {
-					setupBuilderForJarFile(inputFile, builder);
+					builder = setupBuilderForJarFile(inputFile);
 				}
 				builderMap.put(inputFile, builder);
-				
 				mergeExports(exports, usedBy, builder);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -119,36 +116,32 @@ public class AnalyseImportsJob extends Job {
 		return Status.OK_STATUS;
 	}
 	
-	static void setupBuilderForJarFile(IFile file, Analyzer analyzer) throws IOException, CoreException {
+	static Builder setupBuilderForJarFile(IFile file) throws IOException, CoreException {
+		Builder builder = new Builder();
 		Jar jar = new Jar(file.getName(), file.getLocation().toFile());
-		analyzer.setJar(jar);
+		builder.setJar(jar);
 		try {
-			analyzer.analyze();
+			builder.analyze();
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
+		return builder;
 	}
 	
-	static void setupBuilderForBndFile(IFile file, Builder builder) throws IOException, CoreException {
-		// Read the properties
-		Properties props = new Properties();
-		InputStream content = file.getContents();
-		props.load(content);
-		builder.setProperties(props);
-		
-		// Set up the builder classpath
-		IClasspathCalculator classpathCalculator;
-		String classpathStr = builder.getProperty(Constants.CLASSPATH);
-		if(classpathStr != null) {
-			classpathCalculator = new BndFileClasspathCalculator(classpathStr, file.getWorkspace().getRoot(), file.getFullPath());
-		} else {
-			classpathCalculator = new ProjectClasspathCalculator(JavaCore.create(file.getProject()));
-		}
-		builder.setClasspath(classpathCalculator.classpathAsFiles().toArray(new File[0]));
+	static Builder setupBuilderForBndFile(IFile file) throws IOException, CoreException {
+		IProject project = file.getProject();
+		File iofile = file.getLocation().toFile();
 		
 		// Calculate the manifest
 		try {
+			Project bndProject = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
+			Builder builder = bndProject.getSubBuilder(iofile);
+			if(builder == null) {
+				builder = new Builder();
+				builder.setProperties(iofile);
+			}
 			builder.build();
+			return builder;
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
@@ -200,8 +193,13 @@ public class AnalyseImportsJob extends Job {
 			Map<String, String> importAttribs = entry.getValue();
 			
 			// Calculate the importing classes for this import
-			Collection<Clazz> classes = builder.getClasses("", "IMPORTING", pkgName);
 			Map<String, List<Clazz>> classMap = new HashMap<String, List<Clazz>>();
+			Collection<Clazz> classes = Collections.emptyList();
+			try {
+				classes = builder.getClasses("", "IMPORTING", pkgName);
+			} catch (Exception e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
+			}
 			for(Clazz clazz : classes) {
 				String fqn = clazz.getFQN();
 				int index = fqn.lastIndexOf('.');

@@ -71,89 +71,6 @@
       </initializer>
    </extension>
    <extension
-         point="name.neilbartlett.eclipse.bndtools.osgiFrameworks">
-      <framework
-            class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxFramework"
-            displayName="Eclipse Equinox"
-            icon="icons/equinox.gif"
-            id="equinox"
-            supportsAutoConfig="true">
-      </framework>
-      <framework
-            class="name.neilbartlett.eclipse.bndtools.frameworks.felix.FelixFramework"
-            displayName="Apache Felix"
-            icon="icons/felix.gif"
-            id="felix">
-      </framework>
-   </extension>
-   <extension
-         point="name.neilbartlett.eclipse.bndtools.osgiFrameworkBuildJobs">
-      <buildJob
-            class="name.neilbartlett.eclipse.bndtools.frameworks.equinox.EquinoxBuildJob"
-            frameworkId="equinox">
-      </buildJob>
-      <buildJob
-            class="name.neilbartlett.eclipse.bndtools.frameworks.felix.FelixBuildJob"
-            frameworkId="felix">
-      </buildJob>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui.FrameworksPreferencePage"
-            id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
-            name="OSGi Frameworks">
-      </page>
-      <page
-            category="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks"
-            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.ui.PreferredInstancesPreferencePage"
-            id="name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks.specLevels"
-            name="Preferred Frameworks">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.jdt.core.classpathContainerInitializer">
-      <classpathContainerInitializer
-            class="name.neilbartlett.eclipse.bndtools.classpath.FrameworkClasspathContainerInitializer"
-            id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER">
-      </classpathContainerInitializer>
-      <classpathContainerInitializer
-            class="name.neilbartlett.eclipse.bndtools.classpath.WorkspaceRepositoryClasspathContainerInitializerFactory"
-            id="name.neilbartlett.eclipse.bndtools.WORKSPACE_REPOSITORY">
-      </classpathContainerInitializer>
-   </extension>
-   <extension
-         point="org.eclipse.jdt.ui.classpathContainerPage">
-      <classpathContainerPage
-            class="name.neilbartlett.eclipse.bndtools.classpath.ui.FrameworkClasspathPage"
-            id="name.neilbartlett.eclipse.bndtools.FRAMEWORK_CONTAINER"
-            name="OSGi Framework">
-      </classpathContainerPage>
-      <classpathContainerPage
-            class="name.neilbartlett.eclipse.bndtools.classpath.ui.WorkspaceBundlesClasspathPage"
-            id="name.neilbartlett.eclipse.bndtools.WORKSPACE_REPOSITORY"
-            name="Workspace Bundles">
-      </classpathContainerPage>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            delegate="name.neilbartlett.eclipse.bndtools.launch.LaunchConfigurationDelegate"
-            id="name.neilbartlett.eclipse.bndtools.launchConfigurationType"
-            modes="run,debug,profile"
-            name="Bnd OSGi"
-            public="true">
-      </launchConfigurationType>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-      <launchConfigurationTypeImage
-            configTypeID="name.neilbartlett.eclipse.bndtools.launchConfigurationType"
-            icon="icons/bricks.png"
-            id="name.neilbartlett.eclipse.bndtools.launchConfigurationTypeImage">
-      </launchConfigurationTypeImage>
-   </extension>
-   <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             class="name.neilbartlett.eclipse.bndtools.launch.ui.LaunchTabGroup"
@@ -387,21 +304,6 @@
       </perspectiveExtension>
    </extension>
    <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            adaptable="true"
-            class="name.neilbartlett.eclipse.bndtools.project.ui.BndProjectPropertyPage"
-            icon="icons/bricks.png"
-            id="name.neilbartlett.eclipse.bndtools.projectPropertyPage"
-            name="Bnd OSGi Properties"
-            objectClass="org.eclipse.core.resources.IProject">
-         <filter
-               name="nature"
-               value="name.neilbartlett.eclipse.bndtools.bndnature">
-         </filter>
-      </page>
-   </extension>
-   <extension
          id="bnd_classpath_problem"
          name="Bnd Repository Resolution Problem"
          point="org.eclipse.core.resources.markers">
@@ -412,30 +314,165 @@
             value="false">
       </persistent>
    </extension>
-   <extension
-         point="org.eclipse.ui.decorators">
-      <decorator
-            adaptable="true"
-            class="name.neilbartlett.eclipse.bndtools.decorators.ExportedBundlesDecorator"
-            id="name.neilbartlett.eclipse.bndtools.decorators.ExportedBundlesDecorator"
-            label="Exported Bundles Decorator"
-            lightweight="true"
-            state="true">
-         <enablement>
-              <objectClass
-                    name="org.eclipse.core.resources.IFolder">
-              </objectClass>
-         </enablement>
-      </decorator>
+   
+   <!-- NEW STUFF -->
+   	   <extension
+       point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+          id="aQute.bnd.classpath.container"
+          class="aQute.bnd.classpath.BndContainerInitializer"/>
    </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchGroups">
-      <launchGroup
-            id="name.neilbartlett.eclipse.bndtools.launchRunGroup"
-            image="icons/bricks.png"
-            bannerImage="icons/bricks.png"
-            label="Run OSGi Framework"
-            mode="run">
-      </launchGroup>
+   <extension 
+       point="org.eclipse.jdt.ui.classpathContainerPage">
+      <classpathContainerPage
+          id="aQute.bnd.classpath.container"
+          name="bnd classpath"
+          class="aQute.bnd.classpath.BndContainerPage"/>
    </extension>
+   
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="aQute.bnd.junit.OSGiJUnitTabGroup"
+            description="Help!"
+            id="aQute.bnd.junit.OSGiJUnitTabGroup"
+            type="aQute.bnd.junit.launchconfig">
+         <launchMode
+               description="%jUnitTabGroup.description.debug"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+         <launchMode
+               description="%jUnitTabGroup.description.run"
+               mode="run">
+         </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="aQute.bnd.launch.LaunchTabGroup"
+            id="aQute.bnd.launch.tabgroup"
+            type="aQute.bnd.launch">
+      </launchConfigurationTabGroup>
+   </extension>
+   
+   	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+	    <launchConfigurationType
+           delegate="aQute.bnd.launch.LaunchDelegate"
+           id="aQute.bnd.launch"
+           modes="run, debug"
+           name="OSGi Run"
+           sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+           sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+	    </launchConfigurationType>	
+      <launchConfigurationType
+            delegate="aQute.bnd.junit.OSGiJUnitLauncherConfigurationDelegate"
+            delegateDescription="Launches the JUnit Tests in an OSGi Framework and injects a BundleContext"
+            delegateName="OSGi JUnit Tests"
+            id="aQute.bnd.junit.launchconfig"
+            migrationDelegate="org.eclipse.jdt.internal.junit.launcher.JUnitMigrationDelegate"
+            modes="run, debug"
+            name="OSGi JUnit Tests"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+	
+	
+	
+	
+	
+	
+	   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="OSGi JUnit"
+            icon="icons/test.gif"
+            class="aQute.bnd.junit.OSGiJUnitLaunchShortcut"
+            modes="run, debug"
+            id="org.eclipse.jdt.junit.junitShortcut">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+               	  <iterate>
+                     <adapt type="org.eclipse.jdt.core.IJavaElement">
+		                <test property="org.eclipse.jdt.core.isInJavaProject"/>
+		                <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test"/>
+		                <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true"/>
+		             </adapt>
+		          </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+         <configurationType
+               id="org.eclipse.jdt.junit.launchconfig">
+         </configurationType>
+         <description
+               description="Debug a JUnit Test in an OSGi Framework"
+               mode="debug">
+         </description>
+         <description
+               description="Run an OSGi JUnit Test in an OSGi framework"
+               mode="run">
+         </description>
+      </shortcut>
+      <shortcut
+            class="aQute.bnd.launch.Shortcut"
+            icon="icons/run.gif"
+            id="aQute.bnd.launch.shortcut"
+            label="OSGi Run"
+            modes="run, debug">
+         <perspective
+               id="org.eclipse.jdt.ui.JavaPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <adapt
+                           type="org.eclipse.jdt.core.IJavaElement">
+                        <test
+                              property="org.eclipse.jdt.core.isInJavaProject">
+                        </test>
+                        <test
+                              property="org.eclipse.jdt.core.hasTypeOnClasspath"
+                              value="junit.framework.Test">
+                        </test>
+                        <test
+                              forcePluginActivation="true"
+                              property="org.eclipse.jdt.junit.canLaunchAsJUnit">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   
+   
 </plugin>
