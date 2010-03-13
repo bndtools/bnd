@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Processor;
 
 
@@ -27,25 +28,29 @@ public class Plugin extends AbstractUIPlugin {
 	
 	public static final String PLUGIN_ID = "name.neilbartlett.eclipse.bndtools";
 	public static final String BND_EDITOR_ID = "name.neilbartlett.eclipse.bndtools.bndEditor";
-	public static final String EXTPOINT_OSGI_FRAMEWORKS = "osgiFrameworks";
-	public static final String EXTPOINT_OSGI_FRAMEWORK_BUILD_JOBS = "osgiFrameworkBuildJobs";
+	public static final String EXTPOINT_REPO_CONTRIB = "repositoryContributor";
 
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
 	
 	private static Plugin plugin;
 	private BundleContext bundleContext;
+	private Activator bndActivator;
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		this.bundleContext = context;
 		
-		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
-		buildJob.setSystem(false);
-		buildJob.schedule();
+		bndActivator = new Activator();
+		bndActivator.start(context);
+		
+//		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
+//		buildJob.setSystem(false);
+//		buildJob.schedule();
 	}
 
 	public void stop(BundleContext context) throws Exception {
+		bndActivator.stop(context);
 		this.bundleContext = null;
 		plugin = null;
 		super.stop(context);

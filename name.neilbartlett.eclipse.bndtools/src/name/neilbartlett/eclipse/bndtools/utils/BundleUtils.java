@@ -32,10 +32,12 @@ public class BundleUtils {
 				String name = bundle.getSymbolicName();
 				String versionStr = (String) bundle.getHeaders().get(Constants.BUNDLE_VERSION);
 				Version version = versionStr != null ? new Version(versionStr) : new Version();
-				if(symbolicName.equals(name)) {
-					if(matched == null || version.compareTo(matchedVersion) > 0) {
-						matched = bundle;
-						matchedVersion = version;
+				if(range == null || range.includes(version)) {
+					if(symbolicName.equals(name)) {
+						if(matched == null || version.compareTo(matchedVersion) > 0) {
+							matched = bundle;
+							matchedVersion = version;
+						}
 					}
 				}
 			} catch (Exception e) {

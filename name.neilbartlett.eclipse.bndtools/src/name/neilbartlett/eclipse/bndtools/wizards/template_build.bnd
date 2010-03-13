@@ -1,0 +1,25 @@
+# General Options
+-verbose:   true
+target-dir: generated
+target:     ${project}/${target-dir}
+build:      ${workspace}/cnf
+repo:       ${build}/repo
+p:          ${basename;${project}}
+
+# Java Compiler Options
+java:         java
+javac:        javac
+javac.source: 1.5
+javac.target: 1.5
+javac.debug:  on
+
+# Bnd Options
+-sources:       true
+-sourcepath:    ${project}/src 
+-plugin:        aQute.lib.deployer.FileRepo;location=${repo}
+-versionpolicy: "[${version;==;${@}},${version;+;${@}})"
+
+# Runtime Options and Variables
+junit:    com.springsource.junit;version=3.8;export="junit.framework;version=3.8"
+-runpath: org.eclipse.osgi;version=3.5.1,\
+          ${junit}

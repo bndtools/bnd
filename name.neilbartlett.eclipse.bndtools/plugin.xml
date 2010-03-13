@@ -11,8 +11,7 @@
  -->
 
 <plugin>
-   <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
-   <extension-point id="osgiFrameworkBuildJobs" name="OSGi Framework Build Jobs" schema="schema/osgiFrameworkBuildJobs.exsd"/>
+   <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -55,92 +54,6 @@
             id="name.neilbartlett.eclipse.bndtools.newBndEditor"
             name="Bnd Editor">
       </editor>
-      <editor
-            class="org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor"
-            default="false"
-            filenames="config.ini"
-            icon="icons/equinox.gif"
-            id="name.neilbartlett.eclipse.bndtools.equinoxConfigEditor"
-            name="Equinox Config Editor">
-      </editor>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="name.neilbartlett.eclipse.bndtools.prefs.frameworks.FrameworkPreferencesInitializer">
-      </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-      <launchConfigurationTabGroup
-            class="name.neilbartlett.eclipse.bndtools.launch.ui.LaunchTabGroup"
-            id="name.neilbartlett.eclipse.bndtools.launchConfigurationTabGroup"
-            type="name.neilbartlett.eclipse.bndtools.launchConfigurationType">
-         <launchMode
-               mode="run">
-         </launchMode>
-         <launchMode
-               mode="debug">
-         </launchMode>
-         <launchMode
-               mode="profile">
-         </launchMode>
-      </launchConfigurationTabGroup>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchShortcuts">
-      <shortcut
-            class="name.neilbartlett.eclipse.bndtools.launch.LaunchShortcut"
-            icon="icons/bricks.png"
-            id="name.neilbartlett.eclipse.bndtools.launchShortcut"
-            label="Bnd OSGi Launch"
-            modes="run,debug">
-         <configurationType
-               id="name.neilbartlett.eclipse.bndtools.launchConfigurationType">
-         </configurationType>
-         <contextualLaunch>
-            <enablement>
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate>
-                     <or>
-                        <test
-                              args="name.neilbartlett.eclipse.bndtools.bndnature"
-                              property="org.eclipse.jdt.launching.hasProjectNature">
-                        </test>
-                        <test
-                              property="org.eclipse.debug.ui.matchesPattern"
-                              value="*.bnd">
-                        </test>
-                     </or>
-                  </iterate>
-               </with>
-            </enablement>
-         </contextualLaunch>
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <or>
-                     <test
-                           args="name.neilbartlett.eclipse.bndtools.bndnature"
-                           property="org.eclipse.jdt.launching.hasProjectNature">
-                     </test>
-                     <test
-                           property="org.eclipse.debug.ui.matchesPattern"
-                           value="*.bnd">
-                     </test>
-                  </or>
-               </iterate>
-            </with>
-         </enablement>
-      </shortcut>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
@@ -251,16 +164,6 @@
             id="name.neilbartlett.eclipse.bndtools.bndProjectContribution"
             objectClass="org.eclipse.core.resources.IProject">
          <action
-               class="name.neilbartlett.eclipse.bndtools.classpath.ui.ManageImportsAction"
-               id="name.neilbartlett.eclipse.bndtools.manageImportsAction"
-               label="Manage Imported Bundles"
-               menubarPath="additions"
-               icon="icons/brick_edit.png"
-               enablesFor="1"
-               style="push"
-               >
-         </action>
-         <action
                class="name.neilbartlett.eclipse.bndtools.builder.ToggleNatureAction"
                enablesFor="1"
                icon="icons/bnd_nature_remove.png"
@@ -316,17 +219,18 @@
    </extension>
    
    <!-- NEW STUFF -->
-   	   <extension
+   <extension
        point="org.eclipse.jdt.core.classpathContainerInitializer">
       <classpathContainerInitializer
           id="aQute.bnd.classpath.container"
           class="aQute.bnd.classpath.BndContainerInitializer"/>
    </extension>
+   
    <extension 
        point="org.eclipse.jdt.ui.classpathContainerPage">
       <classpathContainerPage
           id="aQute.bnd.classpath.container"
-          name="bnd classpath"
+          name="%classpathContainer"
           class="aQute.bnd.classpath.BndContainerPage"/>
    </extension>
    
@@ -375,17 +279,11 @@
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
    </extension>
-	
-	
-	
-	
-	
-	
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             label="OSGi JUnit"
-            icon="icons/test.gif"
+            icon="icons/bricks_junit.png"
             class="aQute.bnd.junit.OSGiJUnitLaunchShortcut"
             modes="run, debug"
             id="org.eclipse.jdt.junit.junitShortcut">
@@ -403,6 +301,7 @@
                </with>
             </enablement>
          </contextualLaunch>
+         <!--
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
          </perspective>
@@ -415,6 +314,7 @@
          <perspective
                id="org.eclipse.debug.ui.DebugPerspective">
          </perspective>
+         -->
          <configurationType
                id="org.eclipse.jdt.junit.launchconfig">
          </configurationType>
@@ -429,10 +329,11 @@
       </shortcut>
       <shortcut
             class="aQute.bnd.launch.Shortcut"
-            icon="icons/run.gif"
+            icon="icons/bricks_run.png"
             id="aQute.bnd.launch.shortcut"
             label="OSGi Run"
             modes="run, debug">
+         <!--
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
          </perspective>
@@ -445,6 +346,7 @@
          <perspective
                id="org.eclipse.debug.ui.DebugPerspective">
          </perspective>
+         -->
          <contextualLaunch>
             <enablement>
                <with

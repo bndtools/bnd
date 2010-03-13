@@ -5,6 +5,7 @@ Bundle-SymbolicName: name.neilbartlett.eclipse.bndtools;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: name.neilbartlett.eclipse.bndtools.Plugin
 Bundle-Vendor: Neil Bartlett
+Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
@@ -27,6 +28,7 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.jdt.internal.ui.packageview,
  org.eclipse.jdt.internal.ui.propertiesfileeditor,
  org.eclipse.jdt.internal.ui.wizards,
+ org.eclipse.jdt.internal.ui.wizards.buildpaths,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.ui.text.java,
