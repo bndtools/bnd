@@ -16,6 +16,7 @@ import name.neilbartlett.eclipse.bndtools.editor.components.ComponentsPage;
 import name.neilbartlett.eclipse.bndtools.editor.exports.ExportPatternsPage;
 import name.neilbartlett.eclipse.bndtools.editor.imports.ImportPatternsPage;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
+import name.neilbartlett.eclipse.bndtools.editor.project.ProjectPage;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -31,16 +32,19 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import aQute.bnd.build.Project;
+
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 	
 	static final String OVERVIEW_PAGE = "__overview_page";
+	static final String PROJECT_PAGE = "__project_page";
 	static final String COMPONENTS_PAGE = "__components_page";
 	static final String EXPORTS_PAGE = "__exports_page";
 	static final String IMPORTS_PAGE = "__imports_page";
 	static final String SOURCE_PAGE = "__source_page";
 	
 	private final BndEditModel model = new BndEditModel();
-	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);;
+	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -72,6 +76,12 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		try {
 			OverviewFormPage detailsPage = new OverviewFormPage(this, model, OVERVIEW_PAGE, "Overview");
 			addPage(detailsPage);
+			
+			String inputName = getEditorInput().getName();
+			if(Project.BNDFILE.equals(inputName)) {
+				ProjectPage projectPage = new ProjectPage(this, model, PROJECT_PAGE, "Project");
+				addPage(projectPage);
+			}
 
 			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
 			addPage(componentsPage);
@@ -93,12 +103,20 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
 		sourcePage.init(site, input);
-		setPartName(input.getName());
+		
+		String name = input.getName();
+		if(Project.BNDFILE.equals(name)) {
+			IResource resource = ResourceUtil.getResource(input);
+			if(resource != null)
+				name = String.format("%s (%s)", resource.getProject().getName(), Project.BNDFILE);
+		}
+		setPartName(name);
 		
 		IDocumentProvider docProvider = sourcePage.getDocumentProvider();
 		IDocument document = docProvider.getDocument(input);
 		try {
 			model.loadFrom(document);
+			model.setProjectFile(Project.BNDFILE.equals(input.getName()));
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}

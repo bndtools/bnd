@@ -16,8 +16,9 @@ import org.eclipse.core.runtime.IExecutableExtensionFactory;
 public class NewBndProjectWizardFactory implements IExecutableExtensionFactory {
 	public Object create() throws CoreException {
 		NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
-		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne);
+		NewBndProjectWizardBundlesPage bundlesPage = new NewBndProjectWizardBundlesPage("bundleSelection");
+		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(bundlesPage, pageOne);
 		
-		return new NewBndProjectWizard(pageOne, pageTwo);
+		return new NewBndProjectWizard(pageOne, bundlesPage, pageTwo);
 	}
 }

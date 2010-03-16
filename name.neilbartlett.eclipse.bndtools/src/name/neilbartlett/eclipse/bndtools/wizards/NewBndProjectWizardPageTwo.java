@@ -58,19 +58,21 @@ import aQute.bnd.build.Workspace;
 @SuppressWarnings("restriction")
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 	
-	public NewBndProjectWizardPageTwo(NewJavaProjectWizardPageOne pageOne) {
+	private final NewBndProjectWizardBundlesPage bundlesPage;
+
+	public NewBndProjectWizardPageTwo(NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageOne pageOne) {
 		super(pageOne);
+		this.bundlesPage = bundlesPage;
 	}
 	
-	/* Need this if inserting an intermediate page between PageOne and PageTwo
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(!visible && getContainer().getCurrentPage() == frameworkPage) {
+		if(!visible && getContainer().getCurrentPage() == bundlesPage) {
 			removeProvisonalProject();
 		}
 	}
-	*/
+
 	@Override
 	public void configureJavaProject(IProgressMonitor monitor) throws CoreException,
 			InterruptedException {

@@ -34,7 +34,13 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		this.viewer = viewer;
 	}
 	public Object[] getElements(Object inputElement) {
-		return new String[] { BndEditor.OVERVIEW_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.EXPORTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+		Object[] result;
+		if(model.isProjectFile()) {
+			result = new String[] { BndEditor.OVERVIEW_PAGE, BndEditor.PROJECT_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.EXPORTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+		} else {
+			result = new String[] { BndEditor.OVERVIEW_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.EXPORTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+		}
+		return result;
 	}
 	public void dispose() {
 		if(model != null)

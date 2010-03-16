@@ -59,7 +59,8 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.SOURCES,
 		aQute.lib.osgi.Constants.VERSIONPOLICY,
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
-		aQute.lib.osgi.Constants.CLASSPATH
+		aQute.lib.osgi.Constants.CLASSPATH,
+		aQute.lib.osgi.Constants.BUILDPATH
 	};
 	
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -70,6 +71,7 @@ public class BndEditModel {
 	
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
+	private boolean projectFile;
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 	
@@ -326,7 +328,33 @@ public class BndEditModel {
 		List<ImportPattern> oldValue = getImportPatterns();
 		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
 	}
+	
+	public List<VersionedClause> getBuildPath() {
+		return doGetClauseList(aQute.lib.osgi.Constants.BUILDPATH, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
+			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+				return new VersionedClause(input.getKey(), input.getValue());
+			}
+		});
+	}
+	
+	public void setBuildPath(Collection<? extends VersionedClause> paths) {
+		List<VersionedClause> oldValue = getBuildPath();
+		doSetClauseList(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths);
+	}
+	
+	public List<VersionedClause> getRunBundles() {
+		return doGetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
+			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+				return new VersionedClause(input.getKey(), input.getValue());
+			}
+		});
+	}
 
+	public void setRunBundles(Collection<? extends VersionedClause> paths) {
+		List<VersionedClause> oldValue = getBuildPath();
+		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
+	}
+	
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();
 		if(privatePackages != null) {
@@ -437,6 +465,14 @@ public class BndEditModel {
 			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
 	}
+	
+	public void setProjectFile(boolean projectFile) {
+		this.projectFile = projectFile;
+	}
+	public boolean isProjectFile() {
+		return this.projectFile;
+	}
+
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propChangeSupport.addPropertyChangeListener(listener);
 	}
@@ -454,8 +490,4 @@ public class BndEditModel {
 			PropertyChangeListener listener) {
 		propChangeSupport.removePropertyChangeListener(propertyName, listener);
 	}
-
-	// END: PropertyChangeSupport delegate methods
-	
 }
-

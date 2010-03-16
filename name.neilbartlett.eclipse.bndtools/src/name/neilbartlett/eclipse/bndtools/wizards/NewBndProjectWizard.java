@@ -35,18 +35,21 @@ class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
 	private final NewJavaProjectWizardPageTwo pageTwo;
+	private final NewBndProjectWizardBundlesPage bundlesPage;
 
-	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
+	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
 		setWindowTitle("New Bnd OSGi Project");
 		
 		this.pageOne = pageOne;
+		this.bundlesPage = bundlesPage;
 		this.pageTwo = pageTwo;
 	}
 	
 	@Override
 	public void addPages() {
 		addPage(pageOne);
+		addPage(bundlesPage);
 		addPage(pageTwo);
 	}
 	
@@ -85,5 +88,4 @@ class NewBndProjectWizard extends JavaProjectWizard {
 		}
 		return result;
 	}
-
 }

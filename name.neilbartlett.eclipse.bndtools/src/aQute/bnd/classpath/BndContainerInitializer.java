@@ -56,14 +56,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         // do this with a static method :-(
         Project model = central.getModel(project);
         if (model == null)
-            throw new CoreException(
-                    new Status(IStatus.ERROR, ID.toString(),
-                            "Can not create model, likely the project does not contain a bnd.bnd file"));
+            throw new CoreException(new Status(IStatus.ERROR, ID.toString(), "Can not create model, likely the project does not contain a bnd.bnd file"));
 
         // Update the Java Model so the changes become visible.
         // Notice the unreferenced object.
-        requestClasspathContainerUpdate(containerPath, project,
-                new BndContainer(model));
+        requestClasspathContainerUpdate(containerPath, project, new BndContainer(model, project));
     }
 
     /**
@@ -92,8 +89,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         if (model == null || project == null) {
             System.out.println("Help! No IJavaProject for " + model);
         } else
-            requestClasspathContainerUpdate(ID, project,
-                    new BndContainer(model));
+            requestClasspathContainerUpdate(ID, project, new BndContainer(model, project));
     }
 
     public void workspaceChanged(Workspace ws) throws Exception {

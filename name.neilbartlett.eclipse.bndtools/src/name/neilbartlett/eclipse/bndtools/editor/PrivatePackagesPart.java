@@ -48,13 +48,16 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -71,8 +74,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	
 	private Table table;
 	private TableViewer viewer;
-	private Button btnAdd;
-	private Button btnRemove;
 
 	public PrivatePackagesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -82,6 +83,18 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Private Packages");
 		section.setDescription("The listed packages will be included in the bundle but not exported.");
+		
+		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+		section.setTextClient(toolbar);
+		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
+		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+		addItem.setToolTipText("Add Bundle");
+		
+		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+		removeItem.setToolTipText("Remove");
+		removeItem.setEnabled(false);
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -99,14 +112,10 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PrivatePackageTableLabelProvider());
 		
-		btnAdd = toolkit.createButton(composite, "Add", SWT.PUSH);
-		btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
-		btnRemove.setEnabled(false);
-		
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				btnRemove.setEnabled(!viewer.getSelection().isEmpty());
+				removeItem.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
 		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { TextTransfer.getInstance(), ResourceTransfer.getInstance() }, new PackageDropAdapter<String>(viewer) {
@@ -132,13 +141,13 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				return 0;
 			}
 		});
-		btnAdd.addSelectionListener(new SelectionAdapter() {
+		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doAddPackages();
 			}
 		});
-		btnRemove.addSelectionListener(new SelectionAdapter() {
+		removeItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doRemovePackages();
@@ -146,18 +155,15 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		});
 		
 		// Layout
-		GridLayout layout = new GridLayout(2, false);
+		GridLayout layout = new GridLayout(1, false);
 		composite.setLayout(layout);
 		
 		GridData gd;
 		
-		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd.widthHint = 300;
 		gd.heightHint = 180;
 		table.setLayoutData(gd);
-		
-		btnAdd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		btnRemove.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 	
 	private void doAddPackages() {
@@ -176,14 +182,14 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		// Prepare the package lister from the Java project
 		IJavaProject javaProject = getJavaProject();
 		if(javaProject == null) {
-			MessageDialog.openError(btnAdd.getShell(), "Error", "Cannot add packages: unable to find a Java project associated with the editor input.");
+			MessageDialog.openError(getSection().getShell(), "Error", "Cannot add packages: unable to find a Java project associated with the editor input.");
 			return;
 		}
 		IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 		JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 		
 		// Create and open the dialog
-		PackageSelectionDialog dialog =  new PackageSelectionDialog(btnAdd.getShell(), packageLister, filter, "Select new packages to include in the bundle.");
+		PackageSelectionDialog dialog =  new PackageSelectionDialog(getSection().getShell(), packageLister, filter, "Select new packages to include in the bundle.");
 		dialog.setSourceOnly(true);
 		dialog.setMultipleSelection(true);
 		if(dialog.open() == Window.OK) {

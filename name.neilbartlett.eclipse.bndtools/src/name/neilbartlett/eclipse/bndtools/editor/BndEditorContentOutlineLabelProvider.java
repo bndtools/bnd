@@ -34,6 +34,8 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 			// Top-level placeholder
 			if(BndEditor.OVERVIEW_PAGE.equals(element)) {
 				cell.setText("Overview");
+			} else if(BndEditor.PROJECT_PAGE.equals(element)) {
+				cell.setText("Project");
 			} else if(BndEditor.COMPONENTS_PAGE.equals(element)) {
 				cell.setText("Components");
 			} else if(BndEditor.EXPORTS_PAGE.equals(element)) {
