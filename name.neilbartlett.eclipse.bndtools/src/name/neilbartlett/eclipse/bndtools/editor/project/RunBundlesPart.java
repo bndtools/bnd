@@ -18,7 +18,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Run Bundles");
-//		section.setDescription("The selected bundles will be added to the runtime framework.");
+		section.setDescription("The selected bundles will be added to the runtime framework.");
 		super.createSection(section, toolkit);
 	}
 	@Override

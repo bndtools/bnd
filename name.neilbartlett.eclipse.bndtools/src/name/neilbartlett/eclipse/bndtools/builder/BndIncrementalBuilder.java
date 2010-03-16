@@ -49,8 +49,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 																			+ ".bnd_classpath_problem";
 
 	private static final String		BND_SUFFIX						= ".bnd";
-	private static final String		CLASS_SUFFIX					= ".class";
-	private static final String		JAR_SUFFIX						= ".jar";
 	
 	private static final long NEVER = -1;
 	

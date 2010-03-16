@@ -12,17 +12,11 @@ package name.neilbartlett.eclipse.bndtools.editor.components;
 
 import java.util.Map;
 
-import name.neilbartlett.eclipse.bndtools.Plugin;
-
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class PropertiesTableLabelProvider extends StyledCellLabelProvider {
-	
-	private final Image propImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/textfield.png").createImage();
 	
 	@Override
 	public void update(ViewerCell cell) {
@@ -33,16 +27,9 @@ public class PropertiesTableLabelProvider extends StyledCellLabelProvider {
 		String key = (String) cell.getElement();
 		
 		if(cell.getColumnIndex() == 0) {
-			cell.setImage(propImg);
 			cell.setText(key);
 		} else if(cell.getColumnIndex() == 1) {
 			cell.setText(map.get(key));
 		}
-	}
-	
-	@Override
-	public void dispose() {
-		super.dispose();
-		propImg.dispose();
 	}
 }

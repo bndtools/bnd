@@ -18,7 +18,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Build Path");
-		//section.setDescription("The selected bundles will be added to the project classpath for compilation.");
+		section.setDescription("The selected bundles will be added to the project classpath for compilation.");
 		super.createSection(section, toolkit);
 	}
 	@Override

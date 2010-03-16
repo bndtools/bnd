@@ -35,17 +35,19 @@ public class ProjectPage extends FormPage {
 		// Create Controls
 		Composite body = form.getBody();
 
-		BuildPathPart buildPathPart = new BuildPathPart(body, tk, Section.TITLE_BAR | Section.EXPANDED);
+		BuildPathPart buildPathPart = new BuildPathPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(buildPathPart);
 
-		RunBundlesPart runBundlesPart = new RunBundlesPart(body, tk, Section.TITLE_BAR | Section.EXPANDED);
+		RunBundlesPart runBundlesPart = new RunBundlesPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
 
 		// Layout
 		GridLayout layout;
 		GridData gd;
 
-		layout = new GridLayout(2, false);
+		layout = new GridLayout(1, false);
+		layout.verticalSpacing = 10;
+		layout.horizontalSpacing = 10;
 		body.setLayout(layout);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, false, false);
