@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,14 +26,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
-import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.plugin.Activator;
@@ -41,29 +44,16 @@ import aQute.lib.osgi.Builder;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
-	public static final String		BUILDER_ID						= Plugin.PLUGIN_ID
-																			+ ".bndbuilder";
-	public static final String		MARKER_BND_PROBLEM				= Plugin.PLUGIN_ID
-																			+ ".bndproblem";
-	public static final String		MARKER_BND_CLASSPATH_PROBLEM	= Plugin.PLUGIN_ID
-																			+ ".bnd_classpath_problem";
+	public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
+	public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
+	public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
 
-	private static final String		BND_SUFFIX						= ".bnd";
+	private static final String BND_SUFFIX = ".bnd";
 	
 	private static final long NEVER = -1;
 	
-	static {
-		Activator act = new Activator();
-		BundleContext context = Plugin.getDefault().getBundleContext();
-		try {
-			act.start( context);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	private Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
+	private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
+	private final Map<String, Collection<IPath>> projectBndFiles = new HashMap<String, Collection<IPath>>();
 	
 	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
 			throws CoreException {
@@ -90,13 +80,29 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		Long time = projectLastBuildTimes.get(project.getName());
 		return time != null ? time.longValue() : NEVER;
 	}
+	Collection<IPath> enumerateBndFiles(IProject project) throws CoreException {
+		final Collection<IPath> paths = new LinkedList<IPath>();
+		project.accept(new IResourceProxyVisitor() {
+			public boolean visit(IResourceProxy proxy) throws CoreException {
+				if(proxy.getType() == IResource.FOLDER || proxy.getType() == IResource.PROJECT)
+					return true;
+				
+				String name = proxy.getName();
+				if(name.toLowerCase().endsWith(BND_SUFFIX)) {
+					IPath path = proxy.requestFullPath();
+					paths.add(path);
+				}
+				return false;
+			}
+		}, 0);
+		return paths;
+	}
 	void ensureBndBndExists(IProject project) throws CoreException {
 		IFile bndFile = project.getFile(Project.BNDFILE);
 		if(!bndFile.exists()) {
 			bndFile.create(new ByteArrayInputStream(new byte[0]), 0, null);
 		}
 	}
-
 	@Override protected void clean(IProgressMonitor monitor)
 			throws CoreException {
 		// Clear markers
@@ -118,7 +124,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		try {
 			List<File> affectedFiles = new ArrayList<File>();
-			delta.accept(new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles));
+			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles);
+			delta.accept(visitor);
 			
 			progress.setWorkRemaining(affectedFiles.size() + 10);
 			
@@ -146,7 +153,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
 		model.refresh();
-
+		
 		// Get or create the build model for this bnd file
 		IFile bndFile = project.getFile(Project.BNDFILE);
 
@@ -156,7 +163,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		
 		// Build
-		try {
+		try { 
 			File files[] = model.build();
 			if (files != null)
 				for (File f : files) {
@@ -178,5 +185,4 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		*/
 	}
-
 }

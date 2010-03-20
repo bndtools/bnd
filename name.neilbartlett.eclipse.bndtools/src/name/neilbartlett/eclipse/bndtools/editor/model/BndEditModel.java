@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 
 import name.neilbartlett.eclipse.bndtools.BndConstants;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -371,7 +373,15 @@ public class BndEditModel {
 		}
 		return false;
 	}
+	
+	public Collection<IPath> getSubBndFiles() {
+		return doGetPathList(aQute.lib.osgi.Constants.SUB);
+	}
 
+	public void setSubBndFiles(Collection<IPath> subBndFiles) {
+		doSetPathList(aQute.lib.osgi.Constants.SUB, getSubBndFiles(), subBndFiles);
+	}
+	
 	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
 		R result;
 		if(objectProperties.containsKey(name)) {
@@ -412,8 +422,7 @@ public class BndEditModel {
 			public List<String> convert(String string) {
 				List<String> packages = new LinkedList<String>();
 				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
-				for(Entry<String, Map<String,String>> entry : header.entrySet()) {
-					String packageName = entry.getKey();
+				for(String packageName : header.keySet()) {
 					packages.add(packageName);
 				}
 				return packages;
@@ -434,7 +443,33 @@ public class BndEditModel {
 			}
 			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
+	}
 	
+	List<IPath> doGetPathList(String name) {
+		return doGetObject(name, new Converter<List<IPath>,String>() {
+			public List<IPath> convert(String input) {
+				LinkedList<IPath> paths = new LinkedList<IPath>();
+				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(input);
+				for (String pathStr : header.keySet()) {
+					paths.add(new Path(pathStr));
+				}
+				return paths;
+			}
+		});
+	}
+	void doSetPathList(String name, Collection<? extends IPath> oldValue, Collection<? extends IPath> newValue) {
+		StringBuilder buffer = new StringBuilder();
+		if(newValue == null || newValue.isEmpty()) {
+			doSetObject(name, oldValue, null, null);
+		} else {
+			for (Iterator<? extends IPath> iter = newValue.iterator(); iter.hasNext();) {
+				IPath path = iter.next();
+				buffer.append(path.toString());
+				if(iter.hasNext())
+					buffer.append(LIST_SEPARATOR);
+			}
+			doSetObject(name, oldValue, newValue, buffer.toString());
+		}
 	}
 
 	<R> List<R> doGetClauseList(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
