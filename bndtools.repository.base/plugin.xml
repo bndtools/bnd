@@ -5,7 +5,7 @@
          point="name.neilbartlett.eclipse.bndtools.repositoryContributor">
       <repository
             name="Base"
-            path="template/repo/">
+            path="repo/">
       </repository>
    </extension>
 

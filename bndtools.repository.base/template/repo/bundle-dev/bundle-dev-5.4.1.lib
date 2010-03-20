@@ -1,4 +1,0 @@
-ee.j2se;					version=1.5
-osgi.core;					version="[4.1,4.1]"
-osgi.cmpn;					version="[4.1,4.1]"
-com.springsource.junit;		version="[3.8,4)"
