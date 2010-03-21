@@ -55,8 +55,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	}
 
 	public void createControl(Composite parent) {
-		setTitle("Select Bundles");
-		
 		// Create controls
 		Composite composite = new Composite(parent, SWT.NONE);
 		
@@ -182,8 +180,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		gd.widthHint = 250;
 		selectedTable.setLayoutData(gd);
 
-		addButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false));
-		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		addButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, true));
+		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, true));
 
 		setControl(composite);
 	}

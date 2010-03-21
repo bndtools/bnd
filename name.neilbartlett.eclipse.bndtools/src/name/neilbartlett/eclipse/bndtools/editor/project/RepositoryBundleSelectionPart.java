@@ -116,6 +116,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	private void doAdd() {
 		List<VersionedClause> copy = new ArrayList<VersionedClause>(bundles);
 		RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(copy);
+		customizeWizard(wizard);
 		WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 		if(dialog.open() == Window.OK) {
 			bundles = copy;
@@ -148,6 +149,10 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
+	
+	protected void customizeWizard(RepoBundleSelectionWizard wizard) {
+		// Do nothing
+	}
 	
 	@Override
 	public void refresh() {

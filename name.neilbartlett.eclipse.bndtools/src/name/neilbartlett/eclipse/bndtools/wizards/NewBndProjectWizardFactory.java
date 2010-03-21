@@ -17,7 +17,11 @@ public class NewBndProjectWizardFactory implements IExecutableExtensionFactory {
 	public Object create() throws CoreException {
 		NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
 		BndWorkspaceConfigurationPage cnfPage = new BndWorkspaceConfigurationPage("cnfPage");
+		
 		NewBndProjectWizardBundlesPage bundlesPage = new NewBndProjectWizardBundlesPage("bundleSelection", cnfPage);
+		bundlesPage.setTitle("Bundle Build Path");
+		bundlesPage.setDescription("Select bundles to add to the project build path");
+		
 		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(bundlesPage, pageOne);
 		
 		return new NewBndProjectWizard(pageOne, cnfPage, bundlesPage, pageTwo);

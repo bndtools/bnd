@@ -25,19 +25,20 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.WizardPage;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
-	private final NewBndProjectWizardBundlesPage bundlesPage;
+	private final WizardPage previousPage;
 
-	public NewBndProjectWizardPageTwo(NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageOne pageOne) {
+	public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
 		super(pageOne);
-		this.bundlesPage = bundlesPage;
+		this.previousPage = previousPage;
 	}
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(!visible && getContainer().getCurrentPage() == bundlesPage) {
+		if(!visible && getContainer().getCurrentPage() == previousPage) {
 			removeProvisonalProject();
 		}
 	}
