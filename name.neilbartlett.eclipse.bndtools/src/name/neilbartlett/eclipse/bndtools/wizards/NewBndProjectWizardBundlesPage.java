@@ -1,25 +1,23 @@
 package name.neilbartlett.eclipse.bndtools.wizards;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import name.neilbartlett.eclipse.bndtools.editor.project.RepoBundleSelectionWizardPage;
 
-public class NewBndProjectWizardBundlesPage extends WizardPage {
+public class NewBndProjectWizardBundlesPage extends RepoBundleSelectionWizardPage {
 
-	public NewBndProjectWizardBundlesPage(String pageName) {
+	private final BndWorkspaceConfigurationPage cnfPage;
+	private boolean firstShown = true;
+
+	public NewBndProjectWizardBundlesPage(String pageName, BndWorkspaceConfigurationPage cnfPage) {
 		super(pageName);
+		this.cnfPage = cnfPage;
 	}
 
-	public NewBndProjectWizardBundlesPage(String pageName, String title, ImageDescriptor titleImage) {
-		super(pageName, title, titleImage);
-	}
-
-	public void createControl(Composite parent) {
-		Label label = new Label(parent, SWT.NONE);
-		label.setText("Hello World");
-		
-		setControl(label);
+	@Override
+	public void setVisible(boolean visible) {
+		if(visible && firstShown) {
+			cnfPage.createCnfProject();
+			firstShown = false;
+		}
+		super.setVisible(visible);
 	}
 }

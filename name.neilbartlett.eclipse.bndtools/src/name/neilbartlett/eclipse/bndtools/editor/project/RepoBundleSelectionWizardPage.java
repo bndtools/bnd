@@ -38,7 +38,7 @@ import aQute.lib.osgi.Constants;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	
-	private Collection<? super VersionedClause> selectedBundles = new ArrayList<VersionedClause>();
+	private Collection<VersionedClause> selectedBundles = new ArrayList<VersionedClause>();
 	private TreeViewer selectionViewer;
 	private TableViewer selectedViewer;
 
@@ -46,12 +46,16 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		super(pageName);
 	}
 	
-	public void setSelectedBundles(Collection<? super VersionedClause> selectedBundles) {
+	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
 		this.selectedBundles = selectedBundles;
+	}
+	
+	public Collection<VersionedClause> getSelectedBundles() {
+		return this.selectedBundles;
 	}
 
 	public void createControl(Composite parent) {
-		setTitle("Edit Bundles");
+		setTitle("Select Bundles");
 		
 		// Create controls
 		Composite composite = new Composite(parent, SWT.NONE);
@@ -113,6 +117,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		// Load data
 		try {
 			selectionViewer.setInput(Central.getWorkspace());
+			selectionViewer.expandToLevel(2);
 		} catch (Exception e) {
 			setErrorMessage("Error querying repostory configuration.");
 		}
@@ -202,6 +207,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			selectedBundles.addAll(adding);
 			selectedViewer.add((Object[]) adding.toArray(new Object[adding.size()]));
 			selectionViewer.refresh();
+			selectionViewer.expandToLevel(2);
 		}
 	}
 	void doRemove() {

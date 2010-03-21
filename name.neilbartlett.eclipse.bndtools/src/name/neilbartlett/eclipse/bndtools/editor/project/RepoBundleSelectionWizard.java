@@ -8,14 +8,14 @@ import org.eclipse.jface.wizard.Wizard;
 
 public class RepoBundleSelectionWizard extends Wizard {
 	
-	private final Collection<? super VersionedClause> bundles;
+	private final Collection<VersionedClause> bundles;
 	private RepoBundleSelectionWizardPage selectionPage;
 
 	/**
 	 * Create a wizard for editing the specified list of bundles. The supplied collection will be modified by this wizard.
 	 * @param bundles A mutable collection of bundles.
 	 */
-	public RepoBundleSelectionWizard(Collection<? super VersionedClause> bundles) {
+	public RepoBundleSelectionWizard(Collection<VersionedClause> bundles) {
 		this.bundles = bundles;
 	}
 	@Override

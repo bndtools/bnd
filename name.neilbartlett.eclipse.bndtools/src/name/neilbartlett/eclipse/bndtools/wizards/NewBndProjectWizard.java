@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
+import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -27,6 +28,8 @@ import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 
 import aQute.bnd.build.Project;
 
@@ -34,11 +37,13 @@ import aQute.bnd.build.Project;
 class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
-	private final NewJavaProjectWizardPageTwo pageTwo;
+	private final BndWorkspaceConfigurationPage cnfPage;
 	private final NewBndProjectWizardBundlesPage bundlesPage;
+	private final NewJavaProjectWizardPageTwo pageTwo;
 
-	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageTwo pageTwo) {
+	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, BndWorkspaceConfigurationPage cnfPage, NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
+		this.cnfPage = cnfPage;
 		setWindowTitle("New Bnd OSGi Project");
 		
 		this.pageOne = pageOne;
@@ -49,6 +54,7 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	@Override
 	public void addPages() {
 		addPage(pageOne);
+		addPage(cnfPage);
 		addPage(bundlesPage);
 		addPage(pageTwo);
 	}
@@ -58,14 +64,19 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	public boolean performFinish() {
 		boolean result = super.performFinish();
 		if(result) {
-			final IJavaProject javaProj = (IJavaProject) getCreatedElement();
+			// Generate the bnd.bnd content
+			BndEditModel bndModel = new BndEditModel();
+			bndModel.setBuildPath(bundlesPage.getSelectedBundles());
+			IDocument document = new Document();
+			bndModel.saveChangesTo(document);
+			final ByteArrayInputStream bndInput = new ByteArrayInputStream(document.get().getBytes());
 			
+			// Add the bnd.bnd file to the new project
+			final IJavaProject javaProj = (IJavaProject) getCreatedElement();
 			final IWorkspaceRunnable op = new IWorkspaceRunnable() {
 				public void run(IProgressMonitor monitor) throws CoreException {
 					IFile bndBndFile = javaProj.getProject().getFile(Project.BNDFILE);
-					if(!bndBndFile.exists()) {
-						bndBndFile.create(new ByteArrayInputStream(new byte[0]), false, monitor);
-					}
+					bndBndFile.create(bndInput, false, monitor);
 				}
 			};
 			try {

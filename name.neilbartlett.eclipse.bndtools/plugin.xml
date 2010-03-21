@@ -375,6 +375,41 @@
          </contextualLaunch>
       </shortcut>
    </extension>
+    <extension
+          point="org.eclipse.ui.importWizards">
+       <category
+             id="name.neilbartlett.eclipse.bndtools.importWizardsCategory"
+             name="Bnd OSGi Tools">
+       </category>
+       <wizard
+             category="name.neilbartlett.eclipse.bndtools.importWizardsCategory"
+             class="name.neilbartlett.eclipse.bndtools.wizards.ImportBundleRepositoryWizard"
+             icon="icons/brick_add.png"
+             id="name.neilbartlett.eclipse.bndtools.importRepositoryWizard"
+             name="Import Bundles from Repository">
+       </wizard>
+    </extension>
+    <extension
+          point="org.eclipse.ui.importWizards">
+       <category
+             id="name.neilbartlett.eclipse.bndtools.importWizardsCategory"
+             name="Bnd OSGi Tools">
+       </category>
+       <wizard
+             category="name.neilbartlett.eclipse.bndtools.importWizardsCategory"
+             class="name.neilbartlett.eclipse.bndtools.wizards"
+             icon="icons/brick_add.png"
+             id="name.neilbartlett.eclipse.bndtools.importRepositoryWizard"
+             name="Import Bundles from Repository">
+       </wizard>
+    </extension>
+    <extension
+          point="org.eclipse.ui.importWizards">
+       <category
+             id="name.neilbartlett.eclipse.bndtools.importWizardsCategory"
+             name="Bnd OSGi Tools">
+       </category>
+    </extension>
    
    
 </plugin>
