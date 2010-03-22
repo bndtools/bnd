@@ -130,13 +130,28 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			progress.setWorkRemaining(affectedFiles.size() + 10);
 			
 			boolean rebuild = false;
-			Collection<Builder> builders = model.getSubBuilders();
-			for (Builder builder : builders) {
-				if(builder.isInScope(affectedFiles)) {
+			
+			// Check if any affected file is a bnd file
+			for (File file : affectedFiles) {
+				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
 					rebuild = true;
 					break;
 				}
-				progress.worked(1);
+			}
+			if(!rebuild) {
+				// Check if any of the affected files are members of bundles built by a sub builder 
+				Collection<Builder> builders = model.getSubBuilders();
+				for (Builder builder : builders) {
+					File buildPropsFile = builder.getPropertiesFile();
+					if(affectedFiles.contains(buildPropsFile)) {
+						rebuild = true;
+						break;
+					} else if(builder.isInScope(affectedFiles)) {
+						rebuild = true;
+						break;
+					}
+					progress.worked(1);
+				}
 			}
 			progress.setWorkRemaining(10);
 			

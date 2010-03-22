@@ -110,7 +110,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 			}
 		});
 		
-		toolkit.createLabel(mainComposite, "Version Range:");
+		toolkit.createLabel(mainComposite, "Version:");
 		txtVersion = toolkit.createText(mainComposite, "");
 		
 		/*
