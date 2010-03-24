@@ -1,20 +1,36 @@
 package name.neilbartlett.eclipse.bndtools.editor.project;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Builder;
 import aQute.libg.version.Version;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	public Object[] getElements(Object inputElement) {
-		List<RepositoryPlugin> plugins = ((Workspace) inputElement).getPlugins(RepositoryPlugin.class);
+		List<Object> result = new ArrayList<Object>();
+		Workspace workspace = (Workspace) inputElement;
 		
-		return (RepositoryPlugin[]) plugins.toArray(new RepositoryPlugin[plugins.size()]);
+		result.addAll(workspace.getPlugins(RepositoryPlugin.class));
+		try {
+			result.addAll(workspace.getAllProjects());
+		} catch (Exception e) {
+			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying workspace Bnd projects.", e));
+		}
+		
+		return result.toArray(new Object[result.size()]);
 	}
 	public void dispose() {
 	}
@@ -41,6 +57,20 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					result[i++] = new RepositoryBundleVersion(bundle, version);
 				}
 			}
+		} else if(parentElement instanceof Project) {
+			Project project = (Project) parentElement;
+			try {
+				Collection<Builder> builders = project.getSubBuilders();
+				result = new Object[builders.size()];
+				
+				int i = 0;
+				for (Builder builder : builders) {
+					ProjectBundle bundle = new ProjectBundle(project, builder.getBsn());
+					result[i++] = bundle;
+				}
+			} catch (Exception e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error querying sub-bundles for project %s.", project.getName()), e));
+			}
 		}
 		
 		return result;
@@ -55,7 +85,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		return null;
 	}
 	public boolean hasChildren(Object element) {
-		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle;
+		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
 	}
 
 }

@@ -7,7 +7,7 @@ class RepositoryBundle {
 	private final RepositoryPlugin repo;
 	private final String bsn;
 
-	public RepositoryBundle(RepositoryPlugin repo, String bsn) {
+	RepositoryBundle(RepositoryPlugin repo, String bsn) {
 		this.repo = repo;
 		this.bsn = bsn;
 	}

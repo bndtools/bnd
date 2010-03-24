@@ -128,7 +128,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 				IStructuredSelection sel = (IStructuredSelection) selectionViewer.getSelection();
 				for(Iterator<?> iter = sel.iterator(); iter.hasNext(); ) {
 					Object element = iter.next();
-					if(element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion) {
+					if(element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion || element instanceof ProjectBundle) {
 						addButton.setEnabled(true);
 						return;
 					}
@@ -199,6 +199,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 				Map<String,String> attribs = new HashMap<String, String>();
 				attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
 				adding.add(new VersionedClause(bundleVersion.getBundle().getBsn(), attribs));
+			} else if(item instanceof ProjectBundle) {
+				String bsn = ((ProjectBundle) item).getBsn();
+				Map<String,String> attribs = new HashMap<String, String>();
+				attribs.put(Constants.VERSION_ATTRIBUTE, "snapshot");
+				adding.add(new VersionedClause(bsn, attribs));
 			}
 		}
 		if(!adding.isEmpty()) {
