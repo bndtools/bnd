@@ -23,6 +23,7 @@ import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.utils.ResourceDeltaAccumulator;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -190,14 +191,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 
 		// Report errors
-		/* TODO: fix the ConcurrentModificationException
-		for (String errorMessage : model.getErrors()) {
+		List<String> errors = new ArrayList<String>(model.getErrors());
+		for (String errorMessage : errors) {
 			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
 			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 			marker.setAttribute(IMarker.MESSAGE, errorMessage);
 			marker.setAttribute(IMarker.LINE_NUMBER, 1);
 			model.clear();
 		}
-		*/
 	}
 }

@@ -76,7 +76,11 @@ class NewBndProjectWizard extends JavaProjectWizard {
 			final IWorkspaceRunnable op = new IWorkspaceRunnable() {
 				public void run(IProgressMonitor monitor) throws CoreException {
 					IFile bndBndFile = javaProj.getProject().getFile(Project.BNDFILE);
-					bndBndFile.create(bndInput, false, monitor);
+					if(bndBndFile.exists()) {
+						bndBndFile.setContents(bndInput, false, false, monitor);
+					} else {
+						bndBndFile.create(bndInput, false, monitor);
+					}
 				}
 			};
 			try {

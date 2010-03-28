@@ -51,8 +51,16 @@
             default="false"
             extensions="bnd"
             icon="icons/brick.png"
-            id="name.neilbartlett.eclipse.bndtools.newBndEditor"
-            name="Bnd Editor">
+            id="name.neilbartlett.eclipse.bndtools.bndEditor"
+            name="Bnd Bundle Editor">
+      </editor>
+      <editor
+            class="name.neilbartlett.eclipse.bndtools.editor.BndEditor"
+            default="false"
+            filenames="bnd.bnd"
+            icon="icons/bricks.png"
+            id="name.neilbartlett.eclipse.bndtools.bndProjectEditor"
+            name="Bnd Project Editor">
       </editor>
    </extension>
    <extension
@@ -387,6 +395,4 @@
              name="Import Bundles from Repository">
        </wizard>
     </extension>
-   
-   
 </plugin>

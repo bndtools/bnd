@@ -5,10 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.utils.BndSyncUtils;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -104,7 +107,11 @@ public class BndContainer implements IClasspathContainer {
 			}
 			return cachedEntries;
 		} finally {
-			BndSyncUtils.syncProject(javaProject);
+			try {
+				BndSyncUtils.syncProject(javaProject);
+			} catch (Exception e) {
+				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error syncing project.", e));
+			}
 		}
 	}
 

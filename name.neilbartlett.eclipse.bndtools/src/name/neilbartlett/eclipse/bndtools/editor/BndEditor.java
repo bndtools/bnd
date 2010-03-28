@@ -108,7 +108,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		if(Project.BNDFILE.equals(name)) {
 			IResource resource = ResourceUtil.getResource(input);
 			if(resource != null)
-				name = String.format("%s (%s)", resource.getProject().getName(), Project.BNDFILE);
+				name = resource.getProject().getName();
 		}
 		setPartName(name);
 		

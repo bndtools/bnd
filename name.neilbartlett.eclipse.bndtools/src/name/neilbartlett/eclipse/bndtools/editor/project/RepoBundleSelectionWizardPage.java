@@ -115,7 +115,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		// Load data
 		try {
 			selectionViewer.setInput(Central.getWorkspace());
-			selectionViewer.expandToLevel(2);
 		} catch (Exception e) {
 			setErrorMessage("Error querying repostory configuration.");
 		}
@@ -210,7 +209,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			selectedBundles.addAll(adding);
 			selectedViewer.add((Object[]) adding.toArray(new Object[adding.size()]));
 			selectionViewer.refresh();
-			selectionViewer.expandToLevel(2);
 		}
 	}
 	void doRemove() {
