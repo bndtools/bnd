@@ -101,7 +101,7 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 				}
 			}, 0);
 		} catch (CoreException e) {
-			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for resources.", e));
+			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for resources.", e));
 		}
 		
 		// Class matches
@@ -130,7 +130,7 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 				runnable.run(new NullProgressMonitor());
 			}
 		} catch (InvocationTargetException e) {
-			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for classes.", e.getTargetException()));
+			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for classes.", e.getTargetException()));
 		} catch (InterruptedException e) {
 			// Reset the interruption status and continue
 			Thread.currentThread().interrupt();

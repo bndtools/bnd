@@ -12,7 +12,6 @@ package name.neilbartlett.eclipse.bndtools.wizards;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
@@ -58,8 +57,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		Control locationControl= createLocationControl(composite);
 		locationControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-//		Control jreControl= createJRESelectionControl(composite);
-//		jreControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Control jreControl= createJRESelectionControl(composite);
+		jreControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 //		Control layoutControl= createProjectLayoutControl(composite);
 //		layoutControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -83,15 +82,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		IPath bndContainerPath = BndContainerInitializer.ID;
 		IClasspathEntry bndContainerEntry = JavaCore.newContainerEntry(bndContainerPath, false);
 		result.add(bndContainerEntry);
-		
-		// Remove the JRE
-		Iterator<IClasspathEntry> iter = result.iterator();
-		while(iter.hasNext()) {
-			IClasspathEntry entry = iter.next();
-			if("org.eclipse.jdt.launching.JRE_CONTAINER".equals(entry.getPath().segment(0))) {
-				iter.remove();
-			}
-		}
 		
 		return (IClasspathEntry[]) result.toArray(new IClasspathEntry[result.size()]);
 	}

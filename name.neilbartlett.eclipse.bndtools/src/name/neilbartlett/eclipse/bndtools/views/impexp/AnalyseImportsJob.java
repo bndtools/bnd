@@ -198,7 +198,7 @@ public class AnalyseImportsJob extends Job {
 			try {
 				classes = builder.getClasses("", "IMPORTING", pkgName);
 			} catch (Exception e) {
-				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
+				Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
 			}
 			for(Clazz clazz : classes) {
 				String fqn = clazz.getFQN();

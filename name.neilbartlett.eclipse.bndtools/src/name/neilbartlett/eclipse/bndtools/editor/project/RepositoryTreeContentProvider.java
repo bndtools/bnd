@@ -27,7 +27,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		try {
 			result.addAll(workspace.getAllProjects());
 		} catch (Exception e) {
-			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying workspace Bnd projects.", e));
+			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying workspace Bnd projects.", e));
 		}
 		
 		return result.toArray(new Object[result.size()]);
@@ -69,7 +69,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					result[i++] = bundle;
 				}
 			} catch (Exception e) {
-				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error querying sub-bundles for project %s.", project.getName()), e));
+				Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error querying sub-bundles for project %s.", project.getName()), e));
 			}
 		}
 		

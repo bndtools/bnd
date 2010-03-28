@@ -63,7 +63,7 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
 			Workspace workspace = Central.getWorkspace();
 			projects = workspace.getAllProjects();
 		} catch (Exception e) {
-			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
+			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
 			return Collections.emptyList();
 		}
 		List<String> result = new ArrayList<String>(projects.size());

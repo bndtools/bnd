@@ -32,7 +32,7 @@ public class BndSyncUtils {
 				}
 			}, null);
 		} catch (CoreException e) {
-			//Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error refreshing project", e));
+			//Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error refreshing project", e));
 		}
 	}
 }

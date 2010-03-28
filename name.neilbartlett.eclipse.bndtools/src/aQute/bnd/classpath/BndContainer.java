@@ -110,7 +110,7 @@ public class BndContainer implements IClasspathContainer {
 			try {
 				BndSyncUtils.syncProject(javaProject);
 			} catch (Exception e) {
-				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error syncing project.", e));
+				Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error syncing project.", e));
 			}
 		}
 	}

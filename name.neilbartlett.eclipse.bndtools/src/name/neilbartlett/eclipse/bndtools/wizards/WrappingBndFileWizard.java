@@ -47,7 +47,7 @@ public class WrappingBndFileWizard extends Wizard implements INewWizard {
 			try {
 				IDE.openEditor(workbench.getActiveWorkbenchWindow().getActivePage(), newFile);
 			} catch (PartInitException e) {
-				Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "", e));
+				Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "", e));
 			}
 		}
 		return newFile != null;

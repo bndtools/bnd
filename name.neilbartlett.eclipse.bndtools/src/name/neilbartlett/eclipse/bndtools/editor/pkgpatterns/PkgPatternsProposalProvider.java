@@ -104,7 +104,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 			}
 			return result;
 		} catch (InvocationTargetException e) {
-			Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for packages.", e));
+			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for packages.", e));
 			return Collections.emptyList();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();

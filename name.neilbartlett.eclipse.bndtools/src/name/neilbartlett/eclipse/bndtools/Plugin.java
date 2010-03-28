@@ -13,6 +13,7 @@ package name.neilbartlett.eclipse.bndtools;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,7 +33,7 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
 	
-	private static Plugin plugin;
+	private static volatile Plugin plugin;
 	private BundleContext bundleContext;
 	private Activator bndActivator;
 
@@ -58,6 +59,15 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static Plugin getDefault() {
 		return plugin;
+	}
+	
+	public static void log(IStatus status) {
+		Plugin instance = plugin;
+		if(instance != null) {
+			instance.getLog().log(status);
+		} else {
+			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
+		}
 	}
 	
 	public BundleContext getBundleContext() {
