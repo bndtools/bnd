@@ -5,7 +5,7 @@ import name.neilbartlett.eclipse.bndtools.editor.project.RepoBundleSelectionWiza
 public class NewBndProjectWizardBundlesPage extends RepoBundleSelectionWizardPage {
 
 	private final BndWorkspaceConfigurationPage cnfPage;
-	private boolean firstShown = true;
+	private volatile boolean createdCnf = false;
 
 	public NewBndProjectWizardBundlesPage(String pageName, BndWorkspaceConfigurationPage cnfPage) {
 		super(pageName);
@@ -14,10 +14,15 @@ public class NewBndProjectWizardBundlesPage extends RepoBundleSelectionWizardPag
 
 	@Override
 	public void setVisible(boolean visible) {
-		if(visible && firstShown) {
-			cnfPage.createCnfProject();
-			firstShown = false;
+		if(visible) {
+			doCreateCnfIfNeeded();
 		}
 		super.setVisible(visible);
+	}
+	void doCreateCnfIfNeeded() {
+		if(!createdCnf) {
+			cnfPage.createCnfProject();
+			createdCnf = true;
+		}
 	}
 }

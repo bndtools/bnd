@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
@@ -146,7 +147,8 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		IResource myResource = ResourceUtil.getResource(getEditorInput());
 		
 		IResourceDelta delta = event.getDelta();
-		delta = delta.findMember(myResource.getFullPath());
+		IPath fullPath = myResource.getFullPath();
+		delta = delta.findMember(fullPath);
 		if(delta == null)
 			return;
 		

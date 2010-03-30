@@ -172,10 +172,12 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		composite.setLayout(layout);
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
+		gd.heightHint = 300;
 		gd.widthHint = 250;
 		selectionTree.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
+		gd.heightHint = 300;
 		gd.widthHint = 250;
 		selectedTable.setLayoutData(gd);
 

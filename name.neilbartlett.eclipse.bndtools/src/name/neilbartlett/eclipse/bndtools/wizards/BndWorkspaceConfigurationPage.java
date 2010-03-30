@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.utils.BundleUtils;
@@ -21,6 +22,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -40,11 +42,16 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -61,6 +68,8 @@ import aQute.bnd.build.Workspace;
 @SuppressWarnings("restriction")
 public class BndWorkspaceConfigurationPage extends WizardPage {
 	
+	private static final String NO_DESCRIPTION = "No description available";
+	
 	private IConfigurationElement[] checkedConfigElements = null;
 	
 	public BndWorkspaceConfigurationPage(String pageName) {
@@ -68,18 +77,22 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 	}
 	public void createControl(Composite parent) {
 		setTitle("Configure BndTools Workspace");
-		setDescription("Select repositories to copy into the Bnd workspace.");
+		setDescription("Select external repositories to copy into the Bnd workspace.");
 		
 		Composite composite = new Composite(parent, SWT.NONE);
 		
-		new Label(composite, SWT.NONE).setText("Select Static Repositories");
+		new Label(composite, SWT.NONE).setText("External Repositories:");
 		Table table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		
 		final CheckboxTableViewer viewer = new CheckboxTableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new RepositoryContribLabelProvider());
 		
-		viewer.setInput(Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB));
+		final IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+		viewer.setInput(extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB));
+		
+		new Label(composite, SWT.NONE).setText("Description:");
+		final Browser browser = new Browser(composite, SWT.BORDER);
 		
 		// Listeners
 		viewer.addCheckStateListener(new ICheckStateListener() {
@@ -89,10 +102,45 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 				System.arraycopy(checkedElements, 0, checkedConfigElements, 0, checkedElements.length);
 			}
 		});
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				ISelection selection = viewer.getSelection();
+				String text;
+				if(selection.isEmpty()) {
+					text = "";
+				} else {
+					IConfigurationElement element = (IConfigurationElement) ((IStructuredSelection) selection).getFirstElement();
+					if(element == null) {
+						text = NO_DESCRIPTION;
+					} else {
+						IConfigurationElement[] children = element.getChildren("description");
+						if(children.length < 1) {
+							text = NO_DESCRIPTION;
+						} else {
+							if(extensionRegistry.isMultiLanguage()) {
+								text = children[0].getValue(Locale.getDefault().toString());
+							} else {
+								text = children[0].getValue();
+							}
+						}
+					}
+				}
+				browser.setText(text, false);
+			}
+		});
 		
 		// Layout
-		composite.setLayout(new GridLayout(1, false));
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridLayout layout;
+		GridData gd;
+		
+		layout = new GridLayout(1, false);
+		composite.setLayout(layout);
+		
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		table.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 100;
+		browser.setLayoutData(gd);
 		
 		setControl(composite);
 	}
@@ -164,7 +212,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 			// Check whether we can report on the GUI thread or not
 			Display display = Display.getCurrent();
 			if(display != null) {
-				getContainer().run(true, false, new IRunnableWithProgress() {
+				getContainer().run(false, false, new IRunnableWithProgress() {
 					public void run(IProgressMonitor monitor) throws InvocationTargetException {
 						try {
 							workspace.run(createCnfProjectOp, monitor);

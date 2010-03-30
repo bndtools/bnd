@@ -49,6 +49,9 @@
 
    <element name="repository">
       <complexType>
+         <sequence>
+            <element ref="description"/>
+         </sequence>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
@@ -70,6 +73,14 @@
             </annotation>
          </attribute>
       </complexType>
+   </element>
+
+   <element name="description" type="string">
+      <annotation>
+         <appInfo>
+            <meta.element translatable="true"/>
+         </appInfo>
+      </annotation>
    </element>
 
    <annotation>

@@ -22,6 +22,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.plugin.Activator;
+import aQute.bnd.plugin.Central;
+import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
 
 
@@ -36,6 +38,7 @@ public class Plugin extends AbstractUIPlugin {
 	private static volatile Plugin plugin;
 	private BundleContext bundleContext;
 	private Activator bndActivator;
+	private BndListener bndListener;
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
@@ -45,12 +48,18 @@ public class Plugin extends AbstractUIPlugin {
 		bndActivator = new Activator();
 		bndActivator.start(context);
 		
+		bndListener = new FilesystemUpdateListener();
+		Central.getWorkspace().addBasicPlugin(bndListener);
+		
 //		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 //		buildJob.setSystem(false);
 //		buildJob.schedule();
 	}
+	
+
 
 	public void stop(BundleContext context) throws Exception {
+		Central.getWorkspace().removeBasicPlugin(bndListener);
 		bndActivator.stop(context);
 		this.bundleContext = null;
 		plugin = null;
@@ -165,4 +174,8 @@ public class Plugin extends AbstractUIPlugin {
             }
         });
     }
+
+	public static void logError(String message, Throwable exception) {
+		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
+	}
 }

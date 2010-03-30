@@ -6,6 +6,9 @@
       <repository
             name="Base"
             path="repo/">
+         <description>
+            The base repository containing a useful but minimal set of bundles.
+         </description>
       </repository>
    </extension>
 

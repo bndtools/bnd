@@ -10,6 +10,7 @@
  *******************************************************************************/
 package name.neilbartlett.eclipse.bndtools.wizards;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
@@ -18,7 +19,9 @@ import name.neilbartlett.eclipse.bndtools.builder.BndProjectNature;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,13 +30,18 @@ import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
 	private final WizardPage previousPage;
+	private final NewJavaProjectWizardPageOne pageOne;
 
 	public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
 		super(pageOne);
 		this.previousPage = previousPage;
+		this.pageOne = pageOne;
 	}
 	@Override
 	public void setVisible(boolean visible) {
@@ -81,5 +89,10 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 		} catch (InterruptedException e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Interrupted while adding Bnd OSGi Project nature to project.", e));
 		}
+	}
+	
+	@Override
+	protected IProject createProvisonalProject() {
+		return super.createProvisonalProject();
 	}
 }

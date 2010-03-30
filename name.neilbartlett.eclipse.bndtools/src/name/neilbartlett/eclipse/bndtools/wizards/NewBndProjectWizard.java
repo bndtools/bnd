@@ -64,6 +64,9 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	public boolean performFinish() {
 		boolean result = super.performFinish();
 		if(result) {
+			// Create the cnf project, if not already created
+			bundlesPage.doCreateCnfIfNeeded();
+			
 			// Generate the bnd.bnd content
 			BndEditModel bndModel = new BndEditModel();
 			bndModel.setBuildPath(bundlesPage.getSelectedBundles());

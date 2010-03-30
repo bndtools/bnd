@@ -1,12 +1,10 @@
 package name.neilbartlett.eclipse.bndtools.utils;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 
@@ -21,23 +19,29 @@ public class FileUtils {
 	public static IDocument readFully(IFile file) throws CoreException, IOException {
 		if(file.exists()) {
 			InputStream stream = file.getContents();
-			try {
-				Reader reader = new InputStreamReader(stream, file.getCharset());
-				StringWriter writer = new StringWriter();
-				
-				char[] buffer = new char[1024];
-				while(true) {
-					int charsRead = reader.read(buffer, 0, 1024);
-					if(charsRead == -1)
-						break;
-					writer.write(buffer, 0, charsRead);
-				}
-				return new Document(writer.toString());
-			} finally {
-				stream.close();
-			}
+			byte[] bytes = readFully(stream);
+			
+			String string = new String(bytes, file.getCharset());
+			return new Document(string);
 		}
 		return null;
+	}
+	
+	public static byte[] readFully(InputStream stream) throws IOException {
+		try {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			
+			final byte[] buffer = new byte[1024];
+			while(true) {
+				int read = stream.read(buffer, 0, 1024);
+				if(read == -1)
+					break;
+				output.write(buffer, 0, read);
+			}
+			return output.toByteArray();
+		} finally {
+			stream.close();
+		}
 	}
 	public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException, FileNotFoundException {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(document.get().getBytes());
