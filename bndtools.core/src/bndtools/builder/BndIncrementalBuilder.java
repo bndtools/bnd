@@ -12,13 +12,15 @@ package bndtools.builder;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -36,13 +38,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
 
-import bndtools.Plugin;
-import bndtools.utils.ResourceDeltaAccumulator;
-
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.plugin.Activator;
-import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Builder;
+import bndtools.Plugin;
+import bndtools.utils.FileUtils;
+import bndtools.utils.ResourceDeltaAccumulator;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
@@ -55,7 +57,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	private static final long NEVER = -1;
 	
 	private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
-	private final Map<String, Collection<IPath>> projectBndFiles = new HashMap<String, Collection<IPath>>();
+	private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
 	
 	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
 			throws CoreException {
@@ -126,21 +128,32 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		
 		try {
 			List<File> affectedFiles = new ArrayList<File>();
-			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles);
+			final File targetDir = model.getTarget();
+			FileFilter generatedFilter = new FileFilter() {
+				public boolean accept(File pathname) {
+					return !FileUtils.isAncestor(targetDir, pathname);
+				}
+			};
+			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
 			delta.accept(visitor);
 			
 			progress.setWorkRemaining(affectedFiles.size() + 10);
 			
 			boolean rebuild = false;
+			List<File> deletedBnds = new LinkedList<File>();
 			
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
 				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
 					rebuild = true;
+					int deltaKind = visitor.queryDeltaKind(file);
+					if((deltaKind | IResourceDelta.REMOVED) > 0) {
+						deletedBnds.add(file);
+					}
 					break;
 				}
 			}
-			if(!rebuild) {
+			if(!rebuild && !affectedFiles.isEmpty()) {
 				// Check if any of the affected files are members of bundles built by a sub builder 
 				Collection<Builder> builders = model.getSubBuilders();
 				for (Builder builder : builders) {
@@ -155,7 +168,15 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					progress.worked(1);
 				}
 			}
-			progress.setWorkRemaining(10);
+			
+			// Delete corresponding bundles for deleted Bnds
+			for (File bndFile : deletedBnds) {
+				Container container = bndsToDeliverables.get(bndFile);
+				if(container != null) {
+					IResource resource = FileUtils.toWorkspaceResource(container.getFile());
+					resource.delete(false, null);
+				}
+			}
 			
 			if(rebuild)
 				rebuildBndProject(project, monitor);
@@ -165,8 +186,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		model.refresh();
 	}
-	void rebuildBndProject(IProject project, IProgressMonitor monitor)
-			throws CoreException {
+	void rebuildBndProject(IProject project, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
 		model.refresh();
@@ -180,12 +200,17 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 		
 		// Build
-		try { 
-			File files[] = model.build();
-			if (files != null)
-				for (File f : files) {
-					Central.refresh(Central.toPath(model, f));
-				}
+		try {
+			bndsToDeliverables.clear();
+			Collection<Builder> builders = model.getSubBuilders();
+			for (Builder builder : builders) {
+				File subBndFile = builder.getPropertiesFile();
+				String bsn = builder.getBsn();
+				Container deliverable = model.getDeliverable(bsn, null);
+				bndsToDeliverables.put(subBndFile, deliverable);
+			}
+			
+			model.build();
 			progress.worked(1);
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));

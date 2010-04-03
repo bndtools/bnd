@@ -1,6 +1,7 @@
 package bndtools.utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +16,12 @@ public class ResourceDeltaAccumulator implements IResourceDeltaVisitor {
 	private final int acceptKinds;
 	private final Collection<? super File> collector;
 	private final Map<File, Integer> deltaKinds = new HashMap<File, Integer>();
+	private final FileFilter filter;
 
-	public ResourceDeltaAccumulator(int acceptKinds, Collection<? super File> collector) {
+	public ResourceDeltaAccumulator(int acceptKinds, Collection<? super File> collector, FileFilter filter) {
 		this.acceptKinds = acceptKinds;
 		this.collector = collector;
+		this.filter = filter;
 	}
 	public boolean visit(IResourceDelta delta) throws CoreException {
 		if((acceptKinds & delta.getKind()) == 0)
@@ -26,8 +29,10 @@ public class ResourceDeltaAccumulator implements IResourceDeltaVisitor {
 		IResource resource = delta.getResource();
 		if(resource.getType() == IResource.FILE) {
 			File file = resource.getLocation().toFile();
-			collector.add(file);
-			deltaKinds.put(file, delta.getKind());
+			if(filter == null || filter.accept(file)) {
+				collector.add(file);
+				deltaKinds.put(file, delta.getKind());
+			}
 			return false;
 		}
 		// Must be a container type, so return true in order to recurse in.

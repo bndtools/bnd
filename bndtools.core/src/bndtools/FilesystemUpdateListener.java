@@ -3,7 +3,6 @@ package bndtools;
 import java.io.File;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -53,7 +52,8 @@ final class FilesystemUpdateListener extends BndListener {
 						} else {
 							resource = workspaceRoot.getFile(relativeChangedPath);
 						}
-						resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+						resource.refreshLocal(0, monitor);
+						resource.setDerived(true);
 						return Status.OK_STATUS;
 					}
 				};
