@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: BndTools Tests
-Bundle-SymbolicName: name.neilbartlett.eclipse.bndtools.test
-Bundle-Version: 1.0.0.qualifier
-Fragment-Host: name.neilbartlett.eclipse.bndtools;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Require-Bundle: org.junit4

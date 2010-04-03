@@ -1,0 +1,174 @@
+package bndtools.editor.project;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
+
+
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.IMessageManager;
+import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
+
+import bndtools.editor.model.BndEditModel;
+import bndtools.utils.ModificationLock;
+
+public class SubBundlesPart extends SectionPart implements PropertyChangeListener {
+
+	private static final String ALL_BND = "*.bnd";
+	private static final String WARNING_EDITED_MANUALLY = "WARNING_EDITED_MANUALLY";
+	
+	private final ModificationLock lock = new ModificationLock();
+	
+	private BndEditModel model;
+	private Collection<String> subBundleList;
+	private Button button;
+
+	public SubBundlesPart(Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
+		createSection(getSection(), toolkit);
+	}
+
+	final void createSection(Section section, FormToolkit toolkit) {
+		section.setText("Sub-bundles");
+		section.setDescription("If sub-bundles are enabled, then .bnd files other than bnd.bnd will be built as bundles.");
+		
+		// Toolbar buttons
+//		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+//		section.setTextClient(toolbar);
+//		
+//		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
+//		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+//		addItem.setToolTipText("Add");
+//
+//		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+//		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+//		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+//		removeItem.setToolTipText("Remove");
+//		removeItem.setEnabled(false);
+
+		Composite composite = toolkit.createComposite(section);
+		section.setClient(composite);
+		
+		button = new Button(composite, SWT.CHECK);
+		button.setText("Enable sub-bundles");
+		
+		button.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				lock.ifNotModifying(new Runnable() {
+					public void run() {
+						if(button.getSelection()) {
+							subBundleList = Arrays.asList(new String[] {ALL_BND});
+						} else {
+							subBundleList = null;
+						}
+						markDirty();
+					}
+				});
+			}
+		});
+
+//		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+//		table.setHeaderVisible(false);
+//		table.setLinesVisible(false);
+//		
+//		viewer = new TableViewer(table);
+//		viewer.setContentProvider(new ArrayContentProvider());
+//		viewer.setLabelProvider(n());
+		
+		// Listeners
+//		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+//			public void selectionChanged(SelectionChangedEvent event) {
+//				removeItem.setEnabled(!viewer.getSelection().isEmpty());
+//			}
+//		});
+//		addItem.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				doAdd();
+//			}
+//		});
+//		removeItem.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				doRemove();
+//			}
+//		});
+
+		// Layout
+		GridLayout layout = new GridLayout(1, false);
+		layout.horizontalSpacing = 0; layout.verticalSpacing = 0;
+		layout.marginHeight = 0; layout.marginWidth = 0;
+		composite.setLayout(layout);
+		
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 75;
+//		table.setLayoutData(gd);
+	}
+	
+	@Override
+	public void initialize(IManagedForm form) {
+		super.initialize(form);
+		
+		model = (BndEditModel) form.getInput();
+	}
+	
+	@Override
+	public void refresh() {
+		subBundleList = model.getSubBndFiles();
+		
+		lock.modifyOperation(new Runnable() {
+			public void run() {
+				IMessageManager msgs = getManagedForm().getMessageManager();
+				if(subBundleList == null || subBundleList.isEmpty()) {
+					button.setGrayed(false);
+					button.setSelection(false);
+					msgs.removeMessage(WARNING_EDITED_MANUALLY, button);
+				} else if(subBundleList.size() == 1 && subBundleList.iterator().next().equalsIgnoreCase(ALL_BND)) {
+					button.setGrayed(false);
+					button.setSelection(true);
+					msgs.removeMessage(WARNING_EDITED_MANUALLY, button);
+				} else {
+					button.setGrayed(true);
+					msgs.addMessage(WARNING_EDITED_MANUALLY, "The '-sub' setting has been edited manually in the bnd.bnd file. Changing here will override the manually provided setting.", null, IMessageProvider.WARNING, button);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public void commit(boolean onSave) {
+		super.commit(onSave);
+		model.setSubBndFiles(subBundleList);
+	}
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		IFormPage page = (IFormPage) getManagedForm().getContainer();
+		if(page.isActive()) {
+			refresh();
+		} else {
+			markStale();
+		}
+	}
+}

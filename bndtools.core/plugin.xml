@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?><!--
+    Copyright (c) 2010 Neil Bartlett.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Neil Bartlett - initial API and implementation
+ -->
+
+<plugin>
+   <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="bndtools.makeBundleContribution"
+            nameFilter="*.bnd"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="bndtools.MakeBundleWithRefreshAction"
+               enablesFor="+"
+               id="bndtools.makeBundle"
+               label="Make Bundle"
+               menubarPath="additions"
+               tooltip="Create a bundle from this definition file">
+         </action>
+      </objectContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="bndtools.bndEditorContribution"
+            targetID="bndtools.bndEditor">
+         <action
+               class="bndtools.MakeBundleWithRefreshAction"
+               icon="icons/brick.png"
+               id="bndtools.makeBundleAction"
+               label="Make Bundle"
+               style="push"
+               toolbarPath="Normal/additions">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            extensions="bnd"
+            icon="icons/brick.png"
+            id="bndtools.bndEditor"
+            name="Bnd Bundle Editor">
+      </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            filenames="bnd.bnd"
+            icon="icons/bricks.png"
+            id="bndtools.bndProjectEditor"
+            name="Bnd Project Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="bndtools.wizardCategory"
+            name="Bnd OSGi Tools">
+      </category>
+      <wizard
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.EmptyBndFileWizard"
+            icon="icons/brick_add.png"
+            id="bndtools.newBndFile"
+            name="New Bnd Bundle Descriptor"
+            project="false">
+      </wizard>
+      <wizard
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.WrappingBndFileWizard"
+            icon="icons/package_add.png"
+            id="bndtools.wrappingBndWizard"
+            name="New Bnd Wrapper Script for Existing JARs">
+      </wizard>
+      <wizard
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.NewBndProjectWizardFactory"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            icon="icons/bricks.png"
+            id="bndtools.newProjWiz"
+            name="Bnd OSGi Project"
+            project="true">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="bndtools.viewCategory"
+            name="Bnd OSGi">
+      </category>
+      <view
+            category="bndtools.viewCategory"
+            class="bndtools.views.impexp.ImportsExportsView"
+            icon="icons/packages.gif"
+            id="bndtools.impExpView"
+            name="Imports/Exports"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         id="bndnature"
+         name="Bnd OSGi Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="bndtools.builder.BndProjectNature">
+         </run>
+      </runtime>
+      <requires-nature
+            id="org.eclipse.jdt.core.javanature">
+      </requires-nature>
+      <builder
+            id="bndtools.core.bndbuilder">
+      </builder>
+   </extension>
+   <extension
+         id="bndbuilder"
+         name="Bnd OSGi Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            callOnEmptyDelta="true"
+            hasNature="true">
+         <run
+               class="bndtools.builder.BndIncrementalBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="bndtools.nonBndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.builder.ToggleNatureAction"
+               enablesFor="1"
+               icon="icons/bnd_nature_add.png"
+               id="bndtools.addBndNatureAction"
+               label="Add Bnd OSGi Project Nature"
+               menubarPath="additions"
+               style="push">
+         </action>
+         <visibility>
+            <and>
+               <objectState
+                     name="projectNature"
+                     value="org.eclipse.jdt.core.javanature">
+               </objectState>
+               <not>
+                  <objectState
+                        name="projectNature"
+                        value="bndtools.bndnature">
+                  </objectState>
+               </not>
+            </and>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.bndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.builder.ToggleNatureAction"
+               enablesFor="1"
+               icon="icons/bnd_nature_remove.png"
+               id="bndtools.removeBndNatureAction"
+               label="Remove Bnd OSGi Project Nature"
+               menubarPath="additions"
+               style="push">
+         </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="bndtools.bndnature">
+            </objectState>
+         </visibility>
+      </objectContribution>
+   </extension>
+   <extension
+         id="bndproblem"
+         name="Bnd OSGi Problem Marker"
+         point="org.eclipse.core.resources.markers">
+      <persistent
+            value="true">
+      </persistent>
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <newWizardShortcut
+               id="bndtools.newProjWiz">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="bndtools.newBndFile">
+         </newWizardShortcut>
+         <viewShortcut
+               id="bndtools.impExpView">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         id="bnd_classpath_problem"
+         name="Bnd Repository Resolution Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.jdt.core.buildpath_problem">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+   <extension
+       point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+          id="aQute.bnd.classpath.container"
+          class="aQute.bnd.classpath.BndContainerInitializer"/>
+   </extension>
+   
+   <extension 
+       point="org.eclipse.jdt.ui.classpathContainerPage">
+      <classpathContainerPage
+          id="aQute.bnd.classpath.container"
+          name="Bnd Bundle Path"
+          class="aQute.bnd.classpath.BndContainerPage"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="aQute.bnd.junit.OSGiJUnitTabGroup"
+            description="Help!"
+            id="aQute.bnd.junit.OSGiJUnitTabGroup"
+            type="aQute.bnd.junit.launchconfig">
+         <launchMode
+               description="%jUnitTabGroup.description.debug"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+         <launchMode
+               description="%jUnitTabGroup.description.run"
+               mode="run">
+         </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="aQute.bnd.launch.LaunchTabGroup"
+            id="aQute.bnd.launch.tabgroup"
+            type="aQute.bnd.launch">
+      </launchConfigurationTabGroup>
+   </extension>
+   
+   	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+	    <launchConfigurationType
+           delegate="aQute.bnd.launch.LaunchDelegate"
+           id="aQute.bnd.launch"
+           modes="run, debug"
+           name="OSGi Run"
+           sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+           sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+	    </launchConfigurationType>	
+      <launchConfigurationType
+            delegate="aQute.bnd.junit.OSGiJUnitLauncherConfigurationDelegate"
+            delegateDescription="Launches the JUnit Tests in an OSGi Framework and injects a BundleContext"
+            delegateName="OSGi JUnit Tests"
+            id="aQute.bnd.junit.launchconfig"
+            migrationDelegate="org.eclipse.jdt.internal.junit.launcher.JUnitMigrationDelegate"
+            modes="run, debug"
+            name="OSGi JUnit Tests"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+	   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="OSGi JUnit"
+            icon="icons/bricks_junit.png"
+            class="aQute.bnd.junit.OSGiJUnitLaunchShortcut"
+            modes="run, debug"
+            id="org.eclipse.jdt.junit.junitShortcut">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+               	  <iterate>
+                     <adapt type="org.eclipse.jdt.core.IJavaElement">
+		                <test property="org.eclipse.jdt.core.isInJavaProject"/>
+		                <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test"/>
+		                <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true"/>
+		             </adapt>
+		          </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <!--
+         <perspective
+               id="org.eclipse.jdt.ui.JavaPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+         -->
+         <configurationType
+               id="org.eclipse.jdt.junit.launchconfig">
+         </configurationType>
+         <description
+               description="Debug a JUnit Test in an OSGi Framework"
+               mode="debug">
+         </description>
+         <description
+               description="Run an OSGi JUnit Test in an OSGi framework"
+               mode="run">
+         </description>
+      </shortcut>
+      <shortcut
+            class="aQute.bnd.launch.Shortcut"
+            icon="icons/bricks_run.png"
+            id="aQute.bnd.launch.shortcut"
+            label="OSGi Run"
+            modes="run, debug">
+         <!--
+         <perspective
+               id="org.eclipse.jdt.ui.JavaPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+         -->
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <adapt
+                           type="org.eclipse.jdt.core.IJavaElement">
+                        <test
+                              property="org.eclipse.jdt.core.isInJavaProject">
+                        </test>
+                        <test
+                              property="org.eclipse.jdt.core.hasTypeOnClasspath"
+                              value="junit.framework.Test">
+                        </test>
+                        <test
+                              forcePluginActivation="true"
+                              property="org.eclipse.jdt.junit.canLaunchAsJUnit">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+    <extension
+          point="org.eclipse.ui.importWizards">
+       <category
+             id="bndtools.importWizardsCategory"
+             name="Bnd OSGi Tools">
+       </category>
+       <wizard
+             category="bndtools.importWizardsCategory"
+             class="bndtools.wizards.ImportBundleRepositoryWizard"
+             icon="icons/brick_add.png"
+             id="bndtools.importRepositoryWizard"
+             name="Import Bundles from Repository">
+       </wizard>
+    </extension>
+    <extension
+          point="org.eclipse.ui.preferencePages">
+       <page
+             class="bndtools.pref.ui.BndPreferencePage"
+             id="bndtools.prefPages.basic"
+             name="Bnd OSGi Tools">
+       </page>
+    </extension>
+ </plugin>

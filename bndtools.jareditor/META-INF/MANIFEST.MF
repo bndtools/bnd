@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Bndtools JAR Editor Plug-in
+Bundle-SymbolicName: bndtools.jareditor;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Neil Bartlett
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.eclipse.ui,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.forms;bundle-version="[3.3,4)"

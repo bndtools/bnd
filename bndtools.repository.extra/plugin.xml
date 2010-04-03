@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="name.neilbartlett.eclipse.bndtools.repositoryContributor">
+         point="bndtools.core.repositoryContributor">
       <repository
             name="Extras"
             path="repo/">
