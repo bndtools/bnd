@@ -11,19 +11,24 @@
 package name.neilbartlett.eclipse.bndtools.wizards;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import name.neilbartlett.eclipse.bndtools.Plugin;
 import name.neilbartlett.eclipse.bndtools.editor.model.BndEditModel;
 import name.neilbartlett.eclipse.bndtools.utils.FileUtils;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -48,7 +53,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 		super.addPages();
 		
 		mainPage = new NewBndFileWizardPage("newFilePage1", selection); //$NON-NLS-1$
-		mainPage.setFileExtension("bnd");
+		mainPage.setFileExtension("bnd"); //$NON-NLS-1$
 		mainPage.setAllowExistingResources(false);
 		
 		addPage(mainPage);
@@ -56,19 +61,22 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 
 	@Override
 	public boolean performFinish() {
+		// Add to the bnd.bnd descriptor
+		try {
+			IPath containerPath = mainPage.getContainerFullPath();
+			IContainer container = (IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
+			if(!enableSubBundles(container))
+				return false;
+		} catch (Exception e) {
+			ErrorDialog.openError(getShell(), Messages.EmptyBndFileWizard_errorTitleNewBndFile, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.EmptyBndFileWizard_errorEnablingSubBundles, e));
+			return false;
+		}
+		
 		IFile file = mainPage.createNewFile();
 		if (file == null) {
 			return false;
 		}
 		
-		// Add to the bnd.bnd descriptor
-		try {
-			addToBndBnd(file);
-		} catch (Exception e) {
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding new bundle to project.", e));
-			return false;
-		}
-
 		// Open editor on new file.
 		IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
 		try {
@@ -79,34 +87,68 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 				}
 			}
 		} catch (PartInitException e) {
-			ErrorDialog.openError(getShell(), "New Bnd File", null, new Status(
+			ErrorDialog.openError(getShell(), Messages.EmptyBndFileWizard_errorTitleNewBndFile, null, new Status(
 					IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-					"Error opening editor.", e));
+					Messages.EmptyBndFileWizard_errorOpeningBndEditor, e));
 		}
 
 		return true;
 	}
-	void addToBndBnd(IFile file) throws CoreException, IOException {
-		IPath relativePath = file.getProjectRelativePath();
-		
-		IFile projectFile = file.getProject().getFile(Project.BNDFILE);
+	/**
+	 * @param container
+	 * @return Whether it is okay to proceed with the wizard finish processing.
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	boolean enableSubBundles(IContainer container) throws CoreException, IOException {
+		// Read current setting for sub-bundles
+		IFile projectFile = container.getProject().getFile(Project.BNDFILE);
 		IDocument projectDoc = FileUtils.readFully(projectFile);
 		if(projectDoc == null)
 			projectDoc = new Document();
 		
 		BndEditModel model = new BndEditModel();
 		model.loadFrom(projectDoc);
-		Collection<IPath> subBndFiles = model.getSubBndFiles();
-		if(subBndFiles == null)
-			subBndFiles = new LinkedList<IPath>();
+		Collection<String> subBndFiles = model.getSubBndFiles();
+		final boolean enableSubs;
 		
-		if(!subBndFiles.contains(relativePath)) {
-			subBndFiles.add(relativePath);
-			model.setSubBndFiles(subBndFiles);
+		// If -sub is unset, ask if it should be set to *.bnd
+		if(subBndFiles == null || subBndFiles.isEmpty()) {
+			IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+			String enableSubsPref = prefs.getString(Plugin.PREF_ENABLE_SUB_BUNDLES);
+			
+			if(MessageDialogWithToggle.ALWAYS.equals(enableSubsPref)) {
+				enableSubs = true;
+			} else if(MessageDialogWithToggle.NEVER.equals(enableSubsPref)) {
+				enableSubs = false;
+			} else {
+				// Null, or any other value, implies "prompt"
+				MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoCancelQuestion(getShell(), Messages.EmptyBndFileWizard_titleSubBundlesNotEnabled, Messages.EmptyBndFileWizard_questionSubBundlesNotEnabled, Messages.EmptyBndFileWizard_selectAsDefault, false, null, null);
+				final int returnCode = dialog.getReturnCode();
+				if(returnCode == IDialogConstants.CANCEL_ID) {
+					return false;
+				}
+				enableSubs = returnCode == IDialogConstants.YES_ID;
+
+				// Persist the selection if the toggle is on
+				if(dialog.getToggleState()) {
+					enableSubsPref = (returnCode == IDialogConstants.YES_ID) ? MessageDialogWithToggle.ALWAYS : MessageDialogWithToggle.NEVER;
+					prefs.setValue(Plugin.PREF_ENABLE_SUB_BUNDLES, enableSubsPref);
+				}
+			}
+		} else {
+			enableSubs = false;
+		}
+		
+		// Actually do it!
+		if(enableSubs) {
+			model.setSubBndFiles(Arrays.asList(new String[] { "*.bnd" })); //$NON-NLS-1$
 			model.saveChangesTo(projectDoc);
 			
 			FileUtils.writeFully(projectDoc, projectFile, true);
 		}
+		
+		return true;
 	}
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.workbench = workbench;

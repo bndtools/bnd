@@ -395,4 +395,12 @@
              name="Import Bundles from Repository">
        </wizard>
     </extension>
-</plugin>
+    <extension
+          point="org.eclipse.ui.preferencePages">
+       <page
+             class="name.neilbartlett.eclipse.bndtools.pref.ui.BndPreferencePage"
+             id="name.neilbartlett.eclipse.bndtools.prefPages.basic"
+             name="Bnd OSGi Tools">
+       </page>
+    </extension>
+ </plugin>

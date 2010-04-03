@@ -374,12 +374,13 @@ public class BndEditModel {
 		return false;
 	}
 	
-	public Collection<IPath> getSubBndFiles() {
-		return doGetPathList(aQute.lib.osgi.Constants.SUB);
+	public Collection<String> getSubBndFiles() {
+		return doGetStringList(aQute.lib.osgi.Constants.SUB);
 	}
 
-	public void setSubBndFiles(Collection<IPath> subBndFiles) {
-		doSetPathList(aQute.lib.osgi.Constants.SUB, getSubBndFiles(), subBndFiles);
+	public void setSubBndFiles(Collection<String> subBndFiles) {
+		Collection<String> oldValue = getSubBndFiles();
+		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
 	}
 	
 	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

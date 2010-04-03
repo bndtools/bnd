@@ -34,6 +34,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String EXTPOINT_REPO_CONTRIB = "repositoryContributor";
 
 	public static final String ID_FRAMEWORKS_PREF_PAGE = "name.neilbartlett.eclipse.bndtools.prefsPages.osgiFrameworks";
+	public static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
 	
 	private static volatile Plugin plugin;
 	private BundleContext bundleContext;
