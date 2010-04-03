@@ -19,7 +19,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 		super(Constants.RUNBUNDLES, parent, toolkit, style);
 	}
 	@Override
-	protected void createSection(Section section, FormToolkit toolkit) {
+	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Run Bundles");
 		section.setDescription("The selected bundles will be added to the runtime framework.");
 		super.createSection(section, toolkit);
@@ -27,7 +27,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 275;
+		gd.heightHint = 200;
 		return gd;
 	}
 	@Override

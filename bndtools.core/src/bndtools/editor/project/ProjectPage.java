@@ -47,6 +47,9 @@ public class ProjectPage extends FormPage {
 
 		RunBundlesPart runBundlesPart = new RunBundlesPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
+		
+		RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE);
+		managedForm.addPart(runPropertiesPart);
 
 		// Layout
 		GridLayout layout;
@@ -68,7 +71,7 @@ public class ProjectPage extends FormPage {
 		panel1.setLayout(layout);
 		
 		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 0;
+		layout.verticalSpacing = 10;
 		layout.horizontalSpacing = 0;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
@@ -83,5 +86,7 @@ public class ProjectPage extends FormPage {
 		subBundlesPart.getSection().setLayoutData(gd);
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		runBundlesPart.getSection().setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+		runPropertiesPart.getSection().setLayoutData(gd);
 	};
 }

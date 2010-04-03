@@ -1,20 +1,16 @@
-package bndtools.editor.project;
+package bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 
-
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -22,7 +18,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
@@ -33,23 +28,26 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import bndtools.editor.components.MapContentProvider;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.VersionedClause;
 
-public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
+public abstract class PropertyTableSectionPart extends SectionPart implements PropertyChangeListener {
 
 	private final String propertyName;
+	private Map<String,String> properties;
+	private BndEditModel model;
+
 	private Table table;
 	private TableViewer viewer;
-	
-	private BndEditModel model;
-	private List<VersionedClause> bundles;
+	private MapEntryCellModifier<String, String> modifierProperties;
 
-	protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
+	public PropertyTableSectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		this.propertyName = propertyName;
+		
 		createSection(getSection(), toolkit);
 	}
+
 	void createSection(Section section, FormToolkit toolkit) {
 		// Toolbar buttons
 		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
@@ -66,24 +64,35 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-
+		
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+		viewer = new TableViewer(table);
+		modifierProperties = new MapEntryCellModifier<String, String>(viewer);
+
 		table.setHeaderVisible(true);
 		table.setLinesVisible(false);
 		
-		TableColumn col;
+		modifierProperties.addColumnsToTable();
+
+		viewer.setUseHashlookup(true);
+		viewer.setColumnProperties(modifierProperties.getColumnProperties());
+		modifierProperties.addCellEditorsToViewer();
+		viewer.setCellModifier(modifierProperties);
 		
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Bundle");
-		col.setWidth(200);
+		viewer.setContentProvider(new MapContentProvider());
+		viewer.setLabelProvider(new PropertiesTableLabelProvider());
 		
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Version");
-		col.setWidth(150);
+		// Layout
+		GridLayout layout = new GridLayout(1, false);
+		layout.horizontalSpacing = 0;
+		layout.verticalSpacing = 0;
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		composite.setLayout(layout);
 		
-		viewer = new TableViewer(table);
-		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new VersionedClauseLabelProvider());
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 70;
+		table.setLayoutData(gd);
 		
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -94,80 +103,39 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doAdd();
+				doAddProperty();
 			}
 		});
 		removeItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doRemove();
+				doRemoveProperty();
 			}
 		});
-		
-		// Layout
-		GridLayout layout = new GridLayout(1, false);
-		layout.horizontalSpacing = 0; layout.verticalSpacing = 0;
-		layout.marginHeight = 0; layout.marginWidth = 0;
-		composite.setLayout(layout);
-		
-		GridData gd = getTableLayoutData();
-		table.setLayoutData(gd);
-	}
-	protected GridData getTableLayoutData() {
-		return new GridData(SWT.FILL, SWT.FILL, true, false);
-	}
-	private void doAdd() {
-		List<VersionedClause> copy = new ArrayList<VersionedClause>(bundles);
-		RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(copy);
-		customizeWizard(wizard);
-		WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-		if(dialog.open() == Window.OK) {
-			bundles = copy;
-			viewer.setInput(bundles);
-			markDirty();
-		}
-	}
-	private void doRemove() {
-		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-		if(!selection.isEmpty()) {
-			Iterator<?> elements = selection.iterator();
-			List<Object> removed = new LinkedList<Object>();
-			while(elements.hasNext()) {
-				Object element = elements.next();
-				if(bundles.remove(element))
-					removed.add(element);
-			}
-			
-			if(!removed.isEmpty()) {
-				viewer.remove(removed.toArray(new Object[removed.size()]));
+		modifierProperties.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
 				markDirty();
 			}
+		});
+	}
+	void doAddProperty() {
+		properties.put("name", "value");
+		viewer.add("name");
+		markDirty();
+		
+		viewer.editElement("name", 0);
+	}
+	void doRemoveProperty() {
+		@SuppressWarnings("rawtypes")
+		Iterator iter = ((IStructuredSelection) viewer.getSelection()).iterator();
+		while(iter.hasNext()) {
+			Object item = iter.next();
+			properties.remove(item);
+			viewer.remove(item);
 		}
-	}
-	@Override
-	public void commit(boolean onSave) {
-		super.commit(onSave);
-		saveToModel(model, bundles);
+		markDirty();
 	}
 	
-	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
-	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
-	
-	protected void customizeWizard(RepoBundleSelectionWizard wizard) {
-		// Do nothing
-	}
-	
-	@Override
-	public void refresh() {
-		List<VersionedClause> bundles = loadFromModel(model);
-		if(bundles != null) {
-			this.bundles = new ArrayList<VersionedClause>(bundles);
-		} else {
-			this.bundles = new ArrayList<VersionedClause>();
-		}
-		viewer.setInput(this.bundles);
-		super.refresh();
-	}
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
@@ -178,7 +146,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	@Override
 	public void dispose() {
 		super.dispose();
-		if(model != null) model.removePropertyChangeListener(propertyName, this);
+		if(model != null)
+			model.removePropertyChangeListener(propertyName, this);
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
 		IFormPage page = (IFormPage) getManagedForm().getContainer();
@@ -188,4 +157,24 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 			markStale();
 		}
 	}
+	@Override
+	public void refresh() {
+		Map<String, String> tmp = loadProperties(model);
+		if(tmp == null) {
+			this.properties = new HashMap<String, String>();
+		} else {
+			this.properties = new HashMap<String, String>(tmp);
+		}
+		viewer.setInput(properties);
+		super.refresh();
+	}
+	@Override
+	public void commit(boolean onSave) {
+		super.commit(onSave);
+		saveProperties(model, properties);
+	}
+	
+	protected abstract Map<String, String> loadProperties(BndEditModel model);
+	
+	protected abstract void saveProperties(BndEditModel model, Map<String, String> props);
 }

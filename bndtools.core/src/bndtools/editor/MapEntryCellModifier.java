@@ -8,12 +8,11 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
-package bndtools.editor.components;
+package bndtools.editor;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -68,21 +67,30 @@ public class MapEntryCellModifier<K,V> implements ICellModifier {
 		@SuppressWarnings("unchecked")
 		K key = (K) element;
 		
+		boolean changed = false;
 		if(PROP_VALUE.equals(property)) {
 			@SuppressWarnings("unchecked")
 			V newValue = (V) editResult;
-			map.put(key, newValue);
+			V previous = map.put(key, newValue);
+			
+			changed = (newValue == null && previous != null)
+					|| !newValue.equals(previous);
 			viewer.refresh(key);
 		} else if(PROP_NAME.equals(property)) {
-			V value = map.remove(key);
-			viewer.remove(key);
-			
-			@SuppressWarnings("unchecked")
-			K newKey = (K) editResult;
-			map.put(newKey, value);
-			viewer.add(newKey);
+			if(!element.equals(editResult)) {
+				V value = map.remove(key);
+				viewer.remove(key);
+				
+				@SuppressWarnings("unchecked")
+				K newKey = (K) editResult;
+				map.put(newKey, value);
+				viewer.add(newKey);
+				changed = true;
+			}
 		}
-		propertySupport.firePropertyChange(property, null, editResult);
+		
+		if(changed)
+			propertySupport.firePropertyChange(property, null, editResult);
 	}
 	public void addColumnsToTable() {
 		Table table = viewer.getTable();

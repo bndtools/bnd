@@ -22,9 +22,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
-
+import java.util.Properties;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -34,11 +33,10 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
-import bndtools.BndConstants;
-
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
+import bndtools.BndConstants;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -63,7 +61,10 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.VERSIONPOLICY,
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
 		aQute.lib.osgi.Constants.CLASSPATH,
-		aQute.lib.osgi.Constants.BUILDPATH
+		aQute.lib.osgi.Constants.BUILDPATH,
+		aQute.lib.osgi.Constants.RUNBUNDLES,
+		aQute.lib.osgi.Constants.RUNPROPERTIES,
+		aQute.lib.osgi.Constants.SUB
 	};
 	
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -267,7 +268,6 @@ public class BndEditModel {
 			}
 		});
 	}
-
 	public void setExportedPackages(Collection<? extends ExportedPackage> exports) {
 		boolean referencesBundleVersion = false;
 		
@@ -286,7 +286,6 @@ public class BndEditModel {
 			setBundleVersion(new Version(0, 0, 0).toString());
 		}
 	}
-
 	public void addExportedPackage(ExportedPackage export) {
 		Collection<ExportedPackage> exports = getExportedPackages();
 		exports = (exports == null) ? new ArrayList<ExportedPackage>() : new ArrayList<ExportedPackage>(exports);
@@ -300,12 +299,10 @@ public class BndEditModel {
 			}
 		});
 	}
-
 	public void setServiceComponents(Collection<? extends ServiceComponent> components) {
 		List<ServiceComponent> oldValue = getServiceComponents();
 		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
 	}
-
 	public List<HeaderClause> getHeaderClauses(String name) {
 		return doGetClauseList(name, new Converter<HeaderClause, Entry<String,Map<String,String>>>() {
 			public HeaderClause convert(Entry<String, Map<String, String>> input) {
@@ -313,12 +310,10 @@ public class BndEditModel {
 			}
 		}); 
 	}
-
 	public void setHeaderClauses(String name, Collection<? extends HeaderClause> clauses) {
 		List<HeaderClause> oldValue = getHeaderClauses(name);
 		doSetClauseList(name, oldValue, clauses);
 	}
-
 	public List<ImportPattern> getImportPatterns() {
 		return doGetClauseList(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
 			public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
@@ -326,12 +321,10 @@ public class BndEditModel {
 			}
 		});
 	}
-
 	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
 		List<ImportPattern> oldValue = getImportPatterns();
 		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
 	}
-	
 	public List<VersionedClause> getBuildPath() {
 		return doGetClauseList(aQute.lib.osgi.Constants.BUILDPATH, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
 			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
@@ -339,12 +332,10 @@ public class BndEditModel {
 			}
 		});
 	}
-	
 	public void setBuildPath(Collection<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths);
 	}
-	
 	public List<VersionedClause> getRunBundles() {
 		return doGetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
 			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
@@ -352,12 +343,10 @@ public class BndEditModel {
 			}
 		});
 	}
-
 	public void setRunBundles(Collection<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
 	}
-	
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();
 		if(privatePackages != null) {
@@ -384,8 +373,18 @@ public class BndEditModel {
 		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
 	}
 	
+	public Map<String, String> getRunProperties() {
+		return doGetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES);
+	}
+	
+	public void setRunProperties(Map<String, String> props) {
+		Map<String, String> old = getRunProperties();
+		doSetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props);
+	}
+	
+	
 	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
-		R result;
+		R result;	
 		if(objectProperties.containsKey(name)) {
 			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
@@ -500,6 +499,39 @@ public class BndEditModel {
 					buffer.append(LIST_SEPARATOR);
 			}
 			doSetObject(name, oldValue, newValue, buffer.toString());
+		}
+	}
+	
+	Map<String, String> doGetProperties(String name) {
+		return doGetObject(name, new Converter<Map<String, String>, String>() {
+			public Map<String, String> convert(String input) throws IllegalArgumentException {
+				return OSGiHeader.parseProperties(input);
+			}
+		});
+	}
+	
+	void doSetProperties(String propertyName, Map<String, String> oldValue, Map<String, String> newValue) {
+		StringBuilder buffer = new StringBuilder();
+		if(newValue == null || newValue.isEmpty()) {
+			doSetObject(propertyName, oldValue, null, null);
+		} else {
+			for(Iterator<Entry<String, String>> iter = newValue.entrySet().iterator(); iter.hasNext(); ) {
+				Entry<String, String> entry = iter.next();
+				
+				String name = entry.getKey();
+				String value = entry.getValue();
+				if(value != null && value.length() > 0) {
+					// Quote commas in the value
+					value = value.replaceAll(",", "','");
+					// Quote equals in the value
+					value = value.replaceAll("=", "'='");
+				}
+				buffer.append(name).append('=').append(value != null ? value : "");
+
+				if(iter.hasNext())
+					buffer.append(LIST_SEPARATOR);
+			}
+			doSetObject(propertyName, oldValue, newValue, buffer.toString());
 		}
 	}
 	

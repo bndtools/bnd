@@ -19,7 +19,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 		super(Constants.BUILDPATH, parent, toolkit, style);
 	}
 	@Override
-	protected void createSection(Section section, FormToolkit toolkit) {
+	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Build Path");
 		section.setDescription("The selected bundles will be added to the project build path for compilation.");
 		super.createSection(section, toolkit);
@@ -27,7 +27,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 175;
+		gd.heightHint = 125;
 		return gd;
 	}
 	@Override

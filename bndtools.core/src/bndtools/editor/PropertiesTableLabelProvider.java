@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
-package bndtools.editor.components;
+package bndtools.editor;
 
 import java.util.Map;
 

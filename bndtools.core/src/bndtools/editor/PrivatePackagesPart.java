@@ -102,7 +102,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 		table.setHeaderVisible(false);
-		table.setLinesVisible(true);
+		table.setLinesVisible(false);
 		
 		TableColumn col;
 		col = new TableColumn(table, SWT.NONE);
