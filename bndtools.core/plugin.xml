@@ -403,4 +403,17 @@
              name="Bnd OSGi Tools">
        </page>
     </extension>
+    <extension
+          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+       <launchConfigurationTypeImage
+             configTypeID="aQute.bnd.launch"
+             icon="icons/bricks_run.png"
+             id="bndtools.core.launchConfigImages.run">
+       </launchConfigurationTypeImage>
+       <launchConfigurationTypeImage
+             configTypeID="aQute.bnd.junit.launchconfig"
+             icon="icons/bricks_junit.png"
+             id="bndtools.core.launchConfigImages.test">
+       </launchConfigurationTypeImage>
+    </extension>
  </plugin>

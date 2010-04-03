@@ -42,7 +42,7 @@ public class OverviewFormPage extends FormPage {
 		ScrolledForm form = managedForm.getForm();
 		form.setText("General");
 		toolkit.decorateFormHeading(form.getForm());
-		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter());
+		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
 		// Create Controls
 		Composite body = form.getBody();

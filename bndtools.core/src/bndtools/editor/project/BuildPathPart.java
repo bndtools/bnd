@@ -4,6 +4,7 @@ import java.util.List;
 
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -22,6 +23,12 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 		section.setText("Build Path");
 		section.setDescription("The selected bundles will be added to the project build path for compilation.");
 		super.createSection(section, toolkit);
+	}
+	@Override
+	protected GridData getTableLayoutData() {
+		GridData gd = super.getTableLayoutData();
+		gd.heightHint = 175;
+		return gd;
 	}
 	@Override
 	protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {

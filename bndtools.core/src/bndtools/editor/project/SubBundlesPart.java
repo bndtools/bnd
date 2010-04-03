@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -141,17 +142,21 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 		lock.modifyOperation(new Runnable() {
 			public void run() {
 				IMessageManager msgs = getManagedForm().getMessageManager();
+				Control control = getSection().getDescriptionControl();
+				if(control == null) control = getSection().getClient();
+				
 				if(subBundleList == null || subBundleList.isEmpty()) {
 					button.setGrayed(false);
 					button.setSelection(false);
-					msgs.removeMessage(WARNING_EDITED_MANUALLY, button);
+					msgs.removeMessage(WARNING_EDITED_MANUALLY, control);
 				} else if(subBundleList.size() == 1 && subBundleList.iterator().next().equalsIgnoreCase(ALL_BND)) {
 					button.setGrayed(false);
 					button.setSelection(true);
-					msgs.removeMessage(WARNING_EDITED_MANUALLY, button);
+					msgs.removeMessage(WARNING_EDITED_MANUALLY, control);
 				} else {
 					button.setGrayed(true);
-					msgs.addMessage(WARNING_EDITED_MANUALLY, "The '-sub' setting has been edited manually in the bnd.bnd file. Changing here will override the manually provided setting.", null, IMessageProvider.WARNING, button);
+					button.setSelection(true);
+					msgs.addMessage(WARNING_EDITED_MANUALLY, "The '-sub' setting has been edited manually in the bnd.bnd file. Changing here will override the manually provided setting.", null, IMessageProvider.WARNING, control);
 				}
 			}
 		});

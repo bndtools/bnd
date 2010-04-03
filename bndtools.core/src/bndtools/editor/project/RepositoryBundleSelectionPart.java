@@ -110,9 +110,11 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		layout.marginHeight = 0; layout.marginWidth = 0;
 		composite.setLayout(layout);
 		
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gd.heightHint = 100;
+		GridData gd = getTableLayoutData();
 		table.setLayoutData(gd);
+	}
+	protected GridData getTableLayoutData() {
+		return new GridData(SWT.FILL, SWT.FILL, true, false);
 	}
 	private void doAdd() {
 		List<VersionedClause> copy = new ArrayList<VersionedClause>(bundles);

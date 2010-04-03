@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.forms.IMessage;
@@ -41,14 +42,16 @@ public class MessagesPopupDialog extends PopupDialog {
 	
 	private final Control controlAttachment;
 	private final IMessage[] messages;
+	private final IWorkbenchPart part;
 	private final HyperlinkGroup hyperlinkGroup;
 	
 	private final Image bulletImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bullet_go.png").createImage();
 	
-	public MessagesPopupDialog(Control controlAttachment, IMessage[] messages) {
+	public MessagesPopupDialog(Control controlAttachment, IMessage[] messages, IWorkbenchPart part) {
 		super(null, PopupDialog.INFOPOPUP_SHELLSTYLE, true, false, false, false, false, null, null);
 		this.controlAttachment = controlAttachment;
 		this.messages = messages;
+		this.part = part;
 		
 		this.hyperlinkGroup = new HyperlinkGroup(controlAttachment.getDisplay());
 		this.hyperlinkGroup.setHyperlinkUnderlineMode(HyperlinkSettings.UNDERLINE_ALWAYS);
@@ -123,6 +126,8 @@ public class MessagesPopupDialog extends PopupDialog {
 						public void linkActivated(HyperlinkEvent e) {
 							fix.run();
 							close();
+//							part.getSite().getPage().activate(part);
+							part.setFocus();
 						};
 					});
 					fixLink.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));

@@ -37,7 +37,7 @@ public class ComponentsPage extends FormPage {
 		ScrolledForm form = managedForm.getForm();
 		FormToolkit toolkit = managedForm.getToolkit();
 		toolkit.decorateFormHeading(form.getForm());
-		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter());
+		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 		
 		form.setText("Components");
 		block.createContent(managedForm);

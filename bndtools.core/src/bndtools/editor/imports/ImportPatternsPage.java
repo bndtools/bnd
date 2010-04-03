@@ -42,7 +42,7 @@ public class ImportPatternsPage extends FormPage {
 		
 		Form form = scrolledForm.getForm();
 		toolkit.decorateFormHeading(form);
-		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter());
+		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 		
 		block.createContent(managedForm);
 	}

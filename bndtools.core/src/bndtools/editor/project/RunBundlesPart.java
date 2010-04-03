@@ -4,6 +4,7 @@ import java.util.List;
 
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -22,6 +23,12 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 		section.setText("Run Bundles");
 		section.setDescription("The selected bundles will be added to the runtime framework.");
 		super.createSection(section, toolkit);
+	}
+	@Override
+	protected GridData getTableLayoutData() {
+		GridData gd = super.getTableLayoutData();
+		gd.heightHint = 275;
+		return gd;
 	}
 	@Override
 	protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {

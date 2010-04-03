@@ -31,7 +31,7 @@ public class ProjectPage extends FormPage {
 		ScrolledForm form = managedForm.getForm();
 		form.setText("Project");
 		tk.decorateFormHeading(form.getForm());
-		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter());
+		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
 		// Create Controls
 		Composite body = form.getBody();
@@ -39,12 +39,12 @@ public class ProjectPage extends FormPage {
 		Composite panel1 = tk.createComposite(body);
 		Composite panel2 = tk.createComposite(body);
 		
-		BuildPathPart buildPathPart = new BuildPathPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-		managedForm.addPart(buildPathPart);
-
 		SubBundlesPart subBundlesPart = new SubBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(subBundlesPart);
 		
+		BuildPathPart buildPathPart = new BuildPathPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+		managedForm.addPart(buildPathPart);
+
 		RunBundlesPart runBundlesPart = new RunBundlesPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
 
