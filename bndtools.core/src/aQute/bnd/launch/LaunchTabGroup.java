@@ -11,6 +11,7 @@ public class LaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
         		new BndLaunchTab(),
                 new JavaArgumentsTab(),
                 new JavaClasspathTab(),
+                new SourceLookupTab(),
                 new JavaJRETab(),
                 new EnvironmentTab(),
                 new CommonTab(),

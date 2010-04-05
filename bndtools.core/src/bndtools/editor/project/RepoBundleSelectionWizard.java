@@ -1,7 +1,6 @@
 package bndtools.editor.project;
 
-import java.util.Collection;
-
+import java.util.List;
 
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
@@ -16,7 +15,7 @@ public class RepoBundleSelectionWizard extends Wizard {
 	 * Create a wizard for editing the specified list of bundles. The supplied collection will be modified by this wizard.
 	 * @param bundles A mutable collection of bundles.
 	 */
-	public RepoBundleSelectionWizard(Collection<VersionedClause> bundles) {
+	public RepoBundleSelectionWizard(List<VersionedClause> bundles) {
 		selectionPage.setSelectedBundles(bundles);
 		
 		addPage(selectionPage);

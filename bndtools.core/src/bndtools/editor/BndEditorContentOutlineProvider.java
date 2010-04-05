@@ -12,6 +12,7 @@ package bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -60,7 +61,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		
 		if(parentElement instanceof String) {
 			if(BndEditor.COMPONENTS_PAGE.equals(parentElement)) {
-				List<ServiceComponent> components = model.getServiceComponents();
+				Collection<ServiceComponent> components = model.getServiceComponents();
 				if(components != null)
 					result = (ServiceComponent[]) components.toArray(new ServiceComponent[components.size()]);
 			} else if(BndEditor.EXPORTS_PAGE.equals(parentElement)) {
@@ -84,7 +85,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 	public boolean hasChildren(Object element) {
 		if(element instanceof String) {
 			if(BndEditor.COMPONENTS_PAGE.equals(element)) {
-				List<ServiceComponent> components = model.getServiceComponents();
+				Collection<ServiceComponent> components = model.getServiceComponents();
 				return components != null && !components.isEmpty();
 			}
 			if(BndEditor.EXPORTS_PAGE.equals(element)) {

@@ -108,11 +108,11 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 		return new ImportPattern(text, new HashMap<String, String>());
 	}
 	@Override
-	protected Collection<ImportPattern> loadFromModel(BndEditModel model) {
+	protected List<ImportPattern> loadFromModel(BndEditModel model) {
 		return model.getImportPatterns();
 	}
 	@Override
-	protected void saveToModel(BndEditModel model, Collection<? extends ImportPattern> clauses) {
+	protected void saveToModel(BndEditModel model, List<? extends ImportPattern> clauses) {
 		model.setImportPatterns(clauses);
 	}
 }

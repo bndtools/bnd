@@ -241,15 +241,15 @@ public class BndEditModel {
 	public List<String> getPrivatePackages() {
 		return doGetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
 	}
-	public void setPrivatePackages(Collection<? extends String> packages) {
-		Collection<String> oldPackages = getPrivatePackages();
+	public void setPrivatePackages(List<? extends String> packages) {
+		List<String> oldPackages = getPrivatePackages();
 		doSetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages);
 	}
 	public List<String> getClassPath() {
 		return doGetStringList(aQute.lib.osgi.Constants.CLASSPATH);
 	}
 	public void addPrivatePackage(String packageName) {
-		Collection<String> packages = getPrivatePackages();
+		List<String> packages = getPrivatePackages();
 		if(packages == null)
 			packages = new ArrayList<String>();
 		else
@@ -257,7 +257,7 @@ public class BndEditModel {
 		packages.add(packageName);
 		setPrivatePackages(packages);
 	}
-	public void setClassPath(Collection<? extends String> classPath) {
+	public void setClassPath(List<? extends String> classPath) {
 		List<String> oldClassPath = getClassPath();
 		doSetStringList(aQute.lib.osgi.Constants.CLASSPATH, oldClassPath, classPath);
 	}
@@ -268,7 +268,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setExportedPackages(Collection<? extends ExportedPackage> exports) {
+	public void setExportedPackages(List<? extends ExportedPackage> exports) {
 		boolean referencesBundleVersion = false;
 		
 		if(exports != null) {
@@ -287,7 +287,7 @@ public class BndEditModel {
 		}
 	}
 	public void addExportedPackage(ExportedPackage export) {
-		Collection<ExportedPackage> exports = getExportedPackages();
+		List<ExportedPackage> exports = getExportedPackages();
 		exports = (exports == null) ? new ArrayList<ExportedPackage>() : new ArrayList<ExportedPackage>(exports);
 		exports.add(export);
 		setExportedPackages(exports);
@@ -299,7 +299,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setServiceComponents(Collection<? extends ServiceComponent> components) {
+	public void setServiceComponents(List<? extends ServiceComponent> components) {
 		List<ServiceComponent> oldValue = getServiceComponents();
 		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
 	}
@@ -310,7 +310,7 @@ public class BndEditModel {
 			}
 		}); 
 	}
-	public void setHeaderClauses(String name, Collection<? extends HeaderClause> clauses) {
+	public void setHeaderClauses(String name, List<? extends HeaderClause> clauses) {
 		List<HeaderClause> oldValue = getHeaderClauses(name);
 		doSetClauseList(name, oldValue, clauses);
 	}
@@ -321,7 +321,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setImportPatterns(Collection<? extends ImportPattern> patterns) {
+	public void setImportPatterns(List<? extends ImportPattern> patterns) {
 		List<ImportPattern> oldValue = getImportPatterns();
 		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
 	}
@@ -332,7 +332,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setBuildPath(Collection<? extends VersionedClause> paths) {
+	public void setBuildPath(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths);
 	}
@@ -343,7 +343,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	public void setRunBundles(Collection<? extends VersionedClause> paths) {
+	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
 	}
@@ -364,12 +364,12 @@ public class BndEditModel {
 		return false;
 	}
 	
-	public Collection<String> getSubBndFiles() {
+	public List<String> getSubBndFiles() {
 		return doGetStringList(aQute.lib.osgi.Constants.SUB);
 	}
 
-	public void setSubBndFiles(Collection<String> subBndFiles) {
-		Collection<String> oldValue = getSubBndFiles();
+	public void setSubBndFiles(List<String> subBndFiles) {
+		List<String> oldValue = getSubBndFiles();
 		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
 	}
 	
@@ -431,7 +431,7 @@ public class BndEditModel {
 		});
 	}
 
-	void doSetStringList(String name, Collection<? extends String> oldValue, Collection<? extends String> newValue) {
+	void doSetStringList(String name, List<? extends String> oldValue, List<? extends String> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
 			doSetObject(name, oldValue, null, null);
@@ -458,7 +458,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	void doSetPathList(String name, Collection<? extends IPath> oldValue, Collection<? extends IPath> newValue) {
+	void doSetPathList(String name, List<? extends IPath> oldValue, List<? extends IPath> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
 			doSetObject(name, oldValue, null, null);
@@ -487,7 +487,7 @@ public class BndEditModel {
 		});
 	}
 	
-	void doSetClauseList(String name, Collection<? extends HeaderClause> oldValue, Collection<? extends HeaderClause> newValue) {
+	void doSetClauseList(String name, List<? extends HeaderClause> oldValue, List<? extends HeaderClause> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
 			doSetObject(name, oldValue, null, null);

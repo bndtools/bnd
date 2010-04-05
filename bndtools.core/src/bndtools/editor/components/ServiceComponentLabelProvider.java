@@ -26,17 +26,17 @@ public class ServiceComponentLabelProvider extends LabelProvider {
 	
 	@Override
 	public String getText(Object element) {
-		String pattern = ((ServiceComponent) element).getName();
-		return pattern;
+		return toPattern(element);
 	}
 	
 	@Override
 	public Image getImage(Object element) {
 		Image result = null;
+		String pattern;
 		
-		ServiceComponent component = (ServiceComponent) element;
-		String pattern = component.getName();
-        if(component.isPath()) {
+		pattern = toPattern(element);
+		
+        if(pattern.indexOf('/') >= 0 || pattern.endsWith(".xml")) {
         	result = xmlImg;
         } else if(pattern.endsWith(".*")) {
         	result = pkgImg;
@@ -45,6 +45,19 @@ public class ServiceComponentLabelProvider extends LabelProvider {
         }
         
         return result;
+	}
+
+	protected String toPattern(Object element) {
+		String pattern;
+		if(element instanceof String) {
+			pattern = (String) element;
+		} else if(element instanceof ServiceComponent) {
+			ServiceComponent component = (ServiceComponent) element;
+			pattern = component.getName();
+		} else {
+			pattern = "<<error>>";
+		}
+		return pattern;
 	}
 	
 	@Override

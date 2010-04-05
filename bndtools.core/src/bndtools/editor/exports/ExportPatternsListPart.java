@@ -118,11 +118,11 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 		return new ExportedPackage(text, new HashMap<String, String>());
 	}
 	@Override
-	protected Collection<ExportedPackage> loadFromModel(BndEditModel model) {
+	protected List<ExportedPackage> loadFromModel(BndEditModel model) {
 		return model.getExportedPackages();
 	}
 	@Override
-	protected void saveToModel(BndEditModel model, Collection<? extends ExportedPackage> clauses) {
+	protected void saveToModel(BndEditModel model, List<? extends ExportedPackage> clauses) {
 		model.setExportedPackages(clauses);
 	}
 }

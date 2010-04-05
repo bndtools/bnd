@@ -1,12 +1,10 @@
 package bndtools.editor.project;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -32,14 +30,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Tree;
 
-import bndtools.editor.model.VersionedClause;
-
 import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Constants;
+import bndtools.editor.model.VersionedClause;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	
-	private Collection<VersionedClause> selectedBundles = new ArrayList<VersionedClause>();
+	private List<VersionedClause> selectedBundles = new ArrayList<VersionedClause>();
 	private TreeViewer selectionViewer;
 	private TableViewer selectedViewer;
 
@@ -47,11 +44,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		super(pageName);
 	}
 	
-	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
+	public void setSelectedBundles(List<VersionedClause> selectedBundles) {
 		this.selectedBundles = selectedBundles;
 	}
 	
-	public Collection<VersionedClause> getSelectedBundles() {
+	public List<VersionedClause> getSelectedBundles() {
 		return this.selectedBundles;
 	}
 

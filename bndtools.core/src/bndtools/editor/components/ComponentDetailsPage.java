@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -252,8 +251,11 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		txtName.addListener(SWT.Modify, new Listener() {
 			public void handleEvent(Event event) {
 				if(refreshers.get() == 0) {
-					selected.setName(txtName.getText());
-					listPart.updateLabel(selected);
+					String oldName = selected.getName();
+					String newName = txtName.getText();
+					selected.setName(newName);
+					
+					listPart.updateLabel(oldName, newName);
 					markDirty(PROP_COMPONENT_NAME);
 					updateVisibility();
 				}

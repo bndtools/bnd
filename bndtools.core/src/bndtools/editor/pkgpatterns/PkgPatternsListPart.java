@@ -159,8 +159,8 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		btnMoveDown.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
 	protected abstract C newHeaderClause(String text);
-	protected abstract Collection<C> loadFromModel(BndEditModel model);
-	protected abstract void saveToModel(BndEditModel model, Collection<? extends C> clauses);
+	protected abstract List<C> loadFromModel(BndEditModel model);
+	protected abstract void saveToModel(BndEditModel model, List<? extends C> clauses);
 	protected List<C> getClauses() {
 		return clauses;
 	}

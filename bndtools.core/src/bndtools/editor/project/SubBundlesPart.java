@@ -3,14 +3,9 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.Collection;
-
+import java.util.List;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,11 +14,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
@@ -42,7 +32,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 	private final ModificationLock lock = new ModificationLock();
 	
 	private BndEditModel model;
-	private Collection<String> subBundleList;
+	private List<String> subBundleList;
 	private Button button;
 
 	public SubBundlesPart(Composite parent, FormToolkit toolkit, int style) {
