@@ -398,7 +398,7 @@
     <extension
           point="org.eclipse.ui.preferencePages">
        <page
-             class="bndtools.pref.ui.BndPreferencePage"
+             class="bndtools.preferences.ui.BndPreferencePage"
              id="bndtools.prefPages.basic"
              name="Bnd OSGi Tools">
        </page>

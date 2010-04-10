@@ -105,8 +105,6 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 			@Override
 			protected void addRows(int index, Collection<C> rows) {
 				doAddClauses(rows, index, true);
-				validate();
-				markDirty();
 			}
 			@Override
 			protected int indexOf(Object object) {
@@ -173,6 +171,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 	 * Add the specified clauses to the view.
 	 * @param newClauses The new clauses.
 	 * @param index The index at which to insert the new clauses OR -1 to append at the end.
+	 * @return 
 	 */
 	protected void doAddClauses(Collection<? extends C> newClauses, int index, boolean select) {
 		Object[] newClausesArray = newClauses.toArray(new Object[newClauses.size()]);

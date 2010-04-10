@@ -60,6 +60,7 @@ public class ExportPatternsBlock extends MasterDetailsBlock {
 		PkgPatternsDetailsPage page = new PkgPatternsDetailsPage(listPart, "Export Pattern Details");
 		detailsPart.registerPage(ExportedPackage.class, page);
 	}
+	
 	void setSelectedExport(ExportedPackage export) {
 		listPart.setSelectedClause(export);
 	}

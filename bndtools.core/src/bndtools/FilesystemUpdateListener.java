@@ -47,12 +47,20 @@ final class FilesystemUpdateListener extends BndListener {
 				WorkspaceJob job = new WorkspaceJob("update") {
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						IResource resource;
+						int depth;
 						if(file.isDirectory()) {
 							resource = workspaceRoot.getFolder(relativeChangedPath);
-						} else {
+							depth = 0;
+						} else if(file.isFile()) {
 							resource = workspaceRoot.getFile(relativeChangedPath);
+							depth = 0;
+						} else {
+							// File has been deleted or is something else, e.g a pipe.
+							// Check the parent folder
+							resource = workspaceRoot.getFolder(relativeChangedPath.removeLastSegments(1));
+							depth = 1;
 						}
-						resource.refreshLocal(0, monitor);
+						resource.refreshLocal(depth, monitor);
 						resource.setDerived(true);
 						return Status.OK_STATUS;
 					}

@@ -25,6 +25,7 @@ import aQute.bnd.plugin.Activator;
 import aQute.bnd.plugin.Central;
 import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
+import aQute.libg.version.Version;
 
 
 public class Plugin extends AbstractUIPlugin {
@@ -33,7 +34,12 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
 	public static final String EXTPOINT_REPO_CONTRIB = "repositoryContributor";
 
+	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
+
 	public static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
+	public static final String PREF_NOASK_EXPORT_VERSION = "noAskExportVersion";
+	public static final String PREF_DEFAULT_EXPORT_VERSION_POLICY = "defaultExportVertsionPolicy";
+	public static final String PREF_DEFAULT_EXPORT_VERSION = DEFAULT_VERSION.toString();
 	
 	private static volatile Plugin plugin;
 	private BundleContext bundleContext;

@@ -1,9 +1,9 @@
-package bndtools.pref.ui;
+package bndtools.preferences.ui;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "bndtools.pref.ui.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "bndtools.preferences.ui.messages"; //$NON-NLS-1$
 	public static String BndPreferencePage_optionAlwaysEnable;
 	public static String BndPreferencePage_optionNeverEnable;
 	public static String BndPreferencePage_optionPrompt;
