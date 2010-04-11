@@ -425,7 +425,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 				componentMap.putAll(addedMap);
 				if(insertionIndex == -1 || insertionIndex == componentNames.size()) {
 					componentNames.addAll(addedNames);
-					viewer.add(addedNames.toArray(new ServiceComponent[addedNames.size()]));
+					viewer.add(addedNames.toArray(new String[addedNames.size()]));
 				} else {
 					componentNames.addAll(insertionIndex, addedNames);
 					viewer.refresh();
@@ -439,6 +439,6 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	}
 
 	void setSelectedComponent(ServiceComponent component) {
-		viewer.setSelection(new StructuredSelection(component));
+		viewer.setSelection(new StructuredSelection(component.getName()));
 	}
 }
