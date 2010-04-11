@@ -45,15 +45,14 @@ import aQute.bnd.build.Project;
 
 public class EmptyBndFileWizard extends Wizard implements INewWizard {
 	
-	private IStructuredSelection selection;
-	private NewBndFileWizardPage mainPage;
-	private IWorkbench workbench;
+	protected IStructuredSelection selection;
+	protected IWorkbench workbench;
+	
+	protected NewBndFileWizardPage mainPage;
 
 	@Override
 	public void addPages() {
-		super.addPages();
-		
-		mainPage = new NewBndFileWizardPage("newFilePage1", selection); //$NON-NLS-1$
+		mainPage = new NewBndFileWizardPage("newFilePage", selection); //$NON-NLS-1$
 		mainPage.setFileExtension("bnd"); //$NON-NLS-1$
 		mainPage.setAllowExistingResources(false);
 		

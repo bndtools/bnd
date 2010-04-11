@@ -245,7 +245,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		lnkName.addHyperlinkListener(new HyperlinkAdapter() {
 			@Override
 			public void linkActivated(HyperlinkEvent e) {
-				listPart.doOpenComponent(selected);
+				listPart.doOpenComponent(selected.getName());
 			}
 		});
 		txtName.addListener(SWT.Modify, new Listener() {

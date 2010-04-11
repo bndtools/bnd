@@ -42,14 +42,14 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 	private Text txtBSN;
 	private Text txtVersion;
 	
-	private String bsn = "";
+	private String bsn = ""; //$NON-NLS-1$
 	private Version version = new Version(0,0,0);
 	private String error = null;
 
 	public NewWrappingBndFileWizardPage(String pageName, IStructuredSelection selection) {
 		super(pageName, selection);
-		setTitle("New Wrapper Script");
-		setMessage("Specify a file name for the new wrapper script");
+		setTitle(Messages.NewWrappingBndFileWizardPage_title);
+		setMessage(Messages.NewWrappingBndFileWizardPage_messageSpecifyFileName);
 	}
 	
 	public void setPaths(Collection<? extends IPath> paths) {
@@ -60,9 +60,9 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 	protected void createAdvancedControls(Composite parent) {
 		// Override the existing advanced controls
 		Composite composite = new Composite(parent, SWT.NONE);
-		new Label(composite, SWT.NONE).setText("Bundle Symbolic Name:");
+		new Label(composite, SWT.NONE).setText(Messages.NewWrappingBndFileWizardPage_labelBSN);
 		txtBSN = new Text(composite, SWT.BORDER);
-		new Label(composite, SWT.NONE).setText("Bundle Version:");
+		new Label(composite, SWT.NONE).setText(Messages.NewWrappingBndFileWizardPage_labelVersion);
 		txtVersion = new Text(composite, SWT.BORDER);
 		
 		txtBSN.setText(bsn);
@@ -82,7 +82,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 					error = null;
 				} catch (IllegalArgumentException e) {
 					version = null;
-					error = "Invalid version format";
+					error = Messages.NewWrappingBndFileWizardPage_errorInvalidVersion;
 				}
 				getContainer().updateButtons();
 				getContainer().updateMessage();
@@ -99,10 +99,6 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 		txtVersion.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		super.createAdvancedControls(parent);
-	}
-	@Override
-	protected IStatus validateLinkedResource() {
-		return super.validateLinkedResource(); //Status.OK_STATUS;
 	}
 	@Override
 	public boolean isPageComplete() {

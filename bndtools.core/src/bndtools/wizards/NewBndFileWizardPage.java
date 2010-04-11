@@ -32,12 +32,12 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 
 	public NewBndFileWizardPage(String pageName, IStructuredSelection selection) {
 		super(pageName, selection);
-		setTitle("New Bnd OSGi Bundle Descriptor");
+		setTitle(Messages.NewBndFileWizardPage_title);
 	}
 	
 	@Override
 	protected String getNewFileLabel() {
-		return "Bnd File:";
+		return Messages.NewBndFileWizardPage_labelBndFile;
 	}
 	
 	@Override
@@ -55,19 +55,19 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 		IProject project = container.getProject();
 		
 		if(Project.BNDFILE.equalsIgnoreCase(fileName)) {
-			error = "This file name is reserved.";
+			error = Messages.NewBndFileWizardPage_errorReservedFilename;
 		}
 		
 		if(container.getType() != IResource.PROJECT) {
-			warning = "Bnd bundle descriptors should be placed at the top level of a project. Non-top-level files must be manually managed using the source editor.";
+			warning = Messages.NewBndFileWizardPage_warningNotTopLevel;
 		}
 		
 		try {
 			if(!project.hasNature(BndProjectNature.NATURE_ID)) {
-				warning = "The selected project is not a Bnd OSGi project. Bundle descriptors will only be built as bundles if located in a Bnd OSGi project.";
+				warning = Messages.NewBndFileWizardPage_warningNonBndProject;
 			}
 		} catch (CoreException e) {
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "An error occurred while checking if the selected project is a Bnd OSGi project.", e));
+			ErrorDialog.openError(getShell(), Messages.NewBndFileWizardPage_titleError, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.NewBndFileWizardPage_errorCheckingBndNature, e));
 		}
 		
 		setMessage(warning, IMessageProvider.WARNING);

@@ -131,9 +131,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		});
 		viewer.addOpenListener(new IOpenListener() {
 			public void open(OpenEvent event) {
-				ServiceComponent component = (ServiceComponent) ((IStructuredSelection) event.getSelection()).getFirstElement();
-				if(component != null) {
-					doOpenComponent(component);
+				String name = (String) ((IStructuredSelection) event.getSelection()).getFirstElement();
+				if(name != null) {
+					doOpenComponent(name);
 				}
 			}
 		});
@@ -190,7 +190,11 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		checkComponentPackagesIncluded();
 		markDirty();
 	}
-	void doOpenComponent(ServiceComponent component) {
+	void doOpenComponent(String componentName) {
+		ServiceComponent component = componentMap.get(componentName);
+		if(component == null)
+			return;
+		
 		if(component.isPath()) {
 			IFormPage page = (IFormPage) getManagedForm().getContainer();
 			IResource resource = ResourceUtil.getResource(page.getEditorInput());
