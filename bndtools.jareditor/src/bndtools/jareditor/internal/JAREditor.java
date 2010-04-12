@@ -10,42 +10,104 @@
  *******************************************************************************/
 package bndtools.jareditor.internal;
 
-
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.ide.ResourceUtil;
 
-public class JAREditor extends FormEditor {
-	
-	JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
-	
-	protected void addPages() {
-		try {
-			addPage(contentPage);
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		}
-	}
+import bndtools.utils.SWTConcurrencyUtil;
 
-	public void doSave(IProgressMonitor monitor) {
-	}
+public class JAREditor extends FormEditor implements IResourceChangeListener {
 
-	public void doSaveAs() {
-	}
+    JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
 
-	public boolean isSaveAsAllowed() {
-		return false;
-	}
-	
-	protected void setInput(IEditorInput input) {
-		super.setInput(input);
-		contentPage.setFormInput(input);
-		
-		if(input instanceof IFileEditorInput) {
-			String name = ((IFileEditorInput) input).getFile().getName();
-			setPartName(name);
-		}
-	}
+    protected void addPages() {
+        try {
+            addPage(contentPage);
+        } catch (PartInitException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void doSave(IProgressMonitor monitor) {
+    }
+
+    public void doSaveAs() {
+    }
+
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
+
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        super.init(site, input);
+
+        IResource resource = ResourceUtil.getResource(input);
+        if (resource != null) {
+            resource.getWorkspace().addResourceChangeListener(this);
+        }
+
+    }
+
+    @Override
+    protected void setInput(IEditorInput input) {
+        super.setInput(input);
+        contentPage.setFormInput(input);
+
+        if (input instanceof IFileEditorInput) {
+            String name = ((IFileEditorInput) input).getFile().getName();
+            setPartName(name);
+        }
+    }
+
+    protected void updateContent(final IEditorInput input) {
+        Runnable update = new Runnable() {
+            public void run() {
+                if(contentPage != null && !contentPage.getPartControl().isDisposed()) {
+                    contentPage.setFormInput(input);
+                }
+            }
+        };
+        try {
+            SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl().getDisplay(), update);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public void dispose() {
+        IResource resource = ResourceUtil.getResource(getEditorInput());
+        
+        super.dispose();
+        
+        if(resource != null) {
+            resource.getWorkspace().removeResourceChangeListener(this);
+        }
+    }
+
+    public void resourceChanged(IResourceChangeEvent event) {
+        IResource myResource = ResourceUtil.getResource(getEditorInput());
+        
+        IResourceDelta delta = event.getDelta();
+        IPath fullPath = myResource.getFullPath();
+        delta = delta.findMember(fullPath);
+        if(delta == null)
+            return;
+        
+        if(delta.getKind() == IResourceDelta.REMOVED) {
+            close(false);
+        } else if(delta.getKind() == IResourceDelta.CHANGED) {
+            updateContent(getEditorInput());
+        }
+    }
 }
