@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -33,7 +34,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -49,11 +50,11 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 public class JARContentDetailsPage extends AbstractFormPart implements IDetailsPage {
 	
-	private static final String TEXT_FONT = "org.eclipse.jface.textfont";
-
 	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private final String[] charsets;
@@ -61,9 +62,12 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 	private boolean showAsText = true;
 	private ZipEntry zipEntry = null;
 	
+    private Composite parentComposite;
+    private Font textFont;
+
 	private Text text;
 	private Object formInput;
-	
+
 	public JARContentDetailsPage() {
 		SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
 		charsets = new String[charsetMap.size()];
@@ -88,29 +92,35 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 	}
 
 	public void createContents(Composite parent) {
-		FormToolkit toolkit = getManagedForm().getToolkit();
-		
-		// Create controls
-		Section textSection = toolkit.createSection(parent, Section.TITLE_BAR);
-		textSection.setText("Entry Content");
-		text = toolkit.createText(textSection, "", SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
-		text.setFont(JFaceResources.getFont(TEXT_FONT));
-		textSection.setClient(text);
-		
-		Section encodingSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
-		encodingSection.setText("Display Options");
-		encodingSection.setExpanded(false);
-		Composite encodingPanel = toolkit.createComposite(encodingSection);
-		encodingSection.setClient(encodingPanel);
-		toolkit.createLabel(encodingPanel, "Show As:");
-		final Button btnText = toolkit.createButton(encodingPanel, "Text", SWT.RADIO);
-		btnText.setSelection(showAsText);
-		Button btnBinary = toolkit.createButton(encodingPanel, "Binary (hex)", SWT.RADIO);
-		btnBinary.setSelection(!showAsText);
-		toolkit.createLabel(encodingPanel, "Text Encoding:");
-		final Combo encodingCombo = new Combo(encodingPanel, SWT.READ_ONLY);
-		encodingCombo.setEnabled(showAsText);
-		
+        this.parentComposite = parent;
+
+        FontDescriptor fd = JFaceResources.getTextFontDescriptor();
+        fd = fd.setHeight(9);
+        this.textFont = fd.createFont(parent.getDisplay());
+
+        FormToolkit toolkit = getManagedForm().getToolkit();
+
+        // Create controls
+        Section encodingSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
+        encodingSection.setText("Display Options");
+        encodingSection.setExpanded(false);
+        Composite encodingPanel = toolkit.createComposite(encodingSection);
+        encodingSection.setClient(encodingPanel);
+        toolkit.createLabel(encodingPanel, "Show As:");
+        final Button btnText = toolkit.createButton(encodingPanel, "Text", SWT.RADIO);
+        btnText.setSelection(showAsText);
+        Button btnBinary = toolkit.createButton(encodingPanel, "Binary (hex)", SWT.RADIO);
+        btnBinary.setSelection(!showAsText);
+        toolkit.createLabel(encodingPanel, "Text Encoding:");
+        final Combo encodingCombo = new Combo(encodingPanel, SWT.READ_ONLY);
+        encodingCombo.setEnabled(showAsText);
+
+        Section textSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.CLIENT_INDENT);
+        textSection.setText("Entry Content");
+        text = toolkit.createText(textSection, "", SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
+        text.setFont(textFont);
+        textSection.setClient(text);
+
 		// Populate with data
 		encodingCombo.setItems(charsets);
 		encodingCombo.select(selectedCharset);
@@ -141,14 +151,39 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 		});
 	
 		// Layout
-		parent.setLayout(new GridLayout(1, false));
-		textSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		encodingSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
-		textSection.setLayout(new FillLayout());
-		encodingSection.setLayout(new FillLayout());
-		encodingPanel.setLayout(new GridLayout(3, false));
-		encodingCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+        TableWrapLayout tl;
+        TableWrapData td;
+
+        tl = new TableWrapLayout();
+        parent.setLayout(tl);
+
+        td = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+        td.grabHorizontal = true;
+        td.grabVertical = true;
+        textSection.setLayoutData(td);
+
+        td = new TableWrapData(TableWrapData.FILL, TableWrapData.FILL);
+        td.grabHorizontal = true;
+        encodingSection.setLayoutData(td);
+
+        // tl = new TableWrapLayout();
+        // tl.bottomMargin = 0;
+        // tl.topMargin = 0;
+        // tl.leftMargin = 0;
+        // tl.rightMargin = 0;
+        // textSection.setLayout(tl);
+        //
+        // td = new TableWrapData(TableWrapData.FILL_GRAB,
+        // TableWrapData.FILL_GRAB);
+        // td.maxWidth = 100;
+        // td.maxHeight = 100;
+        // td.heightHint = 100;
+        // text.setLayoutData(td);
+        // text.setSize(100, 100);
+
+        encodingSection.setLayout(new FillLayout());
+        encodingPanel.setLayout(new GridLayout(3, false));
+        encodingCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 	}
 
 	public void selectionChanged(IFormPart part, ISelection selection) {
@@ -198,13 +233,9 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 				}
 			}
 		}
-		
-		// Set the text content, preserving the text box height but allowing the width to adjust
-		int priorHeight = text.getSize().y;
-		text.setText(content);
-		text.setFont(JFaceResources.getFont(TEXT_FONT));
-		Point preferredSize = text.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-		text.setSize(preferredSize.x, priorHeight);
+        text.setText(content);
+        text.setFont(textFont);
+        parentComposite.layout(true, true);
 	}
 	
 	private static final String pseudo[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
@@ -248,4 +279,9 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
 		return false;
 	}
 	
+    @Override
+    public void dispose() {
+        super.dispose();
+        textFont.dispose();
+    }
 }
