@@ -1,0 +1,31 @@
+-sourcepath:					../aQute.libg/src
+-pom:
+
+
+Bundle-Version:  		        0.0.401
+Bundle-Vendor: 					aQute SARL http://www.aQute.biz
+Bundle-Copyright:				All files contained in this JAR are licensed under the Apache 2.0 license, unless noted differently in their source (see swing2swt).
+Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
+									description="${Bundle-Copyright}"; \
+									link=LICENSE
+Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
+Bundle-Name: 					aQute Bundle Tool
+Bundle-Description:				A utility and plugin to wrap, build, or print bundles
+Bundle-SymbolicName: 	        biz.aQute.bnd
+Private-Package: 				aQute.bnd.*
+Export-Package:                 aQute.bnd.annotation.*, aQute.lib.osgi, aQute.bnd.build, aQute.bnd.service.*, aQute.libg.reporter, aQute.libg.version, aQute.libg.sed
+Import-Package:					!org.apache.tools.ant, *
+Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
+Include-Resource: 				LICENSE, maven/maven-dependencies.txt
+Bundle-ActivationPolicy:        lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Main-Class:                     aQute.bnd.main.bnd
+
+-buildpath: \
+	com.springsource.junit, \
+	osgi.core; 					version=4.0, \
+	osgi.cmpn; 					version=4.0, \
+	aQute.libg; 				version=project, \
+	aQute.service; 				version=project, \
+	org.apache.tools.ant	
+

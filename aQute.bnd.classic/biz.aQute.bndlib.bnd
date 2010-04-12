@@ -1,0 +1,13 @@
+-include: bnd.version
+-sources: true
+
+Bundle-Name:            BND Library
+Bundle-Description:     JAR Processing Library for creating and verifying OSGi manifest headers
+Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
+Bundle-SymbolicName: 	biz.aQute.bndlib
+Import-Package:			sun.security.util;resolution:=optional,*
+
+Conditional-Package :	aQute.lib.*, aQute.libg.*, aQute.bnd.*
+Export-Package:         aQute.lib.osgi, aQute.service.*, aQute.bnd.annotation.*
+Private-Package:		aQute.lib.spring
+Include-Resource: 		LICENSE

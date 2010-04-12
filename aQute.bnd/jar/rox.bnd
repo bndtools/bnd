@@ -1,0 +1,4 @@
+-classpath: ro.jar
+Export-Package: *
+Import-Package:
+

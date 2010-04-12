@@ -1,0 +1,2 @@
+p=aQute.test
+Header=${p}

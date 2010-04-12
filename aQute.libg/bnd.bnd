@@ -1,0 +1,5 @@
+-buildpath: com.springsource.junit
+
+Private-Package: aQute.lib.*, aQute.libg.*
+
+

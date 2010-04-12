@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+  <groupId>org.apache.felix</groupId>
+  <artifactId>maven-scr-plugin</artifactId>
+  <version>0.2.0</version>
+  <versioning>
+    <latest>1.0.8</latest>
+    <versions>
+      <version>0.2.0</version>
+      <version>1.0.1</version>
+      <version>1.0.2</version>
+      <version>1.0.3</version>
+      <version>1.0.4</version>
+      <version>1.0.5</version>
+      <version>1.0.6</version>
+      <version>1.0.7</version>
+      <version>1.0.8</version>
+    </versions>
+    <lastUpdated>20080911084647</lastUpdated>
+  </versioning>
+</metadata>
