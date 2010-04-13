@@ -12,3 +12,6 @@
 # Mac OS detritus
 .DS_Store
 copyrightLog.txt
+
+# Bnd stuff
+bnd.index
