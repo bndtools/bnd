@@ -4,19 +4,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-
-import bndtools.Plugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.libg.version.Version;
+import bndtools.Plugin;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
@@ -61,7 +59,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		} else if(parentElement instanceof Project) {
 			Project project = (Project) parentElement;
 			try {
-				Collection<Builder> builders = project.getSubBuilders();
+                Collection<? extends Builder> builders = project.getSubBuilders();
 				result = new Object[builders.size()];
 				
 				int i = 0;

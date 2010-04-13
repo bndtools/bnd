@@ -16,11 +16,9 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -155,7 +153,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 			if(!rebuild && !affectedFiles.isEmpty()) {
 				// Check if any of the affected files are members of bundles built by a sub builder 
-				Collection<Builder> builders = model.getSubBuilders();
+                Collection<? extends Builder> builders = model.getSubBuilders();
 				for (Builder builder : builders) {
 					File buildPropsFile = builder.getPropertiesFile();
 					if(affectedFiles.contains(buildPropsFile)) {
@@ -202,7 +200,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		// Build
 		try {
 			bndsToDeliverables.clear();
-			Collection<Builder> builders = model.getSubBuilders();
+            Collection<? extends Builder> builders = model.getSubBuilders();
 			for (Builder builder : builders) {
 				File subBndFile = builder.getPropertiesFile();
 				String bsn = builder.getBsn();
