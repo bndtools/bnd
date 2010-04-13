@@ -1419,12 +1419,7 @@ public class Project extends Processor {
      * @throws Exception
      */
     public Collection<? extends Builder> getSubBuilders() throws Exception {
-        ProjectBuilder pb = getBuilder(null);
-        String sub = (String) getProperty(SUB);
-        if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
-            return Arrays.asList(pb);
-        else
-            return pb.getSubBuilders(sub);
+        return getBuilder(null).getSubBuilders();
     }
 
 }

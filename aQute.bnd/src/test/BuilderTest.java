@@ -9,7 +9,6 @@ import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
     
-    
     public void testAutoNoImport() throws Exception {
         Builder b = new Builder();
         b.setProperty("Export-Package", "org.osgi.service.packageadmin, org.osgi.util.measurement");

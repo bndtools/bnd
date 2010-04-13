@@ -1,16 +1,49 @@
 package test;
 
-import java.io.*;
+import java.io.File;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.lib.deployer.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.eclipse.*;
-import aQute.libg.version.*;
+import junit.framework.TestCase;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Processor;
+import aQute.lib.osgi.eclipse.EclipseClasspath;
+import aQute.libg.version.Version;
 
 public class ProjectTest extends TestCase {
-    
+	
+	/**
+	 * Tests the handling of the -sub facility
+	 * 
+	 * @throws Exception
+	 */
+	
+	public void testSub() throws Exception {
+        Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+        Project project = ws.getProject("p4-sub");
+        File[] files = project.build();
+        System.out.println(Processor.join(project.getErrors(),"\n"));
+        System.out.println(Processor.join(project.getWarnings(),"\n"));
+        
+        assertEquals(0, project.getErrors().size());
+        assertEquals(0, project.getWarnings().size());
+        assertNotNull(files);
+        assertEquals(3,files.length);
+        
+        Jar a = new Jar(files[0]);
+        Jar b = new Jar(files[1]);
+        Manifest ma = a.getManifest();
+        Manifest mb = b.getManifest();
+        
+        assertEquals( "base", ma.getMainAttributes().getValue("Base-Header"));
+        assertEquals( "base", mb.getMainAttributes().getValue("Base-Header"));
+        assertEquals( "a", ma.getMainAttributes().getValue("Sub-Header"));
+        assertEquals( "b", mb.getMainAttributes().getValue("Sub-Header"));
+	}
+	
+	
     public void testOutofDate() throws Exception {
         Workspace ws = Workspace.getWorkspace(new File("test/ws"));
         Project project = ws.getProject("p3");
