@@ -957,7 +957,7 @@ public class Builder extends Analyzer {
 		List<Jar> result = new ArrayList<Jar>();
 		List<Builder> builders;
 
-			builders = getSubBuilders();
+		builders = getSubBuilders();
 
 		for (Builder builder : builders) {
 			try {
@@ -984,10 +984,10 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 	public List<Builder> getSubBuilders() throws Exception {
-        String sub = (String) getProperty(SUB);
-        if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
-            return Arrays.asList(this);
-        
+		String sub = (String) getProperty(SUB);
+		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
+			return Arrays.asList(this);
+
 		List<Builder> builders = new ArrayList<Builder>();
 		if (isTrue(getProperty(NOBUNDLES)))
 			return builders;
@@ -1001,6 +1001,15 @@ public class Builder extends Analyzer {
 		nextFile: while (members.size() > 0) {
 
 			File file = members.remove(0);
+
+			// Check if the file is one of our parents
+			Processor p = this;
+			while ( p != null ) {
+				if ( file.equals(p.getPropertiesFile()))
+					continue nextFile;
+				p = p.getParent();				
+			}
+			
 			// if
 			// (file.getCanonicalFile().equals(getPropertiesFile().getCanonicalFile()))
 			// continue nextFile;
@@ -1013,9 +1022,11 @@ public class Builder extends Analyzer {
 					if (!instruction.isNegated()) {
 
 						Builder builder = getSubBuilder();
-						builder.setProperties(file);
-						addClose(builder);
-						builders.add(builder);
+						if (builder != null) {
+							builder.setProperties(file);
+							addClose(builder);
+							builders.add(builder);
+						}
 					}
 
 					// Because we matched (even though we could be negated)

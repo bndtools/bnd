@@ -1351,6 +1351,7 @@ public class Project extends Processor {
     public Collection<Container> getDeliverables() throws Exception {
         List<Container> result = new ArrayList<Container>();
         Collection<? extends Builder> builders = getSubBuilders();
+        
         for (Builder builder : builders) {
             Container c = new Container(this, builder.getBsn(), builder
                     .getVersion(), Container.TYPE.PROJECT,
@@ -1419,7 +1420,13 @@ public class Project extends Processor {
      * @throws Exception
      */
     public Collection<? extends Builder> getSubBuilders() throws Exception {
-        return getBuilder(null).getSubBuilders();
+    	Collection<Builder> builders = getBuilder(null).getSubBuilders();
+    	for ( Iterator<Builder> i = builders.iterator(); i.hasNext(); ) {
+    		Builder b = i.next();
+    		if ( b.getPropertiesFile().getAbsoluteFile().equals(getPropertiesFile().getAbsoluteFile()))
+    			i.remove();
+    	}
+    	return builders;
     }
 
 }
