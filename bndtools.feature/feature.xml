@@ -14,10 +14,10 @@
       id="bndtools.feature"
       label="Bndtools"
       version="0.0.1.qualifier"
-      provider-name="Neil Bartlett">
+      provider-name="Neil Bartlett and Peter Kriens">
 
    <description url="http://bndtools-updates.s3.amazonaws.com/">
-      Eclipse tools for OSGi Development tools with Bnd.
+      Eclipse tools for OSGi Development with Bnd - by Neil Bartlett and Peter Kriens.
    </description>
 
    <copyright>
@@ -226,7 +226,7 @@ litigation.
    </license>
 
    <url>
-      <update label="Bnd Tools by Neil Bartlett" url="http://bndtools-updates.s3.amazonaws.com/"/>
+      <update label="Bndtools" url="http://bndtools-updates.s3.amazonaws.com/"/>
    </url>
 
    <plugin
