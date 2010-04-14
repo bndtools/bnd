@@ -1420,13 +1420,7 @@ public class Project extends Processor {
      * @throws Exception
      */
     public Collection<? extends Builder> getSubBuilders() throws Exception {
-    	Collection<Builder> builders = getBuilder(null).getSubBuilders();
-    	for ( Iterator<Builder> i = builders.iterator(); i.hasNext(); ) {
-    		Builder b = i.next();
-    		if ( b.getPropertiesFile().getAbsoluteFile().equals(getPropertiesFile().getAbsoluteFile()))
-    			i.remove();
-    	}
-    	return builders;
+    	return getBuilder(null).getSubBuilders();
     }
 
 }

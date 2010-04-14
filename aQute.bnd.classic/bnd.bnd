@@ -1,9 +1,13 @@
-Private-Package: aQute.bnd.*, aQute.lib.osgi
-Conditional-Package: aQute.lib.*, aQute.libg.*
-Export-Package: aQute.bnd.service.*, aQute.service.*
-Bundle-Version: 0.0.402
-Import-Package: org.apache.tools.ant; resolution:=optional, *
- 
+Bundle-SymbolicName: 			biz.aQute.bnd.classic;singleton:=true
+Private-Package: 				aQute.bnd.*, aQute.lib.osgi
+Conditional-Package: 			aQute.lib.*, aQute.libg.*
+Export-Package: 				aQute.bnd.service.*, aQute.service.*
+Bundle-Version: 				0.0.403
+Import-Package: 				org.apache.tools.ant; resolution:=optional, *
+Include-Resource: 				plugin.xml, icons=icons
+Bundle-Activator: 				aQute.bnd.plugin.Activator
+Bundle-ActivationPolicy: 		lazy
+
 -buildpath: \
     aQute.bnd; version=project, \
     aQute.libg; version=project, \
@@ -33,3 +37,5 @@ Import-Package: org.apache.tools.ant; resolution:=optional, *
 	org.eclipse.equinox.registry, \
 	osgi.cmpn, \
 	osgi.core; version=4.1
+
+-savemanifest: META-INF/MANIFEST.MF

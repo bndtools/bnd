@@ -21,7 +21,7 @@ public class JarSignerTest extends TestCase {
  
         Jar jar = b.build();
         File tmp = new File("xyztmp.jar");
-//        tmp.deleteOnExit();
+        tmp.deleteOnExit();
         
         jar.write( tmp );
 

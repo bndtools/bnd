@@ -1393,7 +1393,9 @@ public class bnd extends Processor {
                     repoPut(writable, p, url, bsn, version);
                 }
             } else if ("put".equals(args[i]))
-                repoPut(writable, p, args[++i], bsn, version);
+            	while ( ++i < args.length) {
+            		repoPut(writable, p, args[i], bsn, version);
+            	}
             else if ("get".equals(args[i]))
                 repoGet(repos, args[++i]);
             else
