@@ -1,6 +1,0 @@
-# See BuilderTest.testBndInfo
-p=${p}
-a=${a}
-b=${b}
-now=${now}
-d=fixed
