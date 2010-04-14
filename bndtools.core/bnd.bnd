@@ -3,14 +3,21 @@ Bundle-SymbolicName: bndtools.core;singleton:="true
 Bundle-Version: 0.0.1
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ClassPath: ., biz.aQute.bndlib.jar
 
 # Bundle Content
-Private-Package: bndtools,\
-	bndtools.*
-Include-Resource: resources
+Private-Package: bndtools*,\
+	aQute.bnd.build,\
+	aQute.bnd.classpath,\
+	aQute.bnd.launch,\
+	aQute.bnd.plugin,\
+	aQute.bnd.plugin.repo
+
+Include-Resource: resources,\
+	biz.aQute.bndlib.jar
 
 # Build and Run
--classpath: biz.aQute.bnd.jar
+# -classpath: biz.aQute.bndlib.jar
 -buildpath: org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -35,7 +42,9 @@ Include-Resource: resources
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.debug.ui
--runbundles: org.eclipse.core.runtime,\
+
+-runbundles: org.eclipse.osgi.services,\
+	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
@@ -43,21 +52,21 @@ Include-Resource: resources
 	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.swt,\
 	org.eclipse.text,\
-	org.eclipse.ui.workbench,\
 	org.eclipse.ui.ide,\
 	org.eclipse.core.jobs,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.forms,\
+	org.eclipse.ui.workbench,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.ui.editors,\
 	org.eclipse.ui.views,\
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.core.manipulation,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.filesystem.macosx,\
@@ -66,5 +75,56 @@ Include-Resource: resources
 	org.eclipse.equinox.app,\
 	org.eclipse.equinox.util,\
 	com.ibm.icu,\
-	org.eclipse.core.expressions
--runproperties: osgi.console=9000
+	org.eclipse.core.expressions,\
+	org.eclipse.help,\
+	org.eclipse.ui,\
+	org.eclipse.core.databinding,\
+	org.eclipse.core.databinding.property,\
+	org.eclipse.core.databinding.observable,\
+	org.eclipse.jface.databinding,\
+	org.eclipse.equinox.p2.core,\
+	org.eclipse.equinox.p2.engine,\
+	org.eclipse.equinox.p2.metadata,\
+	org.eclipse.equinox.p2.metadata.repository,\
+	org.eclipse.ecf,\
+	org.eclipse.ecf.filetransfer,\
+	org.eclipse.ecf.identity,\
+	org.eclipse.ecf.provider.filetransfer,\
+	org.eclipse.equinox.p2.repository,\
+	org.eclipse.equinox.security.macosx,\
+	org.eclipse.equinox.security.ui,\
+	org.eclipse.equinox.security,\
+	org.eclipse.equinox.p2.artifact.repository,\
+	org.eclipse.equinox.p2.jarprocessor,\
+	org.eclipse.ui.navigator,\
+	org.eclipse.core.variables,\
+	org.eclipse.core.filebuffers,\
+	org.eclipse.compare.core,\
+	org.eclipse.search,\
+	org.eclipse.ui.console,\
+	org.eclipse.ltk.core.refactoring,\
+	org.eclipse.ltk.ui.refactoring,\
+	org.eclipse.compare,\
+	org.eclipse.team.core,\
+	org.eclipse.team.ui,\
+	org.eclipse.ui.navigator.resources,\
+	org.eclipse.ui.views.properties.tabbed,\
+	org.eclipse.jdt.debug,\
+	org.eclipse.ui.ide.application,\
+	org.eclipse.core.boot,\
+	org.eclipse.core.net,\
+	org.eclipse.equinox.concurrent,\
+	org.eclipse.equinox.simpleconfigurator.manipulator,\
+	org.eclipse.equinox.simpleconfigurator,\
+	org.eclipse.equinox.frameworkadmin.equinox,\
+	org.eclipse.equinox.frameworkadmin
+
+-runproperties: osgi.ws=cocoa,\
+	osgi.arch=x86_64,\
+	osgi.os=macosx,\
+	osgi.console=9000,\
+	eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.application.launchDefault=true,\
+	eclipse.consoleLog=true
+
+-runvm: -XstartOnFirstThread
