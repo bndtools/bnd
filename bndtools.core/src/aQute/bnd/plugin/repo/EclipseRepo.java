@@ -127,6 +127,12 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
                         Constants.BUNDLE_VERSION);
 
                 if (bsn != null) {
+                    // Remove attributes (e.g. "singleton") from the bsn
+                    int index = bsn.indexOf(';');
+                    if (index > -1) {
+                        bsn = bsn.substring(0, index);
+                    }
+
                     if (version == null)
                         version = "0";
 
@@ -153,7 +159,11 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     }
 
     public File[] get(String bsn, String range) throws Exception {
-        VersionRange r = new VersionRange(range);
+        VersionRange r;
+        if (range == null || range.equals("latest"))
+            r = new VersionRange("0");
+        else
+            r = new VersionRange(range);
         Map<String, String> instances = index.get(bsn);
         if (instances == null)
             return null;
