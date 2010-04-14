@@ -1,0 +1,4 @@
+org.apache.felix.configadmin; strategy=highest
+org.apache.felix.configadmin; strategy=lowest
+org.apache.felix.ipojo
+org.apache.felix.ipojo.arch

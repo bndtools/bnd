@@ -1,0 +1,9 @@
+0.0.325
+  - No longer flattening properties starting with - because for version policy, the 
+    context macro ${@} is not valid. I think this is true for more things. So they are now
+    unexpanded.
+  - toclasspath can now take a suffix parameter, possibly empty
+  - Include-Resource can now take optional parameters:
+      flatten:= (true|false). Default is false. Create recursive directories in the output or not.
+      recursive:= (true|false) Default is true. Will descend any directories or not
+      

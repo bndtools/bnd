@@ -1,0 +1,2 @@
+mvn -e gpg:sign-and-deploy-file        -Durl=http://oss.sonatype.org/content/repositories/aqute-releases        -DrepositoryId=aqute-releases        -DupdateReleaseInfo=true        -DpomFile=bnd.pom        -Dfile=bnd.jar 
+

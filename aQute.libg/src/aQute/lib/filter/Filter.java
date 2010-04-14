@@ -219,7 +219,7 @@ public class Filter {
                 } else if (numClass == BigDecimal.class) {
                     return compareSign(op, new BigDecimal(s)
                             .compareTo((BigDecimal) obj));
-                } else if (obj instanceof Collection) {
+                } else if (obj instanceof Collection<?>) {
                     for (Object x : (Collection<?>) obj)
                         if (compare(x, op, s))
                             return true;

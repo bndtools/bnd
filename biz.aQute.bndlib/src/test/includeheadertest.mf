@@ -1,0 +1,8 @@
+Manifest-Version: 1
+manifest: a
+ b
+ c
+ d
+last-manifest: end
+-include: iht/test.prop
+

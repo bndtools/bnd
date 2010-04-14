@@ -1,0 +1,9 @@
+-include: 						~META-INF/MANIFEST.MF
+-includeresource: 				plugin.xml, icons=icons, LICENSE
+
+Private-Package: 				aQute.bnd.*, aQute.lib.osgi
+Conditional-Package: 			aQute.lib.*, aQute.libg.*
+Export-Package: 				aQute.bnd.service.*, aQute.service.*
+Import-Package: 				!org.eclipse.*,org.apache.tools.ant; resolution:=optional, *
+Bundle-ClassPath:				.
+

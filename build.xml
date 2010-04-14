@@ -2,7 +2,7 @@
 <project name="project" default="build"> 
 
         <target name="build">
-                <ant dir="aQute.bnd" target="build"/>
+                <ant dir="biz.aQute.bnd" target="build"/>
         </target>
 
 </project>

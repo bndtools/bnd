@@ -50,6 +50,17 @@
 	<target name="compile" depends="dependencies" if="project.sourcepath">
 		<mkdir dir="${project.output}" />
 		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+		<!-- 
+		  The eclipse compiler copies resources but the Javac compiler does not
+		  If ${src} == ${bin} then this is not necessary, but unfortunately, now 
+		  it is. 
+		--> 
+		<copy todir="${project.output}" verbose="${verbose}" preservelastmodified="true">
+			<fileset dir="${project.sourcepath}">
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.class"/>
+			</fileset>
+		</copy>
 	</target>
 
 	<!-- 
