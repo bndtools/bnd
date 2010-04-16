@@ -396,7 +396,7 @@ public class Project extends Processor {
                         File f = getFile(bsn);
                         String error = null;
                         if (!f.exists())
-                            error = "File does not exist";
+                            error = "File does not exist: " + f.getAbsolutePath();
                         if (f.getName().endsWith(".lib")) {
                             found = new Container(this, bsn, "file",
                                     Container.TYPE.LIBRARY, f, error, attrs);

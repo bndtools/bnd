@@ -100,7 +100,7 @@ public class Activator extends Thread implements BundleActivator {
             };
 
             String path = replace(reportName, "%s", bundle.getSymbolicName());
-            XMLReport report = new XMLReport(path);
+            JunitXmlReport report = new JunitXmlReport(path);
 
             try {
                 TestSuite suite = Target.createSuite(bundle, names);

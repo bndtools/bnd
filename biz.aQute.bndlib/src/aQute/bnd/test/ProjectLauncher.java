@@ -70,13 +70,13 @@ public class ProjectLauncher extends Processor {
         if (runtime == null) {
             try {
                 URL url = ProjectLauncher.class
-                        .getResource("biz.aQute.runtime.jar");
+                        .getResource("/biz.aQute.runtime.jar");
                 if (url == null)
                     throw new IllegalStateException(
-                            "Can not find my runtime.jar");
+                            "Can not find my biz.aQute.runtime.jar! Must be in the root");
 
                 runtime = File.createTempFile("biz.aQute.runtime", ".jar");
-                // runtime.deleteOnExit();
+                runtime.deleteOnExit();
                 FileOutputStream out = new FileOutputStream(runtime);
                 InputStream in = url.openStream();
                 copy(in, out);

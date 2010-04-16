@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-	This XSL stylesheet transforms the output of a testreport to an HTML
+	This XSL stylesheet transforms the output of a testsuite to an HTML
 	file.	
 	-->
 <xsl:stylesheet version="1.0"
@@ -63,19 +63,19 @@
 					<tr>
 						<td width="50%">Target</td>
 						<td>
-							<xsl:value-of select="testreport/@target" />
+							<xsl:value-of select="testsuite/@target" />
 						</td>
 					</tr>
 					<tr>
 						<td width="50%">Framework</td>
 						<td>
-							<xsl:value-of select="testreport/@framework" />
+							<xsl:value-of select="testsuite/@framework" />
 						</td>
 					</tr>
 					<tr>
 						<td width="50%">Testrun</td>
 						<td>
-							<xsl:value-of select="testreport/@time" />
+							<xsl:value-of select="testsuite/@time" />
 						</td>
 					</tr>
 				    <tr>
@@ -106,7 +106,7 @@
 						<th>Error</th>
 						<th>Info</th>
 					</tr>
-					<xsl:for-each select="/testreport/test">
+					<xsl:for-each select="/testsuite/testcase">
 						<xsl:variable name="total" select="count(error) + count(failure)" />
 						<tr>
 							<td width="15px">

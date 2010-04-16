@@ -178,9 +178,13 @@ public class GenericFramework {
                 // 3) Lookup in META-INF/services
                 List implementations = getMetaInfServices(loader,
                         FrameworkFactory.class.getName());
-                if (implementations.size() != 1)
+                
+                if (implementations.size() == 0)
                     System.out
-                            .println("Found more than one framework implementatios: "
+                            .println("Found no fw implementation");
+                if (implementations.size() > 1)
+                    System.out
+                            .println("Found more than one framework implementations: "
                                     + implementations);
 
                 String implementation = (String) implementations.get(0);

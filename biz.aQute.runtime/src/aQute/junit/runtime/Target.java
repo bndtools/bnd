@@ -52,7 +52,8 @@ public class Target {
                     error("No target specified", null);
                 else {
                     if (port == -1) {
-                        XMLReport xmlreport = new XMLReport(reportName);
+                        JunitXmlReport xmlreport = new JunitXmlReport(reportName);
+                        xmlreport.setProgress(true);
                         try {
                             addXML(targetBundle, xmlreport);
                             return doTesting(xmlreport, targetBundle);
@@ -71,36 +72,34 @@ public class Target {
         return -1;
     }
 
-    private void printSummary(XMLReport xmlreport) {
+    private void printSummary(JunitXmlReport xmlreport) {
         // Report the summary info.
-        System.out.println("SUMMARY");
-        String clazz = null;
-        for (Iterator i = xmlreport.logs.iterator(); i.hasNext();) {
-            XMLReport.LogEntry le = (XMLReport.LogEntry) i.next();
-            if (!le.clazz.equals(clazz))
-                System.out.println(le.clazz);
-            clazz = le.clazz;
-            System.out.print("   " + le.name);
-            for (int n = le.name.length(); n < 50; n++)
-                System.out.print(" ");
-            System.out.println(le.message);
-        }
+        System.out.println();
+    	Tag[] total = xmlreport.testsuite.select("//testcase");
+    	Tag[] errors = xmlreport.testsuite.select("//error");
+    	Tag[] failures = xmlreport.testsuite.select("//error");
+        System.out.println( "Result (total/failure/error): " + get(total) + "/" + get(failures) + "/" + get(errors));
     }
 
-    private void addXML(Bundle targetBundle, XMLReport xmlreport) {
+    private int get(Object[] array) {
+    	if (array == null)
+    		return 0;
+		return array.length;
+	}
+
+	private void addXML(Bundle targetBundle, JunitXmlReport xmlreport) {
         String header = (String) targetBundle.getHeaders().get(
                 "Bnd-AddXMLToTest");
         if (header == null)
             return;
 
-        System.out.println("bnd-AddXMLToTest " + header);
         try {
             StringTokenizer st = new StringTokenizer(header, " ,");
 
             while (st.hasMoreTokens()) {
                 String resource = st.nextToken();
                 URL url = targetBundle.getEntry(resource);
-                System.out.println("bnd-AddXMLToTest " + resource + " " + url);
+
                 if (url != null) {
                     String name = url.getFile();
                     int n = name.lastIndexOf('/');
@@ -114,7 +113,9 @@ public class Target {
                     else
                         name = name.substring(n, name.length()).replace('.',
                                 '_');
-                    xmlreport.addXML(name, url);
+
+                    xmlreport.testsuite.addContent(url);
+                    
                 } else {
                     error("Can't find indicated XML to add to test report: "
                             + resource, null);
@@ -231,29 +232,29 @@ public class Target {
         Bundle fw = framework.getFrameworkBundle();
         List names = testNames;
 
-        TestResult result = new TestResult();
-        BasicTestReport otl = new BasicTestReport();
+        TestResult result = new TestResult();  
+        BasicTestReport btr = new BasicTestReport();
+        btr.verbose = false;
         try {
             TestSuite suite = createSuite(targetBundle, names);
             List flattened = new ArrayList();
             int realcount = flatten(flattened, suite);
             tl.begin(fw, targetBundle, flattened, realcount);
-            otl.begin(fw, targetBundle, flattened, realcount);
+            btr.begin(fw, targetBundle, flattened, realcount);
+            result.addListener(btr);
             result.addListener(tl);
-            result.addListener(otl);
             suite.run(result);
 
             if (result.wasSuccessful())
                 return 0;
             else
-                return otl.errors;
+                return result.errorCount()+ result.failureCount();
         } catch (Throwable t) {
             result.addError(null, t);
             t.printStackTrace();
             throw t;
         } finally {
             tl.end();
-            otl.end();
             if (properties.containsKey("wait")) {
                 framework.waitForStop(10000000);
             }

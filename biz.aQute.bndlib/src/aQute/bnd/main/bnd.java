@@ -72,7 +72,7 @@ public class bnd extends Processor {
             } else if ("-base".equals(args[i])) {
                 setBase(new File(args[++i]).getAbsoluteFile());
                 if (!getBase().isDirectory()) {
-                    System.out.println("-base must be a valid directory");
+                    out.println("-base must be a valid directory");
                 }
             } else if ("wrap".equals(args[i])) {
                 cnt++;

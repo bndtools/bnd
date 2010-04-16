@@ -46,12 +46,18 @@ public class BasicTestReport implements TestListener, TestReporter {
 
     public void startTest(Test test) {
         try {
-
             Method m = test.getClass().getMethod("setBundleContext",
                     new Class[] { BundleContext.class });
+            m.setAccessible(true);
             m.invoke(test, new Object[] { targetBundle.getBundleContext() });
         } catch (Exception e) {
-            // Ok, no problem
+        	Field f;
+			try {
+				f = test.getClass().getField("context");
+	        	f.set(test, targetBundle.getBundleContext());
+			} catch (Exception e1) {
+	            // Ok, no problem
+			}
         }
         if (verbose)
             System.out.println(">> " + test + "\n");

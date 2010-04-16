@@ -1,3 +1,4 @@
+-dependson:					biz.aQute.runtime
 -sourcepath:					../aQute.libg/src
 -pom:
 
@@ -14,7 +15,7 @@ Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*
 Export-Package:                 aQute.bnd.annotation.*, aQute.lib.osgi, aQute.bnd.build, aQute.bnd.service.*, aQute.libg.reporter, aQute.libg.version, aQute.libg.sed
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
-Include-Resource: 				LICENSE, maven/maven-dependencies.txt
+Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Main-Class:                     aQute.bnd.main.bnd
 

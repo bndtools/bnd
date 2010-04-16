@@ -22,6 +22,7 @@ public class AnalyzerTest extends TestCase {
     
     
     public void testFindClass() throws Exception {
+    	fail();
         Builder a = new Builder();
         a.setProperty("Export-Package", "org.osgi.service.io");
         a.addClasspath(new File("jar/osgi.jar"));
@@ -43,6 +44,7 @@ public class AnalyzerTest extends TestCase {
         System.out.println(result);
         assertTrue(result.contains("test.T2"));
         assertTrue(result.contains("test.T3"));
+    	throw new Exception("");
     }
 
     public void testClassQuery() throws Exception {

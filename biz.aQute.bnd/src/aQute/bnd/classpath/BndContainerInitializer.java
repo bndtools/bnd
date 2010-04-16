@@ -84,14 +84,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     public void modelChanged(Project model) throws Exception {
         IJavaProject project = central.getJavaProject(model);
         if (model == null || project == null) {
-            System.out.println("Help! No IJavaProject for " + model);
+            //System.out.println("Help! No IJavaProject for " + model);
         } else
             requestClasspathContainerUpdate(ID, project,
                     new BndContainer(model));
     }
 
     public void workspaceChanged(Workspace ws) throws Exception {
-        System.out.println("Workspace changed");
+        //System.out.println("Workspace changed");
     }
 
 }

@@ -10,3 +10,6 @@ Bundle-Version: 		1.0.2
 	osgi.core; version=4.1, \
 	ee.minimum; version=1.2.1, \
 	osgi.cmpn; version=4.2
+	
+	
+-runbundles: src/test/testbundle.jar; version=file

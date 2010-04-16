@@ -171,7 +171,7 @@ public class BndContainerPage extends WizardPage implements
         wCreate.addSelectionListener(new SelectionListener() {
 
             public void widgetDefaultSelected(SelectionEvent e) {
-                System.out.println("defw selected");
+                //System.out.println("defw selected");
             }
 
             public void widgetSelected(SelectionEvent e) {

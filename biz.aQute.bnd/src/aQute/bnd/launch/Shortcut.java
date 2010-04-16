@@ -13,7 +13,7 @@ import org.eclipse.ui.*;
 public class Shortcut implements ILaunchShortcut {
 
     public Shortcut() {
-        System.out.println("Constructor Launch Shortcut");
+       // System.out.println("Constructor Launch Shortcut");
     }
 
     protected String getLaunchConfigurationTypeId() {

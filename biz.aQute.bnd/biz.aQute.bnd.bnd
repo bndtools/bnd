@@ -1,5 +1,6 @@
+-sources: 						true
 -include: 						~META-INF/MANIFEST.MF
--includeresource: 				plugin.xml, icons=icons, LICENSE
+-includeresource: 				plugin.xml, icons=icons, LICENSE, ../biz.aQute.runtime/tmp/biz.aQute.runtime.jar
 
 Private-Package: 				aQute.bnd.*, aQute.lib.osgi
 Conditional-Package: 			aQute.lib.*, aQute.libg.*

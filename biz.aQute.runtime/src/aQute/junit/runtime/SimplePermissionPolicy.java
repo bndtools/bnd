@@ -57,8 +57,8 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
             PermissionInfo[] info = parse(in);
             permissionAdmin.setDefaultPermissions(info);
         } else {
-            System.out.println("default permission not found "
-                    + DEFAULT_PERMISSION_RESOURCE);
+//            System.out.println("default permission not found "
+//                    + DEFAULT_PERMISSION_RESOURCE);
         }
         //
         // Set this bundles permissions.
@@ -84,7 +84,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
             bundles.addElement(bundles);
             permissionAdmin.setPermissions(bundle.getLocation(), info);
         } else 
-            System.out.println("No permissions for " + bundle.getLocation() );
+          ; //  System.out.println("No permissions for " + bundle.getLocation() );
 
     }
 
