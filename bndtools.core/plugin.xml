@@ -266,7 +266,7 @@
    
    	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 	    <launchConfigurationType
-           delegate="aQute.bnd.launch.LaunchDelegate"
+           delegate="bndtools.launch.OSGiLaunchDelegate"
            id="aQute.bnd.launch"
            modes="run, debug"
            name="OSGi Run"
