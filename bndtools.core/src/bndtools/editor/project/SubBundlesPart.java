@@ -42,7 +42,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 
 	final void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Sub-bundles");
-		section.setDescription("If sub-bundles are enabled, then .bnd files other than bnd.bnd will be built as bundles.");
+        section.setDescription("If sub-bundles are enabled, then .bnd files other than \"bnd.bnd\" will be built as bundles.");
 		
 		// Toolbar buttons
 //		ToolBar toolbar = new ToolBar(section, SWT.FLAT);

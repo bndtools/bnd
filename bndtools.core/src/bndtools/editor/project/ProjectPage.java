@@ -48,7 +48,7 @@ public class ProjectPage extends FormPage {
 		RunBundlesPart runBundlesPart = new RunBundlesPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
 		
-		RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE);
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		managedForm.addPart(runPropertiesPart);
 
 		// Layout

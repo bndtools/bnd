@@ -2,7 +2,6 @@ package bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -119,11 +118,11 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		});
 	}
 	void doAddProperty() {
-		properties.put("name", "value");
-		viewer.add("name");
+        properties.put("name", "value");
+        viewer.add("name");
 		markDirty();
 		
-		viewer.editElement("name", 0);
+        viewer.editElement("name", 0);
 	}
 	void doRemoveProperty() {
 		@SuppressWarnings("rawtypes")
