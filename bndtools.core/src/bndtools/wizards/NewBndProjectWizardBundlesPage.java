@@ -1,6 +1,8 @@
 package bndtools.wizards;
 
+import bndtools.Plugin;
 import bndtools.editor.project.RepoBundleSelectionWizardPage;
+import bndtools.utils.SWTConcurrencyUtil;
 
 public class NewBndProjectWizardBundlesPage extends RepoBundleSelectionWizardPage {
 
@@ -23,6 +25,15 @@ public class NewBndProjectWizardBundlesPage extends RepoBundleSelectionWizardPag
 		if(!createdCnf) {
 			cnfPage.createCnfProject();
 			createdCnf = true;
+            SWTConcurrencyUtil.execForDisplay(getShell().getDisplay(), new Runnable() {
+                public void run() {
+                    try {
+                        refreshBundleList();
+                    } catch (Exception e) {
+                        Plugin.logError("Error refreshing repository display.", e);
+                    }
+                }
+            });
 		}
 	}
 }

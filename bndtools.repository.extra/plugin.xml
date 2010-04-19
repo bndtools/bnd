@@ -7,7 +7,7 @@
             name="Extras"
             path="repo/">
          <description>
-            An extended repository containing a richer set of bundles. It includes all bundles that are present in the Base repository.
+            A repository containing an extended set of bundles.
          </description>
       </repository>
    </extension>

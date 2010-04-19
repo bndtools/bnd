@@ -112,7 +112,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		// Load data
 		try {
-			selectionViewer.setInput(Central.getWorkspace());
+			refreshBundleList();
 		} catch (Exception e) {
 			setErrorMessage("Error querying repostory configuration.");
 		}
@@ -184,6 +184,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		setControl(composite);
 	}
+
+    protected void refreshBundleList() throws Exception {
+        selectionViewer.setInput(Central.getWorkspace());
+    }
 	
 	void doAdd() {
 		IStructuredSelection selection = (IStructuredSelection) selectionViewer.getSelection();

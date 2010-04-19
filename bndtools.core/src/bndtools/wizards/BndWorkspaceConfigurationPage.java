@@ -68,11 +68,29 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 	
 	private static final String NO_DESCRIPTION = "No description available";
 	
-	private IConfigurationElement[] checkedConfigElements = null;
+    private IConfigurationElement[] elements;
+    private IConfigurationElement[] checkedConfigElements;
 	
-	public BndWorkspaceConfigurationPage(String pageName) {
-		super(pageName);
-	}
+    public BndWorkspaceConfigurationPage(String pageName) {
+        super(pageName);
+        loadRepositories();
+    }
+
+    private void loadRepositories() {
+        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+
+        this.elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
+
+        List<IConfigurationElement> checkedList = new ArrayList<IConfigurationElement>(elements.length);
+        for (IConfigurationElement element : elements) {
+            String selectedStr = element.getAttribute("selected");
+            if ("true".equalsIgnoreCase(selectedStr)) {
+                checkedList.add(element);
+            }
+        }
+        this.checkedConfigElements = checkedList.toArray(new IConfigurationElement[checkedList.size()]);
+    }
+
 	public void createControl(Composite parent) {
 		setTitle("Configure BndTools Workspace");
 		setDescription("Select external repositories to copy into the Bnd workspace.");
@@ -86,7 +104,8 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new RepositoryContribLabelProvider());
 		
-        loadRepositories(viewer);
+        viewer.setInput(elements);
+        viewer.setCheckedElements(checkedConfigElements);
 		
 		new Label(composite, SWT.NONE).setText("Description:");
 		final Browser browser = new Browser(composite, SWT.BORDER);
@@ -138,17 +157,6 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		setControl(composite);
 	}
 
-    protected void loadRepositories(final CheckboxTableViewer viewer) {
-        final IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-
-        IConfigurationElement[] elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
-        viewer.setInput(elements);
-
-        for (IConfigurationElement element : elements) {
-            String selectedStr = element.getAttribute("selected");
-            viewer.setChecked(element, "true".equalsIgnoreCase(selectedStr));
-        }
-    }
 	static class RepositoryContribLabelProvider extends StyledCellLabelProvider {
 		
 		Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
