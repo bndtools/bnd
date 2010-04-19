@@ -36,6 +36,7 @@ import bndtools.editor.model.ExportedPackage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
+import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.pieces.ExportVersionPolicy;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
@@ -73,35 +74,18 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 		JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 		
 		// Create and open the dialog
-		ExportedPackageSelectionDialog dialog = new ExportedPackageSelectionDialog(window.getShell(), packageLister, filter, "Select new packages to export from the bundle.");
+        PackageSelectionDialog dialog = new PackageSelectionDialog(window.getShell(), packageLister, filter, "Select new packages to export from the bundle.");
 		dialog.setSourceOnly(true);
 		dialog.setMultipleSelection(true);
 		if(dialog.open() == Window.OK) {
 			Object[] results = dialog.getResult();
 			added = new LinkedList<ExportedPackage>();
-			boolean usedBundleVersionMacro = false;
-			
-			// Get the version string
-			ExportVersionPolicy versionPolicy = dialog.getExportVersionPolicy();
-			String version = null;
-			if(versionPolicy == ExportVersionPolicy.linkWithBundle) {
-				version = BndEditModel.BUNDLE_VERSION_MACRO;
-				usedBundleVersionMacro = true;
-			} else if(versionPolicy == ExportVersionPolicy.specified) {
-				version = dialog.getSpecifiedVersion();
-			}
 			
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
 				ExportedPackage newPackage = new ExportedPackage(newPackageName, new HashMap<String, String>());
-				newPackage.getAttribs().put(org.osgi.framework.Constants.VERSION_ATTRIBUTE, version);
 				added.add(newPackage);
-			}
-			
-			// Make sure that the bundle has a version when the Bundle-Version macro was used
-			if(usedBundleVersionMacro) {
-				addDefaultBundleVersion();
 			}
 		}
 		return added;
