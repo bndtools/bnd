@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -16,7 +17,10 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,6 +30,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
@@ -42,9 +48,6 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
     private Text projectNameTxt;
     private Button dynamicUpdateBtn;
     private Button cleanBtn;
-
-	private List<String> projectNames;
-
 
 	public void createControl(Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
@@ -74,6 +77,11 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
                 updateLaunchConfigurationDialog();
             }
         };
+        projectNameBrowseBtn.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                doBrowseProject();
+            }
+        });
         projectNameTxt.addListener(SWT.Modify, updateListener);
         dynamicUpdateBtn.addListener(SWT.Selection, updateListener);
         cleanBtn.addListener(SWT.Selection, updateListener);
@@ -100,6 +108,21 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
         dynamicUpdateBtn.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
         cleanBtn.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 	}
+
+    void doBrowseProject() {
+        ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new WorkbenchLabelProvider());
+        dialog.setTitle("Project Selection");
+
+        dialog.setMessage("Select a project to constrain your search.");
+
+        List<IProject> projects = loadProjects();
+        dialog.setElements(projects.toArray(new IProject[projects.size()]));
+
+        if (Window.OK == dialog.open()) {
+            IProject selected = (IProject) dialog.getFirstResult();
+            projectNameTxt.setText(selected.getName());
+        }
+    }
 
     void checkValid() {
         String error = null;
@@ -128,7 +151,7 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
         setErrorMessage(null);
     }
 
-	List<String> loadProjectNames() {
+    List<IProject> loadProjects() {
 		Collection<Project> projects;
 		try {
 			Workspace workspace = Central.getWorkspace();
@@ -137,9 +160,13 @@ public class BndLaunchTab extends AbstractLaunchConfigurationTab {
 			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
 			return Collections.emptyList();
 		}
-		List<String> result = new ArrayList<String>(projects.size());
+        List<IProject> result = new ArrayList<IProject>(projects.size());
+        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		for (Project project : projects) {
-			result.add(project.getName());
+            IProject iproject = workspaceRoot.getProject(project.getName());
+            if (iproject != null && iproject.isOpen()) {
+                result.add(iproject);
+            }
 		}
 		return result;
 	}
