@@ -29,6 +29,7 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.plugin.Activator;
 import aQute.bnd.plugin.Central;
+import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Processor;
 import bndtools.Plugin;
@@ -93,6 +94,7 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Collection<String> runBundlePaths;
         synchronized (model) {
             try {
+                // Calculate physical paths for -runbundles from bnd.bnd
                 Collection<Container> runbundles = model.getRunbundles();
                 runBundlePaths = new ArrayList<String>(runbundles.size());
                 MultiStatus resolveErrors = new MultiStatus(Plugin.PLUGIN_ID, 0, "One or more run bundles could not be resolved.", null);
@@ -106,6 +108,13 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
                 }
                 if (!resolveErrors.isOK()) {
                     throw new CoreException(resolveErrors);
+                }
+
+                // Add the project's own output bundles
+                Collection<? extends Builder> builders = model.getSubBuilders();
+                for (Builder builder : builders) {
+                    File bundlefile = new File(model.getTarget(), builder.getBsn() + ".jar");
+                    runBundlePaths.add(bundlefile.getAbsolutePath());
                 }
             } catch (Exception e) {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding run bundles.", e));
