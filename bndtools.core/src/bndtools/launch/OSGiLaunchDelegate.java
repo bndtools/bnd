@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -40,6 +41,7 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
     private static final String LAUNCHER_MAIN_CLASS = LAUNCHER_BSN + ".Main";
 
     private File launchPropsFile;
+    private boolean enableDebugOption = false;
 
     @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
@@ -126,14 +128,19 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         outputProps.setProperty(Constants.RUNPROPERTIES, model.getProperties().getProperty(Constants.RUNPROPERTIES, ""));
         outputProps.setProperty(Constants.RUNSYSTEMPACKAGES, model.getProperties().getProperty(Constants.RUNSYSTEMPACKAGES, ""));
         outputProps.setProperty(Constants.RUNVM, model.getProperties().getProperty(Constants.RUNVM, ""));
-        outputProps.setProperty(LaunchConstants.ATTR_DYNAMIC_BUNDLES, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES,
-                LaunchConstants.DEFAULT_DYNAMIC_BUNDLES)));
-        outputProps.setProperty(LaunchConstants.ATTR_CLEAN, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_CLEAN,
-                LaunchConstants.DEFAULT_CLEAN)));
+        outputProps.setProperty(LaunchConstants.ATTR_DYNAMIC_BUNDLES, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES)));
+        outputProps.setProperty(LaunchConstants.ATTR_CLEAN, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN)));
+        outputProps.setProperty(LaunchConstants.ATTR_LOGLEVEL, configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
+        outputProps.setProperty(LaunchConstants.ATTR_LOG_OUTPUT, configuration.getAttribute(LaunchConstants.ATTR_LOG_OUTPUT, LaunchConstants.DEFAULT_LOG_OUTPUT));
+
+        // Check whether to enable launch debugging
+        Level logLevel = Level.parse(configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
+        enableDebugOption = logLevel.intValue() <= Level.FINE.intValue();
 
         // Write properties
         outputProps.store(new FileOutputStream(launchPropsFile), Processor.join(runBundlePaths));
     }
+
 
     @Override
     public String getMainTypeName(ILaunchConfiguration configuration) throws CoreException {
@@ -142,7 +149,11 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public String getProgramArguments(ILaunchConfiguration configuration) throws CoreException {
-        return launchPropsFile.getAbsolutePath();
+        String args = launchPropsFile.getAbsolutePath();
+        if(enableDebugOption) {
+            args += " -debug";
+        }
+        return args;
     }
 
     protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
