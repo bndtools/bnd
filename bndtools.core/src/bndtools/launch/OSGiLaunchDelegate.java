@@ -40,56 +40,31 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
     private static final String LAUNCHER_BSN = "bndtools.launcher";
     private static final String LAUNCHER_MAIN_CLASS = LAUNCHER_BSN + ".Main";
 
-    private File launchPropsFile;
-    private boolean enableDebugOption = false;
+    protected File launchPropsFile;
+    protected boolean enableDebugOption = false;
 
     @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
-        final Project model = getBndProject(configuration);
+        generateLaunchPropsFile(configuration);
+        registerLaunchPropertiesRegenerator(configuration, launch);
 
-        // Generate the initial launch properties file
+        super.launch(configuration, mode, launch, monitor);
+    }
+
+    /**
+     * Generates the initial launch properties file and saves the location into the {@link #launchPropsFile} field.
+     * @param configuration
+     * @throws CoreException
+     */
+    protected void generateLaunchPropsFile(ILaunchConfiguration configuration) throws CoreException {
+        Project model = getBndProject(configuration);
         try {
             launchPropsFile = File.createTempFile("bndtools.launcher", ".properties");
             launchPropsFile.deleteOnExit();
-            generateLaunchPropsFile(model, configuration);
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating temporary launch properties file.", e));
         }
 
-        // Add a resource listener to regenerate launch properties if the
-        // project descriptor changes
-        final IPath propsPath = Central.toPath(model, model.getPropertiesFile());
-        final IResourceChangeListener resourceListener = new IResourceChangeListener() {
-            public void resourceChanged(IResourceChangeEvent event) {
-                try {
-                    IResourceDelta delta = event.getDelta();
-                    delta = delta.findMember(propsPath);
-                    if (delta != null) {
-                        if (delta.getKind() == IResourceDelta.CHANGED) {
-                            generateLaunchPropsFile(model, configuration);
-                        } else if (delta.getKind() == IResourceDelta.REMOVED) {
-                            launchPropsFile.delete();
-                        }
-                    }
-                } catch (Exception e) {
-                    IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating launch properties file.", e);
-                    Plugin.log(status);
-                }
-            }
-        };
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceListener);
-
-        Runnable onTerminate = new Runnable() {
-            public void run() {
-                System.out.println("Processes terminated.");
-                ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceListener);
-            }
-        };
-        DebugPlugin.getDefault().addDebugEventListener(new TerminationListener(launch, onTerminate));
-        super.launch(configuration, mode, launch, monitor);
-    }
-
-    void generateLaunchPropsFile(Project model, ILaunchConfiguration configuration) throws IOException, CoreException {
         Properties outputProps = new Properties();
 
         // Expand -runbundles
@@ -137,10 +112,58 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Level logLevel = Level.parse(configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
         enableDebugOption = logLevel.intValue() <= Level.FINE.intValue();
 
-        // Write properties
-        outputProps.store(new FileOutputStream(launchPropsFile), Processor.join(runBundlePaths));
+        // Write out properties file
+        try {
+            outputProps.store(new FileOutputStream(launchPropsFile), Processor.join(runBundlePaths));
+        } catch (IOException e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating temporary launch properties file.", e));
+        }
     }
 
+    /**
+     * Registers a resource listener with the project model file ({@code bnd.bnd}) to
+     * update the project launcher properties file when the model changes. This
+     * is used to dynamically change the set of runtime bundles. The resource
+     * listener is automatically unregistered when the launched process
+     * terminates.
+     *
+     * @param configuration
+     * @param launch
+     * @throws CoreException
+     */
+    protected void registerLaunchPropertiesRegenerator(final ILaunchConfiguration configuration, final ILaunch launch) throws CoreException {
+        final Project model = getBndProject(configuration);
+
+        final IPath propsPath = Central.toPath(model, model.getPropertiesFile());
+        final IResourceChangeListener resourceListener = new IResourceChangeListener() {
+            public void resourceChanged(IResourceChangeEvent event) {
+                try {
+                    IResourceDelta delta = event.getDelta();
+                    delta = delta.findMember(propsPath);
+                    if (delta != null) {
+                        if (delta.getKind() == IResourceDelta.CHANGED) {
+                            generateLaunchPropsFile(configuration);
+                        } else if (delta.getKind() == IResourceDelta.REMOVED) {
+                            launchPropsFile.delete();
+                        }
+                    }
+                } catch (Exception e) {
+                    IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating launch properties file.", e);
+                    Plugin.log(status);
+                }
+            }
+        };
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceListener);
+
+        // Register a listener for termination of the launched process
+        Runnable onTerminate = new Runnable() {
+            public void run() {
+                System.out.println("Processes terminated.");
+                ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceListener);
+            }
+        };
+        DebugPlugin.getDefault().addDebugEventListener(new TerminationListener(launch, onTerminate));
+    }
 
     @Override
     public String getMainTypeName(ILaunchConfiguration configuration) throws CoreException {

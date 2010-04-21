@@ -16,18 +16,18 @@ import org.eclipse.debug.core.model.IProcess;
  * termination of all processes, the {@link Runnable} supplied in the
  * constructor will be invoked, and then this listener will unregister itself
  * from the {@link DebugPlugin}. It must not be reused for another launch.
- * 
+ *
  * @author Neil Bartlett
- * 
+ *
  */
-class TerminationListener implements IDebugEventSetListener {
-    
+public class TerminationListener implements IDebugEventSetListener {
+
     private final ILaunch launch;
     private final Runnable onTerminate;
 
     private final Set<IProcess> terminatedProcesses = new HashSet<IProcess>();
 
-    TerminationListener(ILaunch launch, Runnable onTerminate) {
+    public TerminationListener(ILaunch launch, Runnable onTerminate) {
         this.launch = launch;
         this.onTerminate = onTerminate;
     }

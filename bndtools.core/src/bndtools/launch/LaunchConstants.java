@@ -3,6 +3,9 @@ package bndtools.launch;
 
 
 public interface LaunchConstants {
+
+    public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
+
     public static String ATTR_FRAMEWORK_BSN = "frameworkBSN";
     public static String DEFAULT_FRAMEWORK_BSN = "org.eclipse.osgi";
 
