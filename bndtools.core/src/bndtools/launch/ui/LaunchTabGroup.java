@@ -1,4 +1,4 @@
-package aQute.bnd.launch;
+package bndtools.launch.ui;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
@@ -13,8 +13,15 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
 public class LaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { new BndLaunchTab(), new JavaArgumentsTab(), new JavaClasspathTab(),
-                new SourceLookupTab(), new JavaJRETab(), new EnvironmentTab(), new CommonTab(), };
+        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
+                new BndLaunchTab(),
+                new JavaArgumentsTab(),
+                new JavaClasspathTab(),
+                new SourceLookupTab(),
+                new JavaJRETab(),
+                new EnvironmentTab(),
+                new CommonTab(),
+        };
         setTabs(tabs);
     }
 

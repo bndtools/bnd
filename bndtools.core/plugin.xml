@@ -242,6 +242,7 @@
    
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <!--
       <launchConfigurationTabGroup
             class="aQute.bnd.junit.OSGiJUnitTabGroup"
             description="Help!"
@@ -257,10 +258,16 @@
                mode="run">
          </launchMode>
       </launchConfigurationTabGroup>
+      -->
       <launchConfigurationTabGroup
-            class="aQute.bnd.launch.LaunchTabGroup"
+            class="bndtools.launch.ui.LaunchTabGroup"
             id="aQute.bnd.launch.tabgroup"
             type="bndtools.launch">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="bndtools.launch.ui.LaunchTabGroup"
+            id="aQute.bnd.launch.tabgroup"
+            type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
    </extension>
    
@@ -274,13 +281,13 @@
            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
 	    </launchConfigurationType>	
       <launchConfigurationType
-            delegate="aQute.bnd.junit.OSGiJUnitLauncherConfigurationDelegate"
+            delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
             delegateDescription="Launches the JUnit Tests in an OSGi Framework and injects a BundleContext"
             delegateName="OSGi JUnit Tests"
             id="bndtools.launch.junit"
             migrationDelegate="org.eclipse.jdt.internal.junit.launcher.JUnitMigrationDelegate"
             modes="run, debug"
-            name="OSGi JUnit Tests"
+            name="OSGi Framework JUnit Tests"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
