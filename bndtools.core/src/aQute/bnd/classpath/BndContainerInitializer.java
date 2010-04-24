@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -18,13 +17,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
-import bndtools.Plugin;
-
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.plugin.Activator;
 import aQute.bnd.plugin.Central;
+import bndtools.Plugin;
 
 /**
  * A bnd container reads the bnd.bnd file in the project directory and use the
@@ -84,65 +82,72 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     public void workspaceChanged(Workspace ws) throws Exception {
         System.out.println("Workspace changed");
     }
-    
-	IClasspathEntry[] calculateEntries(Project project) {
-		
-		Collection<Container> buildpath;
-		try {
-			buildpath = project.getBuildpath();
-		} catch (Exception e) {
-			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project build path.", e));
-			buildpath = Collections.emptyList();
-		}
-		Collection<Container> bootclasspath;
-		try {
-			bootclasspath = project.getBootclasspath();
-		} catch (Exception e) {
-			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project boot classpath.", e));
-			bootclasspath = Collections.emptyList();
-		}
-		
-		List<Container> entries = new ArrayList<Container>(buildpath.size() + bootclasspath.size());
-		entries.addAll(buildpath);
 
-		// The first file is always the project directory,
-		// Eclipse already includes that for us.
-		if (entries.size() > 0) {
-			entries.remove(0);
-		}
-		
-		entries.addAll(bootclasspath);
+    IClasspathEntry[] calculateEntries(Project project) {
+        Collection<Container> buildpath;
+        try {
+            buildpath = project.getBuildpath();
+        } catch (Exception e) {
+            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project build path.", e));
+            buildpath = Collections.emptyList();
+        }
+        Collection<Container> bootclasspath;
+        try {
+            bootclasspath = project.getBootclasspath();
+        } catch (Exception e) {
+            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project boot classpath.", e));
+            bootclasspath = Collections.emptyList();
+        }
 
-		ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.size());
-		for (Container c : entries) {
-			IClasspathEntry cpe;
-			IPath sourceAttachment = null;
+        List<Container> entries = new ArrayList<Container>(buildpath.size() + bootclasspath.size());
+        entries.addAll(buildpath);
 
-			if (c.getError() == null) {
-				File file = c.getFile();
-				assert file.isAbsolute();
+        // The first file is always the project directory,
+        // Eclipse already includes that for us.
+        if (entries.size() > 0) {
+            entries.remove(0);
+        }
 
-				IPath p = Central.toPath(project, file);
-				// JDT seems to ignore files when they
-				// are outside the workspace
-				if (p == null)
-					p = Path.fromOSString(file.getAbsolutePath());
-				try {
-					Central.refresh(p);
-				} catch (Throwable e) {
+        entries.addAll(bootclasspath);
 
-				}
-				if (c.getType() == Container.TYPE.PROJECT) {
-					File sourceDir = c.getProject().getSrc();
-					if (sourceDir.isDirectory())
-						sourceAttachment = Central.toPath(c
-								.getProject(), sourceDir);
-				}
+        ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.size());
+        for (Container c : entries) {
+            IClasspathEntry cpe;
+            IPath sourceAttachment = null;
 
-				cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null);
-				result.add(cpe);
-			}
-		}
-		return result.toArray(new IClasspathEntry[result.size()]);
-	}
+            if (c.getError() == null) {
+                File file = c.getFile();
+                assert file.isAbsolute();
+
+                IPath p = fileToPath(project, file);
+                if (c.getType() == Container.TYPE.PROJECT) {
+                    File sourceDir = c.getProject().getSrc();
+                    if (sourceDir.isDirectory())
+                        sourceAttachment = Central.toPath(c.getProject(), sourceDir);
+                } else {
+                    File sourceBundle = c.getSourceBundle();
+                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
+                        sourceAttachment = fileToPath(project, sourceBundle);
+                    }
+                }
+
+                cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null);
+                result.add(cpe);
+            }
+        }
+        return result.toArray(new IClasspathEntry[result.size()]);
+    }
+
+    protected static IPath fileToPath(Project project, File file) {
+        IPath path = Central.toPath(project, file);
+        if (path == null)
+            path = Path.fromOSString(file.getAbsolutePath());
+
+        try {
+            Central.refresh(path);
+        } catch (Throwable e) {
+        }
+
+        return path;
+    }
 }

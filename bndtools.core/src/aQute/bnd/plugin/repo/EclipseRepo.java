@@ -11,6 +11,7 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.SourceRepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Instruction;
 import aQute.lib.osgi.Jar;
@@ -20,7 +21,7 @@ import aQute.libg.reporter.Reporter;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 
-public class EclipseRepo implements Plugin, RepositoryPlugin {
+public class EclipseRepo implements Plugin, RepositoryPlugin, SourceRepositoryPlugin {
     File                             root;
     Reporter                         reporter;
     String                           name;
@@ -121,21 +122,20 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             try {
                 Jar jar = new Jar(plugin);
                 Manifest manifest = jar.getManifest();
-                String bsn = manifest.getMainAttributes().getValue(
-                        Constants.BUNDLE_SYMBOLICNAME);
-                String version = manifest.getMainAttributes().getValue(
-                        Constants.BUNDLE_VERSION);
+                String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+                String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+                String sourceBundle = manifest.getMainAttributes().getValue("Eclipse-SourceBundle");
 
-                if (bsn != null) {
+                // Ignore source bundles
+
+                if (bsn != null && sourceBundle == null) {
                     // Remove attributes (e.g. "singleton") from the bsn
                     int index = bsn.indexOf(';');
                     if (index > -1) {
                         bsn = bsn.substring(0, index);
                     }
-
                     if (version == null)
                         version = "0";
-
                     Map<String, String> instance = map.get(bsn);
                     if (instance == null) {
                         instance = Create.map();
@@ -182,6 +182,21 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         return result.toArray(new File[result.size()]);
     }
 
+    public File getSourceBundle(File binaryBundle, String bsn) {
+        File parent = binaryBundle.getParentFile();
+        if (!binaryBundle.getName().startsWith(bsn + "_")) {
+            return null;
+        }
+
+        String versionSegment = binaryBundle.getName().substring(bsn.length() + 1);
+        File sourceBundle = new File(parent, bsn + ".source_" + versionSegment);
+
+        if (!sourceBundle.isFile())
+            return null;
+
+        return sourceBundle;
+    }
+
     public String getName() {
         return name;
     }
@@ -214,4 +229,8 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         return versions;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

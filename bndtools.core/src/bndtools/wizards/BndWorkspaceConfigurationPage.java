@@ -9,8 +9,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
-
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -60,22 +58,39 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 
-import bndtools.Plugin;
-import bndtools.utils.BundleUtils;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import bndtools.Plugin;
+import bndtools.utils.BundleUtils;
 
 @SuppressWarnings("restriction")
 public class BndWorkspaceConfigurationPage extends WizardPage {
 	
 	private static final String NO_DESCRIPTION = "No description available";
 	
-	private IConfigurationElement[] checkedConfigElements = null;
+    private IConfigurationElement[] elements;
+    private IConfigurationElement[] checkedConfigElements;
 	
-	public BndWorkspaceConfigurationPage(String pageName) {
-		super(pageName);
-	}
+    public BndWorkspaceConfigurationPage(String pageName) {
+        super(pageName);
+        loadRepositories();
+    }
+
+    private void loadRepositories() {
+        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+
+        this.elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
+
+        List<IConfigurationElement> checkedList = new ArrayList<IConfigurationElement>(elements.length);
+        for (IConfigurationElement element : elements) {
+            String selectedStr = element.getAttribute("selected");
+            if ("true".equalsIgnoreCase(selectedStr)) {
+                checkedList.add(element);
+            }
+        }
+        this.checkedConfigElements = checkedList.toArray(new IConfigurationElement[checkedList.size()]);
+    }
+
 	public void createControl(Composite parent) {
 		setTitle("Configure BndTools Workspace");
 		setDescription("Select external repositories to copy into the Bnd workspace.");
@@ -89,8 +104,8 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new RepositoryContribLabelProvider());
 		
-		final IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-		viewer.setInput(extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB));
+        viewer.setInput(elements);
+        viewer.setCheckedElements(checkedConfigElements);
 		
 		new Label(composite, SWT.NONE).setText("Description:");
 		final Browser browser = new Browser(composite, SWT.BORDER);
@@ -141,6 +156,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		
 		setControl(composite);
 	}
+
 	static class RepositoryContribLabelProvider extends StyledCellLabelProvider {
 		
 		Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
@@ -240,6 +256,10 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 			repoFolder.create(true, true, progress.newChild(1)); 
 		}
 		
+        // Copy the built-in repository
+        Bundle myBundle = Plugin.getDefault().getBundle();
+        copyFromBundleToFolder(myBundle, new Path("repo"), repoFolder, true, progress.newChild(1));
+
 		// Copy in the repository contributions
 		IConfigurationElement[] elements = checkedConfigElements;
 		if(elements != null && elements.length > 0) {
@@ -251,13 +271,14 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 					String bsn = element.getContributor().getName();
 					Bundle bundle = BundleUtils.findBundle(bsn, null);
 					if(bundle != null) {
-						copyFromBundleToFolder(bundle, new Path(path), repoFolder, progress.newChild(1));
+                        copyFromBundleToFolder(bundle, new Path(path), repoFolder, false, progress.newChild(1));
 					}
 				}
 			}
 		}
 	}
-	void copyFromBundleToFolder(Bundle bundle, IPath path, IFolder toFolder, IProgressMonitor monitor) throws CoreException {
+
+    void copyFromBundleToFolder(Bundle bundle, IPath path, IFolder toFolder, boolean replaceContents, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, String.format("Copying repository contribution %s", path.toString()), IProgressMonitor.UNKNOWN);
 		
 		URL baseUrl = bundle.getEntry(path.toString());
@@ -290,7 +311,8 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 						IFile newFile = toFolder.getFile(entryPath);
 						try {
 							if(newFile.exists()) {
-								newFile.setContents(entry.openStream(), true, true, progress.newChild(1));
+                                if (replaceContents)
+                                    newFile.setContents(entry.openStream(), true, true, progress.newChild(1));
 							} else {
 								newFile.create(entry.openStream(), true, progress.newChild(1));
 							}

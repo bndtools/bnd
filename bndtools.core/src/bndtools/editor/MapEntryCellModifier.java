@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+
 public class MapEntryCellModifier<K,V> implements ICellModifier {
 	
 	private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
@@ -44,7 +45,7 @@ public class MapEntryCellModifier<K,V> implements ICellModifier {
 	}
 
 	public Object getValue(Object element, String property) {
-		Object result = null;
+        Object result = null;
 		
 		@SuppressWarnings("unchecked")
 		K key = (K) element;
@@ -55,6 +56,8 @@ public class MapEntryCellModifier<K,V> implements ICellModifier {
 			Map<K,V> map = (Map<K, V>) viewer.getInput();
 			result = map.get(key);
 		}
+        if (result == null)
+            result = "";
 		return result;
 	}
 	public void modify(Object element, String property, Object editResult) {

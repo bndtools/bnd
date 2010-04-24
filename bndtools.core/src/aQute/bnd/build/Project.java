@@ -26,6 +26,7 @@ import aQute.bnd.help.Syntax;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.SourceRepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.test.ProjectLauncher;
@@ -706,20 +707,20 @@ public class Project extends Processor {
         for (RepositoryPlugin plugin : plugins) {
             File[] results = plugin.get(bsn, range);
             if (results != null && results.length > 0) {
-                File f = results[useStrategy == STRATEGY_LOWEST ? 0
-                        : results.length - 1];
-
-                if (f.getName().endsWith("lib"))
-                    return new Container(this, bsn, range,
-                            Container.TYPE.LIBRARY, f, null, attrs);
-                else
-                    return new Container(this, bsn, range, Container.TYPE.REPO,
-                            f, null, attrs);
+                File bundleFile = results[useStrategy == STRATEGY_LOWEST ? 0 : results.length - 1];
+                if (bundleFile.getName().endsWith("lib")) {
+                    return new Container(this, bsn, range, Container.TYPE.LIBRARY, bundleFile, null, attrs);
+                } else {
+                    File sourceBundleFile = null;
+                    if (plugin instanceof SourceRepositoryPlugin) {
+                        sourceBundleFile = ((SourceRepositoryPlugin) plugin).getSourceBundle(bundleFile, bsn);
+                    }
+                    return new Container(this, bsn, range, Container.TYPE.REPO, bundleFile, sourceBundleFile, null, attrs);
+                }
             }
         }
 
-        return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn
-                + ";version=" + range + " Not found in " + plugins, null);
+        return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found in " + plugins, null);
     }
 
     /**

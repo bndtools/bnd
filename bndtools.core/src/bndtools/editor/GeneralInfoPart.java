@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -78,7 +77,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
 
 import bndtools.BndConstants;
 import bndtools.Plugin;
@@ -208,15 +206,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			public void modifyText(ModifyEvent e) {
 				if(refreshers.get() == 0) {
 					addDirtyProperty(Constants.BUNDLE_VERSION);
-				}
-				IMessageManager msgs = getManagedForm().getMessageManager();
-				try {
-					String text = txtVersion.getText();
-					if(text.length() > 0)
-						new Version(text);
-					msgs.removeMessage("ERROR_" + Constants.BUNDLE_VERSION, txtVersion);
-				} catch (IllegalArgumentException x) {
-					msgs.addMessage("ERROR_" + Constants.BUNDLE_VERSION, "Invalid version format.", null, IMessageProvider.ERROR, txtVersion);
 				}
 			}
 		});

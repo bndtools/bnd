@@ -26,5 +26,4 @@ public class RunPropertiesPart extends PropertyTableSectionPart {
 	protected void saveProperties(BndEditModel model, Map<String, String> props) {
 		model.setRunProperties(props);
 	}
-
 }

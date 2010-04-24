@@ -5,11 +5,11 @@
          point="bndtools.core.repositoryContributor">
       <repository
             name="Base"
-            path="repo/">
+            path="repo/"
+            selected="true">
          <description>
             The base repository containing a useful but minimal set of bundles.
          </description>
       </repository>
    </extension>
-
 </plugin>

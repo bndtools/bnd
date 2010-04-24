@@ -82,7 +82,7 @@ import bndtools.utils.PathUtils;
 
 public class ComponentListPart extends SectionPart implements PropertyChangeListener {
 
-	private static final String XML_SUFFIX = ".xml";
+	private static final String XML_SUFFIX = ".xml"; //$NON-NLS-1$
 	private List<String> componentNames;
 	private Map<String, ServiceComponent> componentMap;
 	
@@ -96,7 +96,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		createSection(getSection(), toolkit);
 	}
 	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Service Components");
+		section.setText(Messages.ComponentListPart_listSectionTitle);
 		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -107,8 +107,8 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new ServiceComponentLabelProvider());
 		
-		final Button btnAdd = toolkit.createButton(composite, "Add", SWT.PUSH);
-		final Button btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
+		final Button btnAdd = toolkit.createButton(composite, Messages.ComponentListPart_addButton, SWT.PUSH);
+		final Button btnRemove = toolkit.createButton(composite, Messages.ComponentListPart_RemoveButton, SWT.PUSH);
 		
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -166,7 +166,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		ServiceComponent component;
 		int i = 0;
 		while(true) {
-			name = (i == 0 ? "new" : "new" + i++);
+			name = (i == 0 ? "new" : "new" + i++); //$NON-NLS-1$ //$NON-NLS-2$
 			if(!componentMap.containsKey(name)) {
 				component = new ServiceComponent(name, new HashMap<String, String>());
 				componentMap.put(name, component);
@@ -208,7 +208,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 					e.printStackTrace();
 				}
 			}
-		} else if(!component.getName().endsWith("*")) {
+		} else if(!component.getName().endsWith("*")) { //$NON-NLS-1$
 			try {
 				IType type = getJavaProject().findType(component.getName());
 				if(type != null) {
@@ -238,27 +238,27 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 					if(classOrWildcard != null && classOrWildcard.length() > 0) {
 						int dotIndex = classOrWildcard.lastIndexOf('.');
 						if(dotIndex == -1) {
-							msgs.addMessage("_comp_default_pkg" + index, "Cannot use classes in the default package.", null, IMessageProvider.WARNING);
+							msgs.addMessage("_comp_default_pkg" + index, Messages.ComponentListPart_warningDefaultPkg, null, IMessageProvider.WARNING); //$NON-NLS-1$
 						} else {
 							final String packageName = classOrWildcard.substring(0, dotIndex);
 							final BndEditModel model = (BndEditModel) getManagedForm().getInput();
 							if(!model.isIncludedPackage(packageName)) {
-								String message = MessageFormat.format("Package \"{0}\" is not included in the bundle. It will be imported instead.", packageName);
+                                String message = MessageFormat.format(Messages.ComponentListPart_warningPkgNotIncluded, packageName);
 								IAction[] fixes = new Action[] {
-									new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
+									new Action(MessageFormat.format(Messages.ComponentListPart_fixAddToPrivatePkgs, packageName)) {
 										public void run() {
 											model.addPrivatePackage(packageName);
 											markDirty();
 										};
 									},
-									new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
+									new Action(MessageFormat.format(Messages.ComponentListPart_fixAddToExportedPkgs, packageName)) {
 										public void run() {
 											model.addExportedPackage(new ExportedPackage(packageName, null));
 											markDirty();
 										};
 									}
 								};
-								msgs.addMessage("_comp_nonincluded_pkg" + index, message, fixes, IMessageProvider.WARNING);
+								msgs.addMessage("_comp_nonincluded_pkg" + index, message, fixes, IMessageProvider.WARNING); //$NON-NLS-1$
 							}
 						}
 					}
@@ -388,7 +388,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 							if(javaElement instanceof IType) {
 								IType type = (IType) javaElement;
 								if(type.isClass() && Flags.isPublic(type.getFlags())) {
-									String compName = type.getPackageFragment().getElementName() + "." + type.getElementName();
+									String compName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
 									ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
 									addedNames.add(compName);
 									addedMap.put(compName, component);
@@ -397,7 +397,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 								IType[] allTypes = ((ICompilationUnit) javaElement).getAllTypes();
 								for (IType type : allTypes) {
 									if(type.isClass() && Flags.isPublic(type.getFlags())) {
-										String compName = type.getPackageFragment().getElementName() + "." + type.getElementName();
+										String compName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
 										ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
 										addedNames.add(compName);
 										addedMap.put(compName, component);
@@ -405,7 +405,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 								}
 							}
 						} catch (JavaModelException e) {
-							Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing Java type information", e));
+							Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ComponentListPart_errorJavaType, e));
 						}
 					} else if(resource.getName().endsWith(XML_SUFFIX)) {
 						IFormPage formPage = (IFormPage) getManagedForm().getContainer();

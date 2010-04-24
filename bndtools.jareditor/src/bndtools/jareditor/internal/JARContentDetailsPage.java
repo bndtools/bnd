@@ -282,6 +282,7 @@ public class JARContentDetailsPage extends AbstractFormPart implements IDetailsP
     @Override
     public void dispose() {
         super.dispose();
-        textFont.dispose();
+        if (textFont != null && !textFont.isDisposed())
+            textFont.dispose();
     }
 }

@@ -161,7 +161,7 @@
                <not>
                   <objectState
                         name="projectNature"
-                        value="bndtools.bndnature">
+                        value="bndtools.core.bndnature">
                   </objectState>
                </not>
             </and>
@@ -183,7 +183,7 @@
          <visibility>
             <objectState
                   name="projectNature"
-                  value="bndtools.bndnature">
+                  value="bndtools.core.bndnature">
             </objectState>
          </visibility>
       </objectContribution>
@@ -242,11 +242,12 @@
    
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <!--
       <launchConfigurationTabGroup
             class="aQute.bnd.junit.OSGiJUnitTabGroup"
             description="Help!"
             id="aQute.bnd.junit.OSGiJUnitTabGroup"
-            type="aQute.bnd.junit.launchconfig">
+            type="bndtools.launch.junit">
          <launchMode
                description="%jUnitTabGroup.description.debug"
                mode="debug"
@@ -257,30 +258,36 @@
                mode="run">
          </launchMode>
       </launchConfigurationTabGroup>
+      -->
       <launchConfigurationTabGroup
-            class="aQute.bnd.launch.LaunchTabGroup"
+            class="bndtools.launch.ui.LaunchTabGroup"
             id="aQute.bnd.launch.tabgroup"
-            type="aQute.bnd.launch">
+            type="bndtools.launch">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="bndtools.launch.ui.JUnitLaunchTabGroup"
+            id="aQute.bnd.launch.junit.tabgroup"
+            type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
    </extension>
    
    	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 	    <launchConfigurationType
-           delegate="aQute.bnd.launch.LaunchDelegate"
-           id="aQute.bnd.launch"
+           delegate="bndtools.launch.OSGiLaunchDelegate"
+           id="bndtools.launch"
            modes="run, debug"
-           name="OSGi Run"
+           name="OSGi Framework"
            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
 	    </launchConfigurationType>	
       <launchConfigurationType
-            delegate="aQute.bnd.junit.OSGiJUnitLauncherConfigurationDelegate"
+            delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
             delegateDescription="Launches the JUnit Tests in an OSGi Framework and injects a BundleContext"
             delegateName="OSGi JUnit Tests"
-            id="aQute.bnd.junit.launchconfig"
+            id="bndtools.launch.junit"
             migrationDelegate="org.eclipse.jdt.internal.junit.launcher.JUnitMigrationDelegate"
             modes="run, debug"
-            name="OSGi JUnit Tests"
+            name="OSGi Framework JUnit Tests"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
@@ -307,20 +314,6 @@
                </with>
             </enablement>
          </contextualLaunch>
-         <!--
-         <perspective
-               id="org.eclipse.jdt.ui.JavaPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.debug.ui.DebugPerspective">
-         </perspective>
-         -->
          <configurationType
                id="org.eclipse.jdt.junit.launchconfig">
          </configurationType>
@@ -334,47 +327,27 @@
          </description>
       </shortcut>
       <shortcut
-            class="aQute.bnd.launch.Shortcut"
+            class="bndtools.launch.RunShortcut"
             icon="icons/bricks_run.png"
-            id="aQute.bnd.launch.shortcut"
+            id="bndtools.launch.shortcut"
             label="OSGi Run"
             modes="run, debug">
-         <!--
-         <perspective
-               id="org.eclipse.jdt.ui.JavaPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
-         </perspective>
-         <perspective
-               id="org.eclipse.debug.ui.DebugPerspective">
-         </perspective>
-         -->
          <contextualLaunch>
             <enablement>
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
+               <with variable="selection">
+                  <count value="1"/>
                   <iterate>
-                     <adapt
-                           type="org.eclipse.jdt.core.IJavaElement">
-                        <test
-                              property="org.eclipse.jdt.core.isInJavaProject">
-                        </test>
-                        <test
-                              property="org.eclipse.jdt.core.hasTypeOnClasspath"
-                              value="junit.framework.Test">
-                        </test>
-                        <test
-                              forcePluginActivation="true"
-                              property="org.eclipse.jdt.junit.canLaunchAsJUnit">
-                        </test>
-                     </adapt>
+                     <or>
+                        <!-- Java/Bnd Project -->
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                        </and>
+                        
+                        <!-- bnd.bnd file -->
+                        <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                     </or>
                   </iterate>
                </with>
             </enablement>
@@ -406,12 +379,12 @@
     <extension
           point="org.eclipse.debug.ui.launchConfigurationTypeImages">
        <launchConfigurationTypeImage
-             configTypeID="aQute.bnd.launch"
+             configTypeID="bndtools.launch"
              icon="icons/bricks_run.png"
              id="bndtools.core.launchConfigImages.run">
        </launchConfigurationTypeImage>
        <launchConfigurationTypeImage
-             configTypeID="aQute.bnd.junit.launchconfig"
+             configTypeID="bndtools.launch.junit"
              icon="icons/bricks_junit.png"
              id="bndtools.core.launchConfigImages.test">
        </launchConfigurationTypeImage>
