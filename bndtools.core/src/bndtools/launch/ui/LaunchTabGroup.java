@@ -14,7 +14,7 @@ public class LaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                new BndLaunchTab(),
+                new OSGiLaunchTab(),
                 new JavaArgumentsTab(),
                 new JavaClasspathTab(),
                 new SourceLookupTab(),

@@ -114,7 +114,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
-        String projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
+        projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
         if (projectName != null) {
             projectNameTxt.setText(projectName);
         }

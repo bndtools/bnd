@@ -265,8 +265,8 @@
             type="bndtools.launch">
       </launchConfigurationTabGroup>
       <launchConfigurationTabGroup
-            class="bndtools.launch.ui.LaunchTabGroup"
-            id="aQute.bnd.launch.tabgroup"
+            class="bndtools.launch.ui.JUnitLaunchTabGroup"
+            id="aQute.bnd.launch.junit.tabgroup"
             type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
    </extension>
@@ -276,7 +276,7 @@
            delegate="bndtools.launch.OSGiLaunchDelegate"
            id="bndtools.launch"
            modes="run, debug"
-           name="Runtime OSGi Framework"
+           name="OSGi Framework"
            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
 	    </launchConfigurationType>	

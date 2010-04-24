@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -68,12 +68,72 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Properties outputProps = new Properties();
 
         // Expand -runbundles
-        Collection<String> runBundlePaths;
+        Collection<String> runBundlePaths = calculateRunBundlePaths(model);
+        outputProps.put(Constants.RUNBUNDLES, Processor.join(runBundlePaths));
+
+        // Copy misc properties
+        copyConfigurationToLaunchFile(configuration, model, outputProps);
+        copyLauncherBundlePath(model, outputProps);
+
+        // Check whether to enable launch debugging
+        Level logLevel = Level.parse(configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
+        enableDebugOption = logLevel.intValue() <= Level.FINE.intValue();
+
+        // Write out properties file
+        try {
+            outputProps.store(new FileOutputStream(launchPropsFile), Processor.join(runBundlePaths));
+        } catch (IOException e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating temporary launch properties file.", e));
+        }
+    }
+
+    /**
+     * Copies additional properties from both the launch configuration and the
+     * project model itself into the launch properties file.
+     *
+     * @param configuration
+     *            The launch configuration
+     * @param model
+     *            The project model
+     * @param outputProps
+     *            The output properties, which will be written to the launch
+     *            properties file.
+     * @throws CoreException
+     */
+    protected void copyConfigurationToLaunchFile(ILaunchConfiguration configuration, Project model, Properties outputProps) throws CoreException {
+        outputProps.setProperty(Constants.RUNPROPERTIES, model.getProperties().getProperty(Constants.RUNPROPERTIES, ""));
+        outputProps.setProperty(Constants.RUNSYSTEMPACKAGES, model.getProperties().getProperty(Constants.RUNSYSTEMPACKAGES, ""));
+        outputProps.setProperty(Constants.RUNVM, model.getProperties().getProperty(Constants.RUNVM, ""));
+        outputProps.setProperty(LaunchConstants.ATTR_DYNAMIC_BUNDLES, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES)));
+        outputProps.setProperty(LaunchConstants.ATTR_CLEAN, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN)));
+        outputProps.setProperty(LaunchConstants.ATTR_LOGLEVEL, configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
+        outputProps.setProperty(LaunchConstants.ATTR_LOG_OUTPUT, configuration.getAttribute(LaunchConstants.ATTR_LOG_OUTPUT, LaunchConstants.DEFAULT_LOG_OUTPUT));
+        outputProps.setProperty(LaunchConstants.PROP_JUNIT_KEEP_ALIVE, Boolean.toString(configuration.getAttribute(LaunchConstants.PROP_JUNIT_KEEP_ALIVE, true)));
+        outputProps.setProperty(LaunchConstants.PROP_JUNIT_START_TIMEOUT, configuration.getAttribute(LaunchConstants.PROP_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_START_TIMEOUT));
+    }
+
+    protected void copyLauncherBundlePath(Project model, Properties outputProps) throws CoreException {
+        File launcherBundle = findBundle(model, LAUNCHER_BSN);
+        if(launcherBundle == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find launcher bundle \"{0}\".", LAUNCHER_BSN), null));
+        outputProps.setProperty(LaunchConstants.ATTR_LAUNCHER_BUNDLE_PATH, launcherBundle.getAbsolutePath());
+    }
+
+    /**
+     * Calculates the full paths to the set of runtime bundles. Used to expand
+     * the launch properties file.
+     *
+     * @param model
+     *            The project model
+     * @return A collection of absolute file paths
+     * @throws CoreException
+     */
+    protected Collection<String> calculateRunBundlePaths(Project model) throws CoreException {
+        Collection<String> runBundlePaths = new LinkedList<String>();
         synchronized (model) {
             try {
                 // Calculate physical paths for -runbundles from bnd.bnd
                 Collection<Container> runbundles = model.getRunbundles();
-                runBundlePaths = new ArrayList<String>(runbundles.size());
                 MultiStatus resolveErrors = new MultiStatus(Plugin.PLUGIN_ID, 0, "One or more run bundles could not be resolved.", null);
                 for (Container container : runbundles) {
                     if (container.getType() == TYPE.ERROR) {
@@ -97,27 +157,7 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding run bundles.", e));
             }
         }
-        outputProps.put(Constants.RUNBUNDLES, Processor.join(runBundlePaths));
-
-        // Copy misc properties
-        outputProps.setProperty(Constants.RUNPROPERTIES, model.getProperties().getProperty(Constants.RUNPROPERTIES, ""));
-        outputProps.setProperty(Constants.RUNSYSTEMPACKAGES, model.getProperties().getProperty(Constants.RUNSYSTEMPACKAGES, ""));
-        outputProps.setProperty(Constants.RUNVM, model.getProperties().getProperty(Constants.RUNVM, ""));
-        outputProps.setProperty(LaunchConstants.ATTR_DYNAMIC_BUNDLES, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES)));
-        outputProps.setProperty(LaunchConstants.ATTR_CLEAN, Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN)));
-        outputProps.setProperty(LaunchConstants.ATTR_LOGLEVEL, configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
-        outputProps.setProperty(LaunchConstants.ATTR_LOG_OUTPUT, configuration.getAttribute(LaunchConstants.ATTR_LOG_OUTPUT, LaunchConstants.DEFAULT_LOG_OUTPUT));
-
-        // Check whether to enable launch debugging
-        Level logLevel = Level.parse(configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
-        enableDebugOption = logLevel.intValue() <= Level.FINE.intValue();
-
-        // Write out properties file
-        try {
-            outputProps.store(new FileOutputStream(launchPropsFile), Processor.join(runBundlePaths));
-        } catch (IOException e) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating temporary launch properties file.", e));
-        }
+        return runBundlePaths;
     }
 
     /**
@@ -199,8 +239,7 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         // Get the launcher bundle
         File launcherBundle = findBundle(model, LAUNCHER_BSN);
         if (launcherBundle == null) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find launcher bundle {0}.", LAUNCHER_BSN),
-                    null));
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find launcher bundle {0}.", LAUNCHER_BSN), null));
         }
 
         // Add to the classpath
