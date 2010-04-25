@@ -1,5 +1,5 @@
 # Basic Headers
-Bundle-SymbolicName: bndtools.core;singleton:="true
+Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: 0.0.1
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
@@ -41,7 +41,8 @@ Include-Resource: resources,\
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
-	org.eclipse.jdt.debug.ui
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.jdt.junit
 
 -runbundles: org.eclipse.osgi.services,\
 	org.eclipse.core.runtime,\
@@ -117,13 +118,15 @@ Include-Resource: resources,\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.simpleconfigurator,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
-	org.eclipse.equinox.frameworkadmin
+	org.eclipse.equinox.frameworkadmin,\
+	org.eclipse.jdt.junit,\
+	org.eclipse.jdt.junit.runtime
 
 -runproperties: osgi.ws=cocoa,\
-	osgi.arch=x86_64,\
 	osgi.os=macosx,\
-	osgi.console=9000,\
+	osgi.arch=x86_64,\
 	eclipse.application=org.eclipse.ui.ide.workbench,\
+	osgi.console=,\
 	eclipse.application.launchDefault=true,\
 	eclipse.consoleLog=true
 
