@@ -3,7 +3,7 @@ h1. Bndtools User Manual
 
 h2. Overview
 
-Bndtools is an Eclipse development environment for developing OSGi bundles and applications. It is based the "Bnd" bundle tool, originally developed by Peter Kriens.
+Bndtools is an Eclipse development environment for OSGi bundles and applications. It is based the "Bnd" bundle tool, originally developed by Peter Kriens.
 
 h3. Table of Contents
 
