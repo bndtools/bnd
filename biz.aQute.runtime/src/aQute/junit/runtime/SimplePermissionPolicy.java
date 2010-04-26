@@ -1,11 +1,11 @@
 package aQute.junit.runtime;
 
 import java.io.*;
-import java.net.URL;
-import java.util.Vector;
+import java.net.*;
+import java.util.*;
+
 import org.osgi.framework.*;
 import org.osgi.service.permissionadmin.*;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Implements a permissionpolicy. It will tried to read a resource from the
@@ -31,7 +31,6 @@ import org.osgi.util.tracker.ServiceTracker;
 public class SimplePermissionPolicy implements SynchronousBundleListener {
     static final String DEFAULT_PERMISSION_RESOURCE = "default.perm";
     BundleContext       context;
-    ServiceTracker      tracker;
     Vector              bundles;
     PermissionInfo[]    defaultPermissions;
 
@@ -42,12 +41,8 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
     SimplePermissionPolicy(BundleContext context) throws Exception {
         this.context = context;
         bundles = new Vector();
-        tracker = new ServiceTracker(context, PermissionAdmin.class.getName(),
-                null);
-        tracker.open();
         context.addBundleListener(this);
-        PermissionAdmin permissionAdmin = (PermissionAdmin) tracker
-                .getService();
+        PermissionAdmin permissionAdmin = getPermissionAdmin();
         if (permissionAdmin == null) /* no permission admin service */
             return;
         // Set the default permissions.
@@ -71,8 +66,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
      * Sets the permissions of a bundle from a resource, if exists.
      */
     public void setPermissions(Bundle bundle) {
-        PermissionAdmin permissionAdmin = (PermissionAdmin) tracker
-                .getService();
+        PermissionAdmin permissionAdmin = getPermissionAdmin();
         if (permissionAdmin == null) /* no permission admin service */{
             return;
         }
@@ -149,8 +143,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
      * Clear the permissions for a bundle.
      */
     public void clearPermissions(Bundle bundle) {
-        PermissionAdmin permissionAdmin = (PermissionAdmin) tracker
-                .getService();
+        PermissionAdmin permissionAdmin = getPermissionAdmin();
         if (permissionAdmin == null) /* no permission admin service */
             return;
         if (bundles.removeElement(bundle)) {
@@ -158,7 +151,15 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
         }
     }
 
-    /**
+    private PermissionAdmin getPermissionAdmin() {
+    	ServiceReference ref = context.getServiceReference(PermissionAdmin.class.getName());
+    	if ( ref == null)
+    		return null;
+    	
+		return (PermissionAdmin) context.getService(ref);
+	}
+
+	/**
      * Event when a bundle has changed so we need to inspect if it is installed,
      * and if so we need to set the permissions or remove it when it is
      * uninstalled.
