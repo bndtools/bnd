@@ -94,6 +94,7 @@
 
 	<target name="clean" depends="init">
 		<bnd command="clean" exceptions="true" basedir="${project}" />
+		<delete dir="bin"/>
 	</target>
 
 	<!--

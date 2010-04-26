@@ -5,4 +5,9 @@
                 <ant dir="biz.aQute.bnd" target="build"/>
         </target>
 
+
+	<target name="clean">
+		<ant dir="biz.aQute.bnd" target="deepclean"/>
+	</target>
+
 </project>
