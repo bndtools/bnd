@@ -1108,7 +1108,7 @@ public class Clazz {
                 packageReference(sb.substring(0, lastSlash));
         } else {
             if ("+-*BCDFIJSZV".indexOf(c) < 0)
-                System.out.println("Should not skip: " + c);
+               ;// System.out.println("Should not skip: " + c);
         }
 
         // this skips a lot of characters
