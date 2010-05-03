@@ -43,8 +43,57 @@ Include-Resource: resources,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit
+	
+# Short list
+-runbundles: com.ibm.icu,\
+	org.eclipse.core.commands,\
+	org.eclipse.core.contenttype,\
+	org.eclipse.core.databinding,\
+	org.eclipse.core.databinding.beans,\
+	org.eclipse.core.databinding.observable,\
+	org.eclipse.core.databinding.property,\
+	org.eclipse.core.expressions,\
+	org.eclipse.core.jobs,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.runtime.compatibility.auth,\
+	org.eclipse.equinox.app,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.ds,\
+	org.eclipse.equinox.launcher,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.equinox.simpleconfigurator,\
+	org.eclipse.equinox.util,\
+	org.eclipse.help,\
+	org.eclipse.jface,\
+	org.eclipse.jface.databinding,\
+	org.eclipse.osgi.services,\
+	org.eclipse.rcp,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.ui,\
+	org.eclipse.ui.cocoa,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.update.configurator,\
+	bndtools.runtime.eclipse.applaunch;version=snapshot,\
+	rcptest;version=snapshot,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.filesystem,\
+	org.eclipse.core.filesystem.macosx,\
+	org.eclipse.jdt.debug,\
+	org.eclipse.debug.core
 
--runbundles: org.eclipse.osgi.services,\
+-runproperties: osgi.ws=cocoa,\
+	osgi.arch=x86_64,\
+	osgi.os=macosx,\
+	eclipse.application=rcptest.application,\
+	osgi.console=
+
+#	eclipse.application=org.eclipse.ui.ide.workbench,\
+
+-runvm: -XstartOnFirstThread# Long list
+
+-runbundles.bak: org.eclipse.osgi.services,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -120,14 +169,7 @@ Include-Resource: resources,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.jdt.junit,\
-	org.eclipse.jdt.junit.runtime
-
--runproperties: osgi.ws=cocoa,\
-	osgi.os=macosx,\
-	osgi.arch=x86_64,\
-	eclipse.application=org.eclipse.ui.ide.workbench,\
-	osgi.console=,\
-	eclipse.application.launchDefault=true,\
-	eclipse.consoleLog=true
-
--runvm: -XstartOnFirstThread
+	org.eclipse.jdt.junit.runtime,\
+	org.junit,\
+	bndtools.runtime.eclipse.applaunch,\
+	org.eclipse.ui.cocoa

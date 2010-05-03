@@ -1,2 +1,4 @@
-bin
-generated
+/bin
+/bin_test
+/generated
+/runtimefw
