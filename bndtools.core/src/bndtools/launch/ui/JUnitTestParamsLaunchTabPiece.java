@@ -25,7 +25,7 @@ import bndtools.launch.LaunchConstants;
 public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 
     private boolean keepAlive = false;
-    private String startTimeoutStr = LaunchConstants.DEFAULT_START_TIMEOUT;
+    private String startTimeoutStr = LaunchConstants.DEFAULT_LAUNCH_JUNIT_START_TIMEOUT;
 
     private Button keepAliveButton;
     private Text timeoutText;
@@ -99,21 +99,21 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
     }
 
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-        configuration.setAttribute(LaunchConstants.PROP_JUNIT_KEEP_ALIVE, false);
-        configuration.setAttribute(LaunchConstants.PROP_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_START_TIMEOUT);
+        configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, false);
+        configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_LAUNCH_JUNIT_START_TIMEOUT);
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
-        keepAlive = configuration.getAttribute(LaunchConstants.PROP_JUNIT_KEEP_ALIVE, false);
+        keepAlive = configuration.getAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, false);
         keepAliveButton.setSelection(keepAlive);
         timeoutText.setEnabled(!keepAlive);
 
-        startTimeoutStr = configuration.getAttribute(LaunchConstants.PROP_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_START_TIMEOUT);
+        startTimeoutStr = configuration.getAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_LAUNCH_JUNIT_START_TIMEOUT);
         timeoutText.setText(startTimeoutStr);
     }
 
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        configuration.setAttribute(LaunchConstants.PROP_JUNIT_KEEP_ALIVE, keepAlive);
-        configuration.setAttribute(LaunchConstants.PROP_JUNIT_START_TIMEOUT, startTimeoutStr);
+        configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, keepAlive);
+        configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_START_TIMEOUT, startTimeoutStr);
     }
 }

@@ -1,45 +1,71 @@
 package bndtools.launch;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Properties;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.junit.launcher.JUnitLaunchConfigurationDelegate;
+import org.eclipse.jdt.launching.SocketUtil;
 
-public class OSGiJUnitLaunchDelegate extends JUnitLaunchConfigurationDelegate {
+import aQute.bnd.build.Project;
+import bndtools.Plugin;
 
-    private final OSGiLaunchDelegate delegate = new OSGiLaunchDelegate();
+public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate {
+
+    static final String ATTR_JUNIT_PORT = "org.eclipse.jdt.junit.PORT";
+
+    private static final String BNDTOOLS_RUNTIME_JUNIT_BSN = LaunchConstants.JUNIT_PREFIX;
+
+    int port = -1;
 
     @Override
-    public synchronized void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-        ILaunchConfigurationWorkingCopy copy = configuration.getWorkingCopy();
-        copy.setAttribute(LaunchConstants.ATTR_CLEAN, true);
-
-        delegate.generateLaunchPropsFile(copy);
-
-        super.launch(copy, mode, launch, monitor);
+    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
+        String reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
+        if("port".equalsIgnoreCase(reporter)) {
+            // Find the JUnit port
+            port = SocketUtil.findFreePort();
+            launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(port));
+        }
+        super.launch(configuration, mode, launch, monitor);
     }
 
     @Override
-    public String verifyMainTypeName(ILaunchConfiguration configuration) throws CoreException {
-        return delegate.getMainTypeName(configuration);
+    protected Properties generateLaunchProperties(ILaunchConfiguration configuration) throws CoreException {
+        Properties props = super.generateLaunchProperties(configuration);
+
+        String reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
+        if("port".equalsIgnoreCase(reporter)) {
+            props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_REPORTER, "port:" + Integer.toString(port));
+        } else {
+            props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_REPORTER, reporter);
+        }
+
+        // For testing, always clean the framework
+        props.setProperty(LaunchConstants.PROP_LAUNCH_CLEAN, TRUE.toString());
+        props.setProperty(LaunchConstants.PROP_LAUNCH_DYNAMIC_BUNDLES, FALSE.toString());
+        props.setProperty(LaunchConstants.PROP_LAUNCH_SHUTDOWN_ON_ERROR, TRUE.toString());
+
+        return props;
     }
 
     @Override
-    public String getProgramArguments(ILaunchConfiguration configuration) throws CoreException {
-        return delegate.getProgramArguments(configuration);
-    }
+    protected Collection<String> calculateRunBundlePaths(Project model) throws CoreException {
+        Collection<String> runBundles = super.calculateRunBundlePaths(model);
 
-    @Override
-    public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
-        return delegate.getClasspath(configuration);
-    }
+        File junitBundle = findBundle(model, BNDTOOLS_RUNTIME_JUNIT_BSN);
+        if(junitBundle == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find JUnit bundle {0}.", BNDTOOLS_RUNTIME_JUNIT_BSN), null));
+        runBundles.add(junitBundle.getAbsolutePath());
 
-    @Override
-    protected IMember[] evaluateTests(ILaunchConfiguration configuration, IProgressMonitor monitor) throws CoreException {
-        // Dummy - the tests will be evaluated from the runtime.
-        return new IMember[0];
+        return runBundles;
     }
 }
