@@ -65,12 +65,12 @@ import bndtools.utils.BundleUtils;
 
 @SuppressWarnings("restriction")
 public class BndWorkspaceConfigurationPage extends WizardPage {
-	
+
 	private static final String NO_DESCRIPTION = "No description available";
-	
+
     private IConfigurationElement[] elements;
     private IConfigurationElement[] checkedConfigElements;
-	
+
     public BndWorkspaceConfigurationPage(String pageName) {
         super(pageName);
         loadRepositories();
@@ -94,22 +94,22 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 	public void createControl(Composite parent) {
 		setTitle("Configure BndTools Workspace");
 		setDescription("Select external repositories to copy into the Bnd workspace.");
-		
+
 		Composite composite = new Composite(parent, SWT.NONE);
-		
+
 		new Label(composite, SWT.NONE).setText("External Repositories:");
 		Table table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
-		
+
 		final CheckboxTableViewer viewer = new CheckboxTableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new RepositoryContribLabelProvider());
-		
+
         viewer.setInput(elements);
         viewer.setCheckedElements(checkedConfigElements);
-		
+
 		new Label(composite, SWT.NONE).setText("Description:");
 		final Browser browser = new Browser(composite, SWT.BORDER);
-		
+
 		// Listeners
 		viewer.addCheckStateListener(new ICheckStateListener() {
 			public void checkStateChanged(CheckStateChangedEvent event) {
@@ -140,37 +140,37 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 				browser.setText(text);
 			}
 		});
-		
+
 		// Layout
 		GridLayout layout;
 		GridData gd;
-		
+
 		layout = new GridLayout(1, false);
 		composite.setLayout(layout);
-		
+
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		table.setLayoutData(gd);
 		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gd.heightHint = 100;
 		browser.setLayoutData(gd);
-		
+
 		setControl(composite);
 	}
 
 	static class RepositoryContribLabelProvider extends StyledCellLabelProvider {
-		
+
 		Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
-		
+
 		@Override
 		public void update(ViewerCell cell) {
 			IConfigurationElement element = (IConfigurationElement) cell.getElement();
-			
+
 			String name = element.getAttribute("name");
 			String bundleId = element.getContributor().getName();
-			
+
 			StyledString styledString = new StyledString(name);
 			styledString.append(" [" + bundleId + "]", StyledString.QUALIFIER_STYLER);
-			
+
 			cell.setText(styledString.getString());
 			cell.setStyleRanges(styledString.getStyleRanges());
 			cell.setImage(repoImg);
@@ -186,7 +186,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 	}
 	boolean createCnfProject() {
 		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		
+
 		final IWorkspaceRunnable createCnfProjectOp = new IWorkspaceRunnable() {
 			public void run(IProgressMonitor monitor) throws CoreException {
 				monitor.setTaskName("Setting up Bnd Workspace...");
@@ -195,11 +195,11 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 					SubMonitor progress = SubMonitor.convert(monitor, "Setting up Bnd Workspace...", 0);
 					if(cnfProject == null || !cnfProject.exists()) {
 						progress.setWorkRemaining(4);
-						
+
 						// Create the project and configure it as a Java project
 						JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1));
 						configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1));
-						
+
 						// Copy build.bnd from the template
 						InputStream templateStream = getClass().getResourceAsStream("template_build.bnd");
 						IFile buildBnd = cnfProject.getFile(Workspace.BUILDFILE);
@@ -208,19 +208,19 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 						progress.setWorkRemaining(1);
 					} else if(!cnfProject.isOpen()) {
 						progress.setWorkRemaining(2);
-						
+
 						cnfProject.open(progress.newChild(1));
 					} else {
 						progress.setWorkRemaining(1);
 					}
-					
+
 					// Copy the bundle repository
 					createRepository(cnfProject, progress.newChild(1));
 				} catch (InterruptedException e) {
 				}
 			}
 		};
-		
+
 		try {
 			// Check whether we can report on the GUI thread or not
 			Display display = Display.getCurrent();
@@ -238,10 +238,10 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 				workspace.run(createCnfProjectOp, null);
 			}
 		} catch (InvocationTargetException e) {
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error createing Bnd configuration project '{0}'.", Project.BNDCNF), e.getTargetException()));
+			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd configuration project \"{0}\".", Project.BNDCNF), e.getTargetException()));
 			return false;
 		} catch (CoreException e) {
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error createing Bnd configuration project '{0}'.", Project.BNDCNF), e));
+			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd configuration project \"{0}\".", Project.BNDCNF), e));
 			return false;
 		} catch (InterruptedException e) {
 		}
@@ -249,13 +249,13 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 	}
 	void createRepository(IProject cnfProject, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, "Copying repository", 0);
-		
+
 		// Create the repository folder if it doesn't already exist
 		IFolder repoFolder = cnfProject.getFolder("repo");
 		if(!repoFolder.exists()) {
-			repoFolder.create(true, true, progress.newChild(1)); 
+			repoFolder.create(true, true, progress.newChild(1));
 		}
-		
+
         // Copy the built-in repository
         Bundle myBundle = Plugin.getDefault().getBundle();
         copyFromBundleToFolder(myBundle, new Path("repo"), repoFolder, true, progress.newChild(1));
@@ -264,7 +264,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		IConfigurationElement[] elements = checkedConfigElements;
 		if(elements != null && elements.length > 0) {
 			progress.setWorkRemaining(elements.length);
-			
+
 			for (IConfigurationElement element : elements) {
 				String path = element.getAttribute("path");
 				if(path != null) {
@@ -280,10 +280,10 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 
     void copyFromBundleToFolder(Bundle bundle, IPath path, IFolder toFolder, boolean replaceContents, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, String.format("Copying repository contribution %s", path.toString()), IProgressMonitor.UNKNOWN);
-		
+
 		URL baseUrl = bundle.getEntry(path.toString());
 		IPath basePath = new Path(baseUrl.getPath()).makeAbsolute();
-		
+
 		@SuppressWarnings("unchecked")
 		Enumeration<URL> entriesEnum = bundle.findEntries(path.toString(), null, true);
 		int entryCount = 0;
@@ -293,14 +293,14 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 			entryCount++;
 		}
 		progress.setWorkRemaining(entryCount);
-		
+
 		path = path.makeAbsolute();
 		if(entryCount > 0) {
 			for (URL entry : entries) {
 				IPath entryPath = new Path(entry.getPath()).makeAbsolute();
 				if(basePath.isPrefixOf(entryPath)) {
 					entryPath = entryPath.removeFirstSegments(basePath.segmentCount());
-					
+
 					if(entryPath.hasTrailingSeparator()) {
 						// It's a folder
 						IFolder newFolder = toFolder.getFolder(entryPath);
@@ -330,29 +330,29 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 		try {
 			IProject project= javaProject.getProject();
 			BuildPathsBlock.addJavaNature(project, progress.newChild(1));
-			
+
 			// Create the source folder
 			IFolder srcFolder = project.getFolder("src");
 			if(!srcFolder.exists()) {
 				srcFolder.create(true, true, progress.newChild(1));
 			}
 			progress.setWorkRemaining(3);
-			
+
 			// Create the output location
 			IFolder outputFolder = project.getFolder("bin");
 			if(!outputFolder.exists())
 				outputFolder.create(true, true, progress.newChild(1));
 			outputFolder.setDerived(true);
 			progress.setWorkRemaining(2);
-			
+
 			// Set the output location
 			javaProject.setOutputLocation(outputFolder.getFullPath(), progress.newChild(1));
-			
+
 			// Create classpath entries
 			IClasspathEntry[] classpath = new IClasspathEntry[2];
 			classpath[0] = JavaCore.newSourceEntry(srcFolder.getFullPath());
 			classpath[1] = JavaCore.newContainerEntry(new Path("org.eclipse.jdt.launching.JRE_CONTAINER"));
-			
+
 			javaProject.setRawClasspath(classpath, progress.newChild(1));
 		} catch (OperationCanceledException e) {
 			throw new InterruptedException();

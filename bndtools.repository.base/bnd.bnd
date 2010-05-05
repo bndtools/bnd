@@ -1,0 +1,3 @@
+Bundle-SymbolicName: bndtools.repository.base;singleton:=true
+Include-Resource: plugin.xml,\
+	repo=repo

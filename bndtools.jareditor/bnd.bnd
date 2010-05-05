@@ -1,0 +1,26 @@
+Bundle-SymbolicName: bndtools.jareditor;singleton:=true
+Bundle-Version: 1.0.0.${tstamp;yyyyMMdd-HHmm}
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Include-Resource: resources
+
+-buildpath: org.eclipse.jface.text,\
+	org.eclipse.core.resources,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.jface,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.core.commands,\
+	org.eclipse.core.runtime,\
+	osgi.core,\
+	org.eclipse.core.jobs
+Private-Package: bndtools.jareditor.internal,\
+	bndtools.utils
+Import-Package: org.eclipse.ui*;ui.workbench=!;texteditor=!,\
+	*
