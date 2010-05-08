@@ -304,13 +304,19 @@
             <enablement>
                <with variable="selection">
                   <count value="1"/>
-               	  <iterate>
-                     <adapt type="org.eclipse.jdt.core.IJavaElement">
-		                <test property="org.eclipse.jdt.core.isInJavaProject"/>
-		                <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test"/>
-		                <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true"/>
-		             </adapt>
-		          </iterate>
+                  <iterate>
+                     <or>
+                        <!-- Java/Bnd Project -->
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                        </and>
+                        
+                        <!-- bnd.bnd file -->
+                        <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                     </or>
+                  </iterate>
                </with>
             </enablement>
          </contextualLaunch>
@@ -326,6 +332,7 @@
                mode="run">
          </description>
       </shortcut>
+      
       <shortcut
             class="bndtools.launch.RunShortcut"
             icon="icons/bricks_run.png"

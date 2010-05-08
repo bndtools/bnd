@@ -7,8 +7,8 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -28,8 +28,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Container;
-import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.plugin.Activator;
 import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Builder;
@@ -262,10 +262,14 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Project model = getBndProject(configuration);
 
         // Get the framework bundle
-        String fwkBSN = configuration.getAttribute(LaunchConstants.ATTR_FRAMEWORK_BSN, LaunchConstants.DEFAULT_FRAMEWORK_BSN);
-        File fwkBundle = findBundle(model, fwkBSN);
+        String framework = model.getProperty(LaunchConstants.PROP_FRAMEWORK, LaunchConstants.DEFAULT_FRAMEWORK);
+        if(framework == null || framework.length() == 0) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("No OSGi framework was specified in {0}.", model.getPropertiesFile().getAbsolutePath()), null));
+        }
+
+        File fwkBundle = findBundle(model, framework);
         if (fwkBundle == null) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find framework bundle {0}.", fwkBSN), null));
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find framework bundle {0}.", framework), null));
         }
 
         // Get the launcher bundle
