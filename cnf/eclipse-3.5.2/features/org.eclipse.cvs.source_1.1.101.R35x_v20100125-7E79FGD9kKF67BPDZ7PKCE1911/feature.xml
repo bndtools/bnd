@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.eclipse.cvs.source" version="1.1.101.R35x_v20100125-7E79FGD9kKF67BPDZ7PKCE1911" label="%featureName" provider-name="%providerName"     >
+	<description >
+		%description
+	</description>
+	<copyright >
+		%copyright
+	</copyright>
+	<license url="%licenseURL">
+		%license
+	</license>
+	<url>
+		<update url="http://download.eclipse.org/eclipse/updates/3.5" label="%updateSiteName"/>
+		<discovery url="http://download.eclipse.org/eclipse/updates/3.5" label="%updateSiteName"/>
+		<discovery url="http://download.eclipse.org/releases/galileo" label="%secondaryUpdateSiteName"/>
+	</url>
+	<plugin id="org.eclipse.cvs.source" version="1.0.400.v201002111343"     unpack="false"/>
+	<plugin id="org.eclipse.team.cvs.core.source" version="3.3.200.I20090430-0408"     unpack="false"/>
+	<plugin id="org.eclipse.team.cvs.ssh.source" version="3.2.100.I20090508-2000"     unpack="false"/>
+	<plugin id="org.eclipse.team.cvs.ssh2.source" version="3.2.200.I20090508-2000"     unpack="false"/>
+	<plugin id="org.eclipse.team.cvs.ui.source" version="3.3.202.r35x_20090930-0800"     unpack="false"/>
+</feature>

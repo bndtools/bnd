@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Bundle-ClassPath: junit.jar
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: J2SE-1.3
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.junit
+Export-Package: junit.awtui;version="3.8.2",junit.extensions;version="
+ 3.8.2",junit.framework;version="3.8.2",junit.runner;version="3.8.2",j
+ unit.swingui;version="3.8.2",junit.swingui.icons;version="3.8.2",juni
+ t.textui;version="3.8.2"
+Bundle-Version: 3.8.2.v20090203-1005
+Bundle-ManifestVersion: 2
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: u+F8j/GAE8tzrDry9+wT3Cvg81Y=
+
+Name: junit.jar
+SHA1-Digest: /wiCtC/FhX3znlrNsww4umqaUFw=
+
+Name: about_files/cpl-v10.html
+SHA1-Digest: o0b19ceZ+HQHVX0Ops751AQVdwM=
+
+Name: about.html
+SHA1-Digest: UFe6k4Ad9XpZmuWF46WW3vk9dVA=
+
+Name: plugin.properties
+SHA1-Digest: mL9yvXBmAAJi7G1tls7akuyPG+A=
+

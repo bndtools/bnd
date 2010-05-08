@@ -26,7 +26,6 @@ import aQute.bnd.help.Syntax;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.SourceRepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.test.ProjectLauncher;
@@ -39,13 +38,14 @@ import aQute.lib.osgi.Resource;
 import aQute.lib.osgi.eclipse.EclipseClasspath;
 import aQute.libg.sed.Sed;
 import aQute.service.scripting.Scripter;
+import bndtools.bndplugins.repo.SourceRepositoryPlugin;
 
 
 /**
  * This class is NOT threadsafe
- * 
+ *
  * @author aqute
- * 
+ *
  */
 
 public class Project extends Processor {
@@ -120,7 +120,7 @@ public class Project extends Processor {
     /**
      * Return a new builder that is nicely setup for this project. Please close
      * this builder after use.
-     * 
+     *
      * @param parent
      *            The project builder to use as parent, use this project if null
      * @return
@@ -161,6 +161,7 @@ public class Project extends Processor {
         return workspace;
     }
 
+    @Override
     public String toString() {
         return getBase().getName();
     }
@@ -312,7 +313,7 @@ public class Project extends Processor {
     /**
      * Iterate over the entries and place the projects on the projects list and
      * all the files of the entries on the resultpath.
-     * 
+     *
      * @param resultpath
      *            The list that gets all the files
      * @param projects
@@ -342,11 +343,11 @@ public class Project extends Processor {
 
     /**
      * Parse the list of bundles that are a prerequisite to this project.
-     * 
+     *
      * Bundles are listed in repo specific names. So we just let our repo
      * plugins iterate over the list of bundles and we get the highest version
      * from them.
-     * 
+     *
      * @return
      */
 
@@ -372,7 +373,7 @@ public class Project extends Processor {
      * indicates there is a project in the same workspace. The path to the
      * output directory is calculated. The default directory ${bin} can be
      * overridden with the output attribute.
-     * 
+     *
      * @param strategy
      *            STRATEGY_LOWEST or STRATEGY_HIGHEST
      * @param spec
@@ -577,6 +578,7 @@ public class Project extends Processor {
         return join(list, separator);
     }
 
+    @Override
     protected Object[] getMacroDomains() {
         return new Object[] { workspace };
     }
@@ -588,7 +590,7 @@ public class Project extends Processor {
 
     /**
      * Release
-     * 
+     *
      * @param name
      *            The repository name
      * @param jar
@@ -631,7 +633,7 @@ public class Project extends Processor {
 
     /**
      * Release
-     * 
+     *
      * @param name
      *            The respository name
      * @param test
@@ -654,7 +656,7 @@ public class Project extends Processor {
 
     /**
      * Get a bundle from one of the plugin repositories.
-     * 
+     *
      * @param bsn
      *            The bundle symbolic name
      * @param range
@@ -726,7 +728,7 @@ public class Project extends Processor {
     /**
      * Look for the bundle in the workspace. The premise is that the bsn must
      * start with the project name.
-     * 
+     *
      * @param bsn
      *            The bsn
      * @param attrs
@@ -753,7 +755,7 @@ public class Project extends Processor {
 
     /**
      * Deploy the file (which must be a bundle) into the repository.
-     * 
+     *
      * @param name
      *            The repository name
      * @param file
@@ -793,7 +795,7 @@ public class Project extends Processor {
 
     /**
      * Deploy the file (which must be a bundle) into the repository.
-     * 
+     *
      * @param file
      *            bundle
      */
@@ -804,7 +806,7 @@ public class Project extends Processor {
 
     /**
      * Macro access to the repository
-     * 
+     *
      * ${repo;<bsn>[;<version>[;<low|high>]]}
      */
 
@@ -872,7 +874,7 @@ public class Project extends Processor {
     /**
      * This is the external method that will pre-build any dependencies if it is
      * out of date.
-     * 
+     *
      * @param underTest
      * @return
      * @throws Exception
@@ -887,10 +889,10 @@ public class Project extends Processor {
     /**
      * This method must only be called when it is sure that the project has been
      * build before in the same session.
-     * 
+     *
      * It is a bit yucky, but ant creates different class spaces which makes it
      * hard to detect we already build it.
-     * 
+     *
      * @return
      */
 
@@ -922,7 +924,7 @@ public class Project extends Processor {
     /**
      * Build without doing any dependency checking. Make sure any dependent
      * projects are built first.
-     * 
+     *
      * @param underTest
      * @return
      * @throws Exception
@@ -1028,6 +1030,7 @@ public class Project extends Processor {
     /**
      * Refresh if we are based on stale data. This also implies our workspace.
      */
+    @Override
     public boolean refresh() {
         boolean changed = false;
         if (isCnf()) {
@@ -1040,6 +1043,7 @@ public class Project extends Processor {
         return getBase().getName().equals(Workspace.CNFDIR);
     }
 
+    @Override
     public void propertiesChanged() {
         super.propertiesChanged();
         preparedPaths = false;
@@ -1092,7 +1096,7 @@ public class Project extends Processor {
 
     /**
      * Release.
-     * 
+     *
      * @param name
      *            The repository name
      * @throws Exception
@@ -1178,7 +1182,7 @@ public class Project extends Processor {
      * This methods attempts to turn any jar into a valid jar. If this is a
      * bundle with manifest, a manifest is added based on defaults. If it is a
      * bundle, but not r4, we try to add the r4 headers.
-     * 
+     *
      * @param name
      * @param in
      * @return
@@ -1270,7 +1274,7 @@ public class Project extends Processor {
 
     /**
      * Run all before command plugins
-     * 
+     *
      */
     void before(Project p, String a) {
         List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
@@ -1369,15 +1373,15 @@ public class Project extends Processor {
      * Returns containers for the deliverables of this project. The deliverables
      * is the project builder for this project if no -sub is specified.
      * Otherwise it contains all the sub bnd files.
-     * 
+     *
      * @return A collection of containers
-     * 
+     *
      * @throws Exception
      */
     public Collection<Container> getDeliverables() throws Exception {
         List<Container> result = new ArrayList<Container>();
         Collection<? extends Builder> builders = getSubBuilders();
-        
+
         for (Builder builder : builders) {
             Container c = new Container(this, builder.getBsn(), builder
                     .getVersion(), Container.TYPE.PROJECT,
@@ -1394,7 +1398,7 @@ public class Project extends Processor {
      * same directory that should drive the generation of multiple deliverables.
      * This method figures out if the bndFile is actually one of the bnd files
      * of a deliverable.
-     * 
+     *
      * @param bndFile
      *            A file pointing to a bnd file.
      * @return null or the builder for a sub file.
@@ -1420,7 +1424,7 @@ public class Project extends Processor {
 
     /**
      * Answer the container associated with a given bsn.
-     * 
+     *
      * @param bndFile
      *            A file pointing to a bnd file.
      * @return null or the builder for a sub file.
@@ -1441,7 +1445,7 @@ public class Project extends Processor {
      * option. This will generate multiple deliverables. This method returns the
      * builders for each sub file. If no -sub option is present, the list will
      * contain a builder for the bnd.bnd file.
-     * 
+     *
      * @return A list of builders.
      * @throws Exception
      */

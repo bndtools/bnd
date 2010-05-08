@@ -1,0 +1,12 @@
+#Thu May 06 23:44:18 BST 2010
+repositories/http\:__download.eclipse.org_releases_galileo/count=2
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/nickname=The Eclipse Project Updates
+repositories/http\:__download.eclipse.org_releases_galileo/nickname=Galileo
+repositories/http\:__download.eclipse.org_releases_galileo/enabled=false
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/count=2
+repositories/http\:__download.eclipse.org_releases_galileo/uri=http\://download.eclipse.org/releases/galileo
+eclipse.preferences.version=1
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/isSystem=false
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/uri=http\://download.eclipse.org/eclipse/updates/3.5
+repositories/http\:__download.eclipse.org_releases_galileo/isSystem=false
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/enabled=false

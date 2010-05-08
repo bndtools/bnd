@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.eclipse.pde.source" version="3.5.2.R35x_v20100119-7Z7_FA2FDX-aXQYWqYDBz-z0qufo" label="%featureName" provider-name="%providerName" image="eclipse_update_120.jpg"    >
+	<description >
+		%description
+	</description>
+	<copyright >
+		%copyright
+	</copyright>
+	<license url="%licenseURL">
+		%license
+	</license>
+	<url>
+		<update url="http://download.eclipse.org/eclipse/updates/3.5" label="%updateSiteName"/>
+		<discovery url="http://download.eclipse.org/eclipse/updates/3.5" label="%updateSiteName"/>
+		<discovery url="http://download.eclipse.org/releases/galileo" label="%secondaryUpdateSiteName"/>
+	</url>
+	<plugin id="org.objectweb.asm.source" version="3.1.0.v200803061910"     unpack="false"/>
+	<plugin id="org.eclipse.pde.source" version="3.4.100.v201002111343"     unpack="false"/>
+	<plugin id="org.eclipse.pde.build.source" version="3.5.2.R35x_20100114"     unpack="false"/>
+	<plugin id="org.eclipse.pde.core.source" version="3.5.101.v20100104"     unpack="false"/>
+	<plugin id="org.eclipse.pde.junit.runtime.source" version="3.4.0.v20090527"     unpack="false"/>
+	<plugin id="org.eclipse.pde.runtime.source" version="3.4.100.v20090731"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ui.source" version="3.5.1.v201001121200"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ui.templates.source" version="3.4.100.v20090527"     unpack="false"/>
+	<plugin id="org.eclipse.ui.views.log.source" version="1.0.100.v20090731"     unpack="false"/>
+	<plugin id="org.eclipse.pde.api.tools.source" version="1.0.101.v20090714"     unpack="false"/>
+	<plugin id="org.eclipse.pde.api.tools.ui.source" version="1.0.101.v20090820"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ds.core.source" version="1.0.1.v20100118"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ds.ui.source" version="1.0.0.v20100209-maintenance"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ua.core.source" version="1.0.0.v20090429-1800"     unpack="false"/>
+	<plugin id="org.eclipse.pde.ua.ui.source" version="1.0.0.v20090511"     unpack="false"/>
+</feature>

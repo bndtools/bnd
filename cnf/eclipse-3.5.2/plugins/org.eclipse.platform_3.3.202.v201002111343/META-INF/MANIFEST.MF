@@ -1,0 +1,186 @@
+Manifest-Version: 1.0
+Bundle-ClassPath: platform.jar
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: J2SE-1.4,CDC-1.0/Foundation-1.0,J
+ 2SE-1.3
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.platform; singleton:=true
+Require-Bundle: org.eclipse.ui.intro;bundle-version="[3.2.0,4.0.0)",or
+ g.eclipse.ui.cheatsheets;bundle-version="[3.2.0,4.0.0)";resolution:=o
+ ptional,org.eclipse.ui.forms;bundle-version="[3.2.0,4.0.0)";resolutio
+ n:=optional,org.eclipse.ui;bundle-version="[3.2.0,4.0.0)";resolution:
+ =optional,org.eclipse.update.ui;bundle-version="[3.1.0,4.0.0)";resolu
+ tion:=optional,org.eclipse.ui.intro.universal;bundle-version="[3.2.0,
+ 4.0.0)",org.eclipse.core.runtime;bundle-version="[3.2.0,4.0.0)",org.e
+ clipse.ui.ide.application;bundle-version="[1.0.0,2.0.0)"
+Bundle-Version: 3.3.202.v201002111343
+Export-Package: org.eclipse.platform.internal;x-internal:=true
+Import-Package: javax.xml.parsers,org.xml.sax,org.xml.sax.helpers
+Bundle-ManifestVersion: 2
+
+Name: images/topiclabel/wn_migrate48_hov.gif
+SHA1-Digest: M6zsZ6hi30Dy8VsM/Og4IE9IOkg=
+
+Name: intro/css/whatsnew.properties
+SHA1-Digest: 4nCjPHm7iTBRX2cq5vxBGBYByYU=
+
+Name: eclipse.png
+SHA1-Digest: Wn4ZtSh8OGwHMxNVSl1blf1x/8A=
+
+Name: about.ini
+SHA1-Digest: ZK6m/9CAhsF/6xAiV7yYXjYLbng=
+
+Name: macosx_narrow_book.css
+SHA1-Digest: jjHm301H2huNyXiXwJbHzgWn0K4=
+
+Name: images/topiclabel/ov_wbbasics48.gif
+SHA1-Digest: 0r8/nIJipGbWXTLidf/qFRtxk88=
+
+Name: intro/css/overview.properties
+SHA1-Digest: sR7rB50tGOD19+fqvJ1jGbzo8oY=
+
+Name: eclipse.gif
+SHA1-Digest: qqPgXl0Cuu7J+oyLI7KYJzKh5GQ=
+
+Name: images/topiclabel/ov_wbbasics48_hov.gif
+SHA1-Digest: WHlKtV887rTHYMMuOGAHmtibK5Y=
+
+Name: platform.jar
+SHA1-Digest: St2hHyUIncNVQ2zUVwKPAcwzKWg=
+
+Name: eclipse32.png
+SHA1-Digest: eCk/A3/COXL3S6qAVDOSrlsqmLw=
+
+Name: intro-eclipse.png
+SHA1-Digest: IUrE9u5RnkRx7unbvyyosuGTAOE=
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: images/topiclabel/ov_teamsup48.gif
+SHA1-Digest: /3k/anFwd5sId2ruDxxEdkjRMm8=
+
+Name: about.mappings
+SHA1-Digest: nZdpFBKYixonwdcYNmU6Vg8T+P0=
+
+Name: images/topiclabel/tu_merge48.gif
+SHA1-Digest: /3k/anFwd5sId2ruDxxEdkjRMm8=
+
+Name: images/topiclabel/arrow.gif
+SHA1-Digest: iyBS4QdZ6imHjGPw321lqh6SJSo=
+
+Name: helpData.xml
+SHA1-Digest: ZR1pFHw9xoMSs25sZ0MO6v4/asI=
+
+Name: about.properties
+SHA1-Digest: euenETwVIokAKI5Vz2bxYQijDZw=
+
+Name: images/topiclabel/ov_teamsup48_hov.gif
+SHA1-Digest: tDulFBf6WoQNfzwEyv1Uck54hqk=
+
+Name: images/topiclabel/tu_merge48_hov.gif
+SHA1-Digest: tDulFBf6WoQNfzwEyv1Uck54hqk=
+
+Name: plugin_customization.properties
+SHA1-Digest: YD7gZEVzYiOkYd7BfCANIgVRb/Q=
+
+Name: cheatsheets/cvs_merge.xml
+SHA1-Digest: avIFsf3vMC1U32F8qGLxSyq/lpo=
+
+Name: intro/css/tutorials.properties
+SHA1-Digest: EVPXsNdjFZM29pcX0MRbnH8+WOY=
+
+Name: eclipse32.gif
+SHA1-Digest: OEzrrdlwkZJntOw0ED9ewvFb4ms=
+
+Name: plugin_customization.ini
+SHA1-Digest: wdHIGC6XcmwJg2ameixIeVZCjD8=
+
+Name: intro/overviewExtensionContent.xml
+SHA1-Digest: SfOPkWtjJDCFigPMug4SwU76wTo=
+
+Name: eclipse48.png
+SHA1-Digest: fOC/Uu6aZ5meBi9nhXV5pSTmoSk=
+
+Name: images/topiclabel/wn_eclplatform48.gif
+SHA1-Digest: 3nsWBOR6lpxjr+FXTIxLNviYbdQ=
+
+Name: eclipse_lg.gif
+SHA1-Digest: V1bzzsRNTt2D6InH92BXO4We/X0=
+
+Name: plugin.properties
+SHA1-Digest: LmfCfkOVO4atgxIeRab3xwIQz7Y=
+
+Name: images/topiclabel/wn_updates48.gif
+SHA1-Digest: jZ7rwDl0qk2syJYLk6YYn58pmbk=
+
+Name: images/topiclabel/wn_eclplatform48_hov.gif
+SHA1-Digest: w7/OBSGFd6+YHONIDeq88ckqLJA=
+
+Name: plugin.xml
+SHA1-Digest: HLnwKf4igaDf5w6J56bh6Jlgxzg=
+
+Name: intro/css/overview.css
+SHA1-Digest: 4vnDNPlsnseQQYHOifEYAOAU+28=
+
+Name: images/topiclabel/wn_updates48_hov.gif
+SHA1-Digest: aU4eMLVfJedCANwS4GLHdIfwcLg=
+
+Name: introData.xml
+SHA1-Digest: hRUHRieYHfLpbEmuEpkQGBDq/fU=
+
+Name: eclipse48.gif
+SHA1-Digest: wzuHxugoGF9ip2YX+dp2pqBg3X4=
+
+Name: disabled_book.css
+SHA1-Digest: x3/plDo/tiH3FDASeesyGUCF4gM=
+
+Name: narrow_book.css
+SHA1-Digest: /86jkfITUYJB4OWlA3NEx9IN6zo=
+
+Name: images/topiclabel/wn_eclcommunity48.gif
+SHA1-Digest: a7O8+deDP71UBanvoHQjCgObGqI=
+
+Name: images/topiclabel/tu_checkout48.gif
+SHA1-Digest: huJw6xHMsj2LT1Q3HgsQiEbzNFw=
+
+Name: about.html
+SHA1-Digest: +/ZbB4iOoCwiJmEdG+67tzzJKc4=
+
+Name: intro/whatsnewExtensionContent1.xml
+SHA1-Digest: NUBZgy79C5bRW3u9ES+GFMtqi40=
+
+Name: intro/whatsnewExtensionContent2.xml
+SHA1-Digest: A6PBEv/8FRLrvwbSby8IgTZO0pk=
+
+Name: intro/whatsnewExtensionContent3.xml
+SHA1-Digest: 0XpKhXSlTYVfXF5PtdPK29riXNc=
+
+Name: images/topiclabel/wn_migrate48.gif
+SHA1-Digest: huJw6xHMsj2LT1Q3HgsQiEbzNFw=
+
+Name: intro/css/whatsnew.css
+SHA1-Digest: jmuWdg8Bxhr6CT2FH7xspqR8/RE=
+
+Name: intro/tutorialsExtensionContent.xml
+SHA1-Digest: pzSSeJDAvRK9lDRPhRYMsfhAv9I=
+
+Name: cheatsheets/cvs_checkout.xml
+SHA1-Digest: fgswEDmd/oztNYRiTdOgxndtHG0=
+
+Name: images/topiclabel/wn_eclcommunity48_hov.gif
+SHA1-Digest: u1+mxDrTyo6yu/dvN/Bh90rSFpk=
+
+Name: images/topiclabel/tu_checkout48_hov.gif
+SHA1-Digest: M6zsZ6hi30Dy8VsM/Og4IE9IOkg=
+
+Name: intro/css/tutorials.css
+SHA1-Digest: pfL+vsuZVeqHonEoVb6FBRiugts=
+
+Name: splash.bmp
+SHA1-Digest: th6fACi61sFlmroVhlpsCGHJoJ4=
+
+Name: book.css
+SHA1-Digest: +jMjY3GD/AZ8AWyoyyzOCICTMJU=
+

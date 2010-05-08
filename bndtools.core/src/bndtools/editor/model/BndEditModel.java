@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -42,14 +42,14 @@ import bndtools.BndConstants;
  * A model for a Bnd file. In the first iteration, use a simple Properties
  * object; this will need to be enhanced to additionally record formatting, e.g.
  * line breaks and empty lines, and comments.
- * 
+ *
  * @author Neil Bartlett
  */
 public class BndEditModel {
-	
+
 	private static final String LIST_SEPARATOR = ",\\\n\t";
 	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
-	
+
 	private static final String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
@@ -66,19 +66,19 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
 		aQute.lib.osgi.Constants.SUB
 	};
-	
+
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
-	
+
 	private interface Converter<R,T> {
 		R convert(T input) throws IllegalArgumentException;
 	}
-	
+
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
 	private boolean projectFile;
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
-	
+
 	public void loadFrom(IDocument document) throws IOException {
 		// Clear and load
 		properties.clear();
@@ -86,39 +86,39 @@ public class BndEditModel {
 		properties.load(stream);
 		objectProperties.clear();
 		changesToSave.clear();
-		
+
 		// Fire property changes on all known property names
 		for (String prop : KNOWN_PROPERTIES) {
 			// null values for old and new forced the change to be fired
 			propChangeSupport.firePropertyChange(prop, null, null);
 		}
 	}
-	
+
 	public void saveChangesTo(IDocument document) {
 		for(Iterator<Entry<String,String>> iter = changesToSave.entrySet().iterator(); iter.hasNext(); ) {
 			Entry<String, String> entry = iter.next();
 			iter.remove();
-			
+
 			String propertyName = entry.getKey();
 			String stringValue = entry.getValue();
-			
+
 			updateDocument(document, propertyName, stringValue);
 		}
 	}
-	
+
 	private static IRegion findEntry(IDocument document, String name) throws BadLocationException {
 		int lineCount = document.getNumberOfLines();
-		
+
 		int entryStart = -1;
 		int entryLength = 0;
-		
+
 		for(int i=0; i<lineCount; i++) {
 			IRegion lineRegion = document.getLineInformation(i);
 			String line = document.get(lineRegion.getOffset(), lineRegion.getLength());
 			if(line.startsWith(name)) {
 				entryStart = lineRegion.getOffset();
 				entryLength = lineRegion.getLength();
-				
+
 				// Handle continuation lines, where the current line ends with a blackslash.
 				while(document.getChar(lineRegion.getOffset() + lineRegion.getLength() - 1) == '\\') {
 					if(++i >= lineCount) {
@@ -127,14 +127,14 @@ public class BndEditModel {
 					lineRegion = document.getLineInformation(i);
 					entryLength += lineRegion.getLength() + 1; // Extra 1 is required for the newline
 				}
-				
+
 				return new Region(entryStart, entryLength);
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	private static void updateDocument(IDocument document, String name, String value) {
 		String newEntry;
 		if(value != null) {
@@ -144,14 +144,14 @@ public class BndEditModel {
 		} else {
 			newEntry = "";
 		}
-		
+
 		try {
 			IRegion region = findEntry(document, name);
 			if(region != null) {
 				// Replace an existing entry
 				int offset = region.getOffset();
 				int length = region.getLength();
-				
+
 				// If the replacement is empty, remove one extra character to the right, i.e. the following newline,
 				// unless this would take us past the end of the document
 				if(newEntry.length() == 0 && offset + length + 1 < document.getLength()) {
@@ -160,7 +160,7 @@ public class BndEditModel {
 				document.replace(offset, length, newEntry);
 			} else if(newEntry.length() > 0) {
 				// This is a new entry, put it at the end of the file
-				
+
 				// Does the last line of the document have a newline? If not,
 				// we need to add one.
 				if(document.getLength() > 0 && document.getChar(document.getLength() - 1) != '\n')
@@ -175,36 +175,36 @@ public class BndEditModel {
 	public String getBundleSymbolicName() {
 		return doGetString(Constants.BUNDLE_SYMBOLICNAME);
 	}
-	
+
 	public void setBundleSymbolicName(String bundleSymbolicName) {
-		doSetString(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName); 
+		doSetString(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName);
 	}
-	
+
 	public String getBundleVersionString() {
-		return doGetString(Constants.BUNDLE_VERSION); 
+		return doGetString(Constants.BUNDLE_VERSION);
 	}
-	
+
 	public void setBundleVersion(String bundleVersion) {
 		doSetString(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion);
 	}
-	
+
 	public String getBundleActivator() {
-		return doGetString(Constants.BUNDLE_ACTIVATOR); 
+		return doGetString(Constants.BUNDLE_ACTIVATOR);
 	}
-	
+
 	public void setBundleActivator(String bundleActivator) {
 		doSetString(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator);
 	}
-	
+
 	public String getOutputFile() {
 		return doGetString(BndConstants.OUTPUT);
 	}
-	
+
 	public void setOutputFile(String name) {
 		doSetString(BndConstants.OUTPUT, getOutputFile(), name);
 	}
 
-	
+
 	public boolean isIncludeSources() {
 		Boolean objValue = doGetObject(aQute.lib.osgi.Constants.SOURCES, new Converter<Boolean,String>() {
 			public Boolean convert(String string) throws IllegalArgumentException {
@@ -213,13 +213,13 @@ public class BndEditModel {
 		});
 		return objValue != null ? objValue.booleanValue() : false;
 	}
-	
+
 	public void setIncludeSources(boolean includeSources) {
 		boolean oldValue = isIncludeSources();
 		String formattedString = includeSources ? Boolean.TRUE.toString() : null;
 		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, formattedString);
 	}
-	
+
 	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
 		return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, new Converter<VersionPolicy,String>() {
 			public VersionPolicy convert(String string) throws IllegalArgumentException {
@@ -227,7 +227,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	
+
 	public void setVersionPolicy(VersionPolicy versionPolicy) {
 		String string = versionPolicy != null ? versionPolicy.toString() : null;
 		VersionPolicy oldValue;
@@ -236,7 +236,7 @@ public class BndEditModel {
 		} catch (IllegalArgumentException e) {
 			oldValue = null;
 		}
-		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string); 
+		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string);
 	}
 	public List<String> getPrivatePackages() {
 		return doGetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
@@ -270,7 +270,7 @@ public class BndEditModel {
 	}
 	public void setExportedPackages(List<? extends ExportedPackage> exports) {
 		boolean referencesBundleVersion = false;
-		
+
 		if(exports != null) {
 			for (ExportedPackage pkg : exports) {
 				String versionString = pkg.getVersionString();
@@ -281,7 +281,7 @@ public class BndEditModel {
 		}
 		List<ExportedPackage> oldValue = getExportedPackages();
 		doSetClauseList(Constants.EXPORT_PACKAGE, oldValue, exports);
-		
+
 		if(referencesBundleVersion && getBundleVersionString() == null) {
 			setBundleVersion(new Version(0, 0, 0).toString());
 		}
@@ -308,7 +308,7 @@ public class BndEditModel {
 			public HeaderClause convert(Entry<String, Map<String, String>> input) {
 				return new HeaderClause(input.getKey(), input.getValue());
 			}
-		}); 
+		});
 	}
 	public void setHeaderClauses(String name, List<? extends HeaderClause> clauses) {
 		List<HeaderClause> oldValue = getHeaderClauses(name);
@@ -363,7 +363,7 @@ public class BndEditModel {
 		}
 		return false;
 	}
-	
+
 	public List<String> getSubBndFiles() {
 		return doGetStringList(aQute.lib.osgi.Constants.SUB);
 	}
@@ -372,19 +372,19 @@ public class BndEditModel {
 		List<String> oldValue = getSubBndFiles();
 		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
 	}
-	
+
 	public Map<String, String> getRunProperties() {
 		return doGetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES);
 	}
-	
+
 	public void setRunProperties(Map<String, String> props) {
 		Map<String, String> old = getRunProperties();
 		doSetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props);
 	}
-	
-	
+
+
 	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
-		R result;	
+		R result;
 		if(objectProperties.containsKey(name)) {
 			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
@@ -399,7 +399,7 @@ public class BndEditModel {
 		}
 		return result;
 	}
-	
+
 	void doSetObject(String name, Object oldValue, Object newValue, String formattedString) {
 		objectProperties.put(name, newValue);
 		changesToSave.put(name, formattedString);
@@ -413,7 +413,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	
+
 	void doSetString(String name, String oldValue, String newValue) {
 		doSetObject(name, oldValue, newValue, newValue);
 	}
@@ -445,7 +445,7 @@ public class BndEditModel {
 			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
 	}
-	
+
 	List<IPath> doGetPathList(String name) {
 		return doGetObject(name, new Converter<List<IPath>,String>() {
 			public List<IPath> convert(String input) {
@@ -486,7 +486,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	
+
 	void doSetClauseList(String name, List<? extends HeaderClause> oldValue, List<? extends HeaderClause> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
@@ -501,7 +501,7 @@ public class BndEditModel {
 			doSetObject(name, oldValue, newValue, buffer.toString());
 		}
 	}
-	
+
 	Map<String, String> doGetProperties(String name) {
 		return doGetObject(name, new Converter<Map<String, String>, String>() {
 			public Map<String, String> convert(String input) throws IllegalArgumentException {
@@ -509,7 +509,7 @@ public class BndEditModel {
 			}
 		});
 	}
-	
+
 	void doSetProperties(String propertyName, Map<String, String> oldValue, Map<String, String> newValue) {
 		StringBuilder buffer = new StringBuilder();
 		if(newValue == null || newValue.isEmpty()) {
@@ -517,7 +517,7 @@ public class BndEditModel {
 		} else {
 			for(Iterator<Entry<String, String>> iter = newValue.entrySet().iterator(); iter.hasNext(); ) {
 				Entry<String, String> entry = iter.next();
-				
+
 				String name = entry.getKey();
 				String value = entry.getValue();
 				if(value != null && value.length() > 0) {
@@ -534,7 +534,7 @@ public class BndEditModel {
 			doSetObject(propertyName, oldValue, newValue, buffer.toString());
 		}
 	}
-	
+
 	public void setProjectFile(boolean projectFile) {
 		this.projectFile = projectFile;
 	}

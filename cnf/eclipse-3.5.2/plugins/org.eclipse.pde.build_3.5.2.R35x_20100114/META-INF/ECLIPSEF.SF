@@ -1,0 +1,95 @@
+Signature-Version: 1.0
+SHA1-Digest-Manifest: OhieFJrptmk9TWhFMJnp3l3rGuc=
+Created-By: 1.6.0 (IBM Corporation)
+SHA1-Digest-Manifest-Main-Attributes: FMhnf+g9jQ4/7swC5qC+sqIXc7A=
+
+Name: about_files/LICENSE-2.0.txt
+SHA1-Digest: DMnZPrY7w/ZEOj0YI/l8KoozuvM=
+
+Name: templates/headless-build/allElements.xml
+SHA1-Digest: uNOP4x87ZFcxCZrh1wHh6xocNGE=
+
+Name: pdebuild.jar
+SHA1-Digest: aOKnVFUKbBBTdpCUIeQZWoeVxNQ=
+
+Name: data/30/plugin/plugin.xml
+SHA1-Digest: TNr0SYVHOz82hYL1E035r1bdaxI=
+
+Name: data/21/fragment/fragment.xml
+SHA1-Digest: RuOvETVwkWHHIz6sLL0cGzWOyfs=
+
+Name: plugin.properties
+SHA1-Digest: fSjiXuBXrKDeiadiN8kWDMB5+d0=
+
+Name: scripts/build.xml
+SHA1-Digest: Ra/buYWq+UnCJcPzA5sz41d/1Wo=
+
+Name: data/30/plugin/META-INF/MANIFEST.MF
+SHA1-Digest: uGP7DGAAo+v2VD2WZMZMcvbW5rg=
+
+Name: data/30/fragment/META-INF/MANIFEST.MF
+SHA1-Digest: xuwIdriTMf5tW/1Q8pgg/DXqrkU=
+
+Name: data/env.properties
+SHA1-Digest: QGwQh60xm2wwanoFNdHQE5Quin8=
+
+Name: templates/headless-build/customTargets.xml
+SHA1-Digest: WlB+9NuLDfS72Ze8qNdClC5UvJ4=
+
+Name: plugin.xml
+SHA1-Digest: IwmWpnJXVZh20Hc0tnLuOrr7KgE=
+
+Name: templates/plugins/customBuildCallbacks.xml
+SHA1-Digest: osuAXZ/i65TwqRhp0N7fb8S3CpQ=
+
+Name: templates/headless-build/customAssembly.xml
+SHA1-Digest: LclMktc124g60naNVYDIZaytT+A=
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: aM8odIt7KSTgo2Ap3NjnGa3gOAA=
+
+Name: templates/packager/packager.properties
+SHA1-Digest: 6lW7kLPw6o+7h7RI0cFTkCje1y0=
+
+Name: scripts/package.xml
+SHA1-Digest: Sbeva+/SSgDw+vwb8fGfCaGsdW4=
+
+Name: .api_description
+SHA1-Digest: fjZELaFN7SO4KcMv5rhfqu2tYKs=
+
+Name: templates/packager/packaging.properties
+SHA1-Digest: vtFL0V2RKXrpAMwiftMEsxc9WSo=
+
+Name: data/30/fragment/fragment.xml
+SHA1-Digest: zwzOmFfCE2+ab7G9wkLU7ozpJPc=
+
+Name: about.html
+SHA1-Digest: NsqonTvTIooyUcpddXY8f055MmA=
+
+Name: templates/packager/customTargets.xml
+SHA1-Digest: cvpNR4xRYfhWx6708nI3/HdIawM=
+
+Name: data/21/plugin/plugin.xml
+SHA1-Digest: TpZd48Jmrj9/LTQDyuUubfQoi5w=
+
+Name: lib/pdebuild-ant.jar
+SHA1-Digest: 1nwc4Q3ZR0lIxw5eKLm3hRMnkm8=
+
+Name: .options
+SHA1-Digest: jf17v6tebrVOy/2LizKC8hyG2EM=
+
+Name: scripts/productBuild/productBuild.xml
+SHA1-Digest: dFDDEIM7pWs0f1mYVqpgKZjBRD4=
+
+Name: templates/headless-build/build.properties
+SHA1-Digest: hEARscZKP9OB+Pcv+KpbO0PFS7Y=
+
+Name: templates/features/customBuildCallbacks.xml
+SHA1-Digest: NyC3o1nQkrV1sYrLIPJr89aqmcQ=
+
+Name: scripts/productBuild/allElements.xml
+SHA1-Digest: XQ6qftLqyFAkDlu2MTS22ncyfi0=
+
+Name: scripts/genericTargets.xml
+SHA1-Digest: 1JK4p3zVkDtI/g8JFN7TX2C6uNs=
+

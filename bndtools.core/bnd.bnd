@@ -5,22 +5,25 @@ Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
-Bundle-ClassPath: ., biz.aQute.bndlib.jar
+Bundle-ClassPath: .,\
+	biz.aQute.bndlib-0.0.401.jar,\
+	bndtools.bndplugins.repos-0.0.0.jar
+
 Import-Package: org.eclipse.core.runtime;registry=!,*
 
 # Bundle Content
 Private-Package: bndtools*,\
-	aQute.bnd.build,\
+	aQute.bnd.build;-split-package:=merge-first,\
 	aQute.bnd.classpath,\
-	aQute.bnd.launch,\
-	aQute.bnd.plugin,\
-	aQute.bnd.plugin.repo,\
-	aQute.bnd.service
+	aQute.bnd.plugin
 Include-Resource: resources,\
-	biz.aQute.bndlib.jar
+	${repo;biz.aQute.bndlib},\
+	${repo;bndtools.bndplugins.repos}
 
 # Build and Run
--buildpath: org.eclipse.core.runtime,\
+-buildpath: bndtools.bndplugins.repos,\
+	biz.aQute.bndlib,\
+	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
@@ -78,7 +81,6 @@ Include-Resource: resources,\
 	org.eclipse.ui.cocoa,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.update.configurator,\
-	rcptest;version=snapshot,\
 	org.eclipse.core.resources,\
 	org.eclipse.core.filesystem,\
 	org.eclipse.core.filesystem.macosx,\
@@ -93,17 +95,16 @@ Include-Resource: resources,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
+	org.eclipse.equinox.p2.repository,\
 	org.eclipse.equinox.p2.metadata,\
 	org.eclipse.equinox.p2.metadata.repository,\
+	org.eclipse.equinox.p2.jarprocessor,\
 	org.eclipse.ecf,\
 	org.eclipse.ecf.identity,\
 	org.eclipse.ecf.filetransfer,\
-	org.eclipse.equinox.p2.repository,\
 	org.eclipse.ecf.provider.filetransfer,\
-	org.eclipse.equinox.p2.jarprocessor,\
 	org.eclipse.equinox.security.macosx,\
 	org.eclipse.equinox.security,\
-	org.eclipse.equinox.p2.artifact.repository,\
 	org.eclipse.compare.core,\
 	org.eclipse.ui.editors,\
 	org.eclipse.core.filebuffers,\
@@ -128,7 +129,8 @@ Include-Resource: resources,\
 	org.eclipse.ui.ide.application,\
 	org.eclipse.core.net,\
 	bndtools.repository.base;version=snapshot,\
-	bndtools.jareditor;version=snapshot
+	bndtools.jareditor;version=snapshot,\
+	org.eclipse.equinox.p2.artifact.repository
 
 -runproperties: osgi.ws=cocoa,\
 	osgi.arch=x86_64,\

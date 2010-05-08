@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?metadataRepository version='1.1.0'?>
+<repository name='extension location metadata repository: file:/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/.eclipseextension' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'>
+  <properties size='3'>
+    <property name='org.eclipse.update.site.policy' value='USER-EXCLUDE'/>
+    <property name='org.eclipse.update.site.list' value=''/>
+    <property name='p2.timestamp' value='1273100812740'/>
+  </properties>
+  <units size='2'>
+    <unit id='org.eclipse.jdt.debug' version='3.5.0.v20090526'>
+      <update id='org.eclipse.jdt.debug' range='[0.0.0,3.5.0.v20090526)' severity='0'/>
+      <properties size='7'>
+        <property name='df_LT.providerName' value='Eclipse.org'/>
+        <property name='df_LT.pluginName' value='JDI Debug Model'/>
+        <property name='org.eclipse.equinox.p2.name' value='%pluginName'/>
+        <property name='org.eclipse.equinox.p2.provider' value='%providerName'/>
+        <property name='org.eclipse.equinox.p2.bundle.localization' value='plugin'/>
+        <property name='file.name' value='/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/plugins/org.eclipse.jdt.debug_3.5.0.v20090526.jar'/>
+        <property name='file.lastModified' value='1272939514000'/>
+      </properties>
+      <provides size='27'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.jdt.debug' version='3.5.0.v20090526'/>
+        <provided namespace='osgi.bundle' name='org.eclipse.jdt.debug' version='3.5.0.v20090526'/>
+        <provided namespace='java.package' name='com.sun.jdi' version='0.0.0'/>
+        <provided namespace='java.package' name='com.sun.jdi.connect' version='0.0.0'/>
+        <provided namespace='java.package' name='com.sun.jdi.connect.spi' version='0.0.0'/>
+        <provided namespace='java.package' name='com.sun.jdi.event' version='0.0.0'/>
+        <provided namespace='java.package' name='com.sun.jdi.request' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.hcr' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal.connect' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal.event' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal.jdwp' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal.request' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdi.internal.spy' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.debug.core' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.debug.eval' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.core' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.core.breakpoints' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.core.hcr' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.core.logicalstructures' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.core.model' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.eval' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.eval.ast.engine' version='0.0.0'/>
+        <provided namespace='java.package' name='org.eclipse.jdt.internal.debug.eval.ast.instructions' version='0.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.localization' name='df_LT' version='1.0.0'/>
+      </provides>
+      <requires size='6'>
+        <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='[3.5.0,4.0.0)'/>
+        <required namespace='osgi.bundle' name='org.eclipse.debug.core' range='[3.5.0,4.0.0)'/>
+        <required namespace='osgi.bundle' name='org.eclipse.jdt.core' range='[3.5.0,4.0.0)'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='[3.5.0,4.0.0)'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.expressions' range='[3.4.0,4.0.0)'/>
+        <required namespace='java.package' name='com.ibm.icu.text' range='0.0.0'/>
+      </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='org.eclipse.jdt.debug' version='3.5.0.v20090526'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Bundle-Name: %pluginName&#xA;Bundle-ClassPath: jdi.jar,jdimodel.jar,tools.jar&#xA;Bundle-Version: 3.5.0.v20090526&#xA;Import-Package: com.ibm.icu.text&#xA;Bundle-Activator: org.eclipse.jdt.internal.debug.core.JDIDebugPlugin&#xA;Bundle-Vendor: %providerName&#xA;Require-Bundle: org.eclipse.core.resources;bundle-version=&quot;[3.5.0,4.0.0)&quot;,org.eclipse.debug.core;bundle-version=&quot;[3.5.0,4.0.0)&quot;,org.eclipse.jdt.core;bundle-version=&quot;[3.5.0,4.0.0)&quot;,org.eclipse.core.runtime;bundle-version=&quot;[3.5.0,4.0.0)&quot;,org.eclipse.core.expressions;bundle-version=&quot;[3.4.0,4.0.0)&quot;&#xA;Export-Package: com.sun.jdi,com.sun.jdi.connect,com.sun.jdi.connect.spi,com.sun.jdi.event,com.sun.jdi.request,org.eclipse.jdi,org.eclipse.jdi.hcr,org.eclipse.jdi.internal;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdi.internal.connect;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdi.internal.event;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdi.internal.jdwp;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdi.internal.request;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdi.internal.spy;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.debug.core,org.eclipse.jdt.debug.eval,org.eclipse.jdt.internal.debug.core;x-friends:=&quot;org.eclipse.jdt.debug.ui,org.eclipse.jdt.launching&quot;,org.eclipse.jdt.internal.debug.core.breakpoints;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.core.hcr;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.core.logicalstructures;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.core.model;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.eval;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.eval.ast.engine;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;,org.eclipse.jdt.internal.debug.eval.ast.instructions;x-friends:=&quot;org.eclipse.jdt.debug.ui&quot;&#xA;Bundle-SymbolicName: org.eclipse.jdt.debug; singleton:=true&#xA;Manifest-Version: 1.0&#xA;Bundle-ActivationPolicy: lazy&#xA;Bundle-ManifestVersion: 2&#xA;Bundle-RequiredExecutionEnvironment: J2SE-1.4&#xA;Bundle-Localization: plugin&#xA;
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='org.junit' version='3.8.2.v20090203-1005' singleton='false'>
+      <update id='org.junit' range='[0.0.0,3.8.2.v20090203-1005)' severity='0'/>
+      <properties size='7'>
+        <property name='df_LT.providerName' value='Eclipse.org'/>
+        <property name='df_LT.pluginName' value='JUnit Testing Framework'/>
+        <property name='org.eclipse.equinox.p2.name' value='%pluginName'/>
+        <property name='org.eclipse.equinox.p2.provider' value='%providerName'/>
+        <property name='org.eclipse.equinox.p2.bundle.localization' value='plugin'/>
+        <property name='file.name' value='/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/plugins/org.junit-3.8.2.jar'/>
+        <property name='file.lastModified' value='1272939528000'/>
+      </properties>
+      <provides size='11'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.junit' version='3.8.2.v20090203-1005'/>
+        <provided namespace='osgi.bundle' name='org.junit' version='3.8.2.v20090203-1005'/>
+        <provided namespace='java.package' name='junit.awtui' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.extensions' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.framework' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.runner' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.swingui' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.swingui.icons' version='3.8.2'/>
+        <provided namespace='java.package' name='junit.textui' version='3.8.2'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.localization' name='df_LT' version='1.0.0'/>
+      </provides>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='org.junit' version='3.8.2.v20090203-1005'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Bundle-Vendor: %providerName&#xA;Bundle-ManifestVersion: 2&#xA;Bundle-RequiredExecutionEnvironment: J2SE-1.3&#xA;Bundle-ClassPath: junit.jar&#xA;Bundle-Name: %pluginName&#xA;Bundle-Localization: plugin&#xA;Manifest-Version: 1.0&#xA;Bundle-SymbolicName: org.junit&#xA;Bundle-Version: 3.8.2.v20090203-1005&#xA;Created-By: 1.6.0_15 (Apple Inc.)&#xA;Export-Package: junit.awtui;version=&quot;3.8.2&quot;,junit.extensions;version=&quot;3.8.2&quot;,junit.framework;version=&quot;3.8.2&quot;,junit.runner;version=&quot;3.8.2&quot;,junit.swingui;version=&quot;3.8.2&quot;,junit.swingui.icons;version=&quot;3.8.2&quot;,junit.textui;version=&quot;3.8.2&quot;&#xA;
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+  </units>
+</repository>

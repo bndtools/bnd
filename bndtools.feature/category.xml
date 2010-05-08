@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <feature url="features/bndtools.feature_0.0.1.qualifier.jar" id="bndtools.feature" version="0.0.1.qualifier">
-      <category name="bndtools"/>
-   </feature>
-   <category-def name="bndtools" label="Bndtools"/>
-</site>

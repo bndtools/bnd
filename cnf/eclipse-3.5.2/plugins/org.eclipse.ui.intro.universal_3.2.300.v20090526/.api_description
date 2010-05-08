@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component name="org.eclipse.ui.intro.universal_3.2.300.v20090526" version="1.2">
+    <plugin id="org.eclipse.ui.intro.universal_3.2.300.v20090526"/>
+    <package name="org.eclipse.ui.intro.universal" visibility="1">
+        <type name="ExtensionFactory" restrictions="6"/>
+    </package>
+</component>

@@ -1,0 +1,25 @@
+#Thu May 06 23:44:05 BST 2010
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/uri=http\://download.eclipse.org/eclipse/updates/3.5
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/enabled=true
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/description=
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/version=1
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/count=1
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/suffix=eclipse
+repositories/http\:__download.eclipse.org_releases_galileo/enabled=true
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/provider=
+eclipse.preferences.version=1
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/nickname=The Eclipse Project Updates
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/name=/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/.eclipseextension
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/enabled=true
+repositories/http\:__download.eclipse.org_releases_galileo/count=1
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/isSystem=true
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/uri=file\:/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/configuration/org.eclipse.osgi/bundles/77/data/listener_1925729951/
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/uri=file\:/Users/neil/Workspaces/TrainingTools/cnf/eclipse-3.5.2/.eclipseextension
+repositories/http\:__download.eclipse.org_releases_galileo/uri=http\://download.eclipse.org/releases/galileo
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/isSystem=true
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/suffix=content.xml
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_.eclipseextension/type=org.eclipse.equinox.p2.extensionlocation.metadataRepository
+repositories/http\:__download.eclipse.org_releases_galileo/nickname=Galileo
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/name=metadata listener dropins
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/version=1.0.0
+repositories/file\:_Users_neil_Workspaces_TrainingTools_cnf_eclipse-3.5.2_configuration_org.eclipse.osgi_bundles_77_data_listener_1925729951/type=org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository

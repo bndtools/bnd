@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.pde"
+      label="%featureName"
+      version="3.5.2.R35x_v20100119-7Z7_FA2FDX-aXQYWqYDBz-z0qufo"
+      provider-name="%providerName"
+      image="eclipse_update_120.jpg">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <url>
+      <update label="%updateSiteName" url="http://download.eclipse.org/eclipse/updates/3.5"/>
+      <discovery label="%updateSiteName" url="http://download.eclipse.org/eclipse/updates/3.5"/>
+      <discovery label="%secondaryUpdateSiteName" url="http://download.eclipse.org/releases/galileo"/>
+   </url>
+
+   <requires>
+      <import feature="org.eclipse.jdt" version="3.0.0" match="compatible"/>
+      <import feature="org.eclipse.platform" version="3.0.0" match="compatible"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.pde"
+         download-size="0"
+         install-size="0"
+         version="3.4.100.v201002111343"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.build"
+         download-size="0"
+         install-size="0"
+         version="3.5.2.R35x_20100114"/>
+
+   <plugin
+         id="org.eclipse.pde.core"
+         download-size="0"
+         install-size="0"
+         version="3.5.101.v20100104"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.junit.runtime"
+         download-size="0"
+         install-size="0"
+         version="3.4.0.v20090527"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.runtime"
+         download-size="0"
+         install-size="0"
+         version="3.4.100.v20090731"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.ui"
+         download-size="0"
+         install-size="0"
+         version="3.5.1.v201001121200"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.doc.user"
+         download-size="0"
+         install-size="0"
+         version="3.5.0.v20090818"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.ui.templates"
+         download-size="0"
+         install-size="0"
+         version="3.4.100.v20090527"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.views.log"
+         download-size="0"
+         install-size="0"
+         version="1.0.100.v20090731"
+         unpack="false"/>
+
+   <plugin
+         id="org.objectweb.asm"
+         download-size="0"
+         install-size="0"
+         version="3.1.0.v200803061910"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.api.tools"
+         download-size="0"
+         install-size="0"
+         version="1.0.101.v20090714"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.pde.api.tools.ui"
+         download-size="0"
+         install-size="0"
+         version="1.0.101.v20090820"
+         unpack="false"/>
+         
+   <plugin
+         id="org.eclipse.pde.ds.core"
+         download-size="0"
+         install-size="0"
+         version="1.0.1.v20100118"
+         unpack="false"/>
+         
+   <plugin
+         id="org.eclipse.pde.ds.ui"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.v20100209-maintenance"
+         unpack="false"/>       
+         
+   <plugin
+         id="org.eclipse.pde.ua.core"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.v20090429-1800"
+         unpack="false"/>       
+  
+  <plugin
+         id="org.eclipse.pde.ua.ui"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.v20090511"
+         unpack="false"/>
+         
+</feature>

@@ -15,15 +15,25 @@
 	-->
 
 	<target name="init" unless="initialized">
+		<tstamp>
+			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
+		</tstamp>
+		
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties">
+			<classpath>
+				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar"/>
+				<path location="${workspacedir}/cnf/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar"/>
+			</classpath>
+		</taskdef>
+			<!-- classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" /-->
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
-		<echo>Enter project ${project.name}</echo>
+		<echo message="Enter project ${project.name}"/>
 	</target>
 
 	<!-- 
@@ -48,7 +58,7 @@
 	     Compile the sources. 
 	-->
 	<target name="compile" depends="dependencies" if="project.sourcepath">
-		<mkdir dir="${project.output}" />
+		<mkdir dir="${project.output}"/>
 		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
 		<!-- 
 		  The eclipse compiler copies resources but the Javac compiler does not
@@ -68,10 +78,9 @@
 		Iterate of the jars to build.
 	-->
 	<target name="build" depends="compile">
+		<mkdir dir="${target}"/>
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
-
-
 
 	<target name="junit" depends="build">
 		<junit printsummary="true">			
@@ -95,6 +104,10 @@
 	<target name="clean" depends="init">
 		<bnd command="clean" exceptions="true" basedir="${project}" />
 		<delete dir="bin"/>
+		<delete dir="${target}"/>
+		
+		<delete dir="${workspacedir}/cnf/tmp"/>
+		<delete dir="${workspacedir}/cnf/p2target"/>
 	</target>
 
 	<!--
@@ -129,6 +142,51 @@
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>
 
+	</target>
+	
+	<target name="feature" depends="init">
+		<mkdir dir="${workspacedir}/cnf/tmp"/>
+		<copy todir="${workspacedir}/cnf/tmp">
+			<fileset dir="${workspacedir}/cnf/feature" includes="*.xml"/>
+		</copy>
+		<replace dir="${workspacedir}/cnf/tmp" includes="*.xml" token="qualifier" value="${NOW}" summary="true"/>
+		<zip destfile="${workspacedir}/cnf/tmp/feature.jar">
+			<fileset dir="${workspacedir}/cnf/tmp" includes="feature.xml"/>
+		</zip>
+	</target>
+	
+	<target name="p2" depends="init,feature">
+		<!-- Generate the p2 repository -->
+		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true">
+			<!-- <arg line="-consoleLog"/> -->
+			<arg line="-application org.eclipse.ant.core.antRunner"/>
+			<arg line="-buildfile build.xml __internal_p2"/>
+		</java>
+		
+		<!-- Append the category info -->
+		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true">
+			<!-- <arg line="-consoleLog"/> -->
+			<arg line="-application org.eclipse.equinox.p2.publisher.CategoryPublisher"/>
+			<arg line="-metadataRepository file:${workspacedir}/cnf/p2target"/>
+			<arg line="-categoryDefinition file:${workspacedir}/cnf/tmp/category.xml"/>
+			<arg line="-compress"/>
+		</java>
+	</target>
+	
+	<target name="__internal_p2" depends="init">
+		<p2.publish.featuresAndBundles
+				source="${workspacedir}"
+				repository="file:${workspacedir}/cnf/p2target"
+				append="false"
+				repositoryname="Bndtools"
+				compress="true">
+			<features dir="${workspacedir}/cnf/tmp" includes="feature.jar"/>
+			<bundles dir="${workspacedir}">
+				<include name="bndtools.core/generated/*.jar"/>
+				<include name="bndtools.jareditor/generated/*.jar"/>
+				<include name="bndtools.repository.base/generated/*.jar"/>
+			</bundles>
+		</p2.publish.featuresAndBundles>
 	</target>
 
 	<!--

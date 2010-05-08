@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.eclipse.equinox.p2.user.ui.source" version="1.1.2.R35x_v20091106-7u6FbQFUAtsCKD5Fxz0qz0fb2932" label="%featureName" provider-name="%providerName" image="eclipse_update_120.jpg"    >
+	<description >
+		%description
+	</description>
+	<copyright >
+		%copyright
+	</copyright>
+	<license url="%licenseURL">
+		%license
+	</license>
+	<plugin id="org.eclipse.ecf.source" version="3.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.eclipse.ecf.ssl.source" version="1.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.eclipse.ecf.identity.source" version="3.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.eclipse.ecf.filetransfer.source" version="3.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.eclipse.ecf.provider.filetransfer.ssl.source" version="1.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.eclipse.ecf.provider.filetransfer.httpclient.ssl.source" version="1.0.0.v20090831-1906"     unpack="false"/>
+	<plugin id="org.apache.commons.codec.source" version="1.3.0.v20080530-1600"     unpack="false"/>
+	<plugin id="org.apache.commons.httpclient.source" version="3.1.0.v20080605-1935"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.director.source" version="1.0.101.R35x_v20100112"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.core.source" version="1.0.101.R35x_v20090819"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.engine.source" version="1.0.102.R35x_v20091117"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.jarprocessor.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.metadata.source" version="1.0.101.R35x_v20100112"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.metadata.repository.source" version="1.0.101.R35x_v20090812"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.artifact.repository.source" version="1.0.101.R35x_v20090721"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.exemplarysetup.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.source" version="1.0.101.R35x_20090820-1821"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.touchpoint.natives.source" version="1.0.101.R35x_v20090806"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.frameworkadmin.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.frameworkadmin.equinox.source" version="1.0.101.R35x_v20091214"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.console.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator.source" version="1.0.101.R35x_v20100209"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.ui.source" version="1.0.101.R35x_v20090819"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.ui.sdk.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.ui.sdk.scheduler.source" version="1.0.0.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.updatechecker.source" version="1.1.0.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.garbagecollector.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.directorywatcher.source" version="1.0.100.v20090525"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.reconciler.dropins.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.metadata.generator.source" version="1.0.101.R35x_20100114"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.updatesite.source" version="1.0.101.R35x_20100105"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.security.source" version="1.0.100.v20090520-1800"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.security.ui.source" version="1.0.100.v20090520-1800"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.extensionlocation.source" version="1.0.100.v20090520-1905"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.director.app.source" version="1.0.101.R35x_v20091106"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.publisher.source" version="1.0.1.R35x_20100105"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.repository.tools.source" version="1.0.2.R35x_20100111"     unpack="false"/>
+	<plugin id="org.eclipse.equinox.p2.repository.source" version="1.0.1.R35x_v20100105"     unpack="false"/>
+</feature>

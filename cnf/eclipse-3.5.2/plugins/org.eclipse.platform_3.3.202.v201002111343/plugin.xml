@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+     <extension id="ide" point="org.eclipse.core.runtime.products"> 
+      <product name="%productName" application="org.eclipse.ui.ide.workbench" description="%productBlurb"> 
+          <property name="windowImages" value="eclipse.gif,eclipse32.gif,eclipse48.gif,eclipse.png,eclipse32.png,eclipse48.png"/> 
+          <property name="aboutImage" value="eclipse_lg.gif"/> 
+          <property name="aboutText" value="%productBlurb"/> 
+          <property name="appName" value="Eclipse"/> 
+          <property name="preferenceCustomization" value="plugin_customization.ini"/> 
+          <property
+                name="startupForegroundColor"
+                value="C8D5EA"/>
+          <property
+                name="startupMessageRect"
+                value="7,220,441,20"/>
+          <property
+                name="startupProgressRect"
+                value="0,280,455,15"/>
+         <property
+          		name="introTitle"
+          		value="%productIntroTitle"/>
+          <property
+          		name="introBrandingImage"
+          		value="product:intro-eclipse.png"/>
+          <property
+          		name="introBrandingImageText"
+          		value="%productIntroBrandingText"/>
+		  <property
+				name="introDescription-overview"
+				value="%introDescription-overview"/>
+		  <property
+				name="introDescription-tutorials"
+				value="%introDescription-tutorials"/>
+		  <property
+				name="introDescription-samples"
+				value="%introDescription-samples"/>                
+      </product> 
+   </extension> 
+   
+   	<extension
+		point="org.eclipse.ui.intro">
+      <introProductBinding
+            introId="org.eclipse.ui.intro.universal"
+            productId="org.eclipse.platform.ide">
+      </introProductBinding>
+    </extension>
+
+   <extension
+         point="org.eclipse.ui.cheatsheets.cheatSheetContent">
+      <category
+            id="org.eclipse.platform.team"
+            name="%cheatsheet.category.team">
+      </category>
+      <cheatsheet
+            category="org.eclipse.platform.team"
+            contentFile="$nl$/cheatsheets/cvs_checkout.xml"
+            id="org.eclipse.platform.cvs.checkout"
+            name="%cheatsheet.cvs.checkout.name">
+         <description>
+            %cheatsheet.cvs.checkout.desc
+         </description>
+      </cheatsheet>
+      <cheatsheet
+            category="org.eclipse.platform.team"
+            contentFile="$nl$/cheatsheets/cvs_merge.xml"
+            id="org.eclipse.platform.cvs.merge"
+            name="%cheatsheet.cvs.merge.name">
+         <description>
+            %cheatsheet.cvs.merge.desc
+         </description>
+      </cheatsheet>
+   </extension>
+   <!-- =====================================================  -->
+   <!-- Standby Content Part contributions                     -->
+   <!-- =====================================================  -->
+   <extension point="org.eclipse.ui.intro.configExtension">
+      <standbyContentPart
+            id="org.eclipse.platform.cheatsheet"
+            class="org.eclipse.platform.internal.CheatSheetStandbyContent"
+            pluginId="org.eclipse.platform"/>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/overviewExtensionContent.xml"/>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/tutorialsExtensionContent.xml"/>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/whatsnewExtensionContent1.xml"/>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/whatsnewExtensionContent2.xml"/>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/whatsnewExtensionContent3.xml"/>
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="%cheatsheet.actionset"
+            visible="true"
+            id="org.eclipse.ui.cheatsheets.actionSet">
+         <action
+               label="%cheatsheet.item"
+               class="org.eclipse.ui.cheatsheets.CheatSheetExtensionFactory:helpMenuAction"
+               menubarPath="help/group.tutorials"
+               id="org.eclipse.ui.cheatsheets.actions.CheatSheetHelpMenuAction">
+         </action>
+      </actionSet>
+   </extension>
+
+</plugin>

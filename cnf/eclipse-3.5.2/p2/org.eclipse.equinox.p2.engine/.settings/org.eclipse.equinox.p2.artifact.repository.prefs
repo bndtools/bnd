@@ -1,0 +1,26 @@
+#Fri Feb 12 12:51:23 EST 2010
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/type=org.eclipse.equinox.p2.artifact.repository.simpleRepository
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/uri=http\://download.eclipse.org/eclipse/updates/3.5
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/type=org.eclipse.equinox.p2.artifact.repository.simpleRepository
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/enabled=false
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/count=2
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/uri=file\:/builds/M201002111343/src/M20100211-1343/p2temp/equinox.p2.build/sdk.install.macosx.cocoa.x86_64/eclipse/
+repositories/http\:__download.eclipse.org_releases_galileo/enabled=false
+eclipse.preferences.version=1
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/description=
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/nickname=The Eclipse Project Updates
+repositories/http\:__download.eclipse.org_releases_galileo/count=2
+repositories/http\:__download.eclipse.org_releases_galileo/uri=http\://download.eclipse.org/releases/galileo
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/uri=file\:/builds/M201002111343/src/M20100211-1343/p2temp/equinox.p2.build/sdk.install.macosx.cocoa.x86_64/eclipse/p2/org.eclipse.equinox.p2.core/cache/
+repositories/http\:__download.eclipse.org_releases_galileo/nickname=Galileo
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/isSystem=true
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/isSystem=true
+repositories/http\:__download.eclipse.org_eclipse_updates_3.5/isSystem=false
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/description=
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/name=download cache
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/version=1
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/version=1.0.0
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/name=Bundle pool
+repositories/http\:__download.eclipse.org_releases_galileo/isSystem=false
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse_p2_org.eclipse.equinox.p2.core_cache/provider=
+repositories/file\:_builds_M201002111343_src_M20100211-1343_p2temp_equinox.p2.build_sdk.install.macosx.cocoa.x86_64_eclipse/provider=

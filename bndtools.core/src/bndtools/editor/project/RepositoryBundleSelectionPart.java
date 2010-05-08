@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -41,7 +40,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	private final String propertyName;
 	private Table table;
 	private TableViewer viewer;
-	
+
 	private BndEditModel model;
 	private List<VersionedClause> bundles;
 
@@ -70,21 +69,21 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(false);
-		
+
 		TableColumn col;
-		
+
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Bundle");
 		col.setWidth(200);
-		
+
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Version");
 		col.setWidth(150);
-		
+
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new VersionedClauseLabelProvider());
-		
+
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -103,13 +102,13 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 				doRemove();
 			}
 		});
-		
+
 		// Layout
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0; layout.verticalSpacing = 0;
 		layout.marginHeight = 0; layout.marginWidth = 0;
 		composite.setLayout(layout);
-		
+
 		GridData gd = getTableLayoutData();
 		table.setLayoutData(gd);
 	}
@@ -117,12 +116,11 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		return new GridData(SWT.FILL, SWT.FILL, true, false);
 	}
 	private void doAdd() {
-		List<VersionedClause> copy = new ArrayList<VersionedClause>(bundles);
-		RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(copy);
+		RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(bundles);
 		customizeWizard(wizard);
 		WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 		if(dialog.open() == Window.OK) {
-			bundles = copy;
+			bundles = wizard.getBundleSelectionPage().getSelectedBundles();
 			viewer.setInput(bundles);
 			markDirty();
 		}
@@ -137,7 +135,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 				if(bundles.remove(element))
 					removed.add(element);
 			}
-			
+
 			if(!removed.isEmpty()) {
 				viewer.remove(removed.toArray(new Object[removed.size()]));
 				markDirty();
@@ -149,14 +147,14 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		super.commit(onSave);
 		saveToModel(model, bundles);
 	}
-	
+
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
-	
+
 	protected void customizeWizard(RepoBundleSelectionWizard wizard) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void refresh() {
 		List<VersionedClause> bundles = loadFromModel(model);
@@ -171,7 +169,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		model = (BndEditModel) form.getInput();
 		model.addPropertyChangeListener(propertyName, this);
 	}

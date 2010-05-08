@@ -3,12 +3,11 @@ package bndtools.editor.project;
 import java.util.List;
 
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardPage;
 
 import bndtools.editor.model.VersionedClause;
 
 public class RepoBundleSelectionWizard extends Wizard {
-	
+
 	private final RepoBundleSelectionWizardPage selectionPage = new RepoBundleSelectionWizardPage("bundleSelect");
 
 	/**
@@ -17,15 +16,15 @@ public class RepoBundleSelectionWizard extends Wizard {
 	 */
 	public RepoBundleSelectionWizard(List<VersionedClause> bundles) {
 		selectionPage.setSelectedBundles(bundles);
-		
+
 		addPage(selectionPage);
 	}
 	@Override
 	public boolean performFinish() {
 		return true;
 	}
-	
-	public WizardPage getBundleSelectionPage() {
+
+	public RepoBundleSelectionWizardPage getBundleSelectionPage() {
 		return selectionPage;
 	}
 }

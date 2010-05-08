@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.sdk"
+      label="%featureName"
+      version="3.5.2.R35x_v20100119-7Q7bARBPWUHM_CSjz-8bF1f7_n8rLSyWHoiKoyxBQSGT4"
+      provider-name="%providerName"
+      image="eclipse_update_120.jpg">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <url>
+      <update label="%updateSiteName" url="http://download.eclipse.org/eclipse/updates/3.5"/>
+      <discovery label="%updateSiteName" url="http://download.eclipse.org/eclipse/updates/3.5"/>
+      <discovery label="%secondaryUpdateSiteName" url="http://download.eclipse.org/releases/galileo"/>
+   </url>
+
+   <includes
+         id="org.eclipse.platform"
+         version="3.5.2.R35x_v20100210-0800-9hEiFzmFst-TiEn9hNYgDWg1XN8ulH_JvCNGB"/>
+
+   <includes
+         id="org.eclipse.platform.source"
+         version="3.5.2.R35x_v20100210-0800-9hEiFzmFst-TiEn9hNYgDWg1XN8ulH_JvCNGB"/>
+
+   <includes
+         id="org.eclipse.cvs"
+         version="1.1.101.R35x_v20100125-7E79FGD9kKF67BPDZ7PKCE1911"/>
+
+   <includes
+         id="org.eclipse.cvs.source"
+         version="1.1.101.R35x_v20100125-7E79FGD9kKF67BPDZ7PKCE1911"/>
+
+   <includes
+         id="org.eclipse.jdt"
+         version="3.5.2.r352_v20100108-7r88FEwFI0WTuoBl0iaG0tyhfZH6"/>
+
+   <includes
+         id="org.eclipse.jdt.source"
+         version="3.5.2.r352_v20100108-7r88FEwFI0WTuoBl0iaG0tyhfZH6"/>
+
+   <includes
+         id="org.eclipse.pde"
+         version="3.5.2.R35x_v20100119-7Z7_FA2FDX-aXQYWqYDBz-z0qufo"/>
+
+   <includes
+         id="org.eclipse.pde.source"
+         version="3.5.2.R35x_v20100119-7Z7_FA2FDX-aXQYWqYDBz-z0qufo"/>
+
+   <includes
+         id="org.eclipse.help"
+         version="1.1.2.R35x_v20100119-7e7eFAnFEx2X_fZltJhDjz-D"/>
+
+   <includes
+         id="org.eclipse.help.source"
+         version="1.1.2.R35x_v20100119-7e7eFAnFEx2X_fZltJhDjz-D"/>
+
+   <plugin
+         id="org.eclipse.sdk"
+         download-size="0"
+         install-size="0"
+         version="3.5.2.v201002111343"/>
+
+</feature>

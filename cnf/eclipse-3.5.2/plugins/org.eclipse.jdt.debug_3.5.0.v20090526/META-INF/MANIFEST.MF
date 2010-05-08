@@ -1,0 +1,58 @@
+Manifest-Version: 1.0
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: J2SE-1.4
+Bundle-SymbolicName: org.eclipse.jdt.debug; singleton:=true
+Require-Bundle: org.eclipse.core.resources;bundle-version="[3.5.0,4.0.
+ 0)",org.eclipse.debug.core;bundle-version="[3.5.0,4.0.0)",org.eclipse
+ .jdt.core;bundle-version="[3.5.0,4.0.0)",org.eclipse.core.runtime;bun
+ dle-version="[3.5.0,4.0.0)",org.eclipse.core.expressions;bundle-versi
+ on="[3.4.0,4.0.0)"
+Bundle-Activator: org.eclipse.jdt.internal.debug.core.JDIDebugPlugin
+Export-Package: com.sun.jdi,com.sun.jdi.connect,com.sun.jdi.connect.sp
+ i,com.sun.jdi.event,com.sun.jdi.request,org.eclipse.jdi,org.eclipse.j
+ di.hcr,org.eclipse.jdi.internal;x-friends:="org.eclipse.jdt.debug.ui"
+ ,org.eclipse.jdi.internal.connect;x-friends:="org.eclipse.jdt.debug.u
+ i",org.eclipse.jdi.internal.event;x-friends:="org.eclipse.jdt.debug.u
+ i",org.eclipse.jdi.internal.jdwp;x-friends:="org.eclipse.jdt.debug.ui
+ ",org.eclipse.jdi.internal.request;x-friends:="org.eclipse.jdt.debug.
+ ui",org.eclipse.jdi.internal.spy;x-friends:="org.eclipse.jdt.debug.ui
+ ",org.eclipse.jdt.debug.core,org.eclipse.jdt.debug.eval,org.eclipse.j
+ dt.internal.debug.core;x-friends:="org.eclipse.jdt.debug.ui,org.eclip
+ se.jdt.launching",org.eclipse.jdt.internal.debug.core.breakpoints;x-f
+ riends:="org.eclipse.jdt.debug.ui",org.eclipse.jdt.internal.debug.cor
+ e.hcr;x-friends:="org.eclipse.jdt.debug.ui",org.eclipse.jdt.internal.
+ debug.core.logicalstructures;x-friends:="org.eclipse.jdt.debug.ui",or
+ g.eclipse.jdt.internal.debug.core.model;x-friends:="org.eclipse.jdt.d
+ ebug.ui",org.eclipse.jdt.internal.debug.eval;x-friends:="org.eclipse.
+ jdt.debug.ui",org.eclipse.jdt.internal.debug.eval.ast.engine;x-friend
+ s:="org.eclipse.jdt.debug.ui",org.eclipse.jdt.internal.debug.eval.ast
+ .instructions;x-friends:="org.eclipse.jdt.debug.ui"
+Bundle-Version: 3.5.0.v20090526
+Bundle-ClassPath: jdi.jar,jdimodel.jar,tools.jar
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: %providerName
+Bundle-Name: %pluginName
+Import-Package: com.ibm.icu.text
+Bundle-ManifestVersion: 2
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: jdimodel.jar
+SHA1-Digest: kdq1bNQuYmaST+MLyWJkEu2Mku8=
+
+Name: .api_description
+SHA1-Digest: z/7mZZdhoFyohbJCWDNRX4h0u9o=
+
+Name: jdi.jar
+SHA1-Digest: 9oU4JNU00Mc/mHV9CDHtL/FdpHI=
+
+Name: about.html
+SHA1-Digest: ejOZra0kypGLQQ2bJtGTX+LI8tU=
+
+Name: plugin.xml
+SHA1-Digest: HdTchxDipfi+w4R+yRFZ9p2q2Dw=
+
+Name: plugin.properties
+SHA1-Digest: sBGaDfjFO8Z+PXOFXE9fX6BK4rw=
+

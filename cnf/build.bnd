@@ -1,11 +1,24 @@
-# General Options
--verbose:   true
-target-dir: generated
-target:     ${project}/${target-dir}
-build:      ${workspace}/cnf
-repo:       ${build}/repo
-p:          ${basename;${project}}
+# Very general
+project.dependson       = ${p-dependson;:}
+project.bootclasspath   = ${p-bootclasspath;:}
+project.buildpath       = ${p-buildpath;:}
+project.sourcepath      = ${p-sourcepath;:}
+project.allsourcepath   = ${p-allsourcepath;:}
+project.output          = ${p-output}
+project.testpath        = ${p-testpath;:}
 
+-verbose:     true
+project:      ${basedir}
+src:          src
+bin:          bin
+target:       ${project}/${target-dir}
+build:        ${workspace}/cnf
+repo:         ${build}/repo
+target-dir:   generated
+p:            ${basename;${project}}
+project.name: ${p}
+
+# Eclipse
 eclipse-version:  3.5.2
 eclipse-repo:     ${build}/eclipse-${eclipse-version}
 
@@ -20,7 +33,8 @@ javac.debug:  on
 -sources:       true
 -sourcepath:    ${project}/src 
 -plugin:        aQute.lib.deployer.FileRepo;location=${repo},\
-                aQute.bnd.plugin.repo.EclipseRepo;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+                bndtools.bndplugins.repo.eclipse.EclipseRepo;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+#               aQute.bnd.plugin.repo.EclipseRepo;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"
 
 # Runtime Options and Variables

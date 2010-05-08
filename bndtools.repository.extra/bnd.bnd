@@ -1,0 +1,3 @@
+Bundle-SymbolicName: bndtools.repository.extra;singleton:=true
+Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmm}
+Include-Resource: plugin.xml, repo=repo
