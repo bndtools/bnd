@@ -5,9 +5,6 @@ package bndtools.launch;
 public interface LaunchConstants {
     public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
 
-    public static String PROP_FRAMEWORK = "-runfw";
-    public static String DEFAULT_FRAMEWORK = "org.eclipse.osgi";
-
     public static String ATTR_DYNAMIC_BUNDLES = "dynamicBundles";
     public static boolean DEFAULT_DYNAMIC_BUNDLES = true;
 

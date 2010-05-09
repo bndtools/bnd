@@ -64,7 +64,8 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.BUILDPATH,
 		aQute.lib.osgi.Constants.RUNBUNDLES,
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
-		aQute.lib.osgi.Constants.SUB
+		aQute.lib.osgi.Constants.SUB,
+		BndConstants.RUNFRAMEWORK
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -346,6 +347,25 @@ public class BndEditModel {
 	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
+	}
+	public VersionedClause getRunFramework() {
+	    return doGetObject(BndConstants.RUNFRAMEWORK, new Converter<VersionedClause, String>() {
+            public VersionedClause convert(String input) throws IllegalArgumentException {
+                Map<String, Map<String, String>> map = OSGiHeader.parseHeader(input);
+                if(map.size() != 1)
+                    throw new IllegalArgumentException("Invalid format for runtime framework property");
+                Entry<String, Map<String, String>> entry = map.entrySet().iterator().next();
+                return new VersionedClause(entry.getKey(), entry.getValue());
+            }
+        });
+	}
+	public void setRunFramework(VersionedClause clause) {
+	    VersionedClause oldValue = getRunFramework();
+
+	    StringBuilder builder = new StringBuilder();
+	    clause.formatTo(builder);
+
+	    doSetObject(BndConstants.RUNFRAMEWORK, oldValue, clause, builder.toString());
 	}
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();

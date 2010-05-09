@@ -61,7 +61,7 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate {
     protected Collection<String> calculateRunBundlePaths(Project model) throws CoreException {
         Collection<String> runBundles = super.calculateRunBundlePaths(model);
 
-        File junitBundle = findBundle(model, BNDTOOLS_RUNTIME_JUNIT_BSN);
+        File junitBundle = findBundle(model, BNDTOOLS_RUNTIME_JUNIT_BSN, "0");
         if(junitBundle == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find JUnit bundle {0}.", BNDTOOLS_RUNTIME_JUNIT_BSN), null));
         runBundles.add(junitBundle.getAbsolutePath());

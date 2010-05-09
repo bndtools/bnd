@@ -10,10 +10,10 @@ import bndtools.editor.PropertyTableSectionPart;
 import bndtools.editor.model.BndEditModel;
 
 public class RunPropertiesPart extends PropertyTableSectionPart {
-	
+
 	public RunPropertiesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(Constants.RUNPROPERTIES, parent, toolkit, style);
-		
+
 		getSection().setText("Run Properties");
 	}
 

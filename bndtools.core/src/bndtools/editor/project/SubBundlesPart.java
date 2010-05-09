@@ -21,6 +21,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.utils.ModificationLock;
 
@@ -28,9 +29,9 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 
 	private static final String ALL_BND = "*.bnd";
 	private static final String WARNING_EDITED_MANUALLY = "WARNING_EDITED_MANUALLY";
-	
+
 	private final ModificationLock lock = new ModificationLock();
-	
+
 	private BndEditModel model;
 	private List<String> subBundleList;
 	private Button button;
@@ -43,27 +44,13 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 	final void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Sub-bundles");
         section.setDescription("If sub-bundles are enabled, then .bnd files other than \"bnd.bnd\" will be built as bundles.");
-		
-		// Toolbar buttons
-//		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
-//		section.setTextClient(toolbar);
-//		
-//		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-//		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
-//		addItem.setToolTipText("Add");
-//
-//		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
-//		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-//		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
-//		removeItem.setToolTipText("Remove");
-//		removeItem.setEnabled(false);
 
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
 		button = new Button(composite, SWT.CHECK);
 		button.setText("Enable sub-bundles");
-		
+
 		button.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -83,11 +70,11 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 //		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 //		table.setHeaderVisible(false);
 //		table.setLinesVisible(false);
-//		
+//
 //		viewer = new TableViewer(table);
 //		viewer.setContentProvider(new ArrayContentProvider());
 //		viewer.setLabelProvider(n());
-		
+
 		// Listeners
 //		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 //			public void selectionChanged(SelectionChangedEvent event) {
@@ -112,29 +99,36 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 		layout.horizontalSpacing = 0; layout.verticalSpacing = 0;
 		layout.marginHeight = 0; layout.marginWidth = 0;
 		composite.setLayout(layout);
-		
+
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gd.heightHint = 75;
 //		table.setLayoutData(gd);
 	}
-	
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		model = (BndEditModel) form.getInput();
+		model.addPropertyChangeListener(Constants.SUB, this);
 	}
-	
+
+	@Override
+	public void dispose() {
+	    super.dispose();
+        if(model != null) model.removePropertyChangeListener(Constants.SUB, this);
+	}
+
 	@Override
 	public void refresh() {
 		subBundleList = model.getSubBndFiles();
-		
+
 		lock.modifyOperation(new Runnable() {
 			public void run() {
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				Control control = getSection().getDescriptionControl();
 				if(control == null) control = getSection().getClient();
-				
+
 				if(subBundleList == null || subBundleList.isEmpty()) {
 					button.setGrayed(false);
 					button.setSelection(false);
@@ -151,7 +145,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 			}
 		});
 	}
-	
+
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);

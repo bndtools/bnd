@@ -36,12 +36,16 @@ import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
+import bndtools.BndConstants;
 import bndtools.Plugin;
 
 public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
     private static final String LAUNCHER_BSN = "bndtools.launcher";
     private static final String LAUNCHER_MAIN_CLASS = LAUNCHER_BSN + ".Main";
+
+    private static final String EMPTY = "";
+    private static final String ANY_VERSION = "0"; //$NON-NLS-1$
 
     protected File launchPropsFile;
     protected boolean enableDebugOption = false;
@@ -262,40 +266,53 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Project model = getBndProject(configuration);
 
         // Get the framework bundle
-        String framework = model.getProperty(LaunchConstants.PROP_FRAMEWORK, LaunchConstants.DEFAULT_FRAMEWORK);
-        if(framework == null || framework.length() == 0) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("No OSGi framework was specified in {0}.", model.getPropertiesFile().getAbsolutePath()), null));
-        }
-
-        File fwkBundle = findBundle(model, framework);
-        if (fwkBundle == null) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find framework bundle {0}.", framework), null));
-        }
+        File fwkBundle = findFramework(model);
 
         // Get the launcher bundle
-        File launcherBundle = findBundle(model, LAUNCHER_BSN);
+        File launcherBundle = findBundle(model, LAUNCHER_BSN, ANY_VERSION);
         if (launcherBundle == null) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find launcher bundle {0}.", LAUNCHER_BSN), null));
         }
 
-        // Add to the classpath
+        // Set the classpath
         String[] classpath = new String[2];
-        // String[] newClasspath = new String[classpath.length + 2];
-        // System.arraycopy(classpath, 0, newClasspath, 0, classpath.length);
         classpath[0] = launcherBundle.getAbsolutePath();
         classpath[1] = fwkBundle.getAbsolutePath();
 
         return classpath;
     }
 
-    protected File findBundle(Project project, String bsn) throws CoreException {
+    protected File findFramework(Project model) throws CoreException {
+        String frameworkSpec = model.getProperty(BndConstants.RUNFRAMEWORK, EMPTY);
+        if(frameworkSpec == null || frameworkSpec.length() == 0) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("No OSGi framework was specified in {0}.", model.getPropertiesFile().getAbsolutePath()), null));
+        }
+        Map<String, Map<String, String>> fwkHeader = OSGiHeader.parseHeader(frameworkSpec);
+        if(fwkHeader.size() != 1) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid format for OSGi framework specification.", null));
+        }
+        Entry<String, Map<String, String>> fwkHeaderEntry = fwkHeader.entrySet().iterator().next();
+        String fwkBSN = fwkHeaderEntry.getKey();
+
+        String fwkVersion = fwkHeaderEntry.getValue().get(Constants.VERSION_ATTRIBUTE);
+        if(fwkVersion == null)
+            fwkVersion = ANY_VERSION;
+
+        File fwkBundle = findBundle(model, fwkBSN, fwkVersion);
+        if (fwkBundle == null) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find framework {0}, version {1}.", fwkBSN, fwkVersion), null));
+        }
+        return fwkBundle;
+    }
+
+    protected File findBundle(Project project, String bsn, String version) throws CoreException {
         try {
             Container snapshotContainer = project.getBundle(bsn, "snapshot", Constants.STRATEGY_HIGHEST, null);
             if (snapshotContainer != null && snapshotContainer.getType() != TYPE.ERROR) {
                 return snapshotContainer.getFile();
             }
 
-            Container repoContainer = project.getBundle(bsn, "0", Constants.STRATEGY_HIGHEST, null);
+            Container repoContainer = project.getBundle(bsn, version, Constants.STRATEGY_HIGHEST, null);
             if (repoContainer != null && repoContainer.getType() != TYPE.ERROR) {
                 return repoContainer.getFile();
             }
