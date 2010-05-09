@@ -210,18 +210,33 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         final Project model = getBndProject(configuration);
 
         final IPath propsPath = Central.toPath(model, model.getPropertiesFile());
+        final IPath targetPath;
+        try {
+            targetPath = Central.toPath(model, model.getTarget());
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying project output folder", e));
+        }
         final IResourceChangeListener resourceListener = new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 try {
-                    IResourceDelta delta = event.getDelta();
-                    delta = delta.findMember(propsPath);
+                    boolean regenerate = false;
+
+                    // Was the bnd.bnd file included in the delta?
+                    IResourceDelta delta = event.getDelta().findMember(propsPath);
                     if (delta != null) {
                         if (delta.getKind() == IResourceDelta.CHANGED) {
-                            Properties launchProps = generateLaunchProperties(configuration);
-                            saveLaunchPropsFile(launchProps);
+                            regenerate = true;
                         } else if (delta.getKind() == IResourceDelta.REMOVED && launchPropsFile != null) {
                             launchPropsFile.delete();
+                            return;
                         }
+                    }
+                    // Was the target path included in the delta? This might mean that sub-bundles have changed
+                    regenerate = regenerate || event.getDelta().findMember(targetPath) != null;
+
+                    if(regenerate) {
+                        Properties launchProps = generateLaunchProperties(configuration);
+                        saveLaunchPropsFile(launchProps);
                     }
                 } catch (Exception e) {
                     IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating launch properties file.", e);

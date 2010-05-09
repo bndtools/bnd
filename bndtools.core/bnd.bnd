@@ -132,13 +132,14 @@ Include-Resource: resources,\
 	bndtools.jareditor;version=snapshot,\
 	org.eclipse.equinox.p2.artifact.repository
 
--runproperties: osgi.ws=cocoa,\
+-runproperties: osgi.instance.area=/Users/neil/Projects/BndtoolsDemo,\
+	osgi.ws=cocoa,\
 	osgi.arch=x86_64,\
 	osgi.os=macosx,\
 	eclipse.application=org.eclipse.ui.ide.workbench,\
 	osgi.console=,\
-	eclipse.consoleLog=true,\
-	bndtools.launcher.defaultStart=activationPolicy
+	bndtools.launcher.defaultStart=activationPolicy,\
+	eclipse.consoleLog=/Users/neil/Projects/BndtoolsDemo
 
 -runvm: -XstartOnFirstThread# Long list
 
