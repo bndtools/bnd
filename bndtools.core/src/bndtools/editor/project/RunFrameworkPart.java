@@ -3,7 +3,6 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
@@ -21,7 +20,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.libg.header.OSGiHeader;
 import bndtools.BndConstants;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.VersionedClause;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
@@ -31,7 +29,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     private final ModificationLock lock = new ModificationLock();
 
     private BndEditModel model;
-    private VersionedClause framework;
+    private String frameworkStr = null;
     private Combo combo;
 
     public RunFrameworkPart(Composite parent, FormToolkit toolkit, int style) {
@@ -40,7 +38,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     }
 
     final void createSection(Section section, FormToolkit toolkit) {
-        section.setText("Run Framework");
+        section.setText("OSGi Framework");
 
         combo = new Combo(section, SWT.DROP_DOWN);
         combo.setItems(new String [] {
@@ -50,29 +48,13 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
         Listener l = new Listener() {
             public void handleEvent(Event event) {
-                markDirty();
-                IMessageManager messages = getManagedForm().getMessageManager();
-
-                String text = combo.getText();
-                if(text == null || text.length() == 0) {
-                    framework = null;
-                    messages.addMessage(WARNING_NO_FWK, "No runtime framework specified", null, IMessageProvider.WARNING, combo);
-                    return;
-                } else {
-                    messages.removeMessage(WARNING_NO_FWK, combo);
-                }
-
-                Map<String, Map<String, String>> header = OSGiHeader.parseHeader(text);
-                if(header.size() != 1) {
-                    framework = null;
-                    messages.addMessage("ERROR_INVALID_FWK", "Invalid format", null, IMessageProvider.ERROR, combo);
-                    return;
-                } else {
-                    messages.removeMessage("ERROR_INVALID_FWK", combo);
-                }
-
-                Entry<String, Map<String, String>> entry = header.entrySet().iterator().next();
-                framework = new VersionedClause(entry.getKey(), entry.getValue());
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        markDirty();
+                        frameworkStr = combo.getText();
+                        validateFramework();
+                    }
+                });
             }
         };
         combo.addListener(SWT.Modify, l);
@@ -97,25 +79,38 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
     @Override
     public void refresh() {
-        framework = model.getRunFramework();
-
         lock.modifyOperation(new Runnable() {
             public void run() {
-                if(framework == null) {
-                    combo.setText("");
-                } else {
-                    StringBuilder builder = new StringBuilder();
-                    framework.formatTo(builder);
-                    combo.setText(builder.toString());
-                }
+                frameworkStr = model.getRunFramework();
+                if(frameworkStr == null)
+                    frameworkStr = ""; //$NON-NLS-1$
+                combo.setText(frameworkStr);
+                validateFramework();
             }
         });
+    }
+
+    void validateFramework() {
+        IMessageManager messages = getManagedForm().getMessageManager();
+        if(frameworkStr == null || frameworkStr.length() == 0) {
+            messages.addMessage(WARNING_NO_FWK, "No runtime framework specified", null, IMessageProvider.WARNING, combo);
+            return;
+        } else {
+            messages.removeMessage(WARNING_NO_FWK, combo);
+        }
+        Map<String, Map<String, String>> header = OSGiHeader.parseHeader(frameworkStr);
+        if(header.size() != 1) {
+            messages.addMessage("ERROR_INVALID_FWK", "Invalid format", null, IMessageProvider.ERROR, combo);
+            return;
+        } else {
+            messages.removeMessage("ERROR_INVALID_FWK", combo);
+        }
     }
 
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
-        model.setRunFramework(framework);
+        model.setRunFramework(frameworkStr);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

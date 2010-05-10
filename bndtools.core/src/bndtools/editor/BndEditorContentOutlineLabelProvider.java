@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
@@ -22,21 +22,23 @@ import bndtools.editor.model.ImportPattern;
 import bndtools.editor.model.ServiceComponent;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
-	
+
 	final Image pageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/page_white_text.png").createImage();
 	final Image packageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
 	final Image brickImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
-	
+
 	@Override
 	public void update(ViewerCell cell) {
 		Object element = cell.getElement();
-		
+
 		if(element instanceof String) {
 			// Top-level placeholder
 			if(BndEditor.OVERVIEW_PAGE.equals(element)) {
 				cell.setText("Overview");
-			} else if(BndEditor.PROJECT_PAGE.equals(element)) {
+			} else if(BndEditor.PROJECT_BUILD_PAGE.equals(element)) {
 				cell.setText("Project");
+			} else if(BndEditor.PROJECT_RUN_PAGE.equals(element)) {
+			    cell.setText("Run");
 			} else if(BndEditor.COMPONENTS_PAGE.equals(element)) {
 				cell.setText("Components");
 			} else if(BndEditor.EXPORTS_PAGE.equals(element)) {
@@ -59,7 +61,7 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 			cell.setImage(packageImg);
 		}
 	}
-	
+
 	@Override
 	public void dispose() {
 		super.dispose();

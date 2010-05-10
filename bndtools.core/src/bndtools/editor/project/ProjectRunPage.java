@@ -15,11 +15,11 @@ import org.eclipse.ui.forms.widgets.Section;
 import bndtools.editor.model.BndEditModel;
 import bndtools.utils.MessageHyperlinkAdapter;
 
-public class ProjectPage extends FormPage {
+public class ProjectRunPage extends FormPage {
 
 	private final BndEditModel model;
 
-	public ProjectPage(FormEditor editor, BndEditModel model, String id, String title) {
+	public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
 		this.model = model;
 	}
@@ -29,7 +29,7 @@ public class ProjectPage extends FormPage {
 
 		FormToolkit tk = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
-		form.setText("Project");
+		form.setText("Project Run");
 		tk.decorateFormHeading(form.getForm());
 		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
@@ -39,20 +39,17 @@ public class ProjectPage extends FormPage {
 		Composite panel1 = tk.createComposite(body);
 		Composite panel2 = tk.createComposite(body);
 
-		SubBundlesPart subBundlesPart = new SubBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-		managedForm.addPart(subBundlesPart);
-
-		BuildPathPart buildPathPart = new BuildPathPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-		managedForm.addPart(buildPathPart);
-
-		RunFrameworkPart runFwkPart = new RunFrameworkPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED);
+		RunFrameworkPart runFwkPart = new RunFrameworkPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED);
 		managedForm.addPart(runFwkPart);
 
-		RunBundlesPart runBundlesPart = new RunBundlesPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+		RunBundlesPart runBundlesPart = new RunBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
 
-        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runPropertiesPart);
+
+		RunVMArgsPart vmArgsPart = new RunVMArgsPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		managedForm.addPart(vmArgsPart);
 
 		// Layout
 		GridLayout layout;
@@ -83,15 +80,16 @@ public class ProjectPage extends FormPage {
 		gd = new GridData(SWT.FILL, SWT.TOP, false, true);
 		panel2.setLayoutData(gd);
 
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		buildPathPart.getSection().setLayoutData(gd);
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		subBundlesPart.getSection().setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         runFwkPart.getSection().setLayoutData(gd);
+
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		runBundlesPart.getSection().setLayoutData(gd);
+
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		runPropertiesPart.getSection().setLayoutData(gd);
+
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        vmArgsPart.getSection().setLayoutData(gd);
 	};
 }

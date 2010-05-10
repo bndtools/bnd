@@ -297,6 +297,33 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         return classpath;
     }
 
+    @Override
+    public String getVMArguments(ILaunchConfiguration configuration) throws CoreException {
+        Project model = getBndProject(configuration);
+        String args = model.getProperty(BndConstants.RUNVMARGS, "");
+
+        // Following code copied from AbstractJavaLaunchConfigurationDelegate
+        int libraryPath = args.indexOf("-Djava.library.path"); //$NON-NLS-1$
+        if (libraryPath < 0) {
+            // if a library path is already specified, do not override
+            String[] javaLibraryPath = getJavaLibraryPath(configuration);
+            if (javaLibraryPath != null && javaLibraryPath.length > 0) {
+                StringBuffer path = new StringBuffer(args);
+                path.append(" -Djava.library.path="); //$NON-NLS-1$
+                path.append("\""); //$NON-NLS-1$
+                for (int i = 0; i < javaLibraryPath.length; i++) {
+                    if (i > 0) {
+                        path.append(File.pathSeparatorChar);
+                    }
+                    path.append(javaLibraryPath[i]);
+                }
+                path.append("\""); //$NON-NLS-1$
+                args = path.toString();
+            }
+        }
+        return args;
+    }
+
     protected File findFramework(Project model) throws CoreException {
         String frameworkSpec = model.getProperty(BndConstants.RUNFRAMEWORK, EMPTY);
         if(frameworkSpec == null || frameworkSpec.length() == 0) {

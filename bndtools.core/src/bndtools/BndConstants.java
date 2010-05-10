@@ -15,4 +15,5 @@ import aQute.lib.osgi.Constants;
 public interface BndConstants extends Constants {
 	public static final String OUTPUT = "-output";
 	public static final String RUNFRAMEWORK = "-runfw";
+    public static final String RUNVMARGS = "-vmargs";
 }

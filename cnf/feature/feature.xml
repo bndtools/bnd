@@ -17,11 +17,11 @@
       provider-name="Neil Bartlett and Peter Kriens">
 
    <description url="http://bndtools-updates.s3.amazonaws.com/">
-      Eclipse tools for OSGi Development with Bnd - by Neil Bartlett and Peter Kriens.
+      OSGi Development Tools for Eclipse by Neil Bartlett, based on Bnd by Peter Kriens
    </description>
 
    <copyright>
-      Copyright Neil Bartlett 2009
+      Copyright Neil Bartlett 2010
 
 This software uses icons from the FamFamFam &quot;Silk&quot; icon set by Mark James (http://www.famfamfam.com/lab/icons/silk/)
    </copyright>

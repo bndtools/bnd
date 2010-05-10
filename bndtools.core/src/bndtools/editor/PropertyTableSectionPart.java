@@ -43,7 +43,7 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 	public PropertyTableSectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		this.propertyName = propertyName;
-		
+
 		createSection(getSection(), toolkit);
 	}
 
@@ -63,24 +63,24 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 		viewer = new TableViewer(table);
 		modifierProperties = new MapEntryCellModifier<String, String>(viewer);
 
 		table.setHeaderVisible(true);
 		table.setLinesVisible(false);
-		
+
 		modifierProperties.addColumnsToTable();
 
 		viewer.setUseHashlookup(true);
 		viewer.setColumnProperties(modifierProperties.getColumnProperties());
 		modifierProperties.addCellEditorsToViewer();
 		viewer.setCellModifier(modifierProperties);
-		
+
 		viewer.setContentProvider(new MapContentProvider());
 		viewer.setLabelProvider(new PropertiesTableLabelProvider());
-		
+
 		// Layout
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
@@ -88,11 +88,11 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		layout.marginWidth = 0;
 		layout.marginHeight = 0;
 		composite.setLayout(layout);
-		
+
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gd.heightHint = 70;
+		gd.heightHint = 100;
 		table.setLayoutData(gd);
-		
+
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -118,10 +118,10 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		});
 	}
 	void doAddProperty() {
-        properties.put("name", "value");
+        properties.put("name", "");
         viewer.add("name");
 		markDirty();
-		
+
         viewer.editElement("name", 0);
 	}
 	void doRemoveProperty() {
@@ -134,11 +134,11 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		}
 		markDirty();
 	}
-	
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		model = (BndEditModel) form.getInput();
 		model.addPropertyChangeListener(propertyName, this);
 	}
@@ -172,8 +172,8 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		super.commit(onSave);
 		saveProperties(model, properties);
 	}
-	
+
 	protected abstract Map<String, String> loadProperties(BndEditModel model);
-	
+
 	protected abstract void saveProperties(BndEditModel model, Map<String, String> props);
 }

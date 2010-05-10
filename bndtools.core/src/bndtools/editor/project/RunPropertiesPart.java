@@ -14,7 +14,8 @@ public class RunPropertiesPart extends PropertyTableSectionPart {
 	public RunPropertiesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(Constants.RUNPROPERTIES, parent, toolkit, style);
 
-		getSection().setText("Run Properties");
+		getSection().setText("Runtime Properties");
+		getSection().setDescription("These properties will be supplied as configuration to the OSGi framework, and may be used by the framework or any bundle.");
 	}
 
 	@Override

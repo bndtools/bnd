@@ -1,4 +1,4 @@
-Bndtools -- OSGi Development Tools for Eclipse
+Bndtools: OSGi Development Tools for Eclipse
 =====================
 
 Please visit the [Bndtools Home Page](http://njbartlett.github.com/bndtools.html) for full documentation.

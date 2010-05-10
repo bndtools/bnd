@@ -12,7 +12,6 @@ package bndtools.editor;
 
 import java.io.IOException;
 
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -28,26 +27,27 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import aQute.bnd.build.Project;
 import bndtools.editor.components.ComponentsPage;
 import bndtools.editor.exports.ExportPatternsPage;
 import bndtools.editor.imports.ImportPatternsPage;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.project.ProjectPage;
-
-import aQute.bnd.build.Project;
+import bndtools.editor.project.ProjectBuildPage;
+import bndtools.editor.project.ProjectRunPage;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
-	
+
 	static final String OVERVIEW_PAGE = "__overview_page";
-	static final String PROJECT_PAGE = "__project_page";
+	static final String PROJECT_BUILD_PAGE = "__project_build_page";
+    static final String PROJECT_RUN_PAGE = "__project_run_page";
 	static final String COMPONENTS_PAGE = "__components_page";
 	static final String EXPORTS_PAGE = "__exports_page";
 	static final String IMPORTS_PAGE = "__imports_page";
 	static final String SOURCE_PAGE = "__source_page";
-	
+
 	private final BndEditModel model = new BndEditModel();
 	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
-	
+
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		if(sourcePage.isActive() && sourcePage.isDirty()) {
@@ -78,34 +78,37 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		try {
 			OverviewFormPage detailsPage = new OverviewFormPage(this, model, OVERVIEW_PAGE, "Overview");
 			addPage(detailsPage);
-			
+
 			String inputName = getEditorInput().getName();
 			if(Project.BNDFILE.equals(inputName)) {
-				ProjectPage projectPage = new ProjectPage(this, model, PROJECT_PAGE, "Project");
+				ProjectBuildPage projectPage = new ProjectBuildPage(this, model, PROJECT_BUILD_PAGE, "Build");
 				addPage(projectPage);
+
+				ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
+				addPage(runPage);
 			}
 
 			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
 			addPage(componentsPage);
-			
+
 			ExportPatternsPage exportsPage = new ExportPatternsPage(this, model, EXPORTS_PAGE, "Exports");
 			addPage(exportsPage);
-			
+
 			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, IMPORTS_PAGE, "Imports");
 			addPage(importsPage);
-			
+
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());
 			setPageText(sourcePageIndex, "Source");
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
 		sourcePage.init(site, input);
-		
+
 		String name = input.getName();
 		if(Project.BNDFILE.equals(name)) {
 			IResource resource = ResourceUtil.getResource(input);
@@ -113,7 +116,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 				name = resource.getProject().getName();
 		}
 		setPartName(name);
-		
+
 		IDocumentProvider docProvider = sourcePage.getDocumentProvider();
 		IDocument document = docProvider.getDocument(input);
 		try {
@@ -122,8 +125,8 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}
-		
-		
+
+
 		IResource resource = ResourceUtil.getResource(input);
 		if(resource != null) {
 			resource.getWorkspace().addResourceChangeListener(this);
@@ -132,9 +135,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	public void dispose() {
 		IResource resource = ResourceUtil.getResource(getEditorInput());
-		
+
 		super.dispose();
-		
+
 		if(resource != null) {
 			resource.getWorkspace().removeResourceChangeListener(this);
 		}
@@ -146,18 +149,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResource myResource = ResourceUtil.getResource(getEditorInput());
-		
+
 		IResourceDelta delta = event.getDelta();
 		IPath fullPath = myResource.getFullPath();
 		delta = delta.findMember(fullPath);
 		if(delta == null)
 			return;
-		
+
 		if(delta.getKind() == IResourceDelta.REMOVED) {
 			close(false);
 		}
 	}
-	
+
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		if(IContentOutlinePage.class == adapter) {

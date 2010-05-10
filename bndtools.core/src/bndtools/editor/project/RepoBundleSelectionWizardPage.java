@@ -21,6 +21,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -55,12 +57,17 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             String search = selectionSearchTxt.getText().toLowerCase();
 
+            String bsn = null;
             if(element instanceof RepositoryBundle) {
-                String bsn = ((RepositoryBundle) element).getBsn();
+                bsn = ((RepositoryBundle) element).getBsn();
+            } else if (element instanceof ProjectBundle) {
+                bsn = ((ProjectBundle) element).getBsn();
+            }
+
+            if(bsn != null) {
                 if(search.length() > 0 && bsn.toLowerCase().indexOf(search) == -1) {
                     return false;
                 }
-
                 return !selectedBundles.containsKey(bsn);
             }
             return true;
@@ -103,6 +110,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
 
         // Listeners
+        selectionSearchTxt.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                availableViewer.setFilters(new ViewerFilter[] { alreadySelectedFilter });
+            }
+        });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             // Enable add button when a bundle or bundle version is selected on the left
             public void selectionChanged(SelectionChangedEvent event) {

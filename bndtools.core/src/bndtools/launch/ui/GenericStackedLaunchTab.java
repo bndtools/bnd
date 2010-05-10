@@ -84,6 +84,8 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
         } catch (CoreException e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading launch configuration.", e));
         }
+
+        checkValid();
     }
 
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {

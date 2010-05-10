@@ -25,7 +25,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 150;
+		gd.heightHint = 200;
 		return gd;
 	}
 	@Override

@@ -2,17 +2,15 @@ package bndtools.editor.project;
 
 import java.util.List;
 
-
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.VersionedClause;
-
-import aQute.lib.osgi.Constants;
 
 public class BuildPathPart extends RepositoryBundleSelectionPart {
 	protected BuildPathPart(Composite parent, FormToolkit toolkit, int style) {
@@ -27,7 +25,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 125;
+		gd.heightHint = 200;
 		return gd;
 	}
 	@Override

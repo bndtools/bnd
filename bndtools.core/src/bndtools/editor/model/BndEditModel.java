@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -47,6 +48,7 @@ import bndtools.BndConstants;
  */
 public class BndEditModel {
 
+    private static final String LINE_SEPARATOR = " \\\n\t";
 	private static final String LIST_SEPARATOR = ",\\\n\t";
 	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
 
@@ -65,7 +67,8 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.RUNBUNDLES,
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
 		aQute.lib.osgi.Constants.SUB,
-		BndConstants.RUNFRAMEWORK
+		BndConstants.RUNFRAMEWORK,
+		BndConstants.RUNVMARGS
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -79,6 +82,8 @@ public class BndEditModel {
 	private boolean projectFile;
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
+
+	private final Pattern lineBreakPattern = Pattern.compile("$", Pattern.MULTILINE);
 
 	public void loadFrom(IDocument document) throws IOException {
 		// Clear and load
@@ -348,24 +353,12 @@ public class BndEditModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
 	}
-	public VersionedClause getRunFramework() {
-	    return doGetObject(BndConstants.RUNFRAMEWORK, new Converter<VersionedClause, String>() {
-            public VersionedClause convert(String input) throws IllegalArgumentException {
-                Map<String, Map<String, String>> map = OSGiHeader.parseHeader(input);
-                if(map.size() != 1)
-                    throw new IllegalArgumentException("Invalid format for runtime framework property");
-                Entry<String, Map<String, String>> entry = map.entrySet().iterator().next();
-                return new VersionedClause(entry.getKey(), entry.getValue());
-            }
-        });
+	public String getRunFramework() {
+	    return doGetString(BndConstants.RUNFRAMEWORK);
 	}
-	public void setRunFramework(VersionedClause clause) {
-	    VersionedClause oldValue = getRunFramework();
-
-	    StringBuilder builder = new StringBuilder();
-	    clause.formatTo(builder);
-
-	    doSetObject(BndConstants.RUNFRAMEWORK, oldValue, clause, builder.toString());
+	public void setRunFramework(String clause) {
+	    String oldValue = getRunFramework();
+	    doSetString(BndConstants.RUNFRAMEWORK, oldValue, clause);
 	}
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();
@@ -402,6 +395,15 @@ public class BndEditModel {
 		doSetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props);
 	}
 
+    public String getRunVMArgs() {
+        return doGetString(BndConstants.RUNVMARGS);
+    }
+
+    public void setRunVMArgs(String args) {
+        String old = getRunVMArgs();
+        doSetString(BndConstants.RUNVMARGS, old, args);
+    }
+
 
 	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
 		R result;
@@ -434,9 +436,36 @@ public class BndEditModel {
 		});
 	}
 
-	void doSetString(String name, String oldValue, String newValue) {
-		doSetObject(name, oldValue, newValue, newValue);
-	}
+    void doSetString(String name, String oldValue, String newValue) {
+        String formatted = escapeNewLines(newValue);
+        doSetObject(name, oldValue, newValue, formatted);
+    }
+
+    String escapeNewLines(String input) {
+        if(input == null)
+            return null;
+
+        // Shortcut the result for the majority of cases where there is no newline
+        if(input.indexOf('\n') == -1)
+            return input;
+
+        // Build a new string with newlines escaped
+        StringBuilder result = new StringBuilder();
+        int position = 0;
+        while(position < input.length()) {
+            int newlineIndex = input.indexOf('\n', position);
+            if(newlineIndex == -1) {
+                result.append(input.substring(position));
+                break;
+            } else {
+                result.append(input.substring(position, newlineIndex));
+                result.append(LINE_SEPARATOR);
+                position = newlineIndex + 1;
+            }
+        }
+
+        return result.toString();
+    }
 
 	List<String> doGetStringList(String name) {
 		return doGetObject(name, new Converter<List<String>,String>() {
