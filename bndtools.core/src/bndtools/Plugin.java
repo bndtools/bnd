@@ -29,7 +29,7 @@ import aQute.libg.version.Version;
 
 
 public class Plugin extends AbstractUIPlugin {
-	
+
 	public static final String PLUGIN_ID = "bndtools.core";
 	public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
 	public static final String EXTPOINT_REPO_CONTRIB = "repositoryContributor";
@@ -40,31 +40,36 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_NOASK_EXPORT_VERSION = "noAskExportVersion";
 	public static final String PREF_DEFAULT_EXPORT_VERSION_POLICY = "defaultExportVertsionPolicy";
 	public static final String PREF_DEFAULT_EXPORT_VERSION = DEFAULT_VERSION.toString();
-	
+
+	public static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
+	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
+
 	private static volatile Plugin plugin;
 	private BundleContext bundleContext;
 	private Activator bndActivator;
 	private BndListener bndListener;
 
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		this.bundleContext = context;
-		
+
 		bndActivator = new Activator();
 		bndActivator.start(context);
-		
+
 		bndListener = new FilesystemUpdateListener();
 		Central.getWorkspace().addBasicPlugin(bndListener);
-		
+
 //		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 //		buildJob.setSystem(false);
 //		buildJob.schedule();
 	}
-	
 
 
-	public void stop(BundleContext context) throws Exception {
+
+	@Override
+    public void stop(BundleContext context) throws Exception {
 		Central.getWorkspace().removeBasicPlugin(bndListener);
 		bndActivator.stop(context);
 		this.bundleContext = null;
@@ -75,7 +80,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static Plugin getDefault() {
 		return plugin;
 	}
-	
+
 	public static void log(IStatus status) {
 		Plugin instance = plugin;
 		if(instance != null) {
@@ -84,11 +89,11 @@ public class Plugin extends AbstractUIPlugin {
 			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
 		}
 	}
-	
+
 	public BundleContext getBundleContext() {
 		return bundleContext;
 	}
-	
+
     public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
         if (reporter.getErrors().size() > 0
                 || (warnings && reporter.getWarnings().size() > 0)) {
@@ -111,7 +116,7 @@ public class Plugin extends AbstractUIPlugin {
             }
             final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
-            
+
             async(new Runnable() {
                 public void run() {
                     ErrorDialog.openError(null, title, title + "\n" + extra, s);
@@ -160,7 +165,7 @@ public class Plugin extends AbstractUIPlugin {
 		            Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
 		            ErrorDialog.openError(null, "Errors during bundle generation",
 		                    msg + " " + t.getMessage(), s);
-		            
+
 		            busy.set(false);
             	}
             }

@@ -74,6 +74,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
     public BndWorkspaceConfigurationPage(String pageName) {
         super(pageName);
         loadRepositories();
+        setDescription("Select external repositories to copy into the Bnd workspace.");
     }
 
     private void loadRepositories() {
@@ -93,7 +94,6 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 
 	public void createControl(Composite parent) {
 		setTitle("Configure BndTools Workspace");
-		setDescription("Select external repositories to copy into the Bnd workspace.");
 
 		Composite composite = new Composite(parent, SWT.NONE);
 
@@ -194,18 +194,15 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 					IProject cnfProject = workspace.getRoot().getProject(Project.BNDCNF);
 					SubMonitor progress = SubMonitor.convert(monitor, "Setting up Bnd Workspace...", 0);
 					if(cnfProject == null || !cnfProject.exists()) {
-						progress.setWorkRemaining(4);
+						progress.setWorkRemaining(5);
 
 						// Create the project and configure it as a Java project
 						JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1));
 						configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1));
 
-						// Copy build.bnd from the template
-						InputStream templateStream = getClass().getResourceAsStream("template_build.bnd");
-						IFile buildBnd = cnfProject.getFile(Workspace.BUILDFILE);
-						if(!buildBnd.exists())
-							buildBnd.create(templateStream, true, progress.newChild(1));
-						progress.setWorkRemaining(1);
+						// Copy build.bnd and build.xml from the template
+						copyResourceToFile("template_build.bnd", cnfProject.getFile(Workspace.BUILDFILE), progress.newChild(1));
+						copyResourceToFile("template_cnf_build.xml", cnfProject.getFile("build.xml"), progress.newChild(1));
 					} else if(!cnfProject.isOpen()) {
 						progress.setWorkRemaining(2);
 
@@ -358,4 +355,22 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 			throw new InterruptedException();
 		}
 	}
+
+    private void copyResourceToFile(String resourceName, IFile destinationFile, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 1);
+        if(!destinationFile.exists()) {
+            InputStream templateStream = getClass().getResourceAsStream(resourceName);
+            try {
+                destinationFile.create(templateStream, true, progress.newChild(1));
+            } finally {
+                try {
+                    templateStream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        } else {
+            progress.worked(1);
+        }
+    }
 }

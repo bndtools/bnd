@@ -15,7 +15,8 @@ Import-Package: org.eclipse.core.runtime;registry=!,*
 Private-Package: bndtools*,\
 	aQute.bnd.build;-split-package:=merge-first,\
 	aQute.bnd.classpath,\
-	aQute.bnd.plugin
+	aQute.bnd.plugin,\
+	aQute.lib.deployer;-split-package:=merge-first
 Include-Resource: resources,\
 	${repo;biz.aQute.bndlib},\
 	${repo;bndtools.bndplugins.repos}
@@ -132,13 +133,14 @@ Include-Resource: resources,\
 	bndtools.jareditor;version=snapshot,\
 	org.eclipse.equinox.p2.artifact.repository
 
--runproperties: osgi.instance.area=/Users/neil/Projects/BndtoolsDemo,\
+-runproperties:\
 	osgi.ws=cocoa,\
 	osgi.arch=x86_64,\
 	osgi.os=macosx,\
 	eclipse.application=org.eclipse.ui.ide.workbench,\
 	osgi.console=,\
 	bndtools.launcher.defaultStart=activationPolicy,\
-	eclipse.consoleLog=/Users/neil/Projects/BndtoolsDemo
+	eclipse.consoleLog=
+#	osgi.instance.area=/Users/neil/Projects/BndtoolsDemo,\
 
 -vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xmx512m

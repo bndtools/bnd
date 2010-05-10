@@ -11,7 +11,12 @@ public class Messages extends NLS {
 	public static String EmptyBndFileWizard_selectAsDefault;
 	public static String EmptyBndFileWizard_titleSubBundlesNotEnabled;
 	
-	public static String NewBndFileWizardPage_errorCheckingBndNature;
+	public static String InitialiseCnfProjectIntroWizardPage_message;
+    public static String InitialiseCnfProjectIntroWizardPage_title;
+    public static String InitialiseCnfProjectWizard_info_dialog_donotshow;
+    public static String InitialiseCnfProjectWizard_info_dialog_message;
+    public static String InitialiseCnfProjectWizard_info_dialog_popup;
+    public static String NewBndFileWizardPage_errorCheckingBndNature;
 	public static String NewBndFileWizardPage_errorReservedFilename;
 	public static String NewBndFileWizardPage_labelBndFile;
 	public static String NewBndFileWizardPage_title;

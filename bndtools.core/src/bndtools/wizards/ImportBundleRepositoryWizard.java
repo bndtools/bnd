@@ -6,7 +6,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
 public class ImportBundleRepositoryWizard extends Wizard implements IImportWizard {
-	
+
 	private final BndWorkspaceConfigurationPage repoPage = new BndWorkspaceConfigurationPage("repoPage");
 
 	private IWorkbench workbench;
@@ -15,6 +15,9 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.workbench = workbench;
 		this.selection = selection;
+	}
+	void setDescription(String description) {
+	    repoPage.setDescription(description);
 	}
 	@Override
 	public void addPages() {
