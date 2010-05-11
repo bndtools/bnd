@@ -8,17 +8,46 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
-    
+
+	public void testNoImportDirective() throws Exception{
+        Builder b = new Builder();
+        b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
+        b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+        b.addClasspath( new File("jar/osgi.jar"));
+        b.addClasspath( new File("bin"));
+        Jar jar= b.build();
+        Manifest m = jar.getManifest();
+        String imports = m.getMainAttributes().getValue("Import-Package");
+        assertTrue( imports.contains("org.osgi.util.measurement")); // referred to but no private references (does not use fw).
+        assertFalse( imports.contains("org.osgi.service.http")); // referred to but no private references (does not use fw).
+		
+	}
+	public void testNoImportDirective2() throws Exception{
+        Builder b = new Builder();
+        b.setProperty("Export-Package", "org.osgi.util.measurement;-noimport:=true, org.osgi.service.http");
+        b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+        b.addClasspath( new File("jar/osgi.jar"));
+        b.addClasspath( new File("bin"));
+        Jar jar= b.build();
+        Manifest m = jar.getManifest();
+        String imports = m.getMainAttributes().getValue("Import-Package");
+        assertFalse( imports.contains("org.osgi.util.measurement")); // referred to but no private references (does not use fw).
+        assertTrue( imports.contains("org.osgi.service.http")); // referred to but no private references (does not use fw).
+		
+	}
     public void testAutoNoImport() throws Exception {
         Builder b = new Builder();
-        b.setProperty("Export-Package", "org.osgi.service.packageadmin, org.osgi.util.measurement");
-        b.setProperty("Private-Package", "org.osgi.framework");
+        b.setProperty("Export-Package", "org.osgi.service.event, org.osgi.service.packageadmin, org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
+        b.setProperty("Private-Package", "org.osgi.framework, test.refer");
         b.addClasspath( new File("jar/osgi.jar"));
+        b.addClasspath( new File("bin"));
         Jar jar= b.build();        
         Manifest m = jar.getManifest();
         String imports = m.getMainAttributes().getValue("Import-Package");
-        assertFalse( imports.contains("org.osgi.service.packageadmin"));
-        assertTrue( imports.contains("org.osgi.util.measurement"));
+        assertFalse( imports.contains("org.osgi.service.packageadmin")); // no internal references
+        assertFalse( imports.contains("org.osgi.util.event")); // refers to private framework
+        assertTrue( imports.contains("org.osgi.util.measurement")); // referred to but no private references (does not use fw).
+        assertFalse( imports.contains("org.osgi.service.http")); // referred to but no private references (does not use fw).
     }
     
     
@@ -346,7 +375,7 @@ public class BuilderTest extends TestCase {
         b.setProperty("Import-Package", "org.osgi.service.event");
         b.build();
         String s = b.getImports().get("org.osgi.service.event").get("version");
-        assertEquals("1.0", s);
+        assertEquals("[1.0,2)", s);
     }
 
     /*

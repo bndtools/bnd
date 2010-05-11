@@ -52,17 +52,18 @@ public class ClasspathTest extends TestCase {
 	 */
 	public void testSimple() throws Exception {
 		Properties p = new Properties();
-		p.put("-classpath", new File("src/test/test.jar").toURI().toURL().toString());
-		p.put("Import-Package", "*");
-		p.put("Export-Package", "aQute.bean");
+		p.put("-classpath", new File("jar/osgi.jar").toURI().toURL().toString());
+		p.put("Export-Package", "org.osgi.service.event");
+		p.put("Private-Package", "test.refer");
 
 		Builder b = new Builder();
-		b.setClasspath(new String[] { "src" });
+		b.setClasspath(new String[] { "bin" });
 		b.setProperties(p);
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
 		String importPackage = m.getMainAttributes().getValue("Import-Package");
-		assertEquals("aQute.bean;version=\"1.0\"", importPackage);
+		assertTrue(importPackage.contains("org.osgi.framework;version=\"[1.3,2)\""));
+		assertTrue(importPackage.contains("org.osgi.service.event;version=\"[1.0,2)\""));
 	}
 
 }

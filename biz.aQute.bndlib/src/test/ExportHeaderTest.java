@@ -41,7 +41,7 @@ public class ExportHeaderTest extends TestCase {
         Manifest manifest = jar.getManifest();
         
         String imph = manifest.getMainAttributes().getValue("Import-Package");
-        assertEquals("test.packageinfo;version=\"1.0\"", imph);     
+        assertEquals("test.packageinfo;version=\"[1.0,2)\"", imph);     
     }
     public void testExportVersionWithPackageInfo() throws Exception {
         Builder builder = new Builder();

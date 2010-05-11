@@ -22,7 +22,6 @@ public class AnalyzerTest extends TestCase {
     
     
     public void testFindClass() throws Exception {
-    	fail();
         Builder a = new Builder();
         a.setProperty("Export-Package", "org.osgi.service.io");
         a.addClasspath(new File("jar/osgi.jar"));
@@ -44,7 +43,6 @@ public class AnalyzerTest extends TestCase {
         System.out.println(result);
         assertTrue(result.contains("test.T2"));
         assertTrue(result.contains("test.T3"));
-    	throw new Exception("");
     }
 
     public void testClassQuery() throws Exception {
@@ -253,22 +251,7 @@ public class AnalyzerTest extends TestCase {
         assertEquals("target", map.keySet().iterator().next());
     }
 
-    /**
-     * asm is a simple library with two packages. No imports are done.
-     * 
-     */
-    public void testAsm3() throws Exception {
-        Properties p = Analyzer.getManifest(new File("jar/asm.jar"));
-        String imports = p.getProperty(Analyzer.IMPORT_PACKAGE);
-        String exports = p.getProperty(Analyzer.EXPORT_PACKAGE);
-
-        assertTrue(exports.indexOf("org.objectweb.asm.signature") >= 0);
-        assertTrue(exports.indexOf("org.objectweb.asm") >= 0);
-        assertTrue(imports.indexOf("org.objectweb.asm.signature") >= 0);
-        assertTrue(imports.indexOf("org.objectweb.asm") >= 0);
-    }
-
-    /**
+     /**
      * Test if version works
      */
 
@@ -317,8 +300,7 @@ public class AnalyzerTest extends TestCase {
         h.calcManifest().write(System.out);
         assertPresent(h.getExports(),
                 "org.objectweb.asm.signature, org.objectweb.asm");
-        assertPresent(h.getImports(),
-                "org.objectweb.asm.signature, org.objectweb.asm");
+        assertTrue( Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(h.getImports().keySet()) == false);
         assertEquals("Expected size", 2, h.getExports().size());
         assertEquals("short", get(h.getExports(), "org.objectweb.asm", "name"));
         assertEquals("long", get(h.getExports(), "org.objectweb.asm.signature",
@@ -410,9 +392,9 @@ public class AnalyzerTest extends TestCase {
         h.setProperties(base);
         h.setClasspath(new File[] { osgi });
         h.calcManifest().write(System.out);
-        assertEquals("Version from osgi.jar", "1.2", get(h.getImports(),
+        assertEquals("Version from osgi.jar", "[1.2,2)", get(h.getImports(),
                 "org.osgi.service.packageadmin", "version"));
-        assertEquals("Version from osgi.jar", "1.3", get(h.getImports(),
+        assertEquals("Version from osgi.jar", "[1.3,1.4)", get(h.getImports(),
                 "org.osgi.util.tracker", "version"));
         assertEquals("Version from osgi.jar", null, get(h.getImports(),
                 "org.xml.sax", "version"));

@@ -41,7 +41,6 @@ public class ClassReferenceTest extends TestCase {
 			Manifest manifest = jar.getManifest();
 			String imports = manifest.getMainAttributes()
 					.getValue("Import-Package");
-			assertTrue("Package " + packages[i] + "contains name", imports.indexOf(packages[i])>=0);			
 			assertTrue("Package " + packages[i] + "contains swing ref", imports.indexOf("javax.swing")>=0);			
 			assertFalse("Package " + packages[i] + "should not contain ClassRef", imports.indexOf("ClassRef")>=0);			
 		}
