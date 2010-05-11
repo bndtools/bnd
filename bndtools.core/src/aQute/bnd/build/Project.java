@@ -1414,7 +1414,8 @@ public class Project extends Processor {
 
         Collection<? extends Builder> builders = getSubBuilders();
         for (Builder sub : builders) {
-            if (sub.getBase().getCanonicalFile().equals(bndFile)) {
+            File subPropsFile = sub.getPropertiesFile();
+            if(subPropsFile != null && subPropsFile.getCanonicalFile().equals(bndFile)) {
                 // Found it!
                 return sub;
             }

@@ -15,8 +15,8 @@ Import-Package: org.eclipse.core.runtime;registry=!,*
 Private-Package: bndtools*,\
 	aQute.bnd.build;-split-package:=merge-first,\
 	aQute.bnd.classpath,\
-	aQute.bnd.plugin,\
-	aQute.lib.deployer;-split-package:=merge-first
+	aQute.bnd.plugin
+
 Include-Resource: resources,\
 	${repo;biz.aQute.bndlib},\
 	${repo;bndtools.bndplugins.repos}
@@ -144,3 +144,4 @@ Include-Resource: resources,\
 #	osgi.instance.area=/Users/neil/Projects/BndtoolsDemo,\
 
 -vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xmx512m
+-runfw: org.eclipse.osgi

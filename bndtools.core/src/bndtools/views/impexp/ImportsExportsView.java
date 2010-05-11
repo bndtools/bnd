@@ -13,9 +13,7 @@ package bndtools.views.impexp;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -23,9 +21,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -67,61 +63,65 @@ import bndtools.Plugin;
 import bndtools.editor.model.HeaderClause;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.Predicate;
-import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionUtils;
 import bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
 
 public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
-	
+
 	public static String VIEW_ID = "bndtools.impExpView";
 
 	private Display display = null;
 	private Tree tree = null;
 	private TreeViewer viewer;
 	private ViewerFilter hideSelfImportsFilter;
-	
+
 	private IFile[] selectedFiles;
-	private Job analysisJob = null;
-	
-	private IPartListener partAdapter = new PartAdapter() {
-		public void partActivated(IWorkbenchPart part) {
+	private Job analysisJob;
+
+	private final IPartListener partAdapter = new PartAdapter() {
+		@Override
+        public void partActivated(IWorkbenchPart part) {
 			if(part instanceof IEditorPart) {
 				IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
 				IFile file = ResourceUtil.getFile(editorInput);
-				if(file != null && file.getName().endsWith(".bnd")) {
-					selectedFiles = new IFile[] { file };
-					executeAnalysis();
+				if(file != null) {
+				    if(file.getName().toLowerCase().endsWith(".bnd")
+				    || file.getName().toLowerCase().endsWith(".jar")) {
+    					selectedFiles = new IFile[] { file };
+    					executeAnalysis();
+				    }
 				}
 			}
 		}
 	};
 
-	
+
 	@Override
 	public void createPartControl(Composite parent) {
 		this.display = parent.getDisplay();
-		
+
 		tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
-		
+
 		TreeColumn col;
 		col = new TreeColumn(tree, SWT.NONE);
 		col.setText("Package");
 		col.setWidth(400);
-		
+
 		col = new TreeColumn(tree, SWT.NONE);
 		col.setText("Attribs");
 		col.setWidth(100);
-		
+
 		viewer = new TreeViewer(tree);
 		viewer.setContentProvider(new ImportsExportsTreeContentProvider());
 		viewer.setSorter(new ImportsAndExportsViewerSorter());
 		viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
 		viewer.setAutoExpandLevel(2);
-		
+
 		hideSelfImportsFilter = new ViewerFilter() {
-			public boolean select(Viewer viewer, Object parentElement, Object element) {
+			@Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
 				if(element instanceof ImportPackage) {
 					return !((ImportPackage) element).isSelfImport();
 				}
@@ -129,7 +129,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			}
 		};
 		viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
-		
+
 		viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
 			public void dragStart(DragSourceEvent event) {
 			}
@@ -153,7 +153,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			public void dragFinished(DragSourceEvent event) {
 			}
 		});
-		
+
 		viewer.addOpenListener(new IOpenListener() {
 			public void open(OpenEvent event) {
 				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -187,9 +187,9 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 				}
 			}
 		});
-		
+
 		fillActionBars();
-		
+
 		getSite().getPage().addPostSelectionListener(this);
 		getSite().getPage().addPartListener(partAdapter);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
@@ -214,7 +214,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		toggleShowSelfImports.setChecked(false);
 		toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
 		toggleShowSelfImports.setToolTipText("Show self-imported packages");
-		
+
 		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
 		toolBarManager.add(toggleShowSelfImports);
 	}
@@ -222,7 +222,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	@Override
 	public void setFocus() {
 	}
-	
+
 	@Override
 	public void dispose() {
 		getSite().getPage().removeSelectionListener(this);
@@ -230,12 +230,12 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		getSite().getPage().removePartListener(partAdapter);
 		super.dispose();
 	};
-	
+
 	public void setInput(IFile[] sourceFiles, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
 		selectedFiles = sourceFiles;
 		if(tree != null && !tree.isDisposed()) {
 			viewer.setInput(new ImportsAndExports(imports, exports));
-			
+
 			String label;
 			if(sourceFiles != null) {
 				StringBuilder builder = new StringBuilder();
@@ -251,6 +251,8 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		}
 	}
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+	    if(selection.isEmpty())
+	        return;
 		if(selection instanceof IStructuredSelection) {
 			Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
 				public boolean select(IFile item) {
@@ -265,26 +267,20 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		}
 	}
 	void executeAnalysis() {
-		if(analysisJob != null) {
-			analysisJob.cancel();
-		}
-		if(selectedFiles != null) {
-			analysisJob = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
-			analysisJob.setSystem(true);
-			analysisJob.schedule(500);
-			analysisJob.addJobChangeListener(new JobChangeAdapter() {
-				@Override
-				public void done(IJobChangeEvent event) {
-					analysisJob = null;
-				}
-			});
-		} else {
-			SWTConcurrencyUtil.execForDisplay(display, new Runnable() {;
-				public void run() {
-					setInput(null, Collections.<ImportPackage>emptyList(), Collections.<ExportPackage>emptyList());
-				}
-			});
-		}
+	    synchronized(this) {
+	        Job oldJob = analysisJob;
+	        if(oldJob != null && oldJob.getState() != Job.NONE)
+	            oldJob.cancel();
+
+            if(selectedFiles != null) {
+    			final Job tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
+    			tmp.setSystem(true);
+    			analysisJob = tmp;
+    			analysisJob.schedule(500);
+            } else {
+                analysisJob = null;
+            }
+	    }
 	}
 	public void resourceChanged(IResourceChangeEvent event) {
 		if(selectedFiles != null) {
