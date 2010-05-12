@@ -76,7 +76,7 @@ public class JUnitOutputLaunchTabPiece extends AbstractLaunchTabPiece {
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
-        reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
+        reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, "");
         if(reporter.startsWith("file:")) {
             String outputPath = reporter.substring("file:".length());
             portButton.setSelection(false);

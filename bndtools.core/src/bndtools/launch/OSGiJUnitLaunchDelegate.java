@@ -30,7 +30,7 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate {
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
         String reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
-        if("port".equalsIgnoreCase(reporter)) {
+        if("port".equals(reporter)) {
             // Find the JUnit port
             port = SocketUtil.findFreePort();
             launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(port));
@@ -43,7 +43,7 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate {
         Properties props = super.generateLaunchProperties(configuration);
 
         String reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
-        if("port".equalsIgnoreCase(reporter)) {
+        if("port".equals(reporter)) {
             props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_REPORTER, "port:" + Integer.toString(port));
         } else {
             props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_REPORTER, reporter);

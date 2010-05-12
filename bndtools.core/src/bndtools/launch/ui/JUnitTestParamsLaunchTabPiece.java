@@ -101,6 +101,7 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, false);
         configuration.setAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_START_TIMEOUT, LaunchConstants.DEFAULT_LAUNCH_JUNIT_START_TIMEOUT);
+        configuration.setAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {

@@ -4,6 +4,7 @@ package bndtools.launch;
 
 public interface LaunchConstants {
     public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
+    public static String LAUNCH_ID_OSGI_JUNIT   = "bndtools.launch.junit";
 
     public static String ATTR_DYNAMIC_BUNDLES = "dynamicBundles";
     public static boolean DEFAULT_DYNAMIC_BUNDLES = true;
@@ -20,10 +21,7 @@ public interface LaunchConstants {
 
     public static String ATTR_JUNIT_REPORTER = "junitReporter";
     public static String DEFAULT_JUNIT_REPORTER = "port";
-
     public static String ATTR_LAUNCHER_BUNDLE_PATH = "launcherBundlePath";
-
-
 
     // BndtoolsLauncher
     public static final String LAUNCHER_PREFIX = "bndtools.launcher";

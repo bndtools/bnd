@@ -174,7 +174,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin, SourceRepositoryPl
             Version v = new Version(version);
             if (r.includes(v)) {
                 File f = new File(instances.get(version));
-                if (f.isFile()) {
+                if (f.isFile() || f.isDirectory()) {
                     result.add(f);
                 }
             }

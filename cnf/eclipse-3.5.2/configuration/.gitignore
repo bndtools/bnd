@@ -1,0 +1,5 @@
+*
+!.gitignore
+!org.eclipse.equinox.simpleconfigurator
+!org.eclipse.equinox.source
+!config.ini

@@ -131,7 +131,14 @@ Include-Resource: resources,\
 	org.eclipse.core.net,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
-	org.eclipse.equinox.p2.artifact.repository
+	org.eclipse.equinox.p2.artifact.repository,\
+	org.eclipse.ui.views.log,\
+	org.eclipse.jdt.junit.runtime,\
+	org.eclipse.jdt.junit,\
+	org.junit,\
+	org.eclipse.equinox.simpleconfigurator.manipulator,\
+	org.eclipse.equinox.frameworkadmin,\
+	org.eclipse.equinox.frameworkadmin.equinox
 
 -runproperties:\
 	osgi.ws=cocoa,\

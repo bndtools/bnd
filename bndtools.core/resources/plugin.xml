@@ -301,24 +301,22 @@
 	    </launchConfigurationType>	
       <launchConfigurationType
             delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
-            delegateDescription="Launches the JUnit Tests in an OSGi Framework and injects a BundleContext"
-            delegateName="OSGi JUnit Tests"
             id="bndtools.launch.junit"
-            migrationDelegate="org.eclipse.jdt.internal.junit.launcher.JUnitMigrationDelegate"
             modes="run, debug"
             name="OSGi Framework JUnit Tests"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
    </extension>
+   <!-- LAUNCH SHORTCUTS -->
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             label="OSGi JUnit"
             icon="icons/bricks_junit.png"
-            class="aQute.bnd.junit.OSGiJUnitLaunchShortcut"
+            class="bndtools.launch.JUnitShortcut"
             modes="run, debug"
-            id="org.eclipse.jdt.junit.junitShortcut">
+            id="bndtools.launch.junitShortcut">
          <contextualLaunch>
             <enablement>
                <with variable="selection">
@@ -355,7 +353,7 @@
       <shortcut
             class="bndtools.launch.RunShortcut"
             icon="icons/bricks_run.png"
-            id="bndtools.launch.shortcut"
+            id="bndtools.launch.runShortcut"
             label="OSGi Run"
             modes="run, debug">
          <contextualLaunch>
@@ -380,6 +378,8 @@
          </contextualLaunch>
       </shortcut>
    </extension>
+   
+   <!-- IMPORT WIZARD -->
     <extension
           point="org.eclipse.ui.importWizards">
        <category

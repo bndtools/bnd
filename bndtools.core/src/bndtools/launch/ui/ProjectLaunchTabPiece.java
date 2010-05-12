@@ -123,6 +123,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     @Override
     public String checkForError() {
         String projectName = projectNameTxt.getText();
+        if(projectName == null || projectName.length() == 0) {
+            return "Project must be specified";
+        }
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
         if (project == null || !project.exists()) {
             return MessageFormat.format("Project {0} does not exist.", projectName);
