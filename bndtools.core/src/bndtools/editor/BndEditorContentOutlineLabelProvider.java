@@ -36,7 +36,7 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 			if(BndEditor.OVERVIEW_PAGE.equals(element)) {
 				cell.setText("Overview");
 			} else if(BndEditor.PROJECT_BUILD_PAGE.equals(element)) {
-				cell.setText("Project");
+				cell.setText("Build");
 			} else if(BndEditor.PROJECT_RUN_PAGE.equals(element)) {
 			    cell.setText("Run");
 			} else if(BndEditor.COMPONENTS_PAGE.equals(element)) {

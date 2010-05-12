@@ -10,8 +10,12 @@
  *******************************************************************************/
 package bndtools.jareditor.internal;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.forms.IFormPart;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
@@ -19,46 +23,54 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public class JARContentPage extends FormPage implements IFormPart {
-	
-	private JARContentMasterDetailsBlock contentMasterDetails = new JARContentMasterDetailsBlock();
+public class JARContentPage extends FormPage {
+
 	private Image titleImg;
-	
+    private JARContentTreePart contentTreePart;
+    private JAREntryPart entryPart;
+
 	public JARContentPage(FormEditor editor, String id, String title) {
 		super(editor, id, title);
 	}
-	
-	protected void createFormContent(IManagedForm managedForm) {
+
+	@Override
+    protected void createFormContent(IManagedForm managedForm) {
+	    managedForm.setInput(getEditorInput());
+
+	    FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
-		FormToolkit toolkit = managedForm.getToolkit();
+		form.setText("JAR File Viewer");
 		toolkit.decorateFormHeading(form.getForm());
 
-		form.setText("JAR File Viewer");
 		titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
 		form.setImage(titleImg);
-		
-		contentMasterDetails.createContent(managedForm);
+
+		// CREATE CONTROLS
+		Composite body = form.getBody();
+
+		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
+		sashForm.setLayout(new GridLayout(3, false));
+
+		Composite treePanel = toolkit.createComposite(sashForm);
+		contentTreePart = new JARContentTreePart(treePanel, managedForm);
+		managedForm.addPart(contentTreePart);
+
+		Composite detailsPanel = toolkit.createComposite(sashForm);
+		entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
+		managedForm.addPart(entryPart);
+
+		// LAYOUT
+		GridLayout layout;
+        layout = new GridLayout();
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        body.setLayout(layout);
+
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//treeSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//detailsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 	}
 
-	public void commit(boolean onSave) {
-	}
-
-	public void initialize(IManagedForm form) {
-	}
-
-	public boolean isStale() {
-		return false;
-	}
-
-	public void refresh() {
-		
-	}
-
-	public boolean setFormInput(Object input) {
-		contentMasterDetails.setMasterPartInput(input);
-		return false;
-	}
-	
 	@Override
 	public void dispose() {
 		super.dispose();

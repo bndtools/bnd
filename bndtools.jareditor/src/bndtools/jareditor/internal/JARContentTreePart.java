@@ -30,70 +30,90 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public class JARContentTreePart extends SectionPart {
+public class JARContentTreePart extends AbstractFormPart {
 
 	private final IManagedForm managedForm;
-	
+
 	private final Tree tree;
 	private final TreeViewer viewer;
 
-	public JARContentTreePart(Section section, IManagedForm managedForm) {
-		super(section);
-		this.managedForm = managedForm;
-		FormToolkit toolkit = managedForm.getToolkit();
+
+	public JARContentTreePart(Composite parent, IManagedForm managedForm) {
+	    this.managedForm = managedForm;
+
+	    FormToolkit toolkit = managedForm.getToolkit();
+	    Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
 
 		section.setText("Content Tree");
 		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
 		tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 		section.setClient(tree);
 		toolkit.paintBordersFor(section);
-		
+
 		viewer = new TreeViewer(tree);
 		viewer.setContentProvider(new JARTreeContentProvider());
 		viewer.setLabelProvider(new JARTreeLabelProvider());
-		
+
 		managedForm.addPart(this);
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				JARContentTreePart.this.managedForm.fireSelectionChanged(JARContentTreePart.this, event.getSelection());
 			}
 		});
-		
+
+		parent.setLayout(new GridLayout());
+		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 	}
-	
-	public boolean setFormInput(Object input) {
+
+	@Override
+	public void initialize(IManagedForm form) {
+	    super.initialize(form);
+	}
+
+	@Override
+	public void refresh() {
+	    super.refresh();
+	    Object input = getManagedForm().getInput();
+	    viewer.setInput(input);
+	}
+
+	@Override
+    public boolean setFormInput(Object input) {
 		viewer.setInput(input);
 		return false;
 	}
-	
+
 	private static class JARTreeLabelProvider extends LabelProvider {
-		
+
 		private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
 		private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
-		
+
 		@Override
 		public Image getImage(Object element) {
 			Image image = null;
-			
+
 			ZipTreeNode node = (ZipTreeNode) element;
 			String name = node.toString();
-			
+
 			if(name.endsWith("/"))
 				image = folderImg;
 			else
 				image = fileImg;
-			
+
 			return image;
 		}
-		
+
 		@Override
 		public void dispose() {
 			super.dispose();
@@ -101,16 +121,16 @@ public class JARContentTreePart extends SectionPart {
 			fileImg.dispose();
 		}
 	}
-	
+
 	private class JARTreeContentProvider implements ITreeContentProvider {
-		
+
 		Map<String, ZipTreeNode> entryMap;
-		
+
 		public Object[] getChildren(Object parentElement) {
 			ZipTreeNode parentNode = (ZipTreeNode) parentElement;
 			return parentNode.getChildren().toArray();
 		}
-		
+
 		public Object getParent(Object element) {
 			return ((ZipTreeNode) element).getParent();
 		}
@@ -129,7 +149,7 @@ public class JARContentTreePart extends SectionPart {
 				try {
 					File ioFile = new File(file.getLocationURI());
 					JarFile jarFile = new JarFile(ioFile);
-					
+
 					int i=0;
 					for(Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements(); i++) {
 						ZipTreeNode.addEntry(entryMap, entries.nextElement());
