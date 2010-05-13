@@ -18,9 +18,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
+
+import bndtools.utils.SWTConcurrencyUtil;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
@@ -59,25 +62,20 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 
     }
 
-    /*
     @Override
     protected void setInput(IEditorInput input) {
         super.setInput(input);
-        contentPage.setFormInput(input);
-
         if (input instanceof IFileEditorInput) {
             String name = ((IFileEditorInput) input).getFile().getName();
             setPartName(name);
         }
     }
-    */
 
     protected void updateContent(final IEditorInput input) {
-        /*
         Runnable update = new Runnable() {
             public void run() {
                 if(contentPage != null && !contentPage.getPartControl().isDisposed()) {
-                    contentPage.setFormInput(input);
+                    contentPage.getManagedForm().refresh();
                 }
             }
         };
@@ -86,7 +84,6 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        */
     }
 
     @Override
