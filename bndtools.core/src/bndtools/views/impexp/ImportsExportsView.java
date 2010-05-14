@@ -250,38 +250,42 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 			setContentDescription(label);
 		}
 	}
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-	    if(selection.isEmpty())
-	        return;
-		if(selection instanceof IStructuredSelection) {
-			Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
-				public boolean select(IFile item) {
-					return item.getName().endsWith(".bnd") || item.getName().endsWith(".jar");
-				}
-			});
-			IFile[] files = fileList.toArray(new IFile[fileList.size()]);
-			if(!Arrays.equals(files, selectedFiles)) {
-				this.selectedFiles = files;
-				executeAnalysis();
-			}
-		}
-	}
-	void executeAnalysis() {
-	    synchronized(this) {
-	        Job oldJob = analysisJob;
-	        if(oldJob != null && oldJob.getState() != Job.NONE)
-	            oldJob.cancel();
 
-            if(selectedFiles != null) {
-    			final Job tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
-    			tmp.setSystem(true);
-    			analysisJob = tmp;
-    			analysisJob.schedule(500);
+    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+        if (selection.isEmpty())
+            return;
+        if (selection instanceof IStructuredSelection) {
+            Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
+                public boolean select(IFile item) {
+                    return item.getName().endsWith(".bnd") || item.getName().endsWith(".jar");
+                }
+            });
+            if (fileList.isEmpty())
+                return;
+            IFile[] files = fileList.toArray(new IFile[fileList.size()]);
+            if (!Arrays.equals(files, selectedFiles)) {
+                this.selectedFiles = files;
+                executeAnalysis();
+            }
+        }
+    }
+
+    void executeAnalysis() {
+        synchronized (this) {
+            Job oldJob = analysisJob;
+            if (oldJob != null && oldJob.getState() != Job.NONE)
+                oldJob.cancel();
+
+            if (selectedFiles != null) {
+                final Job tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
+                tmp.setSystem(true);
+                analysisJob = tmp;
+                analysisJob.schedule(500);
             } else {
                 analysisJob = null;
             }
-	    }
-	}
+        }
+    }
 	public void resourceChanged(IResourceChangeEvent event) {
 		if(selectedFiles != null) {
 			for (IFile file : selectedFiles) {

@@ -49,6 +49,9 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate {
             props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_REPORTER, reporter);
         }
 
+        String keepAlive = configuration.getAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, TRUE.toString());
+        props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, keepAlive);
+
         // For testing, always clean the framework
         props.setProperty(LaunchConstants.PROP_LAUNCH_CLEAN, TRUE.toString());
         props.setProperty(LaunchConstants.PROP_LAUNCH_DYNAMIC_BUNDLES, FALSE.toString());

@@ -1415,10 +1415,14 @@ public class Project extends Processor {
         Collection<? extends Builder> builders = getSubBuilders();
         for (Builder sub : builders) {
             File subPropsFile = sub.getPropertiesFile();
-            if(subPropsFile != null && subPropsFile.getCanonicalFile().equals(bndFile)) {
-                // Found it!
-                return sub;
+            boolean found = false;
+            if(subPropsFile == null) {
+                found = sub.getBase().getCanonicalFile().equals(base);
+            } else {
+                found = subPropsFile.getCanonicalFile().equals(bndFile);
             }
+
+            if(found)return sub;
         }
         return null;
     }

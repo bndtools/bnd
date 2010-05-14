@@ -113,7 +113,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
     ILaunchConfigurationWorkingCopy createConfiguration(String projectName) throws Exception {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType configType = manager.getLaunchConfigurationType(LaunchConstants.LAUNCH_ID_OSGI_JUNIT);
+        ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 
         ILaunchConfigurationWorkingCopy wc;
         wc = configType.newInstance(null, manager.generateUniqueLaunchConfigurationNameFrom(projectName));
