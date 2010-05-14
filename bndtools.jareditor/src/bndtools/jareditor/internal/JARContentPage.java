@@ -49,7 +49,6 @@ public class JARContentPage extends FormPage {
 		Composite body = form.getBody();
 
 		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
-		sashForm.setLayout(new GridLayout(3, false));
 
 		Composite treePanel = toolkit.createComposite(sashForm);
 		contentTreePart = new JARContentTreePart(treePanel, managedForm);

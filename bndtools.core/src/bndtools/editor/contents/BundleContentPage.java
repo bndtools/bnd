@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.editor.exports;
+package bndtools.editor.contents;
 
 
 import org.eclipse.ui.forms.IManagedForm;
@@ -22,12 +22,12 @@ import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ExportedPackage;
 import bndtools.utils.MessageHyperlinkAdapter;
 
-public class ExportPatternsPage extends FormPage {
+public class BundleContentPage extends FormPage {
 
-	private final ExportPatternsBlock block = new ExportPatternsBlock();
+	private final BundleContentBlock block = new BundleContentBlock();
 	private final BndEditModel model;
 
-	public ExportPatternsPage(FormEditor editor, BndEditModel model, String id, String title) {
+	public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
 		this.model = model;
 	}
@@ -36,18 +36,21 @@ public class ExportPatternsPage extends FormPage {
 	protected void createFormContent(IManagedForm managedForm) {
 		FormToolkit toolkit = managedForm.getToolkit();
 		managedForm.setInput(model);
-		
+
 		ScrolledForm scrolledForm = managedForm.getForm();
-		scrolledForm.setText("Export Patterns");
-		
+		scrolledForm.setText("Bundle Content");
+
 		Form form = scrolledForm.getForm();
 		toolkit.decorateFormHeading(form);
 		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
-		
+
 		block.createContent(managedForm);
 	}
 
 	public void setSelectedExport(ExportedPackage export) {
 		block.setSelectedExport(export);
+	}
+	public void setSelectedPrivatePkg(String pkg) {
+	    block.setSelectedPrivatePkg(pkg);
 	}
 }

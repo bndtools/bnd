@@ -29,19 +29,19 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
 import bndtools.editor.components.ComponentsPage;
-import bndtools.editor.exports.ExportPatternsPage;
+import bndtools.editor.contents.BundleContentPage;
 import bndtools.editor.imports.ImportPatternsPage;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.project.BundleBuildPage;
 import bndtools.editor.project.ProjectBuildPage;
 import bndtools.editor.project.ProjectRunPage;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
-	static final String OVERVIEW_PAGE = "__overview_page";
-	static final String PROJECT_BUILD_PAGE = "__project_build_page";
+    static final String CONTENT_PAGE = "__content_page";
+	static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
 	static final String COMPONENTS_PAGE = "__components_page";
-	static final String EXPORTS_PAGE = "__exports_page";
 	static final String IMPORTS_PAGE = "__imports_page";
 	static final String SOURCE_PAGE = "__source_page";
 
@@ -76,23 +76,23 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	protected void addPages() {
 		try {
-			OverviewFormPage detailsPage = new OverviewFormPage(this, model, OVERVIEW_PAGE, "Overview");
-			addPage(detailsPage);
+		    BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
+		    addPage(contentPage);
 
 			String inputName = getEditorInput().getName();
 			if(Project.BNDFILE.equals(inputName)) {
-				ProjectBuildPage projectPage = new ProjectBuildPage(this, model, PROJECT_BUILD_PAGE, "Build");
-				addPage(projectPage);
+				ProjectBuildPage buildPage = new ProjectBuildPage(this, model, BUILD_PAGE, "Build");
+				addPage(buildPage);
 
 				ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
 				addPage(runPage);
+			} else {
+			    BundleBuildPage buildPage = new BundleBuildPage(this, model, BUILD_PAGE, "Build");
+			    addPage(buildPage);
 			}
 
 			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
 			addPage(componentsPage);
-
-			ExportPatternsPage exportsPage = new ExportPatternsPage(this, model, EXPORTS_PAGE, "Exports");
-			addPage(exportsPage);
 
 			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, IMPORTS_PAGE, "Imports");
 			addPage(importsPage);

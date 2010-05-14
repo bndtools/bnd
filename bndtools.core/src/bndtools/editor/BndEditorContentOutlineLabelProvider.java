@@ -33,16 +33,16 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 
 		if(element instanceof String) {
 			// Top-level placeholder
-			if(BndEditor.OVERVIEW_PAGE.equals(element)) {
-				cell.setText("Overview");
-			} else if(BndEditor.PROJECT_BUILD_PAGE.equals(element)) {
+			if(BndEditor.BUILD_PAGE.equals(element)) {
 				cell.setText("Build");
 			} else if(BndEditor.PROJECT_RUN_PAGE.equals(element)) {
 			    cell.setText("Run");
 			} else if(BndEditor.COMPONENTS_PAGE.equals(element)) {
 				cell.setText("Components");
-			} else if(BndEditor.EXPORTS_PAGE.equals(element)) {
+			} else if(BndEditorContentOutlineProvider.EXPORTS.equals(element)) {
 				cell.setText("Exports");
+			} else if(BndEditorContentOutlineProvider.PRIVATE_PKGS.equals(element)) {
+			    cell.setText("Private Packages");
 			} else if(BndEditor.IMPORTS_PAGE.equals(element)) {
 				cell.setText("Imports");
 			} else if(BndEditor.SOURCE_PAGE.equals(element)) {
@@ -59,6 +59,8 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 		} else if(element instanceof ImportPattern) {
 			cell.setText(((ImportPattern) element).getName());
 			cell.setImage(packageImg);
+		} else if(element instanceof PrivatePkg) {
+		    cell.setText(((PrivatePkg) element).pkg);
 		}
 	}
 

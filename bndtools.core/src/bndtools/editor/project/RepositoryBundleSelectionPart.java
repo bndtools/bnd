@@ -78,7 +78,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Version");
-		col.setWidth(150);
+		col.setWidth(120);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());

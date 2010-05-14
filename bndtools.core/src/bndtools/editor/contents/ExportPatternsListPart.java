@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.editor.exports;
+package bndtools.editor.contents;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,37 +42,37 @@ import bndtools.pieces.ExportVersionPolicy;
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
 
 	public ExportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.EXPORT_PACKAGE);
+		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Patterns");
 	}
-	
+
 	@Override
 	protected Collection<ExportedPackage> generateClauses() {
 		return selectPackagesToAdd();
 	}
 	protected List<ExportedPackage> selectPackagesToAdd() {
 		List<ExportedPackage> added = null;
-		
+
 		final IPackageFilter filter = new IPackageFilter() {
 			public boolean select(String packageName) {
 				if(packageName.equals("java") || packageName.startsWith("java."))
 					return false;
-				
+
 				// TODO: check already included patterns
-				
+
 				return true;
 			}
 		};
-		
+
 		IFormPage page = (IFormPage) getManagedForm().getContainer();
 		IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
 
 		// Prepare the package lister from the Java project
 		IProject project = ResourceUtil.getResource(page.getEditorInput()).getProject();
 		IJavaProject javaProject = JavaCore.create(project);
-		
+
 		IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 		JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
-		
+
 		// Create and open the dialog
         PackageSelectionDialog dialog = new PackageSelectionDialog(window.getShell(), packageLister, filter, "Select new packages to export from the bundle.");
 		dialog.setSourceOnly(true);
@@ -80,7 +80,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 		if(dialog.open() == Window.OK) {
 			Object[] results = dialog.getResult();
 			added = new LinkedList<ExportedPackage>();
-			
+
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
@@ -90,12 +90,12 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 		}
 		return added;
 	}
-	
+
 	@Override
 	protected void doAddClauses(Collection<? extends ExportedPackage> pkgs, int index, boolean select) {
 		ExportVersionPolicy policy = null;
 		String specificVersion = null;
-		
+
 		// Load the defaults from prefs
 		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
 		boolean noAskPolicy = store.getBoolean(Plugin.PREF_NOASK_EXPORT_VERSION);
@@ -109,13 +109,13 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 		if(specificVersion == null || specificVersion.length() == 0) {
 			specificVersion = Plugin.DEFAULT_VERSION.toString();
 		}
-		
+
 		// Allow the user to change the defaults
 		if(!noAskPolicy) {
 			QueryExportVersionPolicyDialog dialog = new QueryExportVersionPolicyDialog(getSection().getShell());
 			dialog.setExportVersionPolicy(policy);
 			dialog.setSpecifiedVersion(specificVersion);
-			
+
 			if(Window.CANCEL == dialog.open()) {
 				return;
 			}
@@ -127,7 +127,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 				store.setValue(Plugin.PREF_DEFAULT_EXPORT_VERSION, specificVersion);
 			}
 		}
-		
+
 		// Use the values provided to modify the export list
 		String selectedVersion = null;
 		if(policy == ExportVersionPolicy.linkWithBundle) {
@@ -141,12 +141,12 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 				pkg.setVersionString(selectedVersion);
 			}
 		}
-		
+
 		// Actually add the new exports
 		super.doAddClauses(pkgs, index, select);
 	}
-	
-	
+
+
 	private void addDefaultBundleVersion() {
 		BndEditModel model = (BndEditModel) getManagedForm().getInput();
 		String bundleVersion = model.getBundleVersionString();

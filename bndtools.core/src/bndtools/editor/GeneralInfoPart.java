@@ -89,7 +89,7 @@ import bndtools.utils.JavaContentProposalLabelProvider;
 import bndtools.utils.JavaTypeContentProposal;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
-	
+
 	private static final String[] EDITABLE_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
@@ -102,21 +102,21 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
 	private final Set<String> editablePropertySet;
 	private final Set<String> dirtySet = new HashSet<String>();
-	
+
 	private BndEditModel model;
-	
+
 	private Text txtBSN;
 	private Text txtVersion;
 	private Text txtActivator;
 	private Text txtOutput;
 	private Button btnSources;
-	
+
 	private AtomicInteger refreshers = new AtomicInteger(0);
-	
+
 	public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		createSection(getSection(), toolkit);
-		
+
 		editablePropertySet = new HashSet<String>();
 		for (String prop : EDITABLE_PROPERTIES) {
 			editablePropertySet.add(prop);
@@ -125,7 +125,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
 	private void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Basic Information");
-		
+
 		KeyStroke assistKeyStroke = null;
 		try {
 			assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
@@ -134,45 +134,45 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		}
 		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
-		
+
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
 		toolkit.createLabel(composite, "Symbolic Name:");
 		txtBSN = toolkit.createText(composite, "");
-		
+
 		toolkit.createLabel(composite, "Version:");
 		txtVersion = toolkit.createText(composite, "");
-		
+
 		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
 		txtActivator = toolkit.createText(composite, "");
-		
+
 		// Content Proposal for the Activator field
 		ContentProposalAdapter activatorProposalAdapter = null;
-		
+
 		ActivatorClassProposalProvider proposalProvider = new ActivatorClassProposalProvider();
 		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
 		activatorProposalAdapter.addContentProposalListener(proposalProvider);
 		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
 		activatorProposalAdapter.setAutoActivationDelay(500);
-		
+
 		ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.TOP, composite);
 		decorActivator.setImage(contentAssistDecoration.getImage());
 		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
-		
-		
+
+
 		toolkit.createLabel(composite, "Output File:", SWT.NONE);
 		txtOutput = toolkit.createText(composite, "");
-		
+
 		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
 		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
 		decorSources.setImage(infoDecoration.getImage());
 		decorSources.setDescriptionText("If checked, the source code files will be included in the bundle under 'OSGI-OPT/src'.");
 		decorSources.setShowHover(true);
-		
+
 		// Listeners
 		txtBSN.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -182,9 +182,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtBSN.getText();
 				if(text == null || text.length() == 0)
-					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the file name, without the .bnd extension.", null, IMessageProvider.INFORMATION, txtBSN);
+					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the file name, without the .bnd extension.", null, IMessageProvider.INFORMATION);
 				else
-					msgs.removeMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, txtBSN);
+					msgs.removeMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME);
 			}
 		});
 		txtOutput.addModifyListener(new ModifyListener() {
@@ -192,13 +192,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				if(refreshers.get() == 0) {
 					addDirtyProperty(BndConstants.OUTPUT);
 				}
-				
+
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String text = txtOutput.getText();
 				if(text == null || text.length() == 0) {
-					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the bundle symbolic name, with the extension '.jar' appended.", null, IMessageProvider.INFORMATION, txtOutput);
+					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the bundle symbolic name, with the extension '.jar' appended.", null, IMessageProvider.INFORMATION);
 				} else {
-					msgs.removeMessage("INFO_" + BndConstants.OUTPUT, txtOutput);
+					msgs.removeMessage("INFO_" + BndConstants.OUTPUT);
 				}
 			}
 		});
@@ -216,7 +216,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				}
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String unknownError = null;
-				
+
 				String activatorClassName = txtActivator.getText();
 				if(activatorClassName != null && activatorClassName.length() > 0) {
 					try {
@@ -228,13 +228,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 						Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
 					}
 				}
-				
+
 				if(unknownError != null) {
 					msgs.addMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, unknownError, null, IMessageProvider.ERROR, txtActivator);
 				} else {
 					msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
 				}
-				
+
 				checkActivatorIncluded();
 			}
 		});
@@ -274,11 +274,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				addDirtyProperty(aQute.lib.osgi.Constants.SOURCES);
 			}
 		});
-		
+
 		// Layout
 		GridLayout layout = new GridLayout(2, false);
 		composite.setLayout(layout);
-		
+
 		GridData gd;
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.widthHint = 150;
@@ -289,25 +289,25 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtVersion.setLayoutData(gd);
-		
+
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
-		
+
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtOutput.setLayoutData(gd);
-		
+
 		gd = new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1);
 		btnSources.setLayoutData(gd);
 	}
-	
+
 	void checkActivatorIncluded() {
 		String warningMessage = null;
 		IAction[] fixes = null;
-		
+
 		String activatorClassName = txtActivator.getText();
 		if(activatorClassName != null && activatorClassName.length() > 0) {
 			int dotIndex = activatorClassName.lastIndexOf('.');
@@ -319,13 +319,15 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 					warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
 					fixes = new Action[] {
 						new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
-							public void run() {
+							@Override
+                            public void run() {
 								model.addPrivatePackage(packageName);
 								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
 							};
 						},
 						new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
-							public void run() {
+							@Override
+                            public void run() {
 								model.addExportedPackage(new ExportedPackage(packageName, null));
 								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
 							};
@@ -334,31 +336,31 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				}
 			}
 		}
-		
+
 		IMessageManager msgs = getManagedForm().getMessageManager();
 		if(warningMessage != null)
 			msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, fixes, IMessageProvider.WARNING, txtActivator);
 		else
 			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
 	}
-	
+
 	protected void addDirtyProperty(String property) {
 		if(refreshers.get() == 0) {
 			dirtySet.add(property);
 			getManagedForm().dirtyStateChanged();
 		}
 	}
-	
+
 	@Override
 	public void markDirty() {
 		throw new UnsupportedOperationException("Do not call markDirty directly, instead call addDirtyProperty.");
 	}
-	
+
 	@Override
 	public boolean isDirty() {
 		return !dirtySet.isEmpty();
 	}
-	
+
 	@Override
 	public void commit(boolean onSave) {
 		try {
@@ -394,7 +396,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			getManagedForm().dirtyStateChanged();
 		}
 	}
-	
+
 	@Override
 	public void refresh() {
 		super.refresh();
@@ -402,16 +404,16 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			refreshers.incrementAndGet();
 			String bsn = model.getBundleSymbolicName();
 			txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
-			
+
 			String bundleVersion = model.getBundleVersionString();
 			txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
-			
+
 			String outputFile = model.getOutputFile();
 			txtOutput.setText(outputFile != null ? outputFile : ""); //$NON-NLS-1$
-			
+
 			String bundleActivator = model.getBundleActivator();
 			txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
-			
+
 			btnSources.setSelection(model.isIncludeSources());
 		} finally {
 			refreshers.decrementAndGet();
@@ -419,15 +421,15 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		dirtySet.clear();
 		getManagedForm().dirtyStateChanged();
 	}
-	
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(this);
 	}
-	
+
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(editablePropertySet.contains(evt.getPropertyName())) {
 			IFormPage page = (IFormPage) getManagedForm().getContainer();
@@ -440,20 +442,20 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			checkActivatorIncluded();
 		}
 	}
-	
+
 	@Override
 	public void dispose() {
 		super.dispose();
 		if(this.model != null)
 			this.model.removePropertyChangeListener(this);
 	}
-	
+
 	IJavaProject getJavaProject() {
 		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 		IFile file = ResourceUtil.getFile(formPage.getEditorInput());
 		return JavaCore.create(file.getProject());
 	}
-	
+
 	private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
 		@Override
 		protected List<IContentProposal> doGenerateProposals(String contents, int position) {
@@ -481,7 +483,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 						}
 					}
 				};
-				
+
 				IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
 				window.run(false, false, runnable);
 				return result;

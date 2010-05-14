@@ -18,12 +18,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.Plugin;
-import bndtools.editor.exports.Messages;
 
 public class ExportVersionPolicyPiece {
-	
+
 	private static final ExportVersionPolicy DEFAULT_VERSION_POLICY = ExportVersionPolicy.linkWithBundle;
-	
+
 	private ExportVersionPolicy exportVersionPolicy = DEFAULT_VERSION_POLICY;
 	private String specifiedVersion = Plugin.DEFAULT_VERSION.toString();
 
@@ -39,7 +38,7 @@ public class ExportVersionPolicyPiece {
 	 * Create the UI piece as a decorated Group control, which has a title and
 	 * may be recessed or bevelled. Clients should call either this method or
 	 * {@link #createVersionPolicyComposite(Composite, int)}, but NOT both.
-	 * 
+	 *
 	 * @param parent
 	 *            The parent composite.
 	 * @param style
@@ -54,12 +53,12 @@ public class ExportVersionPolicyPiece {
 		fillComposite(group);
 		return group;
 	}
-	
+
 	/**
 	 * Create the UI piece as an undecorated Composite control. Clients should
 	 * call either this method or
 	 * {@link #createVersionPolicyGroup(Composite, int, String)}, but NOT both.
-	 * 
+	 *
 	 * @param parent
 	 *            The parent composite.
 	 * @param style
@@ -71,22 +70,22 @@ public class ExportVersionPolicyPiece {
 		fillComposite(composite);
 		return composite;
 	}
-	
+
 	/**
 	 * Return the layout object used to configure the internal layout of the
 	 * control. This method must be called after either the
 	 * {@link #createVersionPolicyGroup(Composite, int, String)} or
 	 * {@link #createVersionPolicyComposite(Composite, int)} method.
-	 * 
+	 *
 	 * @return
 	 */
 	public GridLayout getLayout() {
 		return layout;
 	}
-	
+
 	protected void fillComposite(Composite composite) {
 		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
-		
+
 		btnUnspecified = new Button(composite, SWT.RADIO);
 		btnUnspecified.setText(Messages.ExportVersionPolicyPiece_labelUnspecifiedVersion);
 		ControlDecoration decorUnspec = new ControlDecoration(btnUnspecified, SWT.RIGHT, composite);
@@ -98,17 +97,17 @@ public class ExportVersionPolicyPiece {
 		ControlDecoration decorLinkBundle = new ControlDecoration(btnLinkToBundleVersion, SWT.RIGHT, composite);
 		decorLinkBundle.setImage(infoDecoration.getImage());
 		decorLinkBundle.setDescriptionText(Messages.ExportVersionPolicyPiece_tooltipLinkWithBundle);
-		
+
 		btnSpecify = new Button(composite, SWT.RADIO);
 		btnSpecify.setText(Messages.ExportVersionPolicyPiece_labelSpecificVersion);
 		lblSpecificVersion = new Label(composite, SWT.NONE);
 		lblSpecificVersion.setText(Messages.ExportVersionPolicyPiece_labelVersion);
 		txtSpecificVersion = new Text(composite, SWT.BORDER);
-		
+
 		// Initialise
 		updateVersionGroupControls();
 		updateVersionGroupControlEnablement();
-		
+
 		// Listeners
 		SelectionAdapter selectionListener = new SelectionAdapter() {
 			@Override
@@ -126,17 +125,17 @@ public class ExportVersionPolicyPiece {
 		btnUnspecified.addSelectionListener(selectionListener);
 		btnLinkToBundleVersion.addSelectionListener(selectionListener);
 		btnSpecify.addSelectionListener(selectionListener);
-		
+
 		txtSpecificVersion.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				specifiedVersion = txtSpecificVersion.getText();
 			}
 		});
-		
+
 		// Layout
 		layout = new GridLayout(2, false);
 		composite.setLayout(layout);
-		
+
 		GridData gd;
 		gd = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
 		btnUnspecified.setLayoutData(gd);
@@ -146,9 +145,9 @@ public class ExportVersionPolicyPiece {
 		btnSpecify.setLayoutData(gd);
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		txtSpecificVersion.setLayoutData(gd);
-		
+
 	}
-	
+
 	public ExportVersionPolicy getExportVersionPolicy() {
 		return exportVersionPolicy;
 	}
@@ -156,7 +155,7 @@ public class ExportVersionPolicyPiece {
 	public void setExportVersionPolicy(ExportVersionPolicy exportVersionPolicy) {
 		this.exportVersionPolicy = exportVersionPolicy;
 	}
-	
+
 	public String getSpecifiedVersion() {
 		return specifiedVersion;
 	}

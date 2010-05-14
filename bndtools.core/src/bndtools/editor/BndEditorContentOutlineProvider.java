@@ -12,6 +12,7 @@ package bndtools.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,6 +28,9 @@ import bndtools.editor.model.ServiceComponent;
 
 public class BndEditorContentOutlineProvider implements ITreeContentProvider, PropertyChangeListener {
 
+    static final String PRIVATE_PKGS = "__private_pkgs";
+    static final String EXPORTS = "__exports";
+
 	BndEditModel model;
 	private final TreeViewer viewer;
 
@@ -36,9 +40,9 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 	public Object[] getElements(Object inputElement) {
 		Object[] result;
 		if(model.isProjectFile()) {
-			result = new String[] { BndEditor.OVERVIEW_PAGE, BndEditor.PROJECT_BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.EXPORTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
 		} else {
-			result = new String[] { BndEditor.OVERVIEW_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.EXPORTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, BndEditor.BUILD_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
 		}
 		return result;
 	}
@@ -54,59 +58,83 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		if(model != null)
 			model.addPropertyChangeListener(this);
 	}
-	public Object[] getChildren(Object parentElement) {
-		Object[] result = new Object[0];
 
-		if(parentElement instanceof String) {
-			if(BndEditor.COMPONENTS_PAGE.equals(parentElement)) {
-				Collection<ServiceComponent> components = model.getServiceComponents();
-				if(components != null)
-					result = components.toArray(new ServiceComponent[components.size()]);
-			} else if(BndEditor.EXPORTS_PAGE.equals(parentElement)) {
-				List<ExportedPackage> exports = model.getExportedPackages();
-				if(exports != null)
-					result = exports.toArray(new Object[exports.size()]);
-			} else if(BndEditor.IMPORTS_PAGE.equals(parentElement)) {
-				List<ImportPattern> imports = model.getImportPatterns();
-				if(imports != null)
-					result = imports.toArray(new Object[imports.size()]);
-			}
-		}
+    public Object[] getChildren(Object parentElement) {
+        Object[] result = new Object[0];
 
-		return result;
-	}
+        if (parentElement instanceof String) {
+            if (BndEditor.COMPONENTS_PAGE.equals(parentElement)) {
+                Collection<ServiceComponent> components = model.getServiceComponents();
+                if (components != null)
+                    result = components.toArray(new ServiceComponent[components.size()]);
+            } else if (EXPORTS.equals(parentElement)) {
+                List<ExportedPackage> exports = model.getExportedPackages();
+                if (exports != null)
+                    result = exports.toArray(new Object[exports.size()]);
+            } else if (PRIVATE_PKGS.equals(parentElement)) {
+                List<String> packages = model.getPrivatePackages();
+                if (packages != null) {
+                    List<PrivatePkg> wrapped = new ArrayList<PrivatePkg>(packages.size());
+                    for (String pkg : packages) {
+                        wrapped.add(new PrivatePkg(pkg));
+                    }
+                    result = wrapped.toArray(new Object[wrapped.size()]);
+                }
+            } else if (BndEditor.IMPORTS_PAGE.equals(parentElement)) {
+                List<ImportPattern> imports = model.getImportPatterns();
+                if (imports != null)
+                    result = imports.toArray(new Object[imports.size()]);
+            }
+        }
+        return result;
+    }
 
 	public Object getParent(Object element) {
 		return null;
 	}
 
-	public boolean hasChildren(Object element) {
-		if(element instanceof String) {
-			if(BndEditor.COMPONENTS_PAGE.equals(element)) {
-				Collection<ServiceComponent> components = model.getServiceComponents();
-				return components != null && !components.isEmpty();
-			}
-			if(BndEditor.EXPORTS_PAGE.equals(element)) {
-				List<ExportedPackage> exports = model.getExportedPackages();
-				return exports != null && !exports.isEmpty();
-			}
-			if(BndEditor.IMPORTS_PAGE.equals(element)) {
-				List<ImportPattern> imports = model.getImportPatterns();
-				return imports != null && !imports.isEmpty();
-			}
-		}
-		return false;
-	}
+    public boolean hasChildren(Object element) {
+        if (element instanceof String) {
+            if (BndEditor.COMPONENTS_PAGE.equals(element)) {
+                Collection<ServiceComponent> components = model.getServiceComponents();
+                return components != null && !components.isEmpty();
+            }
+            if (EXPORTS.equals(element)) {
+                List<ExportedPackage> exports = model.getExportedPackages();
+                return exports != null && !exports.isEmpty();
+            }
+            if (PRIVATE_PKGS.equals(element)) {
+                List<String> packages = model.getPrivatePackages();
+                return packages != null && !packages.isEmpty();
+            }
+            if (BndEditor.IMPORTS_PAGE.equals(element)) {
+                List<ImportPattern> imports = model.getImportPatterns();
+                return imports != null && !imports.isEmpty();
+            }
+        }
+        return false;
+    }
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(Constants.SERVICE_COMPONENT.equals(evt.getPropertyName())) {
 			viewer.refresh(BndEditor.COMPONENTS_PAGE);
 			viewer.expandToLevel(BndEditor.COMPONENTS_PAGE, 1);
 		} else if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
-			viewer.refresh(BndEditor.EXPORTS_PAGE);
-			viewer.expandToLevel(BndEditor.EXPORTS_PAGE, 1);
+			viewer.refresh(EXPORTS);
+			viewer.expandToLevel(EXPORTS, 1);
+		} else if(Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
+		    viewer.refresh(PRIVATE_PKGS);
+		    viewer.expandToLevel(PRIVATE_PKGS, 1);
 		} else if(Constants.IMPORT_PACKAGE.equals(evt.getPropertyName())) {
 			viewer.refresh(BndEditor.IMPORTS_PAGE);
 			viewer.expandToLevel(BndEditor.IMPORTS_PAGE, 1);
 		}
 	}
+}
+
+class PrivatePkg {
+    final String pkg;
+
+    PrivatePkg(String pkg) {
+        this.pkg = pkg;
+    }
 }

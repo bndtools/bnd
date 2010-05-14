@@ -1,9 +1,9 @@
-package bndtools.editor.exports;
+package bndtools.pieces;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "bndtools.editor.exports.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "bndtools.pieces"; //$NON-NLS-1$
 	public static String ExportVersionPolicyPiece_labelLinkWithBundle;
 	public static String ExportVersionPolicyPiece_labelSpecificVersion;
 	public static String ExportVersionPolicyPiece_labelUnspecifiedVersion;

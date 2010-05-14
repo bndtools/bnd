@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -30,6 +29,7 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -39,6 +39,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -60,21 +62,21 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
 
+import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.utils.PackageDropAdapter;
 
-import aQute.lib.osgi.Constants;
-
 public class PrivatePackagesPart extends SectionPart implements PropertyChangeListener {
 
 	private BndEditModel model;
 	private List<String> packages = new ArrayList<String>();
-	
+
 	private Table table;
 	private TableViewer viewer;
+    private IManagedForm managedForm;
 
 	public PrivatePackagesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -84,26 +86,26 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText("Private Packages");
 		section.setDescription("The listed packages will be included in the bundle but not exported.");
-		
+
 		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
 		section.setTextClient(toolbar);
 		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
 		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
-		addItem.setToolTipText("Add Bundle");
-		
+		addItem.setToolTipText("Add");
+
 		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
 		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
 		removeItem.setToolTipText("Remove");
 		removeItem.setEnabled(false);
-		
+
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
 		table.setHeaderVisible(false);
 		table.setLinesVisible(false);
-		
+
 		TableColumn col;
 		col = new TableColumn(table, SWT.NONE);
 		col.setText("Package");
@@ -112,10 +114,17 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PrivatePackageTableLabelProvider());
-		
+
 		// Listeners
+        table.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                managedForm.fireSelectionChanged(PrivatePackagesPart.this, viewer.getSelection());
+            }
+        });
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
+			    managedForm.fireSelectionChanged(PrivatePackagesPart.this, event.getSelection());
 				removeItem.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
@@ -154,23 +163,21 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				doRemovePackages();
 			}
 		});
-		
+
 		// Layout
 		GridLayout layout = new GridLayout(1, false);
 		composite.setLayout(layout);
-		
+
 		GridData gd;
-		
+
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 300;
-		gd.heightHint = 180;
 		table.setLayoutData(gd);
 	}
-	
+
 	private void doAddPackages() {
 		// Prepare the exclusion list based on existing private packages
 		final Set<String> packageNameSet = new HashSet<String>(packages);
-		
+
 		// Create a filter from the exclusion list and packages matching "java.*", which must not be included in a bundle
 		IPackageFilter filter = new IPackageFilter() {
 			public boolean select(String packageName) {
@@ -179,7 +186,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		};
 		IFormPage page = (IFormPage) getManagedForm().getContainer();
 		IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
-		
+
 		// Prepare the package lister from the Java project
 		IJavaProject javaProject = getJavaProject();
 		if(javaProject == null) {
@@ -188,7 +195,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		}
 		IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 		JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
-		
+
 		// Create and open the dialog
 		PackageSelectionDialog dialog =  new PackageSelectionDialog(getSection().getShell(), packageLister, filter, "Select new packages to include in the bundle.");
 		dialog.setSourceOnly(true);
@@ -196,7 +203,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		if(dialog.open() == Window.OK) {
 			Object[] results = dialog.getResult();
 			List<String> added = new LinkedList<String>();
-			
+
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
@@ -204,15 +211,15 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 					added.add(newPackageName);
 				}
 			}
-			
+
 			// Update the model and view
 			if(!added.isEmpty()) {
-				viewer.add((String[]) added.toArray(new String[added.size()]));
+				viewer.add(added.toArray(new String[added.size()]));
 				markDirty();
 			}
 		}
 	}
-	
+
 	private void doRemovePackages() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
@@ -223,20 +230,20 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				if(packages.remove(pkg))
 					removed.add(pkg);
 			}
-			
+
 			if(!removed.isEmpty()) {
 				viewer.remove(removed.toArray(new String[removed.size()]));
 				markDirty();
 			}
 		}
 	}
-	
+
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
 		model.setPrivatePackages(packages);
 	}
-	
+
 	@Override
 	public void refresh() {
 		List<String> tmp = model.getPrivatePackages();
@@ -247,15 +254,15 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		viewer.setInput(packages);
 		super.refresh();
 	}
-	
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+		this.managedForm = form;
 		model = (BndEditModel) form.getInput();
 		model.addPropertyChangeListener(Constants.PRIVATE_PACKAGE, this);
 	}
-	
+
 	@Override
 	public void dispose() {
 		super.dispose();
@@ -271,7 +278,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 			markStale();
 		}
 	}
-	
+
 	private IJavaProject getJavaProject() {
 		IFormPage page = (IFormPage) getManagedForm().getContainer();
 		IEditorInput input = page.getEditorInput();
@@ -280,5 +287,9 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		}
 		IProject project = ((IFileEditorInput) input).getFile().getProject();
 		return JavaCore.create(project);
+	}
+
+	public ISelectionProvider getSelectionProvider() {
+	    return viewer;
 	}
 }

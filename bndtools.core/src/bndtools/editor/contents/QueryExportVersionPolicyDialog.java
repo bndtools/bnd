@@ -1,4 +1,4 @@
-package bndtools.editor.exports;
+package bndtools.editor.contents;
 
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;

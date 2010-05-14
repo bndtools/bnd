@@ -17,9 +17,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -28,14 +28,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -55,44 +60,79 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
 	private final String propertyName;
 	protected ArrayList<C> clauses = new ArrayList<C>();
-	
+
 	private IManagedForm managedForm;
 	private TableViewer viewer;
 	private BndEditModel model;
-	
+
 	private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
-	
-	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName) {
+	private final Image imgInsert = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png").createImage();
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+
+    protected final String title;
+
+	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName, String title) {
 		super(parent, toolkit, style);
 		this.propertyName = propertyName;
-		createSection(getSection(), toolkit);
+        this.title = title;
+
+		Section section = getSection();
+		section.setText(title);
+		createSection(section, toolkit);
 	}
 	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Package Patterns");
-		
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
+        ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+        section.setTextClient(toolbar);
+        final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
+        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setToolTipText("Add");
+
+        final ToolItem insertItem = new ToolItem(toolbar, SWT.PUSH);
+        insertItem.setImage(imgInsert);
+        insertItem.setToolTipText("Insert");
+        insertItem.setEnabled(false);
+
+        final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
+        removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItem.setToolTipText("Remove");
+        removeItem.setEnabled(false);
+
 		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
 		viewer.setUseHashlookup(true);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PkgPatternsLabelProvider());
-		
-		final Button btnAdd = toolkit.createButton(composite, "Add...", SWT.PUSH);
-		final Button btnInsert = toolkit.createButton(composite, "Insert", SWT.PUSH);
-		final Button btnRemove = toolkit.createButton(composite, "Remove", SWT.PUSH);
-		final Button btnMoveUp = toolkit.createButton(composite, "Up", SWT.PUSH);
-		final Button btnMoveDown = toolkit.createButton(composite, "Down", SWT.PUSH);
-		toolkit.createLabel(composite, ""); // Spacer
-		
+
+		toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+
+		final ToolItem btnMoveUp = new ToolItem(toolbar, SWT.PUSH);
+		btnMoveUp.setText("Up");
+		btnMoveUp.setImage(imgUp);
+		btnMoveUp.setEnabled(false);
+
+		final ToolItem btnMoveDown = new ToolItem(toolbar, SWT.PUSH);
+		btnMoveDown.setText("Down");
+		btnMoveDown.setImage(imgDown);
+		btnMoveDown.setEnabled(false);
+
 		// Listeners
+        table.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                managedForm.fireSelectionChanged(PkgPatternsListPart.this, viewer.getSelection());
+            }
+        });
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				managedForm.fireSelectionChanged(PkgPatternsListPart.this, event.getSelection());
 				boolean enabled = !viewer.getSelection().isEmpty();
-				btnInsert.setEnabled(enabled);
-				btnRemove.setEnabled(enabled);
+				insertItem.setEnabled(enabled);
+				removeItem.setEnabled(enabled);
 				btnMoveUp.setEnabled(enabled);
 				btnMoveDown.setEnabled(enabled);
 			}
@@ -111,19 +151,19 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 				return clauses.indexOf(object);
 			}
 		});
-		btnAdd.addSelectionListener(new SelectionAdapter() {
+		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doAddClausesAfterSelection(generateClauses());
 			}
 		});
-		btnInsert.addSelectionListener(new SelectionAdapter() {
+		insertItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doInsertClausesAtSelection(generateClauses());
 			}
 		});
-		btnRemove.addSelectionListener(new SelectionAdapter() {
+		removeItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doRemoveSelectedClauses();
@@ -142,19 +182,18 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 			}
 		});
 
-		
 		// Layout
 		GridLayout layout;
-		layout = new GridLayout(2, false);
+
+		layout = new GridLayout(1, false);
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
+		layout.verticalSpacing = 0;
+		layout.horizontalSpacing = 0;
 		composite.setLayout(layout);
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6));
-		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnInsert.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnMoveUp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnMoveDown.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 	}
 	protected abstract C newHeaderClause(String text);
 	protected abstract List<C> loadFromModel(BndEditModel model);
@@ -171,11 +210,11 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 	 * Add the specified clauses to the view.
 	 * @param newClauses The new clauses.
 	 * @param index The index at which to insert the new clauses OR -1 to append at the end.
-	 * @return 
+	 * @return
 	 */
 	protected void doAddClauses(Collection<? extends C> newClauses, int index, boolean select) {
 		Object[] newClausesArray = newClauses.toArray(new Object[newClauses.size()]);
-		
+
 		if(index == -1 || index == this.clauses.size()) {
 			clauses.addAll(newClauses);
 			viewer.add(newClausesArray);
@@ -183,7 +222,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 			clauses.addAll(index, newClauses);
 			viewer.refresh();
 		}
-		
+
 		if(select)
 			viewer.setSelection(new StructuredSelection(newClausesArray), true);
 		validate();
@@ -210,7 +249,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 			if(selection.isEmpty())
 				return;
 			selectedIndex = this.clauses.indexOf(selection.getFirstElement());
-			
+
 			doAddClauses(newClauses, selectedIndex, true);
 		}
 	}
@@ -226,24 +265,29 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		validate();
 		markDirty();
 	}
-	void doMoveUp() {
-		int[] selectedIndexes = findSelectedIndexes();
-		CollectionUtils.moveUp(clauses, selectedIndexes);
-		viewer.refresh();
-		validate();
-		markDirty();
-	}
-	void doMoveDown() {
-		int[] selectedIndexes = findSelectedIndexes();
-		CollectionUtils.moveDown(clauses, selectedIndexes);
-		viewer.refresh();
-		validate();
-		markDirty();
-	}
+
+    void doMoveUp() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveUp(clauses, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
+    void doMoveDown() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveDown(clauses, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
 	int[] findSelectedIndexes() {
 		Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
 		int[] selectionIndexes = new int[selection.length];
-		
+
 		for(int i=0; i<selection.length; i++) {
 			selectionIndexes[i] = clauses.indexOf(selection[i]);
 		}
@@ -261,7 +305,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 ;	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		this.managedForm = form;
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
@@ -271,11 +315,14 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		super.dispose();
 		this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
 		imgAnalyse.dispose();
+		imgInsert.dispose();
+		imgUp.dispose();
+		imgDown.dispose();
 	}
 	@Override
 	public void refresh() {
 		super.refresh();
-		
+
 		// Deep-copy the model
 		Collection<C> tmp = loadFromModel(model);
 		if(tmp != null) {
@@ -314,7 +361,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 	public void updateLabels(Object[] elements) {
 		viewer.update(elements, null);
 	}
-	public void setSelectedClause(C clause) {
-		viewer.setSelection(new StructuredSelection(clause));
+	public ISelectionProvider getSelectionProvider() {
+	    return viewer;
 	}
 }

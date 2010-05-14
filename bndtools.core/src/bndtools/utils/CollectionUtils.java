@@ -21,68 +21,85 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 
 public class CollectionUtils {
-	public static <T> int[] moveDown(List<T> list, int[] selectionIndexes) {
-		int[] result = new int[selectionIndexes.length];
-		int resultPos = 0;
-		
-		int size = list.size();
-		for(int i=0; i<size; i++) {
-			T item = list.get(i);
-			if(arrayContains(selectionIndexes, i)) {
-				// Find next unselected item
-				int nextUnselected = -1;
-				int j = i + 1;
-				while(j < size) {
-					if(!arrayContains(selectionIndexes, j)) {
-						nextUnselected = j;
-						break;
-					}
-					j++;
-				}
-				// Swap with it
-				if(nextUnselected != -1) {
-					list.set(i, list.get(nextUnselected));
-					list.set(nextUnselected, item);
-					result[resultPos] = i + 1;
-				} else {
-					result[resultPos] = i;
-				}
-				resultPos++;
-			}
-		}
-		return result;
-	}
-	public static <T> int[] moveUp(List<T> list, int[] selectionIndexes) {
-		int[] result = new int[selectionIndexes.length];
-		int resultPos = 0;
-		
-		int size = list.size();
-		for(int i = size - 1; i >= 0; i--) {
-			T item = list.get(i);
-			if(arrayContains(selectionIndexes, i)) {
-				// Find next unselected item
-				int nextUnselected = -1;
-				int j = i - 1;
-				while(j >= 0) {
-					if(!arrayContains(selectionIndexes, j)) {
-						nextUnselected = j;
-						break;
-					}
-					j--;
-				}
-				// Swap with it
-				if(nextUnselected != -1) {
-					list.set(i, list.get(nextUnselected));
-					list.set(nextUnselected, item);
-					result[resultPos] = i - 1;
-				} else {
-					result[resultPos] = i;
-				}
-				resultPos++;
-			}
-		}
-		return result;
-	}
+    /**
+     * Move the selected items down one position in the list.
+     *
+     * @param list
+     *            The list of items, which will be altered in-place.
+     * @param selectionIndexes
+     *            The indexes of the items to be moved.
+     * @return Whether any items have been moved. For example, would return
+     *         false if the selected items were already at the bottom of the list.
+     */
+    public static <T> boolean moveDown(List<T> list, int[] selectionIndexes) {
+        boolean moved = false;
+        int resultPos = 0;
+
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            T item = list.get(i);
+            if (arrayContains(selectionIndexes, i)) {
+                // Find next unselected item
+                int nextUnselected = -1;
+                int j = i + 1;
+                while (j < size) {
+                    if (!arrayContains(selectionIndexes, j)) {
+                        nextUnselected = j;
+                        break;
+                    }
+                    j++;
+                }
+                // Swap with it
+                if (nextUnselected != -1) {
+                    list.set(i, list.get(nextUnselected));
+                    list.set(nextUnselected, item);
+                    moved = true;
+                }
+                resultPos++;
+            }
+        }
+        return moved;
+    }
+
+    /**
+     * Move the selected items up one position in the list.
+     *
+     * @param list
+     *            The list of items, which will be altered in-place.
+     * @param selectionIndexes
+     *            The indexes of the items to be moved.
+     * @return Whether any items have been moved. For example, would return
+     *         false if the selected items were already at the top of the list.
+     */
+    public static <T> boolean moveUp(List<T> list, int[] selectionIndexes) {
+        boolean moved = false;
+        int resultPos = 0;
+
+        int size = list.size();
+        for (int i = size - 1; i >= 0; i--) {
+            T item = list.get(i);
+            if (arrayContains(selectionIndexes, i)) {
+                // Find next unselected item
+                int nextUnselected = -1;
+                int j = i - 1;
+                while (j >= 0) {
+                    if (!arrayContains(selectionIndexes, j)) {
+                        nextUnselected = j;
+                        break;
+                    }
+                    j--;
+                }
+                // Swap with it
+                if (nextUnselected != -1) {
+                    list.set(i, list.get(nextUnselected));
+                    list.set(nextUnselected, item);
+                    moved = true;
+                }
+                resultPos++;
+            }
+        }
+        return moved;
+    }
 	private static boolean arrayContains(int[] array, int item) {
 		for (int i : array) {
 			if(i == item)
@@ -92,11 +109,11 @@ public class CollectionUtils {
 	}
 	public static <K,V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
 		Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
-		
+
 		for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
 			K inputKey = inputEntry.getKey();
 			Collection<V> inputCollection = inputEntry.getValue();
-			
+
 			for (V inputValue : inputCollection) {
 				Set<K> resultSet = result.get(inputValue);
 				if(resultSet == null) {
@@ -106,7 +123,7 @@ public class CollectionUtils {
 				resultSet.add(inputKey);
 			}
 		}
-		
+
 		return result;
 	}
 	public static <T> List<T> asList(Object[] array) {
