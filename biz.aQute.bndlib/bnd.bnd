@@ -1,8 +1,14 @@
--dependson:					biz.aQute.runtime
+-dependson:						biz.aQute.runtime
 -sourcepath:					../aQute.libg/src
 -pom:
 
-Bundle-Version:  		        0.0.401
+
+-deploy = \
+	nexus; \
+		connection=scm:git@github.com:bnd/bnd.git; \
+		developerConnection=scm:git@github.com:bnd/bnd.git
+
+
 Bundle-Vendor: 					aQute SARL http://www.aQute.biz
 Bundle-Copyright:				All files contained in this JAR are licensed under the Apache 2.0 license, unless noted differently in their source (see swing2swt).
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
@@ -25,3 +31,6 @@ Main-Class:                     aQute.bnd.main.bnd
 	osgi.cmpn; 					version=4.0, \
 	aQute.libg; 				version=project, \
 	aQute.service; 				version=project
+
+-pom: true
+Bundle-Version: 1.0.0

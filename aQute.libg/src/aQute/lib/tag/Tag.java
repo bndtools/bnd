@@ -25,7 +25,7 @@ public class Tag {
     // elements
 
     static SimpleDateFormat   format  = new SimpleDateFormat(
-                                              "yyyyMMddhhmmss.SSS");
+                                              "yyyyMMddHHmmss.SSS");
 
     /**
      * Construct a new Tag with a name.
@@ -33,6 +33,11 @@ public class Tag {
     public Tag(String name) {
         this.name = name;
         attributes = new LinkedHashMap<String, String>(); // Attributes
+    }
+    public Tag(Tag parent, String name) {
+        this.name = name;
+        attributes = new LinkedHashMap<String, String>(); // Attributes
+        parent.addContent(this);
     }
 
     /**
@@ -66,47 +71,53 @@ public class Tag {
     /**
      * Add a new attribute.
      */
-    public void addAttribute(String key, String value) {
+    public Tag addAttribute(String key, String value) {
         attributes.put(key, value);
+        return this;
     }
 
     /**
      * Add a new attribute.
      */
-    public void addAttribute(String key, Object value) {
+    public Tag addAttribute(String key, Object value) {
         if (value == null)
-            return;
+            return this;
         attributes.put(key, value.toString());
+        return this;
     }
 
     /**
      * Add a new attribute.
      */
-    public void addAttribute(String key, int value) {
+    public Tag addAttribute(String key, int value) {
         attributes.put(key, Integer.toString(value));
+        return this;
     }
 
     /**
      * Add a new date attribute. The date is formatted as the SimpleDateFormat
      * describes at the top of this class.
      */
-    public void addAttribute(String key, Date value) {
+    public Tag addAttribute(String key, Date value) {
         attributes.put(key, format.format(value));
+        return this;
     }
 
     /**
      * Add a new content string.
      */
-    public void addContent(String string) {
+    public Tag addContent(String string) {
         content.add(string);
+        return this;
     }
 
     /**
      * Add a new content tag.
      */
-    public void addContent(Tag tag) {
+    public Tag addContent(Tag tag) {
         content.add(tag);
         tag.parent = this;
+        return this;
     }
 
     /**
@@ -192,7 +203,7 @@ public class Tag {
     /**
      * Print the tag formatted to a PrintWriter.
      */
-    public void print(int indent, PrintWriter pw) {
+    public Tag print(int indent, PrintWriter pw) {
         pw.print("\n");
         spaces(pw, indent);
         pw.print('<');
@@ -229,6 +240,7 @@ public class Tag {
             pw.print(name);
         }
         pw.print('>');
+        return this;
     }
 
     /**

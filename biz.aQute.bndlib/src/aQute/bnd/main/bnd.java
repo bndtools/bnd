@@ -18,6 +18,7 @@ import org.w3c.dom.*;
 import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.action.*;
 import aQute.bnd.test.*;
 import aQute.lib.deployer.*;
 import aQute.lib.jardiff.*;
@@ -147,6 +148,21 @@ public class bnd extends Processor {
 				doMacro(args, ++i);
 				break;
 			} else {
+				Project p = getProject();
+				if ( p != null ) {
+					 Action a = p.getActions().get(args[i]);
+					 System.out.println("Found action in " + p.getActions() + " " + a);
+					 if ( a != null ) {
+						 cnt++;
+						 // parse args
+						 a.execute(p, args[i++]);
+						 getInfo(p);
+						 break;
+					 }
+				} 
+				
+				
+				
 				cnt++;
 				String path = args[i];
 				if (path.startsWith("-")) {

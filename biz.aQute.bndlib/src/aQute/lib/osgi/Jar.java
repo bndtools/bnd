@@ -247,7 +247,9 @@ public class Jar implements Closeable {
 
     public static void writeManifest(Manifest manifest, OutputStream out)
             throws IOException {
-
+    	if  (manifest == null )
+    		return;
+    	
         manifest = clean(manifest);
         manifest.write(out);
     }

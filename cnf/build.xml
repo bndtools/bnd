@@ -63,6 +63,9 @@
 		</copy>
 	</target>
 
+	<target name="deploy" depends="build">
+		<bnd command="deploy" exceptions="true" basedir="${project}" />
+	</target>
 	<!-- 
 		JARS
 		Iterate of the jars to build.

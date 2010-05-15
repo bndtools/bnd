@@ -18,7 +18,7 @@ public class Tag {
 	Vector content = new Vector(); // Content elements
 	boolean cdata;
 
-	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss.SSS");
+	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
