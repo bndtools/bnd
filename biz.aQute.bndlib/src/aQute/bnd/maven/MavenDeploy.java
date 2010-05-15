@@ -84,6 +84,7 @@ public class MavenDeploy implements Deploy, Plugin {
 				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
 				project.progress("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
+				
 			} finally {
 				main.close();
 				src.close();
