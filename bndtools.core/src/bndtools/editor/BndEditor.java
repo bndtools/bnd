@@ -12,22 +12,29 @@ package bndtools.editor;
 
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
+import bndtools.Plugin;
 import bndtools.editor.components.ComponentsPage;
 import bndtools.editor.contents.BundleContentPage;
 import bndtools.editor.imports.ImportPatternsPage;
@@ -109,29 +116,58 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		super.init(site, input);
 		sourcePage.init(site, input);
 
-		String name = input.getName();
-		if(Project.BNDFILE.equals(name)) {
-			IResource resource = ResourceUtil.getResource(input);
-			if(resource != null)
-				name = resource.getProject().getName();
-		}
-		setPartName(name);
+		setPartNameForInput(input);
 
-		IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+		IResource resource = ResourceUtil.getResource(input);
+		if(resource != null) {
+		    resource.getWorkspace().addResourceChangeListener(this);
+		}
+
+		final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
 		IDocument document = docProvider.getDocument(input);
 		try {
 			model.loadFrom(document);
 			model.setProjectFile(Project.BNDFILE.equals(input.getName()));
+			model.setBndResource(resource);
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}
 
+		// Ensure the field values are updated if the file content is replaced
+        docProvider.addElementStateListener(new IElementStateListener() {
+            public void elementMoved(Object originalElement, Object movedElement) {
+            }
 
-		IResource resource = ResourceUtil.getResource(input);
-		if(resource != null) {
-			resource.getWorkspace().addResourceChangeListener(this);
-		}
+            public void elementDirtyStateChanged(Object element, boolean isDirty) {
+            }
+
+            public void elementDeleted(Object element) {
+            }
+
+            public void elementContentReplaced(Object element) {
+                try {
+                    System.out.println("--> Content Replaced");
+                    model.loadFrom(docProvider.getDocument(element));
+                } catch (IOException e) {
+                    Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+                }
+            }
+
+            public void elementContentAboutToBeReplaced(Object element) {
+            }
+        });
 	}
+
+    private void setPartNameForInput(IEditorInput input) {
+        String name = input.getName();
+        if (Project.BNDFILE.equals(name)) {
+            IResource resource = ResourceUtil.getResource(input);
+            if (resource != null)
+                name = resource.getProject().getName();
+        }
+        setPartName(name);
+    }
+
 	@Override
 	public void dispose() {
 		IResource resource = ResourceUtil.getResource(getEditorInput());
@@ -147,19 +183,28 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		return this.model;
 	}
 
-	public void resourceChanged(IResourceChangeEvent event) {
-		IResource myResource = ResourceUtil.getResource(getEditorInput());
+    public void resourceChanged(IResourceChangeEvent event) {
+        IResource myResource = ResourceUtil.getResource(getEditorInput());
 
-		IResourceDelta delta = event.getDelta();
-		IPath fullPath = myResource.getFullPath();
-		delta = delta.findMember(fullPath);
-		if(delta == null)
-			return;
+        IResourceDelta delta = event.getDelta();
+        IPath fullPath = myResource.getFullPath();
+        delta = delta.findMember(fullPath);
+        if (delta == null)
+            return;
 
-		if(delta.getKind() == IResourceDelta.REMOVED) {
-			close(false);
-		}
-	}
+        if (delta.getKind() == IResourceDelta.REMOVED) {
+            if ((delta.getFlags() & IResourceDelta.MOVED_TO) > 0) {
+                IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
+                FileEditorInput newInput = new FileEditorInput(file);
+
+                setInput(newInput);
+                setPartNameForInput(newInput);
+                sourcePage.setInput(newInput);
+            } else {
+                close(false);
+            }
+        }
+    }
 
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {

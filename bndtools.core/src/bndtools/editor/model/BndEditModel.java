@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
@@ -79,6 +80,8 @@ public class BndEditModel {
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
+
+	private IResource bndResource;
 	private boolean projectFile;
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
@@ -608,4 +611,12 @@ public class BndEditModel {
 			PropertyChangeListener listener) {
 		propChangeSupport.removePropertyChangeListener(propertyName, listener);
 	}
+
+    public void setBndResource(IResource bndResource) {
+        this.bndResource = bndResource;
+    }
+
+    public IResource getBndResource() {
+        return bndResource;
+    }
 }

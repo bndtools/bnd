@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -87,10 +87,12 @@ import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 import bndtools.utils.JavaContentProposalLabelProvider;
 import bndtools.utils.JavaTypeContentProposal;
+import bndtools.utils.ModificationLock;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 
-	private static final String[] EDITABLE_PROPERTIES = new String[] {
+	private static final String BND_SUFFIX = ".bnd";
+    private static final String[] EDITABLE_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
@@ -108,10 +110,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private Text txtBSN;
 	private Text txtVersion;
 	private Text txtActivator;
-	private Text txtOutput;
 	private Button btnSources;
 
-	private AtomicInteger refreshers = new AtomicInteger(0);
+	private final ModificationLock lock = new ModificationLock();
 
 	public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -164,9 +165,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		decorActivator.setShowHover(true);
 
 
-		toolkit.createLabel(composite, "Output File:", SWT.NONE);
-		txtOutput = toolkit.createText(composite, "");
-
 		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
 		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
 		decorSources.setImage(infoDecoration.getImage());
@@ -174,46 +172,31 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		decorSources.setShowHover(true);
 
 		// Listeners
-		txtBSN.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if(refreshers.get() == 0) {
-					addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
-				}
-				IMessageManager msgs = getManagedForm().getMessageManager();
-				String text = txtBSN.getText();
-				if(text == null || text.length() == 0)
-					msgs.addMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME, "The symbolic name of the bundle will default to the file name, without the .bnd extension.", null, IMessageProvider.INFORMATION);
-				else
-					msgs.removeMessage("INFO_" + Constants.BUNDLE_SYMBOLICNAME);
-			}
-		});
-		txtOutput.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if(refreshers.get() == 0) {
-					addDirtyProperty(BndConstants.OUTPUT);
-				}
-
-				IMessageManager msgs = getManagedForm().getMessageManager();
-				String text = txtOutput.getText();
-				if(text == null || text.length() == 0) {
-					msgs.addMessage("INFO_" + BndConstants.OUTPUT, "The output file name will default to the bundle symbolic name, with the extension '.jar' appended.", null, IMessageProvider.INFORMATION);
-				} else {
-					msgs.removeMessage("INFO_" + BndConstants.OUTPUT);
-				}
-			}
-		});
-		txtVersion.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if(refreshers.get() == 0) {
-					addDirtyProperty(Constants.BUNDLE_VERSION);
-				}
-			}
-		});
+        txtBSN.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
+                    }
+                });
+            }
+        });
+        txtVersion.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        addDirtyProperty(Constants.BUNDLE_VERSION);
+                    }
+                });
+            }
+        });
 		txtActivator.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent ev) {
-				if(refreshers.get() == 0) {
-					addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
-				}
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
+                    }
+                });
 				IMessageManager msgs = getManagedForm().getMessageManager();
 				String unknownError = null;
 
@@ -295,11 +278,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
 
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.widthHint = 150;
-		gd.horizontalIndent = 5;
-		txtOutput.setLayoutData(gd);
-
 		gd = new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1);
 		btnSources.setLayoutData(gd);
 	}
@@ -344,12 +322,14 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
 	}
 
-	protected void addDirtyProperty(String property) {
-		if(refreshers.get() == 0) {
-			dirtySet.add(property);
-			getManagedForm().dirtyStateChanged();
-		}
-	}
+    protected void addDirtyProperty(final String property) {
+        lock.ifNotModifying(new Runnable() {
+            public void run() {
+                dirtySet.add(property);
+                getManagedForm().dirtyStateChanged();
+            }
+        });
+    }
 
 	@Override
 	public void markDirty() {
@@ -381,11 +361,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				if(activator != null && activator.length() == 0) activator = null;
 				model.setBundleActivator(activator);
 			}
-			if(dirtySet.contains(BndConstants.OUTPUT)) {
-				String outputFile = txtOutput.getText();
-				if(outputFile != null && outputFile.length() == 0) outputFile = null;
-				model.setOutputFile(outputFile);
-			}
 			if(dirtySet.contains(BndConstants.SOURCES)) {
 				model.setIncludeSources(btnSources.getSelection());
 			}
@@ -397,30 +372,42 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		}
 	}
 
-	@Override
-	public void refresh() {
-		super.refresh();
-		try {
-			refreshers.incrementAndGet();
-			String bsn = model.getBundleSymbolicName();
-			txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
+    @Override
+    public void refresh() {
+        super.refresh();
+        lock.modifyOperation(new Runnable() {
+            public void run() {
+                String defaultBSN = null;
+                IResource bndResource = model.getBndResource();
+                if(bndResource != null && bndResource.getType() == IResource.FILE) {
+                    String baseName = bndResource.getProject().getName();
+                    if(model.isProjectFile()) {
+                        defaultBSN = baseName;
+                    } else {
+                        String name = bndResource.getName();
+                        if(name.toLowerCase().endsWith(BND_SUFFIX)) {
+                            name = name.substring(0, name.length() - BND_SUFFIX.length());
+                        }
+                        defaultBSN = baseName + "." + name;
+                    }
+                }
+                txtBSN.setMessage(defaultBSN);
 
-			String bundleVersion = model.getBundleVersionString();
-			txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
+                String bsn = model.getBundleSymbolicName();
+                txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
 
-			String outputFile = model.getOutputFile();
-			txtOutput.setText(outputFile != null ? outputFile : ""); //$NON-NLS-1$
+                String bundleVersion = model.getBundleVersionString();
+                txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
 
-			String bundleActivator = model.getBundleActivator();
-			txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
+                String bundleActivator = model.getBundleActivator();
+                txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
 
-			btnSources.setSelection(model.isIncludeSources());
-		} finally {
-			refreshers.decrementAndGet();
-		}
-		dirtySet.clear();
-		getManagedForm().dirtyStateChanged();
-	}
+                btnSources.setSelection(model.isIncludeSources());
+            }
+        });
+        dirtySet.clear();
+        getManagedForm().dirtyStateChanged();
+    }
 
 	@Override
 	public void initialize(IManagedForm form) {
