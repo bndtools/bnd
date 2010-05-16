@@ -17,7 +17,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 	public static String NAME = "name";
 
 	File[] EMPTY_FILES = new File[0];
-	File root;
+	protected File root;
 	boolean canWrite = true;
 	Pattern REPO_FILE = Pattern
 			.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
@@ -25,6 +25,18 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 	boolean dirty;
 	String name;
 
+	public FileRepo() {}
+	
+	public FileRepo(String name, File location, boolean canWrite) {
+		this.name = name;
+		this.root = location;
+		this.canWrite = canWrite;
+	}
+	
+	protected void init() throws Exception {
+		// for extensions
+	}
+	
 	public void setProperties(Map<String, String> map) {
 		String location = (String) map.get(LOCATION);
 		if (location == null)
@@ -48,8 +60,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 	 * versionRange.
 	 */
 	public File[] get(String bsn, String versionRange)
-			throws MalformedURLException {
-
+			throws Exception {
+		init();
+		
 		// If the version is set to project, we assume it is not
 		// for us. A project repo will then get it.
 		if (versionRange != null && versionRange.equals("project"))
@@ -109,6 +122,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 	}
 
 	public File put(Jar jar) throws Exception {
+		init();
 		dirty = true;
 
 		Manifest manifest = jar.getManifest();
@@ -174,8 +188,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		this.reporter = reporter;
 	}
 
-	public List<String> list(String regex) {
-
+	public List<String> list(String regex) throws Exception {
+		init();
 		Instruction pattern = null;
 		if (regex != null)
 			pattern = Instruction.getPattern(regex);
@@ -194,7 +208,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		return result;
 	}
 
-	public List<Version> versions(String bsn) {
+	public List<Version> versions(String bsn) throws Exception {
+		init();
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
 			String versions[] = dir.list();

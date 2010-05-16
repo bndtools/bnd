@@ -25,12 +25,13 @@ Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Main-Class:                     aQute.bnd.main.bnd
 
--buildpath: \
-	com.springsource.junit, \
-	osgi.core; 					version=4.0, \
-	osgi.cmpn; 					version=4.0, \
-	aQute.libg; 				version=project, \
-	aQute.service; 				version=project
+-buildpath: com.springsource.junit,\
+	osgi.cmpn;version=4.0,\
+	aQute.libg;version=project,\
+	aQute.service;version=project,\
+	bndtools.runtime.junit,\
+	bndtools.launcher,\
+	osgi.core;version=4.2.1
 
 -pom: true
 Bundle-Version: 1.0.0
