@@ -254,6 +254,11 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         if (selection.isEmpty())
             return;
+
+        // Don't react to the event if the View is not visible
+        if(!getSite().getPage().isPartVisible(this))
+            return;
+
         if (selection instanceof IStructuredSelection) {
             Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
                 public boolean select(IFile item) {
