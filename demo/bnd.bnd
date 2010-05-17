@@ -1,0 +1,4 @@
+-buildpath: osgi.core
+Private-Package: com.example.demo
+Bundle-Activator: com.example.demo.Activator
+Bundle-SymbolicName: demo
