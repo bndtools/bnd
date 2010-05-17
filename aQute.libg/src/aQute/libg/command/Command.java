@@ -11,7 +11,7 @@ public class Command {
 	Reporter		reporter;
 	List<String>	arguments	= new ArrayList<String>();
 	long			timeout		= 0;
-	File			cwd			= new File("").getParentFile().getAbsoluteFile();
+	File			cwd			= new File("").getAbsoluteFile().getParentFile().getAbsoluteFile();
 	static Timer	timer		= new Timer();
 	Process			process;
 

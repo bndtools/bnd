@@ -94,7 +94,9 @@ public interface Constants {
 	String					RUNPROPERTIES								= "-runproperties";
 	String					RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String					RUNBUNDLES									= "-runbundles";
+	String					RUNTESTER									= "-runtester";
 	String					RUNPATH										= "-runpath";
+	String					ATTR_MAIN									= "main";
 	String					RUNVM										= "-runvm";
 
 	String					REPORTNEWER									= "-reportnewer";
@@ -208,4 +210,30 @@ public interface Constants {
 	String					BUILDFILES									= "buildfiles";
 
 	String					EMPTY_HEADER								= "<<EMPTY>>";
+
+	
+	
+	// ****************************************************************************************
+	// Launch constants
+	String					LAUNCH_ID_OSGI_RUNTIME						= "bndtools.launch";
+	String					LAUNCH_ID_OSGI_JUNIT						= "bndtools.launch.junit";
+
+	String					ATTR_DYNAMIC_BUNDLES						= "dynamicBundles";
+	boolean					DEFAULT_DYNAMIC_BUNDLES						= true;
+
+	String					ATTR_CLEAN									= "clean";
+	boolean					DEFAULT_CLEAN								= false;
+
+	String					ATTR_LOGLEVEL								= "logLevel";
+	String					DEFAULT_LOGLEVEL							= "WARNING";
+
+	String					ATTR_LOG_OUTPUT								= "logOutput";
+	String					VALUE_LOG_OUTPUT_CONSOLE					= "console";
+	String					DEFAULT_LOG_OUTPUT							= VALUE_LOG_OUTPUT_CONSOLE;
+
+	String					ATTR_JUNIT_REPORTER							= "junitReporter";
+	String					DEFAULT_JUNIT_REPORTER						= "port";
+	String					ATTR_LAUNCHER_BUNDLE_PATH					= "launcherBundlePath";
+
+
 }

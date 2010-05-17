@@ -10,7 +10,6 @@ import org.eclipse.jdt.junit.launcher.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.plugin.*;
-import aQute.bnd.test.*;
 
 @SuppressWarnings("unchecked")
 public class OSGiJUnitLauncherConfigurationDelegate extends
@@ -37,13 +36,13 @@ public class OSGiJUnitLauncherConfigurationDelegate extends
         IJavaProject javaProject = getJavaProject(configuration);
         Project model = Activator.getDefault().getCentral().getModel(javaProject);
         model.clear();
-        launcher = new ProjectLauncher(model);
 
         try {
+            launcher = new ProjectLauncher(model);
             super.collectExecutionArguments(configuration, vmArguments,
                     programArguments);
 
-            launcher.getArguments(vmArguments, programArguments, true);
+//            launcher.getArguments(vmArguments, programArguments, true);
 
             if (configuration.getAttribute(OSGiArgumentsTab.ATTR_KEEP, false))
                 programArguments.add("-keep");
@@ -72,8 +71,12 @@ public class OSGiJUnitLauncherConfigurationDelegate extends
      */
     public String[] getClasspath(ILaunchConfiguration configuration)
             throws CoreException {
-        
-        return launcher.getClasspath();
+        try {
+        return launcher.getClasspath().toArray(new String[0]);
+        } catch( Exception e) {
+        	e.printStackTrace();
+        	throw new CoreException(null);
+        }
         /**
         try {
             IJavaProject javaProject = getJavaProject(configuration);
@@ -97,16 +100,6 @@ public class OSGiJUnitLauncherConfigurationDelegate extends
         }
         return null;
         */
-    }
-
-    /**
-     * Extract the runtime on the file system so we can refer to it. in the
-     * remote VM.
-     * 
-     * @return
-     */
-    public File getRuntime() {
-        return ProjectLauncher.getRuntime();
     }
 
 }

@@ -8,7 +8,6 @@ import java.util.jar.*;
 import aQute.bnd.help.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
-import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.libg.sed.*;
@@ -23,7 +22,7 @@ import aQute.service.scripting.*;
 
 public class Project extends Processor {
 
-	final static String			DEFAULT_ACTIONS	= "build; label='Build', test; label='Test', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	final static String			DEFAULT_ACTIONS	= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE			= "bnd.bnd";
 	public final static String	BNDCNF			= "cnf";
 	final Workspace				workspace;
@@ -226,10 +225,10 @@ public class Project extends Processor {
 					// before.
 
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
-					doPath(runpath, dependencies, parseTestpath(), bootclasspath);
-					doPath(runbundles, dependencies, parseTestbundles(), null);
+					doPath(runpath, dependencies, parseRunpath(), bootclasspath);
+					doPath(runbundles, dependencies, parseRunbundles(), null);
 
-					// We now know all dependend projects. But we also depend
+					// We now know all dependent projects. But we also depend
 					// on whatever those projects depend on. This creates an
 					// ordered list without any duplicates. This of course
 					// assumes
@@ -317,11 +316,11 @@ public class Project extends Processor {
 		return getBundles(Constants.STRATEGY_LOWEST, getProperty(Constants.BUILDPATH));
 	}
 
-	private List<Container> parseTestpath() throws Exception {
+	private List<Container> parseRunpath() throws Exception {
 		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNPATH));
 	}
 
-	private List<Container> parseTestbundles() throws Exception {
+	private List<Container> parseRunbundles() throws Exception {
 		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNBUNDLES));
 	}
 
@@ -1079,50 +1078,22 @@ public class Project extends Processor {
 	public File[] build() throws Exception {
 		return build(false);
 	}
-
-	public boolean test() throws Exception {
-		boolean ok = true;
-		String testbundles = getProperty(TESTBUNDLES);
-
-		List<Container> containers = getBundles(STRATEGY_HIGHEST, testbundles);
-
-		File jars[] = build(true);
-		if (!isOk())
-			return false;
-
-		if (jars != null) {
-			for (File jar : jars)
-				ok &= test(jar);
-		} else if (containers.isEmpty()) {
-			error("No %s set nor any JARs created in this project %s", TESTBUNDLES, this);
-			return false;
-		}
-
-		for (Container container : containers) {
-			List<File> files = new ArrayList<File>();
-			if (container.contributeFiles(files, this)) {
-				for (File file : files) {
-					ok &= test(file);
-				}
-			}
-		}
-		return ok;
+	
+	
+	public void run() throws Exception {
+		ProjectLauncher pl = new ProjectLauncher(this);
+		pl.launch();
 	}
 
-	public boolean test(File f) throws Exception {
+	public void test() throws Exception {
 		ProjectLauncher pl = new ProjectLauncher(this);
-		pl.setReport(getProperty("target") + "/" + f.getName().replace(".jar", ".xml"));
-		int errors = pl.run(f);
-		getInfo(pl);
-		if (errors == 0) {
-			trace("ok");
-			return true;
-		} else {
-			error("Failed: " + normalize(f) + ", " + errors + " test" + (errors > 1 ? "s" : "")
-					+ " failures, see " + normalize(pl.getTestreport()));
+		Collection<Container> testbundles = getBundles(STRATEGY_HIGHEST, getProperty(RUNTESTER));
+		Collection<File> fs = toFile(testbundles);
+		for ( File f : fs )
+			pl.addBundle(f);
 
-			return false;
-		}
+		// TODO
+		
 	}
 
 	private void delete(File target) {
@@ -1399,6 +1370,21 @@ public class Project extends Processor {
 	 */
 	public Collection<? extends Builder> getSubBuilders() throws Exception {
 		return getBuilder(null).getSubBuilders();
+	}
+
+	/**
+	 * Calculate the classpath. We include our own runtime.jar which includes
+	 * the test framework and we include the first of the test frameworks
+	 * specified.
+	 * 
+	 * @throws Exception
+	 */
+	Collection<File> toFile(Collection<Container> containers) throws Exception {
+		ArrayList<File> files = new ArrayList<File>();
+		for (Container container : containers) {
+			container.contributeFiles(files, this);
+		}
+		return files;
 	}
 
 }

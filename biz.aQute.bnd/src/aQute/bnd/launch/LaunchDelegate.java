@@ -9,7 +9,6 @@ import org.eclipse.jdt.launching.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.plugin.*;
-import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 
 public class LaunchDelegate extends JavaLaunchDelegate {
@@ -25,8 +24,8 @@ public class LaunchDelegate extends JavaLaunchDelegate {
             ProjectLauncher launcher = new ProjectLauncher(model);
             List<String> vmArguments = new ArrayList<String>();
             List<String> programArguments = new ArrayList<String>();
-            launcher.getArguments(vmArguments, programArguments, false);
-            this.classpath = launcher.getClasspath();
+//            launcher.getArguments(vmArguments, programArguments, false);
+//            this.classpath = launcher.getClasspath();
             this.vmArguments = Processor.join(vmArguments, " ");
             this.programArguments = Processor.join(programArguments, " ");
             super.launch(configuration, mode, launch, monitor);

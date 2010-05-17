@@ -19,7 +19,6 @@ import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
-import aQute.bnd.test.*;
 import aQute.lib.deployer.*;
 import aQute.lib.jardiff.*;
 import aQute.lib.osgi.*;
@@ -103,7 +102,7 @@ public class bnd extends Processor {
 				cnt++;
 				doView(args, ++i);
 				break;
-			} else if ("build".equals(args[i])) {
+			} else if ("buildx".equals(args[i])) {
 				cnt++;
 				doBuild(args, ++i);
 				break;
@@ -135,11 +134,7 @@ public class bnd extends Processor {
 				cnt++;
 				doDiff(args, ++i);
 				break;
-			} else if ("test".equals(args[i])) {
-				cnt++;
-				test(args, ++i);
-				break;
-			} else if ("help".equals(args[i])) {
+			} else  if ("help".equals(args[i])) {
 				cnt++;
 				doHelp(args, ++i);
 				break;
@@ -151,7 +146,6 @@ public class bnd extends Processor {
 				Project p = getProject();
 				if ( p != null ) {
 					 Action a = p.getActions().get(args[i]);
-					 System.out.println("Found action in " + p.getActions() + " " + a);
 					 if ( a != null ) {
 						 cnt++;
 						 // parse args
@@ -1289,17 +1283,6 @@ public class bnd extends Processor {
 		this.out = out;
 	}
 
-	/**
-	 * Run a test
-	 * 
-	 * @throws Exception
-	 */
-
-	public void test(String args[], int i) throws Exception {
-		Project project = getProject();
-		project.test();
-		getInfo(project);
-	}
 
 	public Project getProject() throws Exception {
 		if (project != null)
@@ -1361,7 +1344,7 @@ public class bnd extends Processor {
 		String version = null;
 
 		Project p = Workspace.getProject(getBase());
-		List<RepositoryPlugin> repos = p.getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> repos = p.getWorkspace().getPlugins(RepositoryPlugin.class);
 		RepositoryPlugin writable = null;
 		for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
 			RepositoryPlugin rpp = rp.next();
@@ -1719,23 +1702,23 @@ public class bnd extends Processor {
 	 */
 	private int runtActualTests(Tag report, File reportDir, File f,
 			ProjectLauncher pl, File target) throws Exception {
-		int errors;
+		int errors =0;
 		String path = f.getName().replace(".bnd", "") + ".xml";
 		File reportFile = getFile(reportDir, path);
-		pl.setReport(reportFile);
-		report.addAttribute("report", path);
-
-		errors = pl.run(target);
-
-		getInfo(pl);
-		if (errors == 0) {
-			trace("ok");
-		} else {
-			report.addAttribute("error", errors);
-			error("Failed: " + normalize(f) + ", " + errors + " test"
-					+ (errors > 1 ? "s" : "") + " failures, see "
-					+ normalize(pl.getTestreport().getAbsolutePath()));
-		}
+//		pl.setReport(reportFile);
+//		report.addAttribute("report", path);
+//
+//		errors = pl.run(target);
+//
+//		getInfo(pl);
+//		if (errors == 0) {
+//			trace("ok");
+//		} else {
+//			report.addAttribute("error", errors);
+//			error("Failed: " + normalize(f) + ", " + errors + " test"
+//					+ (errors > 1 ? "s" : "") + " failures, see "
+//					+ normalize(pl.getTestreport().getAbsolutePath()));
+//		}
 
 		doPerReport(report, reportFile);
 		return errors;
