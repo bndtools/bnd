@@ -1,2 +1,2 @@
 -resourceonly: true
--includeresource: ${repo;bndtools.runtime.junit}, ${repo;bndtools.launcher} 
+Include-Resource: embedded-repo

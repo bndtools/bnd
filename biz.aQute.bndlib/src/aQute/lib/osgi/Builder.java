@@ -674,7 +674,7 @@ public class Builder extends Analyzer {
 		String includes = getProperty("Bundle-Includes");
 		if (includes == null) {
 			includes = getProperty(INCLUDERESOURCE);
-			if (includes == null)
+			if (includes == null || includes.length() == 0)
 				includes = getProperty("Include-Resource");
 		} else
 			warning("Please use -includeresource instead of Bundle-Includes");
