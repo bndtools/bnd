@@ -21,12 +21,14 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.lib.osgi.Clazz;
+import bndtools.tasks.analyse.ExportPackage;
+import bndtools.tasks.analyse.ImportPackage;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
-	
+
 	static final Object IMPORTS_PLACEHOLDER = new String("_imports_placeholder");
 	static final Object EXPORTS_PLACEHOLDER = new String("_exports_placeholder");
-	
+
 	private final Set<String> exportNames = new HashSet<String>();
 	private ImportsAndExports importsAndExports = null;
 
@@ -74,36 +76,36 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		if(element instanceof ImportUsedByPackage) {
 			return ((ImportUsedByPackage) element).importPackage;
 		}
-		
+
 		if(element instanceof ImportPackage)
 			return IMPORTS_PLACEHOLDER;
-		
+
 		if(element instanceof ExportPackage)
 			return EXPORTS_PLACEHOLDER;
-		
+
 		return null;
 	}
 
 	public boolean hasChildren(Object element) {
 		if(element == IMPORTS_PLACEHOLDER)
 			return importsAndExports.imports != null && !importsAndExports.imports.isEmpty();
-		
+
 		if(element == EXPORTS_PLACEHOLDER)
 			return importsAndExports.imports != null && !importsAndExports.exports.isEmpty();
-		
+
 		if(element instanceof ExportPackage) {
 			Set<String> uses = ((ExportPackage) element).getUses();
 			return uses != null && !uses.isEmpty();
 		}
-		
+
 		if(element instanceof ImportPackage) {
 			Collection<? extends String> usedBy = ((ImportPackage) element).getUsedBy();
 			return usedBy != null && !usedBy.isEmpty();
 		}
-		
+
 		if(element instanceof ImportUsedByPackage)
 			return true;
-		
+
 		return false;
 	}
 
@@ -116,7 +118,7 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		this.importsAndExports = (ImportsAndExports) newInput;
-		
+
 		exportNames.clear();
 		if(importsAndExports != null) {
 			for (ExportPackage export : importsAndExports.exports) {
@@ -124,7 +126,7 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 			}
 		}
 	}
-	
+
 	static class ImportUsedByPackage implements Comparable<ImportUsedByPackage> {
 
 		final ImportPackage importPackage;
@@ -139,8 +141,8 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 			return this.usedByName.compareTo(other.usedByName);
 		}
 	}
-	
-	static class ImportUsedByClass implements Comparable<ImportUsedByClass> {
+
+	public static class ImportUsedByClass implements Comparable<ImportUsedByClass> {
 
 		final ImportUsedByPackage importUsedBy;
 		final Clazz clazz;
@@ -152,9 +154,12 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		public int compareTo(ImportUsedByClass other) {
 			return this.clazz.getFQN().compareTo(other.clazz.getFQN());
 		}
+		public Clazz getClazz() {
+		    return clazz;
+		}
 	}
-	
-	static class ExportUsesPackage implements Comparable<ExportUsesPackage> {
+
+	public static class ExportUsesPackage implements Comparable<ExportUsesPackage> {
 
 		final ExportPackage exportPackage;
 		final String name;

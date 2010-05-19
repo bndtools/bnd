@@ -14,7 +14,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 
-
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -40,27 +39,26 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.lib.osgi.Constants;
 import bndtools.UIConstants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.HeaderClause;
 import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.utils.ModificationLock;
 
-import aQute.lib.osgi.Constants;
-
 public class PkgPatternsDetailsPage extends AbstractFormPart implements
 		IDetailsPage, PropertyChangeListener {
 
 	private final PkgPatternsListPart listPart;
 	private final ModificationLock modifyLock = new ModificationLock();
-	
+
 	private BndEditModel model;
 	protected HeaderClause[] selectedClauses = new HeaderClause[0];
-	
+
 	private Composite mainComposite;
 	private Text txtName;
 	private Text txtVersion;
-	
+
 
 	private final String title;
 
@@ -71,7 +69,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 	}
 	public void createContents(Composite parent) {
 		FormToolkit toolkit = getManagedForm().getToolkit();
-		
+
 		FieldDecoration assistDecor = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 		KeyStroke assistKeyStroke = null;
 		try {
@@ -82,10 +80,10 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 
 		Section mainSection = toolkit.createSection(parent, Section.TITLE_BAR);
 		mainSection.setText(title);
-		
+
 		mainComposite = toolkit.createComposite(mainSection);
 		mainSection.setClient(mainComposite);
-		
+
 		toolkit.createLabel(mainComposite, "Pattern:");
 		txtName = toolkit.createText(mainComposite, "");
 		ControlDecoration decPattern = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, mainComposite);
@@ -93,7 +91,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 		decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decPattern.setShowHover(true);
 		decPattern.setShowOnlyOnFocus(true);
-		
+
 		PkgPatternsProposalProvider proposalProvider = new PkgPatternsProposalProvider(new FormPartJavaSearchContext(this));
 		ContentProposalAdapter patternProposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
 		patternProposalAdapter.addContentProposalListener(proposalProvider);
@@ -110,16 +108,16 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 				txtName.setSelection(patternProposal.getCursorPosition());
 			}
 		});
-		
+
 		toolkit.createLabel(mainComposite, "Version:");
 		txtVersion = toolkit.createText(mainComposite, "");
-		
+
 		/*
 		Section attribsSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
 		attribsSection.setText("Extra Attributes");
 		Composite attribsComposite = toolkit.createComposite(attribsSection);
 		*/
-		
+
 		// Listeners
 		txtName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -139,7 +137,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 					String text = txtVersion.getText();
 					if(text.length() == 0)
 						text = null;
-					
+
 					for (HeaderClause clause : selectedClauses) {
 						clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
 					}
@@ -149,12 +147,12 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 				}
 			}
 		});
-		
+
 		// Layout
 		GridData gd;
-		
-		parent.setLayout(new GridLayout(1, false));
-		mainSection.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+		parent.setLayout(new GridLayout());
+		mainSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		mainComposite.setLayout(new GridLayout(2, false));
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
@@ -170,7 +168,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 	protected final Composite getMainComposite() {
 		return mainComposite;
 	}
-	
+
 	public void selectionChanged(IFormPart part, ISelection selection) {
 		Object[] tmp = ((IStructuredSelection) selection).toArray();
 		selectedClauses = new HeaderClause[tmp.length];
@@ -182,11 +180,11 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 			txtName.setSelection(selectedClauses[0].getName().length());
 		}
 	}
-	
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
-		
+
 		this.model = (BndEditModel) form.getInput();
 		this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
 	}
@@ -207,14 +205,14 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 				} else if(selectedClauses.length == 1) {
 					txtName.setEnabled(true);
 					txtName.setText(selectedClauses[0].getName());
-					
+
 					String version = selectedClauses[0].getAttribs().get(Constants.VERSION_ATTRIBUTE);
 					txtVersion.setEnabled(true);
 					txtVersion.setMessage("");
 					txtVersion.setText(version != null ? version : "");
 				} else {
 					txtName.setEnabled(false);
-					
+
 					String firstVersion = selectedClauses[0].getAttribs().get(Constants.VERSION_ATTRIBUTE);
 					boolean versionsDiffer = false;
 					for(int i = 1; i < selectedClauses.length; i++) {
@@ -237,7 +235,7 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 			}
 		});
 	}
-	
+
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);

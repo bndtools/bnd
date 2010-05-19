@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.views.impexp;
+package bndtools.tasks.analyse;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -33,12 +32,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWorkbenchPage;
-
-import bndtools.Plugin;
-import bndtools.utils.CollectionUtils;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.plugin.Activator;
@@ -49,22 +42,26 @@ import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
+import bndtools.Plugin;
+import bndtools.utils.CollectionUtils;
 
 public class AnalyseImportsJob extends Job {
 
 	private final IFile[] files;
-	private final IWorkbenchPage page;
 
-	public AnalyseImportsJob(String name, IFile[] files, IWorkbenchPage page) {
+    private IFile[] resultFileArray;
+    private ArrayList<ImportPackage> importResults;
+    private ArrayList<ExportPackage> exportResults;
+
+	public AnalyseImportsJob(String name, IFile[] files) {
 		super(name);
 		this.files = files;
-		this.page = page;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		Map<IFile, Builder> builderMap = new HashMap<IFile, Builder>();
-		
+
 		// Setup builders & all exports & used-by mappings
 		Map<String, List<ExportPackage>> exports = new HashMap<String, List<ExportPackage>>();
 		Map<String, Set<String>> usedBy = new HashMap<String, Set<String>>();
@@ -86,12 +83,12 @@ public class AnalyseImportsJob extends Job {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// Calculate the imports
 		Map<String, List<ImportPackage>> imports = new HashMap<String, List<ImportPackage>>();
 		for (Entry<IFile, Builder> entry : builderMap.entrySet()) {
 			Builder builder = entry.getValue();
-			
+
 			try {
 				mergeImports(imports, exports, usedBy, builder);
 			} catch (IOException e) {
@@ -99,24 +96,24 @@ public class AnalyseImportsJob extends Job {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// Generate the final results
 		Set<IFile> resultFiles = builderMap.keySet();
-		IFile[] resultFileArray = (IFile[]) resultFiles.toArray(new IFile[resultFiles.size()]);
-		
-		List<ImportPackage> importResults = new ArrayList<ImportPackage>();
+		resultFileArray = resultFiles.toArray(new IFile[resultFiles.size()]);
+
+		importResults = new ArrayList<ImportPackage>();
 		for (List<ImportPackage> list : imports.values()) {
 			importResults.addAll(list);
 		}
-		List<ExportPackage> exportResults = new ArrayList<ExportPackage>();
+		exportResults = new ArrayList<ExportPackage>();
 		for (List<ExportPackage> list : exports.values()) {
 			exportResults.addAll(list);
 		}
-		
-		showResults(resultFileArray, importResults, exportResults);
+
+		//showResults(resultFileArray, importResults, exportResults);
 		return Status.OK_STATUS;
 	}
-	
+
 	static Builder setupBuilderForJarFile(IFile file) throws IOException, CoreException {
 		Builder builder = new Builder();
 		Jar jar = new Jar(file.getName(), file.getLocation().toFile());
@@ -128,11 +125,11 @@ public class AnalyseImportsJob extends Job {
 		}
 		return builder;
 	}
-	
+
 	static Builder setupBuilderForBndFile(IFile file) throws IOException, CoreException {
 		IProject project = file.getProject();
 		File iofile = file.getLocation().toFile();
-		
+
 		// Calculate the manifest
 		try {
 			Project bndProject = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
@@ -152,10 +149,10 @@ public class AnalyseImportsJob extends Job {
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
 			return;
-		
+
 		Attributes attribs = manifest.getMainAttributes();
 		Map<String, Map<String, String>> exportsMap = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
-		
+
 		// Merge the exports
 		Map<String, Set<String>> uses = builder.getUses();
 		for(Entry<String, Map<String, String>> entry : exportsMap.entrySet()) {
@@ -167,7 +164,7 @@ public class AnalyseImportsJob extends Job {
 			}
 			exportList.add(export);
 		}
-		
+
 		// Merge the used-by package mappings
 		Map<String, Set<String>> myUsedBy = CollectionUtils.invertMapOfCollection(uses);
 		for (Entry<String, Set<String>> entry : myUsedBy.entrySet()) {
@@ -185,14 +182,14 @@ public class AnalyseImportsJob extends Job {
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
 			return;
-		
+
 		Attributes attribs = manifest.getMainAttributes();
 		final Map<String, Map<String, String>> importsMap = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
 
 		for(Entry<String, Map<String, String>> entry : importsMap.entrySet()) {
 			String pkgName = entry.getKey();
 			Map<String, String> importAttribs = entry.getValue();
-			
+
 			// Calculate the importing classes for this import
 			Map<String, List<Clazz>> classMap = new HashMap<String, List<Clazz>>();
 			Collection<Clazz> classes = Collections.emptyList();
@@ -207,7 +204,7 @@ public class AnalyseImportsJob extends Job {
 				if (index < 0)
 					continue;
 				String pkg = fqn.substring(0, index);
-				
+
 				List<Clazz> list = classMap.get(pkg);
 				if(list == null) {
 					list = new LinkedList<Clazz>();
@@ -215,7 +212,7 @@ public class AnalyseImportsJob extends Job {
 				}
 				list.add(clazz);
 			}
-			
+
 			// Check if this is a self-import
 			boolean selfImport = false;
 			List<ExportPackage> matchingExports = exports.get(pkgName);
@@ -231,7 +228,7 @@ public class AnalyseImportsJob extends Job {
 					}
 				}
 			}
-			
+
 			ImportPackage importPackage = new ImportPackage(pkgName, selfImport, importAttribs, usedBy.get(pkgName), classMap);
 			List<ImportPackage> importList = imports.get(pkgName);
 			if(importList == null) {
@@ -241,6 +238,7 @@ public class AnalyseImportsJob extends Job {
 			importList.add(importPackage);
 		}
 	}
+	/*
 	void showResults(final IFile[] files, final List<ImportPackage> imports, final List<ExportPackage> exports) {
 		Display display = page.getWorkbenchWindow().getShell().getDisplay();
 		display.asyncExec(new Runnable() {
@@ -255,4 +253,17 @@ public class AnalyseImportsJob extends Job {
 			}
 		});
 	}
+	*/
+
+	public IFile[] getResultFileArray() {
+        return resultFileArray;
+    }
+
+	public List<ImportPackage> getImportResults() {
+        return importResults;
+    }
+
+	public List<ExportPackage> getExportResults() {
+        return exportResults;
+    }
 }

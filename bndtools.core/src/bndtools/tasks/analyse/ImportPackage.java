@@ -8,16 +8,15 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.views.impexp;
+package bndtools.tasks.analyse;
 
 import java.util.Collection;
 import java.util.Map;
 
+import aQute.lib.osgi.Clazz;
 import bndtools.editor.model.HeaderClause;
 
-import aQute.lib.osgi.Clazz;
-
-class ImportPackage extends HeaderClause {
+public class ImportPackage extends HeaderClause {
 
 	private final Collection<String> usedBy;
 	private final Map<String, ? extends Collection<Clazz>> classes;
@@ -35,7 +34,7 @@ class ImportPackage extends HeaderClause {
 	public Collection<String> getUsedBy() {
 		return usedBy;
 	};
-	
+
 	public Collection<Clazz> getImportingClasses(String importingPackage) {
 		return classes.get(importingPackage);
 	}

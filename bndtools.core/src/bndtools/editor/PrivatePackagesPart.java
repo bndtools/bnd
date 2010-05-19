@@ -39,8 +39,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -116,12 +114,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		viewer.setLabelProvider(new PrivatePackageTableLabelProvider());
 
 		// Listeners
-        table.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                managedForm.fireSelectionChanged(PrivatePackagesPart.this, viewer.getSelection());
-            }
-        });
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 			    managedForm.fireSelectionChanged(PrivatePackagesPart.this, event.getSelection());

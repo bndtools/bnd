@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.views.impexp;
+package bndtools.tasks.analyse;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +16,7 @@ import java.util.Set;
 import bndtools.editor.model.HeaderClause;
 
 
-class ExportPackage extends HeaderClause {
+public class ExportPackage extends HeaderClause {
 
 	private final Set<String> uses;
 
@@ -24,7 +24,7 @@ class ExportPackage extends HeaderClause {
 		super(name, attribs);
 		this.uses = uses;
 	}
-	
+
 	public Set<String> getUses() {
 		return uses;
 	}

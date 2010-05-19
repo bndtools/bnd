@@ -11,12 +11,18 @@
 package bndtools.editor.pkgpatterns;
 
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -25,34 +31,59 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.tasks.analyse.AnalyseImportsJob;
+import bndtools.tasks.analyse.ExportPackage;
+import bndtools.tasks.analyse.ImportPackage;
 import bndtools.utils.EditorUtils;
-import bndtools.views.impexp.AnalyseImportsJob;
 import bndtools.views.impexp.ImportsExportsView;
 
 public class AnalyseToolbarAction extends Action {
-	
+
 	private final IFormPage formPage;
 
 	public AnalyseToolbarAction(IFormPage formPage) {
 		super("analyse");
 		this.formPage = formPage;
 	}
-	public void run() {
+	@Override
+    public void run() {
 		IFile file = ResourceUtil.getFile(formPage.getEditorInput());
 		final IWorkbenchPage workbenchPage = formPage.getEditorSite().getPage();
-		
+
 		try {
 			workbenchPage.showView(ImportsExportsView.VIEW_ID);
 			FormEditor editor = formPage.getEditor();
 			if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
-				AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file }, workbenchPage);
+				final AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file });
+				job.addJobChangeListener(new JobChangeAdapter() {
+				    @Override
+				    public void done(IJobChangeEvent event) {
+				        if(job.getResult().isOK())
+				            showResults(workbenchPage, job.getResultFileArray(), job.getImportResults(), job.getExportResults());
+				    }
+                });
 				job.schedule();
 			}
 		} catch (PartInitException e) {
 			ErrorDialog.openError(workbenchPage.getWorkbenchWindow().getShell(), "Analyse Packages", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening Imports/Exports view", e));
 		}
 	};
-	
+
+    void showResults(final IWorkbenchPage page, final IFile[] files, final List<ImportPackage> imports, final List<ExportPackage> exports) {
+        Display display = page.getWorkbenchWindow().getShell().getDisplay();
+        display.asyncExec(new Runnable() {
+            public void run() {
+                IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID);
+                if(viewRef != null) {
+                    ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
+                    if(view != null) {
+                        view.setInput(files, imports, exports);
+                    }
+                }
+            }
+        });
+    }
+
 	@Override
 	public ImageDescriptor getImageDescriptor() {
 		return AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png");

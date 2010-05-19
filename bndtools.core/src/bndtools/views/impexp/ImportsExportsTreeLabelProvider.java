@@ -29,6 +29,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.model.HeaderClause;
+import bndtools.tasks.analyse.ImportPackage;
 import bndtools.views.impexp.ImportsExportsTreeContentProvider.ExportUsesPackage;
 import bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
 import bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByPackage;

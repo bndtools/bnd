@@ -12,6 +12,9 @@ package bndtools.views.impexp;
 
 import java.util.Collection;
 
+import bndtools.tasks.analyse.ExportPackage;
+import bndtools.tasks.analyse.ImportPackage;
+
 class ImportsAndExports {
 	final Collection<? extends ImportPackage> imports;
 	final Collection<? extends ExportPackage> exports;

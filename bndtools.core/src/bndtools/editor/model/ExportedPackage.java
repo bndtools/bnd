@@ -27,11 +27,11 @@ public class ExportedPackage extends HeaderClause {
 	public void setVersionString(String version) {
 		attribs.put(Constants.VERSION_ATTRIBUTE, version);
 	}
-	
+
 	public String getVersionString() {
 		return attribs.get(Constants.VERSION_ATTRIBUTE);
 	}
-	
+
 	@Override
 	public ExportedPackage clone() {
 		return new ExportedPackage(this.name, this.attribs);

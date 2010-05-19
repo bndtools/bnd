@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -104,7 +105,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
 		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
-		viewer.setUseHashlookup(true);
+		viewer.setUseHashlookup(false);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PkgPatternsLabelProvider());
 
@@ -121,11 +122,13 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		btnMoveDown.setEnabled(false);
 
 		// Listeners
-        table.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                managedForm.fireSelectionChanged(PkgPatternsListPart.this, viewer.getSelection());
-            }
+		table.addFocusListener(new FocusAdapter() {
+		    @Override
+		    public void focusGained(FocusEvent e) {
+		        ISelection selection = viewer.getSelection();
+		        if(!selection.isEmpty())
+		            managedForm.fireSelectionChanged(PkgPatternsListPart.this, selection);
+		    }
         });
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {

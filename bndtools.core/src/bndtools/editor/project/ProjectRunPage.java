@@ -2,6 +2,7 @@ package bndtools.editor.project;
 
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -12,6 +13,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import bndtools.editor.MDSashForm;
 import bndtools.editor.model.BndEditModel;
 import bndtools.utils.MessageHyperlinkAdapter;
 
@@ -36,8 +38,12 @@ public class ProjectRunPage extends FormPage {
 		// Create Controls
 		Composite body = form.getBody();
 
-		Composite panel1 = tk.createComposite(body);
-		Composite panel2 = tk.createComposite(body);
+		MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
+		tk.adapt(sashForm, false, false);
+		sashForm.setSashWidth(6);
+
+		Composite panel1 = tk.createComposite(sashForm);
+		Composite panel2 = tk.createComposite(sashForm);
 
 		RunFrameworkPart runFwkPart = new RunFrameworkPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED);
 		managedForm.addPart(runFwkPart);
@@ -51,30 +57,23 @@ public class ProjectRunPage extends FormPage {
 		RunVMArgsPart vmArgsPart = new RunVMArgsPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
 		managedForm.addPart(vmArgsPart);
 
+		sashForm.hookResizeListener();
+
 		// Layout
 		GridLayout layout;
 		GridData gd;
 
-		layout = new GridLayout(2, false);
-		layout.verticalSpacing = 10;
-		layout.horizontalSpacing = 10;
-		body.setLayout(layout);
+		body.setLayout(new FillLayout());
 
 		gd = new GridData(SWT.FILL, SWT.TOP, false, true);
 		panel1.setLayoutData(gd);
 
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 10;
-		layout.horizontalSpacing = 0;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
 		panel1.setLayout(layout);
 
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 10;
-		layout.horizontalSpacing = 0;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
 		panel2.setLayout(layout);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, false, true);

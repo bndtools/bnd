@@ -21,7 +21,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -61,6 +63,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.editor.model.HeaderClause;
+import bndtools.tasks.analyse.AnalyseImportsJob;
+import bndtools.tasks.analyse.ExportPackage;
+import bndtools.tasks.analyse.ImportPackage;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.Predicate;
 import bndtools.utils.SelectionUtils;
@@ -119,16 +124,16 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
 		viewer.setAutoExpandLevel(2);
 
-		hideSelfImportsFilter = new ViewerFilter() {
-			@Override
+        hideSelfImportsFilter = new ViewerFilter() {
+            @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-				if(element instanceof ImportPackage) {
-					return !((ImportPackage) element).isSelfImport();
-				}
-				return true;
-			}
-		};
-		viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
+                if (element instanceof ImportPackage) {
+                    return !((ImportPackage) element).isSelfImport();
+                }
+                return true;
+            }
+        };
+        viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
 
 		viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
 			public void dragStart(DragSourceEvent event) {
@@ -282,8 +287,23 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                 oldJob.cancel();
 
             if (selectedFiles != null) {
-                final Job tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles, getSite().getPage());
+                final AnalyseImportsJob tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles);
                 tmp.setSystem(true);
+
+                tmp.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        if(tmp.getResult().isOK()) {
+                            display.asyncExec(new Runnable() {
+                                public void run() {
+                                    if(!tree.isDisposed())
+                                        setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults());
+                                }
+                            });
+                        }
+                    }
+                });
+
                 analysisJob = tmp;
                 analysisJob.schedule(500);
             } else {
