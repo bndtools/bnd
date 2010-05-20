@@ -33,7 +33,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.VersionedClause;
+import bndtools.model.clauses.VersionedClause;
+import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
 

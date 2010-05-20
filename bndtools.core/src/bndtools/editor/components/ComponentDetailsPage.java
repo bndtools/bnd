@@ -70,8 +70,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.UIConstants;
-import bndtools.editor.MapEntryCellModifier;
-import bndtools.editor.PropertiesTableLabelProvider;
+import bndtools.editor.common.MapContentProvider;
+import bndtools.editor.common.MapEntryCellModifier;
+import bndtools.editor.common.PropertiesTableLabelProvider;
 import bndtools.editor.model.ComponentSvcReference;
 import bndtools.editor.model.ServiceComponent;
 import bndtools.editor.model.ServiceComponentConfigurationPolicy;

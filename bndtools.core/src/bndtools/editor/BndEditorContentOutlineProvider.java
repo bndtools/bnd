@@ -22,9 +22,9 @@ import org.eclipse.jface.viewers.Viewer;
 
 import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.ExportedPackage;
-import bndtools.editor.model.ImportPattern;
 import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlineProvider implements ITreeContentProvider, PropertyChangeListener {
 

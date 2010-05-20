@@ -42,8 +42,8 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.lib.osgi.Constants;
 import bndtools.UIConstants;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.HeaderClause;
 import bndtools.javamodel.FormPartJavaSearchContext;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.ModificationLock;
 
 public class PkgPatternsDetailsPage extends AbstractFormPart implements

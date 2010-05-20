@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IResource;
@@ -39,6 +39,10 @@ import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.HeaderClause;
+import bndtools.model.clauses.ImportPattern;
+import bndtools.model.clauses.VersionedClause;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -69,7 +73,8 @@ public class BndEditModel {
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
 		aQute.lib.osgi.Constants.SUB,
 		BndConstants.RUNFRAMEWORK,
-		BndConstants.RUNVMARGS
+		BndConstants.RUNVMARGS,
+		BndConstants.TESTSUITES
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -405,6 +410,15 @@ public class BndEditModel {
     public void setRunVMArgs(String args) {
         String old = getRunVMArgs();
         doSetString(BndConstants.RUNVMARGS, old, args);
+    }
+
+    public List<String> getTestSuites() {
+        return doGetStringList(BndConstants.TESTSUITES);
+    }
+
+    public void setTestSuites(List<String> suites) {
+        List<String> old = getTestSuites();
+        doSetStringList(BndConstants.TESTSUITES, old, suites);
     }
 
 

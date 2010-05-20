@@ -17,9 +17,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.model.ExportedPackage;
-import bndtools.editor.model.ImportPattern;
 import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
 

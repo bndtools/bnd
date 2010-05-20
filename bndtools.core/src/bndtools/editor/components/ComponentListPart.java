@@ -76,8 +76,8 @@ import org.eclipse.ui.part.ResourceTransfer;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.ExportedPackage;
 import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.utils.PathUtils;
 
 public class ComponentListPart extends SectionPart implements PropertyChangeListener {

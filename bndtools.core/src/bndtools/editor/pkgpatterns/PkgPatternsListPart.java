@@ -53,7 +53,7 @@ import org.osgi.framework.Constants;
 
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.HeaderClause;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.CollectionUtils;
 import bndtools.utils.PackageDropAdapter;
 

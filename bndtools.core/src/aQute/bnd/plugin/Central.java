@@ -27,7 +27,6 @@ import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.classpath.ModelListener;
 import aQute.bnd.service.Refreshable;
 
 @SuppressWarnings("unchecked")

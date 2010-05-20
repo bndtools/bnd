@@ -32,11 +32,11 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.ExportedPackage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.pieces.ExportVersionPolicy;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {

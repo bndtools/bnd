@@ -19,7 +19,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.UIConstants;
-import bndtools.editor.model.HeaderClause;
+import bndtools.model.clauses.HeaderClause;
 
 import aQute.lib.osgi.Constants;
 

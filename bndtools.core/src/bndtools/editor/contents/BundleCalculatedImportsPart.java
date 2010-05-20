@@ -52,17 +52,18 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.model.HeaderClause;
-import bndtools.tasks.analyse.AnalyseImportsJob;
-import bndtools.tasks.analyse.ImportPackage;
-import bndtools.views.impexp.ImportsAndExportsViewerSorter;
-import bndtools.views.impexp.ImportsExportsTreeLabelProvider;
-import bndtools.views.impexp.ImportsExportsTreeContentProvider.ImportUsedByClass;
+import bndtools.model.clauses.HeaderClause;
+import bndtools.model.importanalysis.ImportPackage;
+import bndtools.model.importanalysis.ImportTreeContentProvider;
+import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;
+import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
+import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
+import bndtools.tasks.AnalyseImportsJob;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
-    private Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png").createImage();
-    private Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif").createImage();
+    private Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png").createImage(); //$NON-NLS-1$
+    private Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif").createImage(); //$NON-NLS-1$
 
     private Tree tree;
     private TreeViewer viewer;
@@ -76,18 +77,18 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
     private void createSection(Section section, FormToolkit toolkit) {
         // CREATE COMPONENTS
-        section.setText("Calculated Imports");
+        section.setText(Messages.BundleCalculatedImportsPart_title);
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
 
         final ToolItem showSelfImportsItem = new ToolItem(toolbar, SWT.CHECK);
         showSelfImportsItem.setImage(imgShowSelfImports);
-        showSelfImportsItem.setToolTipText("Show self-imported packages");
+        showSelfImportsItem.setToolTipText(Messages.BundleCalculatedImportsPart_tooltipShowSelfImports);
 
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
-        toolkit.createLabel(composite, "The packages below will be imported (save to refresh).", SWT.WRAP);
+        toolkit.createLabel(composite, Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
 
         tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION);
         tree.setHeaderVisible(true);
@@ -95,11 +96,11 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
         TreeColumn col;
         col = new TreeColumn(tree, SWT.NONE);
-        col.setText("Package");
+        col.setText(Messages.BundleCalculatedImportsPart_columnPackage);
         col.setWidth(250);
 
         col = new TreeColumn(tree, SWT.NONE);
-        col.setText("Attribs");
+        col.setText(Messages.BundleCalculatedImportsPart_columnAttribs);
         col.setWidth(75);
 
         viewer = new TreeViewer(tree);
@@ -131,7 +132,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                             HeaderClause clause = (HeaderClause) item;
                             builder.append(clause.getName());
                             if(iterator.hasNext()) {
-                                builder.append(",\n");
+                                builder.append(",\n"); //$NON-NLS-1$
                             }
                         }
                     }
@@ -156,19 +157,17 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                                 IJavaProject javaProject = JavaCore.create(file.getProject());
                                 try {
                                     type = javaProject.findType(className);
-                                    if(type != null)
-                                        break;
                                 } catch (JavaModelException e) {
-                                    ErrorDialog.openError(tree.getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                                    ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, Messages.BundleCalculatedImportsPart_errorFindingType, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
                                 }
                         }
                         try {
                             if(type != null)
                                 JavaUI.openInEditor(type, true, true);
                         } catch (PartInitException e) {
-                            ErrorDialog.openError(tree.getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
+                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningJavaEditor, className), e));
                         } catch (JavaModelException e) {
-                            ErrorDialog.openError(tree.getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
                         }
                     }
                 }
@@ -212,7 +211,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
         IFile file = getEditorFile();
         if(file != null) {
-            final AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file });
+            final AnalyseImportsJob job = new AnalyseImportsJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new IFile[] { file });
             final Display display = tree.getDisplay();
             job.addJobChangeListener(new JobChangeAdapter() {
                 @Override

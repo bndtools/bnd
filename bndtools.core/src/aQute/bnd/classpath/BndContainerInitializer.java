@@ -22,6 +22,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.plugin.Activator;
 import aQute.bnd.plugin.Central;
+import aQute.bnd.plugin.ModelListener;
 import bndtools.Plugin;
 
 /**

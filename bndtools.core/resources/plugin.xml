@@ -71,7 +71,7 @@
       </category>
       <wizard
             category="bndtools.wizardCategory"
-            class="bndtools.wizards.EmptyBndFileWizard"
+            class="bndtools.wizards.bndfile.EmptyBndFileWizard"
             icon="icons/brick_add.png"
             id="bndtools.newBndFile"
             name="New Bnd Bundle Descriptor"
@@ -79,14 +79,14 @@
       </wizard>
       <wizard
             category="bndtools.wizardCategory"
-            class="bndtools.wizards.WrappingBndFileWizard"
+            class="bndtools.wizards.bndfile.WrappingBndFileWizard"
             icon="icons/package_add.png"
             id="bndtools.wrappingBndWizard"
             name="New Bnd Wrapper Script for Existing JARs">
       </wizard>
       <wizard
             category="bndtools.wizardCategory"
-            class="bndtools.wizards.NewBndProjectWizardFactory"
+            class="bndtools.wizards.project.NewBndProjectWizardFactory"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             icon="icons/bricks.png"
             id="bndtools.newProjWiz"
@@ -102,7 +102,7 @@
       </category>
       <view
             category="bndtools.viewCategory"
-            class="bndtools.views.impexp.ImportsExportsView"
+            class="bndtools.views.ImportsExportsView"
             icon="icons/packages.gif"
             id="bndtools.impExpView"
             name="Imports/Exports"
@@ -388,7 +388,7 @@
        </category>
        <wizard
              category="bndtools.importWizardsCategory"
-             class="bndtools.wizards.ImportBundleRepositoryWizard"
+             class="bndtools.wizards.workspace.ImportBundleRepositoryWizard"
              icon="icons/brick_add.png"
              id="bndtools.importRepositoryWizard"
              name="Import Bundles from Repository">

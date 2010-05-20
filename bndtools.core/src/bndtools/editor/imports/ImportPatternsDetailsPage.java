@@ -19,9 +19,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.osgi.framework.Constants;
 
-import bndtools.editor.model.HeaderClause;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.ModificationLock;
 
 public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {

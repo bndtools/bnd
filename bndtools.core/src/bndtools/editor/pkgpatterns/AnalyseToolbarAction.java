@@ -31,11 +31,11 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.tasks.analyse.AnalyseImportsJob;
-import bndtools.tasks.analyse.ExportPackage;
-import bndtools.tasks.analyse.ImportPackage;
+import bndtools.model.importanalysis.ExportPackage;
+import bndtools.model.importanalysis.ImportPackage;
+import bndtools.tasks.AnalyseImportsJob;
 import bndtools.utils.EditorUtils;
-import bndtools.views.impexp.ImportsExportsView;
+import bndtools.views.ImportsExportsView;
 
 public class AnalyseToolbarAction extends Action {
 

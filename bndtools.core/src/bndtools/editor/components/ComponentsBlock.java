@@ -23,18 +23,18 @@ import org.eclipse.ui.forms.widgets.Section;
 import bndtools.editor.model.ServiceComponent;
 
 public class ComponentsBlock extends MasterDetailsBlock {
-	
+
 	private ComponentListPart compListPart;
 	private ComponentDetailsPage compDetailsPage;
 
 	@Override
 	protected void createMasterPart(IManagedForm managedForm, Composite parent) {
 		FormToolkit toolkit = managedForm.getToolkit();
-		
+
 		Composite container = toolkit.createComposite(parent);
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
 		container.setLayout(new GridLayout(1, false));
-		
+
 		compListPart = new ComponentListPart(container, toolkit, Section.TITLE_BAR | Section.EXPANDED);
 		managedForm.addPart(compListPart);
 	}
@@ -49,7 +49,7 @@ public class ComponentsBlock extends MasterDetailsBlock {
 		detailsPart.registerPage(ServiceComponent.class, new ComponentDetailsPage(compListPart));
 	}
 
-	void setSelectedComponent(ServiceComponent component) {
+	public void setSelectedComponent(ServiceComponent component) {
 		compListPart.setSelectedComponent(component);
 	}
 

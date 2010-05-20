@@ -18,13 +18,13 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-import bndtools.editor.components.ComponentsPage;
-import bndtools.editor.contents.BundleContentPage;
-import bndtools.editor.imports.ImportPatternsPage;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.ExportedPackage;
-import bndtools.editor.model.ImportPattern;
 import bndtools.editor.model.ServiceComponent;
+import bndtools.editor.pages.BundleContentPage;
+import bndtools.editor.pages.ComponentsPage;
+import bndtools.editor.pages.ImportPatternsPage;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlinePage extends ContentOutlinePage {
 

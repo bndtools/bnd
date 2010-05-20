@@ -35,13 +35,13 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.editor.components.ComponentsPage;
-import bndtools.editor.contents.BundleContentPage;
-import bndtools.editor.imports.ImportPatternsPage;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.project.BundleBuildPage;
-import bndtools.editor.project.ProjectBuildPage;
-import bndtools.editor.project.ProjectRunPage;
+import bndtools.editor.pages.BundleBuildPage;
+import bndtools.editor.pages.BundleContentPage;
+import bndtools.editor.pages.ComponentsPage;
+import bndtools.editor.pages.ImportPatternsPage;
+import bndtools.editor.pages.ProjectBuildPage;
+import bndtools.editor.pages.ProjectRunPage;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 

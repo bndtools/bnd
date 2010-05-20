@@ -23,8 +23,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.editor.model.ImportPattern;
 import bndtools.editor.pkgpatterns.AnalyseToolbarAction;
+import bndtools.model.clauses.ImportPattern;
 
 public class ImportPatternsBlock extends MasterDetailsBlock {
 
@@ -65,7 +65,7 @@ public class ImportPatternsBlock extends MasterDetailsBlock {
 		detailsPart.registerPage(ImportPattern.class, page);
 	}
 
-	void setSelectedImport(ImportPattern pattern) {
+	public void setSelectedImport(ImportPattern pattern) {
 		listPart.getSelectionProvider().setSelection(new StructuredSelection(pattern));
 	}
 }
