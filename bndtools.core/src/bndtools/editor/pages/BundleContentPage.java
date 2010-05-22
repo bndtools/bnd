@@ -11,20 +11,21 @@
 package bndtools.editor.pages;
 
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.forms.AbstractFormPart;
+import org.eclipse.ui.forms.IDetailsPage;
+import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
-import org.eclipse.ui.forms.events.ExpansionAdapter;
-import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
@@ -36,17 +37,24 @@ import bndtools.editor.contents.BundleCalculatedImportsPart;
 import bndtools.editor.contents.ExportPatternsListPart;
 import bndtools.editor.contents.GeneralInfoPart;
 import bndtools.editor.contents.PrivatePackagesPart;
+import bndtools.editor.imports.ImportPatternsDetailsPage;
+import bndtools.editor.imports.ImportPatternsListPart;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {
 
     private final BndEditModel model;
+
+    private Color greyTitleBarColour;
+
     private PrivatePackagesPart privPkgsPart;
+    private ImportPatternsListPart importPatternsPart;
     private ExportPatternsListPart exportPkgsPart;
-    private Composite parent;
+
 
     public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
@@ -66,6 +74,8 @@ public class BundleContentPage extends FormPage {
         form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
         Composite body = form.getBody();
 
+        greyTitleBarColour = new Color(body.getDisplay(), 235, 235, 235);
+
         // Create controls
         MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
         sashForm.setSashWidth(6);
@@ -73,9 +83,14 @@ public class BundleContentPage extends FormPage {
 
         Composite leftPanel = toolkit.createComposite(sashForm);
         createLeftPanel(managedForm, leftPanel);
+
+        Composite middlePanel = toolkit.createComposite(sashForm);
+        createMiddlePanel(managedForm, middlePanel);
+
         Composite rightPanel = toolkit.createComposite(sashForm);
         createRightPanel(managedForm, rightPanel);
 
+        sashForm.setWeights(new int[] { 4,3,4 });
         sashForm.hookResizeListener();
 
         // Layout
@@ -98,69 +113,88 @@ public class BundleContentPage extends FormPage {
         GridData gd;
         GridLayout layout;
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        parent.setLayoutData(gd);
-
         layout = new GridLayout(1, false);
         parent.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         infoPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         privPkgsPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         exportPkgsPart.getSection().setLayoutData(gd);
     }
 
-    void createRightPanel(IManagedForm mform, final Composite parent) {
-        this.parent = parent;
+    void createMiddlePanel(IManagedForm mform, Composite parent) {
         FormToolkit toolkit = mform.getToolkit();
 
-        final Composite detailsPanel = toolkit.createComposite(parent);
         SaneDetailsPart detailsPart = new SaneDetailsPart();
         mform.addPart(detailsPart);
 
-        BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE);
+        PkgPatternsDetailsPage page = new PkgPatternsDetailsPage(exportPkgsPart, "Export Pattern Details");
+        detailsPart.registerPage(ExportedPackage.class, page);
+
+        ImportPatternsDetailsPage importDetailsPage = new ImportPatternsDetailsPage(importPatternsPart);
+        detailsPart.registerPage(ImportPattern.class, importDetailsPage);
+
+        NoSelectionPage noSelectionPage = new NoSelectionPage();
+        mform.addPart(noSelectionPage);
+        detailsPart.registerDeselectedPage(noSelectionPage);
+        detailsPart.createContents(toolkit, parent);
+    }
+
+    class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
+        public void selectionChanged(IFormPart part, ISelection selection) {
+        }
+        public void createContents(Composite parent) {
+            FormToolkit toolkit = getManagedForm().getToolkit();
+            //toolkit.createLabel(parent, "Nothing is selected");
+
+            Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+            section.setText("Selection Details");
+            section.setTitleBarBackground(greyTitleBarColour);
+
+            Composite composite = toolkit.createComposite(section);
+            Label label = toolkit.createLabel(composite, "Select one or more items to view or edit their details.", SWT.WRAP);
+            section.setClient(composite);
+
+            GridLayout layout = new GridLayout();
+            parent.setLayout(layout);
+
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            section.setLayoutData(gd);
+
+            layout = new GridLayout();
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+            composite.setLayout(layout);
+
+            gd = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+            gd.widthHint = 120;
+            label.setLayoutData(gd);
+        }
+    }
+
+    void createRightPanel(IManagedForm mform, final Composite parent) {
+        FormToolkit toolkit = mform.getToolkit();
+
+        BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
         mform.addPart(importsPart);
 
-        PkgPatternsDetailsPage page = new PkgPatternsDetailsPage(exportPkgsPart, "Export Pattern");
-        detailsPart.registerPage(ExportedPackage.class, page);
-        detailsPart.createContents(toolkit, detailsPanel);
+        importPatternsPart = new ImportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        mform.addPart(importPatternsPart);
+        GridLayout layout;
+        GridData gd;
 
-        importsPart.getSection().addExpansionListener(new ExpansionAdapter() {
-            @Override
-            public void expansionStateChanged(ExpansionEvent e) {
-                super.expansionStateChanged(e);
-                parent.layout(true, true);
-            }
-            @Override
-            public void expansionStateChanging(ExpansionEvent e) {
-                super.expansionStateChanging(e);
-            }
-        });
-
-        FormLayout layout;
-        FormData fd;
-
-        layout = new FormLayout();
+        layout = new GridLayout();
         parent.setLayout(layout);
 
-        // Attach importsPart to the bottom & fill width
-        fd = new FormData(SWT.DEFAULT, SWT.DEFAULT);
-        fd.left = new FormAttachment(0, 5);
-        fd.right = new FormAttachment(100, -5);
-        fd.bottom = new FormAttachment(100, 5);
-        importsPart.getSection().setLayoutData(fd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        importsPart.getSection().setLayoutData(gd);
 
-        // Attach detailsPanel to the top & fill width
-        fd = new FormData(SWT.DEFAULT, SWT.DEFAULT);
-        fd.left = new FormAttachment(0);
-        fd.right = new FormAttachment(100);
-        fd.top = new FormAttachment(0);
-        fd.bottom = new FormAttachment(importsPart.getSection());
-        detailsPanel.setLayoutData(fd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        importPatternsPart.getSection().setLayoutData(gd);
     }
 
     public void setSelectedExport(ExportedPackage export) {
@@ -169,5 +203,15 @@ public class BundleContentPage extends FormPage {
 
     public void setSelectedPrivatePkg(String pkg) {
         privPkgsPart.getSelectionProvider().setSelection(new StructuredSelection(pkg));
+    }
+
+    public void setSelectedImport(ImportPattern element) {
+        importPatternsPart.getSelectionProvider().setSelection(new StructuredSelection(element));
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        greyTitleBarColour.dispose();
     }
 }

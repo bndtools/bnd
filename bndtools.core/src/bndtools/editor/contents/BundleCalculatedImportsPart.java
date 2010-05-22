@@ -20,8 +20,10 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IOpenListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -41,7 +43,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
@@ -88,20 +89,9 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
-        toolkit.createLabel(composite, Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
+//        toolkit.createLabel(composite, Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
 
         tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION);
-        tree.setHeaderVisible(true);
-        tree.setLinesVisible(true);
-
-        TreeColumn col;
-        col = new TreeColumn(tree, SWT.NONE);
-        col.setText(Messages.BundleCalculatedImportsPart_columnPackage);
-        col.setWidth(250);
-
-        col = new TreeColumn(tree, SWT.NONE);
-        col.setText(Messages.BundleCalculatedImportsPart_columnAttribs);
-        col.setWidth(75);
 
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new ImportTreeContentProvider());
@@ -119,6 +109,11 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         };
         viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
 
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                getManagedForm().fireSelectionChanged(BundleCalculatedImportsPart.this, event.getSelection());
+            }
+        });
         viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
             public void dragStart(DragSourceEvent event) {
             }
@@ -193,8 +188,10 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         layout.marginWidth = 0;
         layout.verticalSpacing = 2;
         composite.setLayout(layout);
+
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 100;
+        gd.heightHint = 75;
+        gd.widthHint = 100;
         tree.setLayoutData(gd);
     }
 

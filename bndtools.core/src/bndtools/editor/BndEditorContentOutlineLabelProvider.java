@@ -43,8 +43,8 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 				cell.setText("Exports");
 			} else if(BndEditorContentOutlineProvider.PRIVATE_PKGS.equals(element)) {
 			    cell.setText("Private Packages");
-			} else if(BndEditor.IMPORTS_PAGE.equals(element)) {
-				cell.setText("Imports");
+			} else if(BndEditorContentOutlineProvider.IMPORT_PATTERNS.equals(element)) {
+				cell.setText("Import Patterns");
 			} else if(BndEditor.SOURCE_PAGE.equals(element)) {
 				cell.setText("Source");
 			}

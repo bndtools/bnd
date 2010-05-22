@@ -30,6 +30,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 
     static final String PRIVATE_PKGS = "__private_pkgs";
     static final String EXPORTS = "__exports";
+    static final String IMPORT_PATTERNS = "__import_patterns";
 
 	BndEditModel model;
 	private final TreeViewer viewer;
@@ -40,9 +41,9 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 	public Object[] getElements(Object inputElement) {
 		Object[] result;
 		if(model.isProjectFile()) {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
 		} else {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, BndEditor.BUILD_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.IMPORTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
 		}
 		return result;
 	}
@@ -80,7 +81,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
                     }
                     result = wrapped.toArray(new Object[wrapped.size()]);
                 }
-            } else if (BndEditor.IMPORTS_PAGE.equals(parentElement)) {
+            } else if (IMPORT_PATTERNS.equals(parentElement)) {
                 List<ImportPattern> imports = model.getImportPatterns();
                 if (imports != null)
                     result = imports.toArray(new Object[imports.size()]);
@@ -107,7 +108,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
                 List<String> packages = model.getPrivatePackages();
                 return packages != null && !packages.isEmpty();
             }
-            if (BndEditor.IMPORTS_PAGE.equals(element)) {
+            if (IMPORT_PATTERNS.equals(element)) {
                 List<ImportPattern> imports = model.getImportPatterns();
                 return imports != null && !imports.isEmpty();
             }
@@ -125,8 +126,8 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		    viewer.refresh(PRIVATE_PKGS);
 		    viewer.expandToLevel(PRIVATE_PKGS, 1);
 		} else if(Constants.IMPORT_PACKAGE.equals(evt.getPropertyName())) {
-			viewer.refresh(BndEditor.IMPORTS_PAGE);
-			viewer.expandToLevel(BndEditor.IMPORTS_PAGE, 1);
+			viewer.refresh(IMPORT_PATTERNS);
+			viewer.expandToLevel(IMPORT_PATTERNS, 1);
 		}
 	}
 }

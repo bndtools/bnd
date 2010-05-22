@@ -45,7 +45,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
@@ -105,11 +104,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		table.setHeaderVisible(false);
 		table.setLinesVisible(false);
 
-		TableColumn col;
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Package");
-		col.setWidth(300);
-
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new PrivatePackageTableLabelProvider());
@@ -159,11 +153,15 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 
 		// Layout
 		GridLayout layout = new GridLayout(1, false);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
 		composite.setLayout(layout);
 
 		GridData gd;
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.heightHint = 75;
+		gd.widthHint = 100;
 		table.setLayoutData(gd);
 	}
 

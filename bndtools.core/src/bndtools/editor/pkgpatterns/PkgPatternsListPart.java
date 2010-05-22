@@ -195,7 +195,10 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		layout.horizontalSpacing = 0;
 		composite.setLayout(layout);
 
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.widthHint = 100;
+		gd.heightHint = 75;
+        table.setLayoutData(gd);
 		toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 	}
 	protected abstract C newHeaderClause(String text);

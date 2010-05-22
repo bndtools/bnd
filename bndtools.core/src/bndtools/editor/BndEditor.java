@@ -39,7 +39,7 @@ import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleBuildPage;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
-import bndtools.editor.pages.ImportPatternsPage;
+import bndtools.editor.pages.PoliciesPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 
@@ -49,7 +49,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
 	static final String COMPONENTS_PAGE = "__components_page";
-	static final String IMPORTS_PAGE = "__imports_page";
+	static final String POLICIES_PAGE = "__policies_page";
 	static final String SOURCE_PAGE = "__source_page";
 
 	private final BndEditModel model = new BndEditModel();
@@ -101,7 +101,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
 			addPage(componentsPage);
 
-			ImportPatternsPage importsPage = new ImportPatternsPage(this, model, IMPORTS_PAGE, "Imports");
+			PoliciesPage importsPage = new PoliciesPage(this, model, POLICIES_PAGE, "Policies");
 			addPage(importsPage);
 
 			int sourcePageIndex = addPage(sourcePage, getEditorInput());

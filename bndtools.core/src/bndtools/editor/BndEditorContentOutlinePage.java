@@ -22,7 +22,6 @@ import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
-import bndtools.editor.pages.ImportPatternsPage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
 
@@ -67,9 +66,9 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
                         contentsPage.setSelectedPrivatePkg(((PrivatePkg) element).pkg);
                     }
 				} else if(element instanceof ImportPattern) {
-					ImportPatternsPage importsPage = (ImportPatternsPage) editor.setActivePage(BndEditor.IMPORTS_PAGE);
-					if(importsPage != null) {
-						importsPage.setSelectedImport((ImportPattern) element);
+                    BundleContentPage contentsPage = (BundleContentPage) editor.setActivePage(BndEditor.CONTENT_PAGE);
+					if(contentsPage != null) {
+						contentsPage.setSelectedImport((ImportPattern) element);
 					}
 				}
 			}

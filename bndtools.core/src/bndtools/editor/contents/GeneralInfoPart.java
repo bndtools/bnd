@@ -260,21 +260,19 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
 		// Layout
 		GridLayout layout = new GridLayout(2, false);
+
 		composite.setLayout(layout);
 
 		GridData gd;
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtBSN.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtVersion.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.widthHint = 150;
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
 

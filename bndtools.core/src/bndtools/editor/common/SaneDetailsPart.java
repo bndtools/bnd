@@ -17,7 +17,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
 
     private StackLayout stack;
-    private Composite blankPanel;
+    private Composite deselectedPanel;
 
     private IManagedForm managedForm;
     private FormToolkit toolkit;
@@ -25,6 +25,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
 
     private final Map<Class<?>, IDetailsPage> pageMap = new HashMap<Class<?>, IDetailsPage>(3);
     private final Map<Class<?>, Control> controlCache = new HashMap<Class<?>, Control>(3);
+    private IDetailsPage deselectedPage = null;
 
     private IDetailsPage currentPage = null;
     private ISelection currentSelection;
@@ -35,14 +36,21 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         page.initialize(managedForm);
     }
 
+    public void registerDeselectedPage(IDetailsPage page) {
+        this.deselectedPage = page;
+    }
+
     public void createContents(FormToolkit toolkit, Composite parent) {
         this.toolkit = toolkit;
         this.parent = parent;
         stack = new StackLayout();
         parent.setLayout(stack);
 
-        blankPanel = toolkit.createComposite(parent);
-        stack.topControl = blankPanel;
+        deselectedPanel = toolkit.createComposite(parent);
+        //deselectedPanel.setBackground(new Color(parent.getDisplay(), 255, 0, 0));
+        if(deselectedPage != null)
+            deselectedPage.createContents(deselectedPanel);
+        stack.topControl = deselectedPanel;
     }
 
     public void selectionChanged(IFormPart part, ISelection selection) {
@@ -72,7 +80,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         // Show control
         Control control;
         if(currentPage == null) {
-            control = blankPanel;
+            control = deselectedPanel;
         } else {
             control = controlCache.get(clazz);
             if(control == null) {

@@ -25,28 +25,28 @@ import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.ModificationLock;
 
 public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
-	
+
 	private final PkgPatternsListPart listPart;
-	
+
 	private final ModificationLock modifyLock = new ModificationLock();
-	
+
 	private Button btnOptional;
-	
+
 	public ImportPatternsDetailsPage(PkgPatternsListPart listPart) {
 		super(listPart, "Import Pattern Details");
 		this.listPart = listPart;
 	}
-	
+
 	@Override
 	public void createContents(Composite parent) {
 		super.createContents(parent);
-		
+
 		Composite mainComposite = getMainComposite();
-		
+
 		FormToolkit toolkit = getManagedForm().getToolkit();
 		toolkit.createLabel(mainComposite, ""); // Spacer
-		btnOptional = toolkit.createButton(mainComposite, "Optional Resolution", SWT.CHECK);
-		
+		btnOptional = toolkit.createButton(mainComposite, "Optional", SWT.CHECK);
+
 		btnOptional.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -76,7 +76,7 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
 					btnOptional.setSelection(isOptional(selectedClauses[0]));
 				} else {
 					btnOptional.setEnabled(true);
-					
+
 					boolean differs = false;
 					boolean first = isOptional(selectedClauses[0]);
 					for(int i = 1; i < selectedClauses.length; i++) {

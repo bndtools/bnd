@@ -45,9 +45,12 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
 	private static volatile Plugin plugin;
+
 	private BundleContext bundleContext;
 	private Activator bndActivator;
 	private BndListener bndListener;
+
+    private volatile RepositoryModel repositoryModel;
 
 	@Override
     public void start(BundleContext context) throws Exception {
@@ -60,6 +63,11 @@ public class Plugin extends AbstractUIPlugin {
 
 		bndListener = new FilesystemUpdateListener();
 		Central.getWorkspace().addBasicPlugin(bndListener);
+
+		repositoryModel = new RepositoryModel();
+
+		InitialRepositoryScanner repoScanJob = new InitialRepositoryScanner("Scanning Repositories...");
+		repoScanJob.schedule(500);
 
 //		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 //		buildJob.setSystem(false);
@@ -93,6 +101,10 @@ public class Plugin extends AbstractUIPlugin {
 	public BundleContext getBundleContext() {
 		return bundleContext;
 	}
+
+	public RepositoryModel getRepositoryModel() {
+        return repositoryModel;
+    }
 
     public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
         if (reporter.getErrors().size() > 0
