@@ -13,9 +13,10 @@ Import-Package: org.eclipse.core.runtime;registry=!,*
 
 # Bundle Content
 Private-Package: bndtools*,\
-	aQute.bnd.build;-split-package:=merge-first,\
+	aQute.bnd.build,\
 	aQute.bnd.classpath,\
-	aQute.bnd.plugin
+	aQute.bnd.plugin,\
+	org.ardverk.collection
 
 Include-Resource: resources,\
 	${repo;biz.aQute.bndlib},\
@@ -48,7 +49,8 @@ Include-Resource: resources,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.debug.ui,\
-	org.eclipse.jdt.junit
+	org.eclipse.jdt.junit,\
+	patricia_trie
 	
 # Minimal SDK Launch Bundles
 -runbundles: bndtools.runtime.eclipse.applaunch,\
@@ -152,3 +154,4 @@ Include-Resource: resources,\
 
 -vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xmx512m
 -runfw: org.eclipse.osgi
+-classpath: patricia-trie-0.2.jar

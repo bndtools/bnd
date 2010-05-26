@@ -61,6 +61,8 @@ public class InitialRepositoryScanner extends Job {
 
         for (Pair<RepositoryPlugin,File> pair : queue) {
             try {
+                if(monitor.isCanceled())
+                    return Status.CANCEL_STATUS;
                 model.updateRepositoryBundle(pair.getFirst(), pair.getSecond(), progress.newChild(1));
             } catch (IOException e) {
                 status.add(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, MessageFormat.format("Error updating bundle file \"{0}\".", pair.getSecond()), e));
