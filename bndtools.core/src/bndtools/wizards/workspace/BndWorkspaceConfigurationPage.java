@@ -47,7 +47,6 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -107,9 +106,6 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
         viewer.setInput(elements);
         viewer.setCheckedElements(checkedConfigElements);
 
-		new Label(composite, SWT.NONE).setText("Description:");
-		final Browser browser = new Browser(composite, SWT.BORDER);
-
 		// Listeners
 		viewer.addCheckStateListener(new ICheckStateListener() {
 			public void checkStateChanged(CheckStateChangedEvent event) {
@@ -137,7 +133,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 						}
 					}
 				}
-				browser.setText(text);
+//				browser.setText(text);
 			}
 		});
 
@@ -150,9 +146,10 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		table.setLayoutData(gd);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gd.heightHint = 100;
-		browser.setLayoutData(gd);
+
+//		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+//		gd.heightHint = 100;
+//		browser.setLayoutData(gd);
 
 		setControl(composite);
 	}

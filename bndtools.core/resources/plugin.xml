@@ -108,6 +108,14 @@
             name="Imports/Exports"
             restorable="true">
       </view>
+      <view
+            category="bndtools.viewCategory"
+            class="bndtools.views.RepositoriesView"
+            icon="icons/repository.png"
+            id="bndtools.repositoriesView"
+            name="Repositories"
+            restorable="true">
+      </view>
    </extension>
    <extension
          id="bndnature"

@@ -21,14 +21,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	public Object[] getElements(Object inputElement) {
 		List<Object> result = new ArrayList<Object>();
 		Workspace workspace = (Workspace) inputElement;
-		
+
 		result.addAll(workspace.getPlugins(RepositoryPlugin.class));
 		try {
 			result.addAll(workspace.getAllProjects());
 		} catch (Exception e) {
 			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying workspace Bnd projects.", e));
 		}
-		
+
 		return result.toArray(new Object[result.size()]);
 	}
 	public void dispose() {
@@ -37,7 +37,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	}
 	public Object[] getChildren(Object parentElement) {
 		Object[] result = null;
-		
+
 		if(parentElement instanceof RepositoryPlugin) {
 			RepositoryPlugin repo = (RepositoryPlugin) parentElement;
 			List<String> bsns = repo.list(null);
@@ -45,7 +45,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				result = new Object[bsns.size()];
 				int i=0; for (String bsn : bsns) {
 					result[i++] = new RepositoryBundle(repo, bsn);
-				} 
+				}
 			}
 		} else if(parentElement instanceof RepositoryBundle) {
 			RepositoryBundle bundle = (RepositoryBundle) parentElement;
@@ -61,7 +61,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			try {
                 Collection<? extends Builder> builders = project.getSubBuilders();
 				result = new Object[builders.size()];
-				
+
 				int i = 0;
 				for (Builder builder : builders) {
 					ProjectBundle bundle = new ProjectBundle(project, builder.getBsn());
@@ -71,7 +71,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error querying sub-bundles for project %s.", project.getName()), e));
 			}
 		}
-		
+
 		return result;
 	}
 	public Object getParent(Object element) {
@@ -86,5 +86,4 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	public boolean hasChildren(Object element) {
 		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
 	}
-
 }
