@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -17,6 +23,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -26,15 +33,21 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
+import org.eclipse.ui.dialogs.ISelectionStatusValidator;
+import org.eclipse.ui.model.WorkbenchContentProvider;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 import aQute.lib.osgi.Jar;
 import bndtools.Plugin;
-import bndtools.utils.Pair;
+import bndtools.types.Pair;
+import bndtools.utils.FileExtensionFilter;
 
 public class RepositoryFileSelectionWizardPage extends WizardPage {
 
@@ -147,8 +160,11 @@ public class RepositoryFileSelectionWizardPage extends WizardPage {
         viewer.setInput(files);
         validate();
 
-        Button btnAdd = new Button(composite, SWT.PUSH);
-        btnAdd.setText("Add...");
+        final Button btnAdd = new Button(composite, SWT.PUSH);
+        btnAdd.setText("Add JARs...");
+
+        final Button btnAddExternal = new Button(composite, SWT.PUSH);
+        btnAddExternal.setText("Add External JARs...");
 
         final Button btnRemove = new Button(composite, SWT.NONE);
         btnRemove.setText("Remove");
@@ -160,6 +176,18 @@ public class RepositoryFileSelectionWizardPage extends WizardPage {
                 btnRemove.setEnabled(!viewer.getSelection().isEmpty());
             }
         });
+        btnAdd.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAdd();
+            }
+        });
+        btnAddExternal.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAddExternal();
+            }
+        });
         btnRemove.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -169,13 +197,65 @@ public class RepositoryFileSelectionWizardPage extends WizardPage {
 
         // LAYOUT
         composite.setLayout(new GridLayout(2, false));
-        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 4));
         btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 
         setControl(composite);
     }
+    void doAdd() {
+        ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
+        dialog.setValidator(new ISelectionStatusValidator() {
+            public IStatus validate(Object[] selection) {
+                if (selection.length > 0 && selection[0] instanceof IFile) {
+                    return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
+                }
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, IStatus.ERROR, "", null); //$NON-NLS-1$
+            }
+        });
+        dialog.setAllowMultiple(true);
+        dialog.setTitle("JAR File Selection");
+        dialog.addFilter(new FileExtensionFilter("jar")); //$NON-NLS-1$
+        dialog.setInput(ResourcesPlugin.getWorkspace().getRoot());
 
+        if(dialog.open() == Window.OK) {
+            Object[] result = dialog.getResult();
+            List<File> added = new ArrayList<File>(result.length);
+            for (Object fileObj : result) {
+                IFile ifile = (IFile) fileObj;
+                File file = ifile.getLocation().toFile();
+                analyseFile(file);
+                files.add(file);
+                added.add(file);
+            }
+            if(!added.isEmpty()) {
+                viewer.add(added.toArray());
+                validate();
+            }
+        }
+    }
+    void doAddExternal() {
+        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
+        dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
+        String res = dialog.open();
+        if (res != null) {
+            IPath filterPath = new Path(dialog.getFilterPath());
+
+            String[] fileNames = dialog.getFileNames();
+            List<File> added = new ArrayList<File>(fileNames.length);
+            for (String fileName : fileNames) {
+                added.add(filterPath.append(fileName).toFile());
+            }
+            if(!added.isEmpty()) {
+                for (File addedFile : added) {
+                    analyseFile(addedFile);
+                    files.add(addedFile);
+                }
+                viewer.add(added.toArray(new File[added.size()]));
+                validate();
+            }
+        }
+    }
     void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if(!selection.isEmpty()) {

@@ -16,7 +16,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.plugin.Central;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.utils.Pair;
+import bndtools.types.Pair;
 
 public class InitialRepositoryScanner extends Job {
 

@@ -1,4 +1,4 @@
-package bndtools.utils;
+package bndtools.types;
 
 import java.io.Serializable;
 

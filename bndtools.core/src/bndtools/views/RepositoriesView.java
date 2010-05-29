@@ -6,6 +6,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -38,8 +41,12 @@ import bndtools.wizards.workspace.ImportBundleRepositoryWizard;
 public class RepositoriesView extends FilteredViewPart {
 
     private TreeViewer viewer;
+
     private Action collapseAllAction;
     private Action importRepoAction;
+    private Action addBundlesAction;
+
+    private Action removeBundlesAction;
 
     private class BsnFilter extends ViewerFilter {
         private final String filterStr;
@@ -72,6 +79,8 @@ public class RepositoriesView extends FilteredViewPart {
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
         viewer.setLabelProvider(new RepositoryTreeLabelProvider());
+
+        createActions();
 
         // LISTENERS
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {;
@@ -112,6 +121,18 @@ public class RepositoriesView extends FilteredViewPart {
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance(), ResourceTransfer.getInstance() }, dropAdapter);
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                boolean writableRepoSelected = false;
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                Object element = selection.getFirstElement();
+                if (element instanceof RepositoryPlugin) {
+                    RepositoryPlugin repo = (RepositoryPlugin) element;
+                    writableRepoSelected = repo.canWrite();
+                }
+                addBundlesAction.setEnabled(writableRepoSelected);
+            }
+        });
 
         // LOAD
         try {
@@ -130,7 +151,6 @@ public class RepositoriesView extends FilteredViewPart {
 
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        createActions();
     }
 
     boolean addFilesToRepository(RepositoryPlugin repo, File[] files) {
@@ -175,11 +195,34 @@ public class RepositoriesView extends FilteredViewPart {
         importRepoAction.setText("Import");
         importRepoAction.setToolTipText("Import External Repositories");
         importRepoAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/import_wiz.gif"));
+
+        addBundlesAction = new Action() {
+            @Override
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                Object element = selection.getFirstElement();
+                if(element != null && element instanceof RepositoryPlugin) {
+                    RepositoryPlugin repo = (RepositoryPlugin) element;
+                    if(repo.canWrite()) {
+                        AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(repo, new File[0]);
+                        WizardDialog dialog = new WizardDialog(getViewSite().getShell(), wizard);
+                        dialog.open();
+
+                        viewer.refresh(repo);
+                    }
+                }
+            };
+        };
+        addBundlesAction.setEnabled(false);
+        addBundlesAction.setText("Add");
+        addBundlesAction.setToolTipText("Add Bundles to Repository");
+        addBundlesAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick_add.png"));
     }
 
     @Override
     protected void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(importRepoAction);
+        toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
         toolBar.add(collapseAllAction);
 

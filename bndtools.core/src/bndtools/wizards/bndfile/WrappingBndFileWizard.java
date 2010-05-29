@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.wizards.bndfile;
 
-import bndtools.wizards.project.ClasspathEditorWizardPage;
 
 
 

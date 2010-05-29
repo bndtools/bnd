@@ -26,7 +26,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Clazz;
 import aQute.lib.osgi.Jar;
-import bndtools.utils.Pair;
+import bndtools.types.Pair;
 
 public class RepositoryModel {
 
