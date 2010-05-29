@@ -7,7 +7,7 @@ import org.eclipse.ui.IWorkbench;
 
 public class ImportBundleRepositoryWizard extends Wizard implements IImportWizard {
 
-	private final BndWorkspaceConfigurationPage repoPage = new BndWorkspaceConfigurationPage("repoPage");
+	private final RepositorySelectionPage repoPage = new RepositorySelectionPage("repoPage");
 
 	private IWorkbench workbench;
 	private IStructuredSelection selection;

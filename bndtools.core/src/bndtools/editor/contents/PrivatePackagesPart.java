@@ -134,8 +134,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 			}
 			@Override
 			protected int indexOf(Object object) {
-				// TODO Auto-generated method stub
-				return 0;
+			    return 0;
 			}
 		});
 		addItem.addSelectionListener(new SelectionAdapter() {

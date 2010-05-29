@@ -12,7 +12,7 @@ import bndtools.Plugin;
 public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard {
 
     private final InitialiseCnfProjectIntroWizardPage introPage = new InitialiseCnfProjectIntroWizardPage("introPage"); //$NON-NLS-1$
-	private final BndWorkspaceConfigurationPage repoPage = new BndWorkspaceConfigurationPage("repoPage"); //$NON-NLS-1$
+	private final RepositorySelectionPage repoPage = new RepositorySelectionPage("repoPage"); //$NON-NLS-1$
 
 	private IWorkbench workbench;
 	private IStructuredSelection selection;

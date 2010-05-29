@@ -63,17 +63,17 @@ import bndtools.Plugin;
 import bndtools.utils.BundleUtils;
 
 @SuppressWarnings("restriction")
-public class BndWorkspaceConfigurationPage extends WizardPage {
+public class RepositorySelectionPage extends WizardPage {
 
 	private static final String NO_DESCRIPTION = "No description available";
 
     private IConfigurationElement[] elements;
     private IConfigurationElement[] checkedConfigElements;
 
-    public BndWorkspaceConfigurationPage(String pageName) {
+    public RepositorySelectionPage(String pageName) {
         super(pageName);
         loadRepositories();
-        setDescription("Select external repositories to copy into the Bnd workspace.");
+        setDescription("Select external repositories to import into the Bn  d workspace.");
     }
 
     private void loadRepositories() {
@@ -92,7 +92,7 @@ public class BndWorkspaceConfigurationPage extends WizardPage {
     }
 
 	public void createControl(Composite parent) {
-		setTitle("Configure BndTools Workspace");
+		setTitle("Import External Repositories");
 
 		Composite composite = new Composite(parent, SWT.NONE);
 
