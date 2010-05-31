@@ -64,6 +64,8 @@ public class JarSignerTest extends TestCase {
         Builder b = new Builder();
         b.setJar(jar);
         signer.sign(b, "test");
+        System.out.println( Processor.join(b.getErrors(), "\n"));
+        System.out.println( Processor.join(b.getWarnings(), "\n"));
         assertEquals( 0, b.getErrors().size() );
         assertEquals( 0, b.getWarnings().size() );
         assertNotNull( jar.getResource("META-INF/TEST.SF") );

@@ -45,7 +45,13 @@ public class JartoolSigner implements Plugin, SignerPlugin {
     public void setReporter(Reporter processor) {
     }
 
-    public void sign(Builder builder, String alias) throws Exception {
+    public void sign(Builder builder, String alias) throws Exception {    	    	
+    	File f = builder.getFile(keystore);
+    	if ( !f.isFile()) {
+    		builder.error("Invalid keystore %s", f.getAbsolutePath() );
+    		return;
+    	}
+    	
         Jar jar = builder.getJar();
         File tmp = File.createTempFile("signdjar", ".jar");
         tmp.deleteOnExit();
@@ -55,27 +61,27 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         Command command = new Command();
         command.add(path);
         if (keystore != null) {
-            command.add(" -keystore ");
-            command.add(keystore);
+            command.add("-keystore");
+            command.add(f.getAbsolutePath());
         }
 
         if (storetype != null) {
-        	command.add(" -storetype ");
+        	command.add("-storetype");
         	command.add(storetype);
         }
 
         if (keypass != null) {
-        	command.add(" -keypass ");
+        	command.add("-keypass");
         	command.add(keypass);
         }
 
         if (storepass != null) {
-        	command.add(" -storepass ");
+        	command.add("-storepass");
         	command.add(storepass);
         }
 
         if (sigFile != null) {
-        	command.add(" -sigFile ");
+        	command.add("-sigFile");
         	command.add(sigFile);
         }
 
@@ -85,7 +91,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         command.setTimeout(20, TimeUnit.SECONDS);
         StringBuffer out = new StringBuffer();
         StringBuffer err = new StringBuffer();
-        int exitValue = command.execute(out, err);
+        int exitValue = command.execute(System.in, out, err);
         if (exitValue != 0) {
             builder.error("Signing Jar out: %s\nerr: %s", out, err);
         } else {
