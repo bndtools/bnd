@@ -76,7 +76,8 @@ public class Command {
 			if (timer != null)
 				timer.cancel();
 			Runtime.getRuntime().removeShutdownHook(hook);
-			handler.interrupt();
+			if ( handler != null)
+				handler.interrupt();
 		}
 		if (reporter != null)
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s", arguments, result,
@@ -172,5 +173,18 @@ public class Command {
 				// Who cares?
 			}
 		}
+	}
+	
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		
+		for ( String argument : arguments ) {
+			sb.append(del);
+			sb.append(argument);
+			del = " ";
+		}
+		return sb.toString();
 	}
 }
