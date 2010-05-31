@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.jar.*;
@@ -10,6 +11,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
+import aQute.libg.header.*;
 import aQute.libg.sed.*;
 import aQute.service.scripting.*;
 
@@ -29,7 +31,9 @@ public class Project extends Processor {
 	boolean						preparedPaths;
 	final Collection<Project>	dependson		= new LinkedHashSet<Project>();
 	final Collection<Container>	buildpath		= new LinkedHashSet<Container>();
+	final Collection<Container>	testbundles		= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath			= new LinkedHashSet<Container>();
+	final Collection<String>	runfile			= new LinkedHashSet<String>();
 	final Collection<File>		sourcepath		= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath	= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath	= new LinkedHashSet<Container>();
@@ -155,6 +159,7 @@ public class Project extends Processor {
 					bootclasspath.clear();
 					runpath.clear();
 					runbundles.clear();
+					testbundles.clear();
 
 					// We use a builder to construct all the properties for
 					// use.
@@ -227,6 +232,7 @@ public class Project extends Processor {
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(runpath, dependencies, parseRunpath(), bootclasspath);
 					doPath(runbundles, dependencies, parseRunbundles(), null);
+					doPath(testbundles, dependencies, parseTestbundles(), null);
 
 					// We now know all dependent projects. But we also depend
 					// on whatever those projects depend on. This creates an
@@ -324,6 +330,10 @@ public class Project extends Processor {
 		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNBUNDLES));
 	}
 
+	private List<Container> parseTestbundles() throws Exception {
+		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.TESTBUNDLES));
+	}
+
 	/**
 	 * Analyze the header and return a list of files that should be on the
 	 * build, test or some other path. The list is assumed to be a list of bsns
@@ -418,6 +428,11 @@ public class Project extends Processor {
 	public Collection<Container> getBuildpath() throws Exception {
 		prepare();
 		return buildpath;
+	}
+
+	public Collection<Container> getTestbundles() throws Exception {
+		prepare();
+		return testbundles;
 	}
 
 	public Collection<Container> getRunpath() throws Exception {
@@ -543,7 +558,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File release(String name, Jar jar) throws Exception {
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins = getRepositories();
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {
@@ -619,7 +634,7 @@ public class Project extends Processor {
 			return getBundleFromProject(bsn, attrs);
 		}
 
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins = getRepositories();
 
 		int useStrategy = strategyx;
 		if (attrs != null) {
@@ -702,7 +717,7 @@ public class Project extends Processor {
 	 *            bundle
 	 */
 	public void deploy(String name, File file) throws Exception {
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins =getRepositories();
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {
@@ -762,7 +777,7 @@ public class Project extends Processor {
 				for (Deploy d : getPlugins(Deploy.class)) {
 					trace("Deploying %s to: %s", jar, d);
 					try {
-						if ( d.deploy(this, jar) )
+						if (d.deploy(this, jar))
 							trace("deployed %s successfully to %s", output, d);
 					} catch (Exception e) {
 						error("Error while deploying %s, %s", this, e);
@@ -811,12 +826,16 @@ public class Project extends Processor {
 			if (container.getError() != null) {
 				error("The ${repo} macro could not find " + bsn + " in the repo, because "
 						+ container.getError() + "\n" + "Repositories     : "
-						+ getPlugins(RepositoryPlugin.class) + "\n" + "Strategy         : "
+						+ getRepositories() + "\n" + "Strategy         : "
 						+ strategy + "\n" + "Bsn              : " + bsn + ";version=" + version);
 			} else
 				add(paths, container);
 		}
 		return join(paths);
+	}
+
+	private List<RepositoryPlugin> getRepositories() {
+		return getWorkspace().getRepositories();
 	}
 
 	private void add(List<String> paths, Container container) throws Exception {
@@ -1078,22 +1097,21 @@ public class Project extends Processor {
 	public File[] build() throws Exception {
 		return build(false);
 	}
-	
-	
+
 	public void run() throws Exception {
-		ProjectLauncher pl = new ProjectLauncher(this);
+		ProjectLauncher pl = getLauncher();
 		pl.launch();
 	}
 
 	public void test() throws Exception {
-		ProjectLauncher pl = new ProjectLauncher(this);
-		Collection<Container> testbundles = getBundles(STRATEGY_HIGHEST, getProperty(RUNTESTER));
-		Collection<File> fs = toFile(testbundles);
-		for ( File f : fs )
-			pl.addBundle(f);
+//		ProjectLauncher pl = getLauncher();
+//		Collection<Container> testbundles = getBundles(STRATEGY_HIGHEST, getProperty(RUNTESTER));
+//		Collection<File> fs = toFile(testbundles);
+//		for (File f : fs)
+//			pl.addRunBundle(f);
+//
+//		// TODO
 
-		// TODO
-		
 	}
 
 	private void delete(File target) {
@@ -1387,4 +1405,52 @@ public class Project extends Processor {
 		return files;
 	}
 
+	public Collection<String> getRunVM() {
+		return Processor.split(getProperty(RUNVM));
+	}
+
+	public Map<String, String> getRunProperties() {
+		return OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));
+	}
+
+	/**
+	 * Get a launcher.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public ProjectLauncher getLauncher() throws Exception {
+		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN);
+	}
+
+	public ProjectTester getProjectTester() throws Exception {
+		return getHandler(ProjectTester.class, getTestbundles(), TESTER_PLUGIN);
+	}
+
+	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header) throws Exception {
+		Class<? extends T> handlerClass = target;
+		
+		for (Container c : containers) {
+			Manifest manifest =c.getManifest();
+
+			if (manifest != null) {
+				String launcher = manifest.getMainAttributes().getValue(header);
+				if (launcher != null) {
+					Class<?> clz = getClass(launcher, c.getFile());
+					if (clz != null) {
+						if (!target.isAssignableFrom(clz)) {
+							error("Found a %s class in %s but it is not compatible with: %s", clz,
+									c, target);
+						} else {
+							handlerClass = clz.asSubclass(target);
+							Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class);		
+							return constructor.newInstance(this);
+						}
+					}
+				}
+			}
+		}
+		error("Cannot find handler for %s. Header=%s and jars=%s", this, header, containers);
+		return null;
+	}
 }

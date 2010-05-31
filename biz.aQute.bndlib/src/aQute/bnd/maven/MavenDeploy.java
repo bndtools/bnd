@@ -172,15 +172,6 @@ public class MavenDeploy implements Deploy, Plugin {
 		return null;
 	}
 
-	private void delete(File tmp) {
-		tmp = tmp.getAbsoluteFile();
-		assert tmp.getParent() != null;
-		for (String sub : tmp.list()) {
-			delete(new File(tmp, sub));
-		}
-		tmp.delete();
-	}
-
 	private File write(File base, Resource r, String fileName) throws Exception {
 		File f = Processor.getFile(base, fileName);
 		OutputStream out = new FileOutputStream(f);

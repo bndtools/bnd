@@ -6,7 +6,8 @@ import java.util.concurrent.*;
 
 import aQute.libg.reporter.*;
 
-public class Command {
+public class Command {	
+	
 	boolean			trace;
 	Reporter		reporter;
 	List<String>	arguments	= new ArrayList<String>();
@@ -25,7 +26,7 @@ public class Command {
 	}
 
 	public int execute(InputStream in, Appendable stdout, Appendable stderr) throws Exception {
-		int result = 0;
+		int result;
 		if (reporter != null) {
 			reporter.trace("executing cmd: %s", arguments);
 		}
@@ -81,7 +82,8 @@ public class Command {
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s", arguments, result,
 					stdout, stderr);
 
-		return result;
+		byte exitValue = (byte) process.exitValue();
+		return exitValue;
 	}
 
 	public void add(String... args) {
@@ -112,6 +114,10 @@ public class Command {
 		this.cwd = dir;
 	}
 
+	
+	public void cancel() {
+		process.destroy();
+	}
 	class Collector extends Thread {
 		final InputStream	in;
 		final Appendable	sb;

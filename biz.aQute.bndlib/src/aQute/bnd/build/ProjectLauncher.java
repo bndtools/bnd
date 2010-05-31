@@ -3,101 +3,197 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.jar.*;
 
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
-import aQute.libg.header.*;
-import bndtools.launcher.*;
+import aQute.libg.generics.*;
 
-public class ProjectLauncher extends Processor {
-	final Project			project;
-	long					timeout		= 60 * 60 * 1000;
-	File					run;
-	boolean					debug;
-	Collection<Container>	runpath;
-	List<File>				runbundles	= new ArrayList<File>();
-	File					storage;
+/**
+ * A Project Launcher is a base class to be extended by launchers. Launchers are
+ * JARs that launch a framework and install a number of bundles and then run the
+ * framework. A launcher jar must specify a Launcher-Class manifest header. This
+ * class is instantiated and cast to a LauncherPlugin. This plug in is then
+ * asked to provide a ProjectLauncher. This project launcher is then used by the
+ * project to run the code. Launchers must extend this class.
+ * 
+ */
+public abstract class ProjectLauncher {
+	private final Project							project;
+	private long									timeout				= 60 * 60 * 1000;
+	private final Collection<Container>				runpath;
+	private final Collection<String>				classpath			= new ArrayList<String>();
+	private final List<File>						runbundles			= Create.list();
+	private final List<String>						runvm				= new ArrayList<String>();
+	private final Map<String, String>				runproperties;
+	private Command									java;
+	private final Map<String, Map<String, String>>	runsystempackages;
+	private int										loglevel;
+	private boolean									keep;
+	private boolean									report;
+
+	// MUST BE ALIGNED WITH LAUNCHER
+	public final static int							OK					= 0;
+	public final static int							WARNING				= -1;
+	public final static int							ERROR				= -2;
+	public final static int							TIMEDOUT			= -3;
+	public final static int							UPDATE_NEEDED		= -4;
+	public final static int							CANCELED			= -5;
+	public final static int							DUPLICATE_BUNDLE	= -6;
+	public final static int							RESOLVE_ERROR		= -7;
+	public final static int							ACTIVATOR_ERROR		= -8;
+	public final static int							CUSTOM_LAUNCHER		= -128;
 
 	public ProjectLauncher(Project project) throws Exception {
-		super(project);
 		this.project = project;
-		run = File.createTempFile("bnd-" + project, ".properties");
-		run.deleteOnExit();
 		runbundles.addAll(project.toFile(project.getRunbundles()));
 		runbundles.addAll(Arrays.asList(project.build()));
 		runpath = project.getRunpath();
+		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
+
+		for (Container c : runpath) {
+			if (c.getError() != null) {
+				project.error("Cannot launch because %s has reported %s", c.getProject(), c
+						.getError());
+			} else {
+				classpath.add(c.getFile().getAbsolutePath());
+
+				Manifest manifest = c.getManifest();
+				if (manifest != null) {
+					Map<String, Map<String, String>> exports = project.parseHeader(manifest
+							.getMainAttributes().getValue("Export-Package"));
+					runsystempackages.putAll(exports);
+				}
+			}
+		}
+		runvm.addAll(project.getRunVM());
+		runproperties = project.getRunProperties();
 	}
 
-	public void addBundle(File f) {
+	public void addRunBundle(File f) {
 		runbundles.add(f);
 	}
 
-	public Collection<File> getClasspath() throws Exception {
-		return project.toFile(runpath);
+	public Collection<File> getRunBundles() {
+		return runbundles;
 	}
 
-	public String getMainTypeName() {
-		for (Container c : runpath) {
-			String mainType = c.getAttributes().get(ATTR_MAIN);
-			if (mainType != null)
-				return mainType;
-		}
-		return "bndtools.launcher.Main";
+	public void addRunVM(String arg) {
+		runvm.add(arg);
 	}
 
-	public Collection<String> getVMArguments() {
-		return Processor.split(getProperty(RUNVM));
+	public Collection<Container> getRunpath() {
+		return runpath;
+	}
+
+	public Collection<String> getClasspath() {
+		return classpath;
+	}
+
+	public Collection<String> getRunVM() {
+		return runvm;
 	}
 
 	public Collection<String> getArguments() {
-		List<String> args = new ArrayList<String>();
-		if (debug) {
-			args.add("--debug");
-		}
-		args.add(run.getAbsolutePath());
-		return args;
+		return Collections.emptySet();
 	}
 
-	public void update() throws Exception {
-		Properties p = new Properties();
-		p.put(LauncherConstants.PROP_RUN_BUNDLES, Processor.join(runbundles));
-
-		Map<String, String> properties = OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));
-		p.putAll(properties);
-
-		if (getProperty(RUNSYSTEMPACKAGES) != null)
-			p.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
-					getProperty(RUNSYSTEMPACKAGES));
-		p.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE,
-				new File(project.getTarget(), "fwtmp").getAbsolutePath());
-
-		
-		FileOutputStream fout = new FileOutputStream(run);
-		try {
-			p.store(fout, "OSGi Run for ");
-		} finally {
-			fout.close();
-		}
+	public Map<String, String> getRunProperties() {
+		return runproperties;
 	}
 
-	public void launch() throws Exception {
-		update();
-		Command c = new Command();
-		c.add(getProperty("java", "java"));
-		c.add("-cp");
-		c.add(Processor.join(getClasspath(), File.pathSeparator));
-		c.addAll(getVMArguments());
-		c.add(getMainTypeName());
-		c.addAll(getArguments());
+	public abstract String getMainTypeName();
+
+	public abstract void update() throws Exception;
+
+	public int launch() throws Exception {
+		prepare();
+		java = new Command();
+		java.add(project.getProperty("java", "java"));
+		java.add("-cp");
+		java.add(Processor.join(getRunpath(), File.pathSeparator));
+		java.addAll(getRunVM());
+		java.add(getMainTypeName());
+		java.addAll(getArguments());
 		if (timeout != 0)
-			c.setTimeout(timeout, TimeUnit.MILLISECONDS);
-		int result = c.execute(System.in, System.out, System.err);
-		if (result < 0) {
-			error("Command %s failed %d", c, result);
+			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+
+		int result = java.execute(System.in, System.out, System.err);
+		reportResult(result);
+		return result;
+	}
+
+	protected void reportResult(int result) {
+		switch (result) {
+		case OK:
+			project.trace("Command terminated normal %s", java);
+			break;
+		case TIMEDOUT:
+			project.error("Launch timedout: %s", java);
+			break;
+
+		case ERROR:
+			project.error("Launch errored: %s", java);
+			break;
+
+		case WARNING:
+			project.warning("Launch had a warning %s", java);
+			break;
+		default:
+			project.warning("Unknown code %d from launcher: %s", result, java);
+			break;
 		}
 	}
 
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
+	public void setTimeout(long timeout, TimeUnit unit) {
+		this.timeout = unit.convert(timeout, TimeUnit.MILLISECONDS);
+	}
+
+	public long getTimeout() {
+		return this.timeout;
+	}
+
+	public void cancel() {
+		java.cancel();
+	}
+
+	public Map<String, Map<String, String>> getSystemPackages() {
+		return runsystempackages;
+	}
+
+	public void setKeep(boolean keep) {
+		this.keep = keep;
+	}
+
+	public boolean isKeep() {
+		return keep;
+	}
+
+	public void setReport(boolean report) {
+		this.report = report;
+	}
+
+	public boolean isReport() {
+		return report;
+	}
+
+	public void setLogLevel(int level) {
+		this.loglevel = level;
+	}
+
+	public int getLogLevel() {
+		return this.loglevel;
+	}
+
+	/**
+	 * Should be called when all the changes to the launchers are set. Will
+	 * calcualte whatever is necessary for the launcher.
+	 * 
+	 * @throws Exception
+	 */
+	public abstract void prepare() throws Exception;
+
+	public Project getProject() {
+		return project;
 	}
 }

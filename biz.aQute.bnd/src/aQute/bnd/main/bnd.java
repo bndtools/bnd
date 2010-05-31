@@ -271,7 +271,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Cross reference every class in the jar pom to the files it references
+	 * Cross reference every class in the jar file to the files it references
 	 * 
 	 * @param args
 	 * @param i
@@ -390,7 +390,7 @@ public class bnd extends Processor {
 					File properties = new File(args[i]);
 
 					if (!properties.exists())
-						error("Cannot find bnd pom: " + args[i]);
+						error("Cannot find bnd file: " + args[i]);
 					else {
 						if (workspace == null)
 							workspace = properties.getParentFile();
@@ -513,7 +513,7 @@ public class bnd extends Processor {
 			if (!f.exists())
 				f = new File(base, part);
 			if (!f.exists()) {
-				error("Trying to build a non-existent pom: " + parts);
+				error("Trying to build a non-existent file: " + parts);
 				continue;
 			}
 			try {
@@ -584,19 +584,19 @@ public class bnd extends Processor {
 			while (args.length > i) {
 				if ("wrap".equals(args[i])) {
 					out
-							.println("bnd wrap (-output <pom|dir>)? (-properties <pom>)? <jar-pom>");
+							.println("bnd wrap (-output <file|dir>)? (-properties <file>)? <jar-file>");
 				} else if ("print".equals(args[i])) {
 					out
-							.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-pom>");
+							.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
 				} else if ("build".equals(args[i])) {
 					out
-							.println("bnd build (-output <pom|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
+							.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
 					out
-							.println("    -eclipse? -noeclipse? -sources? <bnd-pom>");
+							.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
 				} else if ("eclipse".equals(args[i])) {
 					out.println("bnd eclipse");
 				} else if ("view".equals(args[i])) {
-					out.println("bnd view <pom.jar> <resource-names>+");
+					out.println("bnd view <file> <resource-names>+");
 				}
 				i++;
 			}
@@ -673,7 +673,7 @@ public class bnd extends Processor {
 			if ((options & MANIFEST) != 0) {
 				Manifest manifest = jar.getManifest();
 				if (manifest == null)
-					warning("JAR pom has no manifest " + file);
+					warning("JAR has no manifest " + file);
 				else {
 					out.println("[MANIFEST " + jar.getName() + "]");
 					SortedSet<String> sorted = new TreeSet<String>();
@@ -790,7 +790,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Print the components in this JAR pom.
+	 * Print the components in this JAR.
 	 * 
 	 * @param jar
 	 */
@@ -889,7 +889,7 @@ public class bnd extends Processor {
 	/**
 	 * View files from JARs
 	 * 
-	 * We parse the commandline and print each pom on it.
+	 * We parse the commandline and print each file on it.
 	 * 
 	 * @param args
 	 * @param i
@@ -910,7 +910,7 @@ public class bnd extends Processor {
 		}
 
 		if (i >= args.length) {
-			error("Insufficient arguments for view, no JAR pom");
+			error("Insufficient arguments for view, no JAR");
 			return;
 		}
 		String jar = args[i++];
@@ -930,7 +930,7 @@ public class bnd extends Processor {
 			dir = new File("");
 		}
 		if (!dir.exists()) {
-			error("No such pom: " + dir.getAbsolutePath());
+			error("No such file: " + dir.getAbsolutePath());
 			return;
 		}
 
@@ -956,14 +956,14 @@ public class bnd extends Processor {
 
 	private void doView(File file, String resource, String charset,
 			int options, File output) {
-		// out.println("doView:" + pom.getAbsolutePath() );
+		// out.println("doView:" + file.getAbsolutePath() );
 		try {
 			Instruction instruction = Instruction.getPattern(resource);
 			FileInputStream fin = new FileInputStream(file);
 			ZipInputStream in = new ZipInputStream(fin);
 			ZipEntry entry = in.getNextEntry();
 			while (entry != null) {
-				// out.println("view " + pom + ": "
+				// out.println("view " + file + ": "
 				// + instruction.getPattern() + ": " + entry.getName()
 				// + ": " + output + ": "
 				// + instruction.matches(entry.getName()));
@@ -995,7 +995,7 @@ public class bnd extends Processor {
 				wrt = new FileWriter(output);
 
 		copy(rds, wrt);
-		// rds.close(); also closes the stream which closes our zip pom it
+		// rds.close(); also closes the stream which closes our zip it
 		// seems
 		if (output != null)
 			wrt.close();
@@ -1124,7 +1124,7 @@ public class bnd extends Processor {
 			File classpath[], int options, Map<String, String> additional)
 			throws Exception {
 		if (!bundle.exists()) {
-			error("No such pom: " + bundle.getAbsolutePath());
+			error("No such file: " + bundle.getAbsolutePath());
 			return false;
 		} else {
 			Analyzer analyzer = new Analyzer();
@@ -1235,13 +1235,13 @@ public class bnd extends Processor {
 				else {
 					File f = getFile(base, args[i]);
 					if (!f.isFile())
-						System.err.println("Not a pom: " + f);
+						System.err.println("Not a file: " + f);
 					else {
 						try {
 							Jar jar = new Jar(f);
 							targets[n++] = jar;
 						} catch (Exception e) {
-							System.err.println("Not a JAR pom: " + f);
+							System.err.println("Not a JAR: " + f);
 						}
 					}
 				}
@@ -1275,7 +1275,7 @@ public class bnd extends Processor {
 			in.close();
 			out.close();
 		} catch (IOException e) {
-			error("While copying the output pom: %s -> %s", e, a, b);
+			error("While copying the output: %s -> %s", e, a, b);
 		}
 	}
 
@@ -1333,9 +1333,9 @@ public class bnd extends Processor {
 	 * <pre>
 	 *  repo
 	 *      list
-	 *      put &lt;pom|url&gt;
+	 *      put &lt;file|url&gt;
 	 *      get &lt;bsn&gt; (&lt;version&gt;)?
-	 *      fetch &lt;pom|url&gt;
+	 *      fetch &lt;file|url&gt;
 	 * </pre>
 	 */
 
@@ -1344,7 +1344,7 @@ public class bnd extends Processor {
 		String version = null;
 
 		Project p = Workspace.getProject(getBase());
-		List<RepositoryPlugin> repos = p.getWorkspace().getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> repos = p.getWorkspace().getRepositories();
 		RepositoryPlugin writable = null;
 		for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
 			RepositoryPlugin rpp = rp.next();
@@ -1435,7 +1435,7 @@ public class bnd extends Processor {
 			writable.put(jar);
 
 		} else
-			error("There is no such pom or url: " + file);
+			error("There is no such file or url: " + file);
 	}
 
 	private void repoFetch(List<RepositoryPlugin> repos, String string) {
@@ -1573,7 +1573,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Run the tests from a prepared bnd pom.
+	 * Run the tests from a prepared bnd file.
 	 * 
 	 * @param args
 	 * @param i
@@ -1632,7 +1632,6 @@ public class bnd extends Processor {
 
 	private int runtTest(File testFile, Workspace ws, File reportDir,
 			Tag summary) throws Exception {
-		System.out.println("Report dir=" + reportDir + " testFile=" + testFile);
 		reportDir.mkdirs();
 		int errors = -1;
 		Tag report = new Tag("report");
@@ -1640,8 +1639,8 @@ public class bnd extends Processor {
 
 		report.addAttribute("path", testFile.getAbsolutePath());
 		if (!testFile.isFile()) {
-			error("No bnd pom: " + testFile);
-			report.addAttribute("exception", "No bnd pom found");
+			error("No bnd file: " + testFile);
+			report.addAttribute("exception", "No bnd file found");
 		} else {
 			long start = System.currentTimeMillis();
 			errors = runtTests(report, ws, reportDir, testFile);
@@ -1657,7 +1656,7 @@ public class bnd extends Processor {
 		int errors = -1;
 		Project p = new Project(ws, f.getAbsoluteFile().getParentFile(), f
 				.getAbsoluteFile());
-		ProjectLauncher pl = new ProjectLauncher(p);
+		ProjectLauncher pl = p.getLauncher();
 		String t = p.getProperty("-target");
 		if (t == null) {
 			error("No target set for " + f);
@@ -1675,7 +1674,7 @@ public class bnd extends Processor {
 					File target = c.getFile();
 
 					if (!target.isFile())
-						error("The target is not a proper JAR pom: " + target);
+						error("The target is not a proper JAR: " + target);
 					else {
 						report.addAttribute("title", f.getName().replace(
 								".bnd", ""));
@@ -1725,7 +1724,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Calculate the coverage if there is coverage info in the test pom.
+	 * Calculate the coverage if there is coverage info in the test file.
 	 */
 
 	private void doPerReport(Tag report, File file) throws Exception {
@@ -1786,7 +1785,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Extract a pom from the JAR
+	 * Extract a file from the JAR
 	 */
 
 	public void doExtract(String args[], int i) throws Exception {
@@ -1797,7 +1796,7 @@ public class bnd extends Processor {
 
 		File f = getFile(args[i++]);
 		if (!f.isFile()) {
-			error("No JAR pom to extract from: %s", f);
+			error("No JAR file to extract from: %s", f);
 			return;
 		}
 

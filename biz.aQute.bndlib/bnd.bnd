@@ -18,12 +18,11 @@ Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
 Bundle-Name: 					aQute Bundle Tool Library
 Bundle-Description:				A library for manipulating and generating bundles
 Bundle-SymbolicName: 	        biz.aQute.bndlib
-Private-Package: 				aQute.bnd.*
+Private-Package: 				aQute.bnd.*, aQute.lib.*
 Export-Package:                 aQute.bnd.annotation.*, aQute.lib.osgi, aQute.bnd.build, aQute.bnd.service.*, aQute.libg.reporter, aQute.libg.version, aQute.libg.sed
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
 Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Main-Class:                     aQute.bnd.main.bnd
 
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.0,\

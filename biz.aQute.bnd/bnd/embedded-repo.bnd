@@ -1,3 +1,5 @@
 -resourceonly: true
-Include-Resource: ${repo;bndtools.launcher}, ${repo;bndtools.runtime.junit}
+Include-Resource: \
+	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
+	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}
 

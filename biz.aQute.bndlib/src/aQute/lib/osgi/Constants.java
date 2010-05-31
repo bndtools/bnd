@@ -94,9 +94,9 @@ public interface Constants {
 	String					RUNPROPERTIES								= "-runproperties";
 	String					RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String					RUNBUNDLES									= "-runbundles";
-	String					RUNTESTER									= "-runtester";
 	String					RUNPATH										= "-runpath";
-	String					ATTR_MAIN									= "main";
+	String					RUNPATH_MAIN_DIRECTIVE						= "main:";
+	String					RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
 	String					RUNVM										= "-runvm";
 
 	String					REPORTNEWER									= "-reportnewer";
@@ -179,7 +179,7 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE,
 			INCLUDE_DIRECTIVE, USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE,
 			KEYSTORE_PROVIDER_DIRECTIVE, KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE,
-			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE
+			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE, RUNPATH_LAUNCHER_DIRECTIVE
 
 																		// TODO
 																		};
@@ -211,29 +211,7 @@ public interface Constants {
 
 	String					EMPTY_HEADER								= "<<EMPTY>>";
 
-	
-	
-	// ****************************************************************************************
-	// Launch constants
-	String					LAUNCH_ID_OSGI_RUNTIME						= "bndtools.launch";
-	String					LAUNCH_ID_OSGI_JUNIT						= "bndtools.launch.junit";
-
-	String					ATTR_DYNAMIC_BUNDLES						= "dynamicBundles";
-	boolean					DEFAULT_DYNAMIC_BUNDLES						= true;
-
-	String					ATTR_CLEAN									= "clean";
-	boolean					DEFAULT_CLEAN								= false;
-
-	String					ATTR_LOGLEVEL								= "logLevel";
-	String					DEFAULT_LOGLEVEL							= "WARNING";
-
-	String					ATTR_LOG_OUTPUT								= "logOutput";
-	String					VALUE_LOG_OUTPUT_CONSOLE					= "console";
-	String					DEFAULT_LOG_OUTPUT							= VALUE_LOG_OUTPUT_CONSOLE;
-
-	String					ATTR_JUNIT_REPORTER							= "junitReporter";
-	String					DEFAULT_JUNIT_REPORTER						= "port";
-	String					ATTR_LAUNCHER_BUNDLE_PATH					= "launcherBundlePath";
-
-
+	String					EMBEDDED_REPO								= "/embedded-repo.jar";
+	String					LAUNCHER_PLUGIN								= "Launcher-Plugin";
+	String					TESTER_PLUGIN								= "Tester-Plugin";
 }

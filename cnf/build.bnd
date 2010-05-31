@@ -52,6 +52,6 @@ Bundle-License			= ... TODO
 -removeheader			= Include-Resource
 
 -runpath							= \
-	org.eclipse.osgi;		version=3.5, \
-	bndtools.launcher
+	org.eclipse.osgi;		version=3.5,\
+	com.springsource.junit
 
