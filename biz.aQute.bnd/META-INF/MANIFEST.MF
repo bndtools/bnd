@@ -1,7 +1,7 @@
 Manifest-Version: 1
 Bundle-Description: A utility and plugin to wrap, build, print, or otherwise manipulate bundles
 Bundle-Activator: aQute.bnd.plugin.Activator
-Bundle-Version: 0.0.0
+Bundle-Version: 0.0.1
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: biz.aQute.bnd; singleton:=true
 Bundle-Name: bnd

@@ -96,9 +96,6 @@ public class Launcher implements LauncherConstants, ServiceListener {
 			systemBundle.getBundleContext().registerService(Launcher.class.getName(), this,
 					argprops);
 
-			if (report)
-				report(System.out);
-
 			// Wait until a Runnable is registered with main.thread=true.
 			synchronized (this) {
 				while (mainThread == null)
@@ -187,6 +184,13 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 		if (security)
 			policy.setDefaultPermissions(null);
+		
+		// Get the resolved status
+		if (padmin.resolveBundles(null) == false)
+			return RESOLVE_ERROR;
+		
+		if (report)
+			report(System.out);
 
 		// Now start all the installed bundles in the same order
 		// (unless they're a fragment)
@@ -496,7 +500,6 @@ public class Launcher implements LauncherConstants, ServiceListener {
 			int half = (width-1)/2;
 			return s.substring( 0, half) + ".." + s.substring(s.length()-half);  
 		}
-
 		width -= s.length();
 		int before = (dir == 0) ? width / 2 : (dir < 0) ? 0 : width;
 		int after = width - before;

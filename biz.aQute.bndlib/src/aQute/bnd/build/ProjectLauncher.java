@@ -47,7 +47,9 @@ public abstract class ProjectLauncher {
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
 		runbundles.addAll(project.toFile(project.getRunbundles()));
-		runbundles.addAll(Arrays.asList(project.build()));
+		File [] builds  = project.build();
+		if ( builds != null )
+			runbundles.addAll(Arrays.asList(builds));
 		runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 

@@ -1,5 +1,6 @@
 package aQute.junit;
 
+import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -10,11 +11,11 @@ import org.osgi.framework.*;
 public class BasicTestReport implements TestListener, TestReporter {
     int            errors;
     boolean        verbose = true;
-
+    PrintStream out = System.out;
 
 	public void begin(Bundle fw, Bundle targetBundle, List tests, int realcount) {
         if (verbose) {
-            System.out
+            out
                     .println("====================================================================");
         }
     }
@@ -23,9 +24,9 @@ public class BasicTestReport implements TestListener, TestReporter {
     	check();
         errors++;
         if (verbose) {
-            System.out.println(test + " : ");
-            t.printStackTrace(System.out);
-            System.out.println();
+            out.println(test + " : ");
+            t.printStackTrace(out);
+            out.println();
         }
     }
 
@@ -33,17 +34,17 @@ public class BasicTestReport implements TestListener, TestReporter {
     	check();
         errors++;
         if (verbose) {
-            System.out.println();
-            System.out.print(test + " : ");
+        	out.println();
+            out.print(test + " : ");
             t.getMessage();
         }
     }
 
     public void endTest(Test test) {
-    	check();
         if (verbose) {
-            System.out.print("<< " + test + "\n");
+            out.println("<< " + test + "\n");
         }
+    	check();
     }
 
     public void startTest(Test test) {
@@ -65,31 +66,25 @@ public class BasicTestReport implements TestListener, TestReporter {
 			}
         }
         if (verbose)
-            System.out.println(">> " + test + "\n");
+            out.println(">> " + test + "\n");
     }
 
     public void end() {
         if (verbose) {
-            System.out
+            out
                     .println("-------------------------------------------------------------------------");
-            if (errors == 0)
-                System.out.println("No errors :-)");
-            else if (errors == 1)
-                System.out.println("One error :-|");
-            else
-                System.out.println(errors + " errors :-(");
-            System.out.println();
-            System.out.println();
+            out.println();
+            out.println();
         }
     }
 
     public void aborted() {
         if (verbose) {
-            System.out.println();
-            System.out
+            out.println();
+            out
                     .println("-------------------------------------------------------------------------");
         }
-        System.out.println("\nAborted ...");
+        out.println("\nAborted ...");
     }
 
     protected void check() {

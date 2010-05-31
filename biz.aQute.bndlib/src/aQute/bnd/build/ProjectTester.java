@@ -9,6 +9,7 @@ public abstract class ProjectTester {
 	final ProjectLauncher		launcher;
 	final List<String>			tests		= new ArrayList<String>();
 	final File					reportDir;
+	boolean continuous = true;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
@@ -54,6 +55,14 @@ public abstract class ProjectTester {
 
 	public Project getProject() {
 		return project;
+	}
+
+	public boolean getContinuous() {
+		return continuous;
+	}
+	
+	public void setContinuous(boolean b) {
+		this.continuous = b;
 	}
 	
 	public abstract boolean prepare() throws Exception;

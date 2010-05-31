@@ -188,7 +188,7 @@ public class Workspace extends Processor {
 				while (jentry != null) {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
-						if (!dest.isFile() || dest.lastModified() < jentry.getTime()) {
+						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime()==0) {
 							dest.getParentFile().mkdirs();
 							FileOutputStream out = new FileOutputStream(dest);
 							try {

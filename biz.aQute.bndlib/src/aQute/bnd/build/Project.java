@@ -634,6 +634,12 @@ public class Project extends Processor {
 			return getBundleFromProject(bsn, attrs);
 		}
 
+		if ("latest".equals(range)) {
+			Container c= getBundleFromProject(bsn, attrs);
+			if ( c != null)
+				return c;
+		}
+
 		List<RepositoryPlugin> plugins = getRepositories();
 
 		int useStrategy = strategyx;
@@ -1104,14 +1110,24 @@ public class Project extends Processor {
 	}
 
 	public void test() throws Exception {
-//		ProjectLauncher pl = getLauncher();
-//		Collection<Container> testbundles = getBundles(STRATEGY_HIGHEST, getProperty(RUNTESTER));
-//		Collection<File> fs = toFile(testbundles);
-//		for (File f : fs)
-//			pl.addRunBundle(f);
-//
-//		// TODO
-
+		clear();
+		ProjectTester tester = getProjectTester();
+		tester.setContinuous(false);
+		tester.prepare();
+		
+		if ( !isOk() ) {
+			return;
+		}
+		int errors = tester.test();
+		if ( errors == 0 ) {
+			System.out.println("No Errors");
+		} else {
+			if ( errors > 0 ) {
+				System.out.println(errors + " Error(s)");
+				
+			} else
+				System.out.println("Error " + errors );				
+		}
 	}
 
 	private void delete(File target) {

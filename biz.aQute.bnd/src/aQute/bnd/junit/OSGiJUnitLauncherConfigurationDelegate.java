@@ -72,6 +72,8 @@ import aQute.lib.osgi.*;
 					processFile(tester, testNameFile);
 				} else if (programArguments.get(i).equals("-test")) {
 					tester.addTest((String)programArguments.get(++i));
+				}else if (programArguments.get(i).equals("-classNames")) {
+					tester.addTest((String)programArguments.get(++i));
 				}
 			}
 

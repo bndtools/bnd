@@ -483,9 +483,14 @@ public class Processor implements Reporter, Constants, Closeable {
 
 							doIncludes(file.getParentFile(), sub, done);
 							// make sure we do not override properties
-							if (!overwrite)
-								sub.keySet().removeAll(p.keySet());
-							p.putAll(sub);
+							if (overwrite) {
+								p.putAll(sub);
+							} else {
+								for ( Map.Entry<?,?>  entry : sub.entrySet()) {
+									if ( !properties.containsKey(entry.getKey()))
+										setProperty((String) entry.getKey(), (String) entry.getValue());
+								}
+							}
 						}
 					} else {
 						if (fileMustExist)

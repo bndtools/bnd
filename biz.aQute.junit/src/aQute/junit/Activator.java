@@ -14,8 +14,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	BundleContext		context;
 	BundleTracker		tracker;
 	volatile boolean	active;
-	int					port	= -1;
+	int					port		= -1;
 	String				reportPath;
+	boolean				continuous	= false;
 
 	public Activator() {
 		super("bnd Runtime Test Bundle");
@@ -34,6 +35,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	public void run() {
+
+		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		
 		String testcases = context.getProperty(TESTER_NAMES);
 		if (context.getProperty(TESTER_PORT) != null)
@@ -75,13 +78,16 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			outer: while (active) {
 				Bundle bundle;
 				synchronized (queue) {
-					while (queue.isEmpty() && active)
+					while (queue.isEmpty() && active) {
 						try {
-							queue.wait();
+							queue.wait(100);
+							if (queue.isEmpty() && !continuous)
+								System.exit(0);
 						} catch (InterruptedException e) {
 							interrupt();
 							break outer;
 						}
+					}
 				}
 				try {
 					bundle = (Bundle) queue.remove(0);
@@ -113,6 +119,17 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		return null;
 	}
 
+	/**
+	 * The main test routine.
+	 * 
+	 * @param bundle
+	 *            The bundle under test or null
+	 * @param testnames
+	 *            The names to test
+	 * @param report
+	 *            The report writer or null
+	 * @return # of errors
+	 */
 	int test(Bundle bundle, String testnames, Writer report) {
 		Bundle fw = context.getBundle(0);
 		try {
