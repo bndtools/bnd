@@ -1,0 +1,15 @@
+-buildpath: org.eclipse.core.runtime,\
+	org.eclipse.equinox.common,\
+	junit.osgi,\
+	org.eclipse.core.net,\
+	osgi.core,\
+	org.eclipse.equinox.registry,\
+	bndtools.core;version=snapshot
+
+Private-Package: bndtools.repository.orbit
+Bundle-SymbolicName: bndtools.repository.orbit;singleton:=true
+Bundle-Activator: bndtools.repository.orbit.Activator
+Bundle-ActivationPolicy: lazy
+
+Include-Resource: plugin.xml	
+Import-Package: org.eclipse.core.runtime;registry=!,*

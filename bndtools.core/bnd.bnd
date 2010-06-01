@@ -1,12 +1,16 @@
-# Basic Headers
+baseversion: 0.0.1
+version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
+bndlibver: 0.0.401
+
+Test: true
 Bundle-SymbolicName: bndtools.core;singleton:=true
-Bundle-Version: 0.0.1.${tstamp;yyyyMMdd-HHmm}
+Bundle-Version: ${version}
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
 Bundle-ClassPath: .,\
-	biz.aQute.bndlib-0.0.401.jar,\
+	biz.aQute.bndlib-${bndlibver}.jar,\
 	bndtools.bndplugins.repos-0.0.0.jar
 
 Import-Package: org.eclipse.core.runtime;registry=!,*
@@ -17,6 +21,11 @@ Private-Package: bndtools*,\
 	aQute.bnd.classpath,\
 	aQute.bnd.plugin,\
 	org.ardverk.collection
+
+Export-Package: bndtools.api.*;version=${baseversion},\
+	bndtools.types;version=${baseversion},\
+	aQute.libg.*;version=${bndlibver},\
+	aQute.lib.osgi;version=${bndlibver}
 
 Include-Resource: resources,\
 	${repo;biz.aQute.bndlib},\
@@ -39,6 +48,7 @@ Include-Resource: resources,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
+	osgi.core,\
 	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.forms,\
@@ -131,8 +141,6 @@ Include-Resource: resources,\
 	org.eclipse.team.ui,\
 	org.eclipse.ui.ide.application,\
 	org.eclipse.core.net,\
-	bndtools.repository.base;version=snapshot,\
-	bndtools.jareditor;version=snapshot,\
 	org.eclipse.equinox.p2.artifact.repository,\
 	org.eclipse.ui.views.log,\
 	org.eclipse.jdt.junit.runtime,\
@@ -140,7 +148,9 @@ Include-Resource: resources,\
 	org.junit,\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\
-	org.eclipse.equinox.frameworkadmin.equinox
+	org.eclipse.equinox.frameworkadmin.equinox,\
+	bndtools.repository.base;version=snapshot,\
+	bndtools.jareditor;version=snapshot
 
 -runproperties:\
 	osgi.ws=cocoa,\
@@ -150,8 +160,6 @@ Include-Resource: resources,\
 	osgi.console=,\
 	bndtools.launcher.defaultStart=activationPolicy,\
 	eclipse.consoleLog=
-#	osgi.instance.area=/Users/neil/Projects/BndtoolsDemo,\
 
 -vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xmx512m
 -runfw: org.eclipse.osgi
--classpath: patricia-trie-0.2.jar

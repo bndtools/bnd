@@ -101,8 +101,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		section.setClient(composite);
 
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
-		table.setHeaderVisible(false);
-		table.setLinesVisible(false);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -160,7 +158,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd.heightHint = 75;
-		gd.widthHint = 100;
+		gd.widthHint = 75;
 		table.setLayoutData(gd);
 	}
 

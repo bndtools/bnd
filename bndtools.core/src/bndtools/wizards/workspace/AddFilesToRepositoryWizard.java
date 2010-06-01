@@ -20,13 +20,13 @@ public class AddFilesToRepositoryWizard extends Wizard {
     private final RepositoryPlugin repository;
     private final File[] files;
 
-    private RepositoryFileSelectionWizardPage fileSelectionPage;
+    private AddFilesToRepositoryWizardPage fileSelectionPage;
 
     public AddFilesToRepositoryWizard(RepositoryPlugin repository, File[] initialFiles) {
         this.repository = repository;
         this.files = initialFiles;
 
-        fileSelectionPage = new RepositoryFileSelectionWizardPage("fileSelectionPage");
+        fileSelectionPage = new AddFilesToRepositoryWizardPage("fileSelectionPage");
         fileSelectionPage.setFiles(files);
 
         addPage(fileSelectionPage);

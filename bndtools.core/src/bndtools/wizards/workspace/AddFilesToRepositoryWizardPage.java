@@ -49,7 +49,7 @@ import bndtools.Plugin;
 import bndtools.types.Pair;
 import bndtools.utils.FileExtensionFilter;
 
-public class RepositoryFileSelectionWizardPage extends WizardPage {
+public class AddFilesToRepositoryWizardPage extends WizardPage {
 
     private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
     private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif").createImage();
@@ -61,7 +61,7 @@ public class RepositoryFileSelectionWizardPage extends WizardPage {
 
     private TableViewer viewer;
 
-    public RepositoryFileSelectionWizardPage(String pageName) {
+    public AddFilesToRepositoryWizardPage(String pageName) {
         super(pageName);
     }
 

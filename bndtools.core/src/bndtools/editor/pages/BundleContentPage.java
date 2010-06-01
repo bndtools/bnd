@@ -74,7 +74,7 @@ public class BundleContentPage extends FormPage {
         form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
         Composite body = form.getBody();
 
-        greyTitleBarColour = new Color(body.getDisplay(), 235, 235, 235);
+        greyTitleBarColour = new Color(body.getDisplay(), 210, 245, 210);
 
         // Create controls
         MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
@@ -119,10 +119,10 @@ public class BundleContentPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         infoPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         privPkgsPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         exportPkgsPart.getSection().setLayoutData(gd);
     }
 
@@ -153,7 +153,9 @@ public class BundleContentPage extends FormPage {
 
             Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
             section.setText("Selection Details");
+
             section.setTitleBarBackground(greyTitleBarColour);
+            //section.setTitleBarBorderColor(greyTitleBarColour);
 
             Composite composite = toolkit.createComposite(section);
             Label label = toolkit.createLabel(composite, "Select one or more items to view or edit their details.", SWT.WRAP);
@@ -190,10 +192,10 @@ public class BundleContentPage extends FormPage {
         layout = new GridLayout();
         parent.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         importsPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         importPatternsPart.getSection().setLayoutData(gd);
     }
 

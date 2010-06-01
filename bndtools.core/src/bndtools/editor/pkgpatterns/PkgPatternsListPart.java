@@ -196,7 +196,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		composite.setLayout(layout);
 
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 100;
+		gd.widthHint = 75;
 		gd.heightHint = 75;
         table.setLayoutData(gd);
 		toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));

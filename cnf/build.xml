@@ -79,6 +79,7 @@
 	-->
 	<target name="build" depends="compile">
 		<mkdir dir="${target}"/>
+		<echo message="Building project ${project}."/>
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
 
@@ -185,6 +186,7 @@
 				<include name="bndtools.core/generated/*.jar"/>
 				<include name="bndtools.jareditor/generated/*.jar"/>
 				<include name="bndtools.repository.base/generated/*.jar"/>
+				<include name="bndtools.repository.orbit/generated/*.jar"/>
 			</bundles>
 		</p2.publish.featuresAndBundles>
 	</target>

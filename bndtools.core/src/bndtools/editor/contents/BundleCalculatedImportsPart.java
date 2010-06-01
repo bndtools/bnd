@@ -191,7 +191,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.heightHint = 75;
-        gd.widthHint = 100;
+        gd.widthHint = 75;
         tree.setLayoutData(gd);
     }
 

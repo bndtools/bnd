@@ -3,6 +3,8 @@
 
 # Eclipse compiler output
 /*/bin
+/*/bin_test
+/*/generated
 /*feature/compile*.xml
 
 # vi detritus

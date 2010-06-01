@@ -111,7 +111,7 @@
       <view
             category="bndtools.viewCategory"
             class="bndtools.views.RepositoriesView"
-            icon="icons/repository.png"
+            icon="icons/repository_alt.png"
             id="bndtools.repositoriesView"
             name="Repositories"
             restorable="true">
