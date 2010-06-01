@@ -159,7 +159,7 @@ public class Workspace extends Processor {
 		boolean	inited;
 
 		CachedFileRepo() {
-			super("cache", getFile(buildDir, CACHEDIR), true);
+			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
 
 		protected void init() throws Exception {

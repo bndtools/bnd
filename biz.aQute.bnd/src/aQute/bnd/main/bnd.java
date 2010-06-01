@@ -35,11 +35,11 @@ import aQute.libg.version.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	PrintStream out = System.out;
-	static boolean exceptions = false;
+	PrintStream		out			= System.out;
+	static boolean	exceptions	= false;
 
-	static boolean failok = false;
-	private Project project;
+	static boolean	failok		= false;
+	private Project	project;
 
 	public static void main(String args[]) {
 		bnd main = new bnd();
@@ -134,7 +134,7 @@ public class bnd extends Processor {
 				cnt++;
 				doDiff(args, ++i);
 				break;
-			} else  if ("help".equals(args[i])) {
+			} else if ("help".equals(args[i])) {
 				cnt++;
 				doHelp(args, ++i);
 				break;
@@ -144,19 +144,17 @@ public class bnd extends Processor {
 				break;
 			} else {
 				Project p = getProject();
-				if ( p != null ) {
-					 Action a = p.getActions().get(args[i]);
-					 if ( a != null ) {
-						 cnt++;
-						 // parse args
-						 a.execute(p, args[i++]);
-						 getInfo(p);
-						 break;
-					 }
-				} 
-				
-				
-				
+				if (p != null) {
+					Action a = p.getActions().get(args[i]);
+					if (a != null) {
+						cnt++;
+						// parse args
+						a.execute(p, args[i++]);
+						getInfo(p);
+						break;
+					}
+				}
+
 				cnt++;
 				String path = args[i];
 				if (path.startsWith("-")) {
@@ -165,9 +163,8 @@ public class bnd extends Processor {
 					break;
 				} else {
 					if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-						doBuild(new File(path), new File[0], new File[0], null,
-								"", new File(path).getParentFile(), 0,
-								new HashSet<File>());
+						doBuild(new File(path), new File[0], new File[0], null, "", new File(path)
+								.getParentFile(), 0, new HashSet<File>());
 					else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 							|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
 						doPrint(path, -1);
@@ -188,8 +185,8 @@ public class bnd extends Processor {
 		if (cnt == 0) {
 			File f = new File("bnd.bnd");
 			if (f.exists()) {
-				doBuild(f, new File[0], new File[0], null, "", f
-						.getParentFile(), 0, new HashSet<File>());
+				doBuild(f, new File[0], new File[0], null, "", f.getParentFile(), 0,
+						new HashSet<File>());
 			} else {
 				doHelp();
 				error("No files on commandline");
@@ -238,8 +235,8 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(),
-					v.getMajor(), v.getMinor(), v.getMicro(), c.getFile());
+			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(), v
+					.getMinor(), v.getMicro(), c.getFile());
 		}
 
 	}
@@ -283,8 +280,7 @@ public class bnd extends Processor {
 				File file = new File(args[i]);
 				Jar jar = new Jar(file.getName(), file);
 				try {
-					for (Map.Entry<String, Resource> entry : jar.getResources()
-							.entrySet()) {
+					for (Map.Entry<String, Resource> entry : jar.getResources().entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
@@ -323,16 +319,13 @@ public class bnd extends Processor {
 
 	private void doEclipse(File file) throws Exception {
 		if (!file.isDirectory())
-			error("Eclipse requires a path to a directory: "
-					+ file.getAbsolutePath());
+			error("Eclipse requires a path to a directory: " + file.getAbsolutePath());
 		else {
 			File cp = new File(file, ".classpath");
 			if (!cp.exists()) {
-				error("Cannot find .classpath in project directory: "
-						+ file.getAbsolutePath());
+				error("Cannot find .classpath in project directory: " + file.getAbsolutePath());
 			} else {
-				EclipseClasspath eclipse = new EclipseClasspath(this, file
-						.getParentFile(), file);
+				EclipseClasspath eclipse = new EclipseClasspath(this, file.getParentFile(), file);
 				out.println("Classpath    " + eclipse.getClasspath());
 				out.println("Dependents   " + eclipse.getDependents());
 				out.println("Sourcepath   " + eclipse.getSourcepath());
@@ -343,9 +336,9 @@ public class bnd extends Processor {
 
 	}
 
-	final static int BUILD_SOURCES = 1;
-	final static int BUILD_POM = 2;
-	final static int BUILD_FORCE = 4;
+	final static int	BUILD_SOURCES	= 1;
+	final static int	BUILD_POM		= 2;
+	final static int	BUILD_FORCE		= 4;
 
 	private void doBuild(String[] args, int i) throws Exception {
 		File classpath[] = new File[0];
@@ -367,8 +360,7 @@ public class bnd extends Processor {
 				for (int j = 0; j < spaces.length; j++) {
 					File f = new File(spaces[j]);
 					if (!f.exists())
-						error("No such sourcepath entry: "
-								+ f.getAbsolutePath());
+						error("No such sourcepath entry: " + f.getAbsolutePath());
 					sourcepath[j] = f;
 				}
 			} else if ("-eclipse".startsWith(args[i])) {
@@ -395,9 +387,8 @@ public class bnd extends Processor {
 						if (workspace == null)
 							workspace = properties.getParentFile();
 
-						doBuild(properties, classpath, sourcepath, output,
-								eclipse, workspace, options,
-								new HashSet<File>());
+						doBuild(properties, classpath, sourcepath, output, eclipse, workspace,
+								options, new HashSet<File>());
 					}
 					output = null;
 				}
@@ -418,9 +409,8 @@ public class bnd extends Processor {
 		return classpath;
 	}
 
-	private void doBuild(File properties, File classpath[], File sourcepath[],
-			File output, String eclipse, File workspace, int options,
-			Set<File> building) throws Exception {
+	private void doBuild(File properties, File classpath[], File sourcepath[], File output,
+			String eclipse, File workspace, int options, Set<File> building) throws Exception {
 
 		properties = properties.getAbsoluteFile();
 		if (building.contains(properties)) {
@@ -446,12 +436,10 @@ public class bnd extends Processor {
 
 			String prebuild = builder.getProperty("-prebuild");
 			if (prebuild != null)
-				prebuild(prebuild, properties.getParentFile(), classpath,
-						sourcepath, output, eclipse, workspace, options,
-						building);
+				prebuild(prebuild, properties.getParentFile(), classpath, sourcepath, output,
+						eclipse, workspace, options, building);
 
-			doEclipse(builder, properties, classpath, sourcepath, eclipse,
-					workspace);
+			doEclipse(builder, properties, classpath, sourcepath, eclipse, workspace);
 
 			if ((options & BUILD_SOURCES) != 0)
 				builder.getProperties().setProperty("-sources", "true");
@@ -499,9 +487,9 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void prebuild(String prebuild, File base, File[] classpath,
-			File[] sourcepath, File output, String eclipse2, File workspace,
-			int options, Set<File> building) throws Exception {
+	private void prebuild(String prebuild, File base, File[] classpath, File[] sourcepath,
+			File output, String eclipse2, File workspace, int options, Set<File> building)
+			throws Exception {
 
 		// Force the output a directory
 		if (output.isFile())
@@ -517,8 +505,7 @@ public class bnd extends Processor {
 				continue;
 			}
 			try {
-				doBuild(f, classpath, sourcepath, output, eclipse2, workspace,
-						options, building);
+				doBuild(f, classpath, sourcepath, output, eclipse2, workspace, options, building);
 			} catch (Exception e) {
 				error("Trying to build: " + part + " " + e);
 			}
@@ -526,8 +513,7 @@ public class bnd extends Processor {
 	}
 
 	private void statistics(Jar jar, File output, String msg) {
-		out.println(jar.getName() + " " + jar.getResources().size() + " "
-				+ output.length() + msg);
+		out.println(jar.getName() + " " + jar.getResources().size() + " " + output.length() + msg);
 	}
 
 	/**
@@ -537,34 +523,30 @@ public class bnd extends Processor {
 	 * @return
 	 * @throws IOException
 	 */
-	void doEclipse(Builder builder, File properties, File[] classpath,
-			File sourcepath[], String eclipse, File workspace)
-			throws IOException {
+	void doEclipse(Builder builder, File properties, File[] classpath, File sourcepath[],
+			String eclipse, File workspace) throws IOException {
 		if (eclipse != null) {
 			File project = new File(workspace, eclipse).getAbsoluteFile();
 			if (project.exists() && project.isDirectory()) {
 				try {
 
-					EclipseClasspath path = new EclipseClasspath(this, project
-							.getParentFile(), project);
-					List<File> newClasspath = Create.copy(Arrays
-							.asList(classpath));
+					EclipseClasspath path = new EclipseClasspath(this, project.getParentFile(),
+							project);
+					List<File> newClasspath = Create.copy(Arrays.asList(classpath));
 					newClasspath.addAll(path.getClasspath());
 					classpath = (File[]) newClasspath.toArray(classpath);
 
-					List<File> newSourcepath = Create.copy(Arrays
-							.asList(sourcepath));
+					List<File> newSourcepath = Create.copy(Arrays.asList(sourcepath));
 					newSourcepath.addAll(path.getSourcepath());
 					sourcepath = (File[]) newSourcepath.toArray(sourcepath);
 				} catch (Exception e) {
 					if (eclipse.length() > 0)
-						error("Eclipse specified (" + eclipse
-								+ ") but getting error processing: " + e);
+						error("Eclipse specified (" + eclipse + ") but getting error processing: "
+								+ e);
 				}
 			} else {
 				if (eclipse.length() > 0)
-					error("Eclipse specified (" + eclipse
-							+ ") but no project directory found");
+					error("Eclipse specified (" + eclipse + ") but no project directory found");
 			}
 		}
 		builder.setClasspath(classpath);
@@ -583,16 +565,13 @@ public class bnd extends Processor {
 		} else {
 			while (args.length > i) {
 				if ("wrap".equals(args[i])) {
-					out
-							.println("bnd wrap (-output <file|dir>)? (-properties <file>)? <jar-file>");
+					out.println("bnd wrap (-output <file|dir>)? (-properties <file>)? <jar-file>");
 				} else if ("print".equals(args[i])) {
-					out
-							.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
+					out.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
 				} else if ("build".equals(args[i])) {
 					out
 							.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
-					out
-							.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
+					out.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
 				} else if ("eclipse".equals(args[i])) {
 					out.println("bnd eclipse");
 				} else if ("view".equals(args[i])) {
@@ -603,19 +582,19 @@ public class bnd extends Processor {
 		}
 	}
 
-	final static int VERIFY = 1;
+	final static int	VERIFY		= 1;
 
-	final static int MANIFEST = 2;
+	final static int	MANIFEST	= 2;
 
-	final static int LIST = 4;
+	final static int	LIST		= 4;
 
-	final static int ECLIPSE = 8;
-	final static int IMPEXP = 16;
-	final static int USES = 32;
-	final static int USEDBY = 64;
-	final static int COMPONENT = 128;
+	final static int	ECLIPSE		= 8;
+	final static int	IMPEXP		= 16;
+	final static int	USES		= 32;
+	final static int	USEDBY		= 64;
+	final static int	COMPONENT	= 128;
 
-	static final int HEX = 0;
+	static final int	HEX			= 0;
 
 	private void doPrint(String[] args, int i) throws Exception {
 		int options = 0;
@@ -659,8 +638,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doPrint(File file, int options) throws ZipException,
-			IOException, Exception {
+	private void doPrint(File file, int options) throws ZipException, IOException, Exception {
 
 		Jar jar = new Jar(file.getName(), file);
 		try {
@@ -681,8 +659,7 @@ public class bnd extends Processor {
 						sorted.add(element.toString());
 					}
 					for (String key : sorted) {
-						Object value = manifest.getMainAttributes().getValue(
-								key);
+						Object value = manifest.getMainAttributes().getValue(key);
 						format("%-40s %-40s\r\n", new Object[] { key, value });
 					}
 				}
@@ -692,17 +669,13 @@ public class bnd extends Processor {
 				out.println("[IMPEXP]");
 				Manifest m = jar.getManifest();
 				if (m != null) {
-					Map<String, Map<String, String>> imports = parseHeader(m
-							.getMainAttributes().getValue(
-									Analyzer.IMPORT_PACKAGE));
-					Map<String, Map<String, String>> exports = parseHeader(m
-							.getMainAttributes().getValue(
-									Analyzer.EXPORT_PACKAGE));
+					Map<String, Map<String, String>> imports = parseHeader(m.getMainAttributes()
+							.getValue(Analyzer.IMPORT_PACKAGE));
+					Map<String, Map<String, String>> exports = parseHeader(m.getMainAttributes()
+							.getValue(Analyzer.EXPORT_PACKAGE));
 					imports.keySet().removeAll(exports.keySet());
-					print("Import-Package",
-							new TreeMap<String, Map<String, String>>(imports));
-					print("Export-Package",
-							new TreeMap<String, Map<String, String>>(exports));
+					print("Import-Package", new TreeMap<String, Map<String, String>>(imports));
+					print("Export-Package", new TreeMap<String, Map<String, String>>(exports));
 				} else
 					warning("File has no manifest");
 			}
@@ -715,8 +688,7 @@ public class bnd extends Processor {
 				analyzer.analyze();
 				if ((options & USES) != 0) {
 					out.println("[USES]");
-					printMapOfSets(new TreeMap<String, Set<String>>(analyzer
-							.getUses()));
+					printMapOfSets(new TreeMap<String, Set<String>>(analyzer.getUses()));
 					out.println();
 				}
 				if ((options & USEDBY) != 0) {
@@ -731,8 +703,8 @@ public class bnd extends Processor {
 
 			if ((options & LIST) != 0) {
 				out.println("[LIST]");
-				for (Map.Entry<String, Map<String, Resource>> entry : jar
-						.getDirectories().entrySet()) {
+				for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
+						.entrySet()) {
 					String name = entry.getKey();
 					Map<String, Resource> contents = entry.getValue();
 					out.println(name);
@@ -751,8 +723,7 @@ public class bnd extends Processor {
 								String extra = r.getExtra();
 								if (extra != null) {
 
-									out.print(" extra='" + escapeUnicode(extra)
-											+ "'");
+									out.print(" extra='" + escapeUnicode(extra) + "'");
 								}
 							}
 							out.println();
@@ -802,16 +773,14 @@ public class bnd extends Processor {
 			return;
 		}
 
-		String componentHeader = manifest.getMainAttributes().getValue(
-				Constants.SERVICE_COMPONENT);
+		String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 		Map<String, Map<String, String>> clauses = parseHeader(componentHeader);
 		for (String path : clauses.keySet()) {
 			out.println(path);
 
 			Resource r = jar.getResource(path);
 			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r
-						.openInputStream());
+				InputStreamReader ir = new InputStreamReader(r.openInputStream());
 				OutputStreamWriter or = new OutputStreamWriter(out);
 				try {
 					copy(ir, or);
@@ -922,8 +891,7 @@ public class bnd extends Processor {
 		doView(jar, args, i, charset, options, output);
 	}
 
-	private void doView(String jar, String[] args, int i, String charset,
-			int options, File output) {
+	private void doView(String jar, String[] args, int i, String charset, int options, File output) {
 		File path = new File(jar).getAbsoluteFile();
 		File dir = path.getParentFile();
 		if (dir == null) {
@@ -954,8 +922,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doView(File file, String resource, String charset,
-			int options, File output) {
+	private void doView(File file, String resource, String charset, int options, File output) {
 		// out.println("doView:" + file.getAbsolutePath() );
 		try {
 			Instruction instruction = Instruction.getPattern(resource);
@@ -967,8 +934,7 @@ public class bnd extends Processor {
 				// + instruction.getPattern() + ": " + entry.getName()
 				// + ": " + output + ": "
 				// + instruction.matches(entry.getName()));
-				if (instruction.matches(entry.getName())
-						^ instruction.isNegated())
+				if (instruction.matches(entry.getName()) ^ instruction.isNegated())
 					doView(entry.getName(), in, charset, options, output);
 				in.closeEntry();
 				entry = in.getNextEntry();
@@ -981,8 +947,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doView(String name, ZipInputStream in, String charset,
-			int options, File output) throws Exception {
+	private void doView(String name, ZipInputStream in, String charset, int options, File output)
+			throws Exception {
 		int n = name.lastIndexOf('/');
 		name = name.substring(n + 1);
 
@@ -1020,8 +986,7 @@ public class bnd extends Processor {
 			String key = entry.getKey();
 			Map<String, String> clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			format("  %-38s %s\r\n", key.trim(), clause.isEmpty() ? "" : clause
-					.toString());
+			format("  %-38s %s\r\n", key.trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -1062,8 +1027,7 @@ public class bnd extends Processor {
 					c = string.charAt(i++);
 				}
 				if (c != 's') {
-					throw new IllegalArgumentException(
-							"Invalid sprintf format:  " + string);
+					throw new IllegalArgumentException("Invalid sprintf format:  " + string);
 				}
 
 				if (s.length() > width)
@@ -1120,9 +1084,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	public boolean doWrap(File properties, File bundle, File output,
-			File classpath[], int options, Map<String, String> additional)
-			throws Exception {
+	public boolean doWrap(File properties, File bundle, File output, File classpath[], int options,
+			Map<String, String> additional) throws Exception {
 		if (!bundle.exists()) {
 			error("No such file: " + bundle.getAbsolutePath());
 			return false;
@@ -1140,12 +1103,10 @@ public class bnd extends Processor {
 					analyzer.putAll(additional, false);
 
 				if (analyzer.getProperty(Analyzer.IMPORT_PACKAGE) == null)
-					analyzer.setProperty(Analyzer.IMPORT_PACKAGE,
-							"*;resolution:=optional");
+					analyzer.setProperty(Analyzer.IMPORT_PACKAGE, "*;resolution:=optional");
 
 				if (analyzer.getProperty(Analyzer.BUNDLE_SYMBOLICNAME) == null) {
-					Pattern p = Pattern.compile("("
-							+ Verifier.SYMBOLICNAME.pattern()
+					Pattern p = Pattern.compile("(" + Verifier.SYMBOLICNAME.pattern()
 							+ ")(-[0-9])?.*\\.jar");
 					String base = bundle.getName();
 					Matcher m = p.matcher(base);
@@ -1185,8 +1146,7 @@ public class bnd extends Processor {
 
 				String path = bundle.getName();
 				if (path.endsWith(DEFAULT_JAR_EXTENSION))
-					path = path.substring(0, path.length()
-							- DEFAULT_JAR_EXTENSION.length())
+					path = path.substring(0, path.length() - DEFAULT_JAR_EXTENSION.length())
 							+ DEFAULT_BAR_EXTENSION;
 				else
 					path = bundle.getName() + DEFAULT_BAR_EXTENSION;
@@ -1283,15 +1243,14 @@ public class bnd extends Processor {
 		this.out = out;
 	}
 
-
 	public Project getProject() throws Exception {
 		if (project != null)
 			return project;
 
 		project = Workspace.getProject(getBase());
 		if (!project.isValid())
-			throw new IllegalArgumentException("The base directory "
-					+ getBase() + " is not a project directory ");
+			throw new IllegalArgumentException("The base directory " + getBase()
+					+ " is not a project directory ");
 
 		return project;
 	}
@@ -1410,8 +1369,8 @@ public class bnd extends Processor {
 
 	}
 
-	private void repoPut(RepositoryPlugin writable, Project project,
-			String file, String bsn, String version) throws Exception {
+	private void repoPut(RepositoryPlugin writable, Project project, String file, String bsn,
+			String version) throws Exception {
 		Jar jar = null;
 		int n = file.indexOf(':');
 		if (n > 1 && n < 10) {
@@ -1426,11 +1385,9 @@ public class bnd extends Processor {
 		if (jar != null) {
 			Manifest manifest = jar.getManifest();
 			if (bsn != null)
-				manifest.getMainAttributes().putValue(
-						Constants.BUNDLE_SYMBOLICNAME, bsn);
+				manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
 			if (version != null)
-				manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION,
-						version);
+				manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
 
 			writable.put(jar);
 
@@ -1480,11 +1437,9 @@ public class bnd extends Processor {
 			} else if ("apply".equals(args[i]) && i + 3 < args.length) {
 				applyPatch(args[++i], args[++i], args[++i]);
 			} else if ("help".equals(args[i])) {
-				out
-						.println("patch (create <old> <new> <patch> | patch <old> <patch> <new>)");
+				out.println("patch (create <old> <new> <patch> | patch <old> <patch> <new>)");
 			} else
-				out.println("Patch does not recognize command? "
-						+ Arrays.toString(args));
+				out.println("Patch does not recognize command? " + Arrays.toString(args));
 		}
 	}
 
@@ -1550,8 +1505,7 @@ public class bnd extends Processor {
 		String patchDelete = bm.getMainAttributes().getValue("Patch-Delete");
 		String patchVersion = bm.getMainAttributes().getValue("Patch-Version");
 		if (patchVersion == null) {
-			error("To patch, you must provide a patch bundle.\nThe given "
-					+ patch
+			error("To patch, you must provide a patch bundle.\nThe given " + patch
 					+ " bundle does not contain the Patch-Version header");
 			return;
 		}
@@ -1593,12 +1547,15 @@ public class bnd extends Processor {
 		for (; i < args.length; i++) {
 			if (args[i].startsWith("-reportdir")) {
 				reportDir = getFile(args[i]).getAbsoluteFile();
-				if (reportDir.isFile())
+				if (!reportDir.isDirectory())
 					error("-reportdir must be a directory");
 			} else if (args[i].startsWith("-title")) {
 				summary.addAttribute("title", args[++i]);
 			} else if (args[i].startsWith("-dir")) {
 				cwd = getFile(args[++i]).getAbsoluteFile();
+			} else if (args[i].startsWith("-workspace")) {
+				File tmp = getFile(args[++i]).getAbsoluteFile();
+				ws = Workspace.getWorkspace(tmp);
 			} else {
 				File f = getFile(args[i]);
 				errors += runtTest(f, ws, reportDir, summary);
@@ -1619,6 +1576,18 @@ public class bnd extends Processor {
 		if (errors > 0)
 			summary.addAttribute("errors", errors);
 
+		
+		for ( String error : getErrors() ) {
+			Tag e = new Tag("error");
+			e.addContent(error);
+		}
+		
+		for ( String warning : getWarnings() ) {
+			Tag e = new Tag("warning");
+			e.addContent(warning);
+		}
+		
+		
 		File r = getFile(reportDir + "/summary.xml");
 		FileOutputStream out = new FileOutputStream(r);
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out));
@@ -1630,97 +1599,82 @@ public class bnd extends Processor {
 		}
 	}
 
-	private int runtTest(File testFile, Workspace ws, File reportDir,
-			Tag summary) throws Exception {
-		reportDir.mkdirs();
-		int errors = -1;
-		Tag report = new Tag("report");
-		summary.addContent(report);
-
-		report.addAttribute("path", testFile.getAbsolutePath());
+	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
+		Tag test = new Tag(summary,"test");
+		test.addAttribute("path", testFile.getAbsolutePath());
 		if (!testFile.isFile()) {
-			error("No bnd file: " + testFile);
-			report.addAttribute("exception", "No bnd file found");
-		} else {
-			long start = System.currentTimeMillis();
-			errors = runtTests(report, ws, reportDir, testFile);
-
-			long duration = System.currentTimeMillis() - start;
-			report.addAttribute("duration", (duration + 500) / 1000);
+			error("No bnd file: %s", testFile);
+			test.addAttribute("exception", "No bnd file found");
+			return 1;
 		}
-		return errors;
-	}
-
-	private int runtTests(Tag report, Workspace ws, File reportDir, File f)
-			throws Exception {
-		int errors = -1;
-		Project p = new Project(ws, f.getAbsoluteFile().getParentFile(), f
-				.getAbsoluteFile());
-		ProjectLauncher pl = p.getLauncher();
-		String t = p.getProperty("-target");
-		if (t == null) {
-			error("No target set for " + f);
-			report.addAttribute("exception", "No -target property found");
-		} else {
-			List<Container> targets = p.getBundles(Constants.STRATEGY_HIGHEST,
-					t);
-			if (targets.size() != 1) {
-				error("Only one -target supported " + t);
-				report.addAttribute("exception", "Only one -target supported "
-						+ t);
-			} else {
-
-				for (Container c : targets) {
-					File target = c.getFile();
-
-					if (!target.isFile())
-						error("The target is not a proper JAR: " + target);
-					else {
-						report.addAttribute("title", f.getName().replace(
-								".bnd", ""));
-						report.addAttribute("id", target.getName());
-						errors = runtActualTests(report, reportDir, f, pl,
-								target);
-					}
+		
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
+		ProjectTester tester = project.getProjectTester();
+		
+		tester.setContinuous(false);
+		test.addAttribute("title", project.toString());
+		long start = System.currentTimeMillis();
+		try {
+			int  errors = tester.test();
+			
+			
+			Collection<File> reports = tester.getReports();
+			for ( File report : reports) {
+				Tag bundle= new Tag(test,"bundle");
+				bundle.addAttribute("file", report.getAbsolutePath());
+				doPerReport(bundle, report);
+			}
+			
+			switch(errors) {
+			case ProjectLauncher.OK:
+				return 0;
+				
+			case ProjectLauncher.CANCELED:
+				test.addAttribute("failed", "canceled");
+				return 1;
+				
+			case ProjectLauncher.DUPLICATE_BUNDLE:
+				test.addAttribute("failed", "duplicate bundle");
+				return 1;
+				
+			case ProjectLauncher.ERROR:
+				test.addAttribute("failed", "unknown reason");
+				return 1;
+				
+			case ProjectLauncher.RESOLVE_ERROR:
+				test.addAttribute("failed", "resolve error");
+				return 1;
+				
+			case ProjectLauncher.TIMEDOUT:
+				test.addAttribute("failed", "timed out");
+				return 1;
+			case ProjectLauncher.WARNING:
+				test.addAttribute("warning", "true");
+				return 1;
+				
+			case ProjectLauncher.ACTIVATOR_ERROR:
+				test.addAttribute("failed", "activator error");
+				return 1;
+				
+			default:				
+				if ( errors > 0 ) {
+					test.addAttribute("errors", errors);
+					return errors;
+				}
+				else {
+					test.addAttribute("failed", "unknown reason");
+					return 1;
 				}
 			}
+		} catch( Exception e) {
+			test.addAttribute( "failed", e);
+			return 1;
 		}
-		return errors;
-	}
-
-	/**
-	 * Run the actual test.
-	 * 
-	 * @param report
-	 * @param reportDir
-	 * @param f
-	 * @param pl
-	 * @param target
-	 * @return
-	 * @throws Exception
-	 */
-	private int runtActualTests(Tag report, File reportDir, File f,
-			ProjectLauncher pl, File target) throws Exception {
-		int errors =0;
-		String path = f.getName().replace(".bnd", "") + ".xml";
-		File reportFile = getFile(reportDir, path);
-//		pl.setReport(reportFile);
-//		report.addAttribute("report", path);
-//
-//		errors = pl.run(target);
-//
-//		getInfo(pl);
-//		if (errors == 0) {
-//			trace("ok");
-//		} else {
-//			report.addAttribute("error", errors);
-//			error("Failed: " + normalize(f) + ", " + errors + " test"
-//					+ (errors > 1 ? "s" : "") + " failures, see "
-//					+ normalize(pl.getTestreport().getAbsolutePath()));
-//		}
-
-		doPerReport(report, reportFile);
-		return errors;
+		finally {
+			long duration = System.currentTimeMillis() - start;
+			test.addAttribute("duration", (duration + 500) / 1000);
+			getInfo(project, project.toString());
+		}
 	}
 
 	/**
@@ -1729,8 +1683,7 @@ public class bnd extends Processor {
 
 	private void doPerReport(Tag report, File file) throws Exception {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true); // never forget this!
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(file);
@@ -1746,23 +1699,20 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doCoverage(Tag report, Document doc, XPath xpath)
-			throws XPathExpressionException {
-		int bad = Integer.parseInt(xpath.evaluate(
-				"count(//method[count(ref)<2])", doc));
+	private void doCoverage(Tag report, Document doc, XPath xpath) throws XPathExpressionException {
+		int bad = Integer.parseInt(xpath.evaluate("count(//method[count(ref)<2])", doc));
 		int all = Integer.parseInt(xpath.evaluate("count(//method)", doc));
 		report.addAttribute("coverage-bad", bad);
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(Tag report, File file, Document doc, XPath xpath)
-			throws Exception {
+	private void doHtmlReport(Tag report, File file, Document doc, XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
 		path += ".html";
 		File html = new File(path);
-		System.out.println("Creating html report: " + html);
+		trace("Creating html report: %s", html);
 
 		TransformerFactory fact = TransformerFactory.newInstance();
 
@@ -1772,11 +1722,9 @@ public class bnd extends Processor {
 		} else {
 			FileWriter out = new FileWriter(html);
 			try {
-				Transformer transformer = fact.newTransformer(new StreamSource(
-						in));
-				transformer
-						.transform(new DOMSource(doc), new StreamResult(out));
-				System.out.println("Transformed");
+				Transformer transformer = fact.newTransformer(new StreamSource(in));
+				transformer.transform(new DOMSource(doc), new StreamResult(out));
+				trace("Transformed");
 			} finally {
 				in.close();
 				out.close();
