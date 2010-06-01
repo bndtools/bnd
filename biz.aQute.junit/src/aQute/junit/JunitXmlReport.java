@@ -22,6 +22,7 @@ public class JunitXmlReport implements TestReporter {
 	private Tee			systemOut;
 	boolean				finished;
 	boolean				progress;
+	Bundle				bundle;
 
 	public class LogEntry {
 		String	clazz;
@@ -29,10 +30,11 @@ public class JunitXmlReport implements TestReporter {
 		String	message;
 	}
 
-	public JunitXmlReport(Writer report) throws Exception {
+	public JunitXmlReport(Writer report, Bundle bundle) throws Exception {
 		if (hostname == null)
 			hostname = InetAddress.getLocalHost().getHostName();
 		out = new PrintWriter(report);
+		this.bundle = bundle;
 	}
 
 	public void setProgress(boolean progress) {
@@ -48,7 +50,7 @@ public class JunitXmlReport implements TestReporter {
 			testsuite.addAttribute("target", targetBundle.getLocation());
 		} else {
 			testsuite.addAttribute("name", "test.run");
-			
+
 		}
 		testsuite.addAttribute("timestamp", df.format(new Date()));
 		testsuite.addAttribute("framework", fw);
@@ -58,30 +60,59 @@ public class JunitXmlReport implements TestReporter {
 		testsuite.addContent(properties);
 
 		for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-			Tag property = new Tag("property");
+			Tag property = new Tag(properties, "property");
 			property.addAttribute("name", entry.getKey());
 			property.addAttribute("value", entry.getValue());
-			properties.addContent(property);
 		}
 
-//		Tag bundles = new Tag("bundles");
-//		testsuite.addContent(bundles);
-//		Bundle bs[] = fw.getBundleContext().getBundles();
-//
-//		for (int i = 0; i < bs.length; i++) {
-//			Tag bundle = new Tag("bundle");
-//			bundle.addAttribute("location", bs[i].getLocation());
-//			bundle.addAttribute("modified", df.format(new Date(bs[i].getLastModified())));
-//			bundle.addAttribute("state", bs[i].getState());
-//			bundle.addAttribute("id", bs[i].getBundleId() + "");
-//			bundle.addAttribute("bsn", bs[i].getSymbolicName());
-//			bundle.addAttribute("version", bs[i].getVersion());
-//
-//			if (bs[i].equals(targetBundle))
-//				bundle.addAttribute("target", "true");
-//
-//			bundles.addContent(bundle);
-//		}
+		Tag bundles = new Tag(testsuite, "bundles");
+		Bundle bs[] = fw.getBundleContext().getBundles();
+
+		for (int i = 0; i < bs.length; i++) {
+			Tag bundle = new Tag("bundle");
+			bundle.addAttribute("location", bs[i].getLocation());
+			bundle.addAttribute("modified", df.format(new Date(bs[i].getLastModified())));
+			bundle.addAttribute("state", bs[i].getState());
+			bundle.addAttribute("id", bs[i].getBundleId() + "");
+			bundle.addAttribute("bsn", bs[i].getSymbolicName());
+			bundle.addAttribute("version", bs[i].getVersion());
+
+			if (bs[i].equals(targetBundle))
+				bundle.addAttribute("target", "true");
+
+			bundles.addContent(bundle);
+		}
+		if (bundle != null) {
+			String header = (String) targetBundle.getHeaders().get("Bnd-AddXMLToTest");
+			if (header != null) {
+				StringTokenizer st = new StringTokenizer(header, " ,");
+
+				while (st.hasMoreTokens()) {
+					String resource = st.nextToken();
+					URL url = targetBundle.getEntry(resource);
+
+					if (url != null) {
+						String name = url.getFile();
+						int n = name.lastIndexOf('/');
+						if (n < 0)
+							n = 0;
+						else
+							n = n + 1;
+
+						if (name.endsWith(".xml"))
+							name = name.substring(n, name.length() - 4);
+						else
+							name = name.substring(n, name.length()).replace('.', '_');
+
+						testsuite.addContent(url);
+
+					} else {
+						Tag addxml = new Tag(testsuite,"error");
+						addxml.addAttribute("reason", "no such resource: " + resource);
+					}
+				}
+			}
+		}
 	}
 
 	public void end() {

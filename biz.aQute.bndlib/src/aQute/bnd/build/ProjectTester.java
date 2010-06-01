@@ -8,8 +8,8 @@ public abstract class ProjectTester {
 	final Collection<Container>	testbundles;
 	final ProjectLauncher		launcher;
 	final List<String>			tests		= new ArrayList<String>();
-	final File					reportDir;
-	boolean continuous = true;
+	File						reportDir;
+	boolean						continuous	= true;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
@@ -21,11 +21,8 @@ public abstract class ProjectTester {
 			else
 				launcher.addRunBundle(c.getFile());
 		}
-		reportDir = new File(project.getTarget(), project.getProperty("test-reports", "test-reports"));
-		reportDir.mkdirs();
-		for (File report : reportDir.listFiles()) {
-			report.delete();
-		}
+		reportDir = new File(project.getTarget(), project.getProperty("test-reports",
+				"test-reports"));
 	}
 
 	public ProjectLauncher getProjectLauncher() {
@@ -42,8 +39,8 @@ public abstract class ProjectTester {
 
 	public Collection<File> getReports() {
 		List<File> reports = new ArrayList<File>();
-		for ( File  report : reportDir.listFiles()) {
-			if ( report.isFile())
+		for (File report : reportDir.listFiles()) {
+			if (report.isFile())
 				reports.add(report);
 		}
 		return reports;
@@ -53,6 +50,10 @@ public abstract class ProjectTester {
 		return reportDir;
 	}
 
+	public void setReportDir(File reportDir) {
+		this.reportDir = reportDir;
+	}
+
 	public Project getProject() {
 		return project;
 	}
@@ -60,12 +61,18 @@ public abstract class ProjectTester {
 	public boolean getContinuous() {
 		return continuous;
 	}
-	
+
 	public void setContinuous(boolean b) {
 		this.continuous = b;
 	}
-	
-	public abstract boolean prepare() throws Exception;
+
+	public boolean prepare() throws Exception {
+		reportDir.mkdirs();
+		for (File report : reportDir.listFiles()) {
+			report.delete();
+		}
+		return true;
+	}
 
 	public abstract int test() throws Exception;
 }

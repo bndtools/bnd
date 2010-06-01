@@ -10,14 +10,13 @@ public interface LauncherConstants {
 	String	LAUNCH_SYSTEMPACKAGES	= "launch.system.packages";
 	String	LAUNCH_LOG_LEVEL		= "launch.loglevel";
 	String	LAUNCH_TIMEOUT			= "launch.timeout";
+	String	LAUNCH_NOFRAMEWORK		= "launch.noframework";
 
-	
 	/**
-	 * The command line arguments of the launcher. Launcher are not
-	 * supposed to eat any arguments, they should use -D VM arguments
-	 * so that applications can leverage the command line. The 
-	 * launcher must register itself as a service under its impl.
-	 * class with this property set to a String[].
+	 * The command line arguments of the launcher. Launcher are not supposed to
+	 * eat any arguments, they should use -D VM arguments so that applications
+	 * can leverage the command line. The launcher must register itself as a
+	 * service under its impl. class with this property set to a String[].
 	 */
 	String	LAUNCHER_ARGUMENTS		= "launcher.arguments";
 

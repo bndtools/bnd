@@ -1538,7 +1538,8 @@ public class bnd extends Processor {
 		File cwd = new File("").getAbsoluteFile();
 		Workspace ws = Workspace.getWorkspace(cwd);
 		File reportDir = getFile("reports");
-
+		reportDir.mkdirs();
+		
 		Tag summary = new Tag("summary");
 		summary.addAttribute("date", new Date());
 		summary.addAttribute("ws", ws.getBase());
@@ -1610,8 +1611,12 @@ public class bnd extends Processor {
 		
 		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
 		ProjectTester tester = project.getProjectTester();
+		getInfo(project, project.toString() + ": ");
+		if ( !isOk() )
+			return -1;
 		
 		tester.setContinuous(false);
+		tester.setReportDir(reportDir);
 		test.addAttribute("title", project.toString());
 		long start = System.currentTimeMillis();
 		try {
@@ -1673,7 +1678,7 @@ public class bnd extends Processor {
 		finally {
 			long duration = System.currentTimeMillis() - start;
 			test.addAttribute("duration", (duration + 500) / 1000);
-			getInfo(project, project.toString());
+			getInfo(project, project.toString() + ": ");
 		}
 	}
 

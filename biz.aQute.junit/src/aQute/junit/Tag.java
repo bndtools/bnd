@@ -53,6 +53,11 @@ public class Tag {
 		addContent(content);
 	}
 
+	public Tag(Tag testsuite, String name) {
+		this(name);
+		testsuite.addContent(this);
+	}
+
 	/**
 	 * Add a new attribute.
 	 */

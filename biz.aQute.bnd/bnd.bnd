@@ -1,4 +1,4 @@
--dependson: biz.aQute.junit, biz.aQute.launcher
+-dependson: biz.aQute.junit, biz.aQute.launcher, biz.aQute.miniframework
 
 Bundle-Version: 				1.0.2
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \

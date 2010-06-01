@@ -635,8 +635,8 @@ public class Project extends Processor {
 		}
 
 		if ("latest".equals(range)) {
-			Container c= getBundleFromProject(bsn, attrs);
-			if ( c != null)
+			Container c = getBundleFromProject(bsn, attrs);
+			if (c != null)
 				return c;
 		}
 
@@ -723,7 +723,7 @@ public class Project extends Processor {
 	 *            bundle
 	 */
 	public void deploy(String name, File file) throws Exception {
-		List<RepositoryPlugin> plugins =getRepositories();
+		List<RepositoryPlugin> plugins = getRepositories();
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {
@@ -831,9 +831,9 @@ public class Project extends Processor {
 			Container container = getBundle(bsn, version, strategy, null);
 			if (container.getError() != null) {
 				error("The ${repo} macro could not find " + bsn + " in the repo, because "
-						+ container.getError() + "\n" + "Repositories     : "
-						+ getRepositories() + "\n" + "Strategy         : "
-						+ strategy + "\n" + "Bsn              : " + bsn + ";version=" + version);
+						+ container.getError() + "\n" + "Repositories     : " + getRepositories()
+						+ "\n" + "Strategy         : " + strategy + "\n" + "Bsn              : "
+						+ bsn + ";version=" + version);
 			} else
 				add(paths, container);
 		}
@@ -874,6 +874,9 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
+		if ( getProperty(NOBUNDLES)!=null)
+			return null;
+		
 		if (isUptodate())
 			return files;
 
@@ -1114,19 +1117,19 @@ public class Project extends Processor {
 		ProjectTester tester = getProjectTester();
 		tester.setContinuous(false);
 		tester.prepare();
-		
-		if ( !isOk() ) {
+
+		if (!isOk()) {
 			return;
 		}
 		int errors = tester.test();
-		if ( errors == 0 ) {
+		if (errors == 0) {
 			System.out.println("No Errors");
 		} else {
-			if ( errors > 0 ) {
+			if (errors > 0) {
 				System.out.println(errors + " Error(s)");
-				
+
 			} else
-				System.out.println("Error " + errors );				
+				System.out.println("Error " + errors);
 		}
 	}
 
@@ -1443,11 +1446,12 @@ public class Project extends Processor {
 		return getHandler(ProjectTester.class, getTestbundles(), TESTER_PLUGIN);
 	}
 
-	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header) throws Exception {
+	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header)
+			throws Exception {
 		Class<? extends T> handlerClass = target;
-		
+
 		for (Container c : containers) {
-			Manifest manifest =c.getManifest();
+			Manifest manifest = c.getManifest();
 
 			if (manifest != null) {
 				String launcher = manifest.getMainAttributes().getValue(header);
@@ -1459,7 +1463,8 @@ public class Project extends Processor {
 									c, target);
 						} else {
 							handlerClass = clz.asSubclass(target);
-							Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class);		
+							Constructor<? extends T> constructor = handlerClass
+									.getConstructor(Project.class);
 							return constructor.newInstance(this);
 						}
 					}

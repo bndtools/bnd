@@ -37,7 +37,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
-		
+
 		String testcases = context.getProperty(TESTER_NAMES);
 		if (context.getProperty(TESTER_PORT) != null)
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
@@ -152,8 +152,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				add(reporters, result, new JUnitReport(port));
 			}
 
-			if (report != null)
-				add(reporters, result, new JunitXmlReport(report));
+			if (report != null) {
+				add(reporters, result, new JunitXmlReport(report, bundle));
+			}
 
 			try {
 				TestSuite suite = createSuite(bundle, names);

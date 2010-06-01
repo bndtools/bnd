@@ -118,7 +118,7 @@ public class Builder extends Analyzer {
 			doVerify(dot);
 
 		if (dot.getResources().isEmpty())
-			error("The JAR is empty");
+			error("The JAR is empty: " + dot.getName());
 
 		dot.updateModified(lastModified(), "Last Modified Processor");
 		dot.setName(getBsn());
