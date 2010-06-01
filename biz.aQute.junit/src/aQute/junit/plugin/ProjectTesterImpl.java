@@ -22,6 +22,7 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 	public boolean prepare() throws Exception {
 		if (!prepared) {
 			prepared = true;
+			super.prepare();
 			ProjectLauncher launcher = getProjectLauncher();
 			launcher.setReport(true);
 			if (port > 0) {
