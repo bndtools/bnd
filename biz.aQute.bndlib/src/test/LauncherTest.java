@@ -9,19 +9,6 @@ import aQute.lib.osgi.*;
 
 public class LauncherTest extends TestCase {
 
-	public void testTester() throws Exception {
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
-		project.clear();
-		
-		ProjectTester pt = project.getProjectTester();
-		pt.addTest("test.TestCase1");
-				
-		assertEquals(2,pt.test());
-	}
-	
-	
-	
-	
 	
 	public void testSimple() throws Exception{
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
@@ -32,6 +19,21 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", "exit");
 		assertEquals(42,l.launch());
 	}
+	
+	public void testTester() throws Exception {
+		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		project.clear();
+		project.build();
+		
+		ProjectTester pt = project.getProjectTester();
+		pt.addTest("test.TestCase1");
+				
+		assertEquals(2,pt.test());
+	}
+	
+	
+	
+	
 	
 	public void testTimeoutActivator() throws Exception {
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));

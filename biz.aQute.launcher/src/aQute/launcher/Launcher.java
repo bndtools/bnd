@@ -14,10 +14,11 @@ import org.osgi.service.permissionadmin.*;
 import aQute.launcher.constants.*;
 
 /**
- * This is the primary bnd launcher. It implements a launcher that runs on Java 1.4.
+ * This is the primary bnd launcher. It implements a launcher that runs on Java
+ * 1.4.
  */
 public class Launcher implements LauncherConstants, ServiceListener {
-	private PrintStream out;
+	private PrintStream				out;
 	private final List<String>		runbundles	= new ArrayList<String>();
 	private String					systemPackages;
 
@@ -33,6 +34,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 	private PackageAdmin			padmin;
 	private File					propertiesFile;
 	private Timer					timer		= new Timer();
+	private List<BundleActivator>	embedded	= new ArrayList<BundleActivator>();
 
 	private TimerTask				watchdog	= null;
 
@@ -83,16 +85,17 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 	private void run(String args[]) throws Throwable {
 		try {
-			int status  = activate();
-			if ( status != 0 ) {
+			int status = activate();
+			if (status != 0) {
 				report(out);
 				System.exit(status);
 			}
-			
+
 			// Register the command line with ourselves as the
 			// service.
-			Hashtable<String,Object> argprops = new Hashtable<String,Object>();
+			Hashtable<String, Object> argprops = new Hashtable<String, Object>();
 			argprops.put(LAUNCHER_ARGUMENTS, args);
+			argprops.put(LAUNCHER_READY, "true");
 			systemBundle.getBundleContext().registerService(Launcher.class.getName(), this,
 					argprops);
 
@@ -177,20 +180,47 @@ public class Launcher implements LauncherConstants, ServiceListener {
 				in.close();
 			}
 		}
-
+		
+		String activators = systemContext.getProperty(LauncherConstants.LAUNCH_ACTIVATORS);
+		if ( activators != null ) {
+			StringTokenizer st = new StringTokenizer(activators," ,");
+			ClassLoader loader = getClass().getClassLoader();
+			while ( st.hasMoreElements()) {
+				String token = st.nextToken();
+				try {
+					Class<?> clazz= loader.loadClass(token);
+					BundleActivator activator = (BundleActivator) clazz.newInstance();
+					embedded.add( activator);
+				} catch (Exception e) {
+					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token + ", "+ e);
+				}
+			}
+		}
+		
+		
 		// From now on, the bundles are on their own. They have
 		// by default AllPermission, but if they install bundles
 		// they will not automatically get AllPermission anymore
 
-		if (security)
-			policy.setDefaultPermissions(null);
-		
+
 		// Get the resolved status
 		if (padmin.resolveBundles(null) == false)
 			return RESOLVE_ERROR;
+
+		if (security)
+			policy.setDefaultPermissions(null);
 		
-		if (report)
+		if (report) {
 			report(System.out);
+			System.out.flush();
+		}
+		
+		for ( BundleActivator activator : embedded ) try {
+			activator.start(systemContext);
+		} catch( Exception e) {
+			e.printStackTrace();
+			return ERROR;
+		}
 
 		// Now start all the installed bundles in the same order
 		// (unless they're a fragment)
@@ -394,13 +424,18 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 		while (e.hasMoreElements()) {
 			URL url = (URL) e.nextElement();
-			BufferedReader rdr = new BufferedReader(new InputStreamReader(url.openStream()));
-			String line;
-			while ((line = rdr.readLine()) != null) {
-				line = line.trim();
-				if (!line.startsWith("#") && line.length() > 0) {
-					factories.add(line);
+			InputStream in = url.openStream();
+			try {
+				BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
+				String line;
+				while ((line = rdr.readLine()) != null) {
+					line = line.trim();
+					if (!line.startsWith("#") && line.length() > 0) {
+						factories.add(line);
+					}
 				}
+			} finally {
+				in.close();
 			}
 		}
 		return factories;
@@ -428,19 +463,18 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		try {
 			out.println("------------------------------- REPORT --------------------------");
 			out.println();
-			row(out,"Framework", systemBundle == null ? "<>" : systemBundle.getClass());
-			row(out,"Storage", storage);
-			row(out,"Keep", keep);
-			row(out,"Report" , report);
-			row(out,"Security", security);
-			row(out,"System Packages", systemPackages);
-			list(out,"Classpath", split(System.getProperty("java.class.path"),
-					File.pathSeparator));
-			row(out,"Properties");
+			row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
+			row(out, "Storage", storage);
+			row(out, "Keep", keep);
+			row(out, "Report", report);
+			row(out, "Security", security);
+			row(out, "System Packages", systemPackages);
+			list(out, "Classpath", split(System.getProperty("java.class.path"), File.pathSeparator));
+			row(out, "Properties");
 			for (Entry<Object, Object> entry : properties.entrySet()) {
 				String key = (String) entry.getKey();
 				String value = (String) entry.getValue();
-				row(out,key, value);
+				row(out, key, value);
 			}
 			if (systemBundle != null) {
 				BundleContext context = systemBundle.getBundleContext();
@@ -466,11 +500,11 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		}
 	}
 
-	private void row(PrintStream out, Object ... parms) {
+	private void row(PrintStream out, Object... parms) {
 		boolean fill = true;
-		for ( Object p : parms ) {
-			if ( fill ) 
-				out.print(fill(p.toString(),40));
+		for (Object p : parms) {
+			if (fill)
+				out.print(fill(p.toString(), 40));
 			else
 				out.print(p.toString());
 			fill = false;
@@ -497,8 +531,8 @@ public class Launcher implements LauncherConstants, ServiceListener {
 	private String fill(String s, int width, char filler, int dir) {
 		StringBuffer sb = new StringBuffer();
 		if (s.length() > width) {
-			int half = (width-1)/2;
-			return s.substring( 0, half) + ".." + s.substring(s.length()-half);  
+			int half = (width - 1) / 2;
+			return s.substring(0, half) + ".." + s.substring(s.length() - half);
 		}
 		width -= s.length();
 		int before = (dir == 0) ? width / 2 : (dir < 0) ? 0 : width;
@@ -538,7 +572,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 			String s = o.toString();
 			out.print(del);
 			out.println(s);
-			del = fill(" ",40);
+			del = fill(" ", 40);
 		}
 	}
 
@@ -552,11 +586,11 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		case BundleException.DUPLICATE_BUNDLE_ERROR:
 			out.print("Duplicate bundles: " + e);
 			return LauncherConstants.DUPLICATE_BUNDLE;
-			
+
 		case BundleException.RESOLVE_ERROR:
 			out.print("Resolve error: " + e);
 			return LauncherConstants.RESOLVE_ERROR;
-			
+
 		case BundleException.INVALID_OPERATION:
 		case BundleException.MANIFEST_ERROR:
 		case BundleException.NATIVECODE_ERROR:

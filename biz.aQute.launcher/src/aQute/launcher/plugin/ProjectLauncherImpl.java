@@ -48,6 +48,8 @@ public class ProjectLauncherImpl extends ProjectLauncher implements LauncherCons
 		properties.setProperty(LAUNCH_RUNBUNDLES, Processor.join(getRunBundles()));
 		properties.setProperty(LAUNCH_LOG_LEVEL, "" + getLogLevel());
 		properties.setProperty(LAUNCH_TIMEOUT, "" + getTimeout());
+		if ( !getActivators().isEmpty())
+			properties.setProperty(LAUNCH_ACTIVATORS, Processor.join(getActivators()));
 
 		if (!getSystemPackages().isEmpty()) {
 			String header = Processor.printClauses(getSystemPackages(), null);

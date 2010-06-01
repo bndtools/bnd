@@ -28,6 +28,8 @@ public abstract class ProjectLauncher {
 	private final Map<String, String>				runproperties;
 	private Command									java;
 	private final Map<String, Map<String, String>>	runsystempackages;
+	private final List<String>						activators			= Create.list();
+
 	private int										loglevel;
 	private boolean									keep;
 	private boolean									report;
@@ -44,32 +46,48 @@ public abstract class ProjectLauncher {
 	public final static int							ACTIVATOR_ERROR		= -8;
 	public final static int							CUSTOM_LAUNCHER		= -128;
 
+	public final static String						EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
 		runbundles.addAll(project.toFile(project.getRunbundles()));
-		File [] builds  = project.build();
-		if ( builds != null )
+		File[] builds = project.build();
+		if (builds != null)
 			runbundles.addAll(Arrays.asList(builds));
 		runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 
 		for (Container c : runpath) {
-			if (c.getError() != null) {
-				project.error("Cannot launch because %s has reported %s", c.getProject(), c
-						.getError());
-			} else {
-				classpath.add(c.getFile().getAbsolutePath());
+			addRunpath(c);
+		}
+		runvm.addAll(project.getRunVM());
+		runproperties = project.getRunProperties();
+	}
 
-				Manifest manifest = c.getManifest();
+	public void addRunpath(Container container) throws Exception {
+		if (container.getError() != null) {
+			project.error("Cannot launch because %s has reported %s", container.getProject(),
+					container.getError());
+		} else {
+			Collection<Container> members = container.getMembers();
+			for (Container m : members) {
+				classpath.add(m.getFile().getAbsolutePath());
+
+				Manifest manifest = m.getManifest();
 				if (manifest != null) {
 					Map<String, Map<String, String>> exports = project.parseHeader(manifest
 							.getMainAttributes().getValue("Export-Package"));
 					runsystempackages.putAll(exports);
+
+					// Allow activators on the runpath. They are called after
+					// the framework is completely initialized wit the system
+					// context.
+					String activator = manifest.getMainAttributes().getValue(EMBEDDED_ACTIVATOR);
+					if (activator != null)
+						activators.add(activator);
 				}
 			}
 		}
-		runvm.addAll(project.getRunVM());
-		runproperties = project.getRunProperties();
 	}
 
 	public void addRunBundle(File f) {
@@ -113,7 +131,7 @@ public abstract class ProjectLauncher {
 		java = new Command();
 		java.add(project.getProperty("java", "java"));
 		java.add("-cp");
-		java.add(Processor.join(getRunpath(), File.pathSeparator));
+		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
 		java.add(getMainTypeName());
 		java.addAll(getArguments());
@@ -189,7 +207,7 @@ public abstract class ProjectLauncher {
 
 	/**
 	 * Should be called when all the changes to the launchers are set. Will
-	 * calcualte whatever is necessary for the launcher.
+	 * calculate whatever is necessary for the launcher.
 	 * 
 	 * @throws Exception
 	 */
@@ -197,5 +215,13 @@ public abstract class ProjectLauncher {
 
 	public Project getProject() {
 		return project;
+	}
+
+	public boolean addActivator(String e) {
+		return activators.add(e);
+	}
+
+	public Collection<String> getActivators() {
+		return Collections.unmodifiableCollection(activators);
 	}
 }

@@ -9,7 +9,7 @@ import junit.framework.*;
 
 import org.osgi.framework.*;
 
-public class JunitXmlReport implements TestReporter {
+public class JUnitXmlReport implements TestReporter {
 	Tag					testsuite	= new Tag("testsuite");
 	Tag					testcase;
 	static String		hostname;
@@ -18,11 +18,10 @@ public class JunitXmlReport implements TestReporter {
 	long				testStartTime;
 	int					tests		= 0;
 	PrintWriter			out;
-	private Tee			systemErr;
-	private Tee			systemOut;
 	boolean				finished;
 	boolean				progress;
 	Bundle				bundle;
+	BasicTestReport		basic;
 
 	public class LogEntry {
 		String	clazz;
@@ -30,11 +29,12 @@ public class JunitXmlReport implements TestReporter {
 		String	message;
 	}
 
-	public JunitXmlReport(Writer report, Bundle bundle) throws Exception {
+	public JUnitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
 		if (hostname == null)
 			hostname = InetAddress.getLocalHost().getHostName();
 		out = new PrintWriter(report);
 		this.bundle = bundle;
+		this.basic = basic;
 	}
 
 	public void setProgress(boolean progress) {
@@ -146,8 +146,6 @@ public class JunitXmlReport implements TestReporter {
 		}
 
 		testcase.addAttribute("name", name);
-
-		capture();
 		testStartTime = System.currentTimeMillis();
 		progress(name);
 	}
@@ -172,10 +170,6 @@ public class JunitXmlReport implements TestReporter {
 	}
 
 	private void progress(String s) {
-		if (progress) {
-			systemOut.oldStream.print(s);
-			systemOut.oldStream.flush();
-		}
 	}
 
 	private String getTrace(Throwable t) {
@@ -209,39 +203,23 @@ public class JunitXmlReport implements TestReporter {
 	}
 
 	public void endTest(Test test) {
+		String[] outs = basic.getCaptured();
+		if ( outs[0] == null) {
+			Tag sysout = new Tag(testcase,"sys-out");
+			sysout.addContent(outs[0]);
+		}
+			
+		if ( outs[1] == null) {
+			Tag sysout = new Tag(testcase,"sys-err");
+			sysout.addContent(outs[1]);
+		}
+			
 		testcase
 				.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
-		uncapture();
-		if (progress)
-			System.out.println();
 	}
 
-	void capture() {
-		if (systemOut == null) {
-			systemOut = new Tee(System.out);
-			System.setOut(systemOut.getStream());
-			systemErr = new Tee(System.err);
-			System.setErr(systemOut.getStream());
-		}
-	}
-
-	void uncapture() {
-		if (systemOut != null) {
-			System.out.flush();
-			System.err.flush();
-			if (systemOut.buffer.size() > 0)
-				testcase.addContent(systemOut.getContent("system-out"));
-			System.setOut(systemOut.oldStream);
-			systemOut = null;
-			if (systemErr.buffer.size() > 0)
-				testcase.addContent(systemErr.getContent("system-err"));
-			System.setErr(systemErr.oldStream);
-			systemErr = null;
-		}
-	}
 
 	public void close() {
-		uncapture();
 		end();
 	}
 

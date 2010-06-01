@@ -35,6 +35,13 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	public void run() {
+		try {
+			ServiceTracker tracker = new ServiceTracker(context, FrameworkUtil
+					.createFilter("(launcher.ready=*)"), null);
+			tracker.waitForService(20000);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 
@@ -57,7 +64,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	void automatic() {
 		final File reportDir = new File(context.getProperty(TESTER_DIR));
-		final List<Bundle> queue = new ArrayList<Bundle>();
+		final List<Bundle> queue = new Vector<Bundle>();
 
 		tracker = new BundleTracker(context, Bundle.ACTIVE, null) {
 			public Object addingBundle(Bundle bundle, BundleEvent event) {
@@ -80,9 +87,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				synchronized (queue) {
 					while (queue.isEmpty() && active) {
 						try {
-							queue.wait(100);
-							if (queue.isEmpty() && !continuous)
-								System.exit(0);
+							queue.wait();
 						} catch (InterruptedException e) {
 							interrupt();
 							break outer;
@@ -103,6 +108,10 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					e.printStackTrace(System.err);
 					System.exit(-2);
 				}
+				if (queue.isEmpty() && !continuous) {
+					System.exit(0);
+				}
+
 			}
 		} finally {
 			tracker.close();
@@ -141,51 +150,60 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			List<TestReporter> reporters = new ArrayList<TestReporter>();
 			final TestResult result = new TestResult();
 
-			add(reporters, result, new BasicTestReport() {
-				public void check() {
-					if (!active)
-						result.stop();
-				}
-			});
+			Tee systemErr;
+			Tee systemOut;
 
-			if (port > 0) {
-				add(reporters, result, new JUnitReport(port));
-			}
-
-			if (report != null) {
-				add(reporters, result, new JunitXmlReport(report, bundle));
-			}
-
+			systemOut = new Tee(System.out);
+			systemErr = new Tee(System.err);
+			systemOut.capture(false);
+			systemErr.capture(false);
+			System.setOut(systemOut.getStream());
+			System.setErr(systemErr.getStream());
 			try {
-				TestSuite suite = createSuite(bundle, names);
-				List<Test> flattened = new ArrayList<Test>();
-				int realcount = flatten(flattened, suite);
 
-				for (TestReporter tr : reporters) {
-					tr.begin(fw, bundle, flattened, realcount);
+				BasicTestReport basic = new BasicTestReport(systemOut, systemErr) {
+					public void check() {
+						if (!active)
+							result.stop();
+					}
+				};
+
+				add(reporters, result, basic);
+
+				if (port > 0) {
+					add(reporters, result, new JUnitEclipseReport(port));
 				}
 
-				suite.run(result);
+				if (report != null) {
+					add(reporters, result, new JUnitXmlReport(report, bundle, basic));
+				}
 
-			} catch (Throwable t) {
-				result.addError(null, t);
+				try {
+					TestSuite suite = createSuite(bundle, names);
+					List<Test> flattened = new ArrayList<Test>();
+					int realcount = flatten(flattened, suite);
+
+					for (TestReporter tr : reporters) {
+						tr.begin(fw, bundle, flattened, realcount);
+					}
+					suite.run(result);
+
+				} catch (Throwable t) {
+					result.addError(null, t);
+				} finally {
+					for (TestReporter tr : reporters) {
+						tr.end();
+					}
+				}
 			} finally {
-				for (TestReporter tr : reporters) {
-					tr.end();
-				}
+				System.setOut(systemOut.oldStream);
+				System.setErr(systemErr.oldStream);
 			}
 			return result.errorCount() + result.failureCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return -1;
-	}
-
-	private String removeSuffix(String string, String suffix) {
-		if (!string.endsWith(suffix))
-			return string;
-
-		return string.substring(0, string.length() - suffix.length());
 	}
 
 	private TestSuite createSuite(Bundle tfw, List<String> testNames) throws Exception {

@@ -9,85 +9,119 @@ import junit.framework.*;
 import org.osgi.framework.*;
 
 public class BasicTestReport implements TestListener, TestReporter {
-    int            errors;
-    boolean        verbose = true;
-    PrintStream out = System.out;
+	int					errors;
+	boolean				verbose	= true;
+	PrintStream			out;
+	private final Tee	systemOut;
+	private final Tee	systemErr;
+	int				fails;
+
+	public BasicTestReport(Tee systemOut, Tee systemErr) {
+		this.systemOut = systemOut;
+		this.systemErr = systemErr;
+		out = systemOut.oldStream;
+	}
 
 	public void begin(Bundle fw, Bundle targetBundle, List tests, int realcount) {
-        if (verbose) {
-            out
-                    .println("====================================================================");
-        }
-    }
+		if (verbose) {
+			out.println("====================================================================");
+		}
+	}
 
-    public void addError(Test test, Throwable t) {
-    	check();
-        errors++;
-        if (verbose) {
-            out.println(test + " : ");
-            t.printStackTrace(out);
-            out.println();
-        }
-    }
+	public void addError(Test test, Throwable t) {
+		check();
+		fails++;
+		errors++;
+		if (verbose) {
+			out.println(test + " : ");
+			t.printStackTrace(out);
+			out.println();
+		}
+	}
 
-    public void addFailure(Test test, AssertionFailedError t) {
-    	check();
-        errors++;
-        if (verbose) {
-        	out.println();
-            out.print(test + " : ");
-            t.getMessage();
-        }
-    }
+	public void addFailure(Test test, AssertionFailedError t) {
+		check();
+		fails++;
+		errors++;
+		if (verbose) {
+			out.println();
+			out.print(test + " : ");
+			t.getMessage();
+		}
+	}
 
-    public void endTest(Test test) {
-        if (verbose) {
-            out.println("<< " + test + "\n");
-        }
-    	check();
-    }
-
-    public void startTest(Test test) {
-    	check();
-    	Bundle b = FrameworkUtil.getBundle(test.getClass());
-    	BundleContext context = b.getBundleContext();
-        try {
-            Method m = test.getClass().getMethod("setBundleContext",
-                    new Class[] { BundleContext.class });
-            m.setAccessible(true);
-            m.invoke(test, new Object[] { context });
-        } catch (Exception e) {
-        	Field f;
+	public void startTest(Test test) {
+		check();
+		Bundle b = FrameworkUtil.getBundle(test.getClass());
+		BundleContext context = b.getBundleContext();
+		try {
+			Method m = test.getClass().getMethod("setBundleContext",
+					new Class[] { BundleContext.class });
+			m.setAccessible(true);
+			m.invoke(test, new Object[] { context });
+		} catch (Exception e) {
+			Field f;
 			try {
 				f = test.getClass().getField("context");
-	        	f.set(test, context);
+				f.set(test, context);
 			} catch (Exception e1) {
-	            // Ok, no problem
+				// Ok, no problem
 			}
-        }
-        if (verbose)
-            out.println(">> " + test + "\n");
-    }
+		}
+		if (verbose)
+			out.print(">> " + test);
 
-    public void end() {
-        if (verbose) {
-            out
-                    .println("-------------------------------------------------------------------------");
-            out.println();
-            out.println();
-        }
-    }
+		fails = 0;
+		systemOut.clear().capture(true).echo(false);
+		systemErr.clear().capture(true).echo(false);
+	}
 
-    public void aborted() {
-        if (verbose) {
-            out.println();
-            out
-                    .println("-------------------------------------------------------------------------");
-        }
-        out.println("\nAborted ...");
-    }
+	public void endTest(Test test) {
+		systemOut.capture(false);
+		systemErr.capture(false);
+		if (verbose) {
+			if (fails > 0) {
+				out.println();
+				String sysout = systemOut.getContent();
+				String syserr = systemErr.getContent();
+				if (sysout != null)
+					out.println(sysout);
+				if (syserr != null) {
+					out.println("*** syserr *** ");
+					out.println(syserr);
+				}
+				out.println("<<" + test);
+			} else {
+				out.println(" <<");				
+			}
+		}
+		check();
+	}
 
-    protected void check() {
-    	
-    }
+	public void end() {
+		if (verbose) {
+			out
+					.println("-------------------------------------------------------------------------");
+			out.println();
+			out.println();
+		}
+	}
+
+	public void aborted() {
+		if (verbose) {
+			out.println();
+			out
+					.println("-------------------------------------------------------------------------");
+		}
+		out.println("\nAborted ...");
+	}
+
+	protected void check() {
+
+	}
+
+	String[] getCaptured() {
+		return new String[] { systemOut.getContent(), systemErr.getContent() };
+	}
+
 }

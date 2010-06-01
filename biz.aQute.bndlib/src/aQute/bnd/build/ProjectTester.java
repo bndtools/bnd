@@ -10,16 +10,13 @@ public abstract class ProjectTester {
 	final List<String>			tests		= new ArrayList<String>();
 	File						reportDir;
 	boolean						continuous	= true;
-
+	
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getLauncher();
 		testbundles = project.getTestbundles();
 		for (Container c : testbundles) {
-			if (c.getError() != null)
-				project.error(c.getError());
-			else
-				launcher.addRunBundle(c.getFile());
+			launcher.addRunpath(c);
 		}
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports",
 				"test-reports"));
@@ -40,7 +37,7 @@ public abstract class ProjectTester {
 	public Collection<File> getReports() {
 		List<File> reports = new ArrayList<File>();
 		for (File report : reportDir.listFiles()) {
-			if (report.isFile())
+			if (report.isFile() )
 				reports.add(report);
 		}
 		return reports;
@@ -68,8 +65,8 @@ public abstract class ProjectTester {
 
 	public boolean prepare() throws Exception {
 		reportDir.mkdirs();
-		for (File report : reportDir.listFiles()) {
-			report.delete();
+		for ( File file : reportDir.listFiles() ) {
+			file.delete();
 		}
 		return true;
 	}

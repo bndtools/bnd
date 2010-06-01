@@ -1538,6 +1538,11 @@ public class bnd extends Processor {
 		File cwd = new File("").getAbsoluteFile();
 		Workspace ws = Workspace.getWorkspace(cwd);
 		File reportDir = getFile("reports");
+
+		for ( File file : reportDir.listFiles()) {
+			file.delete();
+		}
+		
 		reportDir.mkdirs();
 		
 		Tag summary = new Tag("summary");
@@ -1549,7 +1554,7 @@ public class bnd extends Processor {
 			if (args[i].startsWith("-reportdir")) {
 				reportDir = getFile(args[i]).getAbsoluteFile();
 				if (!reportDir.isDirectory())
-					error("-reportdir must be a directory");
+					error("reportdir must be a directory "+ reportDir);
 			} else if (args[i].startsWith("-title")) {
 				summary.addAttribute("title", args[++i]);
 			} else if (args[i].startsWith("-dir")) {
@@ -1598,9 +1603,14 @@ public class bnd extends Processor {
 			pw.close();
 			out.close();
 		}
+		System.out.println("Errors: " + errors);
 	}
 
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
+		File tmpDir = new File(reportDir,"tmp");
+		tmpDir.mkdirs();
+		tmpDir.deleteOnExit();
+		
 		Tag test = new Tag(summary,"test");
 		test.addAttribute("path", testFile.getAbsolutePath());
 		if (!testFile.isFile()) {
@@ -1616,7 +1626,7 @@ public class bnd extends Processor {
 			return -1;
 		
 		tester.setContinuous(false);
-		tester.setReportDir(reportDir);
+		tester.setReportDir(tmpDir);
 		test.addAttribute("title", project.toString());
 		long start = System.currentTimeMillis();
 		try {
@@ -1626,8 +1636,10 @@ public class bnd extends Processor {
 			Collection<File> reports = tester.getReports();
 			for ( File report : reports) {
 				Tag bundle= new Tag(test,"bundle");
-				bundle.addAttribute("file", report.getAbsolutePath());
-				doPerReport(bundle, report);
+				File dest = new File( reportDir, report.getName());
+				report.renameTo(dest);
+				bundle.addAttribute("file", dest.getAbsolutePath());
+				doPerReport(bundle, dest);
 			}
 			
 			switch(errors) {

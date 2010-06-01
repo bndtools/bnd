@@ -876,11 +876,19 @@ public class Project extends Processor {
 	public File[] build(boolean underTest) throws Exception {
 		if ( getProperty(NOBUNDLES)!=null)
 			return null;
-		
-		if (isUptodate())
-			return files;
 
-		return buildLocal(underTest);
+		boolean outofdate = !isUptodate();
+		for ( Project project : getDependson()) {
+			if ( !project.isUptodate()) {
+				project.buildLocal(false);
+				outofdate =  true;
+				getInfo(project,project+": ");
+			}
+		}
+		if ( files == null || outofdate )
+			files = buildLocal(underTest);
+		
+		return files;
 	}
 
 	/**
@@ -925,6 +933,9 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] buildLocal(boolean underTest) throws Exception {
+		if ( getProperty(NOBUNDLES)!=null)
+			return null;
+		
 		File bfs = new File(getTarget(), BUILDFILES);
 		bfs.delete();
 
@@ -995,11 +1006,6 @@ public class Project extends Processor {
 			if (f.lastModified() < lastModified())
 				return false;
 		}
-
-		for (Project project : getDependson())
-			if (!project.isUptodate()) {
-				return false;
-			}
 
 		return true;
 	}

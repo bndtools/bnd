@@ -10,7 +10,7 @@ public interface LauncherConstants {
 	String	LAUNCH_SYSTEMPACKAGES	= "launch.system.packages";
 	String	LAUNCH_LOG_LEVEL		= "launch.loglevel";
 	String	LAUNCH_TIMEOUT			= "launch.timeout";
-	String	LAUNCH_NOFRAMEWORK		= "launch.noframework";
+	String	LAUNCH_ACTIVATORS		= "launch.activators";
 
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -19,6 +19,7 @@ public interface LauncherConstants {
 	 * service under its impl. class with this property set to a String[].
 	 */
 	String	LAUNCHER_ARGUMENTS		= "launcher.arguments";
+	String	LAUNCHER_READY			= "launcher.ready";
 
 	// MUST BE ALIGNED WITH ProjectLauncher!
 	int		OK						= 0;
