@@ -4,6 +4,8 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 import java.util.jar.*;
 
 import aQute.bnd.help.*;
@@ -38,6 +40,8 @@ public class Project extends Processor {
 	final Collection<File>		allsourcepath	= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath	= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles		= new LinkedHashSet<Container>();
+	final Lock					lock			= new ReentrantLock(true);
+	volatile String				lockedReason;
 	File						output;
 	File						target;
 	boolean						inPrepare;
@@ -874,20 +878,22 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
-		if ( getProperty(NOBUNDLES)!=null)
+		if (getProperty(NOBUNDLES) != null)
 			return null;
 
+		System.out.println("Need " + this);
 		boolean outofdate = !isUptodate();
-		for ( Project project : getDependson()) {
-			if ( !project.isUptodate()) {
-				project.buildLocal(false);
-				outofdate =  true;
-				getInfo(project,project+": ");
+		for (Project project : getDependson()) {
+			if (project != this && !project.isUptodate()) {
+				System.out.println("Building because out of date: " + project);
+				project.files = project.buildLocal(false);
+				outofdate = true;
+				getInfo(project, project + ": ");
 			}
 		}
-		if ( files == null || outofdate )
+		if (files == null || outofdate)
 			files = buildLocal(underTest);
-		
+
 		return files;
 	}
 
@@ -933,9 +939,9 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] buildLocal(boolean underTest) throws Exception {
-		if ( getProperty(NOBUNDLES)!=null)
+		if (getProperty(NOBUNDLES) != null)
 			return null;
-		
+
 		File bfs = new File(getTarget(), BUILDFILES);
 		bfs.delete();
 
@@ -998,15 +1004,27 @@ public class Project extends Processor {
 	}
 
 	private boolean isUptodate() throws Exception {
-		if (files == null) {
-			return false;
+		if ( getProperty(NOBUNDLES) != null ) {
+			System.out.println( this + " is up to date because it has no bundles");
+			return true;
 		}
-
-		for (File f : files) {
-			if (f.lastModified() < lastModified())
+		
+		if (files == null) {
+//			files = getBuildFiles();
+//			if (files == null)
+			System.out.println( this + " is out of date because it has no files");
+			
 				return false;
 		}
 
+		for (File f : files) {
+			if (f.lastModified() < lastModified()) {
+				System.out.println( this + " is out of date because "+f+" is older");
+				return false;
+			}
+		}
+
+		System.out.println( this + " is up to date");
 		return true;
 	}
 
@@ -1479,5 +1497,19 @@ public class Project extends Processor {
 		}
 		error("Cannot find handler for %s. Header=%s and jars=%s", this, header, containers);
 		return null;
+	}
+
+	public boolean lock(String reason) throws InterruptedException {
+		if (!lock.tryLock(5, TimeUnit.SECONDS)) {
+			error("Could not acquire lock for %s, was locked by %s", reason, lockedReason);
+			System.out.printf("Could not acquire lock for %s, was locked by %s\n", reason, lockedReason);
+			return false;
+		}
+		return true;
+	}
+
+	public void unlock() {
+		lockedReason = null;
+		lock.unlock();		
 	}
 }
