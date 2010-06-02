@@ -38,7 +38,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		try {
 			ServiceTracker tracker = new ServiceTracker(context, FrameworkUtil
 					.createFilter("(launcher.ready=*)"), null);
-			tracker.waitForService(20000);
+			tracker.open();
+			System.out.println(tracker.waitForService(20000));
+			tracker.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

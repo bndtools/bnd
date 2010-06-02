@@ -53,7 +53,9 @@ public class BasicTestReport implements TestListener, TestReporter {
 	public void startTest(Test test) {
 		check();
 		Bundle b = FrameworkUtil.getBundle(test.getClass());
+		assert b != null;
 		BundleContext context = b.getBundleContext();
+		assert context != null;
 		try {
 			Method m = test.getClass().getMethod("setBundleContext",
 					new Class[] { BundleContext.class });

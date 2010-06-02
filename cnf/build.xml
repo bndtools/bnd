@@ -17,7 +17,7 @@
 	<target name="init" unless="initialized">
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/biz.aQute.bnd/bin;${workspacedir}/biz.aQute.bndlib/bin;${workspacedir}/aQute.libg/bin;" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/biz.aQute.bndlib/bin;${workspacedir}/biz.aQute.bnd/bin;${workspacedir}/aQute.libg/bin;${workspacedir}/aQute.service/bin" />
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
@@ -71,7 +71,7 @@
 		Iterate of the jars to build.
 	-->
 	<target name="build" depends="compile">
-		<bnd command="build" exceptions="true" basedir="${project}" />
+		<bnd command="build" trace="true" exceptions="true" basedir="${project}" />
 	</target>
 
 

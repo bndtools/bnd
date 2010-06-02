@@ -60,6 +60,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		} finally {
 			in.close();
 		}
+        System.getProperties().putAll(properties);		
 		init();
 		watchdog = new TimerTask() {
 			long	begin	= propertiesFile.lastModified();
@@ -204,7 +205,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 
 		// Get the resolved status
-		if (padmin.resolveBundles(null) == false)
+		if (padmin != null && padmin.resolveBundles(null) == false)
 			return RESOLVE_ERROR;
 
 		if (security)
@@ -309,8 +310,8 @@ public class Launcher implements LauncherConstants, ServiceListener {
 				out.println("Failed to update " + b.getLocation());
 			}
 		}
-
-		padmin.refreshPackages(null);
+		if ( padmin != null)
+			padmin.refreshPackages(null);
 
 		for (Bundle b : tobeupdated) {
 			try {
@@ -340,7 +341,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 	}
 
 	private boolean isFragment(Bundle b) {
-		return padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		return padmin != null && padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 	}
 
 	public void deactivate() throws Exception {

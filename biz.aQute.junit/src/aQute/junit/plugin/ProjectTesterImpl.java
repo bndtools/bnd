@@ -24,7 +24,6 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			prepared = true;
 			super.prepare();
 			ProjectLauncher launcher = getProjectLauncher();
-			launcher.setReport(true);
 			if (port > 0) {
 				launcher.getRunProperties().put(TESTER_PORT, "" + port);
 				if (host != null)

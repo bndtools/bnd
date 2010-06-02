@@ -47,7 +47,7 @@ public class Project extends Processor {
 	boolean						inPrepare;
 	int							revision;
 	File						files[];
-
+	
 	static List<Project>		trail			= new ArrayList<Project>();
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
@@ -881,21 +881,46 @@ public class Project extends Processor {
 		if (getProperty(NOBUNDLES) != null)
 			return null;
 
-		System.out.println("Need " + this);
 		boolean outofdate = !isUptodate();
-		for (Project project : getDependson()) {
-			if (project != this && !project.isUptodate()) {
-				System.out.println("Building because out of date: " + project);
-				project.files = project.buildLocal(false);
-				outofdate = true;
-				getInfo(project, project + ": ");
-			}
-		}
-		if (files == null || outofdate)
+//		for (Project project : getDependson()) {
+//			if (project != this && !project.isUptodate()) {
+//				
+//				System.out.println("  Building because out of date: " + project);
+//				project.files = project.buildLocal(false);
+//				outofdate = true;
+//				getInfo(project, project + ": ");
+//			}
+//		}
+		if (files == null || outofdate) {
+			trace("Building " + this);
 			files = buildLocal(underTest);
+		}
 
 		return files;
 	}
+	
+	private boolean isUptodate() throws Exception {
+		if ( getProperty(NOBUNDLES) != null ) {
+			return true;
+		}
+		
+		if (files == null) {
+//			files = getBuildFiles();
+//			if (files == null)
+			
+				return false;
+		}
+
+		for (File f : files) {
+			if (f.lastModified() < lastModified()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
 
 	/**
 	 * This method must only be called when it is sure that the project has been
@@ -1001,31 +1026,6 @@ public class Project extends Processor {
 
 	private File getOutputFile(String bsn) throws Exception {
 		return new File(getTarget(), bsn + ".jar");
-	}
-
-	private boolean isUptodate() throws Exception {
-		if ( getProperty(NOBUNDLES) != null ) {
-			System.out.println( this + " is up to date because it has no bundles");
-			return true;
-		}
-		
-		if (files == null) {
-//			files = getBuildFiles();
-//			if (files == null)
-			System.out.println( this + " is out of date because it has no files");
-			
-				return false;
-		}
-
-		for (File f : files) {
-			if (f.lastModified() < lastModified()) {
-				System.out.println( this + " is out of date because "+f+" is older");
-				return false;
-			}
-		}
-
-		System.out.println( this + " is up to date");
-		return true;
 	}
 
 	private void reportNewer(long lastModified, Jar jar) {

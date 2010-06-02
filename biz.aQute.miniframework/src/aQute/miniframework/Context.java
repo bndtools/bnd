@@ -17,8 +17,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext {
 	Manifest				manifest;
 	TreeSet<String>			keys;
 	private TreeSet<String>	paths;
-
-	class Dict extends Dictionary<String,Object> {
+	final List<BundleListener> bundleListeners = new ArrayList<BundleListener>();
+	final List<ServiceListener> serviceListeners = new ArrayList<ServiceListener>();
+	final List<FrameworkListener> frameworkListeners = new ArrayList<FrameworkListener>();
+	
+	class Dict extends Dictionary<String, Object> {
 
 		public Enumeration<Object> elements() {
 			return Collections.enumeration(manifest.getMainAttributes().values());
@@ -287,27 +290,39 @@ public class Context extends URLClassLoader implements Bundle, BundleContext {
 
 	public ServiceRegistration registerService(String[] clazzes, Object service,
 			Dictionary properties) {
-		throw new UnsupportedOperationException();
+		Class<?> c;
+		try {
+			c = fw.loadClass(clazz);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalArgumentException("Class not found: " + clazz);
+		}
+		LocalServiceRegistration reg = new LocalServiceRegistration(this, fw.nextId(), c, service,
+				properties);
+		synchronized (fw.registry) {
+			fw.registry.add(reg);
+		}
+		return reg;
 	}
 
 	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
-		throw new UnsupportedOperationException();
+		registerService(new String[] {clazz}, service, properties);
 	}
 
 	public void removeBundleListener(BundleListener listener) {
-		throw new UnsupportedOperationException();
+		bundleListeners.remove(listener);
 	}
 
 	public void removeFrameworkListener(FrameworkListener listener) {
-		throw new UnsupportedOperationException();
+		frameworkListeners.remove(listener);
 	}
 
-	public void removeServiceListener(ServiceListener listener) {
-		throw new UnsupportedOperationException();
+	public synchronized void removeServiceListener(ServiceListener listener) {
+		serviceListeners.remove(listener);
 	}
 
 	public boolean ungetService(ServiceReference reference) {
-		throw new UnsupportedOperationException();
+		LocalServiceRegistration reg = (LocalServiceRegistration) reference;
+		return reg.unget(this);
 	}
 
 	public String toString() {
