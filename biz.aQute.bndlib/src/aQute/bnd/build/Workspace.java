@@ -41,8 +41,25 @@ public class Workspace extends Processor {
 		return ws.getProject(projectDir.getName());
 	}
 
-	public static Workspace getWorkspace(File workspaceDir) throws Exception {
-		workspaceDir = workspaceDir.getAbsoluteFile();
+	public static Workspace getWorkspace(File parent) throws Exception {
+		File workspaceDir = parent.getAbsoluteFile();
+		File test = new File(workspaceDir, CNFDIR);
+		
+		// Check if we can find a bnd dir higher up so
+		// we can have nested workspaces.
+		while ( !test.exists()) {
+			test = new File(workspaceDir, BNDDIR);
+			if ( test.exists())
+				break;
+			
+			workspaceDir = workspaceDir.getParentFile();				
+			if ( workspaceDir == null ) {
+				// We reached the root ... just use parent dir.
+				workspaceDir = parent;
+				break;
+			}
+		}
+		
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
 			Workspace ws;
