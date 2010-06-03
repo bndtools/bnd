@@ -335,7 +335,7 @@ public class Project extends Processor {
 	}
 
 	private List<Container> parseTestbundles() throws Exception {
-		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.TESTBUNDLES));
+		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.TESTPATH));
 	}
 
 	/**
@@ -1125,6 +1125,8 @@ public class Project extends Processor {
 		if (target.isDirectory() && target.getParentFile() != null) {
 			delete(target);
 		}
+		if ( getOutput().isDirectory())
+			delete(getOutput());
 	}
 
 	public File[] build() throws Exception {
@@ -1132,7 +1134,7 @@ public class Project extends Processor {
 	}
 
 	public void run() throws Exception {
-		ProjectLauncher pl = getLauncher();
+		ProjectLauncher pl = getProjectLauncher();
 		pl.launch();
 	}
 
@@ -1462,7 +1464,7 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public ProjectLauncher getLauncher() throws Exception {
+	public ProjectLauncher getProjectLauncher() throws Exception {
 		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN);
 	}
 

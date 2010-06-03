@@ -33,6 +33,10 @@ public abstract class ProjectLauncher {
 	private int										loglevel;
 	private boolean									keep;
 	private boolean									report;
+	private int										framework;
+
+	public final static int							SERVICES			= 10111;
+	public final static int							NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
 	public final static int							OK					= 0;
@@ -56,12 +60,22 @@ public abstract class ProjectLauncher {
 			runbundles.addAll(Arrays.asList(builds));
 		runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
+		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 
 		for (Container c : runpath) {
 			addRunpath(c);
 		}
 		runvm.addAll(project.getRunVM());
 		runproperties = project.getRunProperties();
+	}
+
+	private int getRunframework(String property) {
+		if (Constants.RUNFRAMEWORK_NONE.equalsIgnoreCase(property))
+			return NONE;
+		else if (Constants.RUNFRAMEWORK_SERVICES.equalsIgnoreCase(property))
+			return SERVICES;
+
+		return SERVICES;
 	}
 
 	public void addRunpath(Container container) throws Exception {
@@ -223,5 +237,22 @@ public abstract class ProjectLauncher {
 
 	public Collection<String> getActivators() {
 		return Collections.unmodifiableCollection(activators);
+	}
+
+	/**
+	 * Either NONE or SERVICES to indicate how the remote end launches.
+	 * NONE means it should not use the classpath to run a framework. This
+	 * likely requires some dummy framework support. SERVICES means it should
+	 * load the framework from the claspath.
+	 * 
+	 * @return
+	 */
+	public int getRunFramework() {
+		return framework;
+	}
+	
+	public void setRunFramework(int n) {
+		assert n == NONE || n == SERVICES;
+		this.framework = n;
 	}
 }

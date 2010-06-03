@@ -290,13 +290,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext {
 
 	public ServiceRegistration registerService(String[] clazzes, Object service,
 			Dictionary properties) {
-		Class<?> c;
-		try {
-			c = fw.loadClass(clazz);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("Class not found: " + clazz);
-		}
-		LocalServiceRegistration reg = new LocalServiceRegistration(this, fw.nextId(), c, service,
+		LocalServiceRegistration reg = new LocalServiceRegistration(this, fw.nextId(), clazzes, service,
 				properties);
 		synchronized (fw.registry) {
 			fw.registry.add(reg);
@@ -305,7 +299,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext {
 	}
 
 	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
-		registerService(new String[] {clazz}, service, properties);
+		return registerService(new String[] {clazz}, service, properties);
 	}
 
 	public void removeBundleListener(BundleListener listener) {
@@ -328,4 +322,5 @@ public class Context extends URLClassLoader implements Bundle, BundleContext {
 	public String toString() {
 		return id + " " + location;
 	}
+
 }

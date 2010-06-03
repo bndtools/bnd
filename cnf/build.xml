@@ -17,7 +17,7 @@
 	<target name="init" unless="initialized">
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/biz.aQute.bndlib/bin;${workspacedir}/biz.aQute.bnd/bin;${workspacedir}/aQute.libg/bin;${workspacedir}/aQute.service/bin" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
@@ -96,8 +96,8 @@
 	</target>
 
 	<target name="clean" depends="init">
+		<delete dir="${project.output}"/>
 		<bnd command="clean" exceptions="true" basedir="${project}" />
-		<delete dir="bin"/>
 	</target>
 
 	<!--

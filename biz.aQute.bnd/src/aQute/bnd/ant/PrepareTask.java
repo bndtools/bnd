@@ -55,7 +55,7 @@ public class PrepareTask extends BaseTask {
                 System.out.printf("%-20s = %s\n", key, value);
 
             // We override existing values.
-            getProject().setProperty(key, value);
+            getProject().setProperty(key, value.trim());
         }
     }
 

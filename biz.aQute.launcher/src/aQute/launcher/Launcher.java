@@ -12,6 +12,7 @@ import org.osgi.service.packageadmin.*;
 import org.osgi.service.permissionadmin.*;
 
 import aQute.launcher.constants.*;
+import aQute.launcher.minifw.*;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
@@ -37,6 +38,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 	private List<BundleActivator>	embedded	= new ArrayList<BundleActivator>();
 
 	private TimerTask				watchdog	= null;
+	private boolean					services	= true;
 
 	public static void main(String[] args) throws Throwable {
 		String path = System.getProperty(LAUNCH_PROPERTIES);
@@ -60,7 +62,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		} finally {
 			in.close();
 		}
-        System.getProperties().putAll(properties);		
+		System.getProperties().putAll(properties);
 		init();
 		watchdog = new TimerTask() {
 			long	begin	= propertiesFile.lastModified();
@@ -82,6 +84,12 @@ public class Launcher implements LauncherConstants, ServiceListener {
 		runbundles.addAll(split(properties.getProperty(LAUNCH_RUNBUNDLES)));
 		systemPackages = properties.getProperty(LAUNCH_SYSTEMPACKAGES);
 		timeout = Long.parseLong(properties.getProperty(LAUNCH_TIMEOUT, "0"));
+
+		String fw = properties.getProperty(LAUNCH_FRAMEWORK);
+		if ("none".equalsIgnoreCase(fw))
+			services = false;
+		else
+			services = true;
 	}
 
 	private void run(String args[]) throws Throwable {
@@ -94,13 +102,17 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 			// Register the command line with ourselves as the
 			// service.
-			Hashtable<String, Object> argprops = new Hashtable<String, Object>();
-			argprops.put(LAUNCHER_ARGUMENTS, args);
-			argprops.put(LAUNCHER_READY, "true");
-			systemBundle.getBundleContext().registerService(Launcher.class.getName(), this,
-					argprops);
-
+			if (services) {
+				Hashtable<String, Object> argprops = new Hashtable<String, Object>();
+				argprops.put(LAUNCHER_ARGUMENTS, args);
+				argprops.put(LAUNCHER_READY, "true");
+				systemBundle.getBundleContext().registerService(Launcher.class.getName(), this,
+						argprops);
+			}
+			
 			// Wait until a Runnable is registered with main.thread=true.
+			// not that this will never happen when we're running on the mini fw
+			// but the test case normally exits.
 			synchronized (this) {
 				while (mainThread == null)
 					wait();
@@ -181,28 +193,10 @@ public class Launcher implements LauncherConstants, ServiceListener {
 				in.close();
 			}
 		}
-		
-		String activators = systemContext.getProperty(LauncherConstants.LAUNCH_ACTIVATORS);
-		if ( activators != null ) {
-			StringTokenizer st = new StringTokenizer(activators," ,");
-			ClassLoader loader = getClass().getClassLoader();
-			while ( st.hasMoreElements()) {
-				String token = st.nextToken();
-				try {
-					Class<?> clazz= loader.loadClass(token);
-					BundleActivator activator = (BundleActivator) clazz.newInstance();
-					embedded.add( activator);
-				} catch (Exception e) {
-					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token + ", "+ e);
-				}
-			}
-		}
-		
-		
+
 		// From now on, the bundles are on their own. They have
 		// by default AllPermission, but if they install bundles
 		// they will not automatically get AllPermission anymore
-
 
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false)
@@ -210,17 +204,10 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 		if (security)
 			policy.setDefaultPermissions(null);
-		
+
 		if (report) {
 			report(System.out);
 			System.out.flush();
-		}
-		
-		for ( BundleActivator activator : embedded ) try {
-			activator.start(systemContext);
-		} catch( Exception e) {
-			e.printStackTrace();
-			return ERROR;
 		}
 
 		// Now start all the installed bundles in the same order
@@ -236,6 +223,32 @@ public class Launcher implements LauncherConstants, ServiceListener {
 				return report(e, out);
 			}
 		}
+
+		// Start embedded activators
+		String activators = systemContext.getProperty(LauncherConstants.LAUNCH_ACTIVATORS);
+		if (activators != null) {
+			StringTokenizer st = new StringTokenizer(activators, " ,");
+			ClassLoader loader = getClass().getClassLoader();
+			while (st.hasMoreElements()) {
+				String token = st.nextToken();
+				try {
+					Class<?> clazz = loader.loadClass(token);
+					BundleActivator activator = (BundleActivator) clazz.newInstance();
+					embedded.add(activator);
+				} catch (Exception e) {
+					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: "
+							+ token + ", " + e);
+				}
+			}
+		}
+		for (BundleActivator activator : embedded)
+			try {
+				activator.start(systemContext);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ERROR;
+			}
+
 		return OK;
 	}
 
@@ -310,7 +323,7 @@ public class Launcher implements LauncherConstants, ServiceListener {
 				out.println("Failed to update " + b.getLocation());
 			}
 		}
-		if ( padmin != null)
+		if (padmin != null)
 			padmin.refreshPackages(null);
 
 		for (Bundle b : tobeupdated) {
@@ -387,24 +400,32 @@ public class Launcher implements LauncherConstants, ServiceListener {
 
 		Framework systemBundle;
 
-		// 3) framework = null, lookup in META-INF/services
+		if (services) {
 
-		ClassLoader loader = getClass().getClassLoader();
+			// 3) framework = null, lookup in META-INF/services
 
-		// 3) Lookup in META-INF/services
-		List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class.getName());
+			ClassLoader loader = getClass().getClassLoader();
 
-		if (implementations.size() == 0)
-			out.println("Found no fw implementation");
-		if (implementations.size() > 1)
-			out.println("Found more than one framework implementations: " + implementations);
+			// 3) Lookup in META-INF/services
+			List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class
+					.getName());
 
-		String implementation = (String) implementations.get(0);
+			if (implementations.size() == 0)
+				out.println("Found no fw implementation");
+			if (implementations.size() > 1)
+				out.println("Found more than one framework implementations: " + implementations);
 
-		Class<?> clazz = loader.loadClass(implementation);
-		FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
-		systemBundle = factory.newFramework(p);
-		systemBundle.init();
+			String implementation = (String) implementations.get(0);
+
+			Class<?> clazz = loader.loadClass(implementation);
+			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
+			systemBundle = factory.newFramework(p);
+			systemBundle.init();
+		} else {
+			// we have to use our own dummy framework
+			systemBundle = new MiniFramework(p);
+			systemBundle.init();
+		}
 		return systemBundle;
 	}
 

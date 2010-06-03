@@ -7,7 +7,7 @@ import java.util.*;
 import org.osgi.framework.*;
 import org.osgi.framework.launch.*;
 
-public class MiniFramework implements Framework, Bundle {
+public class MiniFramework implements Framework {
 	ClassLoader								loader;
 	Map<String, String>						properties;
 	Map<Long, Bundle>						bundles		= new HashMap<Long, Bundle>();
@@ -148,6 +148,18 @@ public class MiniFramework implements Framework, Bundle {
 	}
 
 	public ServiceReference[] getRegisteredServices() {
+
+		Collection<LocalServiceRegistration> mine = filter(this);
+
+		if ( mine.isEmpty())
+			return null;
+		return mine.toArray(new ServiceReference[mine.size()]);
+	}
+
+
+	private Collection<LocalServiceRegistration> filter(MiniFramework miniFramework) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public ServiceReference[] getServicesInUse() {

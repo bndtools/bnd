@@ -47,7 +47,7 @@ public class LocalServiceRegistration implements ServiceRegistration, ServiceRef
 	volatile int				ranking		= 0;
 	final Object				service;
 	final ServiceFactory		factory;
-	final Class<?>				clazz;
+	final String[]				clazz;
 
 	static class Record {
 		Record(Context bundle) {
@@ -74,7 +74,7 @@ public class LocalServiceRegistration implements ServiceRegistration, ServiceRef
 		}
 	}
 
-	LocalServiceRegistration(Context bundle, int id, Class<?> clazz, Object service, Dictionary properties ) {
+	LocalServiceRegistration(Context bundle, int id, String clazz[], Object service, Dictionary properties ) {
 		this.id = id;
 		this.bundle = bundle;
 		this.service = service;
@@ -100,10 +100,14 @@ public class LocalServiceRegistration implements ServiceRegistration, ServiceRef
 			}
 			properties.put(key, properties.get(key));
 		}
+		properties.put(Constants.SERVICE_ID, id);
 	}
 
 	public void unregister() {
-		bundle.removeRegistration(this);
+		synchronized(bundle.fw.registry) {
+			bundle.fw.registry.remove(this);
+		}
+		
 		if (factory != null) {
 			for (Record record : using.values()) {
 				try {

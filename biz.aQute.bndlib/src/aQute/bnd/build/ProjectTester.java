@@ -13,7 +13,7 @@ public abstract class ProjectTester {
 	
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
-		launcher = project.getLauncher();
+		launcher = project.getProjectLauncher();
 		testbundles = project.getTestbundles();
 		for (Container c : testbundles) {
 			launcher.addRunpath(c);

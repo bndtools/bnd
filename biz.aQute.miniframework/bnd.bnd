@@ -6,4 +6,4 @@ Include-Resource: META-INF/services/org.osgi.framework.launch.FrameworkFactory;l
 Export-Package: org.osgi.framework.*, org.osgi.service.packageadmin
 
 javac.source = 1.5
-javac.target = jsr14 
+javac.target = jsr14

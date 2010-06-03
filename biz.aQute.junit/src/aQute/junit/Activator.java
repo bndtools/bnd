@@ -6,13 +6,11 @@ import java.util.*;
 import junit.framework.*;
 
 import org.osgi.framework.*;
-import org.osgi.util.tracker.*;
 
 import aQute.junit.constants.*;
 
 public class Activator extends Thread implements BundleActivator, TesterConstants {
 	BundleContext		context;
-	BundleTracker		tracker;
 	volatile boolean	active;
 	int					port		= -1;
 	String				reportPath;
@@ -35,16 +33,6 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	public void run() {
-		try {
-			ServiceTracker tracker = new ServiceTracker(context, FrameworkUtil
-					.createFilter("(launcher.ready=*)"), null);
-			tracker.open();
-			System.out.println(tracker.waitForService(20000));
-			tracker.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 
 		String testcases = context.getProperty(TESTER_NAMES);
@@ -68,55 +56,61 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		final File reportDir = new File(context.getProperty(TESTER_DIR));
 		final List<Bundle> queue = new Vector<Bundle>();
 
-		tracker = new BundleTracker(context, Bundle.ACTIVE, null) {
-			public Object addingBundle(Bundle bundle, BundleEvent event) {
-				String testcases = (String) bundle.getHeaders().get("Test-Cases");
-				if (testcases == null)
-					return null;
+		context.addBundleListener(new SynchronousBundleListener() {
+			public void bundleChanged(BundleEvent event) {
+				if (event.getType() == BundleEvent.STARTED) {
+					checkBundle(queue, event.getBundle());
+				}
 
-				queue.add(bundle);
+			}
+		});
+
+		for (Bundle b : context.getBundles()) {
+			checkBundle(queue, b);
+		}
+
+		outer: while (active) {
+			Bundle bundle;
+			synchronized (queue) {
+				while (queue.isEmpty() && active) {
+					try {
+						queue.wait();
+					} catch (InterruptedException e) {
+						interrupt();
+						break outer;
+					}
+				}
+			}
+			try {
+				bundle = (Bundle) queue.remove(0);
+				Writer report = getReportWriter(reportDir, bundle);
+				try {
+					test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
+				} finally {
+					if (report != null)
+						report.close();
+				}
+			} catch (Exception e) {
+				System.err.println("Not sure what happened anymore");
+				e.printStackTrace(System.err);
+				System.exit(-2);
+			}
+			if (queue.isEmpty() && !continuous) {
+				System.exit(0);
+			}
+
+		}
+	}
+
+	private void checkBundle(List<Bundle> queue, Bundle bundle) {
+		if (bundle.getState() == Bundle.ACTIVE) {
+			String testcases = (String) bundle.getHeaders().get("Test-Cases");
+			if (testcases != null) {
 				synchronized (queue) {
+					queue.add(bundle);
 					queue.notifyAll();
 				}
-				return bundle;
 			}
-		};
-		tracker.open();
-
-		try {
-			outer: while (active) {
-				Bundle bundle;
-				synchronized (queue) {
-					while (queue.isEmpty() && active) {
-						try {
-							queue.wait();
-						} catch (InterruptedException e) {
-							interrupt();
-							break outer;
-						}
-					}
-				}
-				try {
-					bundle = (Bundle) queue.remove(0);
-					Writer report = getReportWriter(reportDir, bundle);
-					try {
-						test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
-					} finally {
-						if (report != null)
-							report.close();
-					}
-				} catch (Exception e) {
-					System.err.println("Not sure what happened anymore");
-					e.printStackTrace(System.err);
-					System.exit(-2);
-				}
-				if (queue.isEmpty() && !continuous) {
-					System.exit(0);
-				}
-
-			}
-		} finally {
-			tracker.close();
 		}
 	}
 

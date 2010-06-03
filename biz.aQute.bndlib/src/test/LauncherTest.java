@@ -14,7 +14,7 @@ public class LauncherTest extends TestCase {
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
 		project.clear();
 		
-		ProjectLauncher l = project.getLauncher();
+		ProjectLauncher l = project.getProjectLauncher();
 		l.setReport(true);
 		l.getRunProperties().put("test.cmd", "exit");
 		assertEquals(42,l.launch());
@@ -39,7 +39,7 @@ public class LauncherTest extends TestCase {
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
 		project.clear();
 		
-		ProjectLauncher l = project.getLauncher();
+		ProjectLauncher l = project.getProjectLauncher();
 		l.setTimeout(100, TimeUnit.MILLISECONDS);
 		l.setReport(false);
 		assertEquals(ProjectLauncher.TIMEDOUT,l.launch());
@@ -50,7 +50,7 @@ public class LauncherTest extends TestCase {
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
 		project.clear();
 		
-		ProjectLauncher l = project.getLauncher();
+		ProjectLauncher l = project.getProjectLauncher();
 		l.setTimeout(100, TimeUnit.MILLISECONDS);
 		l.setReport(false);
 		l.getRunProperties().put("test.cmd", "timeout");
@@ -61,7 +61,7 @@ public class LauncherTest extends TestCase {
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
 		project.clear();
 		
-		ProjectLauncher l = project.getLauncher();
+		ProjectLauncher l = project.getProjectLauncher();
 		l.setTimeout(10000, TimeUnit.MILLISECONDS);
 		l.setReport(false);
 		l.getRunProperties().put("test.cmd", "main.thread");

@@ -17,7 +17,7 @@ public class LaunchDelegate extends JavaLaunchDelegate {
         IJavaProject javaProject = getJavaProject(configuration);
         Project project = Activator.getDefault().getCentral().getModel(javaProject);
         try {
-            launcher = project.getLauncher();
+            launcher = project.getProjectLauncher();
             super.launch(configuration, mode, launch, monitor);
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -39,6 +39,6 @@ public class LaunchDelegate extends JavaLaunchDelegate {
     }
 
     public String[] getClasspath(ILaunchConfiguration configuration) {
-        return launcher.getRunpath().toArray(new String[0]);
+        return launcher.getClasspath().toArray(new String[0]);
     }
 }

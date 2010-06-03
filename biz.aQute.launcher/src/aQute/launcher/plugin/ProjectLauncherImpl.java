@@ -9,7 +9,7 @@ import aQute.lib.osgi.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher implements LauncherConstants {
 	final private Project	project;
-	final private File			propertiesFile;
+	final private File		propertiesFile;
 	boolean					prepared;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
@@ -48,7 +48,18 @@ public class ProjectLauncherImpl extends ProjectLauncher implements LauncherCons
 		properties.setProperty(LAUNCH_RUNBUNDLES, Processor.join(getRunBundles()));
 		properties.setProperty(LAUNCH_LOG_LEVEL, "" + getLogLevel());
 		properties.setProperty(LAUNCH_TIMEOUT, "" + getTimeout());
-		if ( !getActivators().isEmpty())
+		
+		switch (super.getRunFramework()) {
+		case NONE:
+			properties.setProperty(LAUNCH_FRAMEWORK, Constants.RUNFRAMEWORK_NONE);
+			break;
+
+		default:
+			properties.setProperty(LAUNCH_FRAMEWORK, Constants.RUNFRAMEWORK_SERVICES);
+			break;
+		}
+
+		if (!getActivators().isEmpty())
 			properties.setProperty(LAUNCH_ACTIVATORS, Processor.join(getActivators()));
 
 		if (!getSystemPackages().isEmpty()) {

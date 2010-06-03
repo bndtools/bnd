@@ -9,13 +9,14 @@ import junit.framework.*;
 import org.osgi.framework.*;
 
 public class BasicTestReport implements TestListener, TestReporter {
-	int					errors;
-	boolean				verbose	= true;
-	PrintStream			out;
-	private final Tee	systemOut;
-	private final Tee	systemErr;
-	int				fails;
-
+	private int errors;
+	private boolean verbose = true;
+	private PrintStream out;
+	private final Tee systemOut;
+	private final Tee systemErr;
+	private int fails;
+	private Bundle targetBundle;
+	
 	public BasicTestReport(Tee systemOut, Tee systemErr) {
 		this.systemOut = systemOut;
 		this.systemErr = systemErr;
@@ -23,8 +24,10 @@ public class BasicTestReport implements TestListener, TestReporter {
 	}
 
 	public void begin(Bundle fw, Bundle targetBundle, List tests, int realcount) {
+		this.targetBundle = targetBundle;
 		if (verbose) {
-			out.println("====================================================================");
+			out
+					.println("====================================================================");
 		}
 	}
 
@@ -52,22 +55,26 @@ public class BasicTestReport implements TestListener, TestReporter {
 
 	public void startTest(Test test) {
 		check();
-		Bundle b = FrameworkUtil.getBundle(test.getClass());
-		assert b != null;
-		BundleContext context = b.getBundleContext();
-		assert context != null;
-		try {
-			Method m = test.getClass().getMethod("setBundleContext",
-					new Class[] { BundleContext.class });
-			m.setAccessible(true);
-			m.invoke(test, new Object[] { context });
-		} catch (Exception e) {
-			Field f;
+		Bundle b = targetBundle;
+		if ( b== null)
+			b = FrameworkUtil.getBundle(test.getClass());
+		
+		if (b != null) {
+			BundleContext context = b.getBundleContext();
+			assert context != null;
 			try {
-				f = test.getClass().getField("context");
-				f.set(test, context);
-			} catch (Exception e1) {
-				// Ok, no problem
+				Method m = test.getClass().getMethod("setBundleContext",
+						new Class[] { BundleContext.class });
+				m.setAccessible(true);
+				m.invoke(test, new Object[] { context });
+			} catch (Exception e) {
+				Field f;
+				try {
+					f = test.getClass().getField("context");
+					f.set(test, context);
+				} catch (Exception e1) {
+					// Ok, no problem
+				}
 			}
 		}
 		if (verbose)
@@ -94,7 +101,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 				}
 				out.println("<<" + test);
 			} else {
-				out.println(" <<");				
+				out.println(" <<");
 			}
 		}
 		check();

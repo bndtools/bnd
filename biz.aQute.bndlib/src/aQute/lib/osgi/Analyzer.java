@@ -230,7 +230,7 @@ public class Analyzer extends Processor {
 				String p = i.next();
 				if (p.startsWith("!") || p.indexOf('*') >= 0 || p.indexOf('?') >= 0
 						|| p.indexOf('[') >= 0) {
-					if (!isResourceOnly())
+					if (!isResourceOnly() && !(p.equals("*")))
 						warning("Did not find matching referal for " + p);
 				} else {
 					Map<String, String> map = importInstructions.get(p);
