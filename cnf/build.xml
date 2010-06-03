@@ -172,6 +172,11 @@
 			<arg line="-categoryDefinition file:${workspacedir}/cnf/tmp/category.xml"/>
 			<arg line="-compress"/>
 		</java>
+		
+		<!-- Build the archive -->
+		<zip file="${workspacedir}/cnf/bndtools-latest.zip">
+			<zipfileset dir="${workspacedir}/cnf/p2target" includes="**"/>
+		</zip>
 	</target>
 	
 	<target name="__internal_p2" depends="init">

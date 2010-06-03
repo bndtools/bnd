@@ -1,6 +1,6 @@
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
-bndlibver: 0.0.401
+bndlibver: 0.0.402
 
 Test: true
 Bundle-SymbolicName: bndtools.core;singleton:=true
@@ -60,7 +60,9 @@ Include-Resource: resources,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
-	patricia_trie
+	patricia_trie,\
+	org.osgi.service.obr,\
+	org.eclipse.equinox.preferences
 	
 # Minimal SDK Launch Bundles
 -runbundles: bndtools.runtime.eclipse.applaunch,\
