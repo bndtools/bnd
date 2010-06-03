@@ -1,5 +1,4 @@
 -resourceonly: true
 Include-Resource: \
-	biz.aQute.miniframework/biz.aQute.miniframework-latest.jar=${repo;biz.aQute.miniframework;snapshot}, \
 	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
 	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}
