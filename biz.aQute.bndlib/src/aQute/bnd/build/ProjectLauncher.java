@@ -21,18 +21,16 @@ import aQute.libg.generics.*;
 public abstract class ProjectLauncher {
 	private final Project							project;
 	private long									timeout				= 60 * 60 * 1000;
-	private final Collection<Container>				runpath;
 	private final Collection<String>				classpath			= new ArrayList<String>();
-	private final List<File>						runbundles			= Create.list();
+	private final List<String>						runbundles			= Create.list();
 	private final List<String>						runvm				= new ArrayList<String>();
 	private final Map<String, String>				runproperties;
 	private Command									java;
 	private final Map<String, Map<String, String>>	runsystempackages;
 	private final List<String>						activators			= Create.list();
 
-	private int										loglevel;
+	private boolean									trace;
 	private boolean									keep;
-	private boolean									report;
 	private int										framework;
 
 	public final static int							SERVICES			= 10111;
@@ -54,16 +52,20 @@ public abstract class ProjectLauncher {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
-		runbundles.addAll(project.toFile(project.getRunbundles()));
+		for ( File file : project.toFile(project.getRunbundles()) )
+			runbundles.add(file.getAbsolutePath());
 		File[] builds = project.build();
 		if (builds != null)
-			runbundles.addAll(Arrays.asList(builds));
-		runpath = project.getRunpath();
+			for ( File file : builds )
+			runbundles.add(file.getAbsolutePath());
+		
+		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
-
+		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+	
 		for (Container c : runpath) {
-			addRunpath(c);
+			addClasspath(c);
 		}
 		runvm.addAll(project.getRunVM());
 		runproperties = project.getRunProperties();
@@ -78,37 +80,43 @@ public abstract class ProjectLauncher {
 		return SERVICES;
 	}
 
-	public void addRunpath(Container container) throws Exception {
+	public void addClasspath(Container container) throws Exception {
 		if (container.getError() != null) {
 			project.error("Cannot launch because %s has reported %s", container.getProject(),
 					container.getError());
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
-				classpath.add(m.getFile().getAbsolutePath());
+				String path = m.getFile().getAbsolutePath();
+				if (!classpath.contains(path)) {
+					classpath.add(path);
 
-				Manifest manifest = m.getManifest();
-				if (manifest != null) {
-					Map<String, Map<String, String>> exports = project.parseHeader(manifest
-							.getMainAttributes().getValue("Export-Package"));
-					runsystempackages.putAll(exports);
+					Manifest manifest = m.getManifest();
+					if (manifest != null) {
+						Map<String, Map<String, String>> exports = project.parseHeader(manifest
+								.getMainAttributes().getValue("Export-Package"));
+						runsystempackages.putAll(exports);
 
-					// Allow activators on the runpath. They are called after
-					// the framework is completely initialized wit the system
-					// context.
-					String activator = manifest.getMainAttributes().getValue(EMBEDDED_ACTIVATOR);
-					if (activator != null)
-						activators.add(activator);
+						// Allow activators on the runpath. They are called
+						// after
+						// the framework is completely initialized wit the
+						// system
+						// context.
+						String activator = manifest.getMainAttributes()
+								.getValue(EMBEDDED_ACTIVATOR);
+						if (activator != null)
+							activators.add(activator);
+					}
 				}
 			}
 		}
 	}
 
-	public void addRunBundle(File f) {
+	public void addRunBundle(String f) {
 		runbundles.add(f);
 	}
 
-	public Collection<File> getRunBundles() {
+	public Collection<String> getRunBundles() {
 		return runbundles;
 	}
 
@@ -116,8 +124,8 @@ public abstract class ProjectLauncher {
 		runvm.add(arg);
 	}
 
-	public Collection<Container> getRunpath() {
-		return runpath;
+	public Collection<String> getRunpath() {
+		return classpath;
 	}
 
 	public Collection<String> getClasspath() {
@@ -203,20 +211,12 @@ public abstract class ProjectLauncher {
 		return keep;
 	}
 
-	public void setReport(boolean report) {
-		this.report = report;
+	public void setTrace(boolean level) {
+		this.trace = level;
 	}
 
-	public boolean isReport() {
-		return report;
-	}
-
-	public void setLogLevel(int level) {
-		this.loglevel = level;
-	}
-
-	public int getLogLevel() {
-		return this.loglevel;
+	public boolean getTrace() {
+		return this.trace;
 	}
 
 	/**
@@ -240,19 +240,34 @@ public abstract class ProjectLauncher {
 	}
 
 	/**
-	 * Either NONE or SERVICES to indicate how the remote end launches.
-	 * NONE means it should not use the classpath to run a framework. This
-	 * likely requires some dummy framework support. SERVICES means it should
-	 * load the framework from the claspath.
+	 * Either NONE or SERVICES to indicate how the remote end launches. NONE
+	 * means it should not use the classpath to run a framework. This likely
+	 * requires some dummy framework support. SERVICES means it should load the
+	 * framework from the claspath.
 	 * 
 	 * @return
 	 */
 	public int getRunFramework() {
 		return framework;
 	}
-	
+
 	public void setRunFramework(int n) {
 		assert n == NONE || n == SERVICES;
 		this.framework = n;
 	}
+
+	/**
+	 * Add the specification for a set of bundles the runpath if it does not
+	 * already is included. This can be used by subclasses to ensure the proper
+	 * jars are on the classpath.
+	 * 
+	 * @param defaultSpec
+	 *            The default spec for default jars
+	 */
+	public void addDefault(String defaultSpec) throws Exception {
+		Collection<Container> deflts = project.getBundles(Project.STRATEGY_HIGHEST, defaultSpec);
+		for (Container c : deflts)
+			addClasspath(c);
+	}
+
 }

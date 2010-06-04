@@ -1076,8 +1076,12 @@ public class Processor implements Reporter, Constants, Closeable {
 		return pluginLoader;
 	}
 
+	
+	/*
+	 * Check if this is a valid project.
+	 */
 	public boolean exists() {
-		return base != null && base.exists();
+		return base != null && base.isDirectory() && propertiesFile != null && propertiesFile.isFile();
 	}
 
 	public boolean isOk() {
@@ -1207,4 +1211,19 @@ public class Processor implements Reporter, Constants, Closeable {
 		return cl.loadClass(type);
 	}
 
+	static public void delete(File target) {
+		if (target.getParentFile() == null)
+			throw new IllegalArgumentException("Can not delete root!");
+		if (!target.exists())
+			return;
+
+		if (target.isDirectory()) {
+			File sub[] = target.listFiles();
+			for (File s : sub)
+				delete(s);
+		}
+		target.delete();
+	}
+
+	public boolean isTrace() { return trace; }
 }

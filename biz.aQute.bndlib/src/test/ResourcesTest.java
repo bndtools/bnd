@@ -159,7 +159,8 @@ public class ResourcesTest extends TestCase {
         Jar jar = bmaker.build();
         assertEquals( 0, jar.getResources().size());
         assertEquals( 1, bmaker.getErrors().size() );
-        assertTrue( bmaker.getErrors().get(0).equalsIgnoreCase("The JAR is empty"));
+        System.out.println(bmaker.getErrors());
+        assertTrue( bmaker.getErrors().get(0).indexOf("The JAR is empty") >= 0);
         assertEquals( 0, bmaker.getWarnings().size() );
     }
     

@@ -1249,8 +1249,7 @@ public class bnd extends Processor {
 
 		project = Workspace.getProject(getBase());
 		if (!project.isValid())
-			throw new IllegalArgumentException("The base directory " + getBase()
-					+ " is not a project directory ");
+			return null;
 
 		return project;
 	}
@@ -1539,10 +1538,7 @@ public class bnd extends Processor {
 		Workspace ws = Workspace.getWorkspace(cwd);
 		File reportDir = getFile("reports");
 
-		for ( File file : reportDir.listFiles()) {
-			file.delete();
-		}
-		
+		delete(reportDir);
 		reportDir.mkdirs();
 		
 		Tag summary = new Tag("summary");
@@ -1620,8 +1616,11 @@ public class bnd extends Processor {
 		}
 		
 		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
+		project.setTrace(isTrace());
+		project.setProperty( NOBUNDLES, "true");
 		ProjectTester tester = project.getProjectTester();
 		getInfo(project, project.toString() + ": ");
+
 		if ( !isOk() )
 			return -1;
 		

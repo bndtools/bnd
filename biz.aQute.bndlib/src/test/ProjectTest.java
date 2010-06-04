@@ -91,6 +91,9 @@ public class ProjectTest extends TestCase {
 
 		// Now we build it.
 		File[] files = project.build();
+		System.out.println(project.getErrors());
+		System.out.println(project.getWarnings());
+		assertTrue(project.isOk());
 		assertNotNull(files);
 		assertEquals(1, files.length);
 

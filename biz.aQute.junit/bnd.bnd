@@ -18,3 +18,4 @@ Import-Package: !aQute.*,\
 	*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
+Bundle-Version: 1.0.0

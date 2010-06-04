@@ -98,6 +98,7 @@ public interface Constants {
 	String					RUNPATH_MAIN_DIRECTIVE						= "main:";
 	String					RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
 	String					RUNVM										= "-runvm";
+	String					RUNTRACE									= "-runtrace";
 	String					RUNFRAMEWORK								= "-runframework";
 	String					RUNFRAMEWORK_SERVICES						= "services";
 	String					RUNFRAMEWORK_NONE							= "none";
@@ -124,7 +125,7 @@ public interface Constants {
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER,
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
 			RELEASEREPO, SAVEMANIFEST, RUNVM, VERSIONPOLICY_USES, VERSIONPOLICY,
-			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK				};
+			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK				, RUNTRACE};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -216,4 +217,8 @@ public interface Constants {
 	String					EMBEDDED_REPO								= "/embedded-repo.jar";
 	String					LAUNCHER_PLUGIN								= "Launcher-Plugin";
 	String					TESTER_PLUGIN								= "Tester-Plugin";
+
+	String					DEFAULT_LAUNCHER_BSN						= "biz.aQute.launcher";
+	String					DEFAULT_TESTER_BSN							= "biz.aQute.junit";
+
 }

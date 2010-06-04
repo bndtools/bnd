@@ -7,17 +7,26 @@ import aQute.bnd.build.*;
 import aQute.launcher.constants.*;
 import aQute.lib.osgi.*;
 
-public class ProjectLauncherImpl extends ProjectLauncher implements LauncherConstants {
+public class ProjectLauncherImpl extends ProjectLauncher  {
 	final private Project	project;
 	final private File		propertiesFile;
 	boolean					prepared;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
+		project.trace("created a aQute launcher plugin");
 		this.project = project;
 		propertiesFile = new File(project.getTarget(), "launch.properties");
-		addRunVM("-D" + LauncherConstants.LAUNCH_PROPERTIES + "="
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "="
 				+ propertiesFile.getAbsolutePath());
+
+		if (project.getRunProperties().get("noframework") != null) {
+			setRunFramework(NONE);
+			project
+					.warning("The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
+		}
+
+		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
 	}
 
 	public String getMainTypeName() {
@@ -37,39 +46,27 @@ public class ProjectLauncherImpl extends ProjectLauncher implements LauncherCons
 		if (prepared)
 			return;
 
+		project.trace("preparing the aQute launcher plugin");
+
 		prepared = true;
+		LauncherConstants lc = new LauncherConstants();
 
-		Properties properties = new Properties();
-		properties.putAll(getRunProperties());
-		properties.setProperty(LAUNCH_STORAGE_DIR, new File(project.getTarget(), "fw")
-				.getAbsolutePath());
-		properties.setProperty(LAUNCH_KEEP, "" + isKeep());
-		properties.setProperty(LAUNCH_REPORT, "" + isReport());
-		properties.setProperty(LAUNCH_RUNBUNDLES, Processor.join(getRunBundles()));
-		properties.setProperty(LAUNCH_LOG_LEVEL, "" + getLogLevel());
-		properties.setProperty(LAUNCH_TIMEOUT, "" + getTimeout());
+		lc.runProperties = getRunProperties();
+		lc.storageDir = new File(project.getTarget(), "fw");
+		lc.keep =  isKeep();
+		lc.runbundles.addAll(getRunBundles());
+		lc.trace = getTrace();
+		lc.timeout = getTimeout();
+		lc.services = super.getRunFramework() ==  SERVICES ? true : false;
+		lc.activators.addAll( getActivators());
 		
-		switch (super.getRunFramework()) {
-		case NONE:
-			properties.setProperty(LAUNCH_FRAMEWORK, Constants.RUNFRAMEWORK_NONE);
-			break;
-
-		default:
-			properties.setProperty(LAUNCH_FRAMEWORK, Constants.RUNFRAMEWORK_SERVICES);
-			break;
-		}
-
-		if (!getActivators().isEmpty())
-			properties.setProperty(LAUNCH_ACTIVATORS, Processor.join(getActivators()));
-
 		if (!getSystemPackages().isEmpty()) {
-			String header = Processor.printClauses(getSystemPackages(), null);
-			properties.setProperty(LAUNCH_SYSTEMPACKAGES, header);
+			lc.systemPackages = Processor.printClauses(getSystemPackages(), null);
 		}
 
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
-			properties.store(out, "Launching " + project);
+			lc.getProperties().store(out, "Launching " + project);
 		} finally {
 			out.close();
 		}

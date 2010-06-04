@@ -13,6 +13,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
+import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.sed.*;
 import aQute.service.scripting.*;
@@ -33,7 +34,7 @@ public class Project extends Processor {
 	boolean						preparedPaths;
 	final Collection<Project>	dependson		= new LinkedHashSet<Project>();
 	final Collection<Container>	buildpath		= new LinkedHashSet<Container>();
-	final Collection<Container>	testbundles		= new LinkedHashSet<Container>();
+	final Collection<Container>	testpath		= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath			= new LinkedHashSet<Container>();
 	final Collection<String>	runfile			= new LinkedHashSet<String>();
 	final Collection<File>		sourcepath		= new LinkedHashSet<File>();
@@ -41,13 +42,15 @@ public class Project extends Processor {
 	final Collection<Container>	bootclasspath	= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles		= new LinkedHashSet<Container>();
 	final Lock					lock			= new ReentrantLock(true);
-	volatile String				lockedReason;
+	volatile String				lockingReason;
+	volatile Thread				lockingThread;
+
 	File						output;
 	File						target;
 	boolean						inPrepare;
 	int							revision;
 	File						files[];
-	
+
 	static List<Project>		trail			= new ArrayList<Project>();
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
@@ -148,6 +151,11 @@ public class Project extends Processor {
 	 */
 
 	public synchronized void prepare() throws Exception {
+		if (!isValid()) {
+			warning("Invalid project attempts to prepare: %s", this);
+			return;
+		}
+
 		if (inPrepare)
 			throw new CircularDependencyException(trail.toString() + "," + this);
 
@@ -163,7 +171,7 @@ public class Project extends Processor {
 					bootclasspath.clear();
 					runpath.clear();
 					runbundles.clear();
-					testbundles.clear();
+					testpath.clear();
 
 					// We use a builder to construct all the properties for
 					// use.
@@ -236,7 +244,7 @@ public class Project extends Processor {
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(runpath, dependencies, parseRunpath(), bootclasspath);
 					doPath(runbundles, dependencies, parseRunbundles(), null);
-					doPath(testbundles, dependencies, parseTestbundles(), null);
+					doPath(testpath, dependencies, parseTestpath(), null);
 
 					// We now know all dependent projects. But we also depend
 					// on whatever those projects depend on. This creates an
@@ -334,7 +342,7 @@ public class Project extends Processor {
 		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNBUNDLES));
 	}
 
-	private List<Container> parseTestbundles() throws Exception {
+	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.TESTPATH));
 	}
 
@@ -434,9 +442,9 @@ public class Project extends Processor {
 		return buildpath;
 	}
 
-	public Collection<Container> getTestbundles() throws Exception {
+	public Collection<Container> getTestpath() throws Exception {
 		prepare();
-		return testbundles;
+		return testpath;
 	}
 
 	public Collection<Container> getRunpath() throws Exception {
@@ -706,7 +714,7 @@ public class Project extends Processor {
 		String pname = bsn;
 		while (true) {
 			Project p = getWorkspace().getProject(pname);
-			if (p != null && p.exists()) {
+			if (p != null && p.isValid()) {
 				Container c = p.getDeliverable(bsn, attrs);
 				return c;
 			}
@@ -882,15 +890,15 @@ public class Project extends Processor {
 			return null;
 
 		boolean outofdate = !isUptodate();
-//		for (Project project : getDependson()) {
-//			if (project != this && !project.isUptodate()) {
-//				
-//				System.out.println("  Building because out of date: " + project);
-//				project.files = project.buildLocal(false);
-//				outofdate = true;
-//				getInfo(project, project + ": ");
-//			}
-//		}
+		// for (Project project : getDependson()) {
+		// if (project != this && !project.isUptodate()) {
+		//				
+		// System.out.println("  Building because out of date: " + project);
+		// project.files = project.buildLocal(false);
+		// outofdate = true;
+		// getInfo(project, project + ": ");
+		// }
+		// }
 		if (files == null || outofdate) {
 			trace("Building " + this);
 			files = buildLocal(underTest);
@@ -898,17 +906,17 @@ public class Project extends Processor {
 
 		return files;
 	}
-	
+
 	private boolean isUptodate() throws Exception {
-		if ( getProperty(NOBUNDLES) != null ) {
+		if (getProperty(NOBUNDLES) != null) {
 			return true;
 		}
-		
+
 		if (files == null) {
-//			files = getBuildFiles();
-//			if (files == null)
-			
-				return false;
+			// files = getBuildFiles();
+			// if (files == null)
+
+			return false;
 		}
 
 		for (File f : files) {
@@ -919,8 +927,6 @@ public class Project extends Processor {
 
 		return true;
 	}
-
-
 
 	/**
 	 * This method must only be called when it is sure that the project has been
@@ -1125,8 +1131,9 @@ public class Project extends Processor {
 		if (target.isDirectory() && target.getParentFile() != null) {
 			delete(target);
 		}
-		if ( getOutput().isDirectory())
+		if (getOutput().isDirectory())
 			delete(getOutput());
+		getOutput().mkdirs();
 	}
 
 	public File[] build() throws Exception {
@@ -1157,20 +1164,6 @@ public class Project extends Processor {
 			} else
 				System.out.println("Error " + errors);
 		}
-	}
-
-	private void delete(File target) {
-		if (target.getParentFile() == null)
-			throw new IllegalArgumentException("Can not delete root!");
-		if (!target.exists())
-			return;
-
-		if (target.isDirectory()) {
-			File sub[] = target.listFiles();
-			for (File s : sub)
-				delete(s);
-		}
-		target.delete();
 	}
 
 	/**
@@ -1465,18 +1458,25 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public ProjectLauncher getProjectLauncher() throws Exception {
-		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN);
+		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN,
+				"biz.aQute.launcher");
 	}
 
 	public ProjectTester getProjectTester() throws Exception {
-		return getHandler(ProjectTester.class, getTestbundles(), TESTER_PLUGIN);
+		return getHandler(ProjectTester.class, getTestpath(), TESTER_PLUGIN, "biz.aQute.junit");
 	}
 
-	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header)
-			throws Exception {
+	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header,
+			String defaultHandler) throws Exception {
 		Class<? extends T> handlerClass = target;
 
-		for (Container c : containers) {
+		// Make sure we find at least one handler, but hope to find an earlier
+		// one
+		List<Container> withDefault = Create.list();
+		withDefault.addAll(containers);
+		withDefault.addAll(getBundles(STRATEGY_HIGHEST, defaultHandler));
+
+		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
 
 			if (manifest != null) {
@@ -1497,21 +1497,26 @@ public class Project extends Processor {
 				}
 			}
 		}
-		error("Cannot find handler for %s. Header=%s and jars=%s", this, header, containers);
-		return null;
+		throw new IllegalArgumentException("Default handler for " + header + " not found in "
+				+ defaultHandler);
 	}
 
-	public boolean lock(String reason) throws InterruptedException {
+	public synchronized boolean lock(String reason) throws InterruptedException {
 		if (!lock.tryLock(5, TimeUnit.SECONDS)) {
-			error("Could not acquire lock for %s, was locked by %s", reason, lockedReason);
-			System.out.printf("Could not acquire lock for %s, was locked by %s\n", reason, lockedReason);
+			error("Could not acquire lock for %s, was locked by %s for %s", reason, lockingThread,
+					lockingReason);
+			System.out.printf("Could not acquire lock for %s, was locked by %s for %s\n", reason,
+					lockingThread, lockingReason);
+			System.out.flush();
 			return false;
 		}
+		this.lockingReason = reason;
+		this.lockingThread = Thread.currentThread();
 		return true;
 	}
 
 	public void unlock() {
-		lockedReason = null;
-		lock.unlock();		
+		lockingReason = null;
+		lock.unlock();
 	}
 }

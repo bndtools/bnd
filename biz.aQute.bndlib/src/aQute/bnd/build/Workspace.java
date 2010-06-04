@@ -47,9 +47,9 @@ public class Workspace extends Processor {
 		
 		// Check if we can find a bnd dir higher up so
 		// we can have nested workspaces.
-		while ( !test.exists()) {
+		while ( !test.isDirectory()) {
 			test = new File(workspaceDir, BNDDIR);
-			if ( test.exists())
+			if ( test.isDirectory())
 				break;
 			
 			workspaceDir = workspaceDir.getParentFile();				
@@ -98,11 +98,15 @@ public class Workspace extends Processor {
 
 			File projectDir = getFile(bsn);
 			project = new Project(this, projectDir);
+			if (!project.isValid())
+				return null;
+			
 			models.put(bsn, project);
 			return project;
 		}
 	}
 
+	
 	public boolean isPresent(String name) {
 		return models.containsKey(name);
 	}

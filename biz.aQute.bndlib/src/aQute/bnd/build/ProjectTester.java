@@ -14,9 +14,9 @@ public abstract class ProjectTester {
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
-		testbundles = project.getTestbundles();
+		testbundles = project.getTestpath();
 		for (Container c : testbundles) {
-			launcher.addRunpath(c);
+			launcher.addClasspath(c);
 		}
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports",
 				"test-reports"));
