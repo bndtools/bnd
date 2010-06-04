@@ -31,8 +31,6 @@ javac.target 			= 1.5
 
 -plugin	            	= \
 	aQute.lib.deployer.FileRepo;location=${repo}
-
-#, \
 #	aQute.bnd.maven.MavenDeploy; \
 #		repository=nexus; \
 #		url="http://oss.sonatype.org/service/local/staging/deploy/maven2"
@@ -53,6 +51,6 @@ Bundle-License			= ... TODO
 -removeheader			= Include-Resource
 
 -runpath							= \
-	org.eclipse.osgi;		version=3.5; 	framework=org.eclipse.osgi.launch.Equinox, \
-	com.springsource.junit; version=3.8;    export="junit.framework;version=3.8"
+	org.eclipse.osgi;		version=3.5,\
+	com.springsource.junit
 

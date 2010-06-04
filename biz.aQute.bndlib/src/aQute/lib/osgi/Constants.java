@@ -95,13 +95,18 @@ public interface Constants {
 	String					RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String					RUNBUNDLES									= "-runbundles";
 	String					RUNPATH										= "-runpath";
+	String					RUNPATH_MAIN_DIRECTIVE						= "main:";
+	String					RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
 	String					RUNVM										= "-runvm";
-
+	String					RUNTRACE									= "-runtrace";
+	String					RUNFRAMEWORK								= "-runframework";
+	String					RUNFRAMEWORK_SERVICES						= "services";
+	String					RUNFRAMEWORK_NONE							= "none";
 	String					REPORTNEWER									= "-reportnewer";
 	String					SIGN										= "-sign";
 	String					TESTPACKAGES								= "-testpackages";
 	String					TESTREPORT									= "-testreport";
-	String					TESTBUNDLES									= "-testbundles";
+	String					TESTPATH									= "-testpath";
 	String					UNDERTEST									= "-undertest";
 	String					VERBOSE										= "-verbose";
 	String					VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
@@ -115,12 +120,12 @@ public interface Constants {
 
 	String					options[]									= { BSN_FROM_WORKSPACE,
 			BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
-			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOPE,
+			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
 			PEDANTIC, PLUGIN, POM, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER,
-			UNDERTEST, TESTBUNDLES, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
+			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
 			RELEASEREPO, SAVEMANIFEST, RUNVM, VERSIONPOLICY_USES, VERSIONPOLICY,
-			VERSIONPOLICY_IMPL, WAB, WABLIB							};
+			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK				, RUNTRACE};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -177,7 +182,7 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE,
 			INCLUDE_DIRECTIVE, USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE,
 			KEYSTORE_PROVIDER_DIRECTIVE, KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE,
-			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE
+			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE, RUNPATH_LAUNCHER_DIRECTIVE
 
 																		// TODO
 																		};
@@ -208,4 +213,12 @@ public interface Constants {
 	String					BUILDFILES									= "buildfiles";
 
 	String					EMPTY_HEADER								= "<<EMPTY>>";
+
+	String					EMBEDDED_REPO								= "/embedded-repo.jar";
+	String					LAUNCHER_PLUGIN								= "Launcher-Plugin";
+	String					TESTER_PLUGIN								= "Tester-Plugin";
+
+	String					DEFAULT_LAUNCHER_BSN						= "biz.aQute.launcher";
+	String					DEFAULT_TESTER_BSN							= "biz.aQute.junit";
+
 }

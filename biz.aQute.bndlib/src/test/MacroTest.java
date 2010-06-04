@@ -19,6 +19,24 @@ public class MacroTest extends TestCase {
      * Testing an example with nesting that was supposd not to work
      */
     
+    public void testSuper() {
+        Processor top = new Processor();
+        Processor bottom = new Processor(top);
+        top.setProperty("a", "top.a");
+        top.setProperty("b", "top.b");
+        top.setProperty("c", "top.c");
+        bottom.setProperty("a", "bottom.a");
+        bottom.setProperty("b", "${super;a}");
+        bottom.setProperty("c", "-${super;c}-");
+        assertEquals("bottom.a", bottom.getProperty("a"));
+        assertEquals("top.a", bottom.getProperty("b"));
+        assertEquals("-top.c-", bottom.getProperty("c"));
+    }
+    
+    /**
+     * Testing an example with nesting that was supposd not to work
+     */
+    
     public void testNesting2() {
         Processor p = new Processor();
         p.setProperty("groupId", "com.trivadis.tomas");

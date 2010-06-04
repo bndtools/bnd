@@ -1,10 +1,12 @@
 -sources: 						true
 -include: 						~META-INF/MANIFEST.MF
--includeresource: 				plugin.xml, icons=icons, LICENSE, ../biz.aQute.runtime/tmp/biz.aQute.runtime.jar
+
+Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
 
 Private-Package: 				aQute.bnd.*, aQute.lib.osgi
 Conditional-Package: 			aQute.lib.*, aQute.libg.*
 Export-Package: 				aQute.bnd.service.*, aQute.service.*
 Import-Package: 				!org.eclipse.*,org.apache.tools.ant; resolution:=optional, *
 Bundle-ClassPath:				.
+Main-Class: 					aQute.bnd.main.bnd
 

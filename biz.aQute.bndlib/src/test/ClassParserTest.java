@@ -97,8 +97,9 @@ public class ClassParserTest extends TestCase {
         b.addClasspath(new File("test/craptest"));
         b.build();
         System.out.println(b.getWarnings());
-        assertEquals(0, b.getErrors().size());
-        assertEquals(0, b.getWarnings().size());
+        System.out.println(b.getErrors());
+        assertEquals(1, b.getErrors().size());
+        assertEquals(1, b.getWarnings().size());
 
     }
 

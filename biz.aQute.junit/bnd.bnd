@@ -1,0 +1,21 @@
+-buildpath: com.springsource.junit,\
+	ee.minimum;version=1.2.1,\
+	osgi.cmpn;version=4.2.1,\
+	biz.aQute.bndlib;version=project,\
+	aQute.libg;version=project,\
+	osgi.core;version=4.2.1
+	
+Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
+
+javac.source = 1.5
+javac.target = jsr14
+Private-Package: aQute.junit,\
+	aQute.junit.constants,\
+	aQute.junit.plugin,\
+	junit.framework
+Export-Package: junit.framework; version=3.8
+Import-Package: !aQute.*,\
+	*
+Bundle-Activator: aQute.junit.Activator
+Embedded-Activator: aQute.junit.Activator
+Bundle-Version: 1.0.0

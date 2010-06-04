@@ -2,9 +2,11 @@ package aQute.bnd.signing;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
+import aQute.libg.command.*;
 import aQute.libg.reporter.*;
 
 /**
@@ -43,57 +45,57 @@ public class JartoolSigner implements Plugin, SignerPlugin {
     public void setReporter(Reporter processor) {
     }
 
-    public void sign(Builder builder, String alias) throws Exception {
+    public void sign(Builder builder, String alias) throws Exception {    	    	
+    	File f = builder.getFile(keystore);
+    	if ( !f.isFile()) {
+    		builder.error("Invalid keystore %s", f.getAbsolutePath() );
+    		return;
+    	}
+    	
         Jar jar = builder.getJar();
         File tmp = File.createTempFile("signdjar", ".jar");
         tmp.deleteOnExit();
 
         jar.write(tmp);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(path);
+        Command command = new Command();
+        command.add(path);
         if (keystore != null) {
-            sb.append(" -keystore ");
-            sb.append(keystore);
+            command.add("-keystore");
+            command.add(f.getAbsolutePath());
         }
 
         if (storetype != null) {
-            sb.append(" -storetype ");
-            sb.append(storetype);
+        	command.add("-storetype");
+        	command.add(storetype);
         }
 
         if (keypass != null) {
-            sb.append(" -keypass ");
-            sb.append(keypass);
+        	command.add("-keypass");
+        	command.add(keypass);
         }
 
         if (storepass != null) {
-            sb.append(" -storepass ");
-            sb.append(storepass);
+        	command.add("-storepass");
+        	command.add(storepass);
         }
 
         if (sigFile != null) {
-            sb.append(" -sigFile ");
-            sb.append(sigFile);
+        	command.add("-sigFile");
+        	command.add(sigFile);
         }
 
-        sb.append(" ");
-        sb.append(tmp.getAbsolutePath());
-        sb.append(" ");
-        sb.append(alias);
-
-        String cmd = sb.toString();
-
-        builder.trace(cmd);
-        Process process = Runtime.getRuntime().exec(cmd);
-        StringBuffer sbin = collect( process.getInputStream());
-        StringBuffer sberr = collect( process.getErrorStream());        
-        process.waitFor();
-
-        if (process.exitValue() != 0) {
-            builder.error("Signing Jar out: %s\nerr: %s", sbin, sberr);
+        command.add(tmp.getAbsolutePath());
+        command.add(alias);
+        builder.trace("Jarsigner command: %s", command);
+        command.setTimeout(20, TimeUnit.SECONDS);
+        StringBuffer out = new StringBuffer();
+        StringBuffer err = new StringBuffer();
+        int exitValue = command.execute(System.in, out, err);
+        if (exitValue != 0) {
+            builder.error("Signing Jar out: %s\nerr: %s", out, err);
         } else {
-            builder.trace("Signing Jar out: %s \nerr: %s", sbin, sberr);
+            builder.trace("Signing Jar out: %s \nerr: %s", out, err);
         }
 
         Jar signed = new Jar(tmp);

@@ -42,14 +42,16 @@ public interface RepositoryPlugin {
      * 
      * @param regex if not null, match against the bsn and if matches, return otherwise skip
      * @return A list of bsns that match the regex parameter or all if regex is null
+     * @throws Exception 
      */
-    List<String> list(String regex);
+    List<String> list(String regex) throws Exception;
     
     /**
      * Return a list of versions.
+     * @throws Exception 
      */
     
-    List<Version> versions(String bsn);
+    List<Version> versions(String bsn) throws Exception;
     
     /**
      * @return The name of the repository

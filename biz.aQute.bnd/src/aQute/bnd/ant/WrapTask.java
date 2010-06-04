@@ -42,7 +42,7 @@ public class WrapTask extends BaseTask implements Reporter {
 				String name = file.getName();
 				name = name.replaceFirst("(\\.jar)?$", ".bnd");
 				File bndFile = new File(definitions, name );
-				bnd.doWrap(bndFile.exists()?bndFile:null, file, output, null, 0, getProject().getProperties());
+				bnd.doWrap(bndFile.exists()?bndFile:null, file, output,  classpath.toArray(new File[0]), 0, getProject().getProperties());
 				failed |= report(bnd);
 			}
 		} catch (Exception e) {

@@ -23,7 +23,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	public void setProperties(Map<String, String> map) {
 		repository = map.get("repository");
 		url = map.get("url");
-		passphrase = map.get("passphrase");		
+		passphrase = map.get("passphrase");
 		homedir = map.get("homedir");
 		keyname = map.get("keyname");
 
@@ -84,7 +84,7 @@ public class MavenDeploy implements Deploy, Plugin {
 				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
 				project.progress("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
-				
+
 			} finally {
 				main.close();
 				src.close();
@@ -115,66 +115,54 @@ public class MavenDeploy implements Deploy, Plugin {
 
 	private void maven_gpg_sign_and_deploy(Project b, File file, String classifier, File pomFile)
 			throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(b.getProperty("mvn", "mvn"));
-		
-		sb.append(" gpg:sign-and-deploy-file -DreleaseInfo=true -DpomFile=pom.xml -Dfile=");
-		sb.append(file.getAbsolutePath());
-		sb.append(" -DrepositoryId=");
-		sb.append(repository);
-		sb.append(" -Durl=");
-		sb.append(url);
-		optional(sb, "passphrase", passphrase);
-		optional(sb, "keyname", keyname);
-		optional(sb, "homedir", homedir);
-		optional(sb, "classifier", classifier);
-		optional(sb, "pomFile", pomFile == null ? null : pomFile.getAbsolutePath());
+		Command command = new Command();
+		command.setTrace();
+		command.add(b.getProperty("mvn", "mvn"));
+		command.add("gpg:sign-and-deploy-file", "-DreleaseInfo=true", "-DpomFile=pom.xml");
+		command.add("-Dfile=" + file.getAbsolutePath());
+		command.add("-DrepositoryId=" + repository);
+		command.add("-Durl=" + url);
+		optional(command, "passphrase", passphrase);
+		optional(command, "keyname", keyname);
+		optional(command, "homedir", homedir);
+		optional(command, "classifier", classifier);
+		optional(command, "pomFile", pomFile == null ? null : pomFile.getAbsolutePath());
 
 		StringBuffer stdout = new StringBuffer();
 		StringBuffer stderr = new StringBuffer();
 
-		Command command = new Command();
-		command.setTrace();
-		int result = command.execute(sb.toString(), passphrase+"\n", stdout, stderr);
+		int result = command.execute(stdout, stderr);
 		if (result != 0) {
 			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository,
 					file, "" + stdout + stderr);
 		}
 	}
 
-	private void optional(StringBuilder sb, String key, String value) {
+	private void optional(Command command, String key, String value) {
 		if (value == null)
 			return;
 
-		sb.append(" -D").append(key).append("=").append(value);
+		command.add("-D=" + value);
 	}
 
 	private Jar javadoc(File tmp, Project b, Set<String> exports) throws Exception {
+		Command command = new Command();
+		
+		command.add(b.getProperty("javadoc", "javadoc"));
+		command.add("-d");
+		command.add(tmp.getAbsolutePath());
+		command.add("-sourcepath");
+		command.add( Processor.join(b.getSourcePath(),File.pathSeparator));
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(b.getProperty("javadoc", "javadoc"));
-		sb.append(" -d ");
-		sb.append(tmp.getAbsolutePath());
-		sb.append(" -sourcepath");
-		String del = " ";
-		for (File source : b.getSourcePath()) {
-			sb.append(del);
-			sb.append(source.getAbsolutePath());
-			del = File.separator;
-		}
-
-		del = " ";
 		for (String packageName : exports) {
-			sb.append(del);
-			sb.append(packageName);
-			del = " ";
+			command.add(packageName);
 		}
 
 		StringBuffer out = new StringBuffer();
 		StringBuffer err = new StringBuffer();
 		Command c = new Command();
 		c.setTrace();
-		int result = c.execute(sb.toString(), null, out, err);
+		int result = c.execute(out, err);
 		if (result == 0) {
 			Jar jar = new Jar(tmp);
 			b.addClose(jar);
@@ -182,15 +170,6 @@ public class MavenDeploy implements Deploy, Plugin {
 		}
 		b.error("Error during execution of javadoc command: %s / %s", out, err);
 		return null;
-	}
-
-	private void delete(File tmp) {
-		tmp = tmp.getAbsoluteFile();
-		assert tmp.getParent() != null;
-		for (String sub : tmp.list()) {
-			delete(new File(tmp, sub));
-		}
-		tmp.delete();
 	}
 
 	private File write(File base, Resource r, String fileName) throws Exception {

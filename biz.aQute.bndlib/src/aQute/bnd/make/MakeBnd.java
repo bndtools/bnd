@@ -33,6 +33,7 @@ public class MakeBnd implements MakePlugin, Constants {
             
             // We must make sure that we do not include ourselves again!
             bchild.setProperty(Analyzer.INCLUDE_RESOURCE, "");
+            bchild.setProperty(Analyzer.INCLUDERESOURCE, "");
             bchild.setProperties(bndfile, builder.getBase());
             
             Jar jar = bchild.build();

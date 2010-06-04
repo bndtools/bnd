@@ -2,3 +2,25 @@
 Private-Package: com.example.demo
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
+
+-buildpath: osgi.core,\
+	ee.minimum;version=1.2.1
+	
+	
+-testpath: \
+	biz.aQute.junit; version=snapshot
+
+-runpath: \
+	org.eclipse.osgi, \
+	biz.aQute.launcher; version=snapshot
+ 	
+-runbundles: org.apache.felix.scr,\
+	org.apache.felix.configadmin
+	
+
+Bundle-Activator: test.TestActivator
+Private-Package: test
+
+Import-Package: \
+	junit.framework;resolution:=optional,\
+	*

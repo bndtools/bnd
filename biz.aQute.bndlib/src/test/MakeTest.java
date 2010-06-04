@@ -68,7 +68,7 @@ public class MakeTest extends TestCase {
         p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
         p.setProperty("Include-Resource", "makesondemand.jar");
         bmaker.setProperties(p);
-        bmaker.setClasspath( new String[] {"src"});
+        bmaker.setClasspath( new String[] {"bin"});
         Jar jar = bmaker.build();
         JarResource resource = (JarResource) jar.getResource("makesondemand.jar");
         assertNotNull(resource);
@@ -93,7 +93,7 @@ public class MakeTest extends TestCase {
         p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
         p.setProperty("Include-Resource", "www/xyz.jar=ondemand.jar");
         bmaker.setProperties(p);
-        bmaker.setClasspath( new String[] {"src"});
+        bmaker.setClasspath( new String[] {"bin"});
         Jar jar = bmaker.build();
         Resource resource =jar.getResource("www/xyz.jar");
         assertNotNull(resource);

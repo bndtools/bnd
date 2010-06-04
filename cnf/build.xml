@@ -71,7 +71,7 @@
 		Iterate of the jars to build.
 	-->
 	<target name="build" depends="compile">
-		<bnd command="build" exceptions="true" basedir="${project}" />
+		<bnd command="build" trace="true" exceptions="true" basedir="${project}" />
 	</target>
 
 
@@ -96,8 +96,8 @@
 	</target>
 
 	<target name="clean" depends="init">
+		<delete dir="${project.output}"/>
 		<bnd command="clean" exceptions="true" basedir="${project}" />
-		<delete dir="bin"/>
 	</target>
 
 	<!--

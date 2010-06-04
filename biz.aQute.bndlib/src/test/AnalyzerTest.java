@@ -394,7 +394,7 @@ public class AnalyzerTest extends TestCase {
         h.calcManifest().write(System.out);
         assertEquals("Version from osgi.jar", "[1.2,2)", get(h.getImports(),
                 "org.osgi.service.packageadmin", "version"));
-        assertEquals("Version from osgi.jar", "[1.3,1.4)", get(h.getImports(),
+        assertEquals("Version from osgi.jar", "[1.3,2)", get(h.getImports(),
                 "org.osgi.util.tracker", "version"));
         assertEquals("Version from osgi.jar", null, get(h.getImports(),
                 "org.xml.sax", "version"));

@@ -1,0 +1,3 @@
+#!/bin/sh
+java -cp ../biz.aQute.bndlib/bin:../aQute.libg/bin:bin aQute.bnd.main.bnd -exceptions $1
+

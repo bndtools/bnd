@@ -1,7 +1,5 @@
 package aQute.bnd.launch;
 
-import java.util.*;
-
 import org.eclipse.core.runtime.*;
 import org.eclipse.debug.core.*;
 import org.eclipse.jdt.core.*;
@@ -9,26 +7,17 @@ import org.eclipse.jdt.launching.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.plugin.*;
-import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 
 public class LaunchDelegate extends JavaLaunchDelegate {
-    String   programArguments;
-    String   vmArguments;
-    String[] classpath;
-
+    ProjectLauncher launcher;
+    
     public void launch(ILaunchConfiguration configuration, String mode,
             ILaunch launch, IProgressMonitor monitor) throws CoreException {
         IJavaProject javaProject = getJavaProject(configuration);
-        Project model = Activator.getDefault().getCentral().getModel(javaProject);
+        Project project = Activator.getDefault().getCentral().getModel(javaProject);
         try {
-            ProjectLauncher launcher = new ProjectLauncher(model);
-            List<String> vmArguments = new ArrayList<String>();
-            List<String> programArguments = new ArrayList<String>();
-            launcher.getArguments(vmArguments, programArguments, false);
-            this.classpath = launcher.getClasspath();
-            this.vmArguments = Processor.join(vmArguments, " ");
-            this.programArguments = Processor.join(programArguments, " ");
+            launcher = project.getProjectLauncher();
             super.launch(configuration, mode, launch, monitor);
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -38,18 +27,18 @@ public class LaunchDelegate extends JavaLaunchDelegate {
 
     public String verifyMainTypeName(ILaunchConfiguration configuration)
             throws CoreException {
-        return "aQute.junit.runtime.Target";
+        return launcher.getMainTypeName();
     }
 
     public String getVMArguments(ILaunchConfiguration c) {
-        return vmArguments;
+        return Processor.join(launcher.getRunVM(), " ");
     }
 
     public String getProgramArguments(ILaunchConfiguration c) {
-        return programArguments;
+        return Processor.join(launcher.getArguments(), " ");
     }
 
     public String[] getClasspath(ILaunchConfiguration configuration) {
-        return classpath;
+        return launcher.getClasspath().toArray(new String[0]);
     }
 }
