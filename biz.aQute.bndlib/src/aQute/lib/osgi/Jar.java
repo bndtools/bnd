@@ -94,6 +94,8 @@ public class Jar implements Closeable {
 
     public boolean putResource(String path, Resource resource, boolean overwrite) {
         updateModified(resource.lastModified(), path);
+    	while ( path.startsWith("/"))
+    		path = path.substring(1);
 
         if (path.equals("META-INF/MANIFEST.MF")) {
             manifest = null;
