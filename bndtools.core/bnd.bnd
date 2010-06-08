@@ -65,8 +65,7 @@ Include-Resource: resources,\
 	org.eclipse.jdt.junit,\
 	patricia_trie,\
 	org.osgi.service.obr,\
-	org.eclipse.equinox.preferences,\
-	org.apache.felix.bundlerepository
+	org.eclipse.equinox.preferences
 	
 # Minimal SDK Launch Bundles
 -runbundles: bndtools.runtime.eclipse.applaunch,\

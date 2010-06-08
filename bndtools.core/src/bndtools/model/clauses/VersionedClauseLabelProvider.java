@@ -10,25 +10,20 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import bndtools.Plugin;
 
 public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
-	
+
 	Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
-	
+
 	@Override
 	public void update(ViewerCell cell) {
 		VersionedClause clause = (VersionedClause) cell.getElement();
-		
-		int col = cell.getColumnIndex();
-		if(col == 0) {
-			cell.setText(clause.getName());
-			cell.setImage(bundleImg);
-		} else if(col == 1) {
-			String version = clause.getVersionRange();
-			if(version != null) {
-				StyledString string = new StyledString(version, StyledString.COUNTER_STYLER);
-				cell.setText(string.getString());
-				cell.setStyleRanges(string.getStyleRanges());
-			}
+		StyledString label = new StyledString(clause.getName());
+		String version = clause.getVersionRange();
+		if(version != null) {
+		    label.append(" [" + version + "]", StyledString.COUNTER_STYLER);
 		}
+		cell.setText(label.getString());
+		cell.setStyleRanges(label.getStyleRanges());
+		cell.setImage(bundleImg);
 	}
 	@Override
 	public void dispose() {

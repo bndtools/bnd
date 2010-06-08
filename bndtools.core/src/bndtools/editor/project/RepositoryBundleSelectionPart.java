@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
@@ -84,18 +83,6 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		section.setClient(composite);
 
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
-		table.setHeaderVisible(true);
-		table.setLinesVisible(false);
-
-		TableColumn col;
-
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Bundle");
-		col.setWidth(120);
-
-		col = new TableColumn(table, SWT.NONE);
-		col.setText("Version");
-		col.setWidth(120);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
