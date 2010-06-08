@@ -22,19 +22,17 @@ import org.osgi.framework.Constants;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.model.clauses.HeaderClause;
+import bndtools.model.clauses.ImportPattern;
 import bndtools.utils.ModificationLock;
 
-public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
-
-	private final PkgPatternsListPart listPart;
+public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPattern> {
 
 	private final ModificationLock modifyLock = new ModificationLock();
 
 	private Button btnOptional;
 
-	public ImportPatternsDetailsPage(PkgPatternsListPart listPart) {
-		super(listPart, "Import Pattern Details");
-		this.listPart = listPart;
+	public ImportPatternsDetailsPage() {
+		super("Import Pattern Details");
 	}
 
 	@Override
@@ -55,8 +53,11 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage {
 					for (HeaderClause clause : selectedClauses) {
 						clause.getAttribs().put(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE, resolution);
 					}
-					listPart.updateLabels(selectedClauses);
-					listPart.validate();
+					PkgPatternsListPart<ImportPattern> listPart = getListPart();
+					if(listPart != null) {
+					    listPart.updateLabels(selectedClauses);
+					    listPart.validate();
+					}
 					markDirty();
 				}
 			}

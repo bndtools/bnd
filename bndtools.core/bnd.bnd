@@ -155,7 +155,7 @@ Include-Resource: resources,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
 	bndtools.repository.base;version=snapshot,\
-	bndtools.jareditor;version=snapshot,bndtools.repository.orbit;version=snapshot
+	bndtools.jareditor;version=snapshot
 
 -runproperties:\
 	osgi.ws=cocoa,\

@@ -52,8 +52,12 @@ public class BundleContentPage extends FormPage {
     private Color greyTitleBarColour;
 
     private PrivatePackagesPart privPkgsPart;
-    private ImportPatternsListPart importPatternsPart;
-    private ExportPatternsListPart exportPkgsPart;
+    private ImportPatternsListPart importPatternListPart;
+    private ExportPatternsListPart exportPatternListPart;
+
+    private PkgPatternsDetailsPage<ExportedPackage> exportDetailsPage;
+
+    private ImportPatternsDetailsPage importDetailsPage;
 
 
     public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
@@ -90,6 +94,8 @@ public class BundleContentPage extends FormPage {
         Composite rightPanel = toolkit.createComposite(sashForm);
         createRightPanel(managedForm, rightPanel);
 
+        registerDetailsPages();
+
         sashForm.setWeights(new int[] { 4,3,4 });
         sashForm.hookResizeListener();
 
@@ -106,8 +112,8 @@ public class BundleContentPage extends FormPage {
         privPkgsPart = new PrivatePackagesPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
         mform.addPart(privPkgsPart);
 
-        exportPkgsPart = new ExportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
-        mform.addPart(exportPkgsPart);
+        exportPatternListPart = new ExportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        mform.addPart(exportPatternListPart);
 
         // LAYOUT
         GridData gd;
@@ -123,7 +129,7 @@ public class BundleContentPage extends FormPage {
         privPkgsPart.getSection().setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        exportPkgsPart.getSection().setLayoutData(gd);
+        exportPatternListPart.getSection().setLayoutData(gd);
     }
 
     void createMiddlePanel(IManagedForm mform, Composite parent) {
@@ -132,16 +138,21 @@ public class BundleContentPage extends FormPage {
         SaneDetailsPart detailsPart = new SaneDetailsPart();
         mform.addPart(detailsPart);
 
-        PkgPatternsDetailsPage page = new PkgPatternsDetailsPage(exportPkgsPart, "Export Pattern Details");
-        detailsPart.registerPage(ExportedPackage.class, page);
+        exportDetailsPage = new PkgPatternsDetailsPage<ExportedPackage>("Export Pattern Details");
+        detailsPart.registerPage(ExportedPackage.class, exportDetailsPage);
 
-        ImportPatternsDetailsPage importDetailsPage = new ImportPatternsDetailsPage(importPatternsPart);
+        importDetailsPage = new ImportPatternsDetailsPage();
         detailsPart.registerPage(ImportPattern.class, importDetailsPage);
 
         NoSelectionPage noSelectionPage = new NoSelectionPage();
         mform.addPart(noSelectionPage);
         detailsPart.registerDeselectedPage(noSelectionPage);
         detailsPart.createContents(toolkit, parent);
+    }
+
+    void registerDetailsPages() {
+        exportDetailsPage.setListPart(exportPatternListPart);
+        importDetailsPage.setListPart(importPatternListPart);
     }
 
     class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
@@ -184,8 +195,8 @@ public class BundleContentPage extends FormPage {
         BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
         mform.addPart(importsPart);
 
-        importPatternsPart = new ImportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
-        mform.addPart(importPatternsPart);
+        importPatternListPart = new ImportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        mform.addPart(importPatternListPart);
         GridLayout layout;
         GridData gd;
 
@@ -196,11 +207,11 @@ public class BundleContentPage extends FormPage {
         importsPart.getSection().setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        importPatternsPart.getSection().setLayoutData(gd);
+        importPatternListPart.getSection().setLayoutData(gd);
     }
 
     public void setSelectedExport(ExportedPackage export) {
-        exportPkgsPart.getSelectionProvider().setSelection(new StructuredSelection(export));
+        exportPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(export));
     }
 
     public void setSelectedPrivatePkg(String pkg) {
@@ -208,7 +219,7 @@ public class BundleContentPage extends FormPage {
     }
 
     public void setSelectedImport(ImportPattern element) {
-        importPatternsPart.getSelectionProvider().setSelection(new StructuredSelection(element));
+        importPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(element));
     }
 
     @Override

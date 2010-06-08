@@ -46,10 +46,10 @@ import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.ModificationLock;
 
-public class PkgPatternsDetailsPage extends AbstractFormPart implements
+public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractFormPart implements
 		IDetailsPage, PropertyChangeListener {
 
-	private final PkgPatternsListPart listPart;
+	private PkgPatternsListPart<C> listPart;
 	private final ModificationLock modifyLock = new ModificationLock();
 
 	private BndEditModel model;
@@ -59,14 +59,12 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 	private Text txtName;
 	private Text txtVersion;
 
-
 	private final String title;
 
-
-	public PkgPatternsDetailsPage(PkgPatternsListPart importPatternsPart, String title) {
-		this.listPart = importPatternsPart;
+	public PkgPatternsDetailsPage(String title) {
 		this.title = title;
 	}
+
 	public void createContents(Composite parent) {
 		FormToolkit toolkit = getManagedForm().getToolkit();
 
@@ -124,8 +122,10 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 				if(!modifyLock.isUnderModification()) {
 					if(selectedClauses.length == 1) {
 						selectedClauses[0].setName(txtName.getText());
-						listPart.updateLabels(selectedClauses);
-						listPart.validate();
+						if(listPart != null) {
+						    listPart.updateLabels(selectedClauses);
+						    listPart.validate();
+						}
 						markDirty();
 					}
 				}
@@ -141,8 +141,10 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 					for (HeaderClause clause : selectedClauses) {
 						clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
 					}
-					listPart.updateLabels(selectedClauses);
-					listPart.validate();
+					if(listPart != null) {
+    					listPart.updateLabels(selectedClauses);
+    					listPart.validate();
+					}
 					markDirty();
 				}
 			}
@@ -239,10 +241,18 @@ public class PkgPatternsDetailsPage extends AbstractFormPart implements
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
-		listPart.commit(onSave);
+		if(listPart != null) listPart.commit(onSave);
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object container = getManagedForm().getContainer();
+	}
+
+	public void setListPart(PkgPatternsListPart<C> listPart) {
+	    this.listPart = listPart;
+	}
+
+	protected PkgPatternsListPart<C> getListPart() {
+        return listPart;
 	}
 }
