@@ -13,10 +13,13 @@ Bundle-ClassPath: .,\
 	biz.aQute.bndlib-${bndlibver}.jar,\
 	bndtools.bndplugins.repos-0.0.0.jar
 
-Import-Package: org.eclipse.core.runtime;registry=!,*
+Import-Package: org.eclipse.core.runtime;registry=!,\
+	junit.framework;resolution:=optional,\
+	*
 
 # Bundle Content
 Private-Package: bndtools*,\
+	aQute.lib.deployer,\
 	aQute.bnd.build,\
 	aQute.bnd.classpath,\
 	aQute.bnd.plugin,\
@@ -62,7 +65,8 @@ Include-Resource: resources,\
 	org.eclipse.jdt.junit,\
 	patricia_trie,\
 	org.osgi.service.obr,\
-	org.eclipse.equinox.preferences
+	org.eclipse.equinox.preferences,\
+	org.apache.felix.bundlerepository
 	
 # Minimal SDK Launch Bundles
 -runbundles: bndtools.runtime.eclipse.applaunch,\
@@ -152,7 +156,7 @@ Include-Resource: resources,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
 	bndtools.repository.base;version=snapshot,\
-	bndtools.jareditor;version=snapshot
+	bndtools.jareditor;version=snapshot,bndtools.repository.orbit;version=snapshot
 
 -runproperties:\
 	osgi.ws=cocoa,\

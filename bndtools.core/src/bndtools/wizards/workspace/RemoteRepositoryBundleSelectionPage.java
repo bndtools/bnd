@@ -59,7 +59,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
     private RemoteRepository repository;
 
-    private final Set<URL> selectedURLs = new LinkedHashSet<URL>();
+    private final Set<URL> selectedURL = new LinkedHashSet<URL>();
 
     private TableViewer availableViewer;
     private TableViewer selectedViewer;
@@ -69,6 +69,8 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
     private Button btnRemove;
 
     private Job searchJob = null;
+
+    private Label availableSummaryLabel;
 
     public RemoteRepositoryBundleSelectionPage(String pageName) {
         super(pageName);
@@ -80,11 +82,11 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return !selectedURLs.isEmpty();
+        return !selectedURL.isEmpty();
     }
 
     public Collection<URL> getSelectedURLs() {
-        return Collections.unmodifiableCollection(selectedURLs);
+        return Collections.unmodifiableCollection(selectedURL);
     }
 
     public void createControl(Composite parent) {
@@ -156,8 +158,10 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
         new Label(composite, SWT.NONE).setText("Repository Contents:");
         final Text searchText = new Text(composite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+//        final Button searchButton = new Button(composite, SWT.PUSH);
+//        searchButton.setText("Search");
         final Table availableTree = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
-        final Label summaryLabel = new Label(composite, SWT.NONE);
+        availableSummaryLabel = new Label(composite, SWT.NONE);
 
         availableViewer = new TableViewer(availableTree);
         availableViewer.setContentProvider(new RepositorySearchResultsContentProvider());
@@ -170,17 +174,23 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
                 if(e.detail == SWT.CANCEL) {
                     cancelSearch();
                     availableViewer.setInput(Collections.<String>emptyList());
-                    summaryLabel.setText("");
+                    availableSummaryLabel.setText("");
                 } else {
-                    doSearch(searchText.getText(), 0L, availableViewer, summaryLabel);
+                    doSearch(searchText.getText(), 0L);
                 }
             }
         });
         searchText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                doSearch(searchText.getText(), 500L, availableViewer, summaryLabel);
+                doSearch(searchText.getText(), 500L);
             }
         });
+//        searchButton.addSelectionListener(new SelectionAdapter() {
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                doSearch(searchText.getText(), 0L);
+//            }
+//        });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 btnAdd.setEnabled(!availableViewer.getSelection().isEmpty());
@@ -206,7 +216,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         availableTree.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        summaryLabel.setLayoutData(gd);
+        availableSummaryLabel.setLayoutData(gd);
 
         return composite;
     }
@@ -216,40 +226,42 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         for(Iterator<?> iterator = selection.iterator(); iterator.hasNext(); ) {
             @SuppressWarnings("unchecked")
             Pair<String, Version> id = (Pair<String, Version>) iterator.next();
-            URL[] urls = repository.get(id.getFirst(), "[" + id.getSecond() + "," + id.getSecond() + "]");
-            if(urls != null && urls.length > 0) {
-                selectedURLs.add(urls[urls.length - 1]);
+            List<URL> urls = repository.get(id.getFirst(), "[" + id.getSecond() + "," + id.getSecond() + "]");
+            if(urls != null && !urls.isEmpty()) {
+                selectedURL.add(urls.get(urls.size() - 1));
             }
         }
         updateSelectedURLs();
+        getContainer().updateButtons();
     }
 
     void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
-        selectedURLs.removeAll(selection.toList());
+        selectedURL.removeAll(selection.toList());
         updateSelectedURLs();
+        getContainer().updateButtons();
     }
 
-    void doSearch(final String text, long delay, final Viewer viewer, final Label label) {
+    void doSearch(final String text, long delay) {
         cancelSearch();
         searchJob = new Job("Search Repository") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                final Collection<String> list = repository.list(text);
-                if(!viewer.getControl().isDisposed()) {
+                final Collection<String> list = repository.list("*" + text + "*");
+                if(!availableViewer.getControl().isDisposed()) {
                     Runnable op = new Runnable() {
                         public void run() {
-                            if(!viewer.getControl().isDisposed())
-                                viewer.setInput(list);
-                            if(!label.isDisposed()) {
+                            if(!availableViewer.getControl().isDisposed())
+                                availableViewer.setInput(list);
+                            if(!availableSummaryLabel.isDisposed()) {
                                 if(list.isEmpty())
-                                    label.setText("Nothing found, try wildcards (\"*\").");
+                                    availableSummaryLabel.setText("Nothing found.");
                                 else
-                                    label.setText(MessageFormat.format("{0,choice,1# bundle|1<{0} bundles} found.", list.size()));
+                                    availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# bundle|1<{0} bundles} found.", list.size()));
                             }
                         }
                     };
-                    Display display = viewer.getControl().getDisplay();
+                    Display display = availableViewer.getControl().getDisplay();
                     if(display.getThread() == Thread.currentThread())
                         op.run();
                     else
@@ -281,7 +293,6 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         @Override
         public void update(ViewerCell cell) {
             URL url = (URL) cell.getElement();
-
             cell.setText(url.toString());
             cell.setImage(linkImg);
         }
@@ -332,8 +343,8 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
     }
 
     private void updateSelectedURLs() {
-        selectedViewer.setInput(selectedURLs);
-        selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedURLs.size()));
+        selectedViewer.setInput(selectedURL);
+        selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedURL.size()));
     }
 
     Control createButtonPanel(Composite parent) {

@@ -3,18 +3,29 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -32,9 +43,13 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.model.repo.ProjectBundle;
+import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
@@ -92,6 +107,66 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 				removeItem.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
+		ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
+            @Override
+            public void dragEnter(DropTargetEvent event) {
+                super.dragEnter(event);
+                event.detail = DND.DROP_COPY;
+            }
+            @Override
+            public boolean validateDrop(Object target, int operation, TransferData transferType) {
+                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+                    return false;
+                }
+
+                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
+                while(iterator.hasNext()) {
+                    Object element = iterator.next();
+                    if(!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            @Override
+            public boolean performDrop(Object data) {
+                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+                    return false;
+                }
+                List<VersionedClause> adding = new LinkedList<VersionedClause>();
+                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
+                while(iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if(item instanceof RepositoryBundle) {
+                        String bsn = ((RepositoryBundle) item).getBsn();
+                        adding.add(new VersionedClause(bsn, new HashMap<String, String>()));
+                    } else if(item instanceof RepositoryBundleVersion) {
+                        RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
+                        Map<String,String> attribs = new HashMap<String, String>();
+                        attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
+                        adding.add(new VersionedClause(bundleVersion.getBundle().getBsn(), attribs));
+                    } else if(item instanceof ProjectBundle) {
+                        String bsn = ((ProjectBundle) item).getBsn();
+                        Map<String,String> attribs = new HashMap<String, String>();
+                        attribs.put(Constants.VERSION_ATTRIBUTE, "snapshot");
+                        adding.add(new VersionedClause(bsn, attribs));
+                    }
+                }
+                if(!adding.isEmpty()) {
+                    for (VersionedClause clause : adding) {
+                        bundles.addAll(adding);
+                        viewer.add(adding.toArray(new Object[adding.size()]));
+                    }
+                }
+                return true;
+            }
+        };
+        dropAdapter.setFeedbackEnabled(false);
+        dropAdapter.setExpandEnabled(false);
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, dropAdapter);
+
 		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -104,6 +179,17 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 				doRemove();
 			}
 		});
+        table.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.character == SWT.DEL) {
+                    doRemove();
+                } else if(e.character == '+') {;
+                    doAdd();
+                }
+            }
+        });
+
 
 		// Layout
 		GridLayout layout = new GridLayout(1, false);

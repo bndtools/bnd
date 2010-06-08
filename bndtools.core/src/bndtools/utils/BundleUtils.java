@@ -4,12 +4,14 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
 package bndtools.utils;
 
+
+import java.io.File;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -18,13 +20,14 @@ import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
-import bndtools.Plugin;
-
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
+import bndtools.Plugin;
 
 public class BundleUtils {
-	public static final Bundle findBundle(String symbolicName, VersionRange range) {
+	private static final String FILE_URL_PREFIX = "file:";
+
+    public static final Bundle findBundle(String symbolicName, VersionRange range) {
 		Bundle matched = null;
 		Version matchedVersion = null;
 		Bundle[] bundles = Plugin.getDefault().getBundleContext().getBundles();
@@ -49,11 +52,11 @@ public class BundleUtils {
 	public static IPath getBundleLocation(String symbolicName, VersionRange range) {
 		Location installLocation = Platform.getInstallLocation();
 		Location configLocation = Platform.getConfigurationLocation();
-		
+
 		Bundle bundle= findBundle(symbolicName, range);
 		if(bundle == null)
 			return null;
-		
+
 		String location = bundle.getLocation();
 		if(location.startsWith("file:")) { //$NON-NLS-1$
 			location = location.substring(5);
@@ -63,21 +66,44 @@ public class BundleUtils {
 		IPath bundlePath = new Path(location);
 		if(bundlePath.isAbsolute())
 			return bundlePath;
-		
+
 		// Try install location
 		if(installLocation != null) {
 		IPath installedBundlePath = new Path(installLocation.getURL().getFile()).append(bundlePath);
 		if(installedBundlePath.toFile().exists())
 			return installedBundlePath;
 		}
-		
+
 		// Try config location
 		if(configLocation != null) {
 		IPath configuredBundlePath = new Path(configLocation.getURL().getFile()).append(bundlePath);
 		if(configuredBundlePath.toFile().exists())
 			return configuredBundlePath;
 		}
-		
+
 		return null;
+	}
+
+    /**
+     * Try to get the last modified time for the bundle, based on the modified
+     * time of the file itself if the bundle was installed from a file. If the
+     * bundle was not installed from a file (e.g. it may have been streamed from
+     * the network or some other device) then use the time that the bundle was
+     * last installed or updated in the OSGi framework.
+     *
+     * @param bundle
+     *            The bundle
+     * @return The last modified time of the bundle.
+     */
+	public static long getBundleLastModified(Bundle bundle) {
+	    long result;
+        String location = bundle.getLocation();
+        if(location != null && location.startsWith(FILE_URL_PREFIX)) {
+            File bundleFile = new File(location.substring(FILE_URL_PREFIX.length()));
+            result = bundleFile.lastModified();
+        } else {
+            result = bundle.getLastModified();
+        }
+        return result;
 	}
 }

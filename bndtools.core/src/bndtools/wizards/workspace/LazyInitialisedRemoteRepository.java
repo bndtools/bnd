@@ -2,6 +2,7 @@ package bndtools.wizards.workspace;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -36,9 +37,12 @@ class LazyInitialisedRemoteRepository implements RemoteRepository {
         return repository.versions(bsn);
     }
 
-    public URL[] get(String bsn, String range) {
+    public List<URL> get(String bsn, String range) {
         return repository.get(bsn, range);
     }
 
+    public Long getLastModified(URL url) {
+        return repository.getLastModified(url);
+    }
 
 }

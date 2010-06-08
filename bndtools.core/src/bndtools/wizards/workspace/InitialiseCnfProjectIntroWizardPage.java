@@ -18,7 +18,6 @@ public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
 
     protected InitialiseCnfProjectIntroWizardPage(String pageName) {
         super(pageName);
-        setPageComplete(false);
     }
 
     public void createControl(Composite parent) {
@@ -57,19 +56,5 @@ public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
         text.setLayoutData(gd);
 
         setControl(composite);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        // Allow the wizard to complete once we have left this page
-        if(!visible)
-            setPageComplete(true);
-
-        super.setVisible(visible);
-    }
-
-    @Override
-    public boolean canFlipToNextPage() {
-        return getNextPage() != null;
     }
 }

@@ -3,6 +3,7 @@ package bndtools.repository.orbit;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -56,42 +57,42 @@ public class OrbitRepositoryTest extends TestCase {
     }
 
     public void testGetURLs() {
-        URL[] urls = repo.get("com.ibm.icu", null);
+        List<URL> urls = repo.get("com.ibm.icu", null);
         assertNotNull(urls);
-        assertEquals(4, urls.length);
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.0.v20080530.jar", urls[0].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls[1].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls[2].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls[3].toString());
+        assertEquals(4, urls.size());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.0.v20080530.jar", urls.get(0).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls.get(1).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls.get(2).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls.get(3).toString());
     }
 
     public void testGetUrlsWithRanges() {
-        URL[] urls;
+        List<URL> urls;
 
         urls = repo.get("com.ibm.icu", "4.0.0");
         assertNotNull(urls);
-        assertEquals(2, urls.length);
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls[0].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls[1].toString());
+        assertEquals(2, urls.size());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls.get(0).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls.get(1).toString());
 
         urls = repo.get("com.ibm.icu", "[3.6.1,4.0.1)");
         assertNotNull(urls);
-        assertEquals(2, urls.length);
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls[0].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls[1].toString());
+        assertEquals(2, urls.size());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls.get(0).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls.get(1).toString());
 
         urls = repo.get("com.ibm.icu", "[3.6.1,4.0.1]");
         assertNotNull(urls);
-        assertEquals(3, urls.length);
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls[0].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls[1].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls[2].toString());
+        assertEquals(3, urls.size());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_3.6.1.v20080530.jar", urls.get(0).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls.get(1).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls.get(2).toString());
 
         urls = repo.get("com.ibm.icu", "(3.6.1,4.0.1]");
         assertNotNull(urls);
-        assertEquals(2, urls.length);
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls[0].toString());
-        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls[1].toString());
+        assertEquals(2, urls.size());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.0.v20081201.jar", urls.get(0).toString());
+        assertEquals("http://download.eclipse.org/tools/orbit/downloads/drops/R20100114021427/bundles/com.ibm.icu_4.0.1.v20090822.jar", urls.get(1).toString());
     }
 
     public void testOrbitRepositoryRegexQuery() throws CoreException {

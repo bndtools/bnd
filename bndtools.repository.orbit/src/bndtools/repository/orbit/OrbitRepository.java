@@ -135,7 +135,7 @@ public class OrbitRepository implements RemoteRepository, IExecutableExtension {
         return result;
     }
 
-    public URL[] get(String bsn, String rangeStr) {
+    public List<URL> get(String bsn, String rangeStr) {
         SortedSet<ComparablePair<Version, URL>> set = map.get(bsn);
 
         VersionRange range = (rangeStr == null)
@@ -152,14 +152,15 @@ public class OrbitRepository implements RemoteRepository, IExecutableExtension {
             set = set.tailSet(new ComparablePair<Version, URL>(low, null));
         }
 
-        URL[] result = new URL[set.size()];
-        int i=0;
+        List<URL> result = new ArrayList<URL>(set.size());
         for(ComparablePair<Version, URL> pair : set) {
-            result[i] = pair.getSecond();
-            i++;
+            result.add(pair.getSecond());
         }
-
         return result;
+    }
+
+    public Long getLastModified(URL url) {
+        return null;
     }
 
     private Version successor(Version version) {

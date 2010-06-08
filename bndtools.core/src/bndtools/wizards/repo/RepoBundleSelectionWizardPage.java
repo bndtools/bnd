@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Tree;
 
 import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Constants;
+import bndtools.Plugin;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
@@ -112,7 +113,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         try {
             refreshBundleList();
         } catch (Exception e) {
-            setErrorMessage("Error querying repostory configuration.");
+            setErrorMessage("Error querying repository configuration.");
+            Plugin.logError("Error querying repository configuration.", e);
         }
 
         // Listeners

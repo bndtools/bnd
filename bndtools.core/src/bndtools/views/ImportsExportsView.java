@@ -261,7 +261,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	}
 
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        if (selection.isEmpty())
+        if (selection == null || selection.isEmpty())
             return;
 
         // Don't react to the event if the View is not visible

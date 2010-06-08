@@ -2,6 +2,7 @@ package bndtools.api.repository;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,6 +27,11 @@ public interface RemoteRepository {
 
     Collection<Version> versions(String bsn);
 
-    URL[] get(String bsn, String range);
+    List<URL> get(String bsn, String range);
 
+    /**
+     * Get the last modified time for the specified URL, or <code>null</code> if this is unknown.
+     * @param url
+     */
+    Long getLastModified(URL url);
 }

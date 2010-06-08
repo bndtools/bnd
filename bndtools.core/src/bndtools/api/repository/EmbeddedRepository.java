@@ -31,6 +31,7 @@ import bndtools.utils.BundleUtils;
 
 public class EmbeddedRepository implements RemoteRepository, IExecutableExtension {
 
+    private static final String FILE_URL_PREFIX = "file:";
     private String name;
     private String bsn;
     private String path;
@@ -38,6 +39,7 @@ public class EmbeddedRepository implements RemoteRepository, IExecutableExtensio
     private List<String> bsns;
     private Map<String, SortedSet<Version>> versions;
     private Bundle bundle;
+    private long bundleLastModified;
 
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         name = config.getAttribute("name");
@@ -56,6 +58,8 @@ public class EmbeddedRepository implements RemoteRepository, IExecutableExtensio
 
         bundle = BundleUtils.findBundle(bsn, null);
         if(bundle != null) {
+            bundleLastModified = BundleUtils.getBundleLastModified(bundle);
+
             @SuppressWarnings("unchecked")
             Enumeration<URL> bsnEntries = bundle.findEntries(path, null, false);
             while(bsnEntries.hasMoreElements()) {
@@ -115,19 +119,24 @@ public class EmbeddedRepository implements RemoteRepository, IExecutableExtensio
         return result;
     }
 
-    public URL[] get(String bsn, String range) {
+    public List<URL> get(String bsn, String range) {
         SortedSet<Version> set = this.versions.get(bsn);
 
-        if(set == null) return new URL[0];
+        if(set == null) return Collections.emptyList();
 
         VersionRange  versionRange = (range == null) ?  new VersionRange("0") : new VersionRange(range);
         List<URL> result = new LinkedList<URL>();
         for (Version version : set) {
             if(versionRange.includes(version)) {
                 String bundlePath = this.path + "/" + bsn + "/" + bsn + "-" + version + ".jar";
+
                 result.add(bundle.getEntry(bundlePath));
             }
         }
-        return result.toArray(new URL[result.size()]);
+        return result;
+    }
+
+    public Long getLastModified(URL url) {
+        return bundleLastModified;
     }
 }
