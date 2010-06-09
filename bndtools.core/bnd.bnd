@@ -23,6 +23,7 @@ Private-Package: bndtools*,\
 	aQute.bnd.build,\
 	aQute.bnd.classpath,\
 	aQute.bnd.plugin,\
+	aQute.lib.spring,\
 	org.ardverk.collection
 
 Export-Package: bndtools.api.*;version=${baseversion},\
