@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
@@ -165,18 +164,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	    Composite panel = new Composite(parent, SWT.NONE);
 	    new Label(panel, SWT.NONE).setText("Selected Bundles:");
         Table selectedTable = new Table(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
-        selectedTable.setHeaderVisible(true);
-        selectedTable.setLinesVisible(false);
-
-        TableColumn col;
-
-        col = new TableColumn(selectedTable, SWT.NONE);
-        col.setText("Bundle");
-        col.setWidth(150);
-
-        col = new TableColumn(selectedTable, SWT.NONE);
-        col.setText("Version");
-        col.setWidth(100);
 
         selectedViewer = new TableViewer(selectedTable);
         selectedViewer.setContentProvider(new MapValuesContentProvider());
