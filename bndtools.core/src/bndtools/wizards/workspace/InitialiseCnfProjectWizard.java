@@ -21,7 +21,6 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
-import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
 import bndtools.tasks.repo.LocalRepositoryTasks;
 
@@ -74,8 +73,7 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
                     SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository...", 4);
 
                     LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1));
-                    RepositoryPlugin repo = LocalRepositoryTasks.getLocalRepository();
-                    LocalRepositoryTasks.installImplicitRepositoryContents(repo, status, progress.newChild(2));
+                    LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2));
                     LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1));
                 }
             };

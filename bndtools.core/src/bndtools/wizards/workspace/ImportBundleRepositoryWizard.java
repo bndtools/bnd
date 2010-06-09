@@ -78,7 +78,7 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
 
                                 LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1));
                                 RepositoryPlugin localRepo = LocalRepositoryTasks.getLocalRepository();
-                                LocalRepositoryTasks.installImplicitRepositoryContents(localRepo, status, progress.newChild(2));
+                                LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2));
 
                                 int workRemaining = urls.size() + 1;
                                 for (URL url : urls) {

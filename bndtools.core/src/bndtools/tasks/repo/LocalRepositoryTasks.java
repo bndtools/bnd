@@ -6,7 +6,9 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -101,6 +103,7 @@ public class LocalRepositoryTasks {
             progress.worked(1);
     }
 
+    @Deprecated
     public static RepositoryPlugin getLocalRepository() {
         FileRepo repo = new FileRepo();
 
@@ -111,48 +114,80 @@ public class LocalRepositoryTasks {
         return repo;
     }
 
-    public static IStatus installImplicitRepositoryContents(RepositoryPlugin localRepo, MultiStatus status, IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor);
+    private static class ImplicitRepositoryWrapper {
+        private RemoteRepository repository;
+        private String contributorBSN;
+        private Version contributorVersion;
+    }
 
-        Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
-        Map<String, Version> updatedVersions = new HashMap<String, Version>(installedVersions);
-
-        // Copy in the implicit repository contributions
+    static List<ImplicitRepositoryWrapper> getImplicitRepositories() {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
-        if (elements != null && elements.length > 0) {
-            for(int i = 0; i < elements.length; i++) {
-                progress.setWorkRemaining(elements.length - i);
-                IConfigurationElement element = elements[i];
 
+        List<ImplicitRepositoryWrapper> result;
+        if(elements == null || elements.length == 0) {
+            result = Collections.emptyList();
+        } else {
+            result = new ArrayList<ImplicitRepositoryWrapper>(elements.length);
+            for (IConfigurationElement element : elements) {
                 String implicit = element.getAttribute("implicit");
-                if(!"true".equalsIgnoreCase(implicit))
-                    continue;
+                if("true".equalsIgnoreCase(implicit)) {
+                    ImplicitRepositoryWrapper wrapper = new ImplicitRepositoryWrapper();
 
-                String contributorBSN = element.getContributor().getName();
-                Bundle contributorBundle = BundleUtils.findBundle(contributorBSN, null);
-                if(contributorBundle != null) {
-                    String contributorVersionStr = (String) contributorBundle.getHeaders().get(Constants.BUNDLE_VERSION);
-                    if(contributorVersionStr == null)
-                        contributorVersionStr = "0";
-
+                    String className = element.getAttribute("class");
+                    wrapper.contributorBSN = element.getContributor().getName();
                     try {
-                        Version installedVersion = updatedVersions.get(contributorBSN);
-                        Version contributorVersion = new Version(contributorVersionStr);
-
-                        if(installedVersion == null || contributorVersion.compareTo(installedVersion) > 0) {
-                            initialiseAndInstallRepository(element, localRepo, status, progress.newChild(1));
-                            updatedVersions.put(contributorBSN, contributorVersion);
+                        wrapper.repository = (RemoteRepository) element.createExecutableExtension("class");
+                        Bundle contributorBundle = BundleUtils.findBundle(wrapper.contributorBSN, null);
+                        wrapper.contributorVersion = new Version(0);
+                        if(contributorBundle != null) {
+                            String versionStr = (String) contributorBundle.getHeaders().get(Constants.BUNDLE_VERSION);
+                            if(versionStr != null) {
+                                try {
+                                    wrapper.contributorVersion = new Version(versionStr);
+                                } catch (IllegalArgumentException e) {
+                                    Plugin.logError("Invalid bundle version in repository contributor bundle: " + wrapper.contributorBSN, e);
+                                }
+                            }
+                        } else {
+                            Plugin.logError("Unable to find bundle for repository contributor ID: " + wrapper.contributorBSN, null);
                         }
-                    } catch (IllegalArgumentException e) {
-                        Plugin.logError(MessageFormat.format("Repository contributor {0} has invalid Bundle-Version.", contributorBSN), e);
+                        result.add(wrapper);
+                    } catch (CoreException e) {
+                        Plugin.logError(MessageFormat.format("Error instantiating repositoryContributor element from bundle {0}, class name {1}.", wrapper.contributorBSN, className), e);
                     }
                 }
             }
         }
+        return result;
+    }
 
+    public static IStatus installImplicitRepositoryContents(MultiStatus status, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor);
+
+        Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
+        Map<String, Version> updatedVersions = new HashMap<String, Version>(installedVersions);
+        boolean updated = false;
+
+        RepositoryPlugin localRepo = getLocalRepository();
+
+        // Copy in the implicit repository contributions
+        List<ImplicitRepositoryWrapper> implicitRepos = getImplicitRepositories();
+        int count = implicitRepos.size();
+        for (ImplicitRepositoryWrapper wrapper : implicitRepos) {
+            progress.setWorkRemaining(count--);
+
+            Version installedVersion = updatedVersions.get(wrapper.contributorBSN);
+            if(installedVersion == null || wrapper.contributorVersion.compareTo(installedVersion) > 0) {
+                initialiseAndInstallRepository(wrapper.repository, localRepo, status, progress.newChild(1));
+                updatedVersions.put(wrapper.contributorBSN, wrapper.contributorVersion);
+                updated = true;
+            }
+        }
+
+        // Save the updated versions if necessary
         try {
-            saveInstalledRepositoryVersion(updatedVersions);
+            if(updated) saveInstalledRepositoryVersion(updatedVersions);
         } catch (BackingStoreException e) {
             status.add(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Failed to save installed repository version information.", e));
         }
@@ -241,25 +276,16 @@ public class LocalRepositoryTasks {
         return cnfProject.getFolder(PATH_REPO_FOLDER);
     }
 
-    static void initialiseAndInstallRepository(IConfigurationElement remoteRepositoryElem, RepositoryPlugin localRepo, MultiStatus status, IProgressMonitor monitor) {
+    static void initialiseAndInstallRepository(RemoteRepository remoteRepo, RepositoryPlugin localRepo, MultiStatus status, IProgressMonitor monitor) {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
-
-        String implicitStr = remoteRepositoryElem.getAttribute("implicit");
-        String repoName = remoteRepositoryElem.getAttribute("name");
-        if(repoName == null) repoName = "<unknown>";
-        if("true".equalsIgnoreCase(implicitStr)) {
-            try {
-                RemoteRepository repo = (RemoteRepository) remoteRepositoryElem.createExecutableExtension("class");
-                repo.initialise(progress.newChild(1));
-                installRepository(repo, localRepo, status, progress.newChild(2));
-            } catch (CoreException e) {
-                String message = MessageFormat.format("Failed to initialise remote repository {0}.", repoName);
-                if(status != null)
-                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
-                Plugin.logError(message, e);
-            }
-        } else {
-            progress.worked(1);
+        try {
+            remoteRepo.initialise(progress.newChild(1));
+            installRepository(remoteRepo, localRepo, status, progress.newChild(2));
+        } catch (CoreException e) {
+            String message = MessageFormat.format("Failed to initialise remote repository {0}.", remoteRepo.getName());
+            if(status != null)
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
+            Plugin.logError(message, e);
         }
     }
 

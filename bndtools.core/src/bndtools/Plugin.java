@@ -66,12 +66,11 @@ public class Plugin extends AbstractUIPlugin {
 
 		repositoryModel = new RepositoryModel();
 
-		InitialRepositoryScanner repoScanJob = new InitialRepositoryScanner("Scanning Repositories...");
-		repoScanJob.schedule(500);
-
 //		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 //		buildJob.setSystem(false);
 //		buildJob.schedule();
+
+
 	}
 
 
