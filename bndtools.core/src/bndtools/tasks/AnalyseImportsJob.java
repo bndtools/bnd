@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -68,22 +68,24 @@ public class AnalyseImportsJob extends Job {
 		Map<String, List<ExportPackage>> exports = new HashMap<String, List<ExportPackage>>();
 		Map<String, Set<String>> usedBy = new HashMap<String, Set<String>>();
 		for (IFile inputFile : files) {
-			try {
-				Builder builder;
-				if(inputFile.getName().endsWith(".bnd")) {
-					builder = setupBuilderForBndFile(inputFile);
-				} else {
-					builder = setupBuilderForJarFile(inputFile);
-				}
-				builderMap.put(inputFile, builder);
-				mergeExports(exports, usedBy, builder);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		    if(inputFile.exists()) {
+    			try {
+    				Builder builder;
+    				if(inputFile.getName().endsWith(".bnd")) {
+    					builder = setupBuilderForBndFile(inputFile);
+    				} else {
+    					builder = setupBuilderForJarFile(inputFile);
+    				}
+    				builderMap.put(inputFile, builder);
+    				mergeExports(exports, usedBy, builder);
+    			} catch (IOException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			} catch (CoreException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			}
+		    }
 		}
 
 		// Calculate the imports
