@@ -28,7 +28,6 @@ import aQute.bnd.service.Plugin;
 import aQute.lib.osgi.Analyzer;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Resource;
-import aQute.libg.header.OSGiHeader;
 import aQute.libg.reporter.Reporter;
 
 /**
@@ -42,7 +41,7 @@ import aQute.libg.reporter.Reporter;
  *
  */
 public class SpringComponent implements AnalyzerPlugin, Plugin {
-    static final String PROPNAME_PATTERNS = "patterns";
+    static final String PROPNAME_PREFIX_PATTERN = "pattern";
 	static final Pattern[] DEFAULT_SPRING_PATTERNS = new Pattern[] { Pattern.compile("META-INF/spring/.*\\.xml") };
 	static final Pattern QN = Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
@@ -100,20 +99,21 @@ public class SpringComponent implements AnalyzerPlugin, Plugin {
 	    Pattern[] result = DEFAULT_SPRING_PATTERNS;
 
 	    if(properties != null) {
-	        String patternsListStr = properties.get(PROPNAME_PATTERNS);
-	        Map<String, Map<String, String>> patternsHeader = OSGiHeader.parseHeader(patternsListStr, reporter);
-	        List<Pattern> patterns = new ArrayList<Pattern>(patternsHeader.size());
+	        List<Pattern> patterns = new ArrayList<Pattern>(properties.size());
 
-	        for (Entry<String, ?> entry : patternsHeader.entrySet()) {
-	            String patternStr = entry.getKey();
-                try {
-                    Pattern pattern = Pattern.compile(patternStr);
-                    patterns.add(pattern);
-                } catch (PatternSyntaxException e) {
-                    if(reporter != null)
-                        reporter.error("Invalid regular expression: %s", patternStr);
+	        for (Entry<String, String> propertyEntry : properties.entrySet()) {
+                if(propertyEntry.getKey().startsWith(PROPNAME_PREFIX_PATTERN)) {
+                    String patternStr = propertyEntry.getValue();
+                    try {
+                        Pattern pattern = Pattern.compile(patternStr);
+                        patterns.add(pattern);
+                    } catch (PatternSyntaxException e) {
+                        if(reporter != null)
+                            reporter.error("Invalid regular expression: %s", patternStr);
+                    }
                 }
             }
+
 	        result = patterns.toArray(new Pattern[patterns.size()]);
 	    }
 
