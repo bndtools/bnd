@@ -1,4 +1,4 @@
-package aQute.lib.spring;
+package bndtools.bndplugins.analysis.spring;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -54,8 +54,7 @@ public class SpringComponent implements AnalyzerPlugin, Plugin {
 	public static Set<CharSequence> analyze(InputStream in) throws Exception {
 		if (transformer == null) {
 			TransformerFactory tf = TransformerFactory.newInstance();
-			Source source = new StreamSource(SpringComponent.class
-					.getResourceAsStream("extract.xsl"));
+			Source source = new StreamSource(SpringComponent.class.getResourceAsStream("extract.xsl"));
 			transformer = tf.newTransformer(source);
 		}
 
