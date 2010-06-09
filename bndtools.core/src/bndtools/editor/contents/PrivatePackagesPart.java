@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -113,7 +114,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 				removeItem.setEnabled(!viewer.getSelection().isEmpty());
 			}
 		});
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { TextTransfer.getInstance(), ResourceTransfer.getInstance() }, new PackageDropAdapter<String>(viewer) {
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), TextTransfer.getInstance(), ResourceTransfer.getInstance() }, new PackageDropAdapter<String>(viewer) {
 			@Override
 			protected String createNewEntry(String packageName) {
 				return packageName;

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -140,7 +141,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 				btnMoveDown.setEnabled(enabled);
 			}
 		});
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<C>(viewer) {
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<C>(viewer) {
 			@Override
 			protected C createNewEntry(String packageName) {
 				return newHeaderClause(packageName);
