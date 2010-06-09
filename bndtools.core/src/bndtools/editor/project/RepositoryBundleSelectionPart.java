@@ -145,6 +145,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                     for (VersionedClause clause : adding) {
                         bundles.addAll(adding);
                         viewer.add(adding.toArray(new Object[adding.size()]));
+                        markDirty();
                     }
                 }
                 return true;
