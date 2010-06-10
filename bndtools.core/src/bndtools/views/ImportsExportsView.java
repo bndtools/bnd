@@ -297,8 +297,9 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                 tmp.addJobChangeListener(new JobChangeAdapter() {
                     @Override
                     public void done(IJobChangeEvent event) {
-                        if(tmp.getResult().isOK()) {
-                            display.asyncExec(new Runnable() {
+                        IStatus result = tmp.getResult();
+                        if(result != null && result.isOK()) {
+                            if(display != null && !display.isDisposed()) display.asyncExec(new Runnable() {
                                 public void run() {
                                     if(!tree.isDisposed())
                                         setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults());
