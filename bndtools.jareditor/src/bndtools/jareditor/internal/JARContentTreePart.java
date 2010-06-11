@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
@@ -24,10 +25,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -94,33 +97,40 @@ public class JARContentTreePart extends AbstractFormPart {
 		return false;
 	}
 
-	private static class JARTreeLabelProvider extends LabelProvider {
+    private static class JARTreeLabelProvider extends StyledCellLabelProvider {
 
-		private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
-		private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
+        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
+        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
 
-		@Override
-		public Image getImage(Object element) {
-			Image image = null;
+        @Override
+        public void update(ViewerCell cell) {
+            ZipTreeNode node = (ZipTreeNode) cell.getElement();
 
-			ZipTreeNode node = (ZipTreeNode) element;
-			String name = node.toString();
+            String name = node.toString();
 
-			if(name.endsWith("/"))
-				image = folderImg;
-			else
-				image = fileImg;
+            StyledString label = new StyledString(name);
 
-			return image;
-		}
+            if (name.endsWith("/")) {
+                cell.setImage(folderImg);
+            } else {
+                cell.setImage(fileImg);
+                ZipEntry entry = node.getZipEntry();
+                if(entry != null) {
+                    label.append(String.format(" [sz: %,d; crc: %d]", entry.getSize(), entry.getCrc()), StyledString.QUALIFIER_STYLER);
+                }
+            }
 
-		@Override
-		public void dispose() {
-			super.dispose();
-			folderImg.dispose();
-			fileImg.dispose();
-		}
-	}
+            cell.setText(label.getString());
+            cell.setStyleRanges(label.getStyleRanges());
+        }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            folderImg.dispose();
+            fileImg.dispose();
+        }
+    }
 
 	private class JARTreeContentProvider implements ITreeContentProvider {
 
