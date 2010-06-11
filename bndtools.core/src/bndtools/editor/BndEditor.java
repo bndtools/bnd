@@ -42,6 +42,7 @@ import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.PoliciesPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
+import bndtools.launch.LaunchConstants;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
@@ -83,35 +84,47 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	protected void addPages() {
 		try {
-		    BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
-		    addPage(contentPage);
-
-			String inputName = getEditorInput().getName();
-			if(Project.BNDFILE.equals(inputName)) {
-				ProjectBuildPage buildPage = new ProjectBuildPage(this, model, BUILD_PAGE, "Build");
-				addPage(buildPage);
-
-				ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
-				addPage(runPage);
-			} else {
-			    BundleBuildPage buildPage = new BundleBuildPage(this, model, BUILD_PAGE, "Build");
-			    addPage(buildPage);
-			}
-
-			ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
-			addPage(componentsPage);
-
-			PoliciesPage importsPage = new PoliciesPage(this, model, POLICIES_PAGE, "Policies");
-			addPage(importsPage);
-
-			int sourcePageIndex = addPage(sourcePage, getEditorInput());
-			setPageText(sourcePageIndex, "Source");
+		    String inputName = getEditorInput().getName();
+		    if(inputName.endsWith(LaunchConstants.EXT_BNDRUN)) {
+		        addPagesBndRun();
+		    } else {
+		        addPagesBnd(inputName);
+		    }
+	        int sourcePageIndex = addPage(sourcePage, getEditorInput());
+	        setPageText(sourcePageIndex, "Source");
 		} catch (PartInitException e) {
-			e.printStackTrace();
+		    Plugin.logError("Error adding page(s) to the editor.", e);
 		}
 	}
 
-	@Override
+	private void addPagesBnd(String inputName) throws PartInitException {
+        BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
+        addPage(contentPage);
+
+        if(Project.BNDFILE.equals(inputName)) {
+            ProjectBuildPage buildPage = new ProjectBuildPage(this, model, BUILD_PAGE, "Build");
+            addPage(buildPage);
+
+            ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
+            addPage(runPage);
+        } else {
+            BundleBuildPage buildPage = new BundleBuildPage(this, model, BUILD_PAGE, "Build");
+            addPage(buildPage);
+        }
+
+        ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
+        addPage(componentsPage);
+
+        PoliciesPage importsPage = new PoliciesPage(this, model, POLICIES_PAGE, "Policies");
+        addPage(importsPage);
+    }
+
+    private void addPagesBndRun() throws PartInitException {
+        ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
+        addPage(runPage);
+    }
+
+    @Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
 		sourcePage.init(site, input);

@@ -6,10 +6,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -26,9 +29,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
+import org.eclipse.ui.dialogs.ISelectionStatusValidator;
+import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.bnd.build.Project;
@@ -36,19 +43,29 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.plugin.Central;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
+import bndtools.launch.LaunchConstants;
+import bndtools.utils.FileExtensionFilter;
 
 public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
-    private String projectName = "";
-    private Text projectNameTxt;
+    private static final String PROP_LAUNCH_TARGET = "targetName";
+
+    private String targetName = "";
+    private Text launchTargetTxt;
 
     public Control createControl(Composite parent) {
         Group projectGroup = new Group(parent, SWT.NONE);
-        projectGroup.setText("Project:");
+        projectGroup.setText("Launch:");
 
-        projectNameTxt = new Text(projectGroup, SWT.BORDER);
+        launchTargetTxt = new Text(projectGroup, SWT.BORDER);
+
         Button projectNameBrowseBtn = new Button(projectGroup, SWT.PUSH);
-        projectNameBrowseBtn.setText("Browse");
+        projectNameBrowseBtn.setText("Browse Projects");
+
+        new Label(projectGroup, SWT.NONE); // Spacer
+
+        Button bndrunBrowseBtn = new Button(projectGroup, SWT.PUSH);
+        bndrunBrowseBtn.setText("Browse Run Files");
 
         // LISTENERS
         projectNameBrowseBtn.addSelectionListener(new SelectionAdapter() {
@@ -57,25 +74,35 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                 doBrowseProject();
             }
         });
-        projectNameTxt.addListener(SWT.Modify, new Listener() {
+        bndrunBrowseBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doBrowseBndrun();
+            }
+        });
+        launchTargetTxt.addListener(SWT.Modify, new Listener() {
             public void handleEvent(Event event) {
-                String oldName = projectName;
-                projectName = projectNameTxt.getText();
+                String oldName = targetName;
+                targetName = launchTargetTxt.getText();
                 setDirty(true);
-                firePropertyChange("projectName", oldName, projectName);
+                firePropertyChange(PROP_LAUNCH_TARGET, oldName, targetName);
             }
         });
 
         // LAYOUT
         GridLayout layout = new GridLayout(2, false);
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         projectGroup.setLayout(layout);
-        projectNameTxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        launchTargetTxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        projectNameBrowseBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        bndrunBrowseBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 
         return projectGroup;
     }
 
     void doBrowseProject() {
-        ElementListSelectionDialog dialog = new ElementListSelectionDialog(projectNameTxt.getShell(), new WorkbenchLabelProvider());
+        ElementListSelectionDialog dialog = new ElementListSelectionDialog(launchTargetTxt.getShell(), new WorkbenchLabelProvider());
         dialog.setTitle("Project Selection");
 
         dialog.setMessage("Select a project to constrain your search.");
@@ -85,7 +112,35 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
         if (Window.OK == dialog.open()) {
             IProject selected = (IProject) dialog.getFirstResult();
-            projectNameTxt.setText(selected.getName());
+            launchTargetTxt.setText(selected.getName());
+        }
+    }
+
+    void doBrowseBndrun() {
+        ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(launchTargetTxt.getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
+        dialog.setValidator(new ISelectionStatusValidator() {
+            public IStatus validate(Object[] selection) {
+                if (selection.length > 0 && selection[0] instanceof IFile) {
+                    return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
+                }
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, IStatus.ERROR, "", null); //$NON-NLS-1$
+            }
+        });
+        dialog.setAllowMultiple(false);
+        dialog.setTitle("Run File Selection");
+        dialog.setMessage("Select the Run File to launch.");
+        dialog.addFilter(new FileExtensionFilter(LaunchConstants.EXT_BNDRUN));
+        dialog.setInput(ResourcesPlugin.getWorkspace());
+
+        if(dialog.open() == Window.OK) {
+            Object[] files = dialog.getResult();
+            if(files != null && files.length == 1) {
+                IPath path = ((IResource) files[0]).getFullPath().makeRelative();
+                targetName = path.toString();
+            } else {
+                targetName = "";
+            }
+            launchTargetTxt.setText(targetName);
         }
     }
 
@@ -110,36 +165,46 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     }
 
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        configuration.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectNameTxt.getText());
+        configuration.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, launchTargetTxt.getText());
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
-        projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
-        if (projectName != null) {
-            projectNameTxt.setText(projectName);
+        targetName = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+        if(targetName == null)
+            targetName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
+        if (targetName != null) {
+            launchTargetTxt.setText(targetName);
         }
     }
 
     @Override
     public String checkForError() {
-        String projectName = projectNameTxt.getText();
-        if(projectName == null || projectName.length() == 0) {
-            return "Project must be specified";
+        if(targetName == null || targetName.length() == 0) {
+            return "Launch target must be specified";
         }
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-        if (project == null || !project.exists()) {
-            return MessageFormat.format("Project {0} does not exist.", projectName);
+
+        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetName);
+        if (targetResource == null || !targetResource.exists()) {
+            return MessageFormat.format("Launch target {0} does not exist.", targetName);
         }
-        if (!project.isOpen()) {
-            return MessageFormat.format("Project {0} is closed.", projectName);
-        }
-        try {
-            if (!project.hasNature(BndProjectNature.NATURE_ID)) {
-                return MessageFormat.format("Project {0} is not a Bnd OSGi project.", projectName);
+
+        if(targetResource.getType() == IResource.PROJECT) {
+            IProject project = (IProject) targetResource;
+            if (!project.isOpen()) {
+                return MessageFormat.format("Project {0} is closed.", targetName);
             }
-        } catch (CoreException e) {
-            Plugin.logError("Error checking for Bnd OSGi project nature", e);
-            return "Error checking for Bnd OSGi project nature";
+            try {
+                if (!project.hasNature(BndProjectNature.NATURE_ID)) {
+                    return MessageFormat.format("Project {0} is not a Bnd OSGi project.", targetName);
+                }
+            } catch (CoreException e) {
+                Plugin.logError("Error checking for Bnd OSGi project nature", e);
+                return "Error checking for Bnd OSGi project nature";
+            }
+        } else if(targetResource.getType() == IResource.FILE) {
+            if(!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+                return MessageFormat.format("Selected file {0} is not a .bndrun file.", targetName);
+            }
         }
         return null;
     }

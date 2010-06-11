@@ -3,10 +3,12 @@ package bndtools.launch;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -19,7 +21,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -42,27 +43,29 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         IStructuredSelection is = (IStructuredSelection) selection;
         if ( is.getFirstElement() != null ) {
             Object selected = is.getFirstElement();
-            String projectName = null;
+            IPath targetPath = null;
             if (selected instanceof IJavaElement )
-                projectName = ((IJavaElement) selected).getJavaProject().getElementName();
+                targetPath = ((IJavaElement) selected).getJavaProject().getProject().getFullPath();
             else if (selected instanceof IResource && Project.BNDFILE.equals(((IResource) selected).getName()))
-                projectName = ((IResource) selected).getProject().getName();
+                targetPath = ((IResource) selected).getProject().getFullPath();
+            else if(selected instanceof IFile && ((IFile) selected).getName().endsWith(LaunchConstants.EXT_BNDRUN))
+                targetPath = ((IFile) selected).getFullPath();
             else if (selected instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) selected;
                 IJavaElement javaElement = (IJavaElement) adaptable.getAdapter(IJavaElement.class);
                 if(javaElement != null) {
                     IJavaProject javaProject = javaElement.getJavaProject();
                     if(javaProject != null)
-                        projectName = javaProject.getElementName();
+                        targetPath = javaProject.getProject().getFullPath();
                 }
 
                 IResource resource = (IResource) adaptable.getAdapter(IResource.class);
                 if(resource != null && Project.BNDFILE.equals(resource.getName()))
-                    projectName = resource.getProject().getName();
+                    targetPath = resource.getProject().getFullPath();
             }
 
-            if(projectName != null)
-                launch(projectName, mode);
+            if(targetPath != null)
+                launch(targetPath, mode);
         }
     }
 
@@ -72,16 +75,22 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         if (element != null) {
             IJavaProject jproject = element.getJavaProject();
             if (jproject != null) {
-                launch(jproject.getElementName(), mode);
+                launch(jproject.getProject().getFullPath(), mode);
+            }
+        } else {
+            IFile file = ResourceUtil.getFile(input);
+            if(file != null && file.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+                launch(file.getFullPath(), mode);
             }
         }
     }
 
-    void launch(String projectName, String mode) {
+    void launch(IPath targetPath, String mode) {
+        targetPath = targetPath.makeRelative();
         try {
-            ILaunchConfiguration config = findLaunchConfig(projectName);
+            ILaunchConfiguration config = findLaunchConfig(targetPath);
             if (config == null) {
-                ILaunchConfigurationWorkingCopy wc = createConfiguration(projectName);
+                ILaunchConfigurationWorkingCopy wc = createConfiguration(targetPath);
                 config = wc.doSave();
             }
             DebugUITools.launch(config, mode);
@@ -90,7 +99,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         }
     }
 
-    ILaunchConfiguration findLaunchConfig(String projectName) throws CoreException {
+    ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
         List<ILaunchConfiguration> candidateConfigs = new ArrayList<ILaunchConfiguration>();
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 
@@ -99,8 +108,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
         for (int i = 0; i < configs.length; i++) {
             ILaunchConfiguration config = configs[i];
-            String configProjectName = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
-            if(configProjectName != null && configProjectName.equals(projectName)) {
+            String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+            if(configTargetName != null && configTargetName.equals(targetPath.toString())) {
                 candidateConfigs.add(config);
             }
         }
@@ -111,13 +120,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
             : null;
     }
 
-    ILaunchConfigurationWorkingCopy createConfiguration(String projectName) throws Exception {
+    ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath) throws Exception {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 
         ILaunchConfigurationWorkingCopy wc;
-        wc = configType.newInstance(null, manager.generateUniqueLaunchConfigurationNameFrom(projectName));
-        wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectName);
+        wc = configType.newInstance(null, manager.generateUniqueLaunchConfigurationNameFrom(targetPath.lastSegment()));
+        wc.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, targetPath.toString());
         return wc;
     }
 

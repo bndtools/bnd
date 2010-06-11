@@ -25,12 +25,17 @@ public class FileExtensionFilter extends ViewerFilter {
 	private String fTargetExtension;
 
 	public FileExtensionFilter(String targetExtension) {
-		fTargetExtension = targetExtension;
+	    if(targetExtension.length() > 0 && targetExtension.charAt(0) == '.') {
+	        fTargetExtension = targetExtension;
+	    } else {
+	        fTargetExtension = "." + targetExtension;
+	    }
 	}
 
-	public boolean select(Viewer viewer, Object parent, Object element) {
+	@Override
+    public boolean select(Viewer viewer, Object parent, Object element) {
 		if (element instanceof IFile) {
-			return ((IFile) element).getName().toLowerCase(Locale.ENGLISH).endsWith("." + fTargetExtension); //$NON-NLS-1$
+			return ((IFile) element).getName().toLowerCase(Locale.ENGLISH).endsWith(fTargetExtension);
 		}
 
 		if (element instanceof IProject && !((IProject) element).isOpen())

@@ -7,10 +7,12 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Level;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -24,13 +26,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Container;
-import aQute.bnd.build.Project;
 import aQute.bnd.build.Container.TYPE;
-import aQute.bnd.plugin.Activator;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
@@ -38,6 +39,7 @@ import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import bndtools.BndConstants;
 import bndtools.Plugin;
+import bndtools.builder.BndProjectNature;
 
 public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
@@ -165,9 +167,9 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
      */
     protected Collection<String> calculateRunBundlePaths(Project model) throws CoreException {
         Collection<String> runBundlePaths = new LinkedList<String>();
-        synchronized (model) {
-            try {
-                // Calculate physical paths for -runbundles from bnd.bnd
+        try {
+            // Calculate physical paths for -runbundles from the bnd/bndrun file
+            synchronized (model) {
                 Collection<Container> runbundles = model.getRunbundles();
                 MultiStatus resolveErrors = new MultiStatus(Plugin.PLUGIN_ID, 0, "One or more run bundles could not be resolved.", null);
                 for (Container container : runbundles) {
@@ -181,17 +183,25 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
                 if (!resolveErrors.isOK()) {
                     throw new CoreException(resolveErrors);
                 }
+            }
 
+            // Now we want to calculate the project's output builder.
+            // First find the root project model (if this is a bndrun)
+            File projectDir = model.getBase();
+            Project rootModel = Workspace.getProject(projectDir);
+            synchronized (rootModel ) {
                 // Add the project's own output bundles
-                Collection<? extends Builder> builders = model.getSubBuilders();
+                Collection<? extends Builder> builders = rootModel.getSubBuilders();
                 for (Builder builder : builders) {
                     File bundlefile = new File(model.getTarget(), builder.getBsn() + ".jar");
-                    runBundlePaths.add(bundlefile.getAbsolutePath());
+                    if(bundlefile.exists())
+                        runBundlePaths.add(bundlefile.getAbsolutePath());
                 }
-            } catch (Exception e) {
-                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding run bundles.", e));
             }
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding run bundles.", e));
         }
+
         return runBundlePaths;
     }
 
@@ -271,9 +281,48 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
     }
 
     protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
-        IJavaProject javaProject = getJavaProject(configuration);
-        Project model = Activator.getDefault().getCentral().getModel(javaProject);
-        return model;
+        Project result;
+
+        String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+        if(target == null) {
+            // For compatibility with launches created in previous versions
+            target = getJavaProjectName(configuration);
+        }
+        if(target == null) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified", null));
+        }
+
+        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
+        if(targetResource == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target \"{0}\" does not exist.", target), null));
+
+        IProject project = targetResource.getProject();
+        File projectDir = project.getLocation().toFile();
+        if(targetResource.getType() == IResource.FILE) {
+            if(!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN))
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target file \"{0}\" is not a .bndrun file.", target), null));
+
+            // Get the synthetic "run" project (based on a .bndrun file)
+            File runFile = targetResource.getLocation().toFile();
+            try {
+                result = new Project(Central.getWorkspace(), projectDir, runFile);
+            } catch (Exception e) {
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(), project.getName()), e));
+            }
+        } else if(targetResource.getType() == IResource.PROJECT) {
+            // Use the main project (i.e. bnd.bnd)
+            if(!project.hasNature(BndProjectNature.NATURE_ID))
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The configured run project \"{0}\"is not a Bnd project.", project.getName()), null));
+            try {
+                result = Workspace.getProject(projectDir);
+            } catch (Exception e) {
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to retrieve Bnd project model for project \"{0}\".", project.getName()), null));
+            }
+        } else {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The specified launch target \"{0}\" is not recognised as a Bnd project or .bndrun file.", targetResource.getFullPath().toString()), null));
+        }
+
+        return result;
     }
 
     @Override
@@ -322,6 +371,16 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
             }
         }
         return args;
+    }
+
+    @Override
+    public File verifyWorkingDirectory(ILaunchConfiguration configuration) throws CoreException {
+        try {
+            Project project = getBndProject(configuration);
+            return (project != null) ? project.getTarget() : null;
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting working directory for Bnd project.", e));
+        }
     }
 
     protected File findFramework(Project model) throws CoreException {

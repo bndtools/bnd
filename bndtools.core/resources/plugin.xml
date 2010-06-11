@@ -62,6 +62,14 @@
             id="bndtools.bndProjectEditor"
             name="Bnd Project Editor">
       </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            extensions="bndrun"
+            icon="icons/brick_run.gif"
+            id="bndtools.bndRunEditor"
+            name="Bnd Run File Editor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
@@ -83,6 +91,13 @@
             icon="icons/package_add.png"
             id="bndtools.wrappingBndWizard"
             name="New Bnd Wrapper Script for Existing JARs">
+      </wizard>
+      <wizard
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.bndfile.BndRunFileWizard"
+            icon="icons/brick_run.gif"
+            id="bndtools.bndrunWizard"
+            name="New Bnd Run Descriptor File">
       </wizard>
       <wizard
             category="bndtools.wizardCategory"
@@ -340,6 +355,9 @@
                         
                         <!-- bnd.bnd file -->
                         <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                        
+                        <!-- *.bndrun file -->
+                        <test property="org.eclipse.core.resources.extension" value="bndrun"/>
                      </or>
                   </iterate>
                </with>
@@ -379,6 +397,9 @@
                         
                         <!-- bnd.bnd file -->
                         <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                        
+                        <!-- *.bndrun file -->
+                        <test property="org.eclipse.core.resources.extension" value="bndrun"/>
                      </or>
                   </iterate>
                </with>

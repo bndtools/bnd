@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.Viewer;
 import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;
+import bndtools.launch.LaunchConstants;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
 
@@ -42,6 +43,8 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		Object[] result;
 		if(model.isProjectFile()) {
 			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
+		} else if(model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+		    result = new String[] { BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
 		} else {
 			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
 		}

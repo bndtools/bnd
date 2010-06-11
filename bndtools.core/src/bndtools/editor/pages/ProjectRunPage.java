@@ -35,7 +35,7 @@ public class ProjectRunPage extends FormPage {
 
 		FormToolkit tk = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
-		form.setText("Project Run");
+		form.setText("Run");
 		tk.decorateFormHeading(form.getForm());
 		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
