@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.equinox.executable"
+      label="%featureName"
+      version="3.3.201.R35x_v20091211-7M-FngFELSU3Pqlv3JdZn">
+
+   <description>
+      %description
+   </description>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <plugin
+         id="org.eclipse.equinox.launcher"
+         download-size="0"
+         install-size="0"
+         version="1.0.201.R35x_v20090715"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.solaris.sparc"
+         os="solaris"
+         ws="gtk"
+         arch="sparc"
+         download-size="0"
+         install-size="0"
+         version="1.0.201.R35x_v20090720"
+         fragment="true"/>
+         
+	<plugin
+         id="org.eclipse.equinox.launcher.gtk.solaris.x86"
+         os="solaris"
+         ws="gtk"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.201.R35x_v20090720"
+         fragment="true"/>
+            
+	<plugin
+         id="org.eclipse.equinox.launcher.motif.solaris.sparc"
+         os="solaris"
+         ws="motif"
+         arch="sparc"
+         download-size="0"
+         install-size="0"
+         version="1.0.300.R35x_20090929"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.carbon.macosx"
+         os="macosx"
+         ws="carbon"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090520-1835"
+         fragment="true"/>
+         
+   <plugin
+         id="org.eclipse.equinox.launcher.cocoa.macosx"
+         os="macosx"
+         ws="cocoa"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.1.R35x_v20090707"
+         fragment="true"/>
+           
+   <plugin
+         id="org.eclipse.equinox.launcher.cocoa.macosx"
+         os="macosx"
+         ws="cocoa"
+         arch="ppc"
+         download-size="0"
+         install-size="0"
+         version="1.0.1.R35x_v20090707"
+         fragment="true"/>
+         
+	<plugin
+         id="org.eclipse.equinox.launcher.cocoa.macosx.x86_64"
+         os="macosx"
+         ws="cocoa"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="1.0.1.R35x_v20090707"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.ppc"
+         os="linux"
+         ws="gtk"
+         arch="ppc"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090519"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.x86"
+         os="linux"
+         ws="gtk"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090520"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.x86_64"
+         os="linux"
+         ws="gtk"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090519"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.motif.aix.ppc"
+         os="aix"
+         ws="motif"
+         arch="ppc"
+         download-size="0"
+         install-size="0"
+         version="1.0.201.R35x_v20091211"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.motif.hpux.PA_RISC"
+         os="hpux"
+         ws="motif"
+         arch="PA_RISC"
+         download-size="0"
+         install-size="0"
+         version="1.0.100.v20090306-1900"
+         fragment="true"/>
+         
+	<plugin
+         id="org.eclipse.equinox.launcher.motif.hpux.ia64_32"
+         os="hpux"
+         ws="motif"
+         arch="ia64_32"
+         download-size="0"
+         install-size="0"
+         version="1.0.100.v20090519"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.motif.linux.x86"
+         os="linux"
+         ws="motif"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.201.R35x_v20100209"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.win32.win32.x86"
+         os="win32"
+         ws="win32"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090519"
+         fragment="true"/>
+         
+   <plugin
+         id="org.eclipse.equinox.launcher.win32.win32.x86_64"
+         os="win32"
+         ws="win32"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090519"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.win32.win32.ia64"
+         os="win32"
+         ws="win32"
+         arch="ia64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"/>
+         
+   <plugin
+         id="org.eclipse.equinox.launcher.wpf.win32.x86"
+         os="win32"
+         ws="wpf"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="1.0.200.v20090519"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.s390"
+         os="linux"
+         ws="gtk"
+         arch="s390"
+         download-size="0"
+         install-size="0"
+         version="1.0.100.v20090426-1530"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.s390x"
+         os="linux"
+         ws="gtk"
+         arch="s390x"
+         download-size="0"
+         install-size="0"
+         version="1.0.100.v20090426-1530"
+         fragment="true"/>
+
+</feature>

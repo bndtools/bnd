@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Eclipse-PlatformFilter: (& (osgi.ws=motif) (osgi.os=hpux) (osgi.arch=P
+ A_RISC))
+Bundle-Vendor: %providerName
+Bundle-Localization: launcher.motif.hpux.PA_RISC
+Fragment-Host: org.eclipse.equinox.launcher;bundle-version="[1.0.0,1.1
+ .0)"
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.equinox.launcher.motif.hpux.PA_RISC;s
+ ingleton:=true
+Eclipse-BundleShape: dir
+Bundle-Version: 1.0.100.v20090306-1900
+Bundle-ManifestVersion: 2
+
+Name: launcher.motif.hpux.PA_RISC.properties
+SHA1-Digest: 8DNDo0u5vaHl8eELjNhS4K0cLpk=
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: about.html
+SHA1-Digest: a9lDHrGuLPkvHBUhsqWU+V2mhPw=
+

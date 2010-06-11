@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Eclipse-PlatformFilter: (& (osgi.ws=gtk) (osgi.os=solaris) (osgi.arch=
+ sparc))
+Bundle-Vendor: %providerName
+Bundle-Localization: launcher.gtk.solaris.sparc
+Fragment-Host: org.eclipse.equinox.launcher;bundle-version="[1.0.0,1.1
+ .0)"
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.equinox.launcher.gtk.solaris.sparc;si
+ ngleton:=true
+Eclipse-BundleShape: dir
+Bundle-Version: 1.0.201.R35x_v20090720
+Bundle-ManifestVersion: 2
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: eclipse_1207.so
+SHA1-Digest: yTLbyIOxliaLHD8xDBDkW4lccjE=
+
+Name: about.html
+SHA1-Digest: a9lDHrGuLPkvHBUhsqWU+V2mhPw=
+
+Name: launcher.gtk.solaris.sparc.properties
+SHA1-Digest: kBd5s/J0utQRMEv4g/9dERZN0wM=
+

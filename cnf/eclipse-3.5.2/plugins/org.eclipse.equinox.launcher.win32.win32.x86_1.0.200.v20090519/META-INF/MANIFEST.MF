@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Eclipse-PlatformFilter: (& (osgi.ws=win32) (osgi.os=win32) (osgi.arch=
+ x86))
+Bundle-Vendor: %providerName
+Bundle-Localization: launcher.win32.win32.x86
+Fragment-Host: org.eclipse.equinox.launcher;bundle-version="[1.0.0,1.1
+ .0)"
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.equinox.launcher.win32.win32.x86; sin
+ gleton:=true
+Eclipse-BundleShape: dir
+Bundle-Version: 1.0.200.v20090519
+Bundle-ManifestVersion: 2
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: eclipse_1206.dll
+SHA1-Digest: cTHeGpkmJ24dXDeJ5T3d3uUV/fU=
+
+Name: about.html
+SHA1-Digest: a9lDHrGuLPkvHBUhsqWU+V2mhPw=
+
+Name: launcher.win32.win32.x86.properties
+SHA1-Digest: 9YS+Q0m7uH9sORMehRSXfxre7Yk=
+

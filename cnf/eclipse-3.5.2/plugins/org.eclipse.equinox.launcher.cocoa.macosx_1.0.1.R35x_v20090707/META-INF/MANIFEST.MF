@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Eclipse-PlatformFilter: (& (osgi.ws=cocoa) (osgi.os=macosx) (|(osgi.ar
+ ch=x86)(osgi.arch=ppc)) )
+Bundle-Vendor: %providerName
+Bundle-Localization: launcher.cocoa.macosx
+Fragment-Host: org.eclipse.equinox.launcher;bundle-version="1.0.0"
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.equinox.launcher.cocoa.macosx;singlet
+ on:=true
+Eclipse-BundleShape: dir
+Bundle-Version: 1.0.1.R35x_v20090707
+Bundle-ManifestVersion: 2
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: KyT9FF7C7t86NoBoa2kZT3ZJBfw=
+
+Name: launcher.cocoa.macosx.properties
+SHA1-Digest: 0oGPz+5XtSdRoH2Rmq9ilWH6Kp4=
+
+Name: eclipse_1207.so
+SHA1-Digest: uP25rkbagApio9+TjFjUIZvbd50=
+
+Name: about.html
+SHA1-Digest: a9lDHrGuLPkvHBUhsqWU+V2mhPw=
+
