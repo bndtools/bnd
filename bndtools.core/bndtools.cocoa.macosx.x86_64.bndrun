@@ -1,0 +1,23 @@
+# Use this file to launch Bndtools on Mac OSX using the
+# 64-bit Cocoa binding of SWT.
+
+-include: bndtools.shared.bndrun
+
+-runbundles: ${crossplatform.bundles},\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.ui.cocoa,\
+	org.eclipse.equinox.security.macosx,\
+	org.eclipse.jdt.launching.ui.macosx,\
+	org.eclipse.core.filesystem.macosx,\
+	org.eclipse.jdt.launching.macosx
+
+-vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
+
+-runproperties: eclipse.application=org.eclipse.ui.ide.workbench,\
+	osgi.console=,\
+	bndtools.launcher.defaultStart=activationPolicy,\
+	eclipse.consoleLog=,\
+	osgi.ws=cocoa,\
+	osgi.arch=x86_64,\
+	osgi.os=macosx
+
