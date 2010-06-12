@@ -41,6 +41,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
             Jar jar = null;
             try {
                  jar = new Jar(file);
+                 jar.setDoNotTouchManifest();
             } catch (IOException e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;

@@ -199,6 +199,7 @@ public class LocalRepositoryTasks {
         InputStream stream = connection.getInputStream();
         try {
             Jar jar = new Jar("", stream, System.currentTimeMillis());
+            jar.setDoNotTouchManifest();
             localRepo.put(jar);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding bundle to repository.", e));
