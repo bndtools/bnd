@@ -95,3 +95,8 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	${workspace.bundles}
 
 crossplatform.vmargs: -Xmx512m
+
+crossplatform.runprops: org.eclipse.ui.ide.workbench,\
+	osgi.console=,\
+	bndtools.launcher.defaultStart=activationPolicy,\
+	eclipse.consoleLog=

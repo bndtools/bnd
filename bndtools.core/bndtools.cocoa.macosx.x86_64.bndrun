@@ -13,11 +13,7 @@
 
 -vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
 
--runproperties: eclipse.application=org.eclipse.ui.ide.workbench,\
-	osgi.console=,\
-	bndtools.launcher.defaultStart=activationPolicy,\
-	eclipse.consoleLog=,\
+-runproperties: ${crossplatform.runprops},\
 	osgi.ws=cocoa,\
 	osgi.arch=x86_64,\
 	osgi.os=macosx
-

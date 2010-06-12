@@ -10,10 +10,7 @@
 
 -vmargs: ${crossplatform.vmargs}
 
--runproperties: eclipse.application=org.eclipse.ui.ide.workbench,\
-	osgi.console=,\
-	bndtools.launcher.defaultStart=activationPolicy,\
-	eclipse.consoleLog=,\
+-runproperties: ${crossplatform.runprops},\
 	osgi.ws=win32,\
 	osgi.arch=x86,\
 	osgi.os=win32

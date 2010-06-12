@@ -147,7 +147,8 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
                 Boolean.toString(configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN)));
 
         // Copy the -runproperties values
-        Map<String, String> runProps = OSGiHeader.parseProperties(model.getProperties().getProperty(Constants.RUNPROPERTIES, ""));
+        String runPropsStr = model.getProperty(Constants.RUNPROPERTIES, "");
+        Map<String, String> runProps = OSGiHeader.parseProperties(runPropsStr);
         for (Entry<String, String> entry : runProps.entrySet()) {
             String value = entry.getValue() != null
                 ? entry.getValue()
