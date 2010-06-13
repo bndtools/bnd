@@ -77,8 +77,6 @@ import bndtools.utils.SelectionUtils;
 
 public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
-	public static String VIEW_ID = "bndtools.impExpView";
-
 	private Display display = null;
 	private Tree tree = null;
 	private TreeViewer viewer;

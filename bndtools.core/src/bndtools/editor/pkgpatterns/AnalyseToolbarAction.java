@@ -30,6 +30,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import bndtools.PartConstants;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
@@ -51,7 +52,7 @@ public class AnalyseToolbarAction extends Action {
 		final IWorkbenchPage workbenchPage = formPage.getEditorSite().getPage();
 
 		try {
-			workbenchPage.showView(ImportsExportsView.VIEW_ID);
+			workbenchPage.showView(PartConstants.VIEW_ID_IMPORTSEXPORTS);
 			FormEditor editor = formPage.getEditor();
 			if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
 				final AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file });
@@ -73,7 +74,7 @@ public class AnalyseToolbarAction extends Action {
         Display display = page.getWorkbenchWindow().getShell().getDisplay();
         display.asyncExec(new Runnable() {
             public void run() {
-                IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID);
+                IViewReference viewRef = page.findViewReference(PartConstants.VIEW_ID_IMPORTSEXPORTS);
                 if(viewRef != null) {
                     ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
                     if(view != null) {

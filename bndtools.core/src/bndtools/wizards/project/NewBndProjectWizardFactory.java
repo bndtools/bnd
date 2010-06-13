@@ -11,11 +11,18 @@
 package bndtools.wizards.project;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IExecutableExtensionFactory;
 
 
-public class NewBndProjectWizardFactory implements IExecutableExtensionFactory {
-	public Object create() throws CoreException {
+public class NewBndProjectWizardFactory implements IExecutableExtension, IExecutableExtensionFactory {
+
+	private IConfigurationElement config;
+    private String propertyName;
+    private Object data;
+
+    public Object create() throws CoreException {
 		NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
 
 		NewBndProjectWizardBundlesPage bundlesPage = new NewBndProjectWizardBundlesPage("bundleSelection");
@@ -24,6 +31,15 @@ public class NewBndProjectWizardFactory implements IExecutableExtensionFactory {
 
 		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(bundlesPage, pageOne);
 
-		return new NewBndProjectWizard(pageOne, bundlesPage, pageTwo);
+		NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, bundlesPage, pageTwo);
+		wizard.setInitializationData(config, propertyName, data);
+
+		return wizard;
 	}
+
+    public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
+        this.config = config;
+        this.propertyName = propertyName;
+        this.data = data;
+    }
 }

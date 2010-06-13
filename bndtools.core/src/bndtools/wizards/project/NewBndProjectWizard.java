@@ -18,6 +18,7 @@ import java.text.MessageFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,6 +30,8 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
@@ -40,6 +43,8 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	private final NewBndProjectWizardPageOne pageOne;
 	private final NewBndProjectWizardBundlesPage bundlesPage;
 	private final NewJavaProjectWizardPageTwo pageTwo;
+
+    private IConfigurationElement configElement;
 
 	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
@@ -110,7 +115,21 @@ class NewBndProjectWizard extends JavaProjectWizard {
 			} catch (InterruptedException e) {
 				// Shouldn't happen
 			}
+
+			// Open the bnd.bnd file in the editor
+			IFile bndFile = javaProj.getProject().getFile(Project.BNDFILE);
+			try {
+                IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
+            } catch (PartInitException e) {
+                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath().toString()), e));
+            }
 		}
 		return result;
+	}
+
+	@Override
+	public void setInitializationData(IConfigurationElement config, String propertyName, Object data) {
+	    super.setInitializationData(config, propertyName, data);
+	    this.configElement = config;
 	}
 }

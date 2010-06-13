@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.2"?><!--
-    Copyright (c) 2010 Neil Bartlett.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the Eclipse Public License v1.0
-    which accompanies this distribution, and is available at
-    http://www.eclipse.org/legal/epl-v10.html
-   
-    Contributors:
-        Neil Bartlett - initial API and implementation
- -->
-
 <plugin>
    <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
    <extension
@@ -75,16 +64,17 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="bndtools.wizardCategory"
-            name="Bnd OSGi Tools">
+            name="OSGi">
       </category>
       <wizard
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.EmptyBndFileWizard"
-            icon="icons/brick_add.png"
+            icon="icons/brick.png"
             id="bndtools.newBndFile"
-            name="New Bnd Bundle Descriptor"
+            name="Bundle Descriptor"
             project="false">
       </wizard>
+      <!--
       <wizard
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.WrappingBndFileWizard"
@@ -92,17 +82,19 @@
             id="bndtools.wrappingBndWizard"
             name="New Bnd Wrapper Script for Existing JARs">
       </wizard>
+      -->
       <wizard
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
             icon="icons/brick_run.gif"
             id="bndtools.bndrunWizard"
-            name="New Bnd Run Descriptor File">
+            name="Run Descriptor">
       </wizard>
       <wizard
             category="bndtools.wizardCategory"
             class="bndtools.wizards.project.NewBndProjectWizardFactory"
-            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
             icon="icons/bricks.png"
             id="bndtools.newProjWiz"
             name="Bnd OSGi Project"
@@ -131,6 +123,40 @@
             name="Repositories"
             restorable="true">
       </view>
+   </extension>
+   <extension
+      point="org.eclipse.ui.actionSets">
+      <actionSet
+         id="bndtools.actions"
+         label="OSGi"
+         visible="false">
+
+         <!--
+         <menu
+            id="bndtools.actions.menu"
+            label="Bnd OSGi"
+            path="additions">
+            <separator name="group1"/>
+         </menu>
+         -->
+         
+         <action
+            id="bndtools.actions.newBundle"
+            label="New Bundle Descriptor"
+            toolbarPath="Normal/OSGi"
+            icon="icons/brick_new.png"
+            tooltip="New Bundle Descriptor"
+            class="bndtools.wizards.bndfile.NewBndFileActionDelegate">
+         </action>
+      </actionSet>
+   </extension>
+   <extension point="org.eclipse.ui.perspectives">
+      <perspective
+         id="bndtools.perspective"
+         name="OSGi"
+         class="bndtools.perspective.BndPerspective"
+         icon="icons/bricks.png">
+      </perspective>
    </extension>
    <extension
          id="bndnature"
