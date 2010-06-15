@@ -7,7 +7,7 @@
 
 workspace.bundles: bndtools.repository.base;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
-	bndtools.repostory.orbit;version=snapshot
+	bndtools.repository.orbit;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
@@ -15,6 +15,13 @@ p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.metadata,\
 	org.eclipse.equinox.p2.metadata.repository,\
 	org.eclipse.equinox.p2.jarprocessor
+
+sdk.bundles: org.eclipse.sdk,\
+	org.eclipse.help.ui,\
+	org.eclipse.help.base,\
+	org.eclipse.ui.cheatsheets,\
+	org.apache.lucene,\
+	org.apache.lucene.analysis
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
@@ -91,12 +98,14 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
+	${sdk.bundles},\
 	${p2.bundles},\
 	${workspace.bundles}
-
+	
 crossplatform.vmargs: -Xmx512m
 
 crossplatform.runprops: eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
 	bndtools.launcher.defaultStart=activationPolicy,\
 	eclipse.consoleLog=
