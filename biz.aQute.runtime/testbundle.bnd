@@ -1,7 +1,0 @@
-# standalone, used to create runtime test bundle with a simple test case
-Private-Package: xtest
-Test-Cases: xtest.ArchetypicalTest
-Bnd-AddXMLToTest: OSGI-INF/coverage.xml
--includeresource: OSGI-INF/coverage.xml;literal="<coverage><class name='xtest.Spec' package='xtest' short='Spec'><method pretty='void Spec.foo()' public='true' constructor='false' name='foo' descriptor='()V'><ref pretty='void ArchetypicalTest.testCoverage()' constructor='false' name='testCoverage' descriptor='()V'/></method><method pretty='void Spec.bar()' public='true' constructor='false' name='bar' descriptor='()V'/></class></coverage>"
-
--output: src/test/testbundle.jar
