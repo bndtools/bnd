@@ -3,7 +3,7 @@ package aQute.swt.launcher;
 import java.util.*;
 
 import org.eclipse.swt.widgets.*;
-import org.osgi.framework.*;
+import org.osgi.service.component.*;
 
 import aQute.bnd.annotation.component.*;
 
@@ -19,13 +19,13 @@ import aQute.bnd.annotation.component.*;
 	volatile Display	display;
 	volatile boolean	alive	= true;
 
-	protected void activate(final BundleContext context) {
+	protected void activate(final ComponentContext context) {
 		Hashtable<String, Object> properties = new Hashtable<String, Object>();
 		properties.put("main.thread", "true");
-		context.registerService(Runnable.class.getName(), new Runnable() {
+		context.getBundleContext().registerService(Runnable.class.getName(), new Runnable() {
 			public void run() {
-				display = Display.getCurrent();
-				context.registerService(Display.class.getName(), display, null);
+				display = Display.getDefault();
+				context.getBundleContext().registerService(Display.class.getName(), display, null);
 				alive = true;
 				try {
 					while (alive) {
@@ -39,7 +39,7 @@ import aQute.bnd.annotation.component.*;
 		}, properties);
 	}
 
-	protected void deactivate() {
+	protected void deactivate(ComponentContext context) {
 		alive = false;
 		display.wake();
 	}

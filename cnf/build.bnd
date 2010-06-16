@@ -54,5 +54,5 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 
 -runpath							= \
 	org.eclipse.osgi;		version=3.5,\
-	com.springsource.junit
+	com.springsource.junit; export="junit.framework;version=3.8"
 

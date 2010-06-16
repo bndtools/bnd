@@ -1,17 +1,9 @@
--sourcepath:					../aQute.libg/src
+Private-Package: 				aQute.swt.*, test
 
-
--deploy = \
-	nexus; \
-		connection=scm:git@github.com:bnd/bnd.git; \
-		developerConnection=scm:git@github.com:bnd/bnd.git
-
-
-Bundle-SymbolicName: 	        biz.aQute.bld
-Private-Package: 				aQute.bld.*
-Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
-Include-Resource: 				LICENSE
-Bundle-RequiredExecutionEnvironment: J2SE-1.6
+Bundle-Description: Registers an SWT Display service. This bundle uses the bnd's launcher\
+ facility to get access ot the main thread. In this main thread, an SWT Display is gotten\
+  and registered. Other bundles should use this Display service to create shells. The Display
+  service is disposed when this bundle is stopped.
 
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.0,\
@@ -20,5 +12,17 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.6
 	osgi.core;version=4.2.1, \
 	biz.aQute.bnd, \
 	xorg.eclipse.swt.cocoa
+
+-runbundles: \
+	xorg.eclipse.swt.cocoa, \
+	org.apache.felix.scr, \
+	org.apache.felix.log, \
+	org.apache.felix.configadmin
+
+-runtrace: true
+
+-runvm: -XstartOnFirstThread, -d32
+
+Service-Component: aQute.swt.launcher.SWTLauncher
 
 Bundle-Version: 1.0.0
