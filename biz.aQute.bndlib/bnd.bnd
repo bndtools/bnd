@@ -27,8 +27,6 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.cmpn;version=4.0,\
 	aQute.libg;version=project,\
 	aQute.service;version=project,\
-	bndtools.runtime.junit,\
-	bndtools.launcher,\
 	osgi.core;version=4.2.1
 
 -pom: true

@@ -45,9 +45,11 @@ copyright.html = Copyright &copy; aQute (2000, ${tstamp;yyyy}). All Rights Reser
 
 
 # Documentation
-Bundle-Copyright       	= ${copyright}
-Bundle-Vendor			= aQute
-Bundle-License			= ... TODO
+Bundle-Vendor: 					aQute SARL http://www.aQute.biz
+Bundle-Copyright:				All files contained in this JAR are licensed under the Apache 2.0 license, unless noted differently in their source (see swing2swt).
+Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
+									description="${Bundle-Copyright}"; \
+									link=LICENSE
 -removeheader			= Include-Resource
 
 -runpath							= \
