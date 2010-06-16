@@ -16,9 +16,11 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -28,10 +30,13 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
@@ -51,16 +56,16 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
 
 	private static final String BND_SUFFIX = ".bnd";
-	
+
 	private static final long NEVER = -1;
-	
+
 	private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
 	private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
-	
+
 	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
 			throws CoreException {
 		IProject project = getProject();
-		
+
 		ensureBndBndExists(project);
 
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
@@ -88,7 +93,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			public boolean visit(IResourceProxy proxy) throws CoreException {
 				if(proxy.getType() == IResource.FOLDER || proxy.getType() == IResource.PROJECT)
 					return true;
-				
+
 				String name = proxy.getName();
 				if(name.toLowerCase().endsWith(BND_SUFFIX)) {
 					IPath path = proxy.requestFullPath();
@@ -123,7 +128,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
 		// model.refresh();
-		
+
 		try {
 			List<File> affectedFiles = new ArrayList<File>();
 			final File targetDir = model.getTarget();
@@ -134,25 +139,25 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			};
 			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
 			delta.accept(visitor);
-			
+
 			progress.setWorkRemaining(affectedFiles.size() + 10);
-			
+
 			boolean rebuild = false;
 			List<File> deletedBnds = new LinkedList<File>();
-			
+
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
 				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
 					rebuild = true;
 					int deltaKind = visitor.queryDeltaKind(file);
-					if((deltaKind | IResourceDelta.REMOVED) > 0) {
+					if((deltaKind & IResourceDelta.REMOVED) > 0) {
 						deletedBnds.add(file);
 					}
 					break;
 				}
 			}
 			if(!rebuild && !affectedFiles.isEmpty()) {
-				// Check if any of the affected files are members of bundles built by a sub builder 
+				// Check if any of the affected files are members of bundles built by a sub builder
                 Collection<? extends Builder> builders = model.getSubBuilders();
 				for (Builder builder : builders) {
 					File buildPropsFile = builder.getPropertiesFile();
@@ -166,7 +171,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					progress.worked(1);
 				}
 			}
-			
+
 			// Delete corresponding bundles for deleted Bnds
 			for (File bndFile : deletedBnds) {
 				Container container = bndsToDeliverables.get(bndFile);
@@ -175,7 +180,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 					resource.delete(false, null);
 				}
 			}
-			
+
 			if(rebuild)
 				rebuildBndProject(project, monitor);
 		} catch (Exception e) {
@@ -188,7 +193,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
 		model.refresh();
-		
+
 		// Get or create the build model for this bnd file
 		IFile bndFile = project.getFile(Project.BNDFILE);
 
@@ -196,9 +201,10 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		if (bndFile.exists()) {
 			bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
 		}
-		
+
 		// Build
 		try {
+		    final Set<File> deliverableJars = new HashSet<File>();
 			bndsToDeliverables.clear();
             Collection<? extends Builder> builders = model.getSubBuilders();
 			for (Builder builder : builders) {
@@ -206,10 +212,34 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				String bsn = builder.getBsn();
 				Container deliverable = model.getDeliverable(bsn, null);
 				bndsToDeliverables.put(subBndFile, deliverable);
+				deliverableJars.add(deliverable.getFile());
 			}
-			
+
 			model.build();
 			progress.worked(1);
+
+			// Clear any JARs in the target directory that have not just been built by Bnd
+			final File[] targetJars = model.getTarget().listFiles(new FileFilter() {
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".jar");
+                }
+            });
+			WorkspaceJob deleteJob = new WorkspaceJob("delete") {
+                @Override
+                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                    SubMonitor progress = SubMonitor.convert(monitor);
+                    for (File targetJar : targetJars) {
+                        if(!deliverableJars.contains(targetJar)) {
+                            IFile wsFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(targetJar.getAbsolutePath()));
+                            if(wsFile != null && wsFile.exists()) {
+                                wsFile.delete(true, progress.newChild(1));
+                            }
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+			};
+			deleteJob.schedule();
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));
 		}
