@@ -162,7 +162,7 @@ public class RepositorySelectionPage extends WizardPage {
 
     static class RepositoryContribLabelProvider extends StyledCellLabelProvider {
 
-        Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/repository_alt.png").createImage();
+        Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bundlefolder.png").createImage();
 
         @Override
         public void update(ViewerCell cell) {

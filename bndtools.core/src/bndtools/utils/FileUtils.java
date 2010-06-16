@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -28,17 +27,17 @@ public class FileUtils {
 		if(file.exists()) {
 			InputStream stream = file.getContents();
 			byte[] bytes = readFully(stream);
-			
+
 			String string = new String(bytes, file.getCharset());
 			return new Document(string);
 		}
 		return null;
 	}
-	
+
 	public static byte[] readFully(InputStream stream) throws IOException {
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			
+
 			final byte[] buffer = new byte[1024];
 			while(true) {
 				int read = stream.read(buffer, 0, 1024);
@@ -62,7 +61,7 @@ public class FileUtils {
 				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "File does not exist: " + file.getFullPath().toString(), null));
 		}
 	}
-	
+
 	public static boolean isAncestor(File dir, File child) {
 		if(child == null)
 			return false;
@@ -71,14 +70,14 @@ public class FileUtils {
 			return true;
 		return isAncestor(dir, child.getParentFile());
 	}
-	
+
 	public static IResource toWorkspaceResource(File file) {
 		IPath path = new Path(file.toString());
-		
+
 		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		final IWorkspaceRoot workspaceRoot = workspace.getRoot();
 		IPath workspacePath = workspaceRoot.getLocation();
-		
+
 		if(workspacePath.isPrefixOf(path)) {
 			final IPath relativePath = path.removeFirstSegments(workspacePath.segmentCount());
 			IResource resource;
@@ -90,5 +89,10 @@ public class FileUtils {
 			return resource;
 		}
 		return null;
+	}
+
+	public static IFile[] getWorkspaceFiles(File javaFile) {
+	    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+	    return root.findFilesForLocationURI(javaFile.toURI());
 	}
 }

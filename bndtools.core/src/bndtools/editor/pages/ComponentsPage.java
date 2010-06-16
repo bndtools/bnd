@@ -45,7 +45,6 @@ public class ComponentsPage extends FormPage {
 		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
 		form.setText("Components");
-		form.setImage(componentsImg);
 		block.createContent(managedForm);
 	}
 

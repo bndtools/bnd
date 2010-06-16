@@ -24,11 +24,12 @@ import aQute.lib.osgi.Clazz;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
-	static final Object IMPORTS_PLACEHOLDER = new String("_imports_placeholder");
-	static final Object EXPORTS_PLACEHOLDER = new String("_exports_placeholder");
+	static final Object IMPORTS_PLACEHOLDER = new String("_1_imports_placeholder");
+	static final Object EXPORTS_PLACEHOLDER = new String("_3_exports_placeholder");
+	static final Object REQUIRED_PLACEHOLDER = new String("_2_requires_placeholder");
 
 	private final Set<String> exportNames = new HashSet<String>();
-	private ImportsAndExports importsAndExports = null;
+	private ImportsExportsAnalysisResult importsAndExports = null;
 
 	public Object[] getChildren(Object parentElement) {
 		Collection<?> result;
@@ -36,6 +37,8 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 			result = importsAndExports != null ? importsAndExports.imports : Collections.emptyList();
 		else if(parentElement == EXPORTS_PLACEHOLDER)
 			result = importsAndExports != null ? importsAndExports.exports : Collections.emptyList();
+		else if(parentElement == REQUIRED_PLACEHOLDER)
+		    result = importsAndExports != null ? importsAndExports.requiredBundles : Collections.emptyList();
 		else if(parentElement instanceof ExportPackage) {
 			ExportPackage exportPackage = (ExportPackage) parentElement;
 			Set<String> uses = exportPackage.getUses();
@@ -81,6 +84,9 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		if(element instanceof ExportPackage)
 			return EXPORTS_PLACEHOLDER;
 
+		if(element instanceof RequiredBundle)
+		    return REQUIRED_PLACEHOLDER;
+
 		return null;
 	}
 
@@ -90,6 +96,9 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
 		if(element == EXPORTS_PLACEHOLDER)
 			return importsAndExports.imports != null && !importsAndExports.exports.isEmpty();
+
+		if(element == REQUIRED_PLACEHOLDER)
+		    return importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty();
 
 		if(element instanceof ExportPackage) {
 			Set<String> uses = ((ExportPackage) element).getUses();
@@ -108,14 +117,20 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 	}
 
 	public Object[] getElements(Object inputElement) {
-		return new Object[] { IMPORTS_PLACEHOLDER, EXPORTS_PLACEHOLDER };
+	    Object[] result;
+	    if(importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty()) {
+	        result = new Object[] { IMPORTS_PLACEHOLDER, REQUIRED_PLACEHOLDER, EXPORTS_PLACEHOLDER };
+	    } else {
+	        result = new Object[] { IMPORTS_PLACEHOLDER, EXPORTS_PLACEHOLDER };
+	    }
+	    return result;
 	}
 
 	public void dispose() {
 	}
 
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		this.importsAndExports = (ImportsAndExports) newInput;
+		this.importsAndExports = (ImportsExportsAnalysisResult) newInput;
 
 		exportNames.clear();
 		if(importsAndExports != null) {

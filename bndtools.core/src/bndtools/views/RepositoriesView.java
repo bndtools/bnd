@@ -76,11 +76,12 @@ public class RepositoriesView extends FilteredViewPart {
     @Override
     protected void createMainControl(Composite container) {
         // CREATE CONTROLS
-        Tree tree = new Tree(container, SWT.FULL_SELECTION);
+        Tree tree = new Tree(container, SWT.FULL_SELECTION | SWT.MULTI);
 
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
         viewer.setLabelProvider(new RepositoryTreeLabelProvider());
+        getViewSite().setSelectionProvider(viewer);
 
         createActions();
 

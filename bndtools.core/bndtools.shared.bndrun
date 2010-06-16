@@ -98,11 +98,12 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
+	org.eclipse.ui.browser,\
 	${sdk.bundles},\
 	${p2.bundles},\
 	${workspace.bundles}
 	
-crossplatform.vmargs: -Xmx512m
+crossplatform.vmargs: -Xmx512m -XX:MaxPermSize=256m
 
 crossplatform.runprops: eclipse.application=org.eclipse.ui.ide.workbench,\
 	eclipse.product=org.eclipse.sdk.ide,\

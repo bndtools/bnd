@@ -12,6 +12,8 @@ package bndtools.utils;
 
 
 import java.io.File;
+import java.util.Map;
+import java.util.jar.Attributes;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -20,6 +22,7 @@ import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
+import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
@@ -105,5 +108,13 @@ public class BundleUtils {
             result = bundle.getLastModified();
         }
         return result;
+	}
+
+	public static String getBundleSymbolicName(Attributes attribs) {
+	    Map<String, Map<String, String>> header = Processor.parseHeader(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME), null);
+	    if(header == null || header.size() != 1)
+	        throw new IllegalArgumentException("Invalid Bundle-SymbolicName header");
+
+	    return header.keySet().iterator().next();
 	}
 }

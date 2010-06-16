@@ -10,15 +10,20 @@
  *******************************************************************************/
 package bndtools.views;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -65,12 +70,13 @@ import bndtools.Plugin;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
-import bndtools.model.importanalysis.ImportsAndExports;
 import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;
+import bndtools.model.importanalysis.ImportsExportsAnalysisResult;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
 import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
-import bndtools.tasks.AnalyseImportsJob;
+import bndtools.model.importanalysis.RequiredBundle;
+import bndtools.tasks.AnalyseBundleResolutionJob;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.Predicate;
 import bndtools.utils.SelectionUtils;
@@ -82,25 +88,24 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	private TreeViewer viewer;
 	private ViewerFilter hideSelfImportsFilter;
 
-	private IFile[] selectedFiles;
+	private File[] selectedFiles;
 	private Job analysisJob;
 
-	private final IPartListener partAdapter = new PartAdapter() {
-		@Override
+    private final IPartListener partAdapter = new PartAdapter() {
+        @Override
         public void partActivated(IWorkbenchPart part) {
-			if(part instanceof IEditorPart) {
-				IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
-				IFile file = ResourceUtil.getFile(editorInput);
-				if(file != null) {
-				    if(file.getName().toLowerCase().endsWith(".bnd")
-				    || file.getName().toLowerCase().endsWith(".jar")) {
-    					selectedFiles = new IFile[] { file };
-    					executeAnalysis();
-				    }
-				}
-			}
-		}
-	};
+            if (part instanceof IEditorPart) {
+                IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
+                IFile file = ResourceUtil.getFile(editorInput);
+                if (file != null) {
+                    if (file.getName().toLowerCase().endsWith(".bnd") || file.getName().toLowerCase().endsWith(".jar")) {
+                        selectedFiles = new File[] { file.getLocation().toFile() };
+                        executeAnalysis();
+                    }
+                }
+            }
+        }
+    };
 
 
 	@Override
@@ -131,6 +136,8 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 if (element instanceof ImportPackage) {
                     return !((ImportPackage) element).isSelfImport();
+                } else if(element instanceof RequiredBundle) {
+                    return !((RequiredBundle) element).isSatisfied();
                 }
                 return true;
             }
@@ -171,15 +178,19 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 						String className = importUsedBy.getClazz().getFQN();
 						IType type = null;
 						if(selectedFiles != null) {
-							for (IFile selectedFile : selectedFiles) {
-								IJavaProject javaProject = JavaCore.create(selectedFile.getProject());
-								try {
-									type = javaProject.findType(className);
-									if(type != null)
-										break;
-								} catch (JavaModelException e) {
-									ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
-								}
+						    IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+							for (File selectedFile : selectedFiles) {
+							    IFile[] wsfiles = wsroot.findFilesForLocationURI(selectedFile.toURI());
+							    for (IFile wsfile : wsfiles) {
+							        IJavaProject javaProject = JavaCore.create(wsfile.getProject());
+							        try {
+							            type = javaProject.findType(className);
+							            if(type != null)
+							                break;
+							        } catch (JavaModelException e) {
+							            ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+							        }
+                                }
 							}
 						}
 						try {
@@ -238,17 +249,17 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 		super.dispose();
 	};
 
-	public void setInput(IFile[] sourceFiles, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports) {
+	public void setInput(File[] sourceFiles, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports, Collection<? extends RequiredBundle> requiredBundles) {
 		selectedFiles = sourceFiles;
 		if(tree != null && !tree.isDisposed()) {
-			viewer.setInput(new ImportsAndExports(imports, exports));
+			viewer.setInput(new ImportsExportsAnalysisResult(imports, exports, requiredBundles));
 
 			String label;
 			if(sourceFiles != null) {
 				StringBuilder builder = new StringBuilder();
 				for(int i = 0; i < sourceFiles.length; i++) {
 					if(i > 0) builder.append(", ");
-					builder.append(sourceFiles[i].getFullPath().toString());
+					builder.append(sourceFiles[i].getAbsolutePath());
 				}
 				label = builder.toString();
 			} else {
@@ -267,14 +278,43 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
             return;
 
         if (selection instanceof IStructuredSelection) {
-            Collection<IFile> fileList = SelectionUtils.getSelectionMembers(selection, IFile.class, new Predicate<IFile>() {
-                public boolean select(IFile item) {
-                    return item.getName().endsWith(".bnd") || item.getName().endsWith(".jar");
+            // Look for files outside the workspace
+            Collection<File> fileList = SelectionUtils.getSelectionMembers(selection, File.class, new Predicate<File>() {
+                public boolean select(File file) {
+                    boolean result;
+                    if(file.isDirectory()) {
+                        result = new File(file, "META-INF/MANIFEST.MF").exists();
+                    } else {
+                        result = file.getName().endsWith(".bnd") || file.getName().endsWith(".jar");
+                    }
+                    return result;
                 }
             });
+
+            // Look for workspace resources
+            Collection<IResource> resourceList = SelectionUtils.getSelectionMembers(selection, IResource.class, new Predicate<IResource>() {
+                public boolean select(IResource resource) {
+                    boolean result;
+                    if(resource.getType() == IResource.FOLDER) {
+                        result = ((IFolder) resource).getFile("META-INF/MANIFEST.MF").exists();
+                    } else {
+                        result = resource.getName().endsWith(".bnd") || resource.getName().endsWith(".jar");
+                    }
+                    return result;
+                }
+            });
+
+            // Add the workspace resources to the files
+            for (IResource resource : resourceList) {
+                IPath path = resource.getLocation();
+                File file = path.toFile();
+                fileList.add(file);
+            }
+
             if (fileList.isEmpty())
                 return;
-            IFile[] files = fileList.toArray(new IFile[fileList.size()]);
+
+            File[] files = fileList.toArray(new File[fileList.size()]);
             if (!Arrays.equals(files, selectedFiles)) {
                 this.selectedFiles = files;
                 executeAnalysis();
@@ -289,7 +329,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                 oldJob.cancel();
 
             if (selectedFiles != null) {
-                final AnalyseImportsJob tmp = new AnalyseImportsJob("importExportAnalysis", selectedFiles);
+                final AnalyseBundleResolutionJob tmp = new AnalyseBundleResolutionJob("importExportAnalysis", selectedFiles);
                 tmp.setSystem(true);
 
                 tmp.addJobChangeListener(new JobChangeAdapter() {
@@ -300,7 +340,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                             if(display != null && !display.isDisposed()) display.asyncExec(new Runnable() {
                                 public void run() {
                                     if(!tree.isDisposed())
-                                        setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults());
+                                        setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults(), tmp.getRequiredBundles());
                                 }
                             });
                         }
@@ -314,14 +354,19 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
             }
         }
     }
-	public void resourceChanged(IResourceChangeEvent event) {
-		if(selectedFiles != null) {
-			for (IFile file : selectedFiles) {
-				if(event.getDelta().findMember(file.getFullPath()) != null) {
-					executeAnalysis();
-					break;
-				}
-			}
-		}
-	}
+
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (selectedFiles != null) {
+            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+            for (File file : selectedFiles) {
+                IFile[] wsfiles = wsroot.findFilesForLocationURI(file.toURI());
+                for (IFile wsfile : wsfiles) {
+                    if (event.getDelta().findMember(wsfile.getFullPath()) != null) {
+                        executeAnalysis();
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }

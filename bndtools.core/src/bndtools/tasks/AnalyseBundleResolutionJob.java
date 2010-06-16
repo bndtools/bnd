@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,29 +46,34 @@ import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
+import bndtools.model.importanalysis.RequiredBundle;
+import bndtools.utils.BundleUtils;
 import bndtools.utils.CollectionUtils;
+import bndtools.utils.FileUtils;
 
-public class AnalyseImportsJob extends Job {
+public class AnalyseBundleResolutionJob extends Job {
 
-	private final IFile[] files;
+	private final File[] files;
 
-    private IFile[] resultFileArray;
+    private File[] resultFileArray;
     private ArrayList<ImportPackage> importResults;
     private ArrayList<ExportPackage> exportResults;
+    private ArrayList<RequiredBundle> requiredBundleResults;
 
-	public AnalyseImportsJob(String name, IFile[] files) {
+	public AnalyseBundleResolutionJob(String name, File[] files) {
 		super(name);
 		this.files = files;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		Map<IFile, Builder> builderMap = new HashMap<IFile, Builder>();
+		Map<File, Builder> builderMap = new HashMap<File, Builder>();
 
-		// Setup builders & all exports & used-by mappings
+		// Setup builders and merge together all the capabilities
 		Map<String, List<ExportPackage>> exports = new HashMap<String, List<ExportPackage>>();
 		Map<String, Set<String>> usedBy = new HashMap<String, Set<String>>();
-		for (IFile inputFile : files) {
+		Map<String, Set<Version>> bundleVersions = new HashMap<String, Set<Version>>();
+		for (File inputFile : files) {
 		    if(inputFile.exists()) {
     			try {
     				Builder builder;
@@ -77,7 +83,7 @@ public class AnalyseImportsJob extends Job {
     					builder = setupBuilderForJarFile(inputFile);
     				}
     				builderMap.put(inputFile, builder);
-    				mergeExports(exports, usedBy, builder);
+    				mergeCapabilities(exports, usedBy, bundleVersions, builder);
     			} catch (IOException e) {
     				// TODO Auto-generated catch block
     				e.printStackTrace();
@@ -88,13 +94,14 @@ public class AnalyseImportsJob extends Job {
 		    }
 		}
 
-		// Calculate the imports
+		// Merge together all the requirements, with access to the available capabilities
 		Map<String, List<ImportPackage>> imports = new HashMap<String, List<ImportPackage>>();
-		for (Entry<IFile, Builder> entry : builderMap.entrySet()) {
+		Map<String, List<RequiredBundle>> requiredBundles = new HashMap<String, List<RequiredBundle>>();
+		for (Entry<File, Builder> entry : builderMap.entrySet()) {
 			Builder builder = entry.getValue();
 
 			try {
-				mergeImports(imports, exports, usedBy, builder);
+				mergeRequirements(imports, exports, usedBy, requiredBundles, bundleVersions, builder);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -102,8 +109,8 @@ public class AnalyseImportsJob extends Job {
 		}
 
 		// Generate the final results
-		Set<IFile> resultFiles = builderMap.keySet();
-		resultFileArray = resultFiles.toArray(new IFile[resultFiles.size()]);
+		Set<File> resultFiles = builderMap.keySet();
+		resultFileArray = resultFiles.toArray(new File[resultFiles.size()]);
 
 		importResults = new ArrayList<ImportPackage>();
 		for (List<ImportPackage> list : imports.values()) {
@@ -113,14 +120,18 @@ public class AnalyseImportsJob extends Job {
 		for (List<ExportPackage> list : exports.values()) {
 			exportResults.addAll(list);
 		}
+		requiredBundleResults = new ArrayList<RequiredBundle>();
+		for(List<RequiredBundle> list : requiredBundles.values()) {
+		    requiredBundleResults.addAll(list);
+		}
 
 		//showResults(resultFileArray, importResults, exportResults);
 		return Status.OK_STATUS;
 	}
 
-	static Builder setupBuilderForJarFile(IFile file) throws IOException, CoreException {
+	static Builder setupBuilderForJarFile(File file) throws IOException, CoreException {
 		Builder builder = new Builder();
-		Jar jar = new Jar(file.getName(), file.getLocation().toFile());
+		Jar jar = new Jar(file);
 		builder.setJar(jar);
 		try {
 			builder.analyze();
@@ -130,17 +141,21 @@ public class AnalyseImportsJob extends Job {
 		return builder;
 	}
 
-	static Builder setupBuilderForBndFile(IFile file) throws IOException, CoreException {
-		IProject project = file.getProject();
-		File iofile = file.getLocation().toFile();
+	static Builder setupBuilderForBndFile(File file) throws IOException, CoreException {
+        IFile[] wsfiles = FileUtils.getWorkspaceFiles(file);
+        if (wsfiles == null || wsfiles.length == 0)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to determine project owner for Bnd file: " + file.getAbsolutePath(),
+                    null));
+
+        IProject project = wsfiles[0].getProject();
 
 		// Calculate the manifest
 		try {
 			Project bndProject = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
-			Builder builder = bndProject.getSubBuilder(iofile);
+			Builder builder = bndProject.getSubBuilder(file);
 			if(builder == null) {
 				builder = new Builder();
-				builder.setProperties(iofile);
+				builder.setProperties(file);
 			}
 			builder.build();
 			return builder;
@@ -148,7 +163,7 @@ public class AnalyseImportsJob extends Job {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
 	}
-	void mergeExports(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Builder builder) throws IOException {
+	void mergeCapabilities(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {
 		Jar jar = builder.getJar();
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
@@ -180,16 +195,37 @@ public class AnalyseImportsJob extends Job {
 				mainUsedBy.addAll(entry.getValue());
 			}
 		}
+
+        // Merge the bundle name + version
+        String bsn = BundleUtils.getBundleSymbolicName(attribs);
+        String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
+        Version version = null;
+        if (versionStr != null) {
+            try {
+                version = new Version(versionStr);
+            } catch (IllegalArgumentException e) {
+                Plugin.logError("Error parsing version of bundle: " + bsn, e);
+            }
+        }
+        if (version == null)
+            version = new Version(0);
+        Set<Version> versions = bundleVersions.get(bsn);
+        if (versions == null) {
+            versions = new HashSet<Version>();
+            bundleVersions.put(bsn, versions);
+        }
+        versions.add(version);
 	}
-	void mergeImports(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Builder builder) throws IOException {
+	void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy,
+	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {
 		Jar jar = builder.getJar();
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
 			return;
-
 		Attributes attribs = manifest.getMainAttributes();
-		final Map<String, Map<String, String>> importsMap = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
 
+		// Process imports
+		final Map<String, Map<String, String>> importsMap = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
 		for(Entry<String, Map<String, String>> entry : importsMap.entrySet()) {
 			String pkgName = entry.getKey();
 			Map<String, String> importAttribs = entry.getValue();
@@ -241,6 +277,35 @@ public class AnalyseImportsJob extends Job {
 			}
 			importList.add(importPackage);
 		}
+
+		// Process require-bundles
+        final Map<String, Map<String, String>> requiredBundleMap = Processor.parseHeader(attribs.getValue(Constants.REQUIRE_BUNDLE), null);
+        for(Entry<String, Map<String, String>> entry : requiredBundleMap.entrySet()) {
+            String name = entry.getKey();
+            Map<String, String> rbAttribs = entry.getValue();
+
+            // Check if the required bundle is already included in the closure
+            boolean satisfied = false;
+            Set<Version> includedVersions = bundleVersions.get(name);
+            if(includedVersions != null) {
+                String versionRangeStr = rbAttribs.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
+                VersionRange versionRange = (versionRangeStr != null) ? new VersionRange(versionRangeStr) : new VersionRange("0");
+                for (Version includedVersion : includedVersions) {
+                    if(versionRange.includes(includedVersion)) {
+                        satisfied = true;
+                        break;
+                    }
+                }
+            }
+
+            RequiredBundle rb = new RequiredBundle(name, rbAttribs, satisfied);
+            List<RequiredBundle> rbList = requiredBundles.get(name);
+            if(rbList == null) {
+                rbList = new LinkedList<RequiredBundle>();
+                requiredBundles.put(name, rbList);
+            }
+            rbList.add(rb);
+        }
 	}
 	/*
 	void showResults(final IFile[] files, final List<ImportPackage> imports, final List<ExportPackage> exports) {
@@ -259,7 +324,7 @@ public class AnalyseImportsJob extends Job {
 	}
 	*/
 
-	public IFile[] getResultFileArray() {
+	public File[] getResultFileArray() {
         return resultFileArray;
     }
 
@@ -269,5 +334,9 @@ public class AnalyseImportsJob extends Job {
 
 	public List<ExportPackage> getExportResults() {
         return exportResults;
+    }
+
+    public List<RequiredBundle> getRequiredBundles() {
+        return requiredBundleResults;
     }
 }

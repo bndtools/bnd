@@ -45,9 +45,7 @@ public class ImportsAndExportsViewerSorter extends ViewerSorter {
 		if(e1 instanceof String && e2 instanceof String) {
 			String s1 = (String) e1;
 			String s2 = (String) e2;
-
-			// We want "Import Packages" before "Export Packages", so we reverse the normal order
-			return s2.compareTo(s1);
+			return s1.compareTo(s2);
 		}
 
 		@SuppressWarnings("unchecked")

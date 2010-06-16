@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import aQute.bnd.classpath.BndContainerInitializer;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
-	
+
 	private static final String PATH_TEST_SRC = "test";
 	private static final String PATH_TEST_BIN = "bin_test";
 
@@ -71,31 +71,31 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
 		setControl(composite);
 	}
-	
+
 	@Override
 	public IClasspathEntry[] getDefaultClasspathEntries() {
 		IClasspathEntry[] entries = super.getDefaultClasspathEntries();
 		List<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.length + 2);
 		result.addAll(Arrays.asList(entries));
-		
+
 		// Add the Bnd classpath container entry
 		IPath bndContainerPath = BndContainerInitializer.ID;
 		IClasspathEntry bndContainerEntry = JavaCore.newContainerEntry(bndContainerPath, false);
 		result.add(bndContainerEntry);
-		
-		return (IClasspathEntry[]) result.toArray(new IClasspathEntry[result.size()]);
+
+		return result.toArray(new IClasspathEntry[result.size()]);
 	}
-	
+
 	@Override
 	public IClasspathEntry[] getSourceClasspathEntries() {
 		IPath projectPath = new Path(getProjectName()).makeAbsolute();
-		
+
 		IClasspathEntry[] entries = super.getSourceClasspathEntries();
 		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length + 1];
 		System.arraycopy(entries, 0, newEntries, 0, entries.length);
-		
+
 		newEntries[entries.length] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
-		
+
 		return newEntries;
 	}
 }

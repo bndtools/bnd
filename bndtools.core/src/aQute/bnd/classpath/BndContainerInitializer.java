@@ -52,16 +52,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
     @Override
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
-        // We maintain the models in the activator because other
-        // parts also use the model. Unfortunately, one can only
-        // do this with a static method :-(
         Project model = central.getModel(project);
-        if (model == null)
-            throw new CoreException(new Status(IStatus.ERROR, ID.toString(), "Can not create model, likely the project does not contain a bnd.bnd file"));
-
-        // Update the Java Model so the changes become visible.
-        // Notice the unreferenced object.
-        requestClasspathContainerUpdate(containerPath, project, new BndContainer(model, project, calculateEntries(model)));
+        requestClasspathContainerUpdate(containerPath, project, new BndContainer(project, calculateEntries(model)));
     }
 
     @Override
@@ -79,7 +71,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         if (model == null || project == null) {
             System.out.println("Help! No IJavaProject for " + model);
         } else {
-            requestClasspathContainerUpdate(ID, project, new BndContainer(model, project, calculateEntries(model)));
+            requestClasspathContainerUpdate(ID, project, new BndContainer(project, calculateEntries(model)));
         }
     }
 
@@ -88,6 +80,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     }
 
     IClasspathEntry[] calculateEntries(Project project) {
+        if(project == null)
+            return new IClasspathEntry[0];
+
         Collection<Container> buildpath;
         try {
             buildpath = project.getBuildpath();

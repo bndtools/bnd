@@ -1,5 +1,6 @@
 package bndtools.editor.contents;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +60,7 @@ import bndtools.model.importanalysis.ImportTreeContentProvider;
 import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
 import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
-import bndtools.tasks.AnalyseImportsJob;
+import bndtools.tasks.AnalyseBundleResolutionJob;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
@@ -208,7 +209,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
         IFile file = getEditorFile();
         if(file != null) {
-            final AnalyseImportsJob job = new AnalyseImportsJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new IFile[] { file });
+            final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] { file.getLocation().toFile() });
             final Display display = tree.getDisplay();
             job.addJobChangeListener(new JobChangeAdapter() {
                 @Override

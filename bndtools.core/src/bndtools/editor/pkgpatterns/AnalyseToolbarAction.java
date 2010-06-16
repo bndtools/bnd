@@ -11,6 +11,7 @@
 package bndtools.editor.pkgpatterns;
 
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -34,7 +35,8 @@ import bndtools.PartConstants;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
-import bndtools.tasks.AnalyseImportsJob;
+import bndtools.model.importanalysis.RequiredBundle;
+import bndtools.tasks.AnalyseBundleResolutionJob;
 import bndtools.utils.EditorUtils;
 import bndtools.views.ImportsExportsView;
 
@@ -55,12 +57,12 @@ public class AnalyseToolbarAction extends Action {
 			workbenchPage.showView(PartConstants.VIEW_ID_IMPORTSEXPORTS);
 			FormEditor editor = formPage.getEditor();
 			if(EditorUtils.saveEditorIfDirty(editor, "Analyse Imports", "The editor content must be saved before continuing.")) {
-				final AnalyseImportsJob job = new AnalyseImportsJob("Analyse Imports", new IFile[] { file });
+				final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("Analyse Imports", new File[] { file.getLocation().toFile() });
 				job.addJobChangeListener(new JobChangeAdapter() {
 				    @Override
 				    public void done(IJobChangeEvent event) {
 				        if(job.getResult().isOK())
-				            showResults(workbenchPage, job.getResultFileArray(), job.getImportResults(), job.getExportResults());
+				            showResults(workbenchPage, job.getResultFileArray(), job.getImportResults(), job.getExportResults(), job.getRequiredBundles());
 				    }
                 });
 				job.schedule();
@@ -70,7 +72,7 @@ public class AnalyseToolbarAction extends Action {
 		}
 	};
 
-    void showResults(final IWorkbenchPage page, final IFile[] files, final List<ImportPackage> imports, final List<ExportPackage> exports) {
+    void showResults(final IWorkbenchPage page, final File[] files, final List<ImportPackage> imports, final List<ExportPackage> exports, final List<RequiredBundle> requiredBundles) {
         Display display = page.getWorkbenchWindow().getShell().getDisplay();
         display.asyncExec(new Runnable() {
             public void run() {
@@ -78,7 +80,7 @@ public class AnalyseToolbarAction extends Action {
                 if(viewRef != null) {
                     ImportsExportsView view = (ImportsExportsView) viewRef.getView(false);
                     if(view != null) {
-                        view.setInput(files, imports, exports);
+                        view.setInput(files, imports, exports, requiredBundles);
                     }
                 }
             }
