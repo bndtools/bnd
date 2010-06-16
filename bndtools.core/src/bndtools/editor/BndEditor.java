@@ -42,6 +42,7 @@ import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.PoliciesPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
+import bndtools.editor.pages.TestSuitesPage;
 import bndtools.launch.LaunchConstants;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
@@ -50,6 +51,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
 	static final String COMPONENTS_PAGE = "__components_page";
+	static final String TEST_SUITES_PAGE = "__test_suites_page";
 	static final String POLICIES_PAGE = "__policies_page";
 	static final String SOURCE_PAGE = "__source_page";
 
@@ -115,6 +117,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
         addPage(componentsPage);
 
+        TestSuitesPage testSuitesPage = new TestSuitesPage(this, model, TEST_SUITES_PAGE, "Tests");
+        addPage(testSuitesPage);
+
         PoliciesPage importsPage = new PoliciesPage(this, model, POLICIES_PAGE, "Policies");
         addPage(importsPage);
     }
@@ -177,6 +182,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             IResource resource = ResourceUtil.getResource(input);
             if (resource != null)
                 name = resource.getProject().getName();
+        } else if(name.endsWith(".bnd")) {
+            name = name.substring(0, name.length() - ".bnd".length());
+        } else if(name.endsWith(".bndrun")) {
+            name = name.substring(0, name.length() - ".bndrun".length());
         }
         setPartName(name);
     }

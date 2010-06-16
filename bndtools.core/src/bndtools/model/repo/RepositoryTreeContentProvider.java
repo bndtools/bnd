@@ -1,5 +1,6 @@
 package bndtools.model.repo;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +41,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 		if(parentElement instanceof RepositoryPlugin) {
 			RepositoryPlugin repo = (RepositoryPlugin) parentElement;
-			List<String> bsns = repo.list(null);
+			List<String> bsns = null;
+            try {
+                bsns = repo.list(null);
+            } catch (Exception e) {
+                Plugin.logError("Error querying repository " + repo.getName(), e);
+            }
 			if(bsns != null) {
 				result = new Object[bsns.size()];
 				int i=0; for (String bsn : bsns) {
@@ -49,7 +55,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			}
 		} else if(parentElement instanceof RepositoryBundle) {
 			RepositoryBundle bundle = (RepositoryBundle) parentElement;
-			List<Version> versions = bundle.getRepo().versions(bundle.getBsn());
+			List<Version> versions = null;
+            try {
+                versions = bundle.getRepo().versions(bundle.getBsn());
+            } catch (Exception e) {
+                Plugin.logError(MessageFormat.format("Error querying versions for bundle {0} in repository {1}.", bundle.getBsn(), bundle.getRepo().getName()), e);
+            }
 			if(versions != null) {
 				result = new Object[versions.size()];
 				int i=0; for(Version version : versions) {

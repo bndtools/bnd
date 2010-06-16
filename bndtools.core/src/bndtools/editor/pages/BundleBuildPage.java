@@ -66,7 +66,7 @@ public class BundleBuildPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         classPathPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        gd = new GridData(SWT.FILL, SWT.TOP, true, true);
         buildPart.getSection().setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.TOP, true, true);

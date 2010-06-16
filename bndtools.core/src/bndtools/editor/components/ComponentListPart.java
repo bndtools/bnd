@@ -85,7 +85,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	private static final String XML_SUFFIX = ".xml"; //$NON-NLS-1$
 	private List<String> componentNames;
 	private Map<String, ServiceComponent> componentMap;
-	
+
 	private IManagedForm managedForm;
 	private Table table;
 	private TableViewer viewer;
@@ -97,25 +97,25 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	}
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText(Messages.ComponentListPart_listSectionTitle);
-		
+
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
-		
+
 		table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
 		viewer = new TableViewer(table);
 		viewer.setUseHashlookup(true);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new ServiceComponentLabelProvider());
-		
+
 		final Button btnAdd = toolkit.createButton(composite, Messages.ComponentListPart_addButton, SWT.PUSH);
 		final Button btnRemove = toolkit.createButton(composite, Messages.ComponentListPart_RemoveButton, SWT.PUSH);
-		
+
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 				ArrayList<ServiceComponent> selectedComponents = new ArrayList<ServiceComponent>(selection.size());
-				
+
 				@SuppressWarnings("rawtypes")
 				Iterator iterator = selection.iterator();
 				while(iterator.hasNext()) {
@@ -124,7 +124,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 					if(component != null)
 						selectedComponents.add(component);
 				}
-				
+
 				managedForm.fireSelectionChanged(ComponentListPart.this, new StructuredSelection(selectedComponents));
 				btnRemove.setEnabled(!selection.isEmpty());
 			}
@@ -150,7 +150,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 				doRemove();
 			}
 		});
-		
+
 		// Layout
 		GridData gd;
 		section.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -194,7 +194,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		ServiceComponent component = componentMap.get(componentName);
 		if(component == null)
 			return;
-		
+
 		if(component.isPath()) {
 			IFormPage page = (IFormPage) getManagedForm().getContainer();
 			IResource resource = ResourceUtil.getResource(page.getEditorInput());
@@ -227,9 +227,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		IMessageManager msgs = getManagedForm().getMessageManager();
 		msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);
 		msgs.removeMessages();
-		
+
 		int index = 0;
-		
+
 		if(componentMap != null) {
 			for (Entry<String, ServiceComponent> entry : componentMap.entrySet()) {
 				ServiceComponent component = entry.getValue();
@@ -246,16 +246,18 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
                                 String message = MessageFormat.format(Messages.ComponentListPart_warningPkgNotIncluded, packageName);
 								IAction[] fixes = new Action[] {
 									new Action(MessageFormat.format(Messages.ComponentListPart_fixAddToPrivatePkgs, packageName)) {
-										public void run() {
+										@Override
+                                        public void run() {
 											model.addPrivatePackage(packageName);
 											markDirty();
-										};
+										}
 									},
 									new Action(MessageFormat.format(Messages.ComponentListPart_fixAddToExportedPkgs, packageName)) {
-										public void run() {
+										@Override
+                                        public void run() {
 											model.addExportedPackage(new ExportedPackage(packageName, null));
 											markDirty();
-										};
+										}
 									}
 								};
 								msgs.addMessage("_comp_nonincluded_pkg" + index, message, fixes, IMessageProvider.WARNING); //$NON-NLS-1$
@@ -282,7 +284,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	@Override
 	public void refresh() {
 		super.refresh();
-		
+
 		// Deep-copy the model
 		Collection<ServiceComponent> componentList = model.getServiceComponents();
 		if(componentList != null) {
@@ -296,7 +298,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 			componentNames = new LinkedList<String>();
 			componentMap = new HashMap<String, ServiceComponent>();
 		}
-		
+
 		viewer.setInput(componentNames);
 		checkComponentPackagesIncluded();
 	}
@@ -306,8 +308,8 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 			model.removePropertyChangeListener(this);
 			model.setServiceComponents(componentMap.isEmpty() ? null : new ArrayList<ServiceComponent>(componentMap.values()));
 		} finally {
+		    model.addPropertyChangeListener(this);
 			super.commit(onSave);
-			model.addPropertyChangeListener(this);
 		}
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -325,7 +327,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	}
 	public void updateLabel(String oldName, String newName) {
 		int index = componentNames.indexOf(oldName);
-		
+
 		if(index > -1) {
 			componentNames.remove(index);
 			ServiceComponent component = componentMap.remove(oldName);
@@ -341,7 +343,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 	IJavaProject getJavaProject() {
 		IFormPage page = (IFormPage) getManagedForm().getContainer();
 		IEditorInput input = page.getEditorInput();
-		
+
 		IFile file = ResourceUtil.getFile(input);
 		if(file != null) {
 			return JavaCore.create(file.getProject());
@@ -349,13 +351,13 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 			return null;
 		}
 	}
-	
+
 	private class ComponentListDropAdapter extends ViewerDropAdapter {
-		
+
 		protected ComponentListDropAdapter(Viewer viewer) {
 			super(viewer);
 		}
-		
+
 		@Override
 		public void dragEnter(DropTargetEvent event) {
 			event.detail = DND.DROP_COPY;
@@ -369,14 +371,14 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		public boolean performDrop(Object data) {
 			Object target = getCurrentTarget();
 			int loc = getCurrentLocation();
-			
+
 			int insertionIndex = -1;
 			if(target != null) {
 				insertionIndex = componentNames.indexOf(target);
 				if(insertionIndex > -1 && loc == LOCATION_ON || loc == LOCATION_AFTER)
 					insertionIndex ++;
 			}
-			
+
 			List<String> addedNames = new ArrayList<String>();
 			Map<String, ServiceComponent> addedMap = new HashMap<String, ServiceComponent>();
 			if(data instanceof IResource[]) {
@@ -410,9 +412,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 					} else if(resource.getName().endsWith(XML_SUFFIX)) {
 						IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 						IFile bndFile = ResourceUtil.getFile(formPage.getEditorInput());
-						
+
 						IPath relativePath = PathUtils.makeRelativeTo(resource.getFullPath(), bndFile.getFullPath());
-						
+
 						String compName = relativePath.toString();
 						ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
 						addedNames.add(compName);
@@ -420,7 +422,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 					}
 				}
 			}
-			
+
 			if(!addedNames.isEmpty()) {
 				componentMap.putAll(addedMap);
 				if(insertionIndex == -1 || insertionIndex == componentNames.size()) {

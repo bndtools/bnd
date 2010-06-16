@@ -11,12 +11,15 @@
 package bndtools.editor.pages;
 
 
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import bndtools.Plugin;
 import bndtools.editor.components.ComponentsBlock;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;
@@ -24,6 +27,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ComponentsPage extends FormPage {
 
+    private final Image componentsImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/component.gif").createImage();
 	private final ComponentsBlock block = new ComponentsBlock();
 	private final BndEditModel model;
 
@@ -31,7 +35,7 @@ public class ComponentsPage extends FormPage {
 		super(editor, id, title);
 		this.model = model;
 	}
-	
+
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
 		managedForm.setInput(model);
@@ -39,12 +43,19 @@ public class ComponentsPage extends FormPage {
 		FormToolkit toolkit = managedForm.getToolkit();
 		toolkit.decorateFormHeading(form.getForm());
 		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
-		
+
 		form.setText("Components");
+		form.setImage(componentsImg);
 		block.createContent(managedForm);
 	}
-	
+
 	public void setSelectedComponent(ServiceComponent component) {
 		block.setSelectedComponent(component);
 	}
+
+	@Override
+	public void dispose() {
+	    super.dispose();
+	    componentsImg.dispose();
+	};
 }

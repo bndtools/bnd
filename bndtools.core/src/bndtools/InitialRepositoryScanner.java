@@ -40,7 +40,13 @@ public class InitialRepositoryScanner extends Job {
             return status;
         }
         if(repos != null) for (RepositoryPlugin repo : repos) {
-            List<String> bsns = repo.list(null);
+            List<String> bsns;
+            try {
+                bsns = repo.list(null);
+            } catch (Exception e) {
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, MessageFormat.format("Error getting bundle list from repository {0}.", repo.getName()), e));
+                return status;
+            }
             for (String bsn : bsns) {
                 if(monitor.isCanceled())
                     return Status.CANCEL_STATUS;

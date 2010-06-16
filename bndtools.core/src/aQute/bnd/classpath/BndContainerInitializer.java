@@ -30,12 +30,12 @@ import bndtools.Plugin;
  * information in there to establish the classpath. The classpath is defined by
  * the -build-env instruction. This instruction contains a list of bsn's that
  * are searched in the available repositories and returned as File objects.
- * 
+ *
  * This initializer establishes the link between the container object and the
  * BndModel. The container object is just a delegator because for some unknown
  * reasons, you can only update the container (refresh the contents) when you
  * give it a new object ;-(
- * 
+ *
  * Because this plugin uses the Bnd Builder in different places, the Bnd Model
  * is centralized and available from the Activator.
  */
@@ -50,6 +50,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         central.addModelListener(this);
     }
 
+    @Override
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
         // We maintain the models in the activator because other
         // parts also use the model. Unfortunately, one can only
@@ -63,10 +64,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         requestClasspathContainerUpdate(containerPath, project, new BndContainer(model, project, calculateEntries(model)));
     }
 
+    @Override
     public boolean canUpdateClasspathContainer(IPath containerPath, IJavaProject project) {
         return true;
     }
 
+    @Override
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
         JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { containerSuggestion }, null);
     }
@@ -125,11 +128,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     File sourceDir = c.getProject().getSrc();
                     if (sourceDir.isDirectory())
                         sourceAttachment = Central.toPath(c.getProject(), sourceDir);
-                } else {
-                    File sourceBundle = c.getSourceBundle();
-                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
-                        sourceAttachment = fileToPath(project, sourceBundle);
-                    }
+
+//                } else {
+//                    File sourceBundle = c.getSourceBundle();
+//                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
+//                        sourceAttachment = fileToPath(project, sourceBundle);
+//                    }
                 }
 
                 cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null);

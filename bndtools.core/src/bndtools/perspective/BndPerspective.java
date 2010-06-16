@@ -32,7 +32,7 @@ public class BndPerspective implements IPerspectiveFactory {
 
         IFolderLayout outlineFolder = layout.createFolder("right", IPageLayout.RIGHT, (float)0.75, editorArea); //$NON-NLS-1$
         outlineFolder.addView(IPageLayout.ID_OUTLINE);
-        outlineFolder.addView(TemplatesView.ID);
+        outlineFolder.addPlaceholder(TemplatesView.ID);
 
         layout.addActionSet(IDebugUIConstants.LAUNCH_ACTION_SET);
         layout.addActionSet(JavaUI.ID_ACTION_SET);
