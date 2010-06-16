@@ -1,6 +1,7 @@
 package aQute.junit;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -15,6 +16,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	int					port		= -1;
 	String				reportPath;
 	boolean				continuous	= false;
+	boolean				trace		= false;
+	PrintStream			out			= System.err;
 
 	public Activator() {
 		super("bnd Runtime Test Bundle");
@@ -34,14 +37,17 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public void run() {
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
-
+		trace = context.getProperty(TESTER_TRACE) != null;
 		String testcases = context.getProperty(TESTER_NAMES);
 		if (context.getProperty(TESTER_PORT) != null)
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
 
-		if (testcases == null)
+		if (testcases == null) {
+			trace("automatic testing of all bundles with Test-Cases header");
 			automatic();
+		}
 		else {
+			trace("receivednames of classes to test %s", testcases);
 			try {
 				int errors = test(null, testcases, null);
 				System.exit(errors);
@@ -56,6 +62,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		final File reportDir = new File(context.getProperty(TESTER_DIR));
 		final List<Bundle> queue = new Vector<Bundle>();
 
+		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
 			public void bundleChanged(BundleEvent event) {
 				if (event.getType() == BundleEvent.STARTED) {
@@ -69,6 +76,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			checkBundle(queue, b);
 		}
 
+		trace("starting queue");
 		outer: while (active) {
 			Bundle bundle;
 			synchronized (queue) {
@@ -76,6 +84,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					try {
 						queue.wait();
 					} catch (InterruptedException e) {
+						trace("tests bundle queue interrupted");
 						interrupt();
 						break outer;
 					}
@@ -83,6 +92,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			}
 			try {
 				bundle = (Bundle) queue.remove(0);
+				trace("received bundle to test: %s", bundle.getLocation());
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
 					test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
@@ -91,11 +101,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 						report.close();
 				}
 			} catch (Exception e) {
-				System.err.println("Not sure what happened anymore");
-				e.printStackTrace(System.err);
+				error("Not sure what happened anymore %s", e);
 				System.exit(-2);
 			}
 			if (queue.isEmpty() && !continuous) {
+				trace("queue empty and not continuous, exiting ok");
 				System.exit(0);
 			}
 
@@ -106,6 +116,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		if (bundle.getState() == Bundle.ACTIVE) {
 			String testcases = (String) bundle.getHeaders().get("Test-Cases");
 			if (testcases != null) {
+				trace("found active bundle with test cases %s : %s", bundle, testcases);
 				synchronized (queue) {
 					queue.add(bundle);
 					queue.notifyAll();
@@ -136,6 +147,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	 * @return # of errors
 	 */
 	int test(Bundle bundle, String testnames, Writer report) {
+		trace("testing bundle %s with %s", bundle, testnames);
 		Bundle fw = context.getBundle(0);
 		try {
 			List<String> names = new ArrayList<String>();
@@ -157,7 +169,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			System.setErr(systemErr.getStream());
 			try {
 
-				BasicTestReport basic = new BasicTestReport(systemOut, systemErr) {
+				BasicTestReport basic = new BasicTestReport(this,systemOut, systemErr) {
 					public void check() {
 						if (!active)
 							result.stop();
@@ -267,4 +279,54 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		return sb.toString();
 	}
 
+	public void trace(String msg, Object... objects) {
+		if (trace) {
+			message("# ", msg, objects);
+		}
+	}
+
+	private void message(String prefix, String string, Object[] objects) {
+		Throwable e = null;
+
+		StringBuffer sb = new StringBuffer();
+		int n = 0;
+		sb.append(prefix);
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+			if (c == '%') {
+				c = string.charAt(++i);
+				switch (c) {
+				case 's':
+					if (n < objects.length) {
+						Object o = objects[n++];
+						if (o instanceof Throwable) {
+							e = (Throwable) o;
+							if (o instanceof InvocationTargetException) {
+								Throwable t = (InvocationTargetException) o;
+								sb.append(t.getMessage());
+								e = t;
+							} else
+								sb.append(e.getMessage());
+						} else {
+							sb.append(o);
+						}
+					} else
+						sb.append("<no more arguments>");
+					break;
+
+				default:
+					sb.append(c);
+				}
+			} else {
+				sb.append(c);
+			}
+		}
+		out.println(sb);
+		if (e != null && trace)
+			e.printStackTrace(out);
+	}
+
+	public void error(String msg, Object... objects) {
+		message("! ", msg, objects);
+	}
 }

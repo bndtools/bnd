@@ -32,6 +32,8 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			}
 			launcher.getRunProperties().put(TESTER_DIR, getReportDir().getAbsolutePath());
 			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
+			if ( Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
+				launcher.getRunProperties().put(TESTER_TRACE, "true");
 
 			Collection<String> testnames = getTests();
 			if (testnames.size() > 0) {

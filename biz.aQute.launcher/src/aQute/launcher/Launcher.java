@@ -22,19 +22,20 @@ import aQute.launcher.minifw.*;
  * 1.4.
  */
 public class Launcher implements ServiceListener {
-	private PrintStream					out;
-	private LauncherConstants			parms;
-	private Framework					systemBundle;
-	private final Properties			properties;
-	private boolean						security;
-	private SimplePermissionPolicy		policy;
-	private Runnable					mainThread;
-	private PackageAdmin				padmin;
-	private static File					propertiesFile;
-	private final Timer					timer		= new Timer();
-	private final List<BundleActivator>	embedded	= new ArrayList<BundleActivator>();
-	private TimerTask					watchdog	= null;
-	private boolean						services	= true;
+	private PrintStream						out;
+	private LauncherConstants				parms;
+	private Framework						systemBundle;
+	private final Properties				properties;
+	private boolean							security;
+	private SimplePermissionPolicy			policy;
+	private Runnable						mainThread;
+	private PackageAdmin					padmin;
+	private static File						propertiesFile;
+	private final Timer						timer		= new Timer();
+	private final List<BundleActivator>		embedded	= new ArrayList<BundleActivator>();
+	private TimerTask						watchdog	= null;
+	private boolean							services	= true;
+	private final Map<Bundle, Throwable>	errors		= new HashMap<Bundle, Throwable>();
 
 	public static void main(String[] args) {
 		try {
@@ -117,7 +118,6 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-
 	private List<String> split(String value, String separator) {
 		List<String> list = new ArrayList<String>();
 		if (value == null)
@@ -160,28 +160,50 @@ public class Launcher implements ServiceListener {
 		List<Bundle> installed = new ArrayList<Bundle>();
 
 		for (Object i : parms.runbundles) {
-			trace("will install %s", i);
 			File path = new File((String) i).getAbsoluteFile();
 
-			InputStream in = new FileInputStream(path);
 			try {
-				Bundle b = findBundleByLocation(path.toString());
-				if (b != null) {
-					trace("already installed");
-					if (b.getLastModified() < path.lastModified()) {
-						b.update(in);
-						trace("updated");
-					}
-				} else {
-					b = systemContext.installBundle(path.toString(), in);
-					installed.add(b);
-					trace("installed");
+				trace("will install %s with reference", path.getAbsolutePath());
+				String reference = "reference:" + path.toURL().toExternalForm();
+				Bundle b = systemContext.installBundle(reference);
+				if (b.getLastModified() < path.lastModified()) {
+					b.update();
 				}
+				installed.add(b);
 			} catch (BundleException e) {
-				error("Install: %s error: %s", path, e);
-				return translateToError(e);
-			} finally {
-				in.close();
+				switch (e.getType()) {
+				// Accepted reference
+				case BundleException.MANIFEST_ERROR:
+				case BundleException.RESOLVE_ERROR:
+				case BundleException.ACTIVATOR_ERROR:
+				case BundleException.SECURITY_ERROR:
+				case BundleException.STATECHANGE_ERROR:
+					error("Install: %s error: %s", path, e);
+					return translateToError(e);
+				}
+				
+				trace("failed reference, will try to install %s with input stream", path.getAbsolutePath());
+				String reference = path.toURL().toExternalForm();
+				InputStream in = new FileInputStream(path);
+				try {
+					Bundle b = findBundleByLocation(reference);
+					if (b != null) {
+						trace("already installed");
+						if (b.getLastModified() < path.lastModified()) {
+							b.update(in);
+							trace("updated");
+						}
+					} else {
+						b = systemContext.installBundle(reference, in);
+						installed.add(b);
+						trace("installed");
+					}
+				} catch (BundleException ee) {
+					error("Install: %s error: %s", path, ee);
+					return translateToError(ee);
+				} finally {
+					in.close();
+				}
 			}
 		}
 		trace("all bundles installed %s", parms.runbundles);
@@ -189,15 +211,14 @@ public class Launcher implements ServiceListener {
 		// From now on, the bundles are on their own. They have
 		// by default AllPermission, but if they install bundles
 		// they will not automatically get AllPermission anymore
+		if (security)
+			policy.setDefaultPermissions(null);
 
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false) {
 			error("could not resolve the bundles");
 			return LauncherConstants.RESOLVE_ERROR;
 		}
-
-		if (security)
-			policy.setDefaultPermissions(null);
 
 		// Now start all the installed bundles in the same order
 		// (unless they're a fragment)
@@ -210,8 +231,12 @@ public class Launcher implements ServiceListener {
 					b.start();
 				trace("startedg %s", b.getSymbolicName());
 			} catch (BundleException e) {
+				errors.put(b, e);
 				error("Start: %s, cause: %s", b.getBundleId(), e);
 				return translateToError(e);
+			} catch (RuntimeException e) {
+				errors.put(b, e);
+				throw e;
 			}
 		}
 
@@ -220,7 +245,7 @@ public class Launcher implements ServiceListener {
 		}
 
 		// Start embedded activators
-
+		trace("start embedded activators");
 		if (parms.activators != null) {
 			ClassLoader loader = getClass().getClassLoader();
 			for (Object token : parms.activators) {
@@ -228,6 +253,7 @@ public class Launcher implements ServiceListener {
 					Class<?> clazz = loader.loadClass((String) token);
 					BundleActivator activator = (BundleActivator) clazz.newInstance();
 					embedded.add(activator);
+					trace("adding activator %s", activator);
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: "
 							+ token + ", " + e);
@@ -236,8 +262,10 @@ public class Launcher implements ServiceListener {
 		}
 		for (BundleActivator activator : embedded)
 			try {
+				trace("starting activator %s", activator);
 				activator.start(systemContext);
 			} catch (Exception e) {
+				error("Starting activator %s : %s", activator, e);
 				e.printStackTrace();
 				return LauncherConstants.ERROR;
 			}
@@ -519,7 +547,13 @@ public class Launcher implements ServiceListener {
 							out.print(fill(toDate(f.lastModified()), 14));
 						else
 							out.print(fill("<>", 14));
-						out.println(bundles[i].getLocation());
+						if (errors.containsKey(bundles[i])) {
+							out.print(fill(bundles[i].getLocation(), 50));
+							out.print(errors.get(bundles[i]).getMessage());
+						} else
+							out.print(bundles[i].getLocation());
+
+						out.println();
 					}
 				}
 			}

@@ -6,6 +6,7 @@ public interface TesterConstants {
 	String	TESTER_NAMES		= "tester.names";
 	String	TESTER_DIR			= "tester.dir";
 	String	TESTER_CONTINUOUS	= "tester.continuous";
-	String	TESTER_PROPERTIES		= "tester.properties";
+	String	TESTER_TRACE		= "tester.trace";
+	String	TESTER_PROPERTIES	= "tester.properties";
 
 }

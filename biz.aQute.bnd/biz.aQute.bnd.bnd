@@ -10,3 +10,4 @@ Import-Package: 				!org.eclipse.*,org.apache.tools.ant; resolution:=optional, *
 Bundle-ClassPath:				.
 Main-Class: 					aQute.bnd.main.bnd
 
+Bundle-Version: 				1.0.1
