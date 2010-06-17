@@ -36,29 +36,27 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
+import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 @SuppressWarnings("restriction")
 class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
-	private final NewBndProjectWizardBundlesPage bundlesPage;
 	private final NewJavaProjectWizardPageTwo pageTwo;
 
     private IConfigurationElement configElement;
 
-	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewBndProjectWizardBundlesPage bundlesPage, NewJavaProjectWizardPageTwo pageTwo) {
+	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
 		setWindowTitle("New Bnd OSGi Project");
 
 		this.pageOne = pageOne;
-		this.bundlesPage = bundlesPage;
 		this.pageTwo = pageTwo;
 	}
 
 	@Override
 	public void addPages() {
 		addPage(pageOne);
-		addPage(bundlesPage);
 		addPage(pageTwo);
 	}
 
@@ -68,11 +66,11 @@ class NewBndProjectWizard extends JavaProjectWizard {
 		boolean result = super.performFinish();
 		if(result) {
 			// Create the cnf project, if not already created
-			bundlesPage.doCreateCnfIfNeeded();
+            InitialiseCnfProjectWizard wizard = new InitialiseCnfProjectWizard();
+            wizard.showIfNeeded(false);
 
 			// Generate the bnd.bnd content
 			BndEditModel bndModel = new BndEditModel();
-			bndModel.setBuildPath(bundlesPage.getSelectedBundles());
 			IDocument document = new Document();
 			bndModel.saveChangesTo(document);
 			final ByteArrayInputStream bndInput = new ByteArrayInputStream(document.get().getBytes());

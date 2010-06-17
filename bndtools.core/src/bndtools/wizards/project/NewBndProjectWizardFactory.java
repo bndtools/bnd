@@ -24,14 +24,9 @@ public class NewBndProjectWizardFactory implements IExecutableExtension, IExecut
 
     public Object create() throws CoreException {
 		NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
+		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne, pageOne);
 
-		NewBndProjectWizardBundlesPage bundlesPage = new NewBndProjectWizardBundlesPage("bundleSelection");
-		bundlesPage.setTitle("Bundle Build Path");
-		bundlesPage.setDescription("Select bundles to add to the project build path");
-
-		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(bundlesPage, pageOne);
-
-		NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, bundlesPage, pageTwo);
+		NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, pageTwo);
 		wizard.setInitializationData(config, propertyName, data);
 
 		return wizard;
