@@ -8,13 +8,18 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.SocketUtil;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -46,7 +51,16 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate implements ILaun
                 throw new  CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error starting bundle \"{0}\". Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
             }
         }
-        return super.getLaunch(configuration, mode);
+
+        ILaunchConfigurationWorkingCopy modifiedConfig = configuration.getWorkingCopy();
+        String launchTarget = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+        if(launchTarget != null) {
+            IResource launchResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTarget);
+            IProject launchProject = launchResource.getProject();
+            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, launchProject.getName());
+        }
+
+        return super.getLaunch(modifiedConfig.doSave(), mode);
     }
 
     @Override

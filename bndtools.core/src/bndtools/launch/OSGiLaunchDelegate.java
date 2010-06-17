@@ -378,7 +378,7 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
     public File verifyWorkingDirectory(ILaunchConfiguration configuration) throws CoreException {
         try {
             Project project = getBndProject(configuration);
-            return (project != null) ? project.getTarget() : null;
+            return (project != null) ? project.getBase() : null;
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting working directory for Bnd project.", e));
         }
