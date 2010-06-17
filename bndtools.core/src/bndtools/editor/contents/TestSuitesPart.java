@@ -39,6 +39,8 @@ import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -135,6 +137,17 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                 doRemove();
             }
         });
+        table.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.character == SWT.DEL) {
+                    doRemove();
+                } else if(e.character == '+') {;
+                    doAdd();
+                }
+            }
+        });
+
 
         // LAYOUT
         GridLayout layout;
@@ -162,11 +175,14 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 
     void doAdd() {
-
     }
 
     void doRemove() {
-
+        IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+        if(!sel.isEmpty()) {
+            testSuites.removeAll(sel.toList());
+            viewer.remove(sel.toArray());
+        }
     }
 
     @Override

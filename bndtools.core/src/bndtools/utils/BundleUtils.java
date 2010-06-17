@@ -113,7 +113,7 @@ public class BundleUtils {
 	public static String getBundleSymbolicName(Attributes attribs) {
 	    Map<String, Map<String, String>> header = Processor.parseHeader(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME), null);
 	    if(header == null || header.size() != 1)
-	        throw new IllegalArgumentException("Invalid Bundle-SymbolicName header");
+	        return null;
 
 	    return header.keySet().iterator().next();
 	}

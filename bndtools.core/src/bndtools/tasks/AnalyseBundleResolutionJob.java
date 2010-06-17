@@ -198,23 +198,25 @@ public class AnalyseBundleResolutionJob extends Job {
 
         // Merge the bundle name + version
         String bsn = BundleUtils.getBundleSymbolicName(attribs);
-        String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
-        Version version = null;
-        if (versionStr != null) {
-            try {
-                version = new Version(versionStr);
-            } catch (IllegalArgumentException e) {
-                Plugin.logError("Error parsing version of bundle: " + bsn, e);
+        if(bsn != null) { // Ignore if not a bundle
+            String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
+            Version version = null;
+            if (versionStr != null) {
+                try {
+                    version = new Version(versionStr);
+                } catch (IllegalArgumentException e) {
+                    Plugin.logError("Error parsing version of bundle: " + bsn, e);
+                }
             }
+            if (version == null)
+                version = new Version(0);
+            Set<Version> versions = bundleVersions.get(bsn);
+            if (versions == null) {
+                versions = new HashSet<Version>();
+                bundleVersions.put(bsn, versions);
+            }
+            versions.add(version);
         }
-        if (version == null)
-            version = new Version(0);
-        Set<Version> versions = bundleVersions.get(bsn);
-        if (versions == null) {
-            versions = new HashSet<Version>();
-            bundleVersions.put(bsn, versions);
-        }
-        versions.add(version);
 	}
 	void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy,
 	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {

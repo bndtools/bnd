@@ -32,6 +32,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -155,6 +157,16 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 				return clauses.indexOf(object);
 			}
 		});
+        table.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.character == SWT.DEL) {
+                    doRemoveSelectedClauses();
+                } else if(e.character == '+') {;
+                    doAddClausesAfterSelection(generateClauses());
+                }
+            }
+        });
 		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
