@@ -73,6 +73,9 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
         Project model = getBndProject(configuration);
         Properties outputProps = new Properties();
 
+        // Set the default storage dir
+        outputProps.setProperty(LaunchConstants.PROP_LAUNCH_STORAGE_DIR, LaunchConstants.DEFAULT_LAUNCH_STORAGE_DIR_RUN);
+
         // Expand -runbundles
         Collection<String> runBundlePaths = calculateRunBundlePaths(model);
         outputProps.put(LaunchConstants.PROP_LAUNCH_RUNBUNDLES, Processor.join(runBundlePaths));

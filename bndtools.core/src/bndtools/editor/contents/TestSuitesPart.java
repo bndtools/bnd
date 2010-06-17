@@ -70,6 +70,7 @@ import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.components.Messages;
 import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.ExportedPackage;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
 
@@ -182,6 +183,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         if(!sel.isEmpty()) {
             testSuites.removeAll(sel.toList());
             viewer.remove(sel.toArray());
+            markDirty();
+            validate();
         }
     }
 
@@ -220,6 +223,29 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                     }
                 };
                 msgs.addMessage("_defaultPkg" +  i++, error, fixes, IMessageProvider.ERROR);
+            } else {
+                final String packageName = fqName.substring(0, lastDot);
+                final BndEditModel model = (BndEditModel) getManagedForm().getInput();
+                if(!model.isIncludedPackage(packageName)) {
+                    String message = MessageFormat.format("Package \"{0}\" is not included in the bundle.", packageName);
+                    IAction[] fixes = new Action[] {
+                        new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
+                            @Override
+                            public void run() {
+                                model.addPrivatePackage(packageName);
+                                markDirty();
+                            };
+                        },
+                        new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
+                            @Override
+                            public void run() {
+                                model.addExportedPackage(new ExportedPackage(packageName, null));
+                                markDirty();
+                            };
+                        }
+                    };
+                    msgs.addMessage("_nonincluded_pkg" + i++, message, fixes, IMessageProvider.WARNING);
+                }
             }
         }
     }
@@ -323,10 +349,10 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                     testSuites.addAll(insertionIndex, addedNames);
                     viewer.refresh();
                 }
+                viewer.setSelection(new StructuredSelection(addedNames), true);
+                validate();
+                markDirty();
             }
-            viewer.setSelection(new StructuredSelection(addedNames), true);
-            validate();
-            markDirty();
             return true;
         }
     }

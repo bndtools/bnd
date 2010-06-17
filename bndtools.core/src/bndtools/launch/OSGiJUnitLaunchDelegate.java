@@ -90,9 +90,14 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate implements ILaun
         boolean keepAlive = configuration.getAttribute(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, true);
         props.setProperty(LaunchConstants.PROP_LAUNCH_JUNIT_KEEP_ALIVE, Boolean.toString(keepAlive));
 
-        // For testing, always clean the framework
+        // For testing, always clean the framework & use a different storage dir than for runtimes
         props.setProperty(LaunchConstants.PROP_LAUNCH_CLEAN, TRUE.toString());
+        props.setProperty(LaunchConstants.PROP_LAUNCH_STORAGE_DIR, LaunchConstants.DEFAULT_LAUNCH_STORAGE_DIR_TEST);
+
+        // Turn off dynamic updates
         props.setProperty(LaunchConstants.PROP_LAUNCH_DYNAMIC_BUNDLES, FALSE.toString());
+
+        // Request shutdown on failure to install/start bundles
         props.setProperty(LaunchConstants.PROP_LAUNCH_SHUTDOWN_ON_ERROR, TRUE.toString());
 
         return props;

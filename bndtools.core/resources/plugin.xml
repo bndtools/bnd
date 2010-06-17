@@ -18,6 +18,7 @@
          </action>
       </objectContribution>
    </extension>
+   <!--
    <extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
@@ -33,6 +34,7 @@
          </action>
       </editorContribution>
    </extension>
+   -->
    <extension
          point="org.eclipse.ui.editors">
       <editor

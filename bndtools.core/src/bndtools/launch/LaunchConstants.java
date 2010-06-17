@@ -9,7 +9,6 @@ public interface LaunchConstants {
     public static String LAUNCH_ID_OSGI_JUNIT   = "bndtools.launch.junit";
 
     public static String ATTR_LAUNCH_TARGET = "launchTarget";
-
     public static String ATTR_DYNAMIC_BUNDLES = "dynamicBundles";
     public static boolean DEFAULT_DYNAMIC_BUNDLES = true;
 
@@ -36,6 +35,10 @@ public interface LaunchConstants {
     public static final String PROP_LAUNCH_DYNAMIC_BUNDLES = LAUNCHER_PREFIX + ".dynamicBundles";
     public static final String PROP_LAUNCH_RUNBUNDLES = LAUNCHER_PREFIX + ".runBundles";
     public static final String PROP_LAUNCH_SHUTDOWN_ON_ERROR = LAUNCHER_PREFIX + ".shutdownOnError";
+
+    public static final String PROP_LAUNCH_STORAGE_DIR = LAUNCHER_PREFIX + ".storageDir";
+    public static final String DEFAULT_LAUNCH_STORAGE_DIR_RUN = "runtimefw";
+    public static final String DEFAULT_LAUNCH_STORAGE_DIR_TEST = "testfw";
 
     // BndtooslRuntimeJUnit
     public static final String JUNIT_PREFIX = "bndtools.runtime.junit";
