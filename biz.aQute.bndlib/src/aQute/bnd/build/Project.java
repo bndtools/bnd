@@ -1390,9 +1390,12 @@ public class Project extends Processor {
 
 		Collection<? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
-			if (sub.getBase().getCanonicalFile().equals(bndFile)) {
-				// Found it!
-				return sub;
+			File propertiesFile = sub.getPropertiesFile();
+			if (propertiesFile != null) {
+				if (propertiesFile.getCanonicalFile().equals(bndFile)) {
+					// Found it!
+					return sub;
+				}
 			}
 		}
 		return null;
