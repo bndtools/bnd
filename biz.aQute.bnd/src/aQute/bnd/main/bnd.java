@@ -86,6 +86,10 @@ public class bnd extends Processor {
 				cnt++;
 				doDot(args, ++i);
 				break;
+			} else if ("create-repo".equals(args[i])) {
+				cnt++;
+				createRepo(args, ++i);
+				break;
 			} else if ("release".equals(args[i])) {
 				cnt++;
 				doRelease(args, ++i);
@@ -220,6 +224,121 @@ public class bnd extends Processor {
 		for (String msg : getWarnings()) {
 			System.err.println(n++ + " : " + msg);
 		}
+	}
+
+	/**
+	 * Take the current project, calculate its dependencies from the repo and
+	 * create a mini-repo from it that can easily be unzipped.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
+	 */
+	private void createRepo(String[] args, int i) throws Exception {
+		Project project = getProject();
+		if (project == null) {
+			error("not in a proper bnd project ... " + getBase());
+			return;
+		}
+
+		File out = getFile(project.getName() + ".repo.jar");
+
+		while (i < args.length) {
+			if (args[i].equals("-o")) {
+				i++;
+				if (i < args.length)
+					out = getFile(args[i]);
+				else
+					error("No arg for -out");
+			} else
+				error("invalid arg for create-repo %s", args[i]);
+		}
+
+		Jar output = new Jar(project.getName());
+		addClose(output);
+
+		if (isOk()) {
+			for (Container c : project.getBuildpath()) {
+				addContainer(output, c);
+			}
+			for (Container c : project.getRunbundles()) {
+				addContainer(output, c);
+			}
+			if (isOk()) {
+				try {
+					output.write(out);
+				} catch (Exception e) {
+					error("Could not write mini repo %s", e);
+				}
+			}
+		}
+	}
+
+	private void addContainer(Jar output, Container c) throws Exception {
+		String prefix = "cnf/repo/";
+		
+		switch (c.getType()) {
+		case ERROR:
+			error("Dependencies include %s", c.getError());
+			return;
+
+		case REPO:
+		case EXTERNAL: {
+			String name = getName(prefix,c, ".jar");
+			if (name != null)
+				output.putResource(name, new FileResource(c.getFile()));
+			trace( "storing %s in %s", c, name);
+			break;
+		}
+
+		case PROJECT:
+			break;
+
+		case LIBRARY: {
+			String name = getName(prefix,c, ".lib");
+			if (name != null) {
+				output.putResource(name, new FileResource(c.getFile()));
+				trace("store library %s", name);
+				for (Container child : c.getMembers()) {
+					trace("store member %s", child);
+					addContainer(output, child);
+				}
+			}
+		}
+		}
+	}
+
+	String getName(String prefix, Container c, String extension) throws Exception {
+		Manifest m = c.getManifest();
+		try {
+			if (m == null) {
+				error("No manifest found for %s", c);
+				return null;
+			}
+			String bsn = m.getMainAttributes().getValue(BUNDLE_SYMBOLICNAME);
+			if (bsn == null) {
+				error("No bsn in manifest: %s", c);
+				return null;
+			}
+			
+			int n = bsn.indexOf(';');
+			if ( n > 0 ) {
+				bsn = bsn.substring(0,n).trim();
+			}
+			String version = m.getMainAttributes().getValue(BUNDLE_VERSION);
+			if (version == null)
+				version = "0";
+
+			Version v = new Version(version);
+			version = v.getMajor()+"."+v.getMinor()+"."+v.getMicro();
+			if ( c.getFile() != null && c.getFile().getName().endsWith("-latest.jar"))
+				version = "latest";
+			return prefix + bsn + "/" + bsn + "-" + version + extension;
+			
+		} catch (Exception e) {
+			error("Could not store repo file %s", c);
+		}
+		return null;
 	}
 
 	private void deliverables(String[] args, int i) throws Exception {
@@ -1248,6 +1367,9 @@ public class bnd extends Processor {
 			return project;
 
 		project = Workspace.getProject(getBase());
+		if ( project == null )
+			return null;
+		
 		if (!project.isValid())
 			return null;
 
@@ -1540,7 +1662,7 @@ public class bnd extends Processor {
 
 		delete(reportDir);
 		reportDir.mkdirs();
-		
+
 		Tag summary = new Tag("summary");
 		summary.addAttribute("date", new Date());
 		summary.addAttribute("ws", ws.getBase());
@@ -1550,7 +1672,7 @@ public class bnd extends Processor {
 			if (args[i].startsWith("-reportdir")) {
 				reportDir = getFile(args[i]).getAbsoluteFile();
 				if (!reportDir.isDirectory())
-					error("reportdir must be a directory "+ reportDir);
+					error("reportdir must be a directory " + reportDir);
 			} else if (args[i].startsWith("-title")) {
 				summary.addAttribute("title", args[++i]);
 			} else if (args[i].startsWith("-dir")) {
@@ -1578,18 +1700,16 @@ public class bnd extends Processor {
 		if (errors > 0)
 			summary.addAttribute("errors", errors);
 
-		
-		for ( String error : getErrors() ) {
+		for (String error : getErrors()) {
 			Tag e = new Tag("error");
 			e.addContent(error);
 		}
-		
-		for ( String warning : getWarnings() ) {
+
+		for (String warning : getWarnings()) {
 			Tag e = new Tag("warning");
 			e.addContent(warning);
 		}
-		
-		
+
 		File r = getFile(reportDir + "/summary.xml");
 		FileOutputStream out = new FileOutputStream(r);
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out));
@@ -1603,90 +1723,88 @@ public class bnd extends Processor {
 	}
 
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
-		File tmpDir = new File(reportDir,"tmp");
+		File tmpDir = new File(reportDir, "tmp");
 		tmpDir.mkdirs();
 		tmpDir.deleteOnExit();
-		
-		Tag test = new Tag(summary,"test");
+
+		Tag test = new Tag(summary, "test");
 		test.addAttribute("path", testFile.getAbsolutePath());
 		if (!testFile.isFile()) {
 			error("No bnd file: %s", testFile);
 			test.addAttribute("exception", "No bnd file found");
 			return 1;
 		}
-		
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
+
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile
+				.getAbsoluteFile());
 		project.setTrace(isTrace());
-		project.setProperty( NOBUNDLES, "true");
+		project.setProperty(NOBUNDLES, "true");
 		ProjectTester tester = project.getProjectTester();
 		getInfo(project, project.toString() + ": ");
 
-		if ( !isOk() )
+		if (!isOk())
 			return -1;
-		
+
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
 		test.addAttribute("title", project.toString());
 		long start = System.currentTimeMillis();
 		try {
-			int  errors = tester.test();
-			
-			
+			int errors = tester.test();
+
 			Collection<File> reports = tester.getReports();
-			for ( File report : reports) {
-				Tag bundle= new Tag(test,"bundle");
-				File dest = new File( reportDir, report.getName());
+			for (File report : reports) {
+				Tag bundle = new Tag(test, "bundle");
+				File dest = new File(reportDir, report.getName());
 				report.renameTo(dest);
 				bundle.addAttribute("file", dest.getAbsolutePath());
 				doPerReport(bundle, dest);
 			}
-			
-			switch(errors) {
+
+			switch (errors) {
 			case ProjectLauncher.OK:
 				return 0;
-				
+
 			case ProjectLauncher.CANCELED:
 				test.addAttribute("failed", "canceled");
 				return 1;
-				
+
 			case ProjectLauncher.DUPLICATE_BUNDLE:
 				test.addAttribute("failed", "duplicate bundle");
 				return 1;
-				
+
 			case ProjectLauncher.ERROR:
 				test.addAttribute("failed", "unknown reason");
 				return 1;
-				
+
 			case ProjectLauncher.RESOLVE_ERROR:
 				test.addAttribute("failed", "resolve error");
 				return 1;
-				
+
 			case ProjectLauncher.TIMEDOUT:
 				test.addAttribute("failed", "timed out");
 				return 1;
 			case ProjectLauncher.WARNING:
 				test.addAttribute("warning", "true");
 				return 1;
-				
+
 			case ProjectLauncher.ACTIVATOR_ERROR:
 				test.addAttribute("failed", "activator error");
 				return 1;
-				
-			default:				
-				if ( errors > 0 ) {
+
+			default:
+				if (errors > 0) {
 					test.addAttribute("errors", errors);
 					return errors;
-				}
-				else {
+				} else {
 					test.addAttribute("failed", "unknown reason");
 					return 1;
 				}
 			}
-		} catch( Exception e) {
-			test.addAttribute( "failed", e);
+		} catch (Exception e) {
+			test.addAttribute("failed", e);
 			return 1;
-		}
-		finally {
+		} finally {
 			long duration = System.currentTimeMillis() - start;
 			test.addAttribute("duration", (duration + 500) / 1000);
 			getInfo(project, project.toString() + ": ");
