@@ -242,6 +242,7 @@ public class bnd extends Processor {
 		}
 
 		File out = getFile(project.getName() + ".repo.jar");
+		List<Instruction> skip = Create.list();
 
 		while (i < args.length) {
 			if (args[i].equals("-o")) {
@@ -250,19 +251,28 @@ public class bnd extends Processor {
 					out = getFile(args[i]);
 				else
 					error("No arg for -out");
+			} else if (args[i].equals("-skip")) {
+				i++;
+				if (i < args.length) {
+					Instruction instr = Instruction.getPattern(args[i]);
+					skip.add(instr);
+				} else
+					error("No arg for -skip");
 			} else
 				error("invalid arg for create-repo %s", args[i]);
+			i++;
 		}
 
 		Jar output = new Jar(project.getName());
+		output.setDoNotTouchManifest();
 		addClose(output);
-
+		getInfo(project);
 		if (isOk()) {
 			for (Container c : project.getBuildpath()) {
-				addContainer(output, c);
+				addContainer(skip, output, c);
 			}
 			for (Container c : project.getRunbundles()) {
-				addContainer(output, c);
+				addContainer(skip, output, c);
 			}
 			if (isOk()) {
 				try {
@@ -274,9 +284,11 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void addContainer(Jar output, Container c) throws Exception {
+	private void addContainer(Collection<Instruction> skip, Jar output, Container c)
+			throws Exception {
+		trace("add container " + c);
 		String prefix = "cnf/repo/";
-		
+
 		switch (c.getType()) {
 		case ERROR:
 			error("Dependencies include %s", c.getError());
@@ -284,31 +296,33 @@ public class bnd extends Processor {
 
 		case REPO:
 		case EXTERNAL: {
-			String name = getName(prefix,c, ".jar");
+			String name = getName(skip, prefix, c, ".jar");
 			if (name != null)
 				output.putResource(name, new FileResource(c.getFile()));
-			trace( "storing %s in %s", c, name);
+			trace("storing %s in %s", c, name);
 			break;
 		}
 
 		case PROJECT:
+			trace("not storing project " + c);
 			break;
 
 		case LIBRARY: {
-			String name = getName(prefix,c, ".lib");
+			String name = getName(skip, prefix, c, ".lib");
 			if (name != null) {
 				output.putResource(name, new FileResource(c.getFile()));
 				trace("store library %s", name);
 				for (Container child : c.getMembers()) {
 					trace("store member %s", child);
-					addContainer(output, child);
+					addContainer(skip, output, child);
 				}
 			}
 		}
 		}
 	}
 
-	String getName(String prefix, Container c, String extension) throws Exception {
+	String getName(Collection<Instruction> skip, String prefix, Container c, String extension)
+			throws Exception {
 		Manifest m = c.getManifest();
 		try {
 			if (m == null) {
@@ -320,21 +334,29 @@ public class bnd extends Processor {
 				error("No bsn in manifest: %s", c);
 				return null;
 			}
-			
+			for (Instruction instr : skip) {
+				if (instr.matches(bsn)) {
+					if ( instr.isNegated()) // - * - = +!
+						break;
+					else
+						return null; // skip it
+				}
+			}
+
 			int n = bsn.indexOf(';');
-			if ( n > 0 ) {
-				bsn = bsn.substring(0,n).trim();
+			if (n > 0) {
+				bsn = bsn.substring(0, n).trim();
 			}
 			String version = m.getMainAttributes().getValue(BUNDLE_VERSION);
 			if (version == null)
 				version = "0";
 
 			Version v = new Version(version);
-			version = v.getMajor()+"."+v.getMinor()+"."+v.getMicro();
-			if ( c.getFile() != null && c.getFile().getName().endsWith("-latest.jar"))
+			version = v.getMajor() + "." + v.getMinor() + "." + v.getMicro();
+			if (c.getFile() != null && c.getFile().getName().endsWith("-latest.jar"))
 				version = "latest";
 			return prefix + bsn + "/" + bsn + "-" + version + extension;
-			
+
 		} catch (Exception e) {
 			error("Could not store repo file %s", c);
 		}
@@ -1367,9 +1389,9 @@ public class bnd extends Processor {
 			return project;
 
 		project = Workspace.getProject(getBase());
-		if ( project == null )
+		if (project == null)
 			return null;
-		
+
 		if (!project.isValid())
 			return null;
 
