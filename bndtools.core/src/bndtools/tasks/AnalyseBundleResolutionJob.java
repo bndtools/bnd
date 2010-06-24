@@ -152,10 +152,16 @@ public class AnalyseBundleResolutionJob extends Job {
 		// Calculate the manifest
 		try {
 			Project bndProject = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
-			Builder builder = bndProject.getSubBuilder(file);
+			Builder builder;
+			if(file.getName().equals(Project.BNDFILE)) {
+			    builder = bndProject.getSubBuilders().iterator().next();
+			} else {
+			    builder = bndProject.getSubBuilder(file);
+			}
+
 			if(builder == null) {
-				builder = new Builder();
-				builder.setProperties(file);
+			    builder = new Builder();
+			    builder.setProperties(file);
 			}
 			builder.build();
 			return builder;

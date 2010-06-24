@@ -44,6 +44,8 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
+	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
+
 	private static volatile Plugin plugin;
 
 	private BundleContext bundleContext;

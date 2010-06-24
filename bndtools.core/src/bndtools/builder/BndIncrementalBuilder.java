@@ -48,6 +48,7 @@ import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 import bndtools.utils.ResourceDeltaAccumulator;
+import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
@@ -64,11 +65,15 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
 			throws CoreException {
-		IProject project = getProject();
+        // Create the cnf project, if not already created
+        final InitialiseCnfProjectWizard wizard = new InitialiseCnfProjectWizard();
+        boolean shown = wizard.showIfNeeded(false, false);
+
+        IProject project = getProject();
 
 		ensureBndBndExists(project);
 
-		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
+		if (shown || getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
 			rebuildBndProject(project, monitor);
 		} else {
 			IResourceDelta delta = getDelta(project);

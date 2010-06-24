@@ -14,12 +14,15 @@ import org.eclipse.swt.widgets.Display;
 
 public class SWTConcurrencyUtil {
 
-	public static void execForDisplay(Display display, Runnable op) {
+	public static void execForDisplay(Display display, boolean async, Runnable op) {
 		if(display != null && !display.isDisposed()) {
 			if(display.getThread() == Thread.currentThread()) {
 				op.run();
 			} else {
-				display.asyncExec(op);
+			    if(async)
+			        display.asyncExec(op);
+			    else
+			        display.syncExec(op);
 			}
 		}
 	}

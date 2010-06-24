@@ -36,7 +36,6 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 @SuppressWarnings("restriction")
 class NewBndProjectWizard extends JavaProjectWizard {
@@ -65,10 +64,6 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	public boolean performFinish() {
 		boolean result = super.performFinish();
 		if(result) {
-			// Create the cnf project, if not already created
-            InitialiseCnfProjectWizard wizard = new InitialiseCnfProjectWizard();
-            wizard.showIfNeeded(false);
-
 			// Generate the bnd.bnd content
 			BndEditModel bndModel = new BndEditModel();
 			IDocument document = new Document();

@@ -4,12 +4,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -22,15 +26,20 @@ import bndtools.Plugin;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 
-public class LocalRepositorySelectionPage extends WizardPage {
+class LocalRepositorySelectionPage extends WizardPage {
 
     public static final String PROP_SELECTED_REPO = "selectedRepository";
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private RepositoryPlugin selectedRepository = null;
 
-    protected LocalRepositorySelectionPage(String pageName) {
+    LocalRepositorySelectionPage(String pageName) {
+        this(pageName, null);
+    }
+
+    LocalRepositorySelectionPage(String pageName, RepositoryPlugin selectedRepository) {
         super(pageName);
+        this.selectedRepository = selectedRepository;
     }
 
     public void createControl(Composite parent) {
@@ -50,22 +59,36 @@ public class LocalRepositorySelectionPage extends WizardPage {
                     }
                 }
         });
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                setSelectedRepository((RepositoryPlugin) selection.getFirstElement());
-            }
-        });
 
         try {
             Workspace workspace = Central.getWorkspace();
             viewer.setInput(workspace);
+            if(selectedRepository != null)
+                viewer.setSelection(new StructuredSelection(selectedRepository));
 
             validate(workspace);
         } catch (Exception e) {
             Plugin.logError("Error querying local repositories", e);
             setErrorMessage("Error querying local repositories, see log for details.");
         }
+
+        // LISTENERS
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                setSelectedRepository((RepositoryPlugin) selection.getFirstElement());
+            }
+        });
+        viewer.addOpenListener(new IOpenListener() {
+            public void open(OpenEvent evt) {
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                setSelectedRepository((RepositoryPlugin) selection.getFirstElement());
+
+                IWizardPage nextPage = getNextPage();
+                if(nextPage != null) getContainer().showPage(nextPage);
+            }
+        });
+
 
         setControl(table);
     }

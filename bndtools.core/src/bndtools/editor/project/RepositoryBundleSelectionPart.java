@@ -2,6 +2,7 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,6 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -22,6 +26,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.events.KeyAdapter;
@@ -41,15 +46,19 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.lib.osgi.Constants;
+import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
+import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
 
@@ -102,22 +111,88 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             }
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
-                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
-                if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
-                    return false;
-                }
-
-                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
-                while(iterator.hasNext()) {
-                    Object element = iterator.next();
-                    if(!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
+                if(FileTransfer.getInstance().isSupportedType(transferType)) {
+                    return true;
+                } else if(ResourceTransfer.getInstance().isSupportedType(transferType)) {
+                    return true;
+                } else {
+                    ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                    if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                         return false;
                     }
+
+                    Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
+                    while(iterator.hasNext()) {
+                        Object element = iterator.next();
+                        if(!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
-                return true;
             }
             @Override
             public boolean performDrop(Object data) {
+                if(data instanceof String[]) {
+                    return handleFileNameDrop((String[]) data);
+                } else if(data instanceof IResource[]) {
+                    return handleResourceDrop((IResource[]) data);
+                } else {
+                    return handleSelectionDrop();
+                }
+            }
+            private boolean handleResourceDrop(IResource[] resources) {
+                File[] files = new File[resources.length];
+                for(int i = 0; i < resources.length; i++) {
+                    files[i] = resources[i].getLocation().toFile();
+                }
+                return handleFileDrop(files);
+            }
+            private boolean handleFileNameDrop(String[] paths) {
+                File[] files = new File[paths.length];
+                for(int i = 0; i < paths.length; i++) {
+                    files[i] = new File(paths[i]);
+                }
+                return handleFileDrop(files);
+            }
+            private boolean handleFileDrop(File[] files) {
+                if(files.length > 0) {
+                    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
+                    boolean hideWarning = store.getBoolean(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE);
+                    if(!hideWarning) {
+                        MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(getSection().getShell(), "Add External Files",
+                                "External files cannot be directly added to a project, they must be added to a local repository first.",
+                                "Do not show this warning again.", false, null, null);
+                        if(Window.CANCEL == dialog.getReturnCode()) return false;
+                        if(dialog.getToggleState()) {
+                            store.setValue(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE, true);
+                        }
+                    }
+
+                    AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(null, files);
+                    WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+                    if(Window.OK == dialog.open()) {
+                        List<Pair<String, String>> addingBundles = wizard.getSelectedBundles();
+                        List<VersionedClause> addingClauses = new ArrayList<VersionedClause>(addingBundles.size());
+
+                        for(Pair<String, String> addingBundle : addingBundles) {
+                            Map<String, String> attribs = new HashMap<String, String>();
+                            attribs.put(Constants.VERSION_ATTRIBUTE, addingBundle.getSecond());
+                            addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
+                        }
+
+                        if(!addingClauses.isEmpty()) {
+                            bundles.addAll(addingClauses);
+                            viewer.add(addingClauses.toArray(new Object[addingClauses.size()]));
+                            markDirty();
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            private boolean handleSelectionDrop() {
                 ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
                 if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                     return false;
@@ -151,7 +226,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         };
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, dropAdapter);
+		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance() },
+		            dropAdapter);
 
 		addItem.addSelectionListener(new SelectionAdapter() {
 			@Override

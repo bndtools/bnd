@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
@@ -254,7 +255,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	}
 
     protected void refreshBundleList() throws Exception {
-        availableViewer.setInput(Central.getWorkspace());
+        Workspace workspace = Central.getWorkspace();
+        workspace.refresh();
+        availableViewer.setInput(workspace);
     }
 
 	void doAdd() {

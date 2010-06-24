@@ -1,12 +1,13 @@
 package bndtools.bndplugins.repo.eclipse;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import aQute.bnd.service.Plugin;
@@ -14,27 +15,32 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Instruction;
 import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.libg.generics.Create;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
-import bndtools.bndplugins.repo.SourceRepositoryPlugin;
 
-public class EclipseRepo implements Plugin, RepositoryPlugin, SourceRepositoryPlugin {
-    File                             root;
-    Reporter                         reporter;
-    String                           name;
-    Map<String, Map<String, String>> index;
+public class EclipseRepo implements Plugin, RepositoryPlugin {
 
-    public static String             LOCATION = "location";
-    public static String             NAME     = "name";
+    private static final String DEFAULT_VERSION = "0";
+    private File root;
+    private Reporter reporter;
+    private String name;
+
+    private Map<String, Map<String, File>> index;
+
+    public static String LOCATION = "location";
+    public static String NAME = "name";
+
+
+    public void setReporter(Reporter reporter) {
+        this.reporter = reporter;
+    }
 
     public void setProperties(Map<String, String> map) {
         String location = map.get(LOCATION);
         if (location == null)
             throw new IllegalArgumentException(
-                    "Location muse be set on a EclipseRepo plugin");
+                    "Location must be set on an EclipseRepo plugin");
 
         root = new File(location);
         if (!root.isDirectory())
@@ -50,155 +56,104 @@ public class EclipseRepo implements Plugin, RepositoryPlugin, SourceRepositoryPl
         if (name == null || name.length() == 0)
             name = "Eclipse SDK";
 
-        try {
-            index = buildIndex();
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Could not build index for eclipse repo: " + root);
-        }
+        index = readIndex();
     }
 
-    Map<String, Map<String, String>> buildIndex() throws Exception {
-        File index = new File(root, "bnd.index").getAbsoluteFile();
-        File[] plugins = new File(root, "plugins").listFiles();
+    private Map<String, Map<String, File>> readIndex() {
+        File[] pluginFiles = new File(root, "plugins").listFiles();
 
-        boolean isNewerThanIndex = false;
-        for (File f : plugins) {
-            f = f.getAbsoluteFile();
-            if (f.isFile()) {
-                if (f.lastModified() > index.lastModified()) {
-                    isNewerThanIndex = true;
-                    break;
-                }
+        // Build the index
+        Map<String, Map<String, File>> index = new HashMap<String, Map<String,File>>();
+        if(pluginFiles != null) for (File pluginFile : pluginFiles) {
+            // Determine the bsn and version
+            BundleIdentity id;
+            try {
+                id = getBundleIdentity(pluginFile);
+            } catch (IllegalArgumentException e) {
+                if(reporter != null) reporter.error("Error adding file '%s' to index: %s", pluginFile.getName(), e.getMessage());
+                continue;
+            } catch (IOException e) {
+                if(reporter != null) reporter.error("Error reading file '%s': %s", pluginFile.getName(), e.getMessage());
+                continue;
             }
+
+            // Skip source bundles
+            if(id.getBsn().toLowerCase().endsWith(".source")) continue;
+
+            // Put into the map
+            Map<String, File> bundleMap = index.get(id.getBsn());
+            if(bundleMap == null) {
+                bundleMap = new HashMap<String, File>();
+                index.put(id.getBsn(), bundleMap);
+            }
+            bundleMap.put(id.getVersion(), pluginFile);
         }
 
-        Map<String, Map<String, String>> result;
-        if (isNewerThanIndex) {
-            Map<String, Map<String, String>> map = buildIndex(plugins);
-            write(index, map);
-            result = map;
+        return index;
+    }
+
+    BundleIdentity getBundleIdentity(File pluginFile) throws IOException, IllegalArgumentException {
+        String name = pluginFile.getName();
+        if(pluginFile.isFile()) {
+            if(name.toLowerCase().endsWith(".jar"))
+                name = name.substring(0, name.length() - ".jar".length());
+            else
+                throw new IllegalArgumentException("Not a directory or JAR file.");
+        }
+
+        BundleIdentity result;
+        int firstUnderscore = name.indexOf('_');
+        if(firstUnderscore == -1) {
+            // This bundle has no version tag
+            result = new BundleIdentity(name, DEFAULT_VERSION);
         } else {
-            String s = read(index);
-            result = Processor.parseHeader(s, null);
+            // Check if there are any more underscores...
+            if(name.length() <= firstUnderscore + 1) {
+                // The first underscore was at the end of the name, weird.
+                result = new BundleIdentity(name.substring(0, firstUnderscore), DEFAULT_VERSION);
+            } else {
+                int secondUnderscore = name.indexOf('_', firstUnderscore + 1);
+                if(secondUnderscore == -1) {
+                    // The name only had one underscore, phew.
+                    String bsn = name.substring(0, firstUnderscore);
+                    String version = name.substring(firstUnderscore + 1);
+                    result = new BundleIdentity(bsn, version);
+                } else {
+                    // The geniuses who build Eclipse decided to separate bsn from version with an
+                    // underscore, and also allow underscores in both name and version. In this case
+                    // we have no choice but to read the manifest.
+                    Jar jar = new Jar(pluginFile);
+                    try {
+                        Manifest manifest = jar.getManifest();
+                        Attributes attribs = manifest.getMainAttributes();
+                        String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
+                        String version = attribs.getValue(Constants.BUNDLE_VERSION);
+
+                        if(bsn == null)
+                            throw new IllegalArgumentException("Jar manifest does not contain Bundle-SymbolicName; this is not a bundle.");
+                        int semicolon = bsn.indexOf(';');
+                        if(semicolon > -1)
+                            bsn = bsn.substring(0, semicolon);
+                        if(version == null)
+                            version = DEFAULT_VERSION;
+
+                        result = new BundleIdentity(bsn, version);
+                    } finally {
+                        jar.close();
+                    }
+                }
+            }
         }
+
         return result;
-    }
-
-    private String read(File index) throws Exception {
-        if (index.isFile()) {
-            BufferedReader fr = new BufferedReader(new FileReader(index));
-            StringBuilder sb = new StringBuilder();
-
-            try {
-                String s = fr.readLine();
-                while (s != null) {
-                    sb.append(s);
-                    s = fr.readLine();
-                }
-                return sb.toString();
-            } finally {
-                fr.close();
-            }
-        }
-        return null;
-    }
-
-    private void write(File index, Map<String, Map<String, String>> map)
-            throws Exception {
-        String s = Processor.printClauses(map, null);
-        index.getParentFile().mkdirs();
-        FileWriter fw = new FileWriter(index);
-        try {
-            fw.write(s);
-        } finally {
-            fw.close();
-        }
-    }
-
-    private Map<String, Map<String, String>> buildIndex(File[] plugins) {
-        Map<String, Map<String, String>> map = Create.map();
-        for (File plugin : plugins) {
-            try {
-                Jar jar = new Jar(plugin);
-                Manifest manifest = jar.getManifest();
-                String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-                String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-                String sourceBundle = manifest.getMainAttributes().getValue("Eclipse-SourceBundle");
-
-                // Ignore source bundles
-
-                if (bsn != null && sourceBundle == null) {
-                    // Remove attributes (e.g. "singleton") from the bsn
-                    int index = bsn.indexOf(';');
-                    if (index > -1) {
-                        bsn = bsn.substring(0, index);
-                    }
-                    if (version == null)
-                        version = "0";
-                    Map<String, String> instance = map.get(bsn);
-                    if (instance == null) {
-                        instance = Create.map();
-                        map.put(bsn, instance);
-                    }
-                    instance.put(version, plugin.getAbsolutePath());
-                }
-            } catch (Exception e) {
-                // Ignore exceptions in the plugins dir.
-            }
-        }
-        return map;
-    }
-
-    public void setReporter(Reporter reporter) {
-        this.reporter = reporter;
     }
 
     public boolean canWrite() {
         return false;
     }
 
-    public File[] get(String bsn, String range) throws Exception {
-        VersionRange r;
-        if (range == null || range.equals("latest"))
-            r = new VersionRange("0");
-        else
-            r = new VersionRange(range);
-        Map<String, String> instances = index.get(bsn);
-        if (instances == null)
-            return null;
-
-        List<File> result = Create.list();
-
-        for (String version : instances.keySet()) {
-            Version v = new Version(version);
-            if (r.includes(v)) {
-                File f = new File(instances.get(version));
-                if (f.isFile() || f.isDirectory()) {
-                    result.add(f);
-                }
-            }
-        }
-        return result.toArray(new File[result.size()]);
-    }
-
-    public File getSourceBundle(File binaryBundle, String bsn) {
-        File parent = binaryBundle.getParentFile();
-        if (!binaryBundle.getName().startsWith(bsn + "_")) {
-            return null;
-        }
-
-        String versionSegment = binaryBundle.getName().substring(bsn.length() + 1);
-        File sourceBundle = new File(parent, bsn + ".source_" + versionSegment);
-
-        if (!sourceBundle.isFile())
-            return null;
-
-        return sourceBundle;
-    }
-
-    public String getName() {
-        return name;
+    public File put(Jar jar) throws Exception {
+        throw new UnsupportedOperationException("#put(aQute.lib.osgi.Jar)");
     }
 
     public List<String> list(String regex) {
@@ -214,19 +169,87 @@ public class EclipseRepo implements Plugin, RepositoryPlugin, SourceRepositoryPl
         return result;
     }
 
-    public File put(Jar jar) throws Exception {
-        return null;
-    }
-
     public List<Version> versions(String bsn) {
-        Map<String, String> instances = index.get(bsn);
+        Map<String, File> instances = index.get(bsn);
         if (instances == null)
             return null;
 
-        List<Version> versions = Create.list();
+        List<Version> versions = new ArrayList<Version>();
         for (String v : instances.keySet())
             versions.add(new Version(v));
         return versions;
+    }
+
+    private File getSourceAugmentedFile(File pluginFile, String bsn, String version) {
+        // Don't merge source for a directory-based plugin.
+        if(pluginFile.isDirectory()) return null;
+
+        // Get the source plugin
+        File pluginsDir = new File(root, "plugins");
+        File sourceFile = new File(pluginsDir, bsn + ".source_" + version + ".jar");
+        if(!sourceFile.exists()) return null;
+
+        // Get the cached augmented plugin file, if it exists
+        File cacheDir = new File(root, ".augmented");
+        cacheDir.mkdirs();
+        File augmentedFile = new File(cacheDir, pluginFile.getName());
+
+        // Check if the augmented plugin needs to be (re)built
+        long originalTimestamp = Math.max(pluginFile.lastModified(), sourceFile.lastModified());
+        long augmentedTimestamp = (augmentedFile.isFile()) ? augmentedFile.lastModified() : 0;
+        try {
+            if(originalTimestamp > augmentedTimestamp) {
+                mergeSource(pluginFile, sourceFile, augmentedFile);
+            }
+            return augmentedFile;
+        } catch (IOException e) {
+            if(reporter != null)
+                reporter.error("Error merging plugin and source JARs");
+            return null;
+        }
+    }
+
+    private void mergeSource(File pluginFile, File sourceFile, File augmentedFile) throws IOException {
+            Jar mainJar = new Jar(pluginFile);
+            mainJar.setDoNotTouchManifest();
+            Jar sourceJar = new Jar(sourceFile);
+
+            mainJar.addAll(sourceJar, new Instruction(".*\\.java", false), "OSGI-OPT/src");
+            FileOutputStream out = new FileOutputStream(augmentedFile);
+            mainJar.write(out);
+    }
+
+    public File[] get(String bsn, String range) throws Exception {
+        VersionRange r;
+        if (range == null || range.equals("latest"))
+            r = new VersionRange("0");
+        else
+            r = new VersionRange(range);
+        Map<String, File> instances = index.get(bsn);
+        if (instances == null) {
+            return null;
+        }
+
+        List<File> result = new ArrayList<File>(instances.size());
+
+        for (String version : instances.keySet()) {
+            Version v = new Version(version);
+            if (r.includes(v)) {
+                File pluginFile = instances.get(version);
+                File augmentedFile = getSourceAugmentedFile(pluginFile, bsn, version);
+
+                if(augmentedFile != null && augmentedFile.isFile()) {
+                    result.add(augmentedFile);
+                } else if (pluginFile.isFile() || pluginFile.isDirectory()) {
+                    result.add(pluginFile);
+                }
+            }
+        }
+        return result.toArray(new File[result.size()]);
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

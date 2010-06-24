@@ -1,6 +1,7 @@
 package bndtools.wizards.workspace;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -18,11 +19,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 
 import bndtools.Plugin;
 import bndtools.tasks.repo.LocalRepositoryTasks;
+import bndtools.utils.SWTConcurrencyUtil;
 
 public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard {
 
@@ -38,22 +42,35 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
     /**
      * Show the wizard if it needs to be shown (i.e. the cnf project does not
      * exist and the preference to show the wizard has not been disabled). This
-     * method must be called in the UI thread.
+     * method is safe to call from a non-UI thread.
+     *
+     * @param ignorePreference
+     *            Shows the dialog even if the preference setting
+     *            ("hideInitialiseCnfWizard") has been set to true.
+     * @param asyncExec
+     *            Controls whether the wizard opening is performed as an
+     *            asynchronous execution on the display thread; ignored if this
+     *            method is invoked from the UI thread itself.
      *
      * @return Whether the wizard was shown and finished successfully.
      */
-	public boolean showIfNeeded(boolean ignorePreference) {
-	    boolean shownOkay = false;
+	public boolean showIfNeeded(boolean ignorePreference, boolean asyncExec) {
+	    final AtomicBoolean shownOkay = new AtomicBoolean(false);
 	    if(!LocalRepositoryTasks.isBndWorkspaceConfigured()) {
             IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
             boolean hideWizard = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
 
             if(!hideWizard || ignorePreference) {
-                WizardDialog dialog = new WizardDialog(getShell(), this);
-                shownOkay = dialog.open() == Window.OK;
+                Display display = PlatformUI.getWorkbench().getDisplay();
+                SWTConcurrencyUtil.execForDisplay(display, asyncExec, new Runnable() {
+                    public void run() {
+                        WizardDialog dialog = new WizardDialog(getShell(), InitialiseCnfProjectWizard.this);
+                        shownOkay.set(dialog.open() == Window.OK);
+                    }
+                });
             }
 	    }
-	    return shownOkay;
+	    return shownOkay.get();
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {

@@ -133,7 +133,13 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
                     } else {
                         cell.setImage(jarImg);
                     }
-                    cell.setText(file.getName());
+                    StyledString label = new StyledString(file.getName());
+                    String parentPath = file.getParent();
+                    if(parentPath != null) {
+                        label.append(" (" + parentPath + ")", StyledString.QUALIFIER_STYLER);
+                    }
+                    cell.setText(label.getString());
+                    cell.setStyleRanges(label.getStyleRanges());
                 } else if (index == 1) {
                     if(bundleId == null) {
                         cell.setImage(errorImg);

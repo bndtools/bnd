@@ -7,7 +7,7 @@ project.allsourcepath   = ${p-allsourcepath;:}
 project.output          = ${p-output}
 project.testpath        = ${p-testpath;:}
 
--verbose:     true
+-verbose:     false
 project:      ${basedir}
 src:          src
 bin:          bin
@@ -34,7 +34,6 @@ javac.debug:  on
 -sourcepath:    ${project}/src 
 -plugin:        aQute.lib.deployer.FileRepo;location=${repo},\
                 bndtools.bndplugins.repo.eclipse.EclipseRepo;location=${eclipse-repo};name=Eclipse-${eclipse-version}
-#               aQute.bnd.plugin.repo.EclipseRepo;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"
 
 # Runtime Options and Variables

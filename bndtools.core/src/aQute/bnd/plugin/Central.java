@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -159,20 +160,11 @@ public class Central implements IResourceChangeListener {
         if (workspace != null)
             return workspace;
 
-        IResource resource = iworkspace.getRoot().findMember("/cnf/build.bnd");
-        if (resource != null) {
-            IPath path = resource.getLocation();
-            if (path != null) {
-                File f = path.toFile();
-                workspace = Workspace.getWorkspace(f.getAbsoluteFile()
-                        .getParentFile().getParentFile().getAbsoluteFile());
-                // workspace.setBundleContex(context);
-                return workspace;
-            }
-        }
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        File wsdir = wsroot.getLocation().toFile();
 
-        workspace = Workspace.getWorkspace(iworkspace.getRoot().getLocation()
-                .toFile());
+        workspace = new Workspace(wsdir);
+
         return workspace;
     }
 
