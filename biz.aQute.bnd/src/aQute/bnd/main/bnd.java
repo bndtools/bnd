@@ -336,7 +336,7 @@ public class bnd extends Processor {
 			}
 			for (Instruction instr : skip) {
 				if (instr.matches(bsn)) {
-					if ( instr.isNegated()) // - * - = +!
+					if (instr.isNegated()) // - * - = +!
 						break;
 					else
 						return null; // skip it
@@ -1444,15 +1444,18 @@ public class bnd extends Processor {
 	public void repo(String args[], int i) throws Exception {
 		String bsn = null;
 		String version = null;
-
-		Project p = Workspace.getProject(getBase());
-		List<RepositoryPlugin> repos = p.getWorkspace().getRepositories();
+		List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>();
 		RepositoryPlugin writable = null;
-		for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
-			RepositoryPlugin rpp = rp.next();
-			if (rpp.canWrite()) {
-				writable = rpp;
-				break;
+		
+		Project p = Workspace.getProject(getBase());
+		if (p != null) {
+			 repos.addAll( p.getWorkspace().getRepositories());
+			for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
+				RepositoryPlugin rpp = rp.next();
+				if (rpp.canWrite()) {
+					writable = rpp;
+					break;
+				}
 			}
 		}
 
