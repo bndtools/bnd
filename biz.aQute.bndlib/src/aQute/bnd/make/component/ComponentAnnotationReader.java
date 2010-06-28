@@ -11,7 +11,7 @@ import aQute.libg.reporter.*;
 
 public class ComponentAnnotationReader extends ClassDataCollector {
     static Pattern      BINDDESCRIPTOR          = Pattern
-                                                        .compile("\\(L([^;]*);(Ljava/util/Map;)?\\)V");
+                                                        .compile("\\(L([^;]*);(java/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
     static Pattern      BINDMETHOD              = Pattern
                                                         .compile("(set|bind|add)(.)(.*)");
 
