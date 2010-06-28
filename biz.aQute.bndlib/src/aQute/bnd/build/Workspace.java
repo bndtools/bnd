@@ -47,18 +47,11 @@ public class Workspace extends Processor {
 		
 		// Check if we can find a bnd dir higher up so
 		// we can have nested workspaces.
-		while ( !test.isDirectory()) {
+		if ( !test.isDirectory())
 			test = new File(workspaceDir, BNDDIR);
-			if ( test.isDirectory())
-				break;
-			
-			workspaceDir = workspaceDir.getParentFile();				
-			if ( workspaceDir == null ) {
-				// We reached the root ... just use parent dir.
-				workspaceDir = parent;
-				break;
-			}
-		}
+
+		if ( !test.isDirectory())
+			throw new IllegalArgumentException("No Workspace found from: " + parent);
 		
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
