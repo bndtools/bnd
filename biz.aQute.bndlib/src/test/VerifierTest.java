@@ -8,6 +8,26 @@ import junit.framework.TestCase;
 import aQute.lib.osgi.*;
 
 public class VerifierTest extends TestCase {
+	
+	
+	public void testnativeCode() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("bin"));
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "native/win32/NTEventLogAppender-1.2.dll;literal='abc'");
+		b.setProperty("Bundle-NativeCode", "native/win32/NTEventLogAppender-1.2.dll; osname=Win32; processor=x86");
+		Jar jar = b.build();
+		Verifier v = new Verifier(jar);
+		v.setJar(jar);
+		
+		v.verifyNative();
+		System.out.println( v.getErrors());
+		assertEquals(0, v.getErrors().size());
+		v.close();
+		b.close();
+	}
+	
+	
 
     public void testFilter() {
 
