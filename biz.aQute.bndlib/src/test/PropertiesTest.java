@@ -75,7 +75,6 @@ public class PropertiesTest extends TestCase {
     
     public void testInternationalCharacters() throws Exception {
         String test="#comment\n"
-            + "abc=ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß\n"
             + "Namex=Loïc Cotonéa\n"
             + "Export-Package: *\n"
             + "Unicode=\\u0040\n"
@@ -87,7 +86,6 @@ public class PropertiesTest extends TestCase {
         Properties p = new Properties();
         p.load(bin);
         assertEquals("@", p.get("Unicode"));
-        assertEquals("ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß", p.get("abc"));
         assertEquals("Loïc Cotonéa", p.get("Namex"));
         
         // Now test if we can make the round trip

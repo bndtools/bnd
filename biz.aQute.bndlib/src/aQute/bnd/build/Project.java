@@ -920,7 +920,7 @@ public class Project extends Processor {
 		}
 
 		for (File f : files) {
-			if (f.lastModified() < lastModified()) {
+			if ( !f.exists() || f.lastModified() < lastModified()) {
 				return false;
 			}
 		}
@@ -1019,6 +1019,9 @@ public class Project extends Processor {
 				reportNewer(f.lastModified(), jar);
 				f.delete();
 				jar.write(f);
+				if ( !f.getParentFile().isDirectory())
+					f.getParentFile().mkdirs();
+				
 				getWorkspace().changedFile(f);
 			} else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
@@ -1068,6 +1071,8 @@ public class Project extends Processor {
 	public void propertiesChanged() {
 		super.propertiesChanged();
 		preparedPaths = false;
+		files = null;
+		
 	}
 
 	public String getName() {

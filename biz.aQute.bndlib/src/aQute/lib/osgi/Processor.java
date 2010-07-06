@@ -516,13 +516,14 @@ public class Processor implements Reporter, Constants, Closeable {
 		if (propertiesFile == null)
 			return false;
 
+		updateModified(propertiesFile.lastModified(), "properties file");
 		boolean changed = false;
 		if (included != null) {
 			for (File file : included) {
 
-				if (file.lastModified() > modified) {
+				if (file.exists() == false || file.lastModified() > modified) {
+					updateModified(file.lastModified(), "include file: " + file);
 					changed = true;
-					break;
 				}
 			}
 		}

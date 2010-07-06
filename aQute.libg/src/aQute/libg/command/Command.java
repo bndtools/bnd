@@ -6,15 +6,17 @@ import java.util.concurrent.*;
 
 import aQute.libg.reporter.*;
 
-public class Command {	
-	
-	boolean			trace;
-	Reporter		reporter;
-	List<String>	arguments	= new ArrayList<String>();
-	long			timeout		= 0;
-	File			cwd			= new File("").getAbsoluteFile().getParentFile().getAbsoluteFile();
-	static Timer	timer		= new Timer();
-	Process			process;
+public class Command {
+
+	boolean				trace;
+	Reporter			reporter;
+	List<String>		arguments	= new ArrayList<String>();
+	long				timeout		= 0;
+	File				cwd			= new File("").getAbsoluteFile().getParentFile()
+											.getAbsoluteFile();
+	static Timer		timer		= new Timer();
+	Process				process;
+	volatile boolean	timedout;
 
 	public int execute(Appendable stdout, Appendable stderr) throws Exception {
 		return execute((InputStream) null, stdout, stderr);
@@ -50,6 +52,7 @@ public class Command {
 		if (timeout != 0) {
 			timer = new TimerTask() {
 				public void run() {
+					timedout = true;
 					process.destroy();
 					if (handler != null)
 						handler.interrupt();
@@ -76,13 +79,15 @@ public class Command {
 			if (timer != null)
 				timer.cancel();
 			Runtime.getRuntime().removeShutdownHook(hook);
-			if ( handler != null)
+			if (handler != null)
 				handler.interrupt();
 		}
 		if (reporter != null)
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s", arguments, result,
 					stdout, stderr);
 
+		if( timedout )
+			return Integer.MIN_VALUE;
 		byte exitValue = (byte) process.exitValue();
 		return exitValue;
 	}
@@ -115,10 +120,10 @@ public class Command {
 		this.cwd = dir;
 	}
 
-	
 	public void cancel() {
 		process.destroy();
 	}
+
 	class Collector extends Thread {
 		final InputStream	in;
 		final Appendable	sb;
@@ -174,13 +179,12 @@ public class Command {
 			}
 		}
 	}
-	
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		
-		for ( String argument : arguments ) {
+
+		for (String argument : arguments) {
 			sb.append(del);
 			sb.append(argument);
 			del = " ";

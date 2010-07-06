@@ -161,6 +161,9 @@ public abstract class ProjectLauncher {
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
 		int result = java.execute(System.in, System.out, System.err);
+		if ( result == Integer.MIN_VALUE)
+			return TIMEDOUT;
+		
 		reportResult(result);
 		return result;
 	}
