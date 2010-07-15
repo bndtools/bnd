@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -222,6 +223,10 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 			model.build();
 			progress.worked(1);
+
+			File targetDir = model.getTarget();
+			IContainer target = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
+			target.refreshLocal(IResource.DEPTH_INFINITE, null);
 
 			// Clear any JARs in the target directory that have not just been built by Bnd
 			final File[] targetJars = model.getTarget().listFiles(new FileFilter() {
