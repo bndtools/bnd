@@ -5,8 +5,13 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "bndtools.wizards.workspace.messages"; //$NON-NLS-1$
 
-	public static String InitialiseCnfProjectIntroWizardPage_message;
+
     public static String InitialiseCnfProjectIntroWizardPage_title;
+    public static String InitialiseCnfProjectIntroWizardPage_createCnfMessage;
+    public static String InitialiseCnfProjectIntroWizardPage_updateRepositoryMessage;
+
+    public static String InitialiseCnfProjectIntroWizardPage_dontShowLabel;
+    public static String InitialiseCnfProjectIntroWizardPage_warningNoMoreChecks;
     public static String InitialiseCnfProjectWizard_info_dialog_donotshow;
     public static String InitialiseCnfProjectWizard_info_dialog_message;
     public static String InitialiseCnfProjectWizard_info_dialog_popup;

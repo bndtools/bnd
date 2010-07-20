@@ -44,7 +44,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
     public final static Path ID      = new Path("aQute.bnd.classpath.container");
 
-    final Central            central = Activator.getDefault().getCentral();
+    final Central central = Activator.getDefault().getCentral();
 
     public BndContainerInitializer() {
         central.addModelListener(this);
@@ -79,7 +79,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         System.out.println("Workspace changed");
     }
 
-    IClasspathEntry[] calculateEntries(Project project) {
+    public static IClasspathEntry[] calculateEntries(Project project) {
         if(project == null)
             return new IClasspathEntry[0];
 

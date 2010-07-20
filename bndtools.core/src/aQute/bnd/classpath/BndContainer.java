@@ -10,7 +10,7 @@ public class BndContainer implements IClasspathContainer {
 	final IJavaProject javaProject;
 	final IClasspathEntry[] entries;
 
-	BndContainer(IJavaProject javaProject, IClasspathEntry[] entries) {
+	public BndContainer(IJavaProject javaProject, IClasspathEntry[] entries) {
 		this.javaProject = javaProject;
 		this.entries = entries;
 	}

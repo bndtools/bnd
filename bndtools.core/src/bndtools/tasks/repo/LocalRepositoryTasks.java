@@ -313,7 +313,22 @@ public class LocalRepositoryTasks {
         }
     }
 
-    static Map<String, Version> loadInstalledRepositoryVersions() {
+    public static boolean isRepositoryUpToDate() {
+        Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
+
+        List<ImplicitRepositoryWrapper> repos = getImplicitRepositories();
+        for (ImplicitRepositoryWrapper repo : repos) {
+            Version version = installedVersions.get(repo.contributorBSN);
+            if(version == null)
+                return false;
+            else if (repo.contributorVersion != null && repo.contributorVersion.compareTo(version) > 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    public static Map<String, Version> loadInstalledRepositoryVersions() {
         Preferences node = getProjectPreferencesNode();
 
         Map<String, Version> result = new HashMap<String, Version>();
@@ -355,5 +370,6 @@ public class LocalRepositoryTasks {
         ProjectScope cnfProjectPrefs = new ProjectScope(cnfProject);
         return cnfProjectPrefs.getNode(Plugin.PLUGIN_ID);
     }
+
 }
 

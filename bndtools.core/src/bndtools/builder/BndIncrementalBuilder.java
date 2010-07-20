@@ -40,16 +40,19 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IClasspathContainer;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.classpath.BndContainer;
+import aQute.bnd.classpath.BndContainerInitializer;
 import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 import bndtools.utils.ResourceDeltaAccumulator;
-import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
@@ -66,15 +69,12 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
 			throws CoreException {
-        // Create the cnf project, if not already created
-        final InitialiseCnfProjectWizard wizard = new InitialiseCnfProjectWizard();
-        boolean shown = wizard.showIfNeeded(false, false);
 
         IProject project = getProject();
 
 		ensureBndBndExists(project);
 
-		if (shown || getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
+		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
 			rebuildBndProject(project, monitor);
 		} else {
 			IResourceDelta delta = getDelta(project);
@@ -197,8 +197,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	void rebuildBndProject(IProject project, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
-		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
+		IJavaProject javaProject = JavaCore.create(project);
+
+        Project model = Activator.getDefault().getCentral().getModel(javaProject);
 		model.refresh();
+		model.setChanged();
 
 		// Get or create the build model for this bnd file
 		IFile bndFile = project.getFile(Project.BNDFILE);
@@ -207,6 +210,9 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		if (bndFile.exists()) {
 			bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
 		}
+
+		// Update classpath
+		JavaCore.setClasspathContainer(BndContainerInitializer.ID, new IJavaProject[] { javaProject } , new IClasspathContainer[] { new BndContainer(javaProject, BndContainerInitializer.calculateEntries(model)) }, null);
 
 		// Build
 		try {

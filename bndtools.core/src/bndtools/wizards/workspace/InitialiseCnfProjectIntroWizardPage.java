@@ -11,26 +11,28 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 
 public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
 
-    protected InitialiseCnfProjectIntroWizardPage(String pageName) {
-        super(pageName);
+    private final String message;
+
+    protected InitialiseCnfProjectIntroWizardPage(String pageName, String message) {
+        super(pageName, "Welcome to Bndtools!", AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bndtools-wizban.png"));
+        this.message = message;
     }
 
     public void createControl(Composite parent) {
-        setTitle(Messages.InitialiseCnfProjectIntroWizardPage_title);
-
         Composite composite = new Composite(parent, SWT.NONE);
 
         Text text = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
         text.setBackground(parent.getBackground());
-        text.setText(Messages.InitialiseCnfProjectIntroWizardPage_message);
+        text.setText(message);
 
         final Button hideWizardButton = new Button(composite, SWT.CHECK);
-        hideWizardButton.setText("Do not show this wizard again.");
+        hideWizardButton.setText(Messages.InitialiseCnfProjectIntroWizardPage_dontShowLabel);
 
         hideWizardButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -41,7 +43,7 @@ public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
                 store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, hide);
 
                 if(hide) {
-                    setMessage("Warning: Bndtools will no longer check for the Bnd configuration project when creating a new Bnd project.", IMessageProvider.WARNING);
+                    setMessage(Messages.InitialiseCnfProjectIntroWizardPage_warningNoMoreChecks, IMessageProvider.WARNING);
                 } else {
                     setMessage(null);
                 }

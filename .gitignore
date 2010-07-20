@@ -17,3 +17,8 @@ copyrightLog.txt
 
 # Bnd stuff
 bnd.index
+bndtools.launcher
+cnf/bndtools-*.zip
+utils
+Foo
+External Plug-in Libraries

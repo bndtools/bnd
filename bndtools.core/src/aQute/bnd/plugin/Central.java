@@ -12,7 +12,6 @@ import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
@@ -30,8 +29,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
 
-@SuppressWarnings("unchecked")
-public class Central implements IResourceChangeListener {
+public class Central {
     static IWorkspace                iworkspace;
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
@@ -44,7 +42,6 @@ public class Central implements IResourceChangeListener {
         // Add a resource change listener if this is
         // the first project
         iworkspace = ResourcesPlugin.getWorkspace();
-        iworkspace.addResourceChangeListener(this);
 
         ws = getWorkspace();
         context.registerService(Workspace.class.getName(), ws, null);
@@ -163,7 +160,8 @@ public class Central implements IResourceChangeListener {
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         File wsdir = wsroot.getLocation().toFile();
 
-        workspace = new Workspace(wsdir);
+        //workspace = new Workspace(wsdir);
+        workspace = Workspace.getWorkspace(wsdir);
 
         return workspace;
     }

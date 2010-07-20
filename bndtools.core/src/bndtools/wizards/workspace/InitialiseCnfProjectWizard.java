@@ -16,6 +16,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -29,8 +30,6 @@ import bndtools.tasks.repo.LocalRepositoryTasks;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard {
-
-    private final InitialiseCnfProjectIntroWizardPage introPage = new InitialiseCnfProjectIntroWizardPage("introPage"); //$NON-NLS-1$
 
 	private IWorkbench workbench;
 	private IStructuredSelection selection;
@@ -54,22 +53,36 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
      *
      * @return Whether the wizard was shown and finished successfully.
      */
-	public boolean showIfNeeded(boolean ignorePreference, boolean asyncExec) {
-	    final AtomicBoolean shownOkay = new AtomicBoolean(false);
-	    if(!LocalRepositoryTasks.isBndWorkspaceConfigured()) {
-            IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-            boolean hideWizard = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
-
-            if(!hideWizard || ignorePreference) {
-                Display display = PlatformUI.getWorkbench().getDisplay();
-                SWTConcurrencyUtil.execForDisplay(display, asyncExec, new Runnable() {
-                    public void run() {
-                        WizardDialog dialog = new WizardDialog(getShell(), InitialiseCnfProjectWizard.this);
-                        shownOkay.set(dialog.open() == Window.OK);
-                    }
-                });
-            }
+	public static boolean showIfNeeded(boolean ignorePreference, boolean asyncExec, final IShellProvider shellProvider) {
+	    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
+	    boolean hideWizard = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
+	    if(hideWizard && !ignorePreference) {
+	        return false;
 	    }
+
+	    final InitialiseCnfProjectWizard wizard;
+
+	    if (!LocalRepositoryTasks.isBndWorkspaceConfigured()) {
+            wizard = new InitialiseCnfProjectWizard();
+            wizard.addPage(new InitialiseCnfProjectIntroWizardPage("message", Messages.InitialiseCnfProjectIntroWizardPage_createCnfMessage));
+	    } else if (!LocalRepositoryTasks.isRepositoryUpToDate()) {
+	        wizard = new InitialiseCnfProjectWizard();
+	        wizard.addPage(new InitialiseCnfProjectIntroWizardPage("message", Messages.InitialiseCnfProjectIntroWizardPage_updateRepositoryMessage));
+	    } else {
+	        wizard = null;
+	    }
+
+	    final AtomicBoolean shownOkay = new AtomicBoolean(false);
+	    if(wizard != null) {
+	        Display display = PlatformUI.getWorkbench().getDisplay();
+	        SWTConcurrencyUtil.execForDisplay(display, asyncExec, new Runnable() {
+	            public void run() {
+	                WizardDialog dialog = new WizardDialog(shellProvider.getShell(), wizard);
+	                shownOkay.set(dialog.open() == Window.OK);
+	            }
+	        });
+	    }
+
 	    return shownOkay.get();
 	}
 
@@ -77,10 +90,7 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
 		this.workbench = workbench;
 		this.selection = selection;
 	}
-	@Override
-	public void addPages() {
-	    addPage(introPage);
-	}
+
 	@Override
 	public boolean performFinish() {
 	    try {
@@ -115,6 +125,7 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
         }
         return false;
 	}
+
 	@Override
 	public boolean performCancel() {
 	    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();

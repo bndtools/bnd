@@ -17,7 +17,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -26,6 +29,7 @@ import aQute.bnd.plugin.Central;
 import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
+import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 
 public class Plugin extends AbstractUIPlugin {
@@ -45,6 +49,9 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
 	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
+
+    private static final String BASE_REPOSITORY_INSTALLED_VERSION = "baseRepoInstalledVersion";
+    private static final String BASE_REPOSITORY_BSN = "bndtools.repository.base";
 
 	private static volatile Plugin plugin;
 
@@ -68,6 +75,8 @@ public class Plugin extends AbstractUIPlugin {
 
 		repositoryModel = new RepositoryModel();
 
+		installOrUpdateCheck();
+
 //		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
 //		buildJob.setSystem(false);
 //		buildJob.schedule();
@@ -75,9 +84,17 @@ public class Plugin extends AbstractUIPlugin {
 
 	}
 
+	private void installOrUpdateCheck() {
+	    InitialiseCnfProjectWizard.showIfNeeded(false, true, new IShellProvider() {
+            public Shell getShell() {
+                return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            }
+        });
+    }
 
 
-	@Override
+
+    @Override
     public void stop(BundleContext context) throws Exception {
 		Central.getWorkspace().removeBasicPlugin(bndListener);
 		bndActivator.stop(context);
