@@ -163,8 +163,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 			systemOut = new Tee(System.out);
 			systemErr = new Tee(System.err);
-			systemOut.capture(false);
-			systemErr.capture(false);
+			systemOut.capture(false).echo(true);
+			systemErr.capture(false).echo(true);
 			System.setOut(systemOut.getStream());
 			System.setErr(systemErr.getStream());
 			try {

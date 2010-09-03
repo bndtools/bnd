@@ -217,7 +217,7 @@ public class Launcher implements ServiceListener {
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false) {
 			error("could not resolve the bundles");
-			return LauncherConstants.RESOLVE_ERROR;
+			//return LauncherConstants.RESOLVE_ERROR;
 		}
 
 		// Now start all the installed bundles in the same order

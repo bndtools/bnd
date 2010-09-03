@@ -1388,14 +1388,18 @@ public class bnd extends Processor {
 		if (project != null)
 			return project;
 
-		project = Workspace.getProject(getBase());
-		if (project == null)
-			return null;
+		try {
+			project = Workspace.getProject(getBase());
+			if (project == null)
+				return null;
 
-		if (!project.isValid())
-			return null;
+			if (!project.isValid())
+				return null;
 
-		return project;
+			return project;
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -1446,10 +1450,10 @@ public class bnd extends Processor {
 		String version = null;
 		List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>();
 		RepositoryPlugin writable = null;
-		
+
 		Project p = Workspace.getProject(getBase());
 		if (p != null) {
-			 repos.addAll( p.getWorkspace().getRepositories());
+			repos.addAll(p.getWorkspace().getRepositories());
 			for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
 				RepositoryPlugin rpp = rp.next();
 				if (rpp.canWrite()) {

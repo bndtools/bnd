@@ -1151,7 +1151,11 @@ public class Builder extends Analyzer {
 				String resourcePath = resource.getAbsolutePath();
 
 				if (resourcePath.startsWith(sourcePath)) {
-					return resourcePath.substring(sourcePath.length() + 1);
+					// Make sure that the path name is translated correctly
+					// i.e. on Windows the \ must be translated to /
+					String filePath = resourcePath.substring(sourcePath.length() + 1);
+					
+					return filePath.replace(File.separatorChar, '/');
 				}
 			}
 		}

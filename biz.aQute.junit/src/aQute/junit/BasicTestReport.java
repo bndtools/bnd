@@ -71,8 +71,8 @@ public class BasicTestReport implements TestListener, TestReporter {
 			}
 		}
 		fails = 0;
-		systemOut.clear().capture(true).echo(false);
-		systemErr.clear().capture(true).echo(false);
+		systemOut.clear().capture(true).echo(true);
+		systemErr.clear().capture(true).echo(true);
 	}
 
 	public void endTest(Test test) {

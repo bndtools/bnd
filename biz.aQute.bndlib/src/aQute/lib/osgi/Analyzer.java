@@ -128,26 +128,6 @@ public class Analyzer extends Processor {
 				}
 			}
 
-			if (false) {
-				// Collect all packages that this jar implements.
-				Set<String> implemented = newSet();
-				for (Clazz c : classspace.values()) {
-					Clazz.getImplementedPackages(implemented, this, c);
-				}
-
-				// Now mark all referred packages that we implement
-				// as implemented
-				for (String p : implemented) {
-					Map<String, String> attrs = referred.get(p);
-					if (attrs != null)
-						// originall added this package
-						// but because we do not refer to it directly
-						// I guess we're not really implementing this.
-						// tricky
-						attrs.put(IMPLEMENTED_DIRECTIVE, "true");
-				}
-			}
-
 			if (activator != null) {
 				// Add the package of the activator to the set
 				// of referred classes. This must be done before we remove
@@ -1259,7 +1239,7 @@ public class Analyzer extends Processor {
 					if (override.startsWith(","))
 						override = override.substring(1);
 					if (override.length() > 0) {
-						clause.put("uses:", override);
+						clause.put(USES_DIRECTIVE, override);
 					}
 				}
 			} finally {
