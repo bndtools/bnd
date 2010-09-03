@@ -75,7 +75,7 @@ public class PropertiesTest extends TestCase {
     
     public void testInternationalCharacters() throws Exception {
         String test="#comment\n"
-            + "Namex=Loïc Cotonéa\n"
+            + "Namex=Lo\u00EFc Coton\u00E9a\n"
             + "Export-Package: *\n"
             + "Unicode=\\u0040\n"
             + "NameAgain=Loïc Cotonéa";

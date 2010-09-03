@@ -359,7 +359,6 @@ public class MacroTest extends TestCase {
         assertEquals("aaaa", m.process("$<a>"));
         assertEquals("aaaa", m.process("$(a)"));
         assertEquals("aaaa", m.process("$[a]"));
-        assertEquals("aaaa", m.process("$‹a›"));
 
         assertEquals("xaaaax", m.process("x${a}x"));
         assertEquals("xaaaaxaaaax", m.process("x${a}x${a}x"));
