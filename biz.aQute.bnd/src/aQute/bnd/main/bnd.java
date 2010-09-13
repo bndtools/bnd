@@ -1686,7 +1686,7 @@ public class bnd extends Processor {
 	public void runtests(String args[], int i) throws Exception {
 		int errors = 0;
 		File cwd = new File("").getAbsoluteFile();
-		Workspace ws = Workspace.getWorkspace(cwd);
+		Workspace ws = new Workspace(cwd.getParentFile().getAbsoluteFile());
 		File reportDir = getFile("reports");
 
 		delete(reportDir);
