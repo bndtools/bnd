@@ -30,4 +30,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.core;version=4.2.1
 
 -pom: true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.10
