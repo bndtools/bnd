@@ -107,7 +107,10 @@ public class JUnitEclipseReport implements TestReporter {
     }
 
     private void message(String key, Test test) {
-        message(key, (tests.indexOf(test) + 1) + "," + test);
+    	if ( tests == null )
+            message(key, "?,"+test);
+    	else
+    		message(key, (tests.indexOf(test) + 1) + "," + test);
     }
 
     private void report(List flattened) {
