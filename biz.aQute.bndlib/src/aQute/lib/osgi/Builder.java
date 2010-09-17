@@ -1,30 +1,13 @@
 package aQute.lib.osgi;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.zip.ZipException;
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
+import java.util.zip.*;
 
-import aQute.bnd.make.Make;
-import aQute.bnd.maven.PomResource;
-import aQute.bnd.service.SignerPlugin;
+import aQute.bnd.make.*;
+import aQute.bnd.maven.*;
+import aQute.bnd.service.*;
 
 /**
  * Include-Resource: ( [name '=' ] file )+

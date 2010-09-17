@@ -23,8 +23,11 @@ public class BasicTestReport implements TestListener, TestReporter {
 		this.activator = activator;
 	}
 
-	public void begin(Bundle fw, Bundle targetBundle, List tests, int realcount) {
+	public void setup(Bundle fw, Bundle targetBundle) {
 		this.targetBundle = targetBundle;
+	}
+	
+	public void begin(List tests, int realcount) {
 		activator.trace(">>>> %s, tests %s", targetBundle, tests);
 	}
 

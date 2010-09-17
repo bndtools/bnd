@@ -45,8 +45,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		if (testcases == null) {
 			trace("automatic testing of all bundles with Test-Cases header");
 			automatic();
-		}
-		else {
+		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
 				int errors = test(null, testcases, null);
@@ -169,7 +168,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			System.setErr(systemErr.getStream());
 			try {
 
-				BasicTestReport basic = new BasicTestReport(this,systemOut, systemErr) {
+				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
 					public void check() {
 						if (!active)
 							result.stop();
@@ -186,17 +185,22 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					add(reporters, result, new JunitXmlReport(report, bundle, basic));
 				}
 
+				for (TestReporter tr : reporters) {
+					tr.setup(fw,bundle);
+				}
+				
 				try {
-					TestSuite suite = createSuite(bundle, names);
+					TestSuite suite = createSuite(bundle, names, result);
 					List<Test> flattened = new ArrayList<Test>();
 					int realcount = flatten(flattened, suite);
 
 					for (TestReporter tr : reporters) {
-						tr.begin(fw, bundle, flattened, realcount);
+						tr.begin(flattened, realcount);
 					}
 					suite.run(result);
 
 				} catch (Throwable t) {
+					t.printStackTrace();
 					result.addError(null, t);
 				} finally {
 					for (TestReporter tr : reporters) {
@@ -214,18 +218,23 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		return -1;
 	}
 
-	private TestSuite createSuite(Bundle tfw, List<String> testNames) throws Exception {
+	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) throws Exception {
 		TestSuite suite = new TestSuite();
 		for (String fqn : testNames) {
-			int n = fqn.indexOf(':');
-			if (n > 0) {
-				String method = fqn.substring(n + 1);
-				fqn = fqn.substring(0, n);
-				Class<?> clazz = loadClass(tfw, fqn);
-				suite.addTest(TestSuite.createTest(clazz, method));
-			} else {
-				Class<?> clazz = loadClass(tfw, fqn);
-				suite.addTestSuite(clazz);
+			try {
+				int n = fqn.indexOf(':');
+				if (n > 0) {
+					String method = fqn.substring(n + 1);
+					fqn = fqn.substring(0, n);
+					Class<?> clazz = loadClass(tfw, fqn);
+					suite.addTest(TestSuite.createTest(clazz, method));
+				} else {
+					Class<?> clazz = loadClass(tfw, fqn);
+					suite.addTestSuite(clazz);
+				}
+			} catch (Throwable e) {
+				System.err.println("Can not create test case for: " + fqn + " : " + e);
+				result.addError(suite, e);
 			}
 		}
 		return suite;

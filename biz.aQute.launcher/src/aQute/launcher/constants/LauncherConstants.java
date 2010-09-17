@@ -80,7 +80,7 @@ public class LauncherConstants {
 		services = Boolean.valueOf(p.getProperty(LAUNCH_SERVICES));
 		storageDir = new File(p.getProperty(LAUNCH_STORAGE_DIR));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
-		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), " ,"));
+		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));

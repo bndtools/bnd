@@ -16,7 +16,7 @@ public class JUnitEclipseReport implements TestReporter {
     PrintWriter    out;
     long           startTime;
     Bundle         targetBundle;
-    List<Test>           tests;
+    List           tests;
     boolean        verbose = false;
     Test           current;
 
@@ -40,8 +40,11 @@ public class JUnitEclipseReport implements TestReporter {
                 "UTF-8"));
     }
 
-    public void begin(Bundle fw, Bundle targetBundle, List tests, int realcount) {
-        this.targetBundle = targetBundle;
+    public void setup(Bundle fw, Bundle targetBundle) {
+        this.targetBundle = targetBundle;    	
+    }
+    
+    public void begin(List tests, int realcount) {
         this.tests = tests;
         message("%TESTC  ", realcount + " v2");
         report(tests);

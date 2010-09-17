@@ -41,7 +41,7 @@ public class JunitXmlReport implements TestReporter {
 		this.progress = progress;
 	}
 
-	public void begin(Bundle fw, Bundle targetBundle, List classNames, int realcount) {
+	public void setup(Bundle fw, Bundle targetBundle) {
 		startTime = System.currentTimeMillis();
 
 		testsuite.addAttribute("hostname", hostname);
@@ -107,12 +107,15 @@ public class JunitXmlReport implements TestReporter {
 						testsuite.addContent(url);
 
 					} else {
-						Tag addxml = new Tag(testsuite,"error");
+						Tag addxml = new Tag(testsuite, "error");
 						addxml.addAttribute("reason", "no such resource: " + resource);
 					}
 				}
 			}
 		}
+	}
+
+	public void begin(List classNames, int realcount) {
 	}
 
 	public void end() {
@@ -165,7 +168,10 @@ public class JunitXmlReport implements TestReporter {
 		error.setCDATA();
 		error.addAttribute("type", t.getClass().getName());
 		error.addContent(getTrace(t));
-		testcase.addContent(error);
+		if (testcase == null)
+			testsuite.addContent(error);
+		else
+			testcase.addContent(error);
 		progress(" e");
 	}
 
@@ -204,20 +210,19 @@ public class JunitXmlReport implements TestReporter {
 
 	public void endTest(Test test) {
 		String[] outs = basic.getCaptured();
-		if ( outs[0] == null) {
-			Tag sysout = new Tag(testcase,"sys-out");
+		if (outs[0] != null) {
+			Tag sysout = new Tag(testcase, "sys-out");
 			sysout.addContent(outs[0]);
 		}
-			
-		if ( outs[1] == null) {
-			Tag sysout = new Tag(testcase,"sys-err");
+
+		if (outs[1] != null) {
+			Tag sysout = new Tag(testcase, "sys-err");
 			sysout.addContent(outs[1]);
 		}
-			
+
 		testcase
 				.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
 	}
-
 
 	public void close() {
 		end();
