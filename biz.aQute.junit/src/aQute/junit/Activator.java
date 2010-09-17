@@ -94,7 +94,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				trace("received bundle to test: %s", bundle.getLocation());
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
-					test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
+					int result = test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
+					if ( !continuous)
+						System.exit(result);
 				} finally {
 					if (report != null)
 						report.close();
@@ -103,11 +105,6 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				error("Not sure what happened anymore %s", e);
 				System.exit(-2);
 			}
-			if (queue.isEmpty() && !continuous) {
-				trace("queue empty and not continuous, exiting ok");
-				System.exit(0);
-			}
-
 		}
 	}
 
@@ -162,10 +159,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 			systemOut = new Tee(System.out);
 			systemErr = new Tee(System.err);
-			systemOut.capture(false).echo(true);
-			systemErr.capture(false).echo(true);
+			systemOut.capture(trace).echo(true);
+			systemErr.capture(trace).echo(true);
 			System.setOut(systemOut.getStream());
 			System.setErr(systemErr.getStream());
+			trace("changed streams");
 			try {
 
 				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
@@ -191,26 +189,35 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				
 				try {
 					TestSuite suite = createSuite(bundle, names, result);
+					trace("created suite " + suite);
 					List<Test> flattened = new ArrayList<Test>();
 					int realcount = flatten(flattened, suite);
 
 					for (TestReporter tr : reporters) {
 						tr.begin(flattened, realcount);
 					}
+					trace("running suite " + suite);
 					suite.run(result);
 
 				} catch (Throwable t) {
-					t.printStackTrace();
+					trace( t.getMessage());
 					result.addError(null, t);
 				} finally {
 					for (TestReporter tr : reporters) {
 						tr.end();
 					}
 				}
-			} finally {
+			} catch(Throwable t) {
+				System.out.println("exiting " + t);
+				t.printStackTrace();
+			}
+			finally {
 				System.setOut(systemOut.oldStream);
 				System.setErr(systemErr.oldStream);
+				trace("unset streams");
 			}
+			System.err.println("Errors: " + result.errorCount());
+			System.err.println("Failures: " + result.failureCount());
 			return result.errorCount() + result.failureCount();
 		} catch (Exception e) {
 			e.printStackTrace();
