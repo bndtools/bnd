@@ -195,7 +195,7 @@ public class Analyzer extends Processor {
 			// Add all exports that do not have an -noimport: directive
 			// to the imports.
 			Map<String, Map<String, String>> referredAndExported = newMap(referred);
-			referredAndExported.putAll(addExportsToImports(exports));
+			referredAndExported.putAll(doExportsToImports(exports));
 
 			// match the imports to the referred and exported packages,
 			// merge the info for matching packages
@@ -873,53 +873,88 @@ public class Analyzer extends Processor {
 	 * Additionally, it is necessary to treat the exports in groups. If an
 	 * exported package refers to another exported packages than it must be in
 	 * the same group. A framework can only substitute exports for imports for
-	 * the whole of such a group.
+	 * the whole of such a group. WHY????? Not clear anymore ...
 	 * 
 	 */
-	Map<String, Map<String, String>> addExportsToImports(Map<String, Map<String, String>> exports) {
+	/**
+	 * I could no longer argue why the groups are needed :-( See what happens
+	 * ... The commented out part calculated the groups and then removed the
+	 * imports from there. Now we only remove imports that have internal
+	 * references. Using internal code for an exported package means that a
+	 * bundle cannot import that package from elsewhere because its
+	 * assumptions might be violated if it receives a substitution. //
+	 */
+	Map<String, Map<String, String>> doExportsToImports(Map<String, Map<String, String>> exports) {
 
-		Set<String> imports = newSet(exports.keySet());
-
-		// Calculate the set of private references
+		// private packages = contained - exported.
 		Set<String> privatePackages = new HashSet<String>(contained.keySet());
-		privatePackages.removeAll(imports);
-		Set<String> privateReferences = newSet();
+		privatePackages.removeAll(exports.keySet());
 
+		// private references = ∀ p : private packages | uses(p)
+		Set<String> privateReferences = newSet();
 		for (String p : privatePackages) {
 			Set<String> uses = this.uses.get(p);
 			if (uses != null)
 				privateReferences.addAll(uses);
 		}
 
-		// Calculate the unique unconnected groups.
-		Map<String, Set<String>> groups = newMap();
-		for (String p : imports) {
-			Set<String> uses = this.uses.get(p);
-			merge(imports, groups, p, p);
-			if (uses != null)
-				for (String refers : uses) {
-					merge(imports, groups, p, refers);
+		// Assume we are going to export all exported packages
+		Set<String> toBeImported = new HashSet<String>(exports.keySet());
+
+		// Remove packages that are not referenced privately
+		toBeImported.retainAll(privateReferences);
+
+		// Not necessary to import anything that is already
+		// imported in the Import-Package statement.
+		if ( imports != null )
+			toBeImported.removeAll(imports.keySet());
+
+		// Remove exported packages that are referring to
+		// private packages.
+		// Each exported package has a uses clause. We just use
+		// the used packages for each exported package to find out
+		// if it refers to an internal package.
+		//
+
+		for (Iterator<String> i = toBeImported.iterator(); i.hasNext();) {
+			Set<String> usedByExportedPackage = this.uses.get(i.next());
+			for (String privatePackage : privatePackages) {
+				if (usedByExportedPackage.contains(privatePackage)) {
+					i.remove();
+					break;
 				}
-		}
-		Set<Set<String>> unique = new HashSet<Set<String>>(groups.values());
-
-		// remove any export that is either referenced from
-		// a private package or that is referring to
-		// a private package. This is all based on the group
-		for (Set<String> group : unique) {
-			// Remove any imported packages.
-			group.retainAll(contained.keySet());
-			boolean exportRefsPrivate = group.retainAll(exports.keySet());
-			boolean privateRefsExport = intersects(privateReferences, group);
-
-			if (!privateRefsExport || exportRefsPrivate) {
-				imports.removeAll(group);
 			}
 		}
 
+		// // Calculate the unique unconnected groups.
+		// Map<String, Set<String>> groups = newMap();
+		// for (String p : imports) {
+		// Set<String> uses = this.uses.get(p);
+		// merge(imports, groups, p, p);
+		// if (uses != null)
+		// for (String refers : uses) {
+		// merge(imports, groups, p, refers);
+		// }
+		// }
+		// Set<Set<String>> unique = new HashSet<Set<String>>(groups.values());
+		//
+		// // remove any export that is either referenced from
+		// // a private package or that is referring to
+		// // a private package. This is all based on the group
+		// for (Set<String> group : unique) {
+		// // Remove any imported packages.
+		// group.retainAll(contained.keySet());
+		// boolean exportRefsPrivate = group.retainAll(exports.keySet());
+		// boolean privateRefsExport = intersects(privateReferences, group);
+		//
+		// if (!privateRefsExport || exportRefsPrivate) {
+		// imports.removeAll(group);
+		// }
+		// }
+
 		// Clean up attributes and generate result map
 		Map<String, Map<String, String>> result = newMap();
-		for (Iterator<String> i = imports.iterator(); i.hasNext();) {
+		for (Iterator<String> i = toBeImported.iterator(); i.hasNext();) {
 			String ep = i.next();
 			Map<String, String> parameters = exports.get(ep);
 
@@ -929,8 +964,13 @@ public class Analyzer extends Processor {
 
 			String version = parameters.get(VERSION_ATTRIBUTE);
 			// we can't substitute when there is no version
-			if (version == null)
+			if (version == null) {
+				if ( isPedantic())
+					warning(
+						"Cannot automatically import exported package %s because it has no version defined",
+						ep);
 				continue;
+			}
 
 			parameters = newMap(parameters);
 			parameters.remove(VERSION_ATTRIBUTE);
