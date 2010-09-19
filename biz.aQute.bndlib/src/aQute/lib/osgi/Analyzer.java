@@ -105,7 +105,6 @@ public class Analyzer extends Processor {
 	public void analyze() throws Exception {
 		if (!analyzed) {
 			analyzed = true;
-			classpathExports = newHashMap();
 			activator = getProperty(BUNDLE_ACTIVATOR);
 			bundleClasspath = parseHeader(getProperty(BUNDLE_CLASSPATH));
 
@@ -217,6 +216,10 @@ public class Analyzer extends Processor {
 					imports.put(p, map);
 				}
 			}
+
+			// See what information we can find to augment the
+			// exports. I.e. look on the classpath
+			augmentExports();
 
 			// See what information we can find to augment the
 			// imports. I.e. look on the classpath
@@ -961,16 +964,16 @@ public class Analyzer extends Processor {
 			String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
 			if (noimport != null && noimport.equalsIgnoreCase("true"))
 				continue;
-			
-			// we can't substitute when there is no version
-			String version = parameters.get(VERSION_ATTRIBUTE);
-			if (version == null) {
-				if (isPedantic())
-					warning(
-							"Cannot automatically import exported package %s because it has no version defined",
-							ep);
-				continue;
-			}
+
+			// // we can't substitute when there is no version
+			// String version = parameters.get(VERSION_ATTRIBUTE);
+			// if (version == null) {
+			// if (isPedantic())
+			// warning(
+			// "Cannot automatically import exported package %s because it has no version defined",
+			// ep);
+			// continue;
+			// }
 
 			parameters = newMap(parameters);
 			parameters.remove(VERSION_ATTRIBUTE);
@@ -1058,7 +1061,6 @@ public class Analyzer extends Processor {
 			checkManifest(current);
 			for (Iterator<String> j = current.getDirectories().keySet().iterator(); j.hasNext();) {
 				String dir = j.next();
-
 				Resource resource = current.getResource(dir + "/packageinfo");
 				if (resource != null) {
 					InputStream in = resource.openInputStream();
@@ -1113,39 +1115,87 @@ public class Analyzer extends Processor {
 								.get(IMPORT_DIRECTIVE));
 				}
 
-				// Convert any attribute values that have macros.
-				for (String key : importAttributes.keySet()) {
-					String value = importAttributes.get(key);
-					if (value.indexOf('$') >= 0) {
-						value = getReplacer().process(value);
-						importAttributes.put(key, value);
-					}
-				}
-
-				// You can add a remove-attribute: directive with a regular
-				// expression for attributes that need to be removed. We also
-				// remove all attributes that have a value of !. This allows
-				// you to use macros with ${if} to remove values.
-				String remove = importAttributes.remove(REMOVE_ATTRIBUTE_DIRECTIVE);
-				Instruction removeInstr = null;
-
-				if (remove != null)
-					removeInstr = Instruction.getPattern(remove);
-
-				for (Iterator<Map.Entry<String, String>> i = importAttributes.entrySet().iterator(); i
-						.hasNext();) {
-					Map.Entry<String, String> entry = i.next();
-					if (entry.getValue().equals("!"))
-						i.remove();
-					else if (removeInstr != null && removeInstr.matches((String) entry.getKey()))
-						i.remove();
-					else {
-						// Not removed ...
-					}
-				}
+				fixupAttributes(importAttributes);
+				removeAttributes(importAttributes);
 
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
+			}
+		}
+	}
+
+	/**
+	 * Provide any macro substitutions and versions for exported packages.
+	 */
+
+	void augmentExports() {
+		for (String packageName : exports.keySet()) {
+			setProperty(CURRENT_PACKAGE, packageName);
+			try {
+				Map<String, String> attributes = exports.get(packageName);
+				Map<String, String> exporterAttributes = classpathExports.get(packageName);
+				if (exporterAttributes == null)
+					continue;
+
+				for (Map.Entry<String, String> entry : exporterAttributes.entrySet()) {
+					String key = entry.getKey();
+					if (key.equalsIgnoreCase(SPECIFICATION_VERSION))
+						key = VERSION_ATTRIBUTE;
+					if (!key.endsWith(":") && !attributes.containsKey(key)) {
+						attributes.put(key, entry.getValue());
+					}
+				}
+
+				fixupAttributes(attributes);
+				removeAttributes(attributes);
+
+			} finally {
+				unsetProperty(CURRENT_PACKAGE);
+			}
+		}
+	}
+
+	/**
+	 * Fixup Attributes
+	 * 
+	 * Execute any macros on an export and
+	 */
+
+	void fixupAttributes(Map<String, String> attributes) {
+		// Convert any attribute values that have macros.
+		for (String key : attributes.keySet()) {
+			String value = attributes.get(key);
+			if (value.indexOf('$') >= 0) {
+				value = getReplacer().process(value);
+				attributes.put(key, value);
+			}
+		}
+
+	}
+
+	/*
+	 * Remove the attributes mentioned in the REMOVE_ATTRIBUTE_DIRECTIVE.
+	 */
+
+	void removeAttributes(Map<String, String> attributes) {
+		// You can add a remove-attribute: directive with a regular
+		// expression for attributes that need to be removed. We also
+		// remove all attributes that have a value of !. This allows
+		// you to use macros with ${if} to remove values.
+		String remove = attributes.remove(REMOVE_ATTRIBUTE_DIRECTIVE);
+		Instruction removeInstr = null;
+
+		if (remove != null)
+			removeInstr = Instruction.getPattern(remove);
+
+		for (Iterator<Map.Entry<String, String>> i = attributes.entrySet().iterator(); i.hasNext();) {
+			Map.Entry<String, String> entry = i.next();
+			if (entry.getValue().equals("!"))
+				i.remove();
+			else if (removeInstr != null && removeInstr.matches((String) entry.getKey()))
+				i.remove();
+			else {
+				// Not removed ...
 			}
 		}
 	}
@@ -1323,7 +1373,7 @@ public class Analyzer extends Processor {
 				map = new HashMap<String, String>();
 				classpathExports.put(pack, map);
 			}
-			if ( !map.containsKey(VERSION_ATTRIBUTE))
+			if (!map.containsKey(VERSION_ATTRIBUTE))
 				map.put(key, value);
 		}
 	}

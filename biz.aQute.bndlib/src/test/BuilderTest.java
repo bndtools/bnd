@@ -8,7 +8,68 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
+	
+	
+	/**
+	 * Complaint that exported versions were not picked up from external bundle.
+	 */
+	
+	public void testExportedVersionsNotPickedUp() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/jsr311-api-1.1.1.jar"));
+		b.setProperty("Export-Package", "javax.ws.rs.core");
+		Jar jar = b.build();
+		String ip = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+		Map<String,Map<String,String>> map = Processor.parseHeader(ip, null);
+		assertEquals( "1.1.1", map.get("javax.ws.rs.core").get("version"));
+	}
 
+	/** 
+	 * Test where the version comes from: Manifest or packageinfo
+	 * 
+	 * @throws Exception
+	 */
+    public void testExportVersionSource() throws Exception {
+    	Manifest manifest = new Manifest();
+    	manifest.getMainAttributes().putValue("Export-Package", "org.osgi.service.event;version=100");
+
+    	// Remove packageinfo
+    	Jar manifestOnly = new Jar(new File("jar/osgi.jar"));
+    	manifestOnly.remove("org/osgi/service/event/packageinfo");
+    	manifestOnly.setManifest(manifest);
+    	
+    	// Remove manifest
+    	Jar packageInfoOnly = new Jar(new File("jar/osgi.jar"));
+    	packageInfoOnly.setManifest( new Manifest() );
+    	
+    	
+    	Jar both = new Jar( new File("jar/osgi.jar"));
+    	both.setManifest( manifest );
+    	
+    	// Only version in manifest
+        Builder bms = new Builder();
+        bms.addClasspath(manifestOnly);
+        bms.setProperty("Export-Package", "org.osgi.service.event");
+        bms.build();
+        String s = bms.getExports().get("org.osgi.service.event").get("version");
+        assertEquals("100", s);
+        
+    	// Only version in packageinfo
+        Builder bpinfos = new Builder();
+        bpinfos.addClasspath(packageInfoOnly);
+        bpinfos.setProperty("Export-Package", "org.osgi.service.event");
+        bpinfos.build();
+        s = bpinfos.getExports().get("org.osgi.service.event").get("version");
+        assertEquals("1.0.1", s);
+        
+//    	// Version in manifest + packageinfo
+//        Builder bboth = new Builder();
+//        bboth.addClasspath(both);
+//        bboth.setProperty("Export-Package", "org.osgi.service.event");
+//        bboth.build();
+//        s = bboth.getExports().get("org.osgi.service.event").get("version");
+//        assertEquals("100", s);
+    }
 	/** 
 	 * Test where the version comes from: Manifest or packageinfo
 	 * 
