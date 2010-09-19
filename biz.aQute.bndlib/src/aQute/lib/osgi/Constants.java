@@ -125,7 +125,7 @@ public interface Constants {
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER,
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
 			RELEASEREPO, SAVEMANIFEST, RUNVM, VERSIONPOLICY_USES, VERSIONPOLICY,
-			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK				, RUNTRACE};
+			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE	};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -136,7 +136,7 @@ public interface Constants {
 			SIGNATURE_TEST, WAB, WABLIB								};
 
 	char					DUPLICATE_MARKER							= '~';
-
+	String					SPECIFICATION_VERSION						= "specification-version";
 	String					SPLIT_PACKAGE_DIRECTIVE						= "-split-package:";
 	String					IMPORT_DIRECTIVE							= "-import:";
 	String					NO_IMPORT_DIRECTIVE							= "-noimport:";

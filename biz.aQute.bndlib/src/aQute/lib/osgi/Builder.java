@@ -59,7 +59,6 @@ public class Builder extends Analyzer {
 		doExpand(dot);
 		doIncludeResources(dot);
 		doConditional(dot);
-
 		dot = doWab(dot);
 
 		// NEW!

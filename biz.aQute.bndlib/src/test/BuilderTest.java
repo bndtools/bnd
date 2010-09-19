@@ -9,6 +9,55 @@ import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
 
+	/** 
+	 * Test where the version comes from: Manifest or packageinfo
+	 * 
+	 * @throws Exception
+	 */
+    public void testImportVersionSource() throws Exception {
+    	Jar ms = new Jar("manifestsource");
+    	Jar pinfos = new Jar("packageinfosource");
+    	Jar both = new Jar("both");
+    	
+    	Manifest mms = new Manifest();
+    	mms.getMainAttributes().putValue("Export-Package", "org.osgi.service.event; version=100");
+    	ms.setManifest(mms);
+    	
+    	pinfos.putResource( "org/osgi/service/event/packageinfo", new EmbeddedResource( "version 99".getBytes(),0));
+    	
+    	Manifest mboth = new Manifest();
+    	mboth.getMainAttributes().putValue("Export-Package", "org.osgi.service.event; version=100");    	
+    	both.putResource( "org/osgi/service/event/packageinfo", new EmbeddedResource( "version 99".getBytes(),0));
+    	both.setManifest(mboth);
+    	
+    	
+    	// Only version in manifest
+        Builder bms = new Builder();
+        bms.addClasspath(ms);
+        bms.setProperty("Import-Package", "org.osgi.service.event");
+        bms.build();
+        String s = bms.getImports().get("org.osgi.service.event").get("version");
+        assertEquals("[100.0,101)", s);
+        
+    	// Only version in packageinfo
+        Builder bpinfos = new Builder();
+        bpinfos.addClasspath(pinfos);
+        bpinfos.setProperty("Import-Package", "org.osgi.service.event");
+        bpinfos.build();
+        s = bpinfos.getImports().get("org.osgi.service.event").get("version");
+        assertEquals("[99.0,100)", s);
+        
+    	// Version in manifest + packageinfo
+        Builder bboth = new Builder();
+        bboth.addClasspath(both);
+        bboth.setProperty("Import-Package", "org.osgi.service.event");
+        bboth.build();
+        s = bboth.getImports().get("org.osgi.service.event").get("version");
+        assertEquals("[100.0,101)", s);
+        
+    }
+    
+    
 	public void testNoImportDirective() throws Exception{
         Builder b = new Builder();
         b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");

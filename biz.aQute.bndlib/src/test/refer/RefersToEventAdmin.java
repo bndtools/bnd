@@ -1,7 +1,7 @@
 package test.refer;
 
-import org.osgi.util.measurement.*;
+import org.osgi.service.event.*;
 
 public class RefersToEventAdmin {
-	Measurement acmin;
+	EventAdmin acmin;
 }

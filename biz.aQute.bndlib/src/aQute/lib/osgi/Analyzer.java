@@ -98,7 +98,7 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calcualtes the data structures for generating a manifest.
+	 * Calculates the data structures for generating a manifest.
 	 * 
 	 * @throws IOException
 	 */
@@ -881,8 +881,8 @@ public class Analyzer extends Processor {
 	 * ... The commented out part calculated the groups and then removed the
 	 * imports from there. Now we only remove imports that have internal
 	 * references. Using internal code for an exported package means that a
-	 * bundle cannot import that package from elsewhere because its
-	 * assumptions might be violated if it receives a substitution. //
+	 * bundle cannot import that package from elsewhere because its assumptions
+	 * might be violated if it receives a substitution. //
 	 */
 	Map<String, Map<String, String>> doExportsToImports(Map<String, Map<String, String>> exports) {
 
@@ -906,7 +906,7 @@ public class Analyzer extends Processor {
 
 		// Not necessary to import anything that is already
 		// imported in the Import-Package statement.
-		if ( imports != null )
+		if (imports != null)
 			toBeImported.removeAll(imports.keySet());
 
 		// Remove exported packages that are referring to
@@ -961,14 +961,14 @@ public class Analyzer extends Processor {
 			String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
 			if (noimport != null && noimport.equalsIgnoreCase("true"))
 				continue;
-
-			String version = parameters.get(VERSION_ATTRIBUTE);
+			
 			// we can't substitute when there is no version
+			String version = parameters.get(VERSION_ATTRIBUTE);
 			if (version == null) {
-				if ( isPedantic())
+				if (isPedantic())
 					warning(
-						"Cannot automatically import exported package %s because it has no version defined",
-						ep);
+							"Cannot automatically import exported package %s because it has no version defined",
+							ep);
 				continue;
 			}
 
@@ -1058,12 +1058,13 @@ public class Analyzer extends Processor {
 			checkManifest(current);
 			for (Iterator<String> j = current.getDirectories().keySet().iterator(); j.hasNext();) {
 				String dir = j.next();
+
 				Resource resource = current.getResource(dir + "/packageinfo");
 				if (resource != null) {
 					InputStream in = resource.openInputStream();
 					try {
 						String version = parsePackageInfo(in);
-						setPackageInfo(dir, "version", version);
+						setPackageInfo(dir, VERSION_ATTRIBUTE, version);
 					} finally {
 						in.close();
 					}
@@ -1178,14 +1179,12 @@ public class Analyzer extends Processor {
 	 */
 	private void augmentVersion(Map<String, String> currentAttributes, Map<String, String> exporter) {
 
-		String exportVersion = (String) exporter.get("version");
-		if (exportVersion == null)
-			exportVersion = (String) exporter.get("specification-version");
+		String exportVersion = (String) exporter.get(VERSION_ATTRIBUTE);
 		if (exportVersion == null)
 			return;
 
 		exportVersion = cleanupVersion(exportVersion);
-		String importRange = currentAttributes.get("version");
+		String importRange = currentAttributes.get(VERSION_ATTRIBUTE);
 		boolean impl = isTrue(currentAttributes.get(IMPLEMENTED_DIRECTIVE));
 		try {
 			setProperty("@", exportVersion);
@@ -1203,7 +1202,7 @@ public class Analyzer extends Processor {
 		// we must replace the ${@} with the version we
 		// found this can be useful if you want a range to start
 		// with the found version.
-		currentAttributes.put("version", importRange);
+		currentAttributes.put(VERSION_ATTRIBUTE, importRange);
 	}
 
 	/**
@@ -1324,7 +1323,8 @@ public class Analyzer extends Processor {
 				map = new HashMap<String, String>();
 				classpathExports.put(pack, map);
 			}
-			map.put(key, value);
+			if ( !map.containsKey(VERSION_ATTRIBUTE))
+				map.put(key, value);
 		}
 	}
 
@@ -1532,6 +1532,8 @@ public class Analyzer extends Processor {
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses, Set<String> hide) throws IOException {
 
+		Map<String, Map<String, String>> exportVersions = null;
+
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix) && !hide.contains(path)) {
 				hide.add(path);
@@ -1552,14 +1554,19 @@ public class Analyzer extends Processor {
 
 						Map<String, String> info = newMap();
 						contained.put(pack, info);
+
 						Resource pinfo = jar.getResource(prefix + pack.replace('.', '/')
 								+ "/packageinfo");
 						if (pinfo != null) {
 							InputStream in = pinfo.openInputStream();
-							String version = parsePackageInfo(in);
-							in.close();
+							String version;
+							try {
+								version = parsePackageInfo(in);
+							} finally {
+								in.close();
+							}
 							if (version != null)
-								info.put("version", version);
+								info.put(VERSION_ATTRIBUTE, version);
 						}
 					}
 				}
