@@ -814,7 +814,14 @@ public class bnd extends Processor {
 							.getValue(Analyzer.IMPORT_PACKAGE));
 					Map<String, Map<String, String>> exports = parseHeader(m.getMainAttributes()
 							.getValue(Analyzer.EXPORT_PACKAGE));
-					imports.keySet().removeAll(exports.keySet());
+					for ( String p : exports.keySet()) {
+						if ( imports.containsKey(p)) {
+							Map<String,String> attrs = imports.get(p);
+							if ( attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
+								exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
+							}
+						}
+					}
 					print("Import-Package", new TreeMap<String, Map<String, String>>(imports));
 					print("Export-Package", new TreeMap<String, Map<String, String>>(exports));
 				} else
