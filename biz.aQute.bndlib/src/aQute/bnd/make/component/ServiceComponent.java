@@ -177,9 +177,7 @@ public class ServiceComponent implements AnalyzerPlugin {
                 impl = info.get(COMPONENT_IMPLEMENTATION);
 
             // Check if such a class exists
-            if (!analyzer.checkClass(impl))
-                error("No implementation found for Service-Component entry: "
-                        + impl);
+            analyzer.referTo(impl);
 
             // We have a definition, so make an XML resources
             Resource resource = createComponentResource(name, impl, info);
@@ -377,9 +375,7 @@ public class ServiceComponent implements AnalyzerPlugin {
                     String interfaceName = st.nextToken();
                     pw.println("    <provide interface='" + interfaceName
                             + "'/>");
-                    if (!analyzer.checkClass(interfaceName))
-                        error("Component definition provides a class that is neither imported nor contained: "
-                                + interfaceName);
+                    analyzer.referTo(interfaceName);
 
                     // TODO verifies the impl. class extends or implements the
                     // interface
@@ -495,9 +491,7 @@ public class ServiceComponent implements AnalyzerPlugin {
                     target = m.group(2);
                 }
 
-                if (!analyzer.checkClass(interfaceName))
-                    error("Component definition refers to a class that is neither imported nor contained: "
-                            + interfaceName);
+                analyzer.referTo(interfaceName);
 
                 pw.printf("  <reference name='%s'", referenceName);
                 pw.printf(" interface='%s'", interfaceName);

@@ -715,7 +715,7 @@ public class Analyzer extends Processor {
 		if (interfaceName.startsWith("java."))
 			return true;
 
-		if (referred != null && !referred.isEmpty()) {
+		if (imports != null && !imports.isEmpty()) {
 			String pack = interfaceName;
 			int n = pack.lastIndexOf('.');
 			if (n > 0)
@@ -723,7 +723,7 @@ public class Analyzer extends Processor {
 			else
 				pack = ".";
 
-			if (referred.containsKey(pack))
+			if (imports.containsKey(pack))
 				return true;
 		}
 		int n = interfaceName.lastIndexOf('.');
@@ -2063,6 +2063,12 @@ public class Analyzer extends Processor {
 
 	public boolean isNoBundle() {
 		return isTrue(getProperty(RESOURCEONLY)) || isTrue(getProperty(NOMANIFEST));
+	}
+
+	public void referTo(String impl) {
+		String pack = Clazz.getPackage(impl);
+		if ( !referred.containsKey(pack))
+			referred.put(pack,  new LinkedHashMap<String,String>());
 	}
 
 }

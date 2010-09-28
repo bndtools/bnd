@@ -19,7 +19,18 @@ class T3 extends T2 {
 
 public class AnalyzerTest extends TestCase {
 
-    
+    public void testComponentImportReference() throws Exception {
+    	Builder b = new Builder();
+    	b.addClasspath( new File("jar/osgi.jar"));
+    	b.setProperty("Private-Package", "org.osgi.framework");
+    	b.setProperty("Import-Package", "not.here,*");
+    	b.setProperty("Service-Component", "org.osgi.framework.Bundle;ref=not.here.Reference");
+    	b.build();
+    	System.out.println( b.getErrors());
+    	System.out.println( b.getWarnings());
+    	assertEquals(0, b.getErrors().size());
+    	assertEquals(0, b.getWarnings().size());
+    }
     
     public void testFindClass() throws Exception {
         Builder a = new Builder();
