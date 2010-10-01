@@ -1,2 +1,2 @@
--buildpath: biz.aQute.bnd
+-buildpath: biz.aQute.bndlib
 -sub: *.bnd

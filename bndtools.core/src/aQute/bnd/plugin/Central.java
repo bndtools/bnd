@@ -14,46 +14,43 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
+import bndtools.FilesystemUpdateListener;
+import bndtools.tasks.repo.LocalRepositoryTasks;
 
 public class Central {
-    static IWorkspace                iworkspace;
+    static Workspace workspace = null;
+
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
-    static Workspace                 workspace;
-    final BundleContext              context;
-    final Workspace                  ws;
 
-    Central(BundleContext context) throws Exception {
-        this.context = context;
-        // Add a resource change listener if this is
-        // the first project
-        iworkspace = ResourcesPlugin.getWorkspace();
-
-        ws = getWorkspace();
-        context.registerService(Workspace.class.getName(), ws, null);
-    }
+    Central() { }
 
     public Project getModel(IJavaProject project) {
         try {
             Project model = javaProjectToModel.get(project);
-            if (model == null) {
+             if (model == null) {
                 File projectDir = project.getProject().getLocation()
                         .makeAbsolute().toFile();
-                model = Workspace.getProject(projectDir);
+                try {
+                    model = Workspace.getProject(projectDir);
+                } catch (IllegalArgumentException e) {
+                    initialiseWorkspace();
+                    model = Workspace.getProject(projectDir);
+                }
                 if (workspace == null) {
                     model.getWorkspace();
                 }
@@ -160,10 +157,28 @@ public class Central {
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         File wsdir = wsroot.getLocation().toFile();
 
-        //workspace = new Workspace(wsdir);
-        workspace = Workspace.getWorkspace(wsdir);
+        try {
+            workspace = Workspace.getWorkspace(wsdir);
+        } catch (IllegalArgumentException e) {
+            // Ensure the workspace is configured
+            initialiseWorkspace();
+            // Retry
+            workspace = Workspace.getWorkspace(wsdir);
+        }
+        workspace.addBasicPlugin(new FilesystemUpdateListener());
+
+        Activator.getDefault().getBundleContext().registerService(Workspace.class.getName(), workspace, null);
 
         return workspace;
+    }
+
+    private static void initialiseWorkspace() throws CoreException {
+        IWorkspaceRunnable wsop = new IWorkspaceRunnable() {
+            public void run(IProgressMonitor monitor) throws CoreException {
+                LocalRepositoryTasks.configureBndWorkspace(monitor);
+            }
+        };
+        ResourcesPlugin.getWorkspace().run(wsop, null);
     }
 
     public void changed(Project model) {
@@ -187,7 +202,7 @@ public class Central {
     }
 
     public IJavaProject getJavaProject(Project model) {
-        for (IProject iproj : iworkspace.getRoot().getProjects()) {
+        for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
             if (iproj.getName().equals(model.getName())) {
                 IJavaProject ij = JavaCore.create(iproj);
                 if (ij != null && ij.exists()) {

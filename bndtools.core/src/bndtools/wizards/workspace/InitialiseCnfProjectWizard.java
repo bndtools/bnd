@@ -67,7 +67,7 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
             wizard.addPage(new InitialiseCnfProjectIntroWizardPage("message", Messages.InitialiseCnfProjectIntroWizardPage_createCnfMessage));
 	    } else if (!LocalRepositoryTasks.isRepositoryUpToDate()) {
 	        wizard = new InitialiseCnfProjectWizard();
-	        wizard.addPage(new InitialiseCnfProjectIntroWizardPage("message", Messages.InitialiseCnfProjectIntroWizardPage_updateRepositoryMessage));
+	        wizard.addPage(new UpdateRepositoryWizardPage());
 	    } else {
 	        wizard = null;
 	    }

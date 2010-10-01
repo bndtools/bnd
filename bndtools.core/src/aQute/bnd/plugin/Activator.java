@@ -28,7 +28,7 @@ public class Activator extends AbstractUIPlugin {
     private static Activator   plugin;
     BundleContext              context;
     Central central;
-    
+
     /**
      * The constructor
      */
@@ -38,15 +38,16 @@ public class Activator extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
         this.context = context;
-        this.central = new Central(context);
-        
+        this.central = new Central();
+
         Hashtable<String,Object> p = new Hashtable<String, Object>();
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d", "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
@@ -54,9 +55,10 @@ public class Activator extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
@@ -65,7 +67,7 @@ public class Activator extends AbstractUIPlugin {
 
     /**
      * Returns the shared instance
-     * 
+     *
      * @return the shared instance
      */
     public static Activator getDefault() {
@@ -75,7 +77,7 @@ public class Activator extends AbstractUIPlugin {
     /**
      * Returns an image descriptor for the image file at the given plug-in
      * relative path
-     * 
+     *
      * @param path
      *            the path
      * @return the image descriptor
@@ -98,7 +100,7 @@ public class Activator extends AbstractUIPlugin {
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation",
                         msg + " " + t.getMessage(), s);
-                
+
                 busy = false;
             }
         });
@@ -208,7 +210,7 @@ public class Activator extends AbstractUIPlugin {
             }
             final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
-            
+
             async(new Runnable() {
                 public void run() {
                     ErrorDialog.openError(null, title, title + "\n" + extra, s);

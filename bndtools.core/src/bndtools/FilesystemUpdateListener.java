@@ -18,34 +18,36 @@ import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.service.BndListener;
 
-final class FilesystemUpdateListener extends BndListener {
+public final class FilesystemUpdateListener extends BndListener {
 		void createFolderAndParents(IFolder folder, boolean force) throws CoreException {
 			IContainer parent = folder.getParent();
 			if(parent == null) {
 				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Cannot create the workspace root", null));
 			}
-			
+
 			if(!parent.exists()) {
 				if(!(parent instanceof IFolder)) {
 					throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Cannot create the parent, it is not a regular folder.", null));
 				}
 				createFolderAndParents((IFolder) parent, force);
 			}
-			
+
 			folder.create(force, true, null);
 		}
-		public void changed(final File file) {
+		@Override
+        public void changed(final File file) {
 			System.err.println("--> Changed file: " + file.toString());
 			IPath changedPath = new Path(file.toString());
-			
+
 			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 			final IWorkspaceRoot workspaceRoot = workspace.getRoot();
 			IPath workspacePath = workspaceRoot.getLocation();
-			
+
 			if(workspacePath.isPrefixOf(changedPath)) {
 				final IPath relativeChangedPath = changedPath.removeFirstSegments(workspacePath.segmentCount());
 				WorkspaceJob job = new WorkspaceJob("update") {
-					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+					@Override
+                    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						IResource resource;
 						int depth;
 						if(file.isDirectory()) {
@@ -66,7 +68,7 @@ final class FilesystemUpdateListener extends BndListener {
 					}
 				};
 				job.schedule();
-				
+
 //				try {
 //					final IWorkspaceRunnable operation = new IWorkspaceRunnable() {
 //						public void run(IProgressMonitor monitor) throws CoreException {
@@ -95,7 +97,7 @@ final class FilesystemUpdateListener extends BndListener {
 //							} catch (IOException e) {
 //								throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading content of changed file", e));
 //							} finally {
-//								
+//
 //							}
 //						}
 //					};
@@ -118,7 +120,7 @@ final class FilesystemUpdateListener extends BndListener {
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
 //				} finally {
-//					
+//
 //				}
 			}
 		}

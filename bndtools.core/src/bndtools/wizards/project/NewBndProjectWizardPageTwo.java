@@ -10,8 +10,10 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -19,11 +21,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
 
@@ -86,7 +91,19 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 	}
 
 	@Override
-	protected IProject createProvisonalProject() {
-		return super.createProvisonalProject();
+	protected void initializeBuildPath(final IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
+	    IWorkspaceRunnable wsop = new IWorkspaceRunnable() {
+            public void run(IProgressMonitor monitor) throws CoreException {
+                IFile bndFile = javaProject.getProject().getFile(Project.BNDFILE);
+                if(!bndFile.exists())
+                    bndFile.create(new ByteArrayInputStream(new byte[0]), false, monitor);
+                monitor.done();
+            }
+        };
+
+        SubMonitor progress = SubMonitor.convert(monitor, 5);
+        javaProject.getProject().getWorkspace().run(wsop, progress.newChild(1));
+	    super.initializeBuildPath(javaProject, progress.newChild(4));
 	}
+
 }

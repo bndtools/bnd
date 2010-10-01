@@ -1,8 +1,5 @@
 package bndtools.wizards.workspace;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -15,7 +12,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 
-public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
+public class InitialiseCnfProjectIntroWizardPage extends AbstractInitialisationWizardPage {
 
     private final String message;
 
@@ -34,19 +31,14 @@ public class InitialiseCnfProjectIntroWizardPage extends WizardPage {
         final Button hideWizardButton = new Button(composite, SWT.CHECK);
         hideWizardButton.setText(Messages.InitialiseCnfProjectIntroWizardPage_dontShowLabel);
 
+        hideWizardButton.setSelection(isDontShow());
+
         hideWizardButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean hide = hideWizardButton.getSelection();
+                setDontShow(hideWizardButton.getSelection());
 
-                IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-                store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, hide);
-
-                if(hide) {
-                    setMessage(Messages.InitialiseCnfProjectIntroWizardPage_warningNoMoreChecks, IMessageProvider.WARNING);
-                } else {
-                    setMessage(null);
-                }
+                validate();
             }
         });
 

@@ -8,13 +8,14 @@ public class Messages extends NLS {
 
     public static String InitialiseCnfProjectIntroWizardPage_title;
     public static String InitialiseCnfProjectIntroWizardPage_createCnfMessage;
-    public static String InitialiseCnfProjectIntroWizardPage_updateRepositoryMessage;
 
     public static String InitialiseCnfProjectIntroWizardPage_dontShowLabel;
     public static String InitialiseCnfProjectIntroWizardPage_warningNoMoreChecks;
     public static String InitialiseCnfProjectWizard_info_dialog_donotshow;
     public static String InitialiseCnfProjectWizard_info_dialog_message;
     public static String InitialiseCnfProjectWizard_info_dialog_popup;
+
+    public static String UpdateRepositoryWizardPage_updateRepositoryMessage;
 
 	static {
 		// initialize resource bundle

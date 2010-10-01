@@ -25,8 +25,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.plugin.Activator;
-import aQute.bnd.plugin.Central;
-import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
@@ -57,7 +55,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	private BundleContext bundleContext;
 	private Activator bndActivator;
-	private BndListener bndListener;
 
     private volatile RepositoryModel repositoryModel;
 
@@ -69,9 +66,6 @@ public class Plugin extends AbstractUIPlugin {
 
 		bndActivator = new Activator();
 		bndActivator.start(context);
-
-		bndListener = new FilesystemUpdateListener();
-		Central.getWorkspace().addBasicPlugin(bndListener);
 
 		repositoryModel = new RepositoryModel();
 
@@ -96,7 +90,6 @@ public class Plugin extends AbstractUIPlugin {
 
     @Override
     public void stop(BundleContext context) throws Exception {
-		Central.getWorkspace().removeBasicPlugin(bndListener);
 		bndActivator.stop(context);
 		this.bundleContext = null;
 		plugin = null;

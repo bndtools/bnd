@@ -35,7 +35,7 @@ Include-Resource: resources,\
 
 # Build and Run
 -buildpath: bndtools.bndplugins.repos,\
-	biz.aQute.bndlib,\
+	biz.aQute.bndlib;version=${bndlibver},\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\

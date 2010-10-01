@@ -18,8 +18,3 @@ javac.debug:  on
 -sourcepath:    ${project}/src 
 -plugin:        aQute.lib.deployer.FileRepo;location=${repo}
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"
-
-# Runtime Options and Variables
-junit:    junit.osgi;version=3.8;export="junit.framework;version=3.8"
--runpath: org.eclipse.osgi;version=3.5.1,\
-          ${junit}
