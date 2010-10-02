@@ -69,37 +69,38 @@
             name="OSGi">
       </category>
       <wizard
+            id="bndtools.newBndFile"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.EmptyBndFileWizard"
             icon="icons/brick.png"
-            id="bndtools.newBndFile"
             name="Bundle Descriptor"
             project="false">
       </wizard>
-      <!--
       <wizard
-            category="bndtools.wizardCategory"
-            class="bndtools.wizards.bndfile.WrappingBndFileWizard"
-            icon="icons/package_add.png"
-            id="bndtools.wrappingBndWizard"
-            name="New Bnd Wrapper Script for Existing JARs">
-      </wizard>
-      -->
-      <wizard
+            id="bndtools.bndrunWizard"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
             icon="icons/brick_run.gif"
-            id="bndtools.bndrunWizard"
             name="Run Descriptor">
       </wizard>
       <wizard
+            id="bndtools.newProjWiz"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.project.NewBndProjectWizardFactory"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
             icon="icons/bricks.png"
-            id="bndtools.newProjWiz"
             name="Bnd OSGi Project"
+            project="true">
+      </wizard>
+      <wizard
+            id="bndtools.newWrapProjWiz"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.project.NewWrappingBndProjectWizardFactory"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/wrap.png"
+            name="Wrap JAR as OSGi Bundle Project"
             project="true">
       </wizard>
    </extension>
@@ -256,6 +257,9 @@
             targetID="org.eclipse.jdt.ui.JavaPerspective">
          <newWizardShortcut
                id="bndtools.newProjWiz">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="bndtools.newWrapProjWiz">
          </newWizardShortcut>
          <newWizardShortcut
                id="bndtools.newBndFile">

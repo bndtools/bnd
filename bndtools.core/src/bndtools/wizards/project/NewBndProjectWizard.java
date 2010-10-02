@@ -16,9 +16,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,7 +29,6 @@ import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
@@ -37,17 +36,15 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 
-@SuppressWarnings("restriction")
 class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
 	private final NewJavaProjectWizardPageTwo pageTwo;
 
-    private IConfigurationElement configElement;
-
 	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
 		setWindowTitle("New Bnd OSGi Project");
+		setNeedsProgressMonitor(true);
 
 		this.pageOne = pageOne;
 		this.pageTwo = pageTwo;
@@ -59,70 +56,99 @@ class NewBndProjectWizard extends JavaProjectWizard {
 		addPage(pageTwo);
 	}
 
+	/**
+	 * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
+	 * @param monitor
+	 */
+	protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+	    return new BndEditModel();
+	}
 
-	@Override
-	public boolean performFinish() {
-		boolean result = super.performFinish();
-		if(result) {
-			// Generate the bnd.bnd content
-			BndEditModel bndModel = new BndEditModel();
-			IDocument document = new Document();
-			bndModel.saveChangesTo(document);
-			final ByteArrayInputStream bndInput = new ByteArrayInputStream(document.get().getBytes());
+    /**
+     * Modify the newly generated Java project; this method is executed from
+     * within a workspace operation so is free to make workspace resource
+     * modifications.
+     *
+     * @throws CoreException
+     */
+    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 3);
 
-			// Add the bnd.bnd and build.xml files to the new project
-			final IJavaProject javaProj = (IJavaProject) getCreatedElement();
-			final IWorkspaceRunnable op = new IWorkspaceRunnable() {
-				public void run(IProgressMonitor monitor) throws CoreException {
-				    SubMonitor progress = SubMonitor.convert(monitor, 2);
+        Document document = new Document();
+        bndModel.saveChangesTo(document);
+        progress.worked(1);
 
-					IFile bndBndFile = javaProj.getProject().getFile(Project.BNDFILE);
-					if(bndBndFile.exists()) {
-						bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
-					} else {
-						bndBndFile.create(bndInput, false, progress.newChild(1));
-					}
-					IFile buildXmlFile = javaProj.getProject().getFile("build.xml");
-					InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
-					if(buildXmlFile.exists()) {
-					    buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
-					} else {
-					    buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
-					}
-				}
-			};
-			try {
-				getContainer().run(false, false, new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						try {
-							javaProj.getProject().getWorkspace().run(op, monitor);
-						} catch (CoreException e) {
-							throw new InvocationTargetException(e);
-						}
-					}
-				});
-				result = true;
-			} catch (InvocationTargetException e) {
-				ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).", Project.BNDFILE), e.getTargetException()));
-				result = false;
-			} catch (InterruptedException e) {
-				// Shouldn't happen
-			}
+        ByteArrayInputStream bndInput = new ByteArrayInputStream(document.get().getBytes());
+        IFile bndBndFile = project.getFile(Project.BNDFILE);
+        if (bndBndFile.exists()) {
+            bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
+        } else {
+            bndBndFile.create(bndInput, false, progress.newChild(1));
+        }
 
-			// Open the bnd.bnd file in the editor
-			IFile bndFile = javaProj.getProject().getFile(Project.BNDFILE);
-			try {
+
+        IFile buildXmlFile = project.getFile("build.xml");
+        InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
+        if (buildXmlFile.exists()) {
+            buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
+        } else {
+            buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
+        }
+    }
+
+    @Override
+    public boolean performFinish() {
+        boolean result = super.performFinish();
+        if (result) {
+            final IJavaProject javaProj = (IJavaProject) getCreatedElement();
+            try {
+                // Run using the progress bar from the wizard dialog
+                getContainer().run(false, false, new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        try {
+                            SubMonitor progress = SubMonitor.convert(monitor, 3);
+
+                            // Generate the Bnd model
+                            final BndEditModel bndModel = generateBndModel(progress.newChild(1));
+
+                            // Make changes to the project
+                            final IWorkspaceRunnable op = new IWorkspaceRunnable() {
+                                public void run(IProgressMonitor monitor) throws CoreException {
+                                    processGeneratedProject(bndModel, javaProj.getProject(), monitor);
+                                }
+                            };
+                            javaProj.getProject().getWorkspace().run(op, progress.newChild(2));
+                        } catch (CoreException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+                result = true;
+            } catch (InvocationTargetException e) {
+                ErrorDialog.openError(
+                        getShell(),
+                        "Error",
+                        "",
+                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).",
+                                Project.BNDFILE), e.getTargetException()));
+                result = false;
+            } catch (InterruptedException e) {
+                // Shouldn't happen
+            }
+
+            // Open the bnd.bnd file in the editor
+            IFile bndFile = javaProj.getProject().getFile(Project.BNDFILE);
+            try {
                 IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
             } catch (PartInitException e) {
-                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath().toString()), e));
+                ErrorDialog.openError(
+                        getShell(),
+                        "Error",
+                        null,
+                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.",
+                                bndFile.getFullPath().toString()), e));
             }
-		}
-		return result;
-	}
-
-	@Override
-	public void setInitializationData(IConfigurationElement config, String propertyName, Object data) {
-	    super.setInitializationData(config, propertyName, data);
-	    this.configElement = config;
-	}
+        }
+        return result;
+    }
 }

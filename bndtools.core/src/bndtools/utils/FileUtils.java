@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -94,5 +95,22 @@ public class FileUtils {
 	public static IFile[] getWorkspaceFiles(File javaFile) {
 	    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 	    return root.findFilesForLocationURI(javaFile.toURI());
+	}
+
+	public static File toFile(IWorkspaceRoot root, IPath path) {
+	    IFile wsfile;
+	    IFolder wsfolder;
+
+	    if ((wsfile = root.getFile(path)).exists()) {
+	        IPath location = wsfile.getLocation();
+	        if (location != null) return location.toFile();
+	    }
+
+	    if ((wsfolder = root.getFolder(path)).exists()) {
+	        IPath location = wsfolder.getLocation();
+	        if (location != null) return location.toFile();
+	    }
+
+	    return path.toFile();
 	}
 }
