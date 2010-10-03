@@ -36,7 +36,7 @@ import aQute.libg.version.VersionRange;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.types.ComparablePair;
 
-public class OrbitRepository implements RemoteRepository, IExecutableExtension {
+class OrbitRepository implements RemoteRepository, IExecutableExtension {
 
     private URL url = null;
     private LinkedHashMap<String, SortedSet<ComparablePair<Version, URL>>> map;

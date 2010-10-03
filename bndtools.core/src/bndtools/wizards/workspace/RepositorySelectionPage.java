@@ -3,8 +3,9 @@ package bndtools.wizards.workspace;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -18,9 +19,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -34,21 +33,21 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.api.repository.RemoteRepository;
+import bndtools.api.repository.RemoteRepositoryFactory;
 
 public class RepositorySelectionPage extends WizardPage {
 
     private static final String ATTR_IMPLICIT = "implicit"; //$NON-NLS-1$
-    private static final String NO_DESCRIPTION = "No description available";
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
-    private IConfigurationElement[] elements;
+    private Collection<RemoteRepository> repositories;
     private RemoteRepository selectedRepository = null;
 
     public RepositorySelectionPage(String pageName) {
         super(pageName);
         loadRepositories();
-        setDescription("Select external repositories to import into the Bnd workspace.");
+        setDescription("Select an external repository from which to import bundles into the workspace.");
     }
 
     public RemoteRepository getSelectedRepository() {
@@ -65,18 +64,25 @@ public class RepositorySelectionPage extends WizardPage {
     private void loadRepositories() {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
-        this.elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
-
-        List<IConfigurationElement> checkedList = new ArrayList<IConfigurationElement>(elements.length);
+        IConfigurationElement[] elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
+        this.repositories = new ArrayList<RemoteRepository>(elements.length);
         for (IConfigurationElement element : elements) {
-            String implicitStr = element.getAttribute(ATTR_IMPLICIT);
-            if ("true".equalsIgnoreCase(implicitStr)) {
-                checkedList.add(element);
+            try {
+                String implicit = element.getAttribute(ATTR_IMPLICIT);
+                if (!"true".equalsIgnoreCase(implicit)) {
+                    RemoteRepositoryFactory repoFactory = (RemoteRepositoryFactory) element.createExecutableExtension("class");
+                    if (repoFactory != null) {
+                        Collection<? extends RemoteRepository> repos = repoFactory.getConfiguredRepositories();
+                        this.repositories.addAll(repos);
+                    }
+                }
+            } catch (CoreException e) {
+                Plugin.logError("Error processing extension element", e);
             }
         }
-
         setPageComplete(this.selectedRepository != null);
     }
+
 
     public void createControl(Composite parent) {
         setTitle("Import External Repositories");
@@ -92,42 +98,19 @@ public class RepositorySelectionPage extends WizardPage {
 
         final TableViewer viewer = new TableViewer(table);
         viewer.setContentProvider(new ArrayContentProvider());
-        viewer.setLabelProvider(new RepositoryContribLabelProvider());
-
-        viewer.setFilters(new ViewerFilter[] { new ViewerFilter() {
-            @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
-                IConfigurationElement configElement = (IConfigurationElement) element;
-                String implicit = configElement.getAttribute(ATTR_IMPLICIT);
-                return !("true".equalsIgnoreCase(implicit));
-            }
-        } });
-        viewer.setInput(elements);
+        viewer.setLabelProvider(new RepositoryLabelProvider());
+        viewer.setInput(repositories);
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection selection = viewer.getSelection();
-                String text;
                 if (selection.isEmpty()) {
-                    text = "";
                     setSelectedRepository(null);
                 } else {
-                    IConfigurationElement element = (IConfigurationElement) ((IStructuredSelection) selection).getFirstElement();
-                    if (element == null) {
-                        text = NO_DESCRIPTION;
-                        setSelectedRepository(null);
-                    } else {
-                        IConfigurationElement[] children = element.getChildren("description");
-                        if (children.length < 1) {
-                            text = NO_DESCRIPTION;
-                        } else {
-                            text = children[0].getValue();
-                        }
-                        setSelectedRepository(new LazyInitialisedRemoteRepository(element));
-                    }
+                    RemoteRepository repo = (RemoteRepository) ((IStructuredSelection) selection).getFirstElement();
+                    setSelectedRepository(repo);
                 }
-                description.setText(text);
             }
         });
         viewer.addOpenListener(new IOpenListener() {
@@ -160,19 +143,19 @@ public class RepositorySelectionPage extends WizardPage {
         setControl(composite);
     }
 
-    static class RepositoryContribLabelProvider extends StyledCellLabelProvider {
+    static class RepositoryLabelProvider extends StyledCellLabelProvider {
 
         Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bundlefolder.png").createImage();
 
         @Override
         public void update(ViewerCell cell) {
-            IConfigurationElement element = (IConfigurationElement) cell.getElement();
+            RemoteRepository remoteRepo = (RemoteRepository) cell.getElement();
 
-            String name = element.getAttribute("name");
-            String bundleId = element.getContributor().getName();
+            String name = remoteRepo.getName();
+            // String bundleId = element.getContributor().getName();
 
             StyledString styledString = new StyledString(name);
-            styledString.append(" [" + bundleId + "]", StyledString.QUALIFIER_STYLER);
+            // styledString.append(" [" + bundleId + "]", StyledString.QUALIFIER_STYLER);
 
             cell.setText(styledString.getString());
             cell.setStyleRanges(styledString.getStyleRanges());
