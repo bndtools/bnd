@@ -98,6 +98,10 @@ public class bnd extends Processor {
 				cnt++;
 				debug(args, ++i);
 				break;
+			} else if ("bump".equals(args[i])) {
+				cnt++;
+				bump(args, ++i);
+				break;
 			} else if ("deliverables".equals(args[i])) {
 				cnt++;
 				deliverables(args, ++i);
@@ -224,6 +228,35 @@ public class bnd extends Processor {
 		for (String msg : getWarnings()) {
 			System.err.println(n++ + " : " + msg);
 		}
+	}
+
+	private void bump(String[] args, int i) throws Exception {
+		if ( getProject() == null ) {
+			error("No project found, use -base <dir> bump");
+			return;
+		}
+		
+		String mask = null;
+		if ( args.length > i) {
+			mask = args[i];
+			if ( mask.equalsIgnoreCase("major"))
+				mask = "+00";
+			else if ( mask.equalsIgnoreCase("minor"))
+				mask = "=+0";
+			else if ( mask.equalsIgnoreCase("micro"))
+				mask = "==+";
+			else if ( ! mask.matches("(+=0){1,3}") )
+			{
+				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask", mask);
+				return;
+			}
+		}
+		if ( mask == null )
+			getProject().bump();
+		else
+			getProject().bump(mask);
+		
+		out.println( getProject().getProperty(BUNDLE_VERSION, "No version found"));
 	}
 
 	/**
