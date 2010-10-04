@@ -50,7 +50,7 @@ public class Project extends Processor {
 	boolean						inPrepare;
 	int							revision;
 	File						files[];
-
+	private long				buildtime;
 	static List<Project>		trail			= new ArrayList<Project>();
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
@@ -886,47 +886,35 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
-		if (getProperty(NOBUNDLES) != null)
+		if (getProperty(NOBUNDLES) != null )
 			return null;
 
-		boolean outofdate = !isUptodate();
-		
-		for (Project project : getDependson()) {
-			if (project != this && !project.isUptodate()) {
-				trace("  Building because out of date: " + project);
-				project.files = project.buildLocal(false);
-				outofdate = true;
-				getInfo(project, project + ": ");
+		if (getProperty("-nope") != null ) {
+			warning("Please replace -nope with %s", NOBUNDLES);
+			return null;
+		}
+
+		// Check if we have a local modification not yet build
+		boolean outofdate = false;
+
+		// Check for each dependency if it is locally modified or
+		// its build time > our build time.
+		for (Project dependency : getDependson()) {			
+			if (dependency != this) {
+				if ( outofdate || dependency.getBuildTime() <= dependency.lastModified()) {
+					dependency.buildLocal(false);
+					outofdate = true;
+				}
 			}
 		}
 		
-		if (files == null || outofdate) {
+
+		if (files == null || outofdate || getBuildTime() <= lastModified()) {
 			trace("Building " + this);
 			files = buildLocal(underTest);
 		}
 
 		return files;
-	}
-
-	private boolean isUptodate() throws Exception {
-		if (getProperty(NOBUNDLES) != null) {
-			return true;
-		}
-
-		if (files == null) {
-			// files = getBuildFiles();
-			// if (files == null)
-
-			return false;
-		}
-
-		for (File f : files) {
-			if ( !f.exists() || f.lastModified() < lastModified()) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	/**
@@ -974,6 +962,7 @@ public class Project extends Processor {
 		if (getProperty(NOBUNDLES) != null)
 			return null;
 
+		long buildtime = System.currentTimeMillis();
 		File bfs = new File(getTarget(), BUILDFILES);
 		bfs.delete();
 
@@ -1005,8 +994,8 @@ public class Project extends Processor {
 				fw.close();
 			}
 			getWorkspace().changedFile(bfs);
+			this.buildtime = buildtime;
 			return files;
-
 		} else
 			return null;
 	}
@@ -1020,9 +1009,9 @@ public class Project extends Processor {
 				reportNewer(f.lastModified(), jar);
 				f.delete();
 				jar.write(f);
-				if ( !f.getParentFile().isDirectory())
+				if (!f.getParentFile().isDirectory())
 					f.getParentFile().mkdirs();
-				
+
 				getWorkspace().changedFile(f);
 			} else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
@@ -1073,7 +1062,7 @@ public class Project extends Processor {
 		super.propertiesChanged();
 		preparedPaths = false;
 		files = null;
-		
+
 	}
 
 	public String getName() {
@@ -1528,4 +1517,16 @@ public class Project extends Processor {
 		lockingReason = null;
 		lock.unlock();
 	}
+
+
+	public long getBuildTime() throws Exception {
+		if ( buildtime == 0 ) {
+			
+			files = getBuildFiles();
+			if ( files != null && files.length >= 1)
+				buildtime = files[0].lastModified();
+		}
+		return buildtime;
+	}
+
 }
