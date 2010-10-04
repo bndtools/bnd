@@ -1,34 +1,27 @@
 package bndtools.wizards.workspace;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import org.eclipse.core.runtime.CoreException;
+import org.apache.felix.bundlerepository.RepositoryAdmin;
+import org.apache.felix.bundlerepository.Resource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -50,16 +43,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.libg.version.Version;
 import bndtools.Plugin;
-import bndtools.api.repository.RemoteRepository;
-import bndtools.types.Pair;
 
 public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
-    private RemoteRepository repository;
-
-    private final Set<URL> selectedURL = new LinkedHashSet<URL>();
+    private final RepositoryAdmin repoAdmin;
+    private final List<Resource> selectedResources = new LinkedList<Resource>();
 
     private TableViewer availableViewer;
     private TableViewer selectedViewer;
@@ -72,26 +61,23 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
     private Label availableSummaryLabel;
 
-    public RemoteRepositoryBundleSelectionPage(String pageName) {
+    public RemoteRepositoryBundleSelectionPage(String pageName, RepositoryAdmin repoAdmin) {
         super(pageName);
-    }
-
-    public void setRepository(RemoteRepository repository) {
-        this.repository = repository;
+        this.repoAdmin = repoAdmin;
     }
 
     @Override
     public boolean isPageComplete() {
-        return !selectedURL.isEmpty();
+        return !selectedResources.isEmpty();
     }
 
-    public Collection<URL> getSelectedURLs() {
-        return Collections.unmodifiableCollection(selectedURL);
+    public Collection<Resource> getSelectedResources() {
+        return Collections.unmodifiableCollection(selectedResources);
     }
 
     public void createControl(Composite parent) {
         setTitle("Select Bundles");
-        setMessage("The selected bundles will be imported into the local repository.");
+        setMessage("The selected bundles will be imported into the Local Repository.");
 
         Composite composite = new Composite(parent, SWT.NONE);
 
@@ -99,10 +85,15 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         Control buttonPanel = createButtonPanel(composite);
         Control selectedPanel = createSelectedPanel(composite);
 
+        Label lblHint = new Label(composite, SWT.WRAP);
+        lblHint.setText("Hint: enter a search filter to find bundles (e.g. 'apache').");
+
         GridLayout layout = new GridLayout(3, false);
         composite.setLayout(layout);
 
         GridData gd;
+        gd = new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1);
+        lblHint.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         availPanel.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
@@ -113,35 +104,16 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         setControl(composite);
         setPageComplete(false);
     }
-    private class RepositorySearchResultsContentProvider implements IStructuredContentProvider {
-        public void dispose() {
-        }
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
-        public Object[] getElements(Object inputElement) {
-            List<Pair<String, Version>> result = new ArrayList<Pair<String,Version>>();
 
-            @SuppressWarnings("unchecked")
-            Collection<String> bsns = (Collection<String>) inputElement;
-            for (String bsn : bsns) {
-                Collection<Version> versions = repository.versions(bsn);
-                if(versions != null) for (Version version : versions) {
-                    result.add(new Pair<String, Version>(bsn, version));
-                }
-            }
-
-            return result.toArray(new Object[result.size()]);
-        }
-    }
-
-    private static class RepositorySearchResultsLabelProvider extends StyledCellLabelProvider {
+    private static class OBRResourcesLabelProvider extends StyledCellLabelProvider {
         private Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
         @Override
         public void update(ViewerCell cell) {
-            @SuppressWarnings("unchecked")
-            Pair<String, Version> id = (Pair<String, Version>) cell.getElement();
-            StyledString string = new StyledString(id.getFirst());
-            string.append(" (" + id.getSecond() + ")", StyledString.COUNTER_STYLER);
+            Resource resource = (Resource) cell.getElement();
+
+            StyledString string = new StyledString(resource.getSymbolicName());
+            string.append(" (" + resource.getVersion() + ")", StyledString.COUNTER_STYLER);
+
             cell.setText(string.getString());
             cell.setStyleRanges(string.getStyleRanges());
             cell.setImage(bundleImg);
@@ -158,14 +130,14 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
         new Label(composite, SWT.NONE).setText("Repository Contents:");
         final Text searchText = new Text(composite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-//        final Button searchButton = new Button(composite, SWT.PUSH);
-//        searchButton.setText("Search");
+        searchText.setMessage("type filter");
         final Table availableTree = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         availableSummaryLabel = new Label(composite, SWT.NONE);
 
         availableViewer = new TableViewer(availableTree);
-        availableViewer.setContentProvider(new RepositorySearchResultsContentProvider());
-        availableViewer.setLabelProvider(new RepositorySearchResultsLabelProvider());
+        availableViewer.setContentProvider(new ArrayContentProvider());
+        availableViewer.setLabelProvider(new OBRResourcesLabelProvider());
+
 
         // LISTENERS
         searchText.addSelectionListener(new SelectionAdapter() {
@@ -182,15 +154,9 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         });
         searchText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                doSearch(searchText.getText(), 500L);
+                doSearch(searchText.getText(), 1000L);
             }
         });
-//        searchButton.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                doSearch(searchText.getText(), 0L);
-//            }
-//        });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 btnAdd.setEnabled(!availableViewer.getSelection().isEmpty());
@@ -224,21 +190,17 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
     void doAdd() {
         IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
         for(Iterator<?> iterator = selection.iterator(); iterator.hasNext(); ) {
-            @SuppressWarnings("unchecked")
-            Pair<String, Version> id = (Pair<String, Version>) iterator.next();
-            List<URL> urls = repository.get(id.getFirst(), "[" + id.getSecond() + "," + id.getSecond() + "]");
-            if(urls != null && !urls.isEmpty()) {
-                selectedURL.add(urls.get(urls.size() - 1));
-            }
+            Resource resource = (Resource) iterator.next();
+            selectedResources.add(resource);
         }
-        updateSelectedURLs();
+        updateSelectedResources();
         getContainer().updateButtons();
     }
 
     void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
-        selectedURL.removeAll(selection.toList());
-        updateSelectedURLs();
+        selectedResources.removeAll(selection.toList());
+        updateSelectedResources();
         getContainer().updateButtons();
     }
 
@@ -247,25 +209,28 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         searchJob = new Job("Search Repository") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                final Collection<String> list = repository.list("*" + text + "*");
-                if(!availableViewer.getControl().isDisposed()) {
-                    Runnable op = new Runnable() {
+                try {
+                    final String filter = "(symbolicname=*" + text + "*)";
+                    final Resource[] resources = repoAdmin.discoverResources(filter);
+
+                    Runnable displayOp = new Runnable() {
                         public void run() {
-                            if(!availableViewer.getControl().isDisposed())
-                                availableViewer.setInput(list);
+                            if(!availableViewer.getControl().isDisposed()) {
+                                availableViewer.setInput(resources != null ? resources : Collections.emptyList());
+                            }
                             if(!availableSummaryLabel.isDisposed()) {
-                                if(list.isEmpty())
-                                    availableSummaryLabel.setText("Nothing found.");
-                                else
-                                    availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# bundle|1<{0} bundles} found.", list.size()));
+                                if(resources == null || resources.length == 0) availableSummaryLabel.setText("Nothing found.");
+                                else availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# resource|1<{0} resources} found.", resources.length));
                             }
                         }
                     };
+
                     Display display = availableViewer.getControl().getDisplay();
-                    if(display.getThread() == Thread.currentThread())
-                        op.run();
-                    else
-                        display.asyncExec(op);
+                    if(display.getThread() == Thread.currentThread()) displayOp.run();
+                    else display.asyncExec(displayOp);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
                 return Status.OK_STATUS;
             }
@@ -288,12 +253,12 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         }
     }
 
-    private static class URLLabelProvider extends StyledCellLabelProvider {
+    private static class ResourceLabelProvider extends StyledCellLabelProvider {
         private final Image linkImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/link.png").createImage();
         @Override
         public void update(ViewerCell cell) {
-            URL url = (URL) cell.getElement();
-            cell.setText(url.toString());
+            Resource resource = (Resource) cell.getElement();
+            cell.setText(resource.getURI());
             cell.setImage(linkImg);
         }
         @Override
@@ -311,7 +276,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
         selectedViewer = new TableViewer(table);
         selectedViewer.setContentProvider(new ArrayContentProvider());
-        selectedViewer.setLabelProvider(new URLLabelProvider());
+        selectedViewer.setLabelProvider(new ResourceLabelProvider());
 
         selectedSummaryLabel = new Label(composite, SWT.NONE);
 
@@ -342,9 +307,9 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         return composite;
     }
 
-    private void updateSelectedURLs() {
-        selectedViewer.setInput(selectedURL);
-        selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedURL.size()));
+    private void updateSelectedResources() {
+        selectedViewer.setInput(selectedResources);
+        selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedResources.size()));
     }
 
     Control createButtonPanel(Composite parent) {
@@ -385,28 +350,5 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         return composite;
     }
 
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
 
-        if(visible) {
-            try {
-                getContainer().run(true, false, new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        try {
-                            repository.initialise(monitor);
-                        } catch (CoreException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                CoreException x = (CoreException) e.getCause();
-                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising repository.", x));
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
 }

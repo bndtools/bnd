@@ -15,14 +15,24 @@ Bundle-ClassPath: .,\
 
 Import-Package: org.eclipse.core.runtime;registry=!,\
 	junit.framework;resolution:=optional,\
+	org.apache.felix.shell;resolution:=optional,\
+	org.osgi.service.obr;resolution:=optional,\
 	*
 
 # Bundle Content
+
+felix.obr.packages: \
+	org.apache.felix.bundlerepository*,\
+	org.apache.felix.utils.*,\
+	org.kxml2.io,\
+	org.xmlpull.v1
+
 Private-Package: bndtools*,\
 	aQute.bnd.classpath,\
 	aQute.bnd.plugin,\
 	aQute.lib.spring,\
-	org.ardverk.collection
+	org.ardverk.collection,\
+	${felix.obr.packages}
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
@@ -31,11 +41,13 @@ Export-Package: bndtools.api.*;version=${baseversion},\
 
 Include-Resource: resources,\
 	${repo;biz.aQute.bndlib},\
-	${repo;bndtools.bndplugins.repos}
+	${repo;bndtools.bndplugins.repos},\
+	${repo;org.apache.felix.bundlerepository}
 
 # Build and Run
 -buildpath: bndtools.bndplugins.repos,\
 	biz.aQute.bndlib;version=${bndlibver},\
+	org.apache.felix.bundlerepository,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -63,6 +75,4 @@ Include-Resource: resources,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
 	patricia_trie,\
-	org.osgi.service.obr,\
 	org.eclipse.equinox.preferences
-	
