@@ -63,6 +63,8 @@ public class Central implements IResourceChangeListener {
         if (event.getType() != IResourceChangeEvent.POST_CHANGE)
             return;
 
+        long now = System.currentTimeMillis();
+        
         IResourceDelta rootDelta = event.getDelta();
         try {
             final Set<Project> changed = new HashSet<Project>();
@@ -129,9 +131,9 @@ public class Central implements IResourceChangeListener {
             });
 
             for (Project p : changed) {
+            	p.updateModified(now, "Eclipse resource listener");
                 p.refresh();
                 changed(p);
-
             }
         } catch (CoreException e) {
             Activator.getDefault().error("While handling changes", e);

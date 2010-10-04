@@ -890,15 +890,16 @@ public class Project extends Processor {
 			return null;
 
 		boolean outofdate = !isUptodate();
-		// for (Project project : getDependson()) {
-		// if (project != this && !project.isUptodate()) {
-		//				
-		// System.out.println("  Building because out of date: " + project);
-		// project.files = project.buildLocal(false);
-		// outofdate = true;
-		// getInfo(project, project + ": ");
-		// }
-		// }
+		
+		for (Project project : getDependson()) {
+			if (project != this && !project.isUptodate()) {
+				trace("  Building because out of date: " + project);
+				project.files = project.buildLocal(false);
+				outofdate = true;
+				getInfo(project, project + ": ");
+			}
+		}
+		
 		if (files == null || outofdate) {
 			trace("Building " + this);
 			files = buildLocal(underTest);
