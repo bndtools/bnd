@@ -191,6 +191,8 @@
 				<include name="bndtools.core/generated/*.jar"/>
 				<include name="bndtools.jareditor/generated/*.jar"/>
 				<include name="bndtools.repository.base/generated/*.jar"/>
+				<include name="bndtools.diff/generated/*.jar"/>
+				<include name="bndtools.release/generated/*.jar"/>
 			</bundles>
 		</p2.publish.featuresAndBundles>
 	</target>

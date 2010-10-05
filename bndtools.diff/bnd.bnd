@@ -1,0 +1,19 @@
+baseversion: 0.0.1
+version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
+bndlibver: 1.0.0
+
+Test: true
+Bundle-SymbolicName: bndtools.diff
+Bundle-Version: ${version}
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+
+Import-Package:	!test,*
+Export-Package: bndtools.diff
+
+# Build and Run
+-buildpath: biz.aQute.bndlib;version=${bndlibver},\
+			com.springsource.org.objectweb.asm,\
+			com.springsource.org.objectweb.asm.tree,\
+			bndtools.core;version=project,\
+			osgi.core, \
+			${junit}
