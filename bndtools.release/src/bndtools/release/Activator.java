@@ -10,7 +10,19 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -18,6 +30,11 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -29,7 +46,7 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
-	
+		
 	/**
 	 * The constructor
 	 */
@@ -324,6 +341,126 @@ public class Activator extends AbstractUIPlugin {
 		
 		oid = new OverlayImageDescriptor(reg, "static_method", "minor_remove");
 		reg.put("static_method_minor_remove", oid);
-}
+	}
+	
+    @SuppressWarnings("unchecked")
+	public static <T> T getService(Class<T> clazz) {
+    	 if (clazz == Workspace.class) {
+    		 try {
+				return (T) Workspace.getWorkspace(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+    	 }
+    	 
+    	 ServiceReference sr = getDefault().getBundle().getBundleContext().getServiceReference(clazz.getName());
+    	 if (sr == null) {
+    		 return null;
+    	 }
+    	 return (T) getDefault().getBundle().getBundleContext().getService(sr);
+     }
+
+	public static void refreshProject(Project project) throws Exception {
+		Workspace ws = Activator.getService(Workspace.class);
+		if (ws == null) {
+			return;
+		}
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+		IProject p  = root.getProject(project.getName());
+		project.refresh();
+		refreshProject(p);
+	}
+	
+	public static File getLocalRepoLocation(RepositoryPlugin repository) {
+		if (!repository.getClass().getName().equals("aQute.lib.deployer.FileRepo") &&
+			!repository.getClass().getName().equals("aQute.lib.deployer.FileInstallRepo")) {
+			return null;
+		}
+
+		try {
+			Method m = repository.getClass().getMethod("getRoot");
+			return (File) m.invoke(repository);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static void refreshProject(IProject project) throws Exception {
+		project.refreshLocal(IResource.DEPTH_INFINITE, null);
+	}
+
+	public static List<RepositoryPlugin> getRepositories() {
+		
+		Workspace ws = Activator.getService(Workspace.class);
+		if (ws == null) {
+			return Collections.emptyList();
+		}
+
+		return ws.getPlugins(RepositoryPlugin.class);
+	}
+
+	public static RepositoryPlugin getRepositoryPlugin(String name) {
+		List<RepositoryPlugin> plugins = getRepositories();
+		for (RepositoryPlugin plugin : plugins) {
+			if (name.equals(plugin.getName())) {
+				return plugin;
+			}
+		}
+		return null;
+	}
+
+    protected static String toLocal(File f) throws Exception {
+		Workspace ws = Activator.getService(Workspace.class);
+		if (ws == null) {
+			return "";
+		}
+        String root = ws.getBase().getAbsolutePath();
+        String path = f.getAbsolutePath().substring(root.length());
+        return path;
+    }
+
+	public static void refreshFile(File f) throws Exception {
+		if (f == null) {
+			return;
+		}
+        String path = toLocal(f);
+        IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+        if (r != null) {
+            r.refreshLocal(IResource.DEPTH_INFINITE, null);
+        }
+    }
+
+	public static IProject getProject(File f) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        String wsLoc = root.getLocation().toOSString();
+        try {
+			String fLoc = f.getCanonicalPath().toString();
+			if (fLoc.startsWith(wsLoc)) {
+				String s = fLoc.substring(wsLoc.length() + 1);
+				IResource r = root.findMember(s);
+				return r.getProject();
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return null;
+	}
+
+	public static IPath getPath(File f) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        String wsLoc = root.getLocation().toOSString();
+        try {
+			String fLoc = f.getCanonicalPath().toString();
+			if (fLoc.startsWith(wsLoc)) {
+				String s = fLoc.substring(wsLoc.length() + 1);
+				IResource r = root.findMember(s);
+				return r.getProjectRelativePath();
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return null;
+	}
 
 }

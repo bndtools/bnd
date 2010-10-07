@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -142,6 +143,12 @@ public class BundleReleaseDialog extends Dialog {
 			
 			// Necessary???
 			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, null);
+			
+			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
+			if (repo != null) {
+				File f = Activator.getLocalRepoLocation(repo);
+				Activator.refreshFile(f);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
