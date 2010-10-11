@@ -17,7 +17,7 @@
 	<target name="init" unless="initialized">
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/biz.aQute.bndlib/bin:${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
