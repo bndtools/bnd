@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -52,6 +53,7 @@ import aQute.libg.version.Version;
 import bndtools.Plugin;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.utils.BundleUtils;
+import bndtools.utils.ProgressReportingInputStream;
 
 public class LocalRepositoryTasks {
     private static final String PATH_REPO_FOLDER = "repo";
@@ -194,9 +196,23 @@ public class LocalRepositoryTasks {
         return status;
     }
 
-    public static void installBundle(RepositoryPlugin localRepo, URL url) throws IOException, CoreException {
+    /**
+     * Install a bundle from the supplied URL into the local bundle repository.
+     *
+     * @param localRepo The local repository
+     * @param url The source URL
+     * @param size The size of the remote file if known, otherwise -1
+     * @param monitor A progress monitor for reporting progress of the copy, or {@code null} if progress reporting is not required.
+     * @throws IOException
+     * @throws CoreException
+     */
+    public static void installBundle(RepositoryPlugin localRepo, URL url, int size, IProgressMonitor monitor) throws IOException, CoreException {
         URLConnection connection = url.openConnection();
-        InputStream stream = connection.getInputStream();
+        if(monitor == null) monitor = new NullProgressMonitor();
+
+        monitor.beginTask("Installing " + url.toExternalForm(), size > 0 ? size : IProgressMonitor.UNKNOWN);
+        ProgressReportingInputStream stream = new ProgressReportingInputStream(connection.getInputStream(), monitor);
+
         try {
             Jar jar = new Jar("", stream, System.currentTimeMillis());
             jar.setDoNotTouchManifest();
@@ -207,7 +223,6 @@ public class LocalRepositoryTasks {
             stream.close();
         }
     }
-
 
     public static void refreshWorkspaceForRepository(IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 1);
@@ -299,7 +314,7 @@ public class LocalRepositoryTasks {
                 for (URL url: urls) {
                     String errorMessage = MessageFormat.format("Error installing bundle URL {0} to local repository.", url.toString());
                     try {
-                        installBundle(localRepo, url);
+                        installBundle(localRepo, url, -1, null);
                     } catch (IOException e) {
                         if(status != null) status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, errorMessage, e));
                         Plugin.logError(errorMessage, e);

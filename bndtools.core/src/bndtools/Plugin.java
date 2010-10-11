@@ -11,8 +11,10 @@
 package bndtools;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -23,10 +25,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.url.URLConstants;
+import org.osgi.service.url.URLStreamHandlerService;
+import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
+import bndtools.utils.WorkspaceURLStreamHandlerService;
 import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
 
 
@@ -57,9 +64,12 @@ public class Plugin extends AbstractUIPlugin {
 	private Activator bndActivator;
 
     private volatile RepositoryModel repositoryModel;
+    private volatile ServiceTracker workspaceTracker;
+    private volatile ServiceRegistration urlHandlerReg;
 
 	@Override
     public void start(BundleContext context) throws Exception {
+	    registerWorkspaceURLHandler(context);
 		super.start(context);
 		plugin = this;
 		this.bundleContext = context;
@@ -71,14 +81,23 @@ public class Plugin extends AbstractUIPlugin {
 
 		installOrUpdateCheck();
 
-//		StartupBuildJob buildJob = new StartupBuildJob("Build Bnd Projects...");
-//		buildJob.setSystem(false);
-//		buildJob.schedule();
-
-
 	}
 
-	private void installOrUpdateCheck() {
+	private void registerWorkspaceURLHandler(BundleContext context) {
+	    workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
+	    workspaceTracker.open();
+
+	    Properties props = new Properties();
+	    props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] { WorkspaceURLStreamHandlerService.PROTOCOL });
+	    urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
+    }
+
+	private void unregisterWorkspaceURLHandler() {
+	    urlHandlerReg.unregister();
+	    workspaceTracker.close();
+	}
+
+    private void installOrUpdateCheck() {
 	    InitialiseCnfProjectWizard.showIfNeeded(false, true, new IShellProvider() {
             public Shell getShell() {
                 return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
@@ -94,6 +113,7 @@ public class Plugin extends AbstractUIPlugin {
 		this.bundleContext = null;
 		plugin = null;
 		super.stop(context);
+		unregisterWorkspaceURLHandler();
 	}
 
 	public static Plugin getDefault() {

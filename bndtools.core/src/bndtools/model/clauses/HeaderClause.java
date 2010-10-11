@@ -16,21 +16,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
-	
+
 	private static final String INTERNAL_LIST_SEPARATOR = ";";
 	private static final String INTERNAL_LIST_SEPARATOR_NEWLINES = INTERNAL_LIST_SEPARATOR + "\\\n\t\t";
 
 	protected String name;
 	protected final Map<String,String> attribs;
-	
+
 	public HeaderClause(String name, Map<String, String> attribs) {
 		assert name != null;
 		assert attribs != null;
-		
+
 		this.name = name;
 		this.attribs = attribs;
 	}
@@ -47,13 +47,13 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		String string = attribs.get(attrib);
 		if(string == null)
 			return null;
-		
-		List<String> result = new ArrayList<String>();	
+
+		List<String> result = new ArrayList<String>();
 		StringTokenizer tokenizer = new StringTokenizer(string, ",");
 		while(tokenizer.hasMoreTokens()) {
 			result.add(tokenizer.nextToken().trim());
 		}
-		
+
 		return result;
 	}
 	public void setListAttrib(String attrib, Collection<? extends String> value) {
@@ -74,19 +74,19 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	public void formatTo(StringBuilder buffer) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 		buffer.append(name);
-		for(Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext(); ) {
+		if (attribs != null) for(Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext(); ) {
 			Entry<String, String> entry = iter.next();
 			String name = entry.getKey();
 			String value = entry.getValue();
-			
+
 			if(value != null && value.length() > 0) {
 				buffer.append(separator);
-			
+
 				// Quote commas in the value
 				value = value.replaceAll(",", "','");
 				// Quote equals in the value
 				value = value.replaceAll("=", "'='");
-				
+
 				buffer.append(name).append('=').append(value);
 			}
 		}
@@ -98,7 +98,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	public HeaderClause clone() {
 		return new HeaderClause(this.name, new HashMap<String, String>(this.attribs));
 	}
-	
+
 	public int compareTo(HeaderClause other) {
 		return this.name.compareTo(other.name);
 	}

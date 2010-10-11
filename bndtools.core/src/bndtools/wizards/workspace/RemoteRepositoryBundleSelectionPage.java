@@ -1,8 +1,12 @@
 package bndtools.wizards.workspace;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +49,10 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 
-public class RemoteRepositoryBundleSelectionPage extends WizardPage {
+public class RemoteRepositoryBundleSelectionPage extends WizardPage implements IRepositoriesChangedCallback {
+
+    public static final String PROP_SELECTION = "selection";
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final RepositoryAdmin repoAdmin;
     private final List<Resource> selectedResources = new LinkedList<Resource>();
@@ -61,18 +68,14 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
 
     private Label availableSummaryLabel;
 
-    public RemoteRepositoryBundleSelectionPage(String pageName, RepositoryAdmin repoAdmin) {
-        super(pageName);
+    public RemoteRepositoryBundleSelectionPage(RepositoryAdmin repoAdmin) {
+        super("initialSelection");
         this.repoAdmin = repoAdmin;
     }
 
     @Override
     public boolean isPageComplete() {
         return !selectedResources.isEmpty();
-    }
-
-    public Collection<Resource> getSelectedResources() {
-        return Collections.unmodifiableCollection(selectedResources);
     }
 
     public void createControl(Composite parent) {
@@ -195,6 +198,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         }
         updateSelectedResources();
         getContainer().updateButtons();
+        propSupport.firePropertyChange(PROP_SELECTION, null, selectedResources);
     }
 
     void doRemove() {
@@ -202,6 +206,18 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         selectedResources.removeAll(selection.toList());
         updateSelectedResources();
         getContainer().updateButtons();
+        propSupport.firePropertyChange(PROP_SELECTION, null, selectedResources);
+    }
+
+    public void changedRepositories(RepositoryAdmin repoAdmin) {
+        if (this.repoAdmin == repoAdmin) {
+            cancelSearch();
+            if (availableViewer != null && !availableViewer.getControl().isDisposed())
+                availableViewer.setInput(Collections.emptyList());
+            selectedResources.clear();
+            updateSelectedResources();
+            propSupport.firePropertyChange(PROP_SELECTION, null, selectedResources);
+        }
     }
 
     void doSearch(final String text, long delay) {
@@ -213,6 +229,18 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
                     final String filter = "(symbolicname=*" + text + "*)";
                     final Resource[] resources = repoAdmin.discoverResources(filter);
 
+                    Arrays.sort(resources, new Comparator<Resource>() {
+                        public int compare(Resource o1, Resource o2) {
+                            String bsn1 = o1.getSymbolicName();
+                            if(bsn1 == null) bsn1 = "no-symbolic-name";
+
+                            String bsn2 = o2.getSymbolicName();
+                            if(bsn2 == null) bsn2 = "no-symbolic-name";
+
+                            return bsn1.compareToIgnoreCase(bsn2);
+                        }
+                    });
+
                     Runnable displayOp = new Runnable() {
                         public void run() {
                             if(!availableViewer.getControl().isDisposed()) {
@@ -220,7 +248,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
                             }
                             if(!availableSummaryLabel.isDisposed()) {
                                 if(resources == null || resources.length == 0) availableSummaryLabel.setText("Nothing found.");
-                                else availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# resource|1<{0} resources} found.", resources.length));
+                                else availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# One resource|1<{0} resources} found.", resources.length));
                             }
                         }
                     };
@@ -289,6 +317,11 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
                 }
             }
         });
+        selectedViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                btnRemove.setEnabled(!selectedViewer.getSelection().isEmpty());
+            }
+        });
 
         // LAYOUT
         GridLayout layout = new GridLayout();
@@ -308,8 +341,11 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
     }
 
     private void updateSelectedResources() {
-        selectedViewer.setInput(selectedResources);
-        selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedResources.size()));
+        if(selectedViewer != null && !selectedViewer.getControl().isDisposed()) {
+            selectedViewer.setInput(selectedResources);
+            selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedResources.size()));
+            setPageComplete(!selectedResources.isEmpty());
+        }
     }
 
     Control createButtonPanel(Composite parent) {
@@ -350,5 +386,24 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage {
         return composite;
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public Collection<Resource> getSelectedResources() {
+        return selectedResources;
+    }
 
 }

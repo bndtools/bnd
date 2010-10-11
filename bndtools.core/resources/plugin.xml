@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
    <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
+   <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -18,23 +19,6 @@
          </action>
       </objectContribution>
    </extension>
-   <!--
-   <extension
-         point="org.eclipse.ui.editorActions">
-      <editorContribution
-            id="bndtools.bndEditorContribution"
-            targetID="bndtools.bndEditor">
-         <action
-               class="bndtools.MakeBundleWithRefreshAction"
-               icon="icons/brick.png"
-               id="bndtools.makeBundleAction"
-               label="Make Bundle"
-               style="push"
-               toolbarPath="Normal/additions">
-         </action>
-      </editorContribution>
-   </extension>
-   -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -462,6 +446,12 @@
              id="bndtools.prefPages.basic"
              name="Bnd OSGi Tools">
        </page>
+       <page
+            class="bndtools.preferences.ui.OBRPreferencePage"
+            id="bndtools.prefPages.obr"
+            name="OSGi Bundle Repositories"
+            category="bndtools.prefPages.basic">
+       </page>
     </extension>
     <extension
           point="org.eclipse.debug.ui.launchConfigurationTypeImages">
@@ -475,5 +465,17 @@
              icon="icons/bricks_junit.png"
              id="bndtools.core.launchConfigImages.test">
        </launchConfigurationTypeImage>
+    </extension>
+    <extension
+          point="org.eclipse.core.runtime.preferences">
+       <initializer
+             class="bndtools.preferences.OBRPreferences">
+       </initializer>
+    </extension>
+    <extension
+          point="bndtools.core.obr">
+          <obr
+               label="Eclipse Orbit R20100519200754"
+               resource="obr/orbit-R20100519200754.xml"/>
     </extension>
  </plugin>

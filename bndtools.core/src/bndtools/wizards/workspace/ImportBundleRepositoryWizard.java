@@ -1,28 +1,19 @@
 package bndtools.wizards.workspace;
 
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import org.apache.felix.bundlerepository.RepositoryAdmin;
-import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
 import org.apache.felix.utils.log.Logger;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
@@ -30,31 +21,38 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.osgi.framework.BundleContext;
 
-import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
-import bndtools.tasks.repo.LocalRepositoryTasks;
 
 public class ImportBundleRepositoryWizard extends Wizard implements IImportWizard {
 
     private final RepositoryAdmin repoAdmin;
+
+    private final OBRSelectionPage repoPage;
     private final RemoteRepositoryBundleSelectionPage bundlePage;
+    private final DependentResourcesWizardPage dependenciesPage;
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
 
     public ImportBundleRepositoryWizard() {
+        setNeedsProgressMonitor(true);
+
         BundleContext bc = Plugin.getDefault().getBundleContext();
         repoAdmin = new RepositoryAdminImpl(bc, new Logger(bc));
-        try {
-            repoAdmin.addRepository(new URL("file:/Users/neil/Projects/DistributedOSGi/bindex_test/repository.xml"));
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
-        bundlePage = new RemoteRepositoryBundleSelectionPage("bundlePage", repoAdmin);
+        bundlePage = new RemoteRepositoryBundleSelectionPage(repoAdmin);
+        repoPage = new OBRSelectionPage(repoAdmin, bundlePage);
+        dependenciesPage = new DependentResourcesWizardPage(repoAdmin);
 
-        setNeedsProgressMonitor(true);
+        bundlePage.addPropertyChangeListener(RemoteRepositoryBundleSelectionPage.PROP_SELECTION, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                dependenciesPage.setSelectedResources(bundlePage.getSelectedResources());
+            }
+        });
+
+        addPage(repoPage);
+        addPage(bundlePage);
+        addPage(dependenciesPage);
     }
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -68,90 +66,36 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
     }
 
     @Override
-    public void addPages() {
-        addPage(bundlePage);
-    }
-
-    @Override
     public boolean performFinish() {
-        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems occurred importing bundle(s) to local repository.", null);
+        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems occurred while resolving or importing bundles.", null);
 
-        Collection<Resource> selected = bundlePage.getSelectedResources();
-        if(selected == null || selected.isEmpty())
-            return false;
+        Collection<Resource> adding = new ArrayList<Resource>();
+        adding.addAll(dependenciesPage.getSelected());
+        adding.addAll(dependenciesPage.getRequired());
 
-        final Collection<Resource> adding = new ArrayList<Resource>(selected.size());
-        adding.addAll(selected);
-
-        Collection<Resource> requiredResources = new LinkedList<Resource>();
-        Collection<Resource> optionalResources = new LinkedList<Resource>();
-        boolean resolved;
-        try {
-            Resolver resolver = repoAdmin.resolver();
-            for (Resource resource : bundlePage.getSelectedResources()) {
-                resolver.add(resource);
-            }
-
-            resolved = resolver.resolve(Resolver.NO_SYSTEM_BUNDLE | Resolver.NO_LOCAL_RESOURCES);
-            Resource[] tmp;
-
-            tmp = resolver.getRequiredResources();
-            if (tmp != null)
-                for (Resource resource : tmp) requiredResources.add(resource);
-
-            tmp = resolver.getOptionalResources();
-            if (tmp != null)
-                for (Resource resource : tmp) optionalResources.add(resource);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (!requiredResources.isEmpty() || !optionalResources.isEmpty()) {
-            RequiredBundlesDialog requiredBundlesDialog = new RequiredBundlesDialog(getShell(), requiredResources, optionalResources);
-            requiredBundlesDialog.setBlockOnOpen(true);
-            if (requiredBundlesDialog.open() == Window.OK) {
-                adding.addAll(requiredBundlesDialog.getAllSelected());
-            }
-        }
-
-        try {
-            getContainer().run(false, false, new IRunnableWithProgress() {
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-                            public void run(IProgressMonitor monitor) throws CoreException {
-                                SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository", 4 + adding.size());
-
-                                LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1));
-                                RepositoryPlugin localRepo = LocalRepositoryTasks.getLocalRepository();
-                                LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2));
-
-                                int workRemaining = adding.size() + 1;
-                                for (Resource resource : adding) {
-                                    progress.setWorkRemaining(workRemaining);
-                                    try {
-                                        URL url = new URL(resource.getURI());
-                                        LocalRepositoryTasks.installBundle(localRepo, url);
-                                        progress.worked(1);
-                                    } catch (IOException e) {
-                                        status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error copying resource {0}.", resource.getId()), e));
-                                    } catch (CoreException e) {
-                                        status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error copying resource {0}.", resource.getId()), e));
-                                    }
-                                    workRemaining --;
-                                }
-                                LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1));
-                            }
-                        }, monitor);
-                    } catch (CoreException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-
-            if(!status.isOK())
-                ErrorDialog.openError(getShell(), "Warning", null, status);
+        if(adding.isEmpty())
             return true;
+
+        AddOBRResourcesToWorkspaceTask installTask = new AddOBRResourcesToWorkspaceTask(adding, status);
+
+        try {
+            getContainer().run(true, true, installTask);
+
+            switch (status.getSeverity()) {
+            case IStatus.CANCEL:
+                return false;
+            case IStatus.ERROR:
+                ErrorDialog.openError(getShell(), "Error", null, status);
+                return false;
+            case IStatus.WARNING:
+                if (ErrorDialog.openError(getShell(), "Error", null, status) == Window.OK) {
+                    return true;
+                } else {
+                    return false;
+                }
+            default:
+                return true;
+            }
         } catch (InvocationTargetException e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.", e.getCause()));
         } catch (InterruptedException e) {
@@ -159,4 +103,5 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
         }
         return false;
     }
+
 }

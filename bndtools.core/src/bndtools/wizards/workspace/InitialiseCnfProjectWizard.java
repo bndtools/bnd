@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -20,6 +21,8 @@ import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -77,7 +80,15 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
 	        Display display = PlatformUI.getWorkbench().getDisplay();
 	        SWTConcurrencyUtil.execForDisplay(display, asyncExec, new Runnable() {
 	            public void run() {
-	                WizardDialog dialog = new WizardDialog(shellProvider.getShell(), wizard);
+	                // Modified wizard dialog -- change "Finish" to "OK"
+	                WizardDialog dialog = new WizardDialog(shellProvider.getShell(), wizard) {
+	                    @Override
+	                    protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
+	                        if (id == IDialogConstants.FINISH_ID)
+	                            label = IDialogConstants.OK_LABEL;
+	                        return super.createButton(parent, id, label, defaultButton);
+	                    }
+	                };
 	                shownOkay.set(dialog.open() == Window.OK);
 	            }
 	        });
@@ -99,9 +110,9 @@ public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard 
                 public void run(IProgressMonitor monitor) throws CoreException {
                     SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository...", 4);
 
-                    LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1));
-                    LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2));
-                    LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1));
+                    LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1, 0));
+                    LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2, 0));
+                    LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1, 0));
                 }
             };
             getContainer().run(false, false, new IRunnableWithProgress() {

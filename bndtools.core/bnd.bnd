@@ -16,7 +16,6 @@ Bundle-ClassPath: .,\
 Import-Package: org.eclipse.core.runtime;registry=!,\
 	junit.framework;resolution:=optional,\
 	org.apache.felix.shell;resolution:=optional,\
-	org.osgi.service.obr;resolution:=optional,\
 	*
 
 # Bundle Content
@@ -32,7 +31,9 @@ Private-Package: bndtools*,\
 	aQute.bnd.plugin,\
 	aQute.lib.spring,\
 	org.ardverk.collection,\
-	${felix.obr.packages}
+	${felix.obr.packages},\
+	org.osgi.impl.bundle.obr.resource,\
+	org.osgi.service.obr
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
@@ -48,6 +49,7 @@ Include-Resource: resources,\
 -buildpath: bndtools.bndplugins.repos,\
 	biz.aQute.bndlib;version=${bndlibver},\
 	org.apache.felix.bundlerepository,\
+	bindex,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\

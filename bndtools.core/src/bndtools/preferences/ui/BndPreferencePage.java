@@ -23,6 +23,8 @@ import bndtools.utils.ModificationLock;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
+    public static final String PAGE_ID = "bndtools.prefPages.basic";
+
 	private final ModificationLock lock = new ModificationLock();
 
 	private IPreferenceStore store;
