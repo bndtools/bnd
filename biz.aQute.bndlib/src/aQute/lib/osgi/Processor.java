@@ -28,7 +28,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	private File			base			= new File("").getAbsoluteFile();
 	private List<Closeable>	toBeClosed		= newList();
 
-	final Properties		properties;
+	Properties		properties;
 	private Macro			replacer;
 	private long			lastModified;
 	private File			propertiesFile;
@@ -56,6 +56,9 @@ public class Processor implements Reporter, Constants, Closeable {
 
 	public void setParent(Processor processor) {
 		this.parent = processor;
+		Properties ext = new Properties(processor.properties);
+		ext.putAll(this.properties);
+		this.properties = ext;
 	}
 
 	public Processor getParent() {

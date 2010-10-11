@@ -158,20 +158,18 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 				+ version.getMinor() + "." + version.getMicro() + ".jar";
 		File file = new File(dir, fName);
 
-		System.out.println("put" + file.getAbsolutePath() + " "
-				+ file.lastModified() + " " + jar.lastModified());
-		if (file.lastModified() < jar.lastModified()) {
-			System.out.println("Updating " + fName);
+		reporter.trace("Updating " + file.getAbsolutePath());
+		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
-			// reportNewer(file.lastModified(), jar);
+			reporter.progress("Updated " + file.getAbsolutePath());
 		} else {
 			reporter.progress("Did not update " + jar
 					+ " because repo has a newer version");
-			System.out.println("NOT Updating " + fName + " (repo is newer)");
+			reporter.trace("NOT Updating " + fName + " (repo is newer)");
 		}
 
 		file = new File(dir, bsn + "-latest.jar");
-		if (file.isFile() && file.lastModified() < jar.lastModified()) {
+		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
 		}
 		return file;

@@ -16,6 +16,7 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.libsync.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
@@ -43,6 +44,7 @@ public class bnd extends Processor {
 
 	public static void main(String args[]) {
 		bnd main = new bnd();
+
 		try {
 			main.run(args);
 			if (bnd.failok)
@@ -59,147 +61,61 @@ public class bnd extends Processor {
 	}
 
 	void run(String[] args) throws Exception {
-		int cnt = 0;
-		for (int i = 0; i < args.length; i++) {
-			if ("-failok".equals(args[i])) {
-				failok = true;
-			} else if ("-exceptions".equals(args[i])) {
-				exceptions = true;
-			} else if ("-trace".equals(args[i])) {
-				setTrace(true);
-			} else if ("-pedantic".equals(args[i])) {
-				setPedantic(true);
-			} else if ("-base".equals(args[i])) {
-				setBase(new File(args[++i]).getAbsoluteFile());
-				if (!getBase().isDirectory()) {
-					out.println("-base must be a valid directory");
-				}
-			} else if ("wrap".equals(args[i])) {
-				cnt++;
-				doWrap(args, ++i);
-				break;
-			} else if ("print".equals(args[i])) {
-				cnt++;
-				doPrint(args, ++i);
-				break;
-			} else if ("graph".equals(args[i])) {
-				cnt++;
-				doDot(args, ++i);
-				break;
-			} else if ("create-repo".equals(args[i])) {
-				cnt++;
-				createRepo(args, ++i);
-				break;
-			} else if ("release".equals(args[i])) {
-				cnt++;
-				doRelease(args, ++i);
-				break;
-			} else if ("debug".equals(args[i])) {
-				cnt++;
-				debug(args, ++i);
-				break;
-			} else if ("bump".equals(args[i])) {
-				cnt++;
-				bump(args, ++i);
-				break;
-			} else if ("deliverables".equals(args[i])) {
-				cnt++;
-				deliverables(args, ++i);
-				break;
-			} else if ("view".equals(args[i])) {
-				cnt++;
-				doView(args, ++i);
-				break;
-			} else if ("buildx".equals(args[i])) {
-				cnt++;
-				doBuild(args, ++i);
-				break;
-			} else if ("extract".equals(args[i])) {
-				cnt++;
-				doExtract(args, ++i);
-				break;
-			} else if ("patch".equals(args[i])) {
-				cnt++;
-				patch(args, ++i);
-				break;
-			} else if ("runtests".equals(args[i])) {
-				cnt++;
-				runtests(args, ++i);
-				break;
-			} else if ("xref".equals(args[i])) {
-				cnt++;
-				doXref(args, ++i);
-				break;
-			} else if ("eclipse".equals(args[i])) {
-				cnt++;
-				doEclipse(args, ++i);
-				break;
-			} else if ("repo".equals(args[i])) {
-				cnt++;
-				repo(args, ++i);
-				break;
-			} else if ("diff".equals(args[i])) {
-				cnt++;
-				doDiff(args, ++i);
-				break;
-			} else if ("help".equals(args[i])) {
-				cnt++;
-				doHelp(args, ++i);
-				break;
-			} else if ("macro".equals(args[i])) {
-				cnt++;
-				doMacro(args, ++i);
-				break;
-			} else {
-				Project p = getProject();
-				if (p != null) {
-					Action a = p.getActions().get(args[i]);
-					if (a != null) {
-						cnt++;
-						// parse args
-						a.execute(p, args[i++]);
-						getInfo(p);
-						break;
-					}
-				}
+		int i = 0;
 
-				cnt++;
-				String path = args[i];
-				if (path.startsWith("-")) {
-					doHelp(args, i);
-					error("Invalid option on commandline: " + args[i]);
+		try {
+			for (; i < args.length; i++) {
+				if ("-failok".equals(args[i])) {
+					failok = true;
+				} else if ("-exceptions".equals(args[i])) {
+					exceptions = true;
+				} else if ("-trace".equals(args[i])) {
+					setTrace(true);
+				} else if ("-pedantic".equals(args[i])) {
+					setPedantic(true);
+				} else if (args[i].indexOf('=') > 0) {
+					String parts[] = args[i].split("\\s*(?!\\\\)=\\s*");
+					if (parts.length == 2)
+						setProperty(parts[0], parts[1]);
+					else
+						error("invalid property def: %s", args[i]);
+				} else if ("-base".equals(args[i])) {
+					setBase(new File(args[++i]).getAbsoluteFile());
+					if (!getBase().isDirectory()) {
+						out.println("-base must be a valid directory");
+					} else if (args[i].startsWith("-"))
+						error("Invalid option: ", args[i]);
+				} else
 					break;
-				} else {
-					if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-						doBuild(new File(path), new File[0], new File[0], null, "", new File(path)
-								.getParentFile(), 0, new HashSet<File>());
-					else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
-							|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
-						doPrint(path, -1);
-					else {
-						try {
-							i = doMacro(args, i);
-						} catch (Throwable t) {
-							t.printStackTrace();
-							doHelp(args, i);
-							error("Invalid commandline: " + args[i]);
-							break;
-						}
+			}
+
+			project = getProject();
+			if (project != null) {
+				setParent(project);
+				project.setPedantic(isPedantic());
+				project.setTrace(isTrace());
+			}
+			trace("project = %s", project);
+
+			if (i >= args.length) {
+				if (project != null && project.isValid()) {
+					trace("default build of current project");
+					project.build();
+				} else
+					doHelp();
+			} else {
+				if (!doProject(project, args, i)) {
+					if (!doCommand(args, i)) {
+						doFiles(args, i);
 					}
 				}
 			}
+		} catch (Throwable t) {
+			if (exceptions)
+				t.printStackTrace();
+			error("exception %s", t);
 		}
 
-		if (cnt == 0) {
-			File f = new File("bnd.bnd");
-			if (f.exists()) {
-				doBuild(f, new File[0], new File[0], null, "", f.getParentFile(), 0,
-						new HashSet<File>());
-			} else {
-				doHelp();
-				error("No files on commandline");
-			}
-		}
 		int n = 1;
 		switch (getErrors().size()) {
 		case 0:
@@ -230,33 +146,111 @@ public class bnd extends Processor {
 		}
 	}
 
+	boolean doProject(Project project, String[] args, int i) throws Exception {
+		if (project != null) {
+			trace("project command %s", args[i]);
+			Action a = project.getActions().get(args[i]);
+			if (a != null) {
+				a.execute(project, args[i++]);
+				getInfo(project);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	boolean doCommand(String args[], int i) throws Exception {
+		trace("command %s", args[i]);
+		if ("wrap".equals(args[i])) {
+			doWrap(args, ++i);
+		} else if ("print".equals(args[i])) {
+			doPrint(args, ++i);
+		} else if ("graph".equals(args[i])) {
+			doDot(args, ++i);
+		} else if ("create-repo".equals(args[i])) {
+			createRepo(args, ++i);
+		} else if ("release".equals(args[i])) {
+			doRelease(args, ++i);
+		} else if ("debug".equals(args[i])) {
+			debug(args, ++i);
+		} else if ("libsync".equals(args[i])) {
+			doLibsync(args, ++i);
+		} else if ("bump".equals(args[i])) {
+			bump(args, ++i);
+		} else if ("deliverables".equals(args[i])) {
+			deliverables(args, ++i);
+		} else if ("view".equals(args[i])) {
+			doView(args, ++i);
+		} else if ("buildx".equals(args[i])) {
+			doBuild(args, ++i);
+		} else if ("extract".equals(args[i])) {
+			doExtract(args, ++i);
+		} else if ("patch".equals(args[i])) {
+			patch(args, ++i);
+		} else if ("runtests".equals(args[i])) {
+			runtests(args, ++i);
+		} else if ("xref".equals(args[i])) {
+			doXref(args, ++i);
+		} else if ("eclipse".equals(args[i])) {
+			doEclipse(args, ++i);
+		} else if ("repo".equals(args[i])) {
+			repo(args, ++i);
+		} else if ("diff".equals(args[i])) {
+			doDiff(args, ++i);
+		} else if ("help".equals(args[i])) {
+			doHelp(args, ++i);
+		} else if ("macro".equals(args[i])) {
+			doMacro(args, ++i);
+		} else
+			return false;
+
+		return true;
+	}
+
+	boolean doFiles(String args[], int i) throws Exception {
+		while (i < args.length) {
+			String path = args[i];
+			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
+				doBuild(getFile(path), new File[0], new File[0], null, "", new File(path)
+						.getParentFile(), 0, new HashSet<File>());
+			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
+					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
+				doPrint(path, -1);
+			else
+				error("Unknown file %s", path);
+			i++;
+		}
+		return true;
+	}
+
 	private void bump(String[] args, int i) throws Exception {
-		if ( getProject() == null ) {
+		if (getProject() == null) {
 			error("No project found, use -base <dir> bump");
 			return;
 		}
-		
+
 		String mask = null;
-		if ( args.length > i) {
+		if (args.length > i) {
 			mask = args[i];
-			if ( mask.equalsIgnoreCase("major"))
+			if (mask.equalsIgnoreCase("major"))
 				mask = "+00";
-			else if ( mask.equalsIgnoreCase("minor"))
+			else if (mask.equalsIgnoreCase("minor"))
 				mask = "=+0";
-			else if ( mask.equalsIgnoreCase("micro"))
+			else if (mask.equalsIgnoreCase("micro"))
 				mask = "==+";
-			else if ( ! mask.matches("(+=0){1,3}") )
-			{
-				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask", mask);
+			else if (!mask.matches("(+=0){1,3}")) {
+				error(
+						"Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
+						mask);
 				return;
 			}
 		}
-		if ( mask == null )
+		if (mask == null)
 			getProject().bump();
 		else
 			getProject().bump(mask);
-		
-		out.println( getProject().getProperty(BUNDLE_VERSION, "No version found"));
+
+		out.println(getProject().getProperty(BUNDLE_VERSION, "No version found"));
 	}
 
 	/**
@@ -422,7 +416,7 @@ public class bnd extends Processor {
 			cmd = cmd.replaceAll("@\\{([^}])\\}", "\\${$1}");
 			cmd = cmd.replaceAll(":", ";");
 			cmd = cmd.replaceAll("[^$](.*)", "\\${$0}");
-			result = getProject().getReplacer().process(cmd);
+			result = getReplacer().process(cmd);
 			if (result != null && result.length() != 0) {
 				Collection<String> parts = split(result);
 				for (String s : parts) {
@@ -847,10 +841,10 @@ public class bnd extends Processor {
 							.getValue(Analyzer.IMPORT_PACKAGE));
 					Map<String, Map<String, String>> exports = parseHeader(m.getMainAttributes()
 							.getValue(Analyzer.EXPORT_PACKAGE));
-					for ( String p : exports.keySet()) {
-						if ( imports.containsKey(p)) {
-							Map<String,String> attrs = imports.get(p);
-							if ( attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
+					for (String p : exports.keySet()) {
+						if (imports.containsKey(p)) {
+							Map<String, String> attrs = imports.get(p);
+							if (attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
 								exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
 							}
 						}
@@ -2015,6 +2009,52 @@ public class bnd extends Processor {
 			pw.close();
 		}
 
+	}
+
+	void doLibsync(String args[], int i) throws Exception {
+		List<File> files = new ArrayList<File>();
+
+		while (i < args.length) {
+			String v = args[i++];
+			if (v.startsWith("-")) {
+				error("Invalid option for submit: %s, use: libsync [-url <url>] <file|dir>...", v);
+			} else {
+				File f = getFile(v);
+				if (!f.exists()) {
+					error("Non existent file: %s", f);
+				} else
+					traverse(files, f);
+			}
+		}
+		LibSync libsync;
+		libsync = new LibSync(this);
+
+		for (File file : files) {
+			Jar jar = new Jar(file);
+			try {
+				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
+				libsync.submit(jar);
+				getInfo(libsync);
+				System.out.printf("     ok\n");
+			} catch (Exception e) {
+				System.out.printf("     failed %s\n", e.getMessage());
+				error("Submit to libsync failed for %s: %s", file, e);
+			} finally {
+				jar.close();
+			}
+		}
+	}
+
+	private void traverse(List<File> files, File f) {
+		if (f.isFile()) {
+			if (f.getName().endsWith(".jar"))
+				files.add(f);
+		} else if (f.isDirectory()) {
+			File[] subs = f.listFiles();
+			for (File sub : subs) {
+				traverse(files, sub);
+			}
+		}
 	}
 
 }
