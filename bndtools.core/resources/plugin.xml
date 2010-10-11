@@ -2,6 +2,7 @@
 <plugin>
    <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
    <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
+   <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -477,5 +478,11 @@
           <obr
                label="Eclipse Orbit R20100519200754"
                resource="obr/orbit-R20100519200754.xml"/>
+    </extension>
+    <extension
+          point="bndtools.core.projectTemplates">
+          <template
+               name="Component Development (Declarative Services)"
+               class="bndtools.wizards.project.ComponentTemplate"/>
     </extension>
  </plugin>

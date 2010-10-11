@@ -34,12 +34,14 @@ import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
+import bndtools.api.IProjectTemplate;
 import bndtools.editor.model.BndEditModel;
 
 class NewBndProjectWizard extends JavaProjectWizard {
 
 	private final NewBndProjectWizardPageOne pageOne;
 	private final NewJavaProjectWizardPageTwo pageTwo;
+	private final TemplateSelectionWizardPage templatePage = new TemplateSelectionWizardPage();
 
 	NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
 		super(pageOne, pageTwo);
@@ -53,6 +55,7 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	@Override
 	public void addPages() {
 		addPage(pageOne);
+		addPage(templatePage);
 		addPage(pageTwo);
 	}
 
@@ -61,7 +64,14 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	 * @param monitor
 	 */
 	protected BndEditModel generateBndModel(IProgressMonitor monitor) {
-	    return new BndEditModel();
+	    BndEditModel model = new BndEditModel();
+
+	    IProjectTemplate template = templatePage.getTemplate();
+	    if (template != null) {
+	        template.modifyInitialBndModel(model);
+	    }
+
+	    return model;
 	}
 
     /**

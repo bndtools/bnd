@@ -160,6 +160,13 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
                 doSearch(searchText.getText(), 1000L);
             }
         });
+        searchText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == SWT.ARROW_DOWN)
+                    availableTree.setFocus();
+            }
+        });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 btnAdd.setEnabled(!availableViewer.getSelection().isEmpty());

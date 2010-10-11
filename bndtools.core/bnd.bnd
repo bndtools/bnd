@@ -37,6 +37,7 @@ Private-Package: bndtools*,\
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
+	bndtools.editor.model;version=${baseversion},\
 	aQute.libg.*;version=${bndlibver},\
 	aQute.lib.osgi;version=${bndlibver}
 
