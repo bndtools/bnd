@@ -16,7 +16,6 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.sed.*;
-import aQute.service.scripting.*;
 
 /**
  * This class is NOT threadsafe
@@ -384,7 +383,7 @@ public class Project extends Processor {
 					if (versionRange != null
 							&& (versionRange.equals("project") || versionRange.equals("latest"))) {
 						Project project = getWorkspace().getProject(bsn);
-						if (project.exists()) {
+						if (project != null && project.exists()) {
 							File f = project.getOutput();
 							found = new Container(project, bsn, "project", Container.TYPE.PROJECT,
 									f, null, attrs);
