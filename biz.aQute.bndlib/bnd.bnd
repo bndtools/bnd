@@ -26,8 +26,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.0,\
 	aQute.libg;version=project,\
-	aQute.service;version=project,\
-	osgi.core;version=4.2.1
+	osgi.core;version=4.1
 
 -pom: true
-Bundle-Version: 1.1.0
+Bundle-Version: 1.4.0
