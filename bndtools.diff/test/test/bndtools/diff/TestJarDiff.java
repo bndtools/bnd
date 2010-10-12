@@ -45,13 +45,13 @@ public class TestJarDiff extends TestCase {
 
 		Jar newJar = new Jar(bsn);
 		Manifest mf1 = new Manifest();
-		mf1.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
+		mf1.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn + ";singleton:=true");
 		mf1.getMainAttributes().putValue(Constants.EXPORT_PACKAGE, exportedPackages1);
 		newJar.setManifest(mf1);
 
 		Jar oldJar = new Jar(bsn);
 		Manifest mf2 = new Manifest();
-		mf2.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
+		mf2.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn + ";singleton:=true");
 		mf2.getMainAttributes().putValue(Constants.BUNDLE_VERSION, "1.0.0.201010101010");
 		mf2.getMainAttributes().putValue(Constants.EXPORT_PACKAGE, exportedPackages2);
 		oldJar.setManifest(mf2);

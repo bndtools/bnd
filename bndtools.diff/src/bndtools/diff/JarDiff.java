@@ -80,8 +80,13 @@ public class JarDiff {
 		Manifest projectManifest = projectJar.getManifest();
 		Map<String, Map<String, String>> projectExportedPackages = OSGiHeader.parseHeader((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.EXPORT_PACKAGE)), null);
 		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.IMPORT_PACKAGE)), null);
+		String symbName = (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
+		int idx = symbName.indexOf(';');
+		if (idx > -1) {
+			symbName = symbName.substring(0, idx);
+		}
 		
-		bundleSymbolicName  = (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
+		bundleSymbolicName  = symbName;// (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
 		version = removeVersionQualifier((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_VERSION))); // This is the version from the .bnd file
 		
 		Map<String, Map<String, String>> previousPackages;
@@ -102,6 +107,10 @@ public class JarDiff {
 		}
 		
 		String prevName = (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
+		idx = prevName.indexOf(';');
+		if (idx > -1) {
+			prevName = prevName.substring(0, idx);
+		}
 		
 		if (bundleSymbolicName != null && prevName != null && !bundleSymbolicName.equals(prevName)) {
 			throw new IllegalArgumentException(Constants.BUNDLE_SYMBOLICNAME + " must be equal");
