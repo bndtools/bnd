@@ -4,3 +4,5 @@ Include-Resource: plugin.xml,\
 	repo=repo
 Import-Package: bndtools.api.repository;version="[0,1)",\
 	*
+-buildpath: bndtools.core;version=snapshot
+Private-Package: bndtools.templates

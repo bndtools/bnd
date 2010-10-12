@@ -1,4 +1,4 @@
-package bndtools.wizards.project;
+package bndtools.templates;
 
 import java.util.ArrayList;
 import java.util.HashMap;
