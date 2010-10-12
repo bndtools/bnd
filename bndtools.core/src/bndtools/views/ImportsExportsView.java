@@ -12,12 +12,13 @@ package bndtools.views;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -78,7 +79,6 @@ import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
 import bndtools.model.importanalysis.RequiredBundle;
 import bndtools.tasks.AnalyseBundleResolutionJob;
 import bndtools.utils.PartAdapter;
-import bndtools.utils.Predicate;
 import bndtools.utils.SelectionUtils;
 
 public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
@@ -277,49 +277,55 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         if(!getSite().getPage().isPartVisible(this))
             return;
 
-        if (selection instanceof IStructuredSelection) {
-            // Look for files outside the workspace
-            Collection<File> fileList = SelectionUtils.getSelectionMembers(selection, File.class, new Predicate<File>() {
-                public boolean select(File file) {
-                    boolean result;
-                    if(file.isDirectory()) {
-                        result = new File(file, "META-INF/MANIFEST.MF").exists();
-                    } else {
-                        result = file.getName().endsWith(".bnd") || file.getName().endsWith(".jar");
-                    }
-                    return result;
-                }
-            });
+        Collection<File> fileList = getFilesFromSelection(selection);
 
-            // Look for workspace resources
-            Collection<IResource> resourceList = SelectionUtils.getSelectionMembers(selection, IResource.class, new Predicate<IResource>() {
-                public boolean select(IResource resource) {
-                    boolean result;
-                    if(resource.getType() == IResource.FOLDER) {
-                        result = ((IFolder) resource).getFile("META-INF/MANIFEST.MF").exists();
-                    } else {
-                        result = resource.getName().endsWith(".bnd") || resource.getName().endsWith(".jar");
-                    }
-                    return result;
-                }
-            });
-
-            // Add the workspace resources to the files
-            for (IResource resource : resourceList) {
-                IPath path = resource.getLocation();
-                File file = path.toFile();
-                fileList.add(file);
-            }
-
-            if (fileList.isEmpty())
-                return;
-
-            File[] files = fileList.toArray(new File[fileList.size()]);
-            if (!Arrays.equals(files, selectedFiles)) {
-                this.selectedFiles = files;
-                executeAnalysis();
+        // Filter out non-bundle files/dirs
+        for (Iterator<File> iter = fileList.iterator(); iter.hasNext(); ) {
+            File file = iter.next();
+            if (file.isDirectory()) {
+                File manifestFile = new File(file, "META-INF/MANIFEST.MF");
+                if (!manifestFile.isFile())
+                    iter.remove();
+            } else {
+                String fileName = file.getName().toLowerCase();
+                if (!fileName.endsWith(".bnd") && !fileName.endsWith(".jar"))
+                    iter.remove();
             }
         }
+
+        if (fileList.isEmpty())
+            return;
+
+        File[] files = fileList.toArray(new File[fileList.size()]);
+        if (!Arrays.equals(files, selectedFiles)) {
+            this.selectedFiles = files;
+            executeAnalysis();
+        }
+    }
+
+    private Collection<File> getFilesFromSelection(ISelection selection) {
+        if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+            return Collections.emptyList();
+        }
+
+        IStructuredSelection structSel = (IStructuredSelection) selection;
+        Collection<File> result = new ArrayList<File>();
+        Iterator<?> iter = structSel.iterator();
+        while(iter.hasNext()) {
+            Object element = iter.next();
+            File file = SelectionUtils.adaptObject(element, File.class);
+            if (file != null) {
+                result.add(file);
+            } else {
+                IResource resource = SelectionUtils.adaptObject(element, IResource.class);
+                if (resource != null) {
+                    IPath location = resource.getLocation();
+                    if (location != null)
+                        result.add(location.toFile());
+                }
+            }
+        }
+        return result;
     }
 
     void executeAnalysis() {
