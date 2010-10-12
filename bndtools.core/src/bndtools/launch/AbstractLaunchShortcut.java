@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -21,6 +22,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -127,6 +129,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         ILaunchConfigurationWorkingCopy wc;
         wc = configType.newInstance(null, manager.generateUniqueLaunchConfigurationNameFrom(targetPath.lastSegment()));
         wc.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, targetPath.toString());
+
+        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetPath);
+        if (targetResource != null && targetResource.exists())
+            wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetResource.getProject().getName());
+
         return wc;
     }
 

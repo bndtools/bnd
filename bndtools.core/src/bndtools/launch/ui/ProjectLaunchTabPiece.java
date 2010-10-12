@@ -166,6 +166,11 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, launchTargetTxt.getText());
+
+        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTargetTxt.getText());
+        if (targetResource != null && targetResource.exists()) {
+            configuration.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetResource.getProject().getName());
+        }
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
