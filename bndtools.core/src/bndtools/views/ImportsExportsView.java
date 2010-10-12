@@ -88,19 +88,29 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
 	private TreeViewer viewer;
 	private ViewerFilter hideSelfImportsFilter;
 
+	private boolean outOfDate = false;
 	private File[] selectedFiles;
 	private Job analysisJob;
 
     private final IPartListener partAdapter = new PartAdapter() {
         @Override
         public void partActivated(IWorkbenchPart part) {
-            if (part instanceof IEditorPart) {
+            if (part == ImportsExportsView.this) {
+                if (outOfDate) {
+                    executeAnalysis();
+                }
+            } else if (part instanceof IEditorPart) {
                 IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
                 IFile file = ResourceUtil.getFile(editorInput);
                 if (file != null) {
                     if (file.getName().toLowerCase().endsWith(".bnd") || file.getName().toLowerCase().endsWith(".jar")) {
                         selectedFiles = new File[] { file.getLocation().toFile() };
-                        executeAnalysis();
+
+                        if (getSite().getPage().isPartVisible(ImportsExportsView.this)) {
+                            executeAnalysis();
+                        } else {
+                            outOfDate = true;
+                        }
                     }
                 }
             }
@@ -273,10 +283,6 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         if (selection == null || selection.isEmpty())
             return;
 
-        // Don't react to the event if the View is not visible
-        if(!getSite().getPage().isPartVisible(this))
-            return;
-
         Collection<File> fileList = getFilesFromSelection(selection);
 
         // Filter out non-bundle files/dirs
@@ -299,7 +305,12 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         File[] files = fileList.toArray(new File[fileList.size()]);
         if (!Arrays.equals(files, selectedFiles)) {
             this.selectedFiles = files;
-            executeAnalysis();
+
+            if (getSite().getPage().isPartVisible(this)) {
+                executeAnalysis();
+            } else {
+                outOfDate = true;
+            }
         }
     }
 
@@ -329,6 +340,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
     }
 
     void executeAnalysis() {
+        outOfDate = false;
         synchronized (this) {
             Job oldJob = analysisJob;
             if (oldJob != null && oldJob.getState() != Job.NONE)
