@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Constants;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;

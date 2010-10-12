@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Bundle;
 
+import bndtools.Plugin;
 import bndtools.shared.OBRLink;
 import bndtools.utils.BundleUtils;
 
@@ -32,7 +33,7 @@ public class BuiltInOBRLink implements OBRLink {
         URL result = null;
 
         String bundleId = element.getContributor().getName();
-        Bundle bundle = BundleUtils.findBundle(bundleId, null);
+        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bundleId, null);
 
         if (bundle != null) {
             result = bundle.getEntry(element.getAttribute("resource"));

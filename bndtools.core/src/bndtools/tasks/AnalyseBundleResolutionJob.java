@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Clazz;
 import aQute.lib.osgi.Constants;
@@ -151,7 +150,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
 		// Calculate the manifest
 		try {
-			Project bndProject = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
+			Project bndProject = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
 			Builder builder;
 			if(file.getName().equals(Project.BNDFILE)) {
 			    builder = bndProject.getSubBuilders().iterator().next();

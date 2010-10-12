@@ -14,12 +14,8 @@ package bndtools.utils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
-import bndtools.Plugin;
-
 public class ServiceUtils {
-	public static final <R,S,E extends Throwable> R usingService(Class<S> clazz, ServiceOperation<R,S,E> operation) throws E {
-		BundleContext context = Plugin.getDefault().getBundleContext();
-		
+	public static final <R,S,E extends Throwable> R usingService(BundleContext context, Class<S> clazz, ServiceOperation<R,S,E> operation) throws E {
 		ServiceReference reference = context.getServiceReference(clazz.getName());
 		if(reference != null) {
 			@SuppressWarnings("unchecked")

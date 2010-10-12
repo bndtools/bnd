@@ -1,4 +1,4 @@
-package bndtools.tasks.repo;
+package bndtools;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +50,6 @@ import aQute.lib.deployer.FileRepo;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import aQute.libg.version.Version;
-import bndtools.Plugin;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.utils.BundleUtils;
 import bndtools.utils.ProgressReportingInputStream;
@@ -122,7 +121,7 @@ public class LocalRepositoryTasks {
         private Version contributorVersion;
     }
 
-    static List<ImplicitRepositoryWrapper> getImplicitRepositories() {
+    static List<ImplicitRepositoryWrapper> getImplicitRepositories(MultiStatus status) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
 
@@ -140,7 +139,7 @@ public class LocalRepositoryTasks {
                     wrapper.contributorBSN = element.getContributor().getName();
                     try {
                         wrapper.repository = (RemoteRepository) element.createExecutableExtension("class");
-                        Bundle contributorBundle = BundleUtils.findBundle(wrapper.contributorBSN, null);
+                        Bundle contributorBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), wrapper.contributorBSN, null);
                         wrapper.contributorVersion = new Version(0);
                         if(contributorBundle != null) {
                             String versionStr = (String) contributorBundle.getHeaders().get(Constants.BUNDLE_VERSION);
@@ -156,7 +155,11 @@ public class LocalRepositoryTasks {
                         }
                         result.add(wrapper);
                     } catch (CoreException e) {
-                        Plugin.logError(MessageFormat.format("Error instantiating repositoryContributor element from bundle {0}, class name {1}.", wrapper.contributorBSN, className), e);
+                        String message = MessageFormat.format("Error instantiating repositoryContributor element from bundle {0}, class name {1}.", wrapper.contributorBSN, className);
+                        if (status != null)
+                            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
+
+                        Plugin.logError(message, e);
                     }
                 }
             }
@@ -174,7 +177,10 @@ public class LocalRepositoryTasks {
         RepositoryPlugin localRepo = getLocalRepository();
 
         // Copy in the implicit repository contributions
-        List<ImplicitRepositoryWrapper> implicitRepos = getImplicitRepositories();
+        List<ImplicitRepositoryWrapper> implicitRepos = getImplicitRepositories(status);
+        if (status.getSeverity() >= IStatus.ERROR)
+            return status;
+
         int count = implicitRepos.size();
         for (ImplicitRepositoryWrapper wrapper : implicitRepos) {
             progress.setWorkRemaining(count--);
@@ -331,7 +337,7 @@ public class LocalRepositoryTasks {
     public static boolean isRepositoryUpToDate() {
         Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
 
-        List<ImplicitRepositoryWrapper> repos = getImplicitRepositories();
+        List<ImplicitRepositoryWrapper> repos = getImplicitRepositories(null);
         for (ImplicitRepositoryWrapper repo : repos) {
             Version version = installedVersions.get(repo.contributorBSN);
             if(version == null)

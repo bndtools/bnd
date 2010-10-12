@@ -22,8 +22,8 @@ import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.Tag;
 
-import aQute.bnd.plugin.Central;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.Central;
 import bndtools.Plugin;
 
 public class LocalRepositoryIndexer implements IRunnableWithProgress {

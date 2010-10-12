@@ -1,9 +1,10 @@
-package aQute.bnd.classpath;
+package bndtools.classpath;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+
 
 public class BndContainer implements IClasspathContainer {
 

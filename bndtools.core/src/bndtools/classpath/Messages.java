@@ -1,9 +1,9 @@
-package aQute.bnd.classpath;
+package bndtools.classpath;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "aQute.bnd.classpath.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "bndtools.classpath.messages"; //$NON-NLS-1$
 	public static String BndContainer_ContainerName;
 	static {
 		// initialize resource bundle

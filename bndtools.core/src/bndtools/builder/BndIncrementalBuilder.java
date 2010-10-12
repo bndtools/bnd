@@ -46,11 +46,10 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import aQute.bnd.classpath.BndContainer;
-import aQute.bnd.classpath.BndContainerInitializer;
-import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
+import bndtools.classpath.BndContainer;
+import bndtools.classpath.BndContainerInitializer;
 import bndtools.utils.FileUtils;
 import bndtools.utils.ResourceDeltaAccumulator;
 
@@ -123,7 +122,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				IResource.DEPTH_INFINITE);
 
 		// Delete target files
-		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(getProject()));
+		Project model = Plugin.getDefault().getCentral().getModel(JavaCore.create(getProject()));
 		try {
 			model.clean();
 		} catch (Exception e) {
@@ -132,7 +131,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	void incrementalRebuild(IResourceDelta delta, IProject project, IProgressMonitor monitor) {
 		SubMonitor progress = SubMonitor.convert(monitor);
-		Project model = Activator.getDefault().getCentral().getModel(JavaCore.create(project));
+		Project model = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
 		// model.refresh();
 
 		try {
@@ -199,7 +198,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		IJavaProject javaProject = JavaCore.create(project);
 
-        Project model = Activator.getDefault().getCentral().getModel(javaProject);
+        Project model = Plugin.getDefault().getCentral().getModel(javaProject);
 		model.refresh();
 		model.setChanged();
 

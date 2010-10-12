@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.bnd.plugin.Central;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.types.Pair;
 

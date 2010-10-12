@@ -1,21 +1,40 @@
-package aQute.bnd.classpath;
+package bndtools.classpath;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
-import org.eclipse.jdt.core.*;
-import org.eclipse.jdt.ui.wizards.*;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.wizard.*;
-import org.eclipse.swt.*;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
+import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 
-import aQute.bnd.build.*;
-import aQute.bnd.plugin.*;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import bndtools.Plugin;
 
 public class BndContainerPage extends WizardPage implements
         IClasspathContainerPage, IClasspathContainerPageExtension {
@@ -38,19 +57,19 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension#initialize(org.eclipse.jdt.core.IJavaProject,
      *      org.eclipse.jdt.core.IClasspathEntry[])
      */
     public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
         javaProject = project;
-        model = Activator.getDefault().getCentral().getModel(project);
+        model = Plugin.getDefault().getCentral().getModel(project);
         basedir = project.getProject().getLocation().makeAbsolute().toFile();
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
      */
     public void createControl(Composite parent) {
@@ -102,7 +121,7 @@ public class BndContainerPage extends WizardPage implements
             public Object[] getElements(Object inputElement) {
                 if (model != null)
                     try {
-                        
+
                         return model.getBuildpath().toArray();
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
@@ -206,7 +225,7 @@ public class BndContainerPage extends WizardPage implements
                     ps.close();
                 }
                 javaProject.getResource().refreshLocal(IResource.DEPTH_ONE, null);
-                model = Activator.getDefault().getCentral().getModel(javaProject);
+                model = Plugin.getDefault().getCentral().getModel(javaProject);
                 return model != null;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -220,7 +239,7 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#finish()
      */
     public boolean finish() {
@@ -229,7 +248,7 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#getSelection()
      */
     public IClasspathEntry getSelection() {
@@ -240,7 +259,7 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#setSelection(org.eclipse.jdt.core.IClasspathEntry)
      */
     public void setSelection(IClasspathEntry containerEntry) {

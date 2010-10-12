@@ -43,7 +43,7 @@ public class OSGiJUnitLaunchDelegate extends OSGiLaunchDelegate implements ILaun
         String reporter = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_REPORTER, LaunchConstants.DEFAULT_JUNIT_REPORTER);
         if("port".equals(reporter)) {
             try {
-                Bundle jdtJUnitBundle = BundleUtils.findBundle(JDT_JUNIT_BSN, null);
+                Bundle jdtJUnitBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), JDT_JUNIT_BSN, null);
                 if(jdtJUnitBundle == null)
                     throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bundle \"{0}\" was not found. Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
                 jdtJUnitBundle.start();

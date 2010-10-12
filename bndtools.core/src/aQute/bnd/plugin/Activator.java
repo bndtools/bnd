@@ -27,7 +27,6 @@ public class Activator extends AbstractUIPlugin {
     // The shared instance
     private static Activator   plugin;
     BundleContext              context;
-    Central central;
 
     /**
      * The constructor
@@ -46,7 +45,6 @@ public class Activator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         this.context = context;
-        this.central = new Central();
 
         Hashtable<String,Object> p = new Hashtable<String, Object>();
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d", "a:d:e"});
@@ -62,7 +60,6 @@ public class Activator extends AbstractUIPlugin {
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
-        central.close();
     }
 
     /**
@@ -222,7 +219,4 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    public Central getCentral() {
-        return central;
-    }
 }

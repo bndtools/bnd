@@ -40,7 +40,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Central;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
 import bndtools.launch.LaunchConstants;

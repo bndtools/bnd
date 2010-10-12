@@ -2,7 +2,9 @@ Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmm}
 Include-Resource: plugin.xml,\
 	repo=repo
-Import-Package: bndtools.api.repository;version="[0,1)",\
+Import-Package: \
+	bndtools.api.repository;version="[0,1)",\
+	bndtools.api.repository.impl;version="[0,1)",\
 	*
 -buildpath: bndtools.core;version=snapshot
 Private-Package: bndtools.templates

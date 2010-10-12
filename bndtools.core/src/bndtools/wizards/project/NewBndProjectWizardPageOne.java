@@ -25,7 +25,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import aQute.bnd.classpath.BndContainerInitializer;
+import bndtools.classpath.BndContainerInitializer;
+
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 

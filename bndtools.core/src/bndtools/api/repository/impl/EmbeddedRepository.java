@@ -1,4 +1,4 @@
-package bndtools.api.repository;
+package bndtools.api.repository.impl;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import aQute.lib.osgi.Instruction;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
+import bndtools.api.repository.RemoteRepository;
 import bndtools.utils.BundleUtils;
 
 public class EmbeddedRepository implements RemoteRepository, IExecutableExtension {
@@ -56,7 +57,7 @@ public class EmbeddedRepository implements RemoteRepository, IExecutableExtensio
         bsns = new ArrayList<String>();
         versions = new HashMap<String, SortedSet<Version>>();
 
-        bundle = BundleUtils.findBundle(bsn, null);
+        bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
         if(bundle != null) {
             bundleLastModified = BundleUtils.getBundleLastModified(bundle);
 

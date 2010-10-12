@@ -1,4 +1,4 @@
-package aQute.bnd.classpath;
+package bndtools.classpath;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,9 +20,8 @@ import org.eclipse.jdt.core.JavaCore;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Activator;
-import aQute.bnd.plugin.Central;
 import aQute.bnd.plugin.ModelListener;
+import bndtools.Central;
 import bndtools.Plugin;
 
 /**
@@ -44,7 +43,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
     public final static Path ID      = new Path("aQute.bnd.classpath.container");
 
-    final Central central = Activator.getDefault().getCentral();
+    final Central central = Plugin.getDefault().getCentral();
 
     public BndContainerInitializer() {
         central.addModelListener(this);

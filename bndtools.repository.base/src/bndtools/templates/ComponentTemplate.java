@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import bndtools.api.IBndModel;
 import bndtools.api.IProjectTemplate;
-import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 
 public class ComponentTemplate implements IProjectTemplate {
 
-    public void modifyInitialBndModel(BndEditModel model) {
+    public void modifyInitialBndModel(IBndModel model) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 

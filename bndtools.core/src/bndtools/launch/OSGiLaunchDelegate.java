@@ -33,12 +33,12 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Central;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import bndtools.BndConstants;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
 

@@ -20,8 +20,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Central;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;

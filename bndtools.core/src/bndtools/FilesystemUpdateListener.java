@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
+
 import aQute.bnd.service.BndListener;
 
 public final class FilesystemUpdateListener extends BndListener {

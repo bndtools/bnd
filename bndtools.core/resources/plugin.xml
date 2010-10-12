@@ -3,6 +3,7 @@
    <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
    <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
    <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
+   <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -269,7 +270,7 @@
        point="org.eclipse.jdt.core.classpathContainerInitializer">
       <classpathContainerInitializer
           id="aQute.bnd.classpath.container"
-          class="aQute.bnd.classpath.BndContainerInitializer"/>
+          class="bndtools.classpath.BndContainerInitializer"/>
    </extension>
    
    <extension 
@@ -277,7 +278,7 @@
       <classpathContainerPage
           id="aQute.bnd.classpath.container"
           name="Bnd Bundle Path"
-          class="aQute.bnd.classpath.BndContainerPage"/>
+          class="bndtools.classpath.BndContainerPage"/>
    </extension>
    
    <!-- COMPLETION PROPOSALS
@@ -478,5 +479,10 @@
           <obr
                label="Eclipse Orbit R20100519200754"
                resource="obr/orbit-R20100519200754.xml"/>
+    </extension>
+    <extension
+         point="bndtoolsStartupParticipant">
+         <startupParticipant
+               class="bndtools.wizards.workspace.InitialiseCnfStartupParticipant"/>
     </extension>
  </plugin>

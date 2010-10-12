@@ -1,4 +1,4 @@
-package aQute.bnd.plugin;
+package bndtools;
 
 import java.io.File;
 import java.util.HashMap;
@@ -27,9 +27,9 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.plugin.Activator;
+import aQute.bnd.plugin.ModelListener;
 import aQute.bnd.service.Refreshable;
-import bndtools.FilesystemUpdateListener;
-import bndtools.tasks.repo.LocalRepositoryTasks;
 
 public class Central {
     static Workspace workspace = null;

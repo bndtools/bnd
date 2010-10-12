@@ -18,8 +18,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
-import bndtools.tasks.repo.LocalRepositoryTasks;
 
 final class AddOBRResourcesToWorkspaceTask implements IRunnableWithProgress {
 

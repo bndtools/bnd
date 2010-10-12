@@ -29,8 +29,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.plugin.Central;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;

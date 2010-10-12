@@ -39,6 +39,7 @@ import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.api.IBndModel;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
@@ -51,7 +52,7 @@ import bndtools.model.clauses.VersionedClause;
  *
  * @author Neil Bartlett
  */
-public class BndEditModel {
+public class BndEditModel implements IBndModel {
 
     private static final String LINE_SEPARATOR = " \\\n\t";
 	private static final String LIST_SEPARATOR = ",\\\n\t";
@@ -339,6 +340,9 @@ public class BndEditModel {
 		List<ImportPattern> oldValue = getImportPatterns();
 		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getBuildPath()
+     */
 	public List<VersionedClause> getBuildPath() {
 		return doGetClauseList(aQute.lib.osgi.Constants.BUILDPATH, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
 			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
@@ -346,10 +350,16 @@ public class BndEditModel {
 			}
 		});
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setBuildPath(java.util.List)
+     */
 	public void setBuildPath(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths);
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getRunBundles()
+     */
 	public List<VersionedClause> getRunBundles() {
 		return doGetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
 			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
@@ -357,13 +367,22 @@ public class BndEditModel {
 			}
 		});
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setRunBundles(java.util.List)
+     */
 	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getRunFramework()
+     */
 	public String getRunFramework() {
 	    return doGetString(BndConstants.RUNFRAMEWORK);
 	}
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setRunFramework(java.lang.String)
+     */
 	public void setRunFramework(String clause) {
 	    String oldValue = getRunFramework();
 	    doSetString(BndConstants.RUNFRAMEWORK, oldValue, clause);
@@ -385,28 +404,46 @@ public class BndEditModel {
 		return false;
 	}
 
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getSubBndFiles()
+     */
 	public List<String> getSubBndFiles() {
 		return doGetStringList(aQute.lib.osgi.Constants.SUB);
 	}
 
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setSubBndFiles(java.util.List)
+     */
 	public void setSubBndFiles(List<String> subBndFiles) {
 		List<String> oldValue = getSubBndFiles();
 		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
 	}
 
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getRunProperties()
+     */
 	public Map<String, String> getRunProperties() {
 		return doGetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES);
 	}
 
+	/* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setRunProperties(java.util.Map)
+     */
 	public void setRunProperties(Map<String, String> props) {
 		Map<String, String> old = getRunProperties();
 		doSetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props);
 	}
 
+    /* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#getRunVMArgs()
+     */
     public String getRunVMArgs() {
         return doGetString(BndConstants.RUNVMARGS);
     }
 
+    /* (non-Javadoc)
+     * @see bndtools.editor.model.IBndModel#setRunVMArgs(java.lang.String)
+     */
     public void setRunVMArgs(String args) {
         String old = getRunVMArgs();
         doSetString(BndConstants.RUNVMARGS, old, args);

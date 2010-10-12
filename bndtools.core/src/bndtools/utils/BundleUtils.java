@@ -20,20 +20,20 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
-import bndtools.Plugin;
 
 public class BundleUtils {
 	private static final String FILE_URL_PREFIX = "file:";
 
-    public static final Bundle findBundle(String symbolicName, VersionRange range) {
+    public static final Bundle findBundle(BundleContext context, String symbolicName, VersionRange range) {
 		Bundle matched = null;
 		Version matchedVersion = null;
-		Bundle[] bundles = Plugin.getDefault().getBundleContext().getBundles();
+		Bundle[] bundles = context.getBundles();
 		for (Bundle bundle : bundles) {
 			try {
 				String name = bundle.getSymbolicName();
@@ -52,11 +52,11 @@ public class BundleUtils {
 		}
 		return matched;
 	}
-	public static IPath getBundleLocation(String symbolicName, VersionRange range) {
+	public static IPath getBundleLocation(BundleContext context, String symbolicName, VersionRange range) {
 		Location installLocation = Platform.getInstallLocation();
 		Location configLocation = Platform.getConfigurationLocation();
 
-		Bundle bundle= findBundle(symbolicName, range);
+		Bundle bundle= findBundle(context, symbolicName, range);
 		if(bundle == null)
 			return null;
 

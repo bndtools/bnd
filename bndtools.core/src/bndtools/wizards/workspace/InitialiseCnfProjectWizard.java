@@ -28,8 +28,8 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
-import bndtools.tasks.repo.LocalRepositoryTasks;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class InitialiseCnfProjectWizard extends Wizard implements IImportWizard {

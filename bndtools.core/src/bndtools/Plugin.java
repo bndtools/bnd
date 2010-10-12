@@ -15,14 +15,14 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -33,9 +33,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.plugin.Activator;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
-import bndtools.utils.WorkspaceURLStreamHandlerService;
-import bndtools.wizards.workspace.InitialiseCnfProjectWizard;
-
+import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
@@ -66,6 +64,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
+    private volatile Central central;
 
 	@Override
     public void start(BundleContext context) throws Exception {
@@ -77,10 +76,11 @@ public class Plugin extends AbstractUIPlugin {
 		bndActivator = new Activator();
 		bndActivator.start(context);
 
+		central = new Central();
+
 		repositoryModel = new RepositoryModel();
 
-		installOrUpdateCheck();
-
+		runStartupParticipants();
 	}
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
@@ -92,24 +92,28 @@ public class Plugin extends AbstractUIPlugin {
 	    urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
+	private void runStartupParticipants() {
+	    IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
+
+	    for (IConfigurationElement element : elements) {
+            try {
+                Runnable participant = (Runnable) element.createExecutableExtension("class");
+                participant.run();
+            } catch (CoreException e) {
+                logError("Error executing startup participant", e);
+            }
+        }
+	}
+
 	private void unregisterWorkspaceURLHandler() {
 	    urlHandlerReg.unregister();
 	    workspaceTracker.close();
 	}
 
-    private void installOrUpdateCheck() {
-	    InitialiseCnfProjectWizard.showIfNeeded(false, true, new IShellProvider() {
-            public Shell getShell() {
-                return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            }
-        });
-    }
-
-
-
     @Override
     public void stop(BundleContext context) throws Exception {
 		bndActivator.stop(context);
+		central.close();
 		this.bundleContext = null;
 		plugin = null;
 		super.stop(context);
@@ -232,4 +236,9 @@ public class Plugin extends AbstractUIPlugin {
 	public static void logError(String message, Throwable exception) {
 		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
 	}
+
+    public Central getCentral() {
+        return central;
+    }
+
 }
