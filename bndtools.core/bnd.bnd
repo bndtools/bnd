@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
 Bundle-ClassPath: .,\
-	biz.aQute.bndlib-${bndlibver}.jar,\
 	bndtools.bndplugins.repos-0.0.0.jar
 
 Import-Package: org.eclipse.core.runtime;registry=!,\
@@ -27,13 +26,14 @@ felix.obr.packages: \
 	org.xmlpull.v1
 
 Private-Package: bndtools*,\
-	aQute.bnd.classpath,\
-	aQute.bnd.plugin,\
-	aQute.lib.spring,\
 	org.ardverk.collection,\
 	${felix.obr.packages},\
 	org.osgi.impl.bundle.obr.resource,\
 	org.osgi.service.obr
+
+Conditional-Package: aQute.bnd.*,\
+	aQute.lib.*,\
+	aQute.service.*
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
@@ -43,7 +43,6 @@ Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.model.clauses;version=${baseversion}
 
 Include-Resource: resources,\
-	${repo;biz.aQute.bndlib},\
 	${repo;bndtools.bndplugins.repos},\
 	${repo;org.apache.felix.bundlerepository}
 
