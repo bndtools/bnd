@@ -28,7 +28,11 @@ public class ComponentTemplate implements IProjectTemplate {
         if (tmp != null) runPath.addAll(tmp);
         runPath.add(new VersionedClause("osgi.cmpn", new HashMap<String, String>()));
         runPath.add(new VersionedClause("org.apache.felix.scr", new HashMap<String, String>()));
+        runPath.add(new VersionedClause("org.apache.felix.shell", new HashMap<String, String>()));
+        runPath.add(new VersionedClause("org.apache.felix.shell.tui", new HashMap<String, String>()));
         model.setRunBundles(runPath);
+
+        model.setRunFramework("org.apache.felix.framework");
     }
 
 }
