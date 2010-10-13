@@ -40,7 +40,10 @@ Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.editor.model;version=${baseversion},\
 	aQute.libg.*;version=${bndlibver},\
 	aQute.lib.osgi;version=${bndlibver},\
-	bndtools.model.clauses;version=${baseversion}
+	bndtools.model.clauses;version=${baseversion},\
+	aQute.bnd.build;version=${bndlibver}, \
+	aQute.bnd.service;version=${bndlibver}, \
+	aQute.lib.osgi;version=${bndlibver}
 
 Include-Resource: resources,\
 	${repo;bndtools.bndplugins.repos},\

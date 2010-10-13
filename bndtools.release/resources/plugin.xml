@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="bndtools.releaseBundleContribution"
+            nameFilter="bnd.bnd"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="bndtools.release.ReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundle"
+               label="%releaseBundle"
+               menubarPath="additions"
+               tooltip="%releaseBundle.tooltip">
+         </action>
+      </objectContribution>
+   </extension>
+</plugin>
