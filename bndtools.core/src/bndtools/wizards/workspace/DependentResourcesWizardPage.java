@@ -134,7 +134,7 @@ public class DependentResourcesWizardPage extends WizardPage {
 
         IRunnableWithProgress operation = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                int work = 3;
+                int work = 4;
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
                 URL localUrl = getLocalRepositoryIndex(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -148,7 +148,7 @@ public class DependentResourcesWizardPage extends WizardPage {
                         resolver.add(resource);
                     }
 
-                    resolver.resolve(Resolver.NO_SYSTEM_BUNDLE | Resolver.NO_LOCAL_RESOURCES);
+                    boolean resolved = resolver.resolve(Resolver.NO_SYSTEM_BUNDLE | Resolver.NO_LOCAL_RESOURCES);
                     progress.worked(1); work--;
 
                     Resource[] tmp;
@@ -156,6 +156,8 @@ public class DependentResourcesWizardPage extends WizardPage {
                     for (Resource resource : tmp) {
                         required.add(resource);
                     }
+
+                    Reason[] unsatisfied = resolver.getUnsatisfiedRequirements();
 
                     tmp = resolver.getOptionalResources();
                     for (Resource resource : tmp) {

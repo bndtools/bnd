@@ -39,7 +39,7 @@ import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
-import bndtools.api.IBndModel;
+import bndtools.api.IPersistableBndModel;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
@@ -52,7 +52,7 @@ import bndtools.model.clauses.VersionedClause;
  *
  * @author Neil Bartlett
  */
-public class BndEditModel implements IBndModel {
+public class BndEditModel implements IPersistableBndModel {
 
     private static final String LINE_SEPARATOR = " \\\n\t";
 	private static final String LIST_SEPARATOR = ",\\\n\t";

@@ -1,5 +1,6 @@
 package bndtools.preferences;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -32,11 +33,22 @@ public class BuiltInOBRLink implements OBRLink {
     private static URL getURL(IConfigurationElement element) {
         URL result = null;
 
-        String bundleId = element.getContributor().getName();
-        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bundleId, null);
+        String urlAttribute = element.getAttribute("url");
+        String resourceAttribute = element.getAttribute("resource");
 
-        if (bundle != null) {
-            result = bundle.getEntry(element.getAttribute("resource"));
+        if (urlAttribute != null) {
+            try {
+                result = new URL(urlAttribute);
+            } catch (MalformedURLException e) {
+                Plugin.logError("Invalid URL defined in built-in OBR configuration.", e);
+            }
+        } else if (resourceAttribute != null) {
+            String bundleId = element.getContributor().getName();
+            Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bundleId, null);
+
+            if (bundle != null) {
+                result = bundle.getEntry(resourceAttribute);
+            }
         }
 
         return result;

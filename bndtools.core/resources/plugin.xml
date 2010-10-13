@@ -475,6 +475,10 @@
        </initializer>
     </extension>
     <extension
+         point="bndtools.core.obr">
+         <obr label="Apache Felix Releases" url="felix.apache.org/obr/releases.xml"/>
+    </extension>
+    <extension
           point="bndtools.core.obr">
           <obr
                label="Eclipse Orbit R20100519200754"
