@@ -137,7 +137,7 @@ public class DependentResourcesWizardPage extends WizardPage {
                 int work = 4;
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
-                URL localUrl = getLocalRepositoryIndex(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                URL localUrl = getLocalRepositoryIndex("__local__", progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                 progress.setWorkRemaining(--work);
 
                 try {
@@ -154,10 +154,17 @@ public class DependentResourcesWizardPage extends WizardPage {
                     Resource[] tmp;
                     tmp = resolver.getRequiredResources();
                     for (Resource resource : tmp) {
-                        required.add(resource);
-                    }
+                        // Check if the resource is tagged local
+                        boolean localResource = false;
+                        for (String category : resource.getCategories()) {
+                            if("__local__".equals(category)) {
+                                localResource = true; break;
+                            }
+                        }
 
-                    Reason[] unsatisfied = resolver.getUnsatisfiedRequirements();
+                        // Add to the required set
+                        if (!localResource) required.add(resource);
+                    }
 
                     tmp = resolver.getOptionalResources();
                     for (Resource resource : tmp) {
@@ -206,10 +213,10 @@ public class DependentResourcesWizardPage extends WizardPage {
         return !modifiedSelection && checkedOptional.isEmpty();
     }
 
-    private synchronized URL getLocalRepositoryIndex(IProgressMonitor monitor) {
+    private synchronized URL getLocalRepositoryIndex(String localCategory, IProgressMonitor monitor) {
         if (localIndexURL == null) {
             LocalRepositoryIndexer indexer = new LocalRepositoryIndexer();
-            indexer.setLocalCategory("__local__");
+            indexer.setLocalCategory(localCategory);
             indexer.run(monitor);
 
             localIndexURL = indexer.getUrl();
