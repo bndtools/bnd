@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -37,9 +38,6 @@ import bndtools.bindex.LocalRepositoryIndexer;
 
 public class DependentResourcesWizardPage extends WizardPage {
 
-    private TableViewer requiredViewer;
-    private CheckboxTableViewer optionalViewer;
-
     private final RepositoryAdmin repoAdmin;
 
     private final List<Resource> selected = new ArrayList<Resource>();
@@ -47,10 +45,14 @@ public class DependentResourcesWizardPage extends WizardPage {
     private final List<Resource> availableOptional = new ArrayList<Resource>();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
 
+    private TableViewer requiredViewer;
+    private TableViewer selectedViewer;
+    private CheckboxTableViewer optionalViewer;
+    private Button btnAddAndResolve;
+
     private boolean modifiedSelection = false;
 
     private URL localIndexURL = null;
-    private Button btnAddAndResolve;
 
     /**
      * Create the wizard.
@@ -59,8 +61,8 @@ public class DependentResourcesWizardPage extends WizardPage {
         super("wizardPage");
         this.repoAdmin = repoAdmin;
 
-        setTitle("Wizard Page title");
-        setDescription("Wizard Page description");
+        setTitle("Requirements");
+        setDescription("Review requirements of the selected bundles. All bundles in the upper lists will be installed.");
     }
 
 
@@ -87,11 +89,18 @@ public class DependentResourcesWizardPage extends WizardPage {
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
 
-        new Label(composite, SWT.NONE).setText("Required Resources (will be installed automatically):");
-        Table requiredTable = new Table(composite, SWT.HIDE_SELECTION | SWT.BORDER);
-        GridData gd_requiredTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_requiredTable.heightHint = 100;
-        requiredTable.setLayoutData(gd_requiredTable);
+        Composite topPanel = new Composite(composite, SWT.NULL);
+
+        new Label(topPanel, SWT.NONE).setText("Selected Resources:");
+        new Label(topPanel, SWT.NONE).setText("Required Resources:");
+
+        Table selectedTable = new Table(topPanel, SWT.BORDER);
+        Table requiredTable = new Table(topPanel, SWT.BORDER);
+
+        selectedViewer = new TableViewer(selectedTable);
+        selectedViewer.setContentProvider(new ArrayContentProvider());
+        selectedViewer.setLabelProvider(new ResourceLabelProvider());
+
         requiredViewer = new TableViewer(requiredTable);
         requiredViewer.setContentProvider(new ArrayContentProvider());
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
@@ -116,6 +125,17 @@ public class DependentResourcesWizardPage extends WizardPage {
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         composite.setLayoutData(gd);
+
+        topPanel.setLayout(new GridLayout(2, true));
+        topPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.heightHint = 100;
+        selectedTable.setLayoutData(gd);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.heightHint = 100;
+        requiredTable.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         separator.setLayoutData(gd);
@@ -191,6 +211,7 @@ public class DependentResourcesWizardPage extends WizardPage {
         if (modifiedSelection) {
             try {
                 getContainer().run(true, true, operation);
+                selectedViewer.setInput(selected);
                 requiredViewer.setInput(required);
                 optionalViewer.setInput(availableOptional);
                 modifiedSelection = false;
@@ -254,7 +275,7 @@ public class DependentResourcesWizardPage extends WizardPage {
                 checkedOptional.clear();
                 checkedOptional.addAll(availableOptional);
                 optionalViewer.setCheckedElements(checkedOptional.toArray());
-                updateButtons();
+                updateButtonAndMessage();
             }
         });
         uncheckAll.addSelectionListener(new SelectionAdapter() {
@@ -262,7 +283,7 @@ public class DependentResourcesWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 checkedOptional.clear();
                 optionalViewer.setCheckedElements(checkedOptional.toArray());
-                updateButtons();
+                updateButtonAndMessage();
             }
         });
         viewer.addCheckStateListener(new ICheckStateListener() {
@@ -273,7 +294,7 @@ public class DependentResourcesWizardPage extends WizardPage {
                 } else {
                     checkedOptional.remove(resource);
                 }
-                updateButtons();
+                updateButtonAndMessage();
             }
         });
         btnAddAndResolve.addSelectionListener(new SelectionAdapter() {
@@ -281,7 +302,7 @@ public class DependentResourcesWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 addResources(checkedOptional);
                 refreshBundles();
-                updateButtons();
+                updateButtonAndMessage();
             }
         });
 
@@ -314,9 +335,16 @@ public class DependentResourcesWizardPage extends WizardPage {
         return viewer;
     }
 
-    private void updateButtons() {
+    private void updateButtonAndMessage() {
         getContainer().updateButtons();
-        btnAddAndResolve.setEnabled(!checkedOptional.isEmpty());
+
+        if (!checkedOptional.isEmpty()) {
+            btnAddAndResolve.setEnabled(true);
+            setMessage("Click 'Add and Resolve' to add the selected optional bundles and re-calculate dependencies.", IMessageProvider.INFORMATION);
+        } else {
+            btnAddAndResolve.setEnabled(false);
+            setMessage(null, IMessageProvider.INFORMATION);
+        }
     }
 
     public List<Resource> getSelected() {
