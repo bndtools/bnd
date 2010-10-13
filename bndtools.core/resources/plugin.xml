@@ -485,4 +485,9 @@
          <startupParticipant
                class="bndtools.wizards.workspace.InitialiseCnfStartupParticipant"/>
     </extension>
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Empty Project"
+         priority="-2147483648"
+         class="bndtools.api.EmptyTemplate" />
+   </extension>
  </plugin>

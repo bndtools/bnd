@@ -11,6 +11,8 @@
       </repository>
    </extension>
    <extension point="bndtools.core.projectTemplates">
-      <template name="Component Development (Declarative Services)" class="bndtools.templates.ComponentTemplate" />
+      <template name="Component Development (Declarative Services)"
+         priority="100"
+         class="bndtools.templates.ComponentTemplate" />
    </extension>
 </plugin>
