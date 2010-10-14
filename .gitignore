@@ -13,12 +13,11 @@
 
 # Mac OS detritus
 .DS_Store
-copyrightLog.txt
 
 # Bnd stuff
-bnd.index
-bndtools.launcher
-cnf/bndtools-*.zip
-utils
-Foo
-External Plug-in Libraries
+/bnd.index
+/bndtools.launcher
+/cnf/bndtools-*.zip
+
+# my rubbish
+/Foo*
