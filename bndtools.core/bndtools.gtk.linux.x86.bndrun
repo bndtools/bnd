@@ -1,0 +1,12 @@
+-include: bndtools.shared.bndrun
+
+-runbundles: ${crossplatform.bundles},\
+	org.eclipse.swt.gtk.linux.x86,\
+	org.eclipse.core.filesystem.linux.x86
+
+-vmargs: ${crossplatform.vmargs}
+
+-runproperties: ${crossplatform.runprops},\
+	osgi.ws=gtk,\
+	osgi.arch=x86,\
+	osgi.os=linux

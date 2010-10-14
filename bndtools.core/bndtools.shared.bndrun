@@ -1,7 +1,6 @@
 # This run file contains all the cross-platform bundle and settings to run Bndtools.
 
-# You cannot run this file directly! Instead use "-include" to pull it into a run file that
-# adds platform-specific stuff.
+# Do not run this, use the platform-specific bndrun files (which "-include" this)
 
 -runfw: org.eclipse.osgi
 

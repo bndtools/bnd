@@ -1,5 +1,3 @@
-# Use this file to launch Bndtools on Windows/x86
-
 -include: bndtools.shared.bndrun
 
 -runbundles: ${crossplatform.bundles},\

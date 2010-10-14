@@ -1,6 +1,3 @@
-# Use this file to launch Bndtools on Mac OSX using the
-# 64-bit Cocoa binding of SWT.
-
 -include: bndtools.shared.bndrun
 
 -runbundles: ${crossplatform.bundles},\
