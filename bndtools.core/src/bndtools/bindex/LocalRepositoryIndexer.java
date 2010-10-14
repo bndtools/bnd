@@ -1,114 +1,59 @@
 package bndtools.bindex;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.osgi.impl.bundle.obr.resource.BundleInfo;
 import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
-import org.osgi.impl.bundle.obr.resource.Tag;
+import org.osgi.service.obr.Resource;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Builder;
 import bndtools.Central;
-import bndtools.Plugin;
 
-public class LocalRepositoryIndexer implements IRunnableWithProgress {
+public class LocalRepositoryIndexer extends AbstractIndexer {
 
-    private String localCategory = null;
-    private IStatus status = Status.OK_STATUS;
-    private URL url = null;
+    private static final String CATEGORY = "__local_repo__";
 
-    public URL getUrl() {
-        return url;
+    private final boolean includeWorkspace;
+
+    private String workspaceCategory = null;
+
+    public LocalRepositoryIndexer(boolean includeWorkspace) {
+        this.includeWorkspace = includeWorkspace;
     }
 
-    public IStatus getStatus() {
-        return status;
+    public void setWorkspaceCategory(String workspaceCategory) {
+        this.workspaceCategory = workspaceCategory;
     }
 
-    public void setLocalCategory(String localCategory) {
-        this.localCategory = localCategory;
+    @Override
+    public String getCategory() {
+        return CATEGORY;
     }
 
-    public void run(IProgressMonitor monitor) {
-        int workRemaining = 7;
-        SubMonitor progress = SubMonitor.convert(monitor, "Indexing local repository", workRemaining);
+    @Override
+    protected void generateResources(RepositoryImpl bindex, List<Resource> result, IProgressMonitor monitor) throws Exception {
+        SubMonitor progress = SubMonitor.convert(monitor, 6);
 
-        // Setup Bindex
-        File tempRepoFile;
-        RepositoryImpl bindex;
-        try {
-            tempRepoFile = File.createTempFile("repository", ".xml");
-            url = tempRepoFile.toURI().toURL();
-            tempRepoFile.deleteOnExit();
-            bindex = new RepositoryImpl(url);
-
-            progress.worked(1);
-            workRemaining --;
-        } catch (IOException e) {
-            status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "IO error creating temporary OBR file", e);
-            return;
+        List<RepositoryPlugin> bndRepos = Central.getWorkspace().getRepositories();
+        if (bndRepos != null) {
+            processRepos(bndRepos, bindex, result, progress.newChild(4));
         }
+        progress.setWorkRemaining(2);
 
-        List<ResourceImpl> resources = new LinkedList<ResourceImpl>();
-
-        // Analyse bundles
-        try {
-            List<RepositoryPlugin> bndRepos = Central.getWorkspace().getRepositories();
-            workRemaining -= 4;
-            if (bndRepos != null) {
-                processRepos(bndRepos, bindex, resources, progress.newChild(4));
-            } else {
-                progress.setWorkRemaining(workRemaining);
-            }
-        } catch (Exception e) {
-            status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error indexing local repository", e);
-            return;
-        }
-
-        // Sort and generate index
-        List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
-        Collections.sort(sorted, new Comparator<ResourceImpl>() {
-            public int compare(ResourceImpl o1, ResourceImpl o2) {
-                String s1 = getResourceName(o1);
-                String s2 = getResourceName(o2);
-                return s1.compareTo(s2);
-            }
-        });
-        progress.worked(1);
-        workRemaining --;
-        try {
-            Tag tag = doIndex(resources, "dummy");
-            PrintWriter printWriter = new PrintWriter(tempRepoFile);
-            try {
-                tag.print(0, printWriter);
-            } finally {
-                printWriter.close();
-            }
-            progress.worked(1);
-            workRemaining --;
-            status = Status.OK_STATUS;
-        } catch (IOException e) {
-            status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "IO error writing local repository index", e);
-            return;
+        if (includeWorkspace) {
+            Collection<Project> projects = Central.getWorkspace().getAllProjects();
+            processProjects(projects, bindex, result, progress.newChild(2));
         }
     }
 
-    private void processRepos(List<RepositoryPlugin> bndRepos, RepositoryImpl bindex, List<ResourceImpl> resources, IProgressMonitor monitor) throws Exception {
+    private void processRepos(List<RepositoryPlugin> bndRepos, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
         SubMonitor progress = SubMonitor.convert(monitor, bndRepos.size());
         for (RepositoryPlugin bndRepo : bndRepos) {
             List<String> bsns = bndRepo.list(null);
@@ -118,7 +63,7 @@ public class LocalRepositoryIndexer implements IRunnableWithProgress {
         }
     }
 
-    private void processRepoBundles(RepositoryPlugin bndRepo, List<String> bsns, RepositoryImpl bindex, List<ResourceImpl> resources, IProgressMonitor monitor) throws Exception {
+    private void processRepoBundles(RepositoryPlugin bndRepo, List<String> bsns, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
         SubMonitor progress = SubMonitor.convert(monitor, bsns.size());
         for (String bsn : bsns) {
             File[] files = bndRepo.get(bsn, null);
@@ -128,7 +73,7 @@ public class LocalRepositoryIndexer implements IRunnableWithProgress {
         }
     }
 
-    private void processRepoFiles(File[] files, RepositoryImpl bindex, List<ResourceImpl> resources, IProgressMonitor monitor) throws Exception {
+    private void processRepoFiles(File[] files, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
         SubMonitor progress = SubMonitor.convert(monitor, files.length);
         for (File bundleFile : files) {
             if (bundleFile.getName().toLowerCase().endsWith(".jar")) {
@@ -136,8 +81,7 @@ public class LocalRepositoryIndexer implements IRunnableWithProgress {
                 ResourceImpl resource = info.build();
                 resource.setURL(bundleFile.toURI().toURL());
 
-                if(localCategory != null)
-                    resource.addCategory(localCategory);
+                resource.addCategory(CATEGORY);
 
                 resources.add(resource);
             }
@@ -145,23 +89,32 @@ public class LocalRepositoryIndexer implements IRunnableWithProgress {
         }
     }
 
-    String getResourceName(ResourceImpl impl) {
-        String s = impl.getSymbolicName();
-        if (s != null)
-            return s;
-        else {
-            return "no-symbolic-name";
+    private void processProjects(Collection<Project> projects, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
+        SubMonitor progress = SubMonitor.convert(monitor, projects.size());
+        for (Project project : projects) {
+            Collection<? extends Builder> builders = project.getSubBuilders();
+            processProjectBuilders(builders, bindex, resources, progress.newChild(1));
         }
     }
 
-    Tag doIndex(Collection<ResourceImpl> resources, String name) throws IOException {
-        Tag repository = new Tag("repository");
-        repository.addAttribute("lastmodified", new Date());
-        repository.addAttribute("name", name);
+    private void processProjectBuilders(Collection<? extends Builder> builders, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
+        SubMonitor progress = SubMonitor.convert(monitor, builders.size());
+        for (Builder builder : builders) {
+            BundleInfo info = new BundleInfo(bindex, builder.getTarget().getSource());
+            ResourceImpl resource = info.build();
+            resource.setURL(builder.getTarget().getSource().toURI().toURL());
 
-        for (ResourceImpl resource : resources) {
-            repository.addContent(resource.toXML());
+            resource.addCategory(CATEGORY);
+            if(workspaceCategory != null)
+                resource.addCategory(workspaceCategory);
+
+            resources.add(resource);
+            progress.worked(1);
         }
-        return repository;
+    }
+
+    @Override
+    protected String getTaskLabel() {
+        return "Indexing local repository";
     }
 }

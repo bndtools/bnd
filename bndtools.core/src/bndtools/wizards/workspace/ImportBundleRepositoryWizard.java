@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.osgi.framework.BundleContext;
 
 import bndtools.Plugin;
+import bndtools.bindex.LocalRepositoryIndexer;
 
 public class ImportBundleRepositoryWizard extends Wizard implements IImportWizard {
 
@@ -42,7 +43,7 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
 
         bundlePage = new RemoteRepositoryBundleSelectionPage(repoAdmin);
         repoPage = new OBRSelectionPage(repoAdmin, bundlePage);
-        dependenciesPage = new DependentResourcesWizardPage(repoAdmin);
+        dependenciesPage = new DependentResourcesWizardPage(repoAdmin, new LocalRepositoryIndexer(false));
 
         bundlePage.addPropertyChangeListener(RemoteRepositoryBundleSelectionPage.PROP_SELECTION, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

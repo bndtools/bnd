@@ -2,7 +2,6 @@ package bndtools.editor.project;
 
 import java.util.List;
 
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -37,10 +36,14 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	protected List<VersionedClause> loadFromModel(BndEditModel model) {
 		return model.getBuildPath();
 	}
-	@Override
-	protected void customizeWizard(RepoBundleSelectionWizard wizard) {
-		WizardPage bundlePage = wizard.getBundleSelectionPage();
-		bundlePage.setTitle("Project Build Path");
-		bundlePage.setDescription("Select bundles to be added to the project build path for compilation.");
-	}
+
+    @Override
+    protected RepoBundleSelectionWizard createBundleSelectionWizard(List<VersionedClause> bundles) {
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(null, bundles, false);
+
+        wizard.setSelectionPageTitle("Project Build Path");
+        wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
+
+        return wizard;
+    }
 }

@@ -265,16 +265,19 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	protected GridData getTableLayoutData() {
 		return new GridData(SWT.FILL, SWT.FILL, true, false);
 	}
-	private void doAdd() {
-		RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(bundles);
-		customizeWizard(wizard);
-		WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-		if(dialog.open() == Window.OK) {
-			bundles = wizard.getBundleSelectionPage().getSelectedBundles();
-			viewer.setInput(bundles);
-			markDirty();
-		}
-	}
+
+    private void doAdd() {
+        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(bundles);
+        if (wizard != null) {
+            WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+            if (dialog.open() == Window.OK) {
+                bundles = wizard.getSelectedBundles();
+                viewer.setInput(bundles);
+                markDirty();
+            }
+        }
+    }
+
 	private void doRemove() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if(!selection.isEmpty()) {
@@ -301,8 +304,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
-	protected void customizeWizard(RepoBundleSelectionWizard wizard) {
-		// Do nothing
+	protected RepoBundleSelectionWizard createBundleSelectionWizard(List<VersionedClause> bundles) {
+	    return null;
 	}
 
 	@Override

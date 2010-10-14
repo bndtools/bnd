@@ -1,12 +1,14 @@
 package bndtools.wizards.workspace;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.felix.bundlerepository.Reason;
+import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
@@ -33,12 +35,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.bindex.LocalRepositoryIndexer;
+import bndtools.bindex.AbstractIndexer;
+import bndtools.model.clauses.VersionedClause;
 
 public class DependentResourcesWizardPage extends WizardPage {
 
     private final RepositoryAdmin repoAdmin;
+    private final AbstractIndexer installedIndexer;
+    private final List<AbstractIndexer> indexers = new ArrayList<AbstractIndexer>();
 
     private final List<Resource> selected = new ArrayList<Resource>();
     private final List<Resource> required = new ArrayList<Resource>();
@@ -51,20 +59,67 @@ public class DependentResourcesWizardPage extends WizardPage {
     private Button btnAddAndResolve;
 
     private boolean modifiedSelection = false;
-
-    private URL localIndexURL = null;
+    private Resolver resolver = null;
 
     /**
      * Create the wizard.
      */
-    public DependentResourcesWizardPage(RepositoryAdmin repoAdmin) {
+    public DependentResourcesWizardPage(RepositoryAdmin repoAdmin, AbstractIndexer installedIndexer) {
         super("wizardPage");
         this.repoAdmin = repoAdmin;
+        this.installedIndexer = installedIndexer;
 
         setTitle("Requirements");
         setDescription("Review requirements of the selected bundles. All bundles in the upper lists will be installed.");
     }
 
+    public void addRepositoryIndexer(AbstractIndexer repoIndexer) {
+        indexers.add(repoIndexer);
+    }
+
+    public void setSelectedBundles(final Project project, final Collection<? extends VersionedClause> bundles) {
+        final List<Resource> selectedResources = new ArrayList<Resource>(bundles.size());
+        IRunnableWithProgress op = new IRunnableWithProgress() {
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                SubMonitor progress = SubMonitor.convert(monitor, 1 + indexers.size());
+                try {
+                    installedIndexer.initialise(progress.newChild(1));
+                    Repository repo = repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
+
+                    Resource[] resources = repo.getResources();
+                    Map<String, Resource> urisToResources = new HashMap<String, Resource>();
+                    for (Resource resource : resources) {
+                        urisToResources.put(resource.getURI(), resource);
+                    }
+
+                    for (VersionedClause bundle : bundles) {
+                        Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Project.STRATEGY_HIGHEST, null);
+
+                        if (container.getType() != TYPE.ERROR) {
+                            String uri = container.getFile().toURI().toString();
+                            Resource resource = urisToResources.get(uri);
+                            if (resource != null) {
+                                selectedResources.add(resource);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
+                }
+            }
+        };
+
+        try {
+            getContainer().run(true, true, op);
+            setSelectedResources(selectedResources);
+        } catch (InvocationTargetException e) {
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error in resolver", e.getTargetException()));
+        } catch (InterruptedException e) {
+            // do nothing, just don't set the modified flag to true
+        }
+    }
 
     void setSelectedResources(Collection<? extends Resource> resource) {
         selected.clear();
@@ -157,13 +212,13 @@ public class DependentResourcesWizardPage extends WizardPage {
                 int work = 4;
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
-                URL localUrl = getLocalRepositoryIndex("__local__", progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                progress.setWorkRemaining(--work);
-
                 try {
-                    repoAdmin.addRepository(localUrl.toExternalForm());
+                    installedIndexer.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    progress.setWorkRemaining(--work);
 
-                    Resolver resolver = repoAdmin.resolver();
+                    repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
+
+                    resolver = repoAdmin.resolver();
                     for (Resource resource : selected) {
                         resolver.add(resource);
                     }
@@ -173,21 +228,17 @@ public class DependentResourcesWizardPage extends WizardPage {
 
                     Resource[] tmp;
                     tmp = resolver.getRequiredResources();
-                    for (Resource resource : tmp) {
-                        // Check if the resource is tagged local
-                        boolean localResource = false;
-                        for (String category : resource.getCategories()) {
-                            if("__local__".equals(category)) {
-                                localResource = true; break;
-                            }
-                        }
 
-                        // Add to the required set
-                        if (!localResource) required.add(resource);
+                    // Add to the required set
+                    for (Resource resource : tmp) {
+                        if (!isInstalledResource(resource)) required.add(resource);
                     }
 
+                    // Add to the optional set
                     tmp = resolver.getOptionalResources();
                     for (Resource resource : tmp) {
+                        if (isInstalledResource(resource)) continue;
+
                         boolean direct = false;
                         Reason[] reasons = resolver.getReason(resource);
                         for (Reason reason : reasons) {
@@ -203,9 +254,10 @@ public class DependentResourcesWizardPage extends WizardPage {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 } finally {
-                    repoAdmin.removeRepository(localUrl.toExternalForm());
+                    repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
                 }
             }
+
         };
 
         if (modifiedSelection) {
@@ -223,6 +275,19 @@ public class DependentResourcesWizardPage extends WizardPage {
         }
     }
 
+    private boolean isInstalledResource(Resource resource) {
+        String installedCategory = installedIndexer.getCategory();
+
+        boolean installed = false;
+        for (String category : resource.getCategories()) {
+            if(category.equals(installedCategory)) {
+                installed = true; break;
+            }
+        }
+
+        return installed;
+    }
+
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
@@ -232,18 +297,6 @@ public class DependentResourcesWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete() {
         return !modifiedSelection && checkedOptional.isEmpty();
-    }
-
-    private synchronized URL getLocalRepositoryIndex(String localCategory, IProgressMonitor monitor) {
-        if (localIndexURL == null) {
-            LocalRepositoryIndexer indexer = new LocalRepositoryIndexer();
-            indexer.setLocalCategory(localCategory);
-            indexer.run(monitor);
-
-            localIndexURL = indexer.getUrl();
-        }
-
-        return localIndexURL;
     }
 
     private CheckboxTableViewer createOptionalPanel(Composite parent) {
@@ -354,6 +407,10 @@ public class DependentResourcesWizardPage extends WizardPage {
 
     public List<Resource> getRequired() {
         return required;
+    }
+
+    public Resolver getResolver() {
+        return resolver;
     }
 
 }

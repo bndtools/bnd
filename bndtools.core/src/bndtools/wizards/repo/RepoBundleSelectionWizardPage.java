@@ -1,5 +1,7 @@
 package bndtools.wizards.repo;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +50,9 @@ import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
+
+    public static final String PROP_SELECTION = "selection";
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
 
@@ -276,7 +281,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			} else if(item instanceof ProjectBundle) {
 				String bsn = ((ProjectBundle) item).getBsn();
 				Map<String,String> attribs = new HashMap<String, String>();
-				attribs.put(Constants.VERSION_ATTRIBUTE, "snapshot");
+				attribs.put(Constants.VERSION_ATTRIBUTE, "latest");
 				adding.add(new VersionedClause(bsn, attribs));
 			}
 		}
@@ -286,6 +291,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
 			selectedViewer.add(adding.toArray(new Object[adding.size()]));
 			availableViewer.refresh();
+			propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
 		}
 	}
 	void doRemove() {
@@ -295,7 +301,26 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
 		selectedViewer.remove(selection.toArray());
 		availableViewer.refresh();
+		propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
 	}
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+
 }
 
 class MapValuesContentProvider implements IStructuredContentProvider {
