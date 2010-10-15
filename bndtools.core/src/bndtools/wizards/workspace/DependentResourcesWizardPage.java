@@ -3,12 +3,11 @@ package bndtools.wizards.workspace;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.apache.felix.bundlerepository.Reason;
-import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
@@ -35,12 +34,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
-import aQute.bnd.build.Container;
-import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.bindex.AbstractIndexer;
 import bndtools.model.clauses.VersionedClause;
+import bndtools.utils.Requestor;
 
 public class DependentResourcesWizardPage extends WizardPage {
 
@@ -48,7 +46,9 @@ public class DependentResourcesWizardPage extends WizardPage {
     private final AbstractIndexer installedIndexer;
     private final List<AbstractIndexer> indexers = new ArrayList<AbstractIndexer>();
 
-    private final List<Resource> selected = new ArrayList<Resource>();
+    private Requestor<Collection<? extends Resource>> selectedRequestor;
+
+    private final Set<Resource> selected = new HashSet<Resource>();
     private final List<Resource> required = new ArrayList<Resource>();
     private final List<Resource> availableOptional = new ArrayList<Resource>();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
@@ -78,62 +78,16 @@ public class DependentResourcesWizardPage extends WizardPage {
     }
 
     public void setSelectedBundles(final Project project, final Collection<? extends VersionedClause> bundles) {
-        final List<Resource> selectedResources = new ArrayList<Resource>(bundles.size());
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                SubMonitor progress = SubMonitor.convert(monitor, 1 + indexers.size());
-                try {
-                    installedIndexer.initialise(progress.newChild(1));
-                    Repository repo = repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
+        selectedRequestor = new BundleResourceRequestor(repoAdmin, installedIndexer, bundles, project);
+        modifiedSelection = true;
+    }
 
-                    Resource[] resources = repo.getResources();
-                    Map<String, Resource> urisToResources = new HashMap<String, Resource>();
-                    for (Resource resource : resources) {
-                        urisToResources.put(resource.getURI(), resource);
-                    }
-
-                    for (VersionedClause bundle : bundles) {
-                        Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Project.STRATEGY_HIGHEST, null);
-
-                        if (container.getType() != TYPE.ERROR) {
-                            String uri = container.getFile().toURI().toString();
-                            Resource resource = urisToResources.get(uri);
-                            if (resource != null) {
-                                selectedResources.add(resource);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
-                }
+    void setSelectedResources(final Collection<? extends Resource> resources) {
+        selectedRequestor = new Requestor<Collection<? extends Resource>>() {
+            public Collection<? extends Resource> request(IProgressMonitor monitor) throws InvocationTargetException {
+                return resources;
             }
         };
-
-        try {
-            getContainer().run(true, true, op);
-            setSelectedResources(selectedResources);
-        } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error in resolver", e.getTargetException()));
-        } catch (InterruptedException e) {
-            // do nothing, just don't set the modified flag to true
-        }
-    }
-
-    void setSelectedResources(Collection<? extends Resource> resource) {
-        selected.clear();
-        selected.addAll(resource);
-        modifiedSelection = true;
-    }
-
-    void addResource(Resource resource) {
-        selected.add(resource);
-        modifiedSelection = true;
-    }
-
-    void addResources(Collection<Resource> resource) {
-        selected.addAll(resource);
         modifiedSelection = true;
     }
 
@@ -202,6 +156,10 @@ public class DependentResourcesWizardPage extends WizardPage {
         setControl(composite);
     }
 
+    private void addResources(Collection<? extends Resource> adding) {
+        selected.addAll(adding);
+    }
+
     private void refreshBundles() {
         required.clear();
         availableOptional.clear();
@@ -209,16 +167,24 @@ public class DependentResourcesWizardPage extends WizardPage {
 
         IRunnableWithProgress operation = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                int work = 4;
+                int work = 4 + indexers.size();
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
                 try {
                     installedIndexer.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                    progress.setWorkRemaining(--work);
+                    --work;
 
                     repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
 
+                    for (AbstractIndexer indexer : indexers) {
+                        indexer.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                        repoAdmin.addRepository(indexer.getUrl().toExternalForm());
+                        --work;
+                    }
+
                     resolver = repoAdmin.resolver();
+                    Collection<? extends Resource> newSelected = selectedRequestor.request(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    selected.addAll(newSelected);
                     for (Resource resource : selected) {
                         resolver.add(resource);
                     }
@@ -255,6 +221,9 @@ public class DependentResourcesWizardPage extends WizardPage {
                     e.printStackTrace();
                 } finally {
                     repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
+                    for (AbstractIndexer indexer : indexers) {
+                        repoAdmin.removeRepository(indexer.getUrl().toExternalForm());
+                    }
                 }
             }
 
@@ -400,10 +369,9 @@ public class DependentResourcesWizardPage extends WizardPage {
         }
     }
 
-    public List<Resource> getSelected() {
+    public Collection<Resource> getSelected() {
         return selected;
     }
-
 
     public List<Resource> getRequired() {
         return required;

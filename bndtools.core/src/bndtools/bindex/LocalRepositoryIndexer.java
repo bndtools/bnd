@@ -93,16 +93,18 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
         SubMonitor progress = SubMonitor.convert(monitor, projects.size());
         for (Project project : projects) {
             Collection<? extends Builder> builders = project.getSubBuilders();
-            processProjectBuilders(builders, bindex, resources, progress.newChild(1));
+            processProjectBuilders(project, builders, bindex, resources, progress.newChild(1));
         }
     }
 
-    private void processProjectBuilders(Collection<? extends Builder> builders, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
+    private void processProjectBuilders(Project project, Collection<? extends Builder> builders, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
         SubMonitor progress = SubMonitor.convert(monitor, builders.size());
         for (Builder builder : builders) {
-            BundleInfo info = new BundleInfo(bindex, builder.getTarget().getSource());
+            File bundleFile = new File(project.getTarget(), builder.getBsn() + ".jar");
+            BundleInfo info = new BundleInfo(bindex, bundleFile);
             ResourceImpl resource = info.build();
-            resource.setURL(builder.getTarget().getSource().toURI().toURL());
+
+            resource.setURL(bundleFile.toURI().toURL());
 
             resource.addCategory(CATEGORY);
             if(workspaceCategory != null)

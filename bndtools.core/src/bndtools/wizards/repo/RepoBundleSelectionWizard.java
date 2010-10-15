@@ -50,6 +50,7 @@ public class RepoBundleSelectionWizard extends Wizard {
 
         if (useResolver) {
             LocalRepositoryIndexer repoIndexer = new LocalRepositoryIndexer(true);
+            requirementsPage.addRepositoryIndexer(repoIndexer);
 
             addPage(requirementsPage);
 
@@ -91,6 +92,8 @@ public class RepoBundleSelectionWizard extends Wizard {
                 String bsn = resource.getSymbolicName();
                 Reason[] reason = resolver.getReason(resource);
                 // WTF
+
+                System.out.println("What now...");
             }
         } else {
             result = selectionPage.getSelectedBundles();
