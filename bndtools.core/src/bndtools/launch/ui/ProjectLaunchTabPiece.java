@@ -169,7 +169,11 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTargetTxt.getText());
         if (targetResource != null && targetResource.exists()) {
-            configuration.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetResource.getProject().getName());
+            IProject project = targetResource.getProject();
+            if (project != null)
+                configuration.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName());
+            else
+                configuration.removeAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME);
         }
     }
 

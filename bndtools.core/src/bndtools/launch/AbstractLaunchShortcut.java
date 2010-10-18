@@ -129,6 +129,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         ILaunchConfigurationWorkingCopy wc;
         wc = configType.newInstance(null, manager.generateUniqueLaunchConfigurationNameFrom(targetPath.lastSegment()));
         wc.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, targetPath.toString());
+        wc.setAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
+        wc.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetPath);
         if (targetResource != null && targetResource.exists())

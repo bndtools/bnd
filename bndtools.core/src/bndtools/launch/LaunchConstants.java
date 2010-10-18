@@ -13,7 +13,7 @@ public interface LaunchConstants {
     public static boolean DEFAULT_DYNAMIC_BUNDLES = true;
 
     public static String ATTR_CLEAN = "clean";
-    public static boolean DEFAULT_CLEAN = false;
+    public static boolean DEFAULT_CLEAN = true;
 
     public static String ATTR_LOGLEVEL = "logLevel";
     public static String DEFAULT_LOGLEVEL = "WARNING";
