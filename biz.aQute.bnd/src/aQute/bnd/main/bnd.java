@@ -163,6 +163,10 @@ public class bnd extends Processor {
 		trace("command %s", args[i]);
 		if ("wrap".equals(args[i])) {
 			doWrap(args, ++i);
+		} else if ("maven".equals(args[i])) {
+			Maven maven = new Maven(); 
+			maven.run(args, ++i);
+			getInfo(maven);
 		} else if ("print".equals(args[i])) {
 			doPrint(args, ++i);
 		} else if ("graph".equals(args[i])) {
@@ -2017,7 +2021,7 @@ public class bnd extends Processor {
 		while (i < args.length) {
 			String v = args[i++];
 			if (v.startsWith("-")) {
-				error("Invalid option for submit: %s, use: libsync [-url <url>] <file|dir>...", v);
+				error("Invalid option for libsync: %s, use: libsync [-url <url>] <file|dir>...", v);
 			} else {
 				File f = getFile(v);
 				if (!f.exists()) {

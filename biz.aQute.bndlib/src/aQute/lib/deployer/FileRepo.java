@@ -169,7 +169,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		}
 
 		file = new File(dir, bsn + "-latest.jar");
-		if (!file.exists() || file.lastModified() < jar.lastModified()) {
+		if (file.exists() && file.lastModified() < jar.lastModified()) {
 			jar.write(file);
 		}
 		return file;

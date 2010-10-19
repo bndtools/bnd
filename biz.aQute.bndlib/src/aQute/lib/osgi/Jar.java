@@ -4,10 +4,14 @@ import java.io.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.*;
 import java.util.zip.*;
 
+import aQute.io.*;
 import aQute.lib.base64.*;
 import aQute.libg.reporter.*;
+
+import static aQute.io.IO.*;
 
 public class Jar implements Closeable {
 	public static final Object[]		EMPTY_ARRAY	= new Jar[0];
@@ -476,4 +480,55 @@ public class Jar implements Closeable {
 		}
 	}
 
+	
+	
+	Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;.*");
+	public String getBsn() throws IOException {
+		Manifest m = getManifest();
+		if ( m == null)
+			return null;
+		
+		String s  = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+		Matcher matcher = BSN.matcher(s);
+		if ( matcher.matches()) {
+			return matcher.group(1); 
+		}
+		return null;
+	}
+	
+	public String getVersion() throws IOException {
+		Manifest m = getManifest();
+		if ( m == null)
+			return null;
+
+		String s = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+		if ( s == null)
+			return null;
+		
+		return s.trim();
+	}
+	
+
+
+	/**
+	 * Expand the JAR file to a directory.
+	 * 
+	 * @param dir the dst directory, is not required to exist
+	 * @throws Exception if anything does not work as expected.
+	 */
+	public void expand(File dir) throws IOException {
+		dir = dir.getAbsoluteFile();
+		dir.mkdirs();
+		if ( !dir.isDirectory()) {
+			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
+		}
+			
+		for ( Map.Entry<String,Resource> entry : getResources().entrySet()) {
+			File f = getFile( dir, entry.getKey());
+			f.getParentFile().mkdirs();
+			copy(entry.getValue().openInputStream(), f);
+		}
+	}
+	
+		
 }

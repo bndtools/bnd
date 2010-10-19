@@ -6,6 +6,6 @@ import junit.framework.*;
 public class TestLibSync extends TestCase {
 
 	public void testlibsync() throws Exception {
-		bnd.main(new String[] {"-trace", "libsync.repo=http://localhost:8080/repo/put", "libsync", "tmp/biz.aQute.bnd.jar"});
+		bnd.main(new String[] {"-trace", "libsync.repo=http://localhost:8080/repo", "libsync", "tmp/biz.aQute.bnd.jar"});
 	}
 }
