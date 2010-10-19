@@ -15,7 +15,7 @@
 .DS_Store
 
 # Bnd stuff
-/bnd.index
+/cnf/eclipse-*/bnd.index
 /bndtools.launcher
 /cnf/bndtools-*.zip
 

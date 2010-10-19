@@ -167,7 +167,7 @@ public class LocalRepositoryTasks {
         return result;
     }
 
-    public static IStatus installImplicitRepositoryContents(MultiStatus status, IProgressMonitor monitor) throws CoreException {
+    public static IStatus installImplicitRepositoryContents(boolean skipContent, MultiStatus status, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
@@ -186,8 +186,9 @@ public class LocalRepositoryTasks {
             progress.setWorkRemaining(count--);
 
             Version installedVersion = updatedVersions.get(wrapper.contributorBSN);
-            if(installedVersion == null || wrapper.contributorVersion.compareTo(installedVersion) > 0) {
-                initialiseAndInstallRepository(wrapper.repository, localRepo, status, progress.newChild(1));
+            if (installedVersion == null || wrapper.contributorVersion.compareTo(installedVersion) > 0) {
+                if (!skipContent)
+                    initialiseAndInstallRepository(wrapper.repository, localRepo, status, progress.newChild(1));
                 updatedVersions.put(wrapper.contributorBSN, wrapper.contributorVersion);
                 updated = true;
             }

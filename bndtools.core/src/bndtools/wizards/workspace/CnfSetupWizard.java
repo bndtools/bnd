@@ -92,11 +92,19 @@ public class CnfSetupWizard extends Wizard {
 		}
 
 		if (confirmation.getDecision() == Decision.SKIP) {
-			return true;
+			try {
+				getContainer().run(false, false, new CnfSetupTask(true));
+				return true;
+			} catch (InvocationTargetException e) {
+				ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+						"Error creating workspace configuration project.", e.getCause()));
+			} catch (InterruptedException e) {
+				// ignore
+			}
 		}
 
 		try {
-			getContainer().run(false, false, new CnfSetupTask());
+			getContainer().run(false, false, new CnfSetupTask(false));
 			return true;
 		} catch (InvocationTargetException e) {
 			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,

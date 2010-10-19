@@ -39,7 +39,7 @@ final class AddOBRResourcesToWorkspaceTask implements IRunnableWithProgress {
 
                     LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                     RepositoryPlugin localRepo = LocalRepositoryTasks.getLocalRepository();
-                    LocalRepositoryTasks.installImplicitRepositoryContents(status, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
+                    LocalRepositoryTasks.installImplicitRepositoryContents(false, status, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
 
                     int workRemaining = adding.size() + 1;
                     for (Resource resource : adding) {
