@@ -476,7 +476,7 @@
     </extension>
     <extension
          point="bndtools.core.obr">
-         <obr label="Apache Felix Releases" url="felix.apache.org/obr/releases.xml"/>
+         <obr label="Apache Felix Releases" url="http://felix.apache.org/obr/releases.xml"/>
     </extension>
     <extension
           point="bndtools.core.obr">
