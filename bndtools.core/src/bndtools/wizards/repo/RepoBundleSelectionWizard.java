@@ -25,10 +25,12 @@ public class RepoBundleSelectionWizard extends Wizard {
 
     private final RepositoryAdmin repoAdmin;
 
-	private final RepoBundleSelectionWizardPage selectionPage = new RepoBundleSelectionWizardPage("bundleSelect");
-	private final DependentResourcesWizardPage requirementsPage;
-
+	private final Project sourceProject;
     private final boolean useResolver;
+
+    private final RepoBundleSelectionWizardPage selectionPage;
+    private final DependentResourcesWizardPage requirementsPage;
+
 
     /**
      * Create a wizard for editing the specified list of bundles. The supplied
@@ -38,7 +40,10 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      */
     public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver) {
+        this.sourceProject = project;
         this.useResolver = useResolver;
+
+        selectionPage = new RepoBundleSelectionWizardPage(project);
 
         BundleContext context = Plugin.getDefault().getBundleContext();
         repoAdmin = new RepositoryAdminImpl(context, new Logger(context));

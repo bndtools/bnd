@@ -48,6 +48,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
@@ -267,7 +269,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	}
 
     private void doAdd() {
-        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(bundles);
+        Project project = getProject();
+        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, bundles);
         if (wizard != null) {
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
             if (dialog.open() == Window.OK) {
@@ -276,6 +279,18 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 markDirty();
             }
         }
+    }
+
+    Project getProject() {
+        Project project = null;
+        try {
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
+            File projectDir = model.getBndResource().getProject().getLocation().toFile();
+            project = Workspace.getProject(projectDir);
+        } catch (Exception e) {
+            Plugin.logError("Error getting project from editor model", e);
+        }
+        return project;
     }
 
 	private void doRemove() {
@@ -304,7 +319,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(List<VersionedClause> bundles) {
+	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project sourceProject, List<VersionedClause> bundles) {
 	    return null;
 	}
 

@@ -17,6 +17,7 @@
 # Bnd stuff
 /cnf/eclipse-*/bnd.index
 /bndtools.launcher
+/bndtools.runtime.junit
 /cnf/bndtools-*.zip
 
 # my rubbish

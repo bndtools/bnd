@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,6 +39,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
@@ -54,7 +57,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     public static final String PROP_SELECTION = "selection";
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-    Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
+    private final Project sourceProject;
+    private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
 
 	TreeViewer availableViewer;
 	Text selectionSearchTxt;
@@ -63,6 +67,21 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
     Button addButton;
     Button removeButton;
+
+    ViewerFilter sourceProjectFilter = new ViewerFilter() {
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (sourceProject == null)
+                return true;
+            if (element instanceof Project) {
+                Project viewerProject = (Project) element;
+
+                if (viewerProject.getBase().equals(sourceProject.getBase()))
+                    return false;
+            }
+            return true;
+        }
+    };
 
     ViewerFilter alreadySelectedFilter = new ViewerFilter() {
         @Override
@@ -86,8 +105,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-	protected RepoBundleSelectionWizardPage(String pageName) {
-		super(pageName);
+
+
+    protected RepoBundleSelectionWizardPage(Project sourceProject) {
+		super("bundleSelectionPage");
+        this.sourceProject = sourceProject;
 	}
 
 	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
@@ -106,13 +128,13 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	    selectionSearchTxt = new Text(panel, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 	    selectionSearchTxt.setMessage("filter bundle name");
 
-	    Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+	    final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 	    availableViewer = new TreeViewer(availableTree);
 	    availableViewer.setLabelProvider(new RepositoryTreeLabelProvider());
 	    availableViewer.setContentProvider(new RepositoryTreeContentProvider());
 	    availableViewer.setAutoExpandLevel(2);
 
-	    availableViewer.setFilters(new ViewerFilter[] { alreadySelectedFilter });
+	    availableViewer.setFilters(new ViewerFilter[] { sourceProjectFilter, alreadySelectedFilter });
 
 	    // Load data
         try {
@@ -123,9 +145,16 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
 
         // Listeners
+        selectionSearchTxt.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == SWT.ARROW_DOWN)
+                    availableTree.setFocus();
+            }
+        });
         selectionSearchTxt.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                availableViewer.setFilters(new ViewerFilter[] { alreadySelectedFilter });
+                availableViewer.setFilters(new ViewerFilter[] { sourceProjectFilter, alreadySelectedFilter });
             }
         });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
