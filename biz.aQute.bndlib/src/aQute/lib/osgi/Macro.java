@@ -180,8 +180,12 @@ public class Macro implements Replacer {
 			} catch (NoSuchMethodException e) {
 				// Ignore
 			} catch (InvocationTargetException e) {
-				domain.warning("Exception in replace: " + e.getCause());
-				e.printStackTrace();
+				if ( e.getCause() instanceof IllegalArgumentException ) {
+					domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+				} else {
+					domain.warning("Exception in replace: " + e.getCause());
+					e.getCause().printStackTrace();
+				}
 			} catch (Exception e) {
 				domain.warning("Exception in replace: " + e + " method=" + method);
 				e.printStackTrace();
@@ -602,18 +606,38 @@ public class Macro implements Replacer {
 	 * @param args
 	 * @return
 	 */
-	static String	_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
-												+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-												+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	static Pattern	_versionPattern[]	= new Pattern[] { null, null,
-			Pattern.compile("[-+=~]{0,3}[=~]?"), Verifier.VERSION };
+	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
+	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
+	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
+														+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
+														+ "M ::= '+' | '-' | MQ\n"
+														+ "MQ ::= '~' | '='";
+	final static Pattern	_versionPattern[]	= new Pattern[] { null, null, MASK,
+			Verifier.VERSION					};
 
 	public String _version(String args[]) {
-		verifyCommand(args, _versionHelp, null, 3, 3);
+		verifyCommand(args, _versionHelp, null, 2, 3);
 
 		String mask = args[1];
 
-		Version version = new Version(args[2]);
+		Version version = null;
+		if (args.length >= 3)
+			version = new Version(args[2]);
+
+		return version(version, mask);
+	}
+
+	String version(Version version, String mask) {
+		if (version == null)
+			version = new Version(domain.getProperty("@"));
+		if (version == null) {
+			domain
+					.error(
+							"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
+							mask);
+			version = new Version("0");
+		}
+
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 
@@ -646,6 +670,55 @@ public class Macro implements Replacer {
 					sb.append(result);
 				}
 			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Schortcut for version policy
+	 * 
+	 * <pre>
+	 * -provide-policy : ${policy;[==,=+)}
+	 * -consume-policy : ${policy;[==,+)}
+	 * </pre>
+	 * 
+	 * @param args
+	 * @return
+	 */
+
+	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING +")(\\]|\\))");
+	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
+											+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
+											+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+	static Pattern	_rangePattern[]	= new Pattern[] { null, RANGE_MASK };
+
+	public String _range(String args[]) {
+		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
+		Version version = null;
+		if (args.length >= 3)
+			version = new Version(args[2]);
+
+		String spec = args[1];
+
+		Matcher m = RANGE_MASK.matcher(spec);
+		m.matches();
+		String floor = m.group(1);
+		String floorMask = m.group(2);
+		String ceilingMask = m.group(3);
+		String ceiling = m.group(4);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(floor);
+		sb.append(version(version, floorMask));
+		sb.append(",");
+		sb.append(version(version, ceilingMask));
+		sb.append(ceiling);
+
+		String s = sb.toString();
+		VersionRange vr = new VersionRange(s);
+		if (!(vr.includes(vr.getHigh()) || vr.includes(vr.getLow()))) {
+			domain.error("${range} macro created an invalid range %s from %s and mask %s", s,
+					version, spec);
 		}
 		return sb.toString();
 	}
@@ -744,10 +817,12 @@ public class Macro implements Replacer {
 		} else if (args.length < low) {
 			message = "too few arguments";
 		} else {
-			for (int i = 0; patterns != null && i < patterns.length && i < args.length - 1; i++) {
-				if (patterns[i] != null && !patterns[i].matcher(args[i + 1]).matches()) {
-					message += String.format("Argument %s (%s) does not match %s\n", i, args[i],
-							patterns[i].pattern());
+			for (int i = 0; patterns != null && i < patterns.length && i < args.length; i++) {
+				if (patterns[i] != null) {
+					Matcher m = patterns[i].matcher(args[i]);
+					if (!m.matches())
+						message += String.format("Argument %s (%s) does not match %s\n", i,
+								args[i], patterns[i].pattern());
 				}
 			}
 		}

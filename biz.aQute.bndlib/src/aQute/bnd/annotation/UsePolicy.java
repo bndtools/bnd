@@ -13,6 +13,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
+@Deprecated
 public @interface UsePolicy {
     String RNAME = "LaQute/bnd/annotation/UsePolicy;";
 

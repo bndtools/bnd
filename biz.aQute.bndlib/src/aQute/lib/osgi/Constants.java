@@ -109,8 +109,13 @@ public interface Constants {
 	String					TESTPATH									= "-testpath";
 	String					UNDERTEST									= "-undertest";
 	String					VERBOSE										= "-verbose";
+	@Deprecated
 	String					VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
+	@Deprecated
 	String					VERSIONPOLICY_USES							= "-versionpolicy-uses";
+	String					PROVIDER_POLICY							= "-provider-policy";
+	String					CONSUMER_POLICY							= "-consumer-policy";
+	@Deprecated
 	String					VERSIONPOLICY								= "-versionpolicy";
 	String					WAB											= "-wab";
 	String					WABLIB										= "-wablib";
@@ -119,13 +124,12 @@ public interface Constants {
 	String					CLASSPATH									= "-classpath";
 
 	String					options[]									= { BSN_FROM_WORKSPACE,
-			BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
+			BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
 			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
-			PEDANTIC, PLUGIN, POM, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,
+			PEDANTIC, PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER,
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
-			RELEASEREPO, SAVEMANIFEST, RUNVM, VERSIONPOLICY_USES, VERSIONPOLICY,
-			VERSIONPOLICY_IMPL, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE	};
+			RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE	};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -147,7 +151,7 @@ public interface Constants {
 	String					USES_DIRECTIVE								= "uses:";
 	String					MANDATORY_DIRECTIVE							= "mandatory:";
 	String					INCLUDE_DIRECTIVE							= "include:";
-	String					IMPLEMENTED_DIRECTIVE						= "implemented:";
+	String					PROVIDE_DIRECTIVE							= "provide:";
 	String					EXCLUDE_DIRECTIVE							= "exclude:";
 	String					PRESENCE_DIRECTIVE							= "presence:";
 	String					SINGLETON_DIRECTIVE							= "singleton:";

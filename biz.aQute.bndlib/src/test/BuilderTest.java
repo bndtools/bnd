@@ -9,6 +9,34 @@ import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
 	
+	/**
+	 * Test the provide package
+	 */
+	public void testProvidedVersion() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath( new File("bin"));
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event;provide:=true");
+		b.setProperty("Private-Package", "test.refer");
+		Jar jar = b.build();
+		String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+		Map<String,Map<String,String>> map = Processor.parseHeader(ip, null);
+		assertEquals( "[1.0,1.1)", map.get("org.osgi.service.event").get("version"));
+		
+	}	
+	
+	public void testUnProvidedVersion() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath( new File("bin"));
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event;provide:=false");
+		b.setProperty("Private-Package", "test.refer");
+		Jar jar = b.build();
+		String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+		Map<String,Map<String,String>> map = Processor.parseHeader(ip, null);
+		assertEquals( "[1.0,2)", map.get("org.osgi.service.event").get("version"));
+	}	
+	
 	
 	/**
 	 * Complaint that exported versions were not picked up from external bundle.

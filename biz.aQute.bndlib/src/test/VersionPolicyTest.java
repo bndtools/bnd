@@ -69,7 +69,7 @@ public class VersionPolicyTest extends TestCase {
         Builder b = new Builder();
         b.addClasspath(new File("jar/osgi.jar"));
         b.setProperty("-versionpolicy",
-                "[${version;==;${@}},${version;+;${@}})");
+                "${range;[==,+)}");
         b.setProperty("Private-Package", "org.objectweb.asm");
         b.setProperty("Import-Package",
                 "org.osgi.framework,org.objectweb.asm,abc;version=2.0.0,*");
@@ -144,7 +144,7 @@ public class VersionPolicyTest extends TestCase {
         b.addClasspath(new File("jar/osgi.jar"));
         b.addClasspath(new File("bin"));
         b.setProperty("-versionpolicy",
-                "[${version;==;${@}},${version;=+;${@}})");
+                "${range;[==,=+)}");
         b.setProperty("Export-Package", "org.osgi.service.event");
         b.setProperty("Private-Package", "test.refer");
         b.build();
@@ -173,7 +173,7 @@ public class VersionPolicyTest extends TestCase {
         Builder b = new Builder();
         b.addClasspath(new File("jar/osgi.jar"));
         b.setProperty("-versionpolicy",
-                "[${version;==;${@}},${version;=+;${@}})");
+                "${range;[==,=+)}");
         b.setProperty("Import-Package", "org.osgi.service.event");
         b.build();
         String s = b.getImports().get("org.osgi.service.event").get("version");

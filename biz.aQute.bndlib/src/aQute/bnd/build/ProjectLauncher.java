@@ -95,7 +95,6 @@ public abstract class ProjectLauncher {
 					if (manifest != null) {
 						Map<String, Map<String, String>> exports = project.parseHeader(manifest
 								.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-						
 						for ( Map.Entry<String,Map<String,String>> e : exports.entrySet()) {
 							if ( ! runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());

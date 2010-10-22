@@ -1011,32 +1011,33 @@ public class Analyzer extends Processor {
 	 * @param refs
 	 *            the uses from the group
 	 */
-	private void merge(Set<String> imports, Map<String, Set<String>> groups, String a, String b) {
-		Set<String> as = groups.get(a);
-		Set<String> bs = groups.get(b);
-		if (as == null && bs == null) {
-			Set<String> result = newSet();
-			result.add(a);
-			result.add(b);
-			groups.put(a, result);
-			groups.put(b, result);
-		} else if (as == null) {
-			bs.add(a);
-			if (imports.contains(a))
-				groups.put(a, bs);
-		} else if (bs == null) {
-			as.add(b);
-			if (imports.contains(b))
-				groups.put(b, as);
-		} else if (as == bs) {
-			return;
-		} else {
-			// as!=null bs != null
-			// pick one.
-			as.addAll(bs);
-			groups.put(b, as);
-		}
-	}
+	// private void merge(Set<String> imports, Map<String, Set<String>> groups,
+	// String a, String b) {
+	// Set<String> as = groups.get(a);
+	// Set<String> bs = groups.get(b);
+	// if (as == null && bs == null) {
+	// Set<String> result = newSet();
+	// result.add(a);
+	// result.add(b);
+	// groups.put(a, result);
+	// groups.put(b, result);
+	// } else if (as == null) {
+	// bs.add(a);
+	// if (imports.contains(a))
+	// groups.put(a, bs);
+	// } else if (bs == null) {
+	// as.add(b);
+	// if (imports.contains(b))
+	// groups.put(b, as);
+	// } else if (as == bs) {
+	// return;
+	// } else {
+	// // as!=null bs != null
+	// // pick one.
+	// as.addAll(bs);
+	// groups.put(b, as);
+	// }
+	// }
 
 	public boolean referred(String packageName) {
 		// return true;
@@ -1099,6 +1100,7 @@ public class Analyzer extends Processor {
 	 * Find some more information about imports in manifest and other places.
 	 */
 	void augmentImports() {
+
 		for (String packageName : imports.keySet()) {
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
@@ -1235,7 +1237,7 @@ public class Analyzer extends Processor {
 
 		exportVersion = cleanupVersion(exportVersion);
 		String importRange = currentAttributes.get(VERSION_ATTRIBUTE);
-		boolean impl = isTrue(currentAttributes.get(IMPLEMENTED_DIRECTIVE));
+		boolean impl = isTrue(currentAttributes.get(PROVIDE_DIRECTIVE));
 		try {
 			setProperty("@", exportVersion);
 
@@ -1582,8 +1584,6 @@ public class Analyzer extends Processor {
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses, Set<String> hide) throws IOException {
 
-		Map<String, Map<String, String>> exportVersions = null;
-
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix) && !hide.contains(path)) {
 				hide.add(path);
@@ -1889,16 +1889,41 @@ public class Analyzer extends Processor {
 		return null;
 	}
 
+	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
+	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
+
 	public String getVersionPolicy(boolean implemented) {
-		String vp = implemented ? getProperty(VERSIONPOLICY_IMPL) : getProperty(VERSIONPOLICY_USES);
+		if (implemented) {
+			String s = getProperty(PROVIDER_POLICY);
+			if (s != null)
+				return s;
 
-		if (vp != null)
-			return vp;
+			s = getProperty(VERSIONPOLICY_IMPL);
+			if (s != null)
+				return s;
 
-		if (implemented)
-			return getProperty(VERSIONPOLICY_IMPL, "[${version;==;${@}},${version;=+;${@}})");
-		else
-			return getProperty(VERSIONPOLICY, "[${version;==;${@}},${version;+;${@}})");
+			return getProperty(VERSIONPOLICY, DEFAULT_PROVIDER_POLICY);
+		} else {
+			String s = getProperty(CONSUMER_POLICY);
+			if (s != null)
+				return s;
+
+			s = getProperty(VERSIONPOLICY_USES);
+			if (s != null)
+				return s;
+
+			return getProperty(VERSIONPOLICY, DEFAULT_CONSUMER_POLICY);
+		}
+		// String vp = implemented ? getProperty(VERSIONPOLICY_IMPL) :
+		// getProperty(VERSIONPOLICY_USES);
+		//
+		// if (vp != null)
+		// return vp;
+		//
+		// if (implemented)
+		// return getProperty(VERSIONPOLICY_IMPL, "{$range;[==,=+}");
+		// else
+		// return getProperty(VERSIONPOLICY, "${range;[==,+)}");
 	}
 
 	/**
@@ -2067,8 +2092,8 @@ public class Analyzer extends Processor {
 
 	public void referTo(String impl) {
 		String pack = Clazz.getPackage(impl);
-		if ( !referred.containsKey(pack))
-			referred.put(pack,  new LinkedHashMap<String,String>());
+		if (!referred.containsKey(pack))
+			referred.put(pack, new LinkedHashMap<String, String>());
 	}
 
 }
