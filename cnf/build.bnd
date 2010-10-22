@@ -25,15 +25,16 @@ javac.debug				= on
 javac.source 			= 1.5
 javac.target 			= 1.5
 
+# default version policies
+#   -provider-policy =  ${range;[==,=+)}
+#   -consumer-policy =  ${range;[==,+)}
+
 #Bnd options
 -sources               	= true
 -sourcepath             = ${project}/src 
 
 -plugin	            	= \
 	aQute.lib.deployer.FileRepo;location=${repo}
-#	aQute.bnd.maven.MavenDeploy; \
-#		repository=nexus; \
-#		url="http://oss.sonatype.org/service/local/staging/deploy/maven2"
 		
   						  
 -make                   =  \
