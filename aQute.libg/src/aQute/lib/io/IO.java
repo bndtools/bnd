@@ -1,4 +1,4 @@
-package aQute.io;
+package aQute.lib.io;
 
 import java.io.*;
 
