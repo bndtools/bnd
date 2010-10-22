@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.settings.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
@@ -12,14 +13,17 @@ import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class Maven extends Processor {
+	final Settings			settings = new Settings();
 
-	String		repository	= "nexus";
-	String		url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
-	String		homedir;
-	String		keyname;
-	File		temp;
-	String		passphrase;
-	Reporter	reporter;
+	String			repository	= "nexus";
+	String			url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
+	String			homedir;
+	String			keyname;
+	File			temp;
+	String			scm;
+	String			passphrase;
+	Reporter		reporter;
+	List<String>	developers	= new ArrayList<String>();
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
@@ -45,6 +49,10 @@ public class Maven extends Processor {
 				repository = args[++i];
 			else if (option.equals("-temp"))
 				temp = getFile(args[++i]);
+			else if (option.equals("-scm"))
+				scm = args[++i];
+			else if (option.equals("-developer"))
+				developers.add( args[++i]);
 			else if (option.equals("-passphrase"))
 				passphrase = args[++i];
 			else if (option.equals("-url"))
@@ -97,6 +105,15 @@ public class Maven extends Processor {
 	}
 
 	void deploy(String args[], int i) throws Exception {
+		if ( developers.isEmpty()) {
+			String email = settings.globalGet(Settings.EMAIL, null);
+			if ( email == null)
+				error("No developer email set, you can set global default email with: bnd global email Peter.Kriens@aQute.biz");
+			else
+				developers.add(email);
+		}
+		
+		
 		while (i < args.length) {
 			String jar = args[i++];
 			File f = getFile(jar);
@@ -114,8 +131,17 @@ public class Maven extends Processor {
 		original.mkdirs();
 		jar.expand(original);
 
+		
+		
 		try {
 			Manifest manifest = jar.getManifest();
+			Pom pom = new Pom(manifest);
+			if (scm != null)
+				pom.setSCM(scm);
+			
+			for ( String d : developers)
+				pom.addDeveloper(d);
+
 			Set<String> exports = OSGiHeader.parseHeader(
 					manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).keySet();
 			Jar javadoc = javadoc(getFile(original, "OSGI-OPT/src"), f, exports);
@@ -135,22 +161,28 @@ public class Maven extends Processor {
 					binary.putResource(entry.getKey().substring("OSGI-OPT/src/".length()), entry
 							.getValue());
 			}
+			String prefix = pom.getArtifactId() + "-" + pom.getVersion();
+			File bundle = new File(temp, "bundle");
+			bundle.mkdirs();
 
-			File binaryFile = new File(temp, "binary.jar");
-			File sourceFile = new File(temp, "source.jar");
-			File javadocFile = new File(temp, "javadoc.jar");
-			File pomFile = new File(temp, "pom.xml").getAbsoluteFile();
+			File binaryFile = new File(bundle, prefix + ".jar");
+			File sourceFile = new File(bundle, prefix + "-sources.jar");
+			File javadocFile = new File(bundle, prefix + "-javadoc.jar");
+			File pomFile = new File(bundle, "pom.xml").getAbsoluteFile();
 
-			PomResource pom = new PomResource(manifest);
 			IO.copy(pom.openInputStream(), pomFile);
 
+			sign(pomFile);
 			binary.write(binaryFile);
+			sign(binaryFile);
 			source.write(sourceFile);
+			sign(sourceFile);
 			javadoc.write(javadocFile);
+			sign(javadocFile);
 
-			maven_gpg_sign_and_deploy(binaryFile, null, pomFile);
-			maven_gpg_sign_and_deploy(sourceFile, "sources", pomFile);
-			maven_gpg_sign_and_deploy(javadocFile, "javadoc", pomFile);
+			Jar jarred = new Jar(bundle);
+			File jarredFile = new File(temp, "bundle.jar");
+			jarred.write(jarredFile);
 
 		} finally {
 			jar.close();
@@ -165,6 +197,27 @@ public class Maven extends Processor {
 	// -DpomFile=pom.xml \
 	// -Dfile=/Ws/bnd/biz.aQute.bndlib/tmp/biz.aQute.bndlib.jar \
 	// -Dpassphrase=a1k3v3t5x3
+
+	private void sign(File file) throws Exception {
+		File asc = new File(file.getParentFile(), file.getName() + ".asc");
+		asc.delete();
+
+		Command command = new Command();
+		command.setTrace();
+
+		command.add(getProperty("gpgp", "gpg"));
+		if (passphrase != null)
+			command.add("--passphrase", passphrase);
+		command.add("-a", "--sign");
+		command.add(file.getAbsolutePath());
+		System.out.println(command);
+		StringBuffer stdout = new StringBuffer();
+		StringBuffer stderr = new StringBuffer();
+		int result = command.execute(stdout, stderr);
+		if (result != 0) {
+			error("gpg signing %s failed because %s", file, "" + stdout + stderr);
+		}
+	}
 
 	private void maven_gpg_sign_and_deploy(File file, String classifier, File pomFile)
 			throws Exception {

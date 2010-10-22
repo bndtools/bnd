@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.prefs.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
@@ -20,12 +21,14 @@ import aQute.bnd.libsync.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
+import aQute.bnd.settings.*;
 import aQute.lib.deployer.*;
 import aQute.lib.jardiff.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 /**
@@ -36,6 +39,7 @@ import aQute.libg.version.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
+	Settings		settings	= new Settings();
 	PrintStream		out			= System.out;
 	static boolean	exceptions	= false;
 
@@ -164,9 +168,11 @@ public class bnd extends Processor {
 		if ("wrap".equals(args[i])) {
 			doWrap(args, ++i);
 		} else if ("maven".equals(args[i])) {
-			Maven maven = new Maven(); 
+			Maven maven = new Maven();
 			maven.run(args, ++i);
 			getInfo(maven);
+		} else if ("global".equals(args[i])) {
+			global(args, ++i);
 		} else if ("print".equals(args[i])) {
 			doPrint(args, ++i);
 		} else if ("graph".equals(args[i])) {
@@ -631,7 +637,7 @@ public class bnd extends Processor {
 			output.getParentFile().mkdirs();
 
 			if ((options & BUILD_POM) != 0) {
-				Resource r = new PomResource(jar.getManifest());
+				Resource r = new Pom(jar.getManifest());
 				jar.putResource("pom.xml", r);
 				String path = output.getName().replaceAll("\\.jar$", ".pom");
 				if (path.equals(output.getName()))
@@ -2036,7 +2042,9 @@ public class bnd extends Processor {
 		for (File file : files) {
 			Jar jar = new Jar(file);
 			try {
-				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
+				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(
+						BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(
+						BUNDLE_VERSION));
 				libsync.submit(jar);
 				getInfo(libsync);
 				System.out.printf("     ok\n");
@@ -2057,6 +2065,33 @@ public class bnd extends Processor {
 			File[] subs = f.listFiles();
 			for (File sub : subs) {
 				traverse(files, sub);
+			}
+		}
+	}
+
+	public void global(String args[], int i) throws BackingStoreException {
+		Settings settings = new Settings();
+
+		if (args.length == i) {
+			for (String key : settings.getKeys())
+				System.out.printf("%-30s %s\n", key, settings.globalGet(key, "<>"));
+		} else {
+			while (i < args.length) {
+				boolean remove=false;
+				if ( "-remove".equals(args[i])) {
+					remove = true;
+					i++;
+				}
+				if (i + 1 == args.length) {
+					if ( remove )
+						settings.globalRemove(args[i]);
+					else
+						System.out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));						
+					i++;
+				} else {
+					settings.globalSet(args[i], args[i + 1]);
+					i += 2;
+				}
 			}
 		}
 	}

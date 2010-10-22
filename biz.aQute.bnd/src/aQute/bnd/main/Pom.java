@@ -5,40 +5,42 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.settings.*;
 import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
-public class PomResource extends WriteResource {
-	final Manifest				manifest;
-	private Map<String, String>	scm;
-	final static Pattern		NAME_URL	= Pattern.compile("(.*)(http://.*)");
-	String xbsn;
-	String xgroupId;
-	String xartifactId;
-	
+public class Pom extends WriteResource {
+	final Manifest			manifest;
+	private List<String>	scm			= new ArrayList<String>();
+	private List<String>	developers	= new ArrayList<String>();
+	final static Pattern	NAME_URL	= Pattern.compile("(.*)(http://.*)");
+	String					xbsn;
+	String					xgroupId;
+	String					xartifactId;
+
 	public String getBsn() {
-		if ( xbsn == null )
+		if (xbsn == null)
 			xbsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		if (xbsn == null)
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 
 		xbsn = xbsn.trim();
 		int n = xbsn.lastIndexOf('.');
-		if (n < 0)  {
+		if (n < 0) {
 			n = xbsn.length();
 			xbsn = xbsn + "." + xbsn;
 		}
-		
+
 		xgroupId = xbsn.substring(0, n);
 		xartifactId = xbsn.substring(n + 1);
 		n = xartifactId.indexOf(';');
 		if (n > 0)
 			xartifactId = xartifactId.substring(0, n).trim();
-		
+
 		return xbsn;
 	}
-	
+
 	public String getGroupId() {
 		getBsn();
 		return xgroupId;
@@ -53,8 +55,8 @@ public class PomResource extends WriteResource {
 		String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 		return new Version(version);
 	}
-	
-	public PomResource(Manifest manifest) {
+
+	public Pom(Manifest manifest) {
 		this.manifest = manifest;
 	}
 
@@ -95,10 +97,12 @@ public class PomResource extends WriteResource {
 			new Tag(project, "url").addContent(docUrl);
 		}
 
-		if (scm != null) {
+		if (scm != null && !scm.isEmpty()) {
 			Tag scm = new Tag(project, "scm");
-			for (Map.Entry<String, String> e : this.scm.entrySet()) {
-				new Tag(scm, e.getKey()).addContent(e.getValue());
+			for (String cm : this.scm) {
+				new Tag(scm, "url").addContent(cm);
+				new Tag(scm, "connection").addContent(cm);
+				new Tag(scm, "developerConnection").addContent(cm);
 			}
 		}
 
@@ -114,6 +118,28 @@ public class PomResource extends WriteResource {
 			new Tag(organization, "name").addContent(namePart.trim());
 			if (urlPart != null) {
 				new Tag(organization, "url").addContent(urlPart.trim());
+			}
+		}
+		if (!developers.isEmpty()) {
+			Tag d = new Tag(project, "developers");
+			for (String email : developers) {
+				String id = email;
+				String xname = email;
+				String organization = null;
+
+				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)")
+						.matcher(email);
+				if (m.matches()) {
+					xname = m.group(1);
+					organization = m.group(2);
+				}
+
+				Tag developer = new Tag(d, "developer");
+				new Tag(developer, "id").addContent(id);
+				new Tag(developer, "name").addContent(xname);
+				new Tag(developer, "email").addContent(email);
+				if (organization != null)
+					new Tag(developer, "organization").addContent(organization);
 			}
 		}
 		if (licenses != null) {
@@ -173,7 +199,11 @@ public class PomResource extends WriteResource {
 		return parent;
 	}
 
-	public void setProperties(Map<String, String> scm) {
-		this.scm = scm;
+	public void setSCM(String scm) {
+		this.scm.add(scm);
+	}
+
+	public void addDeveloper(String email) {
+		this.developers.add(email);
 	}
 }
