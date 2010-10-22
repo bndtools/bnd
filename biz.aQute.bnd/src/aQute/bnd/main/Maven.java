@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import aQute.io.*;
 import aQute.lib.collections.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.header.*;
@@ -53,6 +53,7 @@ public class Maven extends Processor {
 				keyname = args[++i];
 			else
 				error("Invalid command ");
+			i++;
 		}
 
 		temp.mkdirs();
@@ -93,15 +94,6 @@ public class Maven extends Processor {
 		while (lc.hasNext()) {
 			System.out.println(lc.next());
 		}
-
-		// FileInputStream in = new FileInputStream(settings);
-		// try {
-		// URL url = getClass().getResource("maven-settings.xsl");
-		// Transform.transform(url, in,
-		// System.out);
-		// } finally {
-		// in.close();
-		// }
 	}
 
 	void deploy(String args[], int i) throws Exception {
@@ -126,10 +118,10 @@ public class Maven extends Processor {
 			Manifest manifest = jar.getManifest();
 			Set<String> exports = OSGiHeader.parseHeader(
 					manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).keySet();
-			Jar javadoc = javadoc(getFile(original, "OSGI-OPT/src"), exports);
-			if ( javadoc == null)
+			Jar javadoc = javadoc(getFile(original, "OSGI-OPT/src"), f, exports);
+			if (javadoc == null)
 				return;
-				
+
 			addClose(javadoc);
 
 			Jar binary = new Jar("binary");
@@ -147,25 +139,23 @@ public class Maven extends Processor {
 			File binaryFile = new File(temp, "binary.jar");
 			File sourceFile = new File(temp, "source.jar");
 			File javadocFile = new File(temp, "javadoc.jar");
-			File pomFile = new File( temp, "pom.xml");
-			
+			File pomFile = new File(temp, "pom.xml").getAbsoluteFile();
+
 			PomResource pom = new PomResource(manifest);
-			IO.copy( pom.openInputStream(), pomFile);
+			IO.copy(pom.openInputStream(), pomFile);
 
 			binary.write(binaryFile);
 			source.write(sourceFile);
 			javadoc.write(javadocFile);
 
 			maven_gpg_sign_and_deploy(binaryFile, null, pomFile);
-			maven_gpg_sign_and_deploy(sourceFile, "sources", null);
-			maven_gpg_sign_and_deploy(javadocFile, "javadoc", null);
-			
+			maven_gpg_sign_and_deploy(sourceFile, "sources", pomFile);
+			maven_gpg_sign_and_deploy(javadocFile, "javadoc", pomFile);
+
 		} finally {
 			jar.close();
 		}
 	}
-
-
 
 	// gpg:sign-and-deploy-file \
 	// -Durl=http://oss.sonatype.org/service/local/staging/deploy/maven2
@@ -180,12 +170,16 @@ public class Maven extends Processor {
 			throws Exception {
 		Command command = new Command();
 		command.setTrace();
+
 		command.add(getProperty("mvn", "mvn"));
-		command.add("gpg:sign-and-deploy-file", "-DreleaseInfo=true", "-DpomFile=pom.xml");
+		command.add("-e");
+		command.add("org.apache.maven.plugins:maven-gpg-plugin:1.1:sign-and-deploy-file");
+		command.add("-DreleaseInfo=true");
 		command.add("-Dfile=" + file.getAbsolutePath());
 		command.add("-DrepositoryId=" + repository);
 		command.add("-Durl=" + url);
-		optional(command, "passphrase", passphrase);
+		command.add("-Pgpg");
+		optional(command, "gpg.passphrase", passphrase);
 		optional(command, "keyname", keyname);
 		optional(command, "homedir", homedir);
 		optional(command, "classifier", classifier);
@@ -194,10 +188,12 @@ public class Maven extends Processor {
 		StringBuffer stdout = new StringBuffer();
 		StringBuffer stderr = new StringBuffer();
 
+		System.out.println(command);
+
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
-			error("Maven deploy to %s failed to sign and transfer %s because %s", repository,
-					file, "" + stdout + stderr);
+			error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file,
+					"" + stdout + stderr);
 		}
 	}
 
@@ -205,15 +201,19 @@ public class Maven extends Processor {
 		if (value == null)
 			return;
 
-		command.add("-D=" + value);
+		command.add("-D" + key + "=" + value);
 	}
 
-	private Jar javadoc(File source, Set<String> exports) throws Exception {
+	private Jar javadoc(File source, File binary, Set<String> exports) throws Exception {
 		File tmp = new File(temp, "javadoc");
 		tmp.mkdirs();
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));
+		command.add("-quiet");
+		command.add("-protected");
+		command.add("-classpath");
+		command.add(binary.getAbsolutePath());
 		command.add("-d");
 		command.add(tmp.getAbsolutePath());
 		command.add("-charset");
@@ -227,13 +227,15 @@ public class Maven extends Processor {
 
 		StringBuffer out = new StringBuffer();
 		StringBuffer err = new StringBuffer();
+
+		System.out.println(command);
+
 		int result = command.execute(out, err);
 		if (result == 0) {
-			Jar jar = new Jar(tmp);
-			addClose(jar);
-			return jar;
+			warning("Error during execution of javadoc command: %s / %s", out, err);
 		}
-		error("Error during execution of javadoc command: %s / %s", out, err);
-		return null;
+		Jar jar = new Jar(tmp);
+		addClose(jar);
+		return jar;
 	}
 }

@@ -113,7 +113,7 @@ public class bnd extends Processor {
 		} catch (Throwable t) {
 			if (exceptions)
 				t.printStackTrace();
-			error("exception %s", t);
+			error("exception %s", t, t);
 		}
 
 		int n = 1;
