@@ -11,12 +11,18 @@
 package bndtools.wizards.project;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,6 +42,7 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.api.IProjectTemplate;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends JavaProjectWizard {
 
@@ -75,6 +82,20 @@ class NewBndProjectWizard extends JavaProjectWizard {
 	}
 
     /**
+     * Allows for an IProjectTemplate to modify the new Bnd project
+     * @param monitor
+     */
+    protected BndProject generateBndProject(IProgressMonitor monitor) {
+        BndProject proj = new BndProject();
+
+        IProjectTemplate template = templatePage.getTemplate();
+        if (template != null) {
+            template.modifyInitialBndProject(proj);
+        }
+
+        return proj;
+    }
+    /**
      * Modify the newly generated Java project; this method is executed from
      * within a workspace operation so is free to make workspace resource
      * modifications.
@@ -104,6 +125,54 @@ class NewBndProjectWizard extends JavaProjectWizard {
         } else {
             buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
         }
+        
+        BndProject proj = generateBndProject(progress.newChild(1));
+        for (Map.Entry<String, URL> resource : proj.getResources().entrySet()) {
+            importResource(project, resource.getKey(), resource.getValue(), progress.newChild(1));
+        }
+        
+    }
+
+    protected IFile importResource(IProject project, String fullPath, URL url, IProgressMonitor monitor) throws CoreException {
+        
+        IFile p = project.getFile(fullPath);
+        File target = p.getLocation().toFile();
+        
+        InputStream is = null;
+        OutputStream os = null;
+
+        try {
+            is = url.openStream();
+            os = new FileOutputStream(target);
+ 
+            byte[] b = new byte[1024];
+            int len;
+            
+            while ((len = is.read(b)) > -1) {
+                os.write(b, 0, len);
+            }
+            os.flush();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));
+        } finally {
+            if (is != null) {
+                try{is.close();}catch(Exception e){}
+            }
+            if (os != null) {
+                try{os.close();}catch(Exception e){}
+            }
+        }
+        
+        try {
+            p.refreshLocal(IResource.DEPTH_ZERO, null);
+        } catch (CoreException e) {
+            // Do nothing
+        }
+        
+        if (monitor != null) {
+            monitor.done();
+        }
+        return p;
     }
 
     @Override

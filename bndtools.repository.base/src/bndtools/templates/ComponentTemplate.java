@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import bndtools.api.IBndModel;
+import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 import bndtools.model.clauses.VersionedClause;
 
@@ -34,5 +35,10 @@ public class ComponentTemplate implements IProjectTemplate {
 
         model.setRunFramework("org.apache.felix.framework");
     }
+
+	@Override
+	public void modifyInitialBndProject(IBndProject project) {
+		
+	}
 
 }
