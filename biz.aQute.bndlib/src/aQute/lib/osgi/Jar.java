@@ -7,11 +7,9 @@ import java.util.jar.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
-import aQute.io.*;
+import static aQute.lib.io.IO.*;
 import aQute.lib.base64.*;
 import aQute.libg.reporter.*;
-
-import static aQute.io.IO.*;
 
 public class Jar implements Closeable {
 	public static final Object[]		EMPTY_ARRAY	= new Jar[0];
