@@ -373,17 +373,14 @@ public class Activator extends AbstractUIPlugin {
 	}
 	
 	public static File getLocalRepoLocation(RepositoryPlugin repository) {
-		if (!repository.getClass().getName().equals("aQute.lib.deployer.FileRepo") &&
-			!repository.getClass().getName().equals("aQute.lib.deployer.FileInstallRepo")) {
-			return null;
-		}
-
 		try {
 			Method m = repository.getClass().getMethod("getRoot");
-			return (File) m.invoke(repository);
+			if (m.getReturnType() == File.class) {
+				return (File) m.invoke(repository);
+			}
 		} catch (Exception e) {
-			return null;
 		}
+ 		return null;
 	}
 
 	public static void refreshProject(IProject project) throws Exception {
