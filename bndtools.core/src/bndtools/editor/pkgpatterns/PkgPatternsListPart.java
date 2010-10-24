@@ -146,7 +146,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), ResourceTransfer.getInstance(), TextTransfer.getInstance() }, new PackageDropAdapter<C>(viewer) {
 			@Override
 			protected C createNewEntry(String packageName) {
-				return newHeaderClause(packageName);
+			    return newHeaderClause(packageName);
 			}
 			@Override
 			protected void addRows(int index, Collection<C> rows) {
@@ -214,12 +214,17 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         table.setLayoutData(gd);
 		toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 	}
+
 	protected abstract C newHeaderClause(String text);
+
 	protected abstract List<C> loadFromModel(BndEditModel model);
+
 	protected abstract void saveToModel(BndEditModel model, List<? extends C> clauses);
+
 	protected List<C> getClauses() {
 		return clauses;
 	}
+
 	protected Collection<? extends C> generateClauses() {
 		Collection<C> result = new ArrayList<C>();
 		result.add(newHeaderClause(""));

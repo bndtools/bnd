@@ -45,9 +45,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
 
 	public static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
-	public static final String PREF_NOASK_EXPORT_VERSION = "noAskExportVersion";
-	public static final String PREF_DEFAULT_EXPORT_VERSION_POLICY = "defaultExportVertsionPolicy";
-	public static final String PREF_DEFAULT_EXPORT_VERSION = DEFAULT_VERSION.toString();
+    public static final String PREF_NOASK_PACKAGEINFO = "noAskPackageInfo";
 
 	public static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";

@@ -17,11 +17,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import bndtools.Plugin;
-import bndtools.pieces.ExportVersionPolicy;
-import bndtools.pieces.ExportVersionPolicyPiece;
 import bndtools.utils.ModificationLock;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+    public BndPreferencePage() {
+    }
 
     public static final String PAGE_ID = "bndtools.prefPages.basic";
 
@@ -29,10 +29,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
 	private IPreferenceStore store;
 	private String enableSubs;
-	private boolean noAskVersionPolicy = false;
+	private boolean noAskPackageInfo = false;
 	private boolean noCheckCnf = false;
-
-	private final ExportVersionPolicyPiece versionPolicyPiece = new ExportVersionPolicyPiece();
 
 	@Override
 	protected Control createContents(Composite parent) {
@@ -55,12 +53,11 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
 		btnNoCheckCnf.setText("Do not check for the Bnd Configuration project.");
 
-		Group versionPolicyGroup = new Group(composite, SWT.NONE);
-		versionPolicyGroup.setText( "Default Export Version");
+		Group exportsGroup = new Group(composite, SWT.NONE);
+		exportsGroup.setText( "Exported Source Packages");
 
-		Control versionPolicyControl = versionPolicyPiece.createVersionPolicyComposite(versionPolicyGroup, SWT.NONE);
-		final Button btnNoAskVersionPolicy = new Button(versionPolicyGroup, SWT.CHECK);
-		btnNoAskVersionPolicy.setText("Use this default without asking.");
+		final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
+		btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
 
 		// Load Data
 		if(MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
@@ -76,7 +73,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 			btnNever.setSelection(false);
 			btnPrompt.setSelection(true);
 		}
-		btnNoAskVersionPolicy.setSelection(noAskVersionPolicy);
+		btnNoAskPackageInfo.setSelection(noAskPackageInfo);
 		btnNoCheckCnf.setSelection(noCheckCnf);
 
 		// Listeners
@@ -99,10 +96,10 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		btnAlways.addSelectionListener(adapter);
 		btnNever.addSelectionListener(adapter);
 		btnPrompt.addSelectionListener(adapter);
-		btnNoAskVersionPolicy.addSelectionListener(new SelectionAdapter() {
+		btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				noAskVersionPolicy = btnNoAskVersionPolicy.getSelection();
+				noAskPackageInfo = btnNoAskPackageInfo.getSelection();
 			}
 		});
 		btnNoCheckCnf.addSelectionListener(new SelectionAdapter() {
@@ -126,23 +123,16 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		enableSubBundlesGroup.setLayout(layout);
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		versionPolicyGroup.setLayoutData(gd);
+		exportsGroup.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         cnfCheckGroup.setLayoutData(gd);
 
         layout = new GridLayout(1, false);
 		layout.verticalSpacing = 10;
-		versionPolicyGroup.setLayout(layout);
+		exportsGroup.setLayout(layout);
 
 		cnfCheckGroup.setLayout(new GridLayout(1, false));
-
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		versionPolicyControl.setLayoutData(gd);
-
-		layout = versionPolicyPiece.getLayout();
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
 
 		return composite;
 	}
@@ -150,9 +140,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	@Override
 	public boolean performOk() {
 		store.setValue(Plugin.PREF_ENABLE_SUB_BUNDLES, enableSubs);
-		store.setValue(Plugin.PREF_DEFAULT_EXPORT_VERSION_POLICY, versionPolicyPiece.getExportVersionPolicy().toString());
-		store.setValue(Plugin.PREF_DEFAULT_EXPORT_VERSION, versionPolicyPiece.getSpecifiedVersion());
-		store.setValue(Plugin.PREF_NOASK_EXPORT_VERSION, noAskVersionPolicy);
+		store.setValue(Plugin.PREF_NOASK_PACKAGEINFO, noAskPackageInfo);
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, noCheckCnf);
 		return true;
 	}
@@ -160,30 +148,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	public void init(IWorkbench workbench) {
 		store = Plugin.getDefault().getPreferenceStore();
 
-		// Sub-bundles
 		enableSubs = store.getString(Plugin.PREF_ENABLE_SUB_BUNDLES);
-
-		// Version Policy
-		String policyStr = store.getString(Plugin.PREF_DEFAULT_EXPORT_VERSION_POLICY);
-		ExportVersionPolicy policy;
-		try {
-			policy = Enum.valueOf(ExportVersionPolicy.class, policyStr);
-		} catch (IllegalArgumentException e) {
-			policy = ExportVersionPolicy.linkWithBundle;
-		}
-		versionPolicyPiece.setExportVersionPolicy(policy);
-
-		// Specified version (if any)
-		String version = store.getString(Plugin.PREF_DEFAULT_EXPORT_VERSION);
-		if(version == null || version.length() == 0) {
-			version = Plugin.DEFAULT_VERSION.toString();
-		}
-		versionPolicyPiece.setSpecifiedVersion(version);
-
-		// Ask about version policy?
-		noAskVersionPolicy = store.getBoolean(Plugin.PREF_NOASK_EXPORT_VERSION);
-
-		// Check for the cnf project?
+		noAskPackageInfo = store.getBoolean(Plugin.PREF_NOASK_PACKAGEINFO);
 		noCheckCnf = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
 	}
 }

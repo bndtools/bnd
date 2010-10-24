@@ -14,6 +14,15 @@ public class Messages extends NLS {
     public static String BundleCalculatedImportsPart_jobAnalyse;
     public static String BundleCalculatedImportsPart_title;
     public static String BundleCalculatedImportsPart_tooltipShowSelfImports;
+    public static String PackageInfoDialog_AlwaysGenerate;
+    public static String PackageInfoDialog_ExportedPackage;
+    public static String PackageInfoDialog_Message;
+    public static String PackageInfoDialog_Title;
+    public static String PackageInfoDialog_Version;
+    public static String PackageInfoDialog_Warning;
+    public static String PackageInfoDialog_btnCheckAll_text;
+    public static String PackageInfoDialog_btnUncheckAll_text;
+    public static String PackageInfoDialog_btnUncheckAll_text_1;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
