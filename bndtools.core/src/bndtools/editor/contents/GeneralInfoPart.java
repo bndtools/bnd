@@ -22,22 +22,15 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchMatch;
-import org.eclipse.jdt.core.search.SearchParticipant;
-import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -56,11 +49,8 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -110,7 +100,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	private Text txtBSN;
 	private Text txtVersion;
 	private Text txtActivator;
-	private Button btnSources;
 
 	private final ModificationLock lock = new ModificationLock();
 
@@ -156,20 +145,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		activatorProposalAdapter.addContentProposalListener(proposalProvider);
 		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
-		activatorProposalAdapter.setAutoActivationDelay(500);
+		activatorProposalAdapter.setAutoActivationDelay(1000);
 
 		ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.TOP, composite);
 		decorActivator.setImage(contentAssistDecoration.getImage());
 		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
-
-
-		btnSources = toolkit.createButton(composite, "Include source files.", SWT.CHECK);
-		ControlDecoration decorSources = new ControlDecoration(btnSources, SWT.RIGHT, composite);
-		decorSources.setImage(infoDecoration.getImage());
-		decorSources.setDescriptionText("If checked, the source code files will be included in the bundle under 'OSGI-OPT/src'.");
-		decorSources.setShowHover(true);
 
 		// Listeners
         txtBSN.addModifyListener(new ModifyListener() {
@@ -251,12 +233,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				}
 			});
 		}
-		btnSources.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				addDirtyProperty(aQute.lib.osgi.Constants.SOURCES);
-			}
-		});
 
 		// Layout
 		GridLayout layout = new GridLayout(2, false);
@@ -275,9 +251,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.horizontalIndent = 5;
 		txtActivator.setLayoutData(gd);
-
-		gd = new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1);
-		btnSources.setLayoutData(gd);
 	}
 
 	void checkActivatorIncluded() {
@@ -359,9 +332,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 				if(activator != null && activator.length() == 0) activator = null;
 				model.setBundleActivator(activator);
 			}
-			if(dirtySet.contains(BndConstants.SOURCES)) {
-				model.setIncludeSources(btnSources.getSelection());
-			}
 		} finally {
 			// Restore property change listening
 			model.addPropertyChangeListener(this);
@@ -399,8 +369,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
                 String bundleActivator = model.getBundleActivator();
                 txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
-
-                btnSources.setSelection(model.isIncludeSources());
             }
         });
         dirtySet.clear();
@@ -441,50 +409,44 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		return JavaCore.create(file.getProject());
 	}
 
-	private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
-		@Override
-		protected List<IContentProposal> doGenerateProposals(String contents, int position) {
-			final String prefix = contents.substring(0, position);
-			IJavaProject javaProject = getJavaProject();
-			try {
-				IType activatorType = javaProject.findType(BundleActivator.class.getName());
-				final SearchPattern searchPattern = SearchPattern.createPattern(activatorType, IJavaSearchConstants.IMPLEMENTORS);
-				final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
-				final List<IContentProposal> result = new ArrayList<IContentProposal>();
-				final SearchRequestor requestor = new SearchRequestor() {
-					@Override
-					public void acceptSearchMatch(SearchMatch match) throws CoreException {
-						IType type = (IType) match.getElement();
-						if(type.getElementName().toLowerCase().contains(prefix.toLowerCase()))
-							result.add(new JavaTypeContentProposal(type));
-					}
-				};
-				final IRunnableWithProgress runnable = new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						try {
-							new SearchEngine().search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope, requestor, monitor);
-						} catch (CoreException e) {
-							throw new InvocationTargetException(e);
-						}
-					}
-				};
+    private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
+        @Override
+        protected List<IContentProposal> doGenerateProposals(String contents, int position) {
+            final String prefix = contents.substring(0, position);
+            final IJavaProject javaProject = getJavaProject();
+            try {
+                final List<IContentProposal> result = new ArrayList<IContentProposal>();
 
-				IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
-				window.run(false, false, runnable);
-				return result;
-			} catch (JavaModelException e) {
-				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e);
-				Plugin.log(status);
-				return Collections.emptyList();
-			} catch (InvocationTargetException e) {
-				IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
-				Plugin.log(status);
-				return Collections.emptyList();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return Collections.emptyList();
-			}
-		}
+                final IRunnableWithProgress runnable = new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        try {
+                            IType activatorType = javaProject.findType(BundleActivator.class.getName());
+                            if (activatorType != null) {
+                                ITypeHierarchy hierarchy = activatorType.newTypeHierarchy(javaProject, monitor);
+                                for (IType subType : hierarchy.getAllSubtypes(activatorType)) {
+                                    if (!Flags.isAbstract(subType.getFlags()) && subType.getElementName().toLowerCase().contains(prefix.toLowerCase())) {
+                                        result.add(new JavaTypeContentProposal(subType));
+                                    }
+                                }
+                            }
+                        } catch (JavaModelException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                };
+
+                IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
+                window.run(false, false, runnable);
+                return result;
+            } catch (InvocationTargetException e) {
+                IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
+                Plugin.log(status);
+                return Collections.emptyList();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return Collections.emptyList();
+            }
+        }
 
 		@Override
 		protected boolean match(String contents, int position, IContentProposal proposal) {
