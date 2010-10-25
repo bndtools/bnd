@@ -1,11 +1,10 @@
-package aQute.bnd.main;
+package aQute.bnd.maven;
 
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.settings.*;
 import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 import aQute.libg.version.*;
@@ -97,12 +96,16 @@ public class Pom extends WriteResource {
 			new Tag(project, "url").addContent(docUrl);
 		}
 
+		String scmheader = manifest.getMainAttributes().getValue("Bundle-SCM");
+		if ( scmheader != null)
+			scm.add(scmheader);
+		
+		Tag scmtag = new Tag(project, "scm");
 		if (scm != null && !scm.isEmpty()) {
-			Tag scm = new Tag(project, "scm");
 			for (String cm : this.scm) {
-				new Tag(scm, "url").addContent(cm);
-				new Tag(scm, "connection").addContent(cm);
-				new Tag(scm, "developerConnection").addContent(cm);
+				new Tag(scmtag, "url").addContent(cm);
+				new Tag(scmtag, "connection").addContent(cm);
+				new Tag(scmtag, "developerConnection").addContent(cm);
 			}
 		}
 
