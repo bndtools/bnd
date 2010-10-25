@@ -1521,7 +1521,7 @@ public class Analyzer extends Processor {
 		return dot;
 	}
 
-	Map<String, Clazz> analyzeBundleClasspath(Jar dot,
+	protected Map<String, Clazz> analyzeBundleClasspath(Jar dot,
 			Map<String, Map<String, String>> bundleClasspath,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses) throws IOException {
@@ -1892,7 +1892,7 @@ public class Analyzer extends Processor {
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
-	public String getVersionPolicy(boolean implemented) {
+	@SuppressWarnings("deprecation") public String getVersionPolicy(boolean implemented) {
 		if (implemented) {
 			String s = getProperty(PROVIDER_POLICY);
 			if (s != null)

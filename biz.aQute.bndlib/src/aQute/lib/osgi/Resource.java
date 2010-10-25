@@ -1,7 +1,6 @@
 package aQute.lib.osgi;
 
 import java.io.*;
-import java.security.*;
 
 public interface Resource {
 	InputStream openInputStream() throws IOException ;
