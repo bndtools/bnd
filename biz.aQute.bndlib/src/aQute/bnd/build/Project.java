@@ -840,13 +840,7 @@ public class Project extends Processor {
 
 		for (String bsn : parts) {
 			Container container = getBundle(bsn, version, strategy, null);
-			if (container.getError() != null) {
-				error("The ${repo} macro could not find " + bsn + " in the repo, because "
-						+ container.getError() + "\n" + "Repositories     : " + getRepositories()
-						+ "\n" + "Strategy         : " + strategy + "\n" + "Bsn              : "
-						+ bsn + ";version=" + version);
-			} else
-				add(paths, container);
+			add(paths, container);
 		}
 		return join(paths);
 	}
@@ -856,18 +850,23 @@ public class Project extends Processor {
 	}
 
 	private void add(List<String> paths, Container container) throws Exception {
-		if (container.getError() == null) {
-			if (container.getType() == Container.TYPE.LIBRARY) {
-				List<Container> members = container.getMembers();
-				for (Container sub : members) {
-					add(paths, sub);
-				}
-			} else {
-				paths.add(container.getFile().getAbsolutePath());
+		if (container.getType() == Container.TYPE.LIBRARY) {
+			List<Container> members = container.getMembers();
+			for (Container sub : members) {
+				add(paths, sub);
 			}
 		} else {
-			error("Loading library file: %s getting %s", container.getBundleSymbolicName(),
-					container.getError());
+			if (container.getError() == null)
+				paths.add(container.getFile().getAbsolutePath());
+			else {
+				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-"
+						+ container.getVersion() + " : " + container.getError() + ">>");
+				
+				if ( isPedantic() ) {
+					warning("Could not expand repo path request: %s ", container);
+				}
+			}
+
 		}
 	}
 
@@ -885,10 +884,10 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
-		if (getProperty(NOBUNDLES) != null )
+		if (getProperty(NOBUNDLES) != null)
 			return null;
 
-		if (getProperty("-nope") != null ) {
+		if (getProperty("-nope") != null) {
 			warning("Please replace -nope with %s", NOBUNDLES);
 			return null;
 		}
@@ -898,15 +897,14 @@ public class Project extends Processor {
 
 		// Check for each dependency if it is locally modified or
 		// its build time > our build time.
-		for (Project dependency : getDependson()) {			
+		for (Project dependency : getDependson()) {
 			if (dependency != this) {
-				if ( outofdate || dependency.getBuildTime() <= dependency.lastModified()) {
+				if (outofdate || dependency.getBuildTime() <= dependency.lastModified()) {
 					dependency.buildLocal(false);
 					outofdate = true;
 				}
 			}
 		}
-		
 
 		if (files == null || outofdate || getBuildTime() <= lastModified()) {
 			trace("Building " + this);
@@ -1517,12 +1515,11 @@ public class Project extends Processor {
 		lock.unlock();
 	}
 
-
 	public long getBuildTime() throws Exception {
-		if ( buildtime == 0 ) {
-			
+		if (buildtime == 0) {
+
 			files = getBuildFiles();
-			if ( files != null && files.length >= 1)
+			if (files != null && files.length >= 1)
 				buildtime = files[0].lastModified();
 		}
 		return buildtime;
