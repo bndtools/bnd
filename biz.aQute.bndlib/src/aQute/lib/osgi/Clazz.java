@@ -1238,7 +1238,7 @@ public class Clazz {
 	 * @param clazz
 	 * @throws Exception
 	 */
-	final static String USEPOLICY = rname(UsePolicy.class);
+	@SuppressWarnings("deprecation") final static String USEPOLICY = rname(UsePolicy.class);
 	final static String PROVIDERPOLICY = rname(ProviderType.class);
 	
 	public static void getImplementedPackages(Set<String> implemented, Analyzer analyzer,

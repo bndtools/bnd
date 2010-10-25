@@ -1892,7 +1892,7 @@ public class Analyzer extends Processor {
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
-	public String getVersionPolicy(boolean implemented) {
+	@SuppressWarnings("deprecation") public String getVersionPolicy(boolean implemented) {
 		if (implemented) {
 			String s = getProperty(PROVIDER_POLICY);
 			if (s != null)

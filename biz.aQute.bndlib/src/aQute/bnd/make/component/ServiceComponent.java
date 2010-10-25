@@ -8,7 +8,6 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.*;
-import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
 /**
