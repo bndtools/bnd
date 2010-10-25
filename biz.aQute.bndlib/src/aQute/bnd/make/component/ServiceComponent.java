@@ -8,6 +8,7 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.*;
+import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
 /**
@@ -522,10 +523,39 @@ public class ServiceComponent implements AnalyzerPlugin {
                     // error("Target for " + referenceName
                     // + " is not a correct filter: " + target + " "
                     // + filter.verify());
-                    pw.print(" target='" + target + "'");
+                    pw.print(" target='" + escape(target) + "'");
                 }
                 pw.println("/>");
             }
         }
     }
+
+    /**
+     * Escape a string, do entity conversion.
+     */
+    static String escape(String s) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+            case '<':
+                sb.append("&lt;");
+                break;
+            case '>':
+                sb.append("&gt;");
+                break;
+            case '&':
+                sb.append("&amp;");
+                break;
+            case '\'':
+                sb.append("&quot;");
+                break;
+            default:
+                sb.append(c);
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
 }
