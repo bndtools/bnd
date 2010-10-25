@@ -1521,7 +1521,7 @@ public class Analyzer extends Processor {
 		return dot;
 	}
 
-	Map<String, Clazz> analyzeBundleClasspath(Jar dot,
+	protected Map<String, Clazz> analyzeBundleClasspath(Jar dot,
 			Map<String, Map<String, String>> bundleClasspath,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses) throws IOException {
