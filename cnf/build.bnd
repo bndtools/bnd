@@ -1,3 +1,6 @@
+
+Bundle-SCM				= git://github.com/bnd/bnd.git
+
 # Very general
 project.dependson       = ${p-dependson;:}
 project.bootclasspath   = ${p-bootclasspath;:}

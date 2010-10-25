@@ -28,7 +28,6 @@ import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 /**
@@ -168,7 +167,7 @@ public class bnd extends Processor {
 		if ("wrap".equals(args[i])) {
 			doWrap(args, ++i);
 		} else if ("maven".equals(args[i])) {
-			Maven maven = new Maven();
+			MavenCommand maven = new MavenCommand();
 			maven.run(args, ++i);
 			getInfo(maven);
 		} else if ("global".equals(args[i])) {
