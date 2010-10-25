@@ -2,6 +2,7 @@ package test;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
@@ -16,10 +17,54 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 
 public class TestComponent extends TestCase {
 
+	/**
+	 * Targets in references must be propeperly escpaed
+	 * for entities. If they have entities, a warning must
+	 * be given.
+	 * 
+	 * @throws Exception
+	 */
+	@Component(name="escaped")
+	class Escaped {
+		@Reference(target="(&(a>=2)(a<=2))") 
+		protected void setLog(LogService log) {
+			
+		}
+	}
+	
+    public void testEscape() throws Exception {
+        Builder b = new Builder();
+        b.setClasspath(new File[] { new File("bin") });
+        b.setProperty("Service-Component", "*Escaped");
+        b.setProperty("Private-Package", "test");
+        Jar jar = b.build();
+        System.out.println(b.getErrors());
+        System.out.println(b.getWarnings());
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+
+        String xml = IO.collect( jar.getResource("OSGI-INF/escaped.xml").openInputStream());
+        Pattern p = Pattern.compile("target\\s*=\\s*['\"]\\(&amp;\\(a&gt;=2\\)\\(a&lt;=2\\)\\)['\"]");
+        Matcher matcher = p.matcher(xml);
+        assertTrue( matcher.find());
+        
+        {
+	        Document doc = doc(b, "escaped");
+	        XPath xp = XPathFactory.newInstance().newXPath();
+	        assertEquals("(&(a>=2)(a<=2))", xp.evaluate("component/reference/@target", doc));
+        }
+    }
+    
+    /**
+     * 
+     * @author aqute
+     *
+     */
     @Component(name="nounbind")
     static class NoUnbind {
 
