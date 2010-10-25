@@ -100,7 +100,7 @@ public class PropertiesTest extends TestCase {
         bin = new ByteArrayInputStream(bout.toByteArray());
         Manifest m = new Manifest( bin );
         
-        assertEquals("Loïc Cotonéa", m.getMainAttributes().getValue("Namex"));
+        assertEquals("Lo\u00EFc Coton\u00E9a", m.getMainAttributes().getValue("Namex"));
     }
 	public void testBadProperties() throws Exception {
 		Analyzer	analyzer = new Analyzer();
