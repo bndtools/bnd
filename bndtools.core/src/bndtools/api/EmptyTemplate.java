@@ -6,4 +6,8 @@ public class EmptyTemplate implements IProjectTemplate {
         // noop
     }
 
+    public void modifyInitialBndProject(IBndProject project) {
+        // noop
+    }
+
 }

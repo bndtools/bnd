@@ -559,8 +559,9 @@ public class JarDiff {
 				
 				//List<String> errors = b.getErrors();
 				
-				String bundleVersion = b.getProperty("Bundle-Version");
+				String bundleVersion = b.getProperty(Constants.BUNDLE_VERSION);
 				if (bundleVersion == null) {
+				    b.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
 					bundleVersion = "0.0.0";
 				}
 				

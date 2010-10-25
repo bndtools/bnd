@@ -107,7 +107,7 @@ public class BundleReleaseDialog extends Dialog {
 	}
 	
 	private String[] getRepositories() {
-		List<RepositoryPlugin> repos = project.getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> repos = project.getWorkspace().getPlugins(RepositoryPlugin.class);
 		Set<String> ret = new TreeSet<String>();
 		for (RepositoryPlugin repo : repos) {
 			if (repo.canWrite()) {
