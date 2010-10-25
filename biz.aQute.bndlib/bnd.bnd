@@ -24,4 +24,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 -pom: true
 
-Bundle-Version: 1.14.0
+Bundle-Version: 1.15.0

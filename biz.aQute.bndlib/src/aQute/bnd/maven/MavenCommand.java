@@ -71,7 +71,7 @@ public class MavenCommand extends Processor {
 		else if (cmd.equals("help"))
 			help();
 		else if (cmd.equals("deploy"))
-			deploy(args, i);
+			bundle(args, i);
 		else
 			error("No such command %s, type help", cmd);
 	}
@@ -104,7 +104,7 @@ public class MavenCommand extends Processor {
 		}
 	}
 
-	void deploy(String args[], int i) throws Exception {
+	void bundle(String args[], int i) throws Exception {
 		if ( developers.isEmpty()) {
 			String email = settings.globalGet(Settings.EMAIL, null);
 			if ( email == null)
@@ -117,6 +117,19 @@ public class MavenCommand extends Processor {
 		while (i < args.length) {
 			String jar = args[i++];
 			File f = getFile(jar);
+			if (!f.isFile()) {
+				error("File does not exist: %s", f.getAbsoluteFile());
+			} else {
+				deploy(f);
+			}
+		}
+	}
+
+	void execute(String args[], int i) throws Exception {
+		
+		while (i < args.length) {
+			String pom = args[i++];
+			File f = getFile(pom);
 			if (!f.isFile()) {
 				error("File does not exist: %s", f.getAbsoluteFile());
 			} else {
@@ -245,4 +258,8 @@ public class MavenCommand extends Processor {
 		addClose(jar);
 		return jar;
 	}
+	
+	
+	
+	
 }
