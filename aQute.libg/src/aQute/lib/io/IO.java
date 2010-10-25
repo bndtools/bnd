@@ -1,9 +1,15 @@
 package aQute.lib.io;
 
 import java.io.*;
+import java.nio.*;
 
 public class IO {
 	public static void copy(InputStream in, OutputStream out) throws IOException {
+		DataOutputStream dos = new DataOutputStream(out);
+		copy(in, (DataOutput) dos);
+	}
+
+	public static void copy(InputStream in, DataOutput out) throws IOException {
 		byte[] buffer = new byte[10000];
 		try {
 			int size = in.read(buffer);
@@ -16,6 +22,19 @@ public class IO {
 		}
 	}
 
+	public static void copy( InputStream in, ByteBuffer bb ) throws IOException {
+		byte[] buffer = new byte[10000];
+		try {
+			int size = in.read(buffer);
+			while (size > 0) {
+				bb.put(buffer, 0, size);
+				size = in.read(buffer);
+			}
+		} finally {
+			in.close();
+		}
+	}
+	
 	public static void copy(File a, File b) throws IOException {
 		FileOutputStream out = new FileOutputStream(b);
 		try {
@@ -82,5 +101,20 @@ public class IO {
 		String remainder = path.substring(n+1);
 		dir = new File( dir, part);
 		return getFile(dir, remainder);
+	}
+	
+	public static void delete(File f) {
+		f = f.getAbsoluteFile();
+		if ( f.getParentFile() == null )
+			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
+		
+
+		if ( f.isDirectory()) {
+			File [] subs = f.listFiles();
+			for ( File sub : subs) 
+				delete(sub);
+		}
+		
+		delete(f);
 	}
 }
