@@ -86,7 +86,7 @@ public class PropertiesTest extends TestCase {
         Properties p = new Properties();
         p.load(bin);
         assertEquals("@", p.get("Unicode"));
-        assertEquals("Loïc Cotonéa", p.get("Namex"));
+        assertEquals("Lo\u00EFc Coton\u00E9a", p.get("Namex"));
         
         // Now test if we can make the round trip
         Builder b  = new Builder();
