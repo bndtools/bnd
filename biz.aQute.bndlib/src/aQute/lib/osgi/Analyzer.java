@@ -1791,10 +1791,13 @@ public class Analyzer extends Processor {
 	static Pattern	nummeric			= Pattern.compile("\\d*");
 
 	static public String cleanupVersion(String version) {
-		if (Verifier.VERSIONRANGE.matcher(version).matches())
-			return version;
+		Matcher m = Verifier.VERSIONRANGE.matcher(version);
 
-		Matcher m = fuzzyVersionRange.matcher(version);
+		if (m.matches()) {
+			return version;
+		}
+
+		m = fuzzyVersionRange.matcher(version);
 		if (m.matches()) {
 			String prefix = m.group(1);
 			String first = m.group(2);
@@ -1805,9 +1808,9 @@ public class Analyzer extends Processor {
 			m = fuzzyVersion.matcher(version);
 			if (m.matches()) {
 				StringBuffer result = new StringBuffer();
-				String major = m.group(1);
-				String minor = m.group(3);
-				String micro = m.group(5);
+				String major = removeLeadingZeroes(m.group(1));
+				String minor = removeLeadingZeroes(m.group(3));
+				String micro = removeLeadingZeroes(m.group(5));
 				String qualifier = m.group(7);
 
 				if (major != null) {
@@ -1835,6 +1838,16 @@ public class Analyzer extends Processor {
 			}
 		}
 		return version;
+	}
+
+	private static String removeLeadingZeroes(String group) {
+		int n = 0;
+		while (group != null && n < group.length()-1 && group.charAt(n) == '0')
+			n++;
+		if (n == 0)
+			return group;
+
+		return group.substring(n);
 	}
 
 	static void cleanupModifier(StringBuffer result, String modifier) {
