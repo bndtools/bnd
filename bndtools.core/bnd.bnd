@@ -1,6 +1,6 @@
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
-bndlibver: 1.0.0
+bndlibver: 1.13.0
 
 Test: true
 Bundle-SymbolicName: bndtools.core;singleton:=true
@@ -51,7 +51,7 @@ Include-Resource: resources,\
 
 # Build and Run
 -buildpath: bndtools.bndplugins.repos,\
-	biz.aQute.bndlib;version=${bndlibver},\
+	biz.aQute.bndlib,\
 	org.apache.felix.bundlerepository,\
 	bindex,\
 	org.eclipse.core.runtime,\

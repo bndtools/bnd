@@ -52,6 +52,7 @@ import aQute.lib.osgi.Jar;
 import aQute.libg.version.Version;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.utils.BundleUtils;
+import bndtools.utils.NullReporter;
 import bndtools.utils.ProgressReportingInputStream;
 
 public class LocalRepositoryTasks {
@@ -105,8 +106,13 @@ public class LocalRepositoryTasks {
     }
 
     @Deprecated
-    public static RepositoryPlugin getLocalRepository() {
+    public static RepositoryPlugin getLocalRepository() throws CoreException {
         FileRepo repo = new FileRepo();
+        try {
+            repo.setReporter(Central.getWorkspace());
+        } catch (Exception e) {
+            repo.setReporter(new NullReporter());
+        }
 
         Map<String, String> props = new HashMap<String, String>();
         props.put("location", getLocalRepositoryFolder(getCnfProject()).getLocation().toString());
