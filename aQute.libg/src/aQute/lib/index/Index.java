@@ -39,7 +39,7 @@ public class Index {
 		boolean					leaf;
 		final MappedByteBuffer	buffer;
 		int						n				= 0;
-		private boolean	dirty;
+		boolean					dirty;
 
 		Page(int number) throws IOException {
 			this.number = number;
