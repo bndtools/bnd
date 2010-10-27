@@ -2,6 +2,7 @@ package test;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.*;
 
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
@@ -17,9 +18,58 @@ import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Constants;
 
-public class TestComponent extends TestCase {
+public class ComponentTest extends TestCase {
 
+	/**
+	 * A non-FQN entry but we demand no annotations, should generate an
+	 * error and no component
+	 */
+	
+    public void testNonFQNAndNoAnnotations() throws Exception {
+        Builder b = new Builder();
+        b.setProperty("Include-Resource", "org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+        b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS+"=true");
+        b.setProperty("-resourceonly", "true");
+        Jar jar = b.build();
+        System.out.println(b.getErrors());
+        System.out.println(b.getWarnings());
+        assertEquals(1, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+
+        Manifest manifest = jar.getManifest();
+        String component = manifest.getMainAttributes().getValue("Service-Component");
+        System.out.println(component);
+        assertNull( component );
+    }
+
+	
+	/**
+	 * Imported default package because JSR14 seems to do
+	 * something weird with annotations.
+	 * 
+	 * @throws Exception
+	 */
+    public void testJSR14ComponentAnnotations() throws Exception {
+        Builder b = new Builder();
+        b.setProperty("Include-Resource", "org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+        b.setProperty("Service-Component", "*");
+        b.setProperty("-resourceonly", "true");
+        Jar jar = b.build();
+        System.out.println(b.getErrors());
+        System.out.println(b.getWarnings());
+        assertEquals(1, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+
+        Manifest manifest = jar.getManifest();
+        String component = manifest.getMainAttributes().getValue("Service-Component");
+        System.out.println(component);
+        assertNull( component );
+    }
+    
+	
+	
     @Component(name="nounbind")
     static class NoUnbind {
 
@@ -501,7 +551,7 @@ public class TestComponent extends TestCase {
         assertEquals(0, b.getWarnings().size());
 
         Document doc = doc(b, "acomp");
-        assertAttribute(doc, "test.TestComponent.MyComponent",
+        assertAttribute(doc, "test.ComponentTest.MyComponent",
                 "implementation", "class");
         assertAttribute(doc, "acomp", "component", "name");
         assertAttribute(doc, "abc", "component", "factory");
