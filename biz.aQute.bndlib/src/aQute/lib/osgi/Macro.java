@@ -7,6 +7,7 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.lib.io.*;
 import aQute.libg.sed.*;
 import aQute.libg.version.*;
 
@@ -432,7 +433,7 @@ public class Macro implements Replacer {
 			String del = "";
 			StringBuffer sb = new StringBuffer();
 			for (int i = 1; i < args.length; i++) {
-				File f = new File(args[i]).getAbsoluteFile();
+				File f = domain.getFile(args[i]);
 				if (f.exists() && f.getParentFile().exists()) {
 					sb.append(del);
 					sb.append(f.getParentFile().getAbsolutePath());
@@ -452,7 +453,7 @@ public class Macro implements Replacer {
 			String del = "";
 			StringBuffer sb = new StringBuffer();
 			for (int i = 1; i < args.length; i++) {
-				File f = new File(args[i]).getAbsoluteFile();
+				File f = domain.getFile(args[i]);
 				if (f.exists() && f.getParentFile().exists()) {
 					sb.append(del);
 					sb.append(f.getName());
@@ -534,7 +535,7 @@ public class Macro implements Replacer {
 			throw new IllegalArgumentException(
 					"the ${ls} macro must at least have a directory as parameter");
 
-		File dir = new File(args[1]);
+		File dir = domain.getFile(args[1]);
 		if (!dir.isAbsolute())
 			throw new IllegalArgumentException(
 					"the ${ls} macro directory parameter is not absolute: " + dir);
@@ -747,8 +748,7 @@ public class Macro implements Replacer {
 		}
 		process.getOutputStream().close();
 
-		String s = getString(process.getInputStream());
-		process.getInputStream().close();
+		String s = IO.collect(process.getInputStream(), "UTF-8");
 		int exitValue = process.waitFor();
 		if (exitValue != 0) {
 			domain.error("System command " + command + " failed with " + exitValue);
@@ -778,34 +778,17 @@ public class Macro implements Replacer {
 		verifyCommand(args, "${cat;<in>}, get the content of a file", null, 2, 2);
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
-			InputStream in = new FileInputStream(f);
-			return getString(in);
+			return IO.collect(f);
 		} else if (f.isDirectory()) {
 			return Arrays.toString(f.list());
 		} else {
 			try {
 				URL url = new URL(args[1]);
-				InputStream in = url.openStream();
-				return getString(in);
+				return IO.collect(url, "UTF-8");
 			} catch (MalformedURLException mfue) {
 				// Ignore here
 			}
 			return null;
-		}
-	}
-
-	public static String getString(InputStream in) throws IOException {
-		try {
-			StringBuilder sb = new StringBuilder();
-			BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
-			String line = null;
-			while ((line = rdr.readLine()) != null) {
-				sb.append(line);
-				sb.append("\n");
-			}
-			return sb.toString();
-		} finally {
-			in.close();
 		}
 	}
 

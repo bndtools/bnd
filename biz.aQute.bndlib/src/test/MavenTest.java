@@ -24,7 +24,7 @@ public class MavenTest extends TestCase {
     	
     	graph.addRepository( new URL("http://repo1.maven.org/maven2/"));
     	graph.addRepository( new URL("http://repository.springsource.com/maven/bundles/external"));
-    	graph.root.add( new File("test/poms/pom-1.xml").toURI().toURL());
+    //	graph.root.add( new File("test/poms/pom-1.xml").toURI().toURL());
     	
     }
     

@@ -2,7 +2,7 @@ package test;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.*;
+import java.util.jar.*;
 
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
@@ -17,54 +17,59 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
-import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Constants;
 
-public class TestComponent extends TestCase {
+public class ComponentTest extends TestCase {
 
 	/**
-	 * Targets in references must be propeperly escpaed
-	 * for entities. If they have entities, a warning must
-	 * be given.
-	 * 
-	 * @throws Exception
+	 * A non-FQN entry but we demand no annotations, should generate an
+	 * error and no component
 	 */
-	@Component(name="escaped")
-	class Escaped {
-		@Reference(target="(&(a>=2)(a<=2))") 
-		protected void setLog(LogService log) {
-			
-		}
-	}
 	
-    public void testEscape() throws Exception {
+    public void testNonFQNAndNoAnnotations() throws Exception {
         Builder b = new Builder();
-        b.setClasspath(new File[] { new File("bin") });
-        b.setProperty("Service-Component", "*Escaped");
-        b.setProperty("Private-Package", "test");
+        b.setProperty("Include-Resource", "org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+        b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS+"=true");
+        b.setProperty("-resourceonly", "true");
         Jar jar = b.build();
         System.out.println(b.getErrors());
         System.out.println(b.getWarnings());
-        assertEquals(0, b.getErrors().size());
+        assertEquals(1, b.getErrors().size());
         assertEquals(0, b.getWarnings().size());
 
-        String xml = IO.collect( jar.getResource("OSGI-INF/escaped.xml").openInputStream());
-        Pattern p = Pattern.compile("target\\s*=\\s*['\"]\\(&amp;\\(a&gt;=2\\)\\(a&lt;=2\\)\\)['\"]");
-        Matcher matcher = p.matcher(xml);
-        assertTrue( matcher.find());
-        
-        {
-	        Document doc = doc(b, "escaped");
-	        XPath xp = XPathFactory.newInstance().newXPath();
-	        assertEquals("(&(a>=2)(a<=2))", xp.evaluate("component/reference/@target", doc));
-        }
+        Manifest manifest = jar.getManifest();
+        String component = manifest.getMainAttributes().getValue("Service-Component");
+        System.out.println(component);
+        assertNull( component );
+    }
+
+	
+	/**
+	 * Imported default package because JSR14 seems to do
+	 * something weird with annotations.
+	 * 
+	 * @throws Exception
+	 */
+    public void testJSR14ComponentAnnotations() throws Exception {
+        Builder b = new Builder();
+        b.setProperty("Include-Resource", "org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+        b.setProperty("Service-Component", "*");
+        b.setProperty("-resourceonly", "true");
+        Jar jar = b.build();
+        System.out.println(b.getErrors());
+        System.out.println(b.getWarnings());
+        assertEquals(1, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+
+        Manifest manifest = jar.getManifest();
+        String component = manifest.getMainAttributes().getValue("Service-Component");
+        System.out.println(component);
+        assertNull( component );
     }
     
-    /**
-     * 
-     * @author aqute
-     *
-     */
+	
+	
     @Component(name="nounbind")
     static class NoUnbind {
 
@@ -546,7 +551,7 @@ public class TestComponent extends TestCase {
         assertEquals(0, b.getWarnings().size());
 
         Document doc = doc(b, "acomp");
-        assertAttribute(doc, "test.TestComponent.MyComponent",
+        assertAttribute(doc, "test.ComponentTest.MyComponent",
                 "implementation", "class");
         assertAttribute(doc, "acomp", "component", "name");
         assertAttribute(doc, "abc", "component", "factory");

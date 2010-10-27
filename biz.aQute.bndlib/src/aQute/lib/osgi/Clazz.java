@@ -9,6 +9,43 @@ import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
 
 public class Clazz {
+	public static enum JAVA {		
+		UNKNOWN( Integer.MAX_VALUE),
+		OpenJDK7( 51),
+		J2S6( 50),
+		J2SE5(49),
+		JDK1_4(48),
+		JDK1_3(47),
+		JDK1_2(46),
+		JDK1_1(45);
+		
+		final int major;
+		JAVA(int major) {
+			this.major = major;
+		}
+		
+		static JAVA format( int n ) {
+			for( JAVA e : JAVA.values())
+				if ( e.major == n)
+					return e;
+			return UNKNOWN;
+		}
+
+		public int getMajor() {
+			return major;
+		}
+		
+		public boolean hasAnnotations() {
+			return major >= J2SE5.major;
+		}
+		public boolean hasGenerics() {
+			return major >= J2SE5.major;
+		}
+		public boolean hasEnums() {
+			return major >= J2SE5.major;
+		}
+	};
+	
 	public static enum QUERY {
 		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATION, RUNTIMEANNOTATIONS, CLASSANNOTATIONS
 	};
@@ -1335,6 +1372,11 @@ public class Clazz {
 
 	public boolean isPublic() {
 		return isPublic;
+	}
+
+	public JAVA getFormat() {
+		return JAVA.format(major);
+
 	}
 
 }

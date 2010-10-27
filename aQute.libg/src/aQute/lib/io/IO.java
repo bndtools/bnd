@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import java.io.*;
+import java.net.*;
 import java.nio.*;
 
 public class IO {
@@ -60,6 +61,12 @@ public class IO {
 	public static String collect(File a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(a, out);
+		return new String(out.toByteArray(), encoding);
+	}
+
+	public static String collect(URL a, String encoding) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		copy(a.openStream(), out);
 		return new String(out.toByteArray(), encoding);
 	}
 

@@ -68,10 +68,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		Map<String, Map<String, String>> l = m.doServiceComponent();
 
-		if (!l.isEmpty())
-			analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l, ""));
+		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l, ""));
 
-		analyzer.getInfo(m, "Service-Component");
+		analyzer.getInfo(m, "Service-Component: ");
 		m.close();
 		return false;
 	}
@@ -85,14 +84,17 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 
 		/**
-		 * Check if a service component header is actually referring to a class.
-		 * If so, replace the reference with an XML file reference. This makes
-		 * it easier to create and use components. We also allow wildcards in
-		 * the class, they must then map to embedded classes that have
-		 * annotations.
+		 * Iterate over the Service Component entries. There are two cases:
+		 * <ol>
+		 * <li>An XML file reference</li>
+		 * <li>A FQN/wildcard with a set of attributes</li>
+		 * </ol>
 		 * 
-		 * @throws UnsupportedEncodingException
+		 * An XML reference is immediately expanded, an FQN/wildcard is more
+		 * complicated and is delegated to
+		 * {@link #componentEntry(Map, String, Map)}.
 		 * 
+		 * @throws Exception
 		 */
 		Map<String, Map<String, String>> doServiceComponent() throws Exception {
 			Map<String, Map<String, String>> serviceComponents = newMap();
@@ -103,60 +105,146 @@ public class ServiceComponent implements AnalyzerPlugin {
 				String name = entry.getKey();
 				Map<String, String> info = entry.getValue();
 
-				if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
-					// Normal service component, we do not process it
-					serviceComponents.put(name, info);
-				} else
-					try {
-						// Try to locate any classes in the wildcarded universe
-						// that are annotated with Component.
-						Collection<Clazz> expanded = analyzer.getClasses("",
-						// Then limit the ones with component annotations.
-								QUERY.ANNOTATION.toString(), Component.class.getName(), // 
-								// Limit the scope
-								QUERY.NAMED.toString(), name //
-								);
-
-						if (expanded.isEmpty() || Processor.isTrue(info.get(NOANNOTATIONS))) {
-							// We did not find any annotated classes
-							// Check if we import or contain the class
-							createComponentResource(name, info);
-							serviceComponents.put("OSGI-INF/" + name + ".xml", EMPTY);
-						} else {
-							for (Clazz c : expanded) {
-								// Get the component definition
-								// from the annotations
-								Map<String, String> map = ComponentAnnotationReader.getDefinition(
-										c, this);
-
-								// Pick the name, the annotation can override
-								// the name.
-								String localname = map.get(COMPONENT_NAME);
-								if (localname == null)
-									localname = c.getFQN();
-
-								// Overide the component info with out manifest
-								// entries. We merge the properties though.
-
-								String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES),
-										map.remove(COMPONENT_PROPERTIES));
-								if (merged != null && merged.length() > 0)
-									map.put(COMPONENT_PROPERTIES, merged);
-								map.putAll(info);
-								createComponentResource(localname, map);
-								serviceComponents.put("OSGI-INF/" + localname + ".xml", EMPTY);
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						error("Invalid Service-Component header: %s %s, throws %s", name, info, e);
+				try {
+					if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
+						// Normal service component, we do not process it
+						serviceComponents.put(name, info);
+					} else {
+						componentEntry(serviceComponents, name, info);
 					}
+				} catch (Exception e) {
+					error("Invalid Service-Component header: %s %s, throws %s", name, info, e);
+				}
 			}
 			return serviceComponents;
 		}
 
-		private void createComponentResource(String name, Map<String, String> info)
-				throws IOException {
+		/**
+		 * Parse an entry in the Service-Component header. This header supports
+		 * the following types:
+		 * <ol>
+		 * <li>An FQN + attributes describing a component</li>
+		 * <li>A wildcard expression for finding annotated components.</li>
+		 * </ol>
+		 * The problem is the distinction between an FQN and a wildcard because
+		 * an FQN can also be used as a wildcard.
+		 * 
+		 * If the info specifies {@link Constants#NOANNOTATIONS} then wildcards
+		 * are an error and the component must be fully described by the info.
+		 * Otherwise the FQN/wildcard is expanded into a list of classes with
+		 * annotations. If this list is empty, the FQN case is interpreted as a
+		 * complete component definition. For the wildcard case, it is checked
+		 * if any matching classes for the wildcard have been compiled for a
+		 * class file format that does not support annotations, this can be a
+		 * problem with JSR14 who silently ignores annotations. An error is
+		 * reported in such a case.
+		 * 
+		 * @param serviceComponents
+		 * @param name
+		 * @param info
+		 * @throws Exception
+		 * @throws IOException
+		 */
+		private void componentEntry(Map<String, Map<String, String>> serviceComponents,
+				String name, Map<String, String> info) throws Exception, IOException {
+
+			boolean annotations = !Processor.isTrue(info.get(NOANNOTATIONS));
+			boolean fqn = Verifier.isFQN(name);
+
+			if (annotations) {
+
+				// Annotations possible!
+
+				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATION
+						.toString(), Component.class.getName(), // 
+						QUERY.NAMED.toString(), name //
+						);
+
+				if (fqn) {
+					if (annotatedComponents.isEmpty()) {
+
+						// No annotations, fully specified in header
+
+						createComponentResource(serviceComponents, name, info);
+					} else {
+
+						// We had a FQN so expect only one
+
+						for (Clazz c : annotatedComponents) {
+							annotated(serviceComponents, c, info);
+						}
+					}
+				} else {
+
+					// We did not have an FQN, so expect the use of wildcards
+
+					if (annotatedComponents.isEmpty())
+						checkAnnotationsFeasible(name);
+					else
+						for (Clazz c : annotatedComponents) {
+							annotated(serviceComponents, c, info);
+						}
+				}
+			} else {
+				// No annotations
+				if (fqn)
+					createComponentResource(serviceComponents, name, info);
+				else
+					error("Set to %s but entry %s is not an FQN ", NOANNOTATIONS, name);
+
+			}
+		}
+
+		/**
+		 * Check if annotations are actually feasible looking at the class
+		 * format. If the class format does not provide annotations then it is
+		 * no use specifying annotated components.
+		 * 
+		 * @param name
+		 * @return
+		 * @throws Exception
+		 */
+		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {
+			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
+					);
+			if (!not.isEmpty()) {
+				for (Clazz c : not) {
+					if (c.getFormat().hasAnnotations())
+						break;
+				}
+				error(
+						"Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
+						name);
+			}
+			return not;
+		}
+
+		void annotated(Map<String, Map<String, String>> components, Clazz c,
+				Map<String, String> info) throws Exception {
+			// Get the component definition
+			// from the annotations
+			Map<String, String> map = ComponentAnnotationReader.getDefinition(c, this);
+
+			// Pick the name, the annotation can override
+			// the name.
+			String localname = map.get(COMPONENT_NAME);
+			if (localname == null)
+				localname = c.getFQN();
+
+			// Override the component info without manifest
+			// entries. We merge the properties though.
+
+			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES), map
+					.remove(COMPONENT_PROPERTIES));
+			if (merged != null && merged.length() > 0)
+				map.put(COMPONENT_PROPERTIES, merged);
+			map.putAll(info);
+			createComponentResource(components, localname, map);
+		}
+
+		private void createComponentResource(Map<String, Map<String, String>> components,
+				String name, Map<String, String> info) throws IOException {
+
 			// We can override the name in the parameters
 			if (info.containsKey(COMPONENT_NAME))
 				name = info.get(COMPONENT_NAME);
@@ -172,6 +260,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 			// We have a definition, so make an XML resources
 			Resource resource = createComponentResource(name, impl, info);
 			analyzer.getJar().putResource("OSGI-INF/" + name + ".xml", resource);
+
+			components.put("OSGI-INF/" + name + ".xml", info);
+
 		}
 
 		/**
@@ -485,10 +576,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 					// error("Target for " + referenceName
 					// + " is not a correct filter: " + target + " "
 					// + filter.verify());
-
-					target = escape(target);
-
-					pw.print(" target='" + target + "'");
+					pw.print(" target='" + escape(target) + "'");
 				}
 				pw.println("/>");
 			}

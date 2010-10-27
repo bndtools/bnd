@@ -781,6 +781,9 @@ public class BuilderTest extends TestCase {
      * @throws Exception
      */
     public void testVersionCleanup() throws Exception {
+        assertVersion("000001.0003.00000-SNAPSHOT", "1.3.0.SNAPSHOT");
+        assertVersion("000000.0000.00000-SNAPSHOT", "0.0.0.SNAPSHOT");
+        assertVersion("0-SNAPSHOT", "0.0.0.SNAPSHOT");
         assertVersion("1.3.0.0-0-01-0-SNAPSHOT", "1.3.0.0-0-01-0-SNAPSHOT");
         assertVersion("1.3.0.0-0-01-0", "1.3.0.0-0-01-0");
         assertVersion("0.9.0.1.2.3.4.5-incubator-SNAPSHOT",
@@ -857,6 +860,7 @@ public class BuilderTest extends TestCase {
         Builder b = new Builder();
         b.setClasspath(new File[] { new File("bin") });
         Properties p = new Properties();
+        p.put("build", "xyz");
         p.put("Export-Package", "test*;version=3.1");
         b.setProperties(p);
         b.setPedantic(true);
@@ -1089,6 +1093,7 @@ public class BuilderTest extends TestCase {
         Builder bmaker = new Builder();
         Properties p = new Properties();
         p.put("Bundle-Activator", "test.activator.Activator");
+        p.put("build", "xyz");	// for @Version annotation
         p.put("Private-Package", "test.*");
         bmaker.setProperties(p);
         bmaker.setClasspath(new File[] { new File("bin") });

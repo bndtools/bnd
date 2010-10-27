@@ -892,6 +892,23 @@ public class Verifier extends Analyzer {
         return false;
     }
 
+	public static boolean isFQN(String name) {
+		if ( name.length() == 0)
+			return false;
+		if ( !Character.isJavaIdentifierStart(name.charAt(0)))
+			return false;
+		
+		for ( int i=1; i<name.length(); i++) {
+			char c = name.charAt(i);
+			if (Character.isJavaIdentifierPart(c) || c == '$' || c == '.')
+				continue;
+			
+			return false;
+		}
+		
+		return true;
+	}
+
     /*
      * public int verifyFilter(StringBuffer sb, String s, int rover) { rover =
      * skip(s, rover); char c = s.charAt(rover); if (c == '(') { sb.append('(');
