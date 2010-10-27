@@ -10,15 +10,56 @@ import aQute.lib.osgi.*;
 public class VersionPolicyTest extends TestCase {
 
     /**
+     * Test import provide:.
+     */
+    public void testImportProvided() throws Exception {
+        Builder a = new Builder();
+        a.addClasspath(new File("jar/osgi.jar"));
+        a.addClasspath(new File("bin"));
+        a.setProperty("Private-Package", "test.refer");
+        a.setProperty("Import-Package", "org.osgi.service.event;provide:=true,*");
+        Jar jar = a.build();
+        Map<String,String> event = a.getImports().get("org.osgi.service.event");
+        assertEquals("[1.0,1.1)", event.get("version"));
+        Map<String,String> http = a.getImports().get("org.osgi.service.http");
+        assertEquals("[1.2,2)", http.get("version"));
+        
+        Manifest m = jar.getManifest();
+        String imports = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+        assertFalse( imports.contains(Constants.PROVIDE_DIRECTIVE));
+    }
+    
+    /**
+     * Test import provide:.
+     */
+    public void testExportProvided() throws Exception {
+        Builder a = new Builder();
+        a.addClasspath(new File("jar/osgi.jar"));
+        a.addClasspath(new File("bin"));
+        a.setProperty("Private-Package", "test.refer");
+        a.setProperty("Export-Package", "org.osgi.service.http;provide:=true");
+        Jar jar = a.build();
+        Map<String,String> event = a.getImports().get("org.osgi.service.event");
+        assertEquals("[1.0,2)", event.get("version"));
+        Map<String,String> http = a.getImports().get("org.osgi.service.http");
+        assertEquals("[1.2,1.3)", http.get("version"));
+        
+        Manifest m = jar.getManifest();
+        String imports = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+        assertFalse( imports.contains(Constants.PROVIDE_DIRECTIVE));
+    }
+    
+    /**
      * Test export annotation.
      */
     public void testExportAnnotation() throws Exception {
         Builder a = new Builder();
         a.addClasspath(new File("bin"));
+        a.setProperty("build", "xyz");
         a.setProperty("Export-Package", "test.versionpolicy.api");
         a.build();
         Map<String,String> attrs = a.getExports().get("test.versionpolicy.api");
-        assertEquals("4.3.2.1", attrs.get("version"));
+        assertEquals("1.2.0.xyz", attrs.get("version"));
         assertEquals("PrivateImpl", attrs.get("exclude:"));
         assertEquals("a", attrs.get("mandatory:"));
     }

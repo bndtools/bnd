@@ -30,6 +30,7 @@ import aQute.bnd.annotation.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.Clazz.*;
 import aQute.libg.generics.*;
+import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
 
@@ -62,6 +63,7 @@ public class Analyzer extends Processor {
 	String									versionPolicyUses;
 	String									versionPolicyImplemented;
 	boolean									diagnostics				= false;
+	SortedSet<Clazz.JAVA>					formats					= new TreeSet<Clazz.JAVA>();
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -1565,6 +1567,10 @@ public class Analyzer extends Processor {
 					}
 				}
 			}
+
+			for (Clazz c : classSpace.values()) {
+				formats.add(c.getFormat());
+			}
 		}
 		return classSpace;
 	}
@@ -1688,19 +1694,33 @@ public class Analyzer extends Processor {
 			throws IOException {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			@Override public void annotation(Annotation a) {
-				if (a.name.equals(Export.RNAME)) {
+				if (a.name.equals(Clazz.rname(aQute.bnd.annotation.Version.class))) {
 
 					// Check version
+					String version = a.get("value");
 					if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
-						String version = a.get(Export.VERSION);
 						if (version != null) {
+							version = getReplacer().process(version);
 							if (Verifier.VERSION.matcher(version).matches())
-								info.put(VERSION_ATTRIBUTE, getReplacer().process(version));
+								info.put(VERSION_ATTRIBUTE, version);
 							else
 								error("Export annotatio in %s has invalid version info: %s", clazz,
 										version);
 						}
+					} else {
+						// Verify this matches with packageinfo
+						String presentVersion = info.get(VERSION_ATTRIBUTE);
+						try {							
+							Version av = new Version(presentVersion);
+							Version bv = new Version(version);
+							if ( !av.equals(bv)) {
+								error("Version from annotation for %s differs with packageinfo or Manifest", Clazz.getPackage(clazz.className));
+							}
+						} catch( Exception e) {
+							// Ignore
+						}
 					}
+				} else if (a.name.equals(Clazz.rname(Export.class))) {
 
 					// Check mandatory attributes
 					Map<String, String> attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY),
@@ -1842,7 +1862,7 @@ public class Analyzer extends Processor {
 
 	private static String removeLeadingZeroes(String group) {
 		int n = 0;
-		while (group != null && n < group.length()-1 && group.charAt(n) == '0')
+		while (group != null && n < group.length() - 1 && group.charAt(n) == '0')
 			n++;
 		if (n == 0)
 			return group;

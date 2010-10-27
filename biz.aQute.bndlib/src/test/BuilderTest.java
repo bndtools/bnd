@@ -860,6 +860,7 @@ public class BuilderTest extends TestCase {
         Builder b = new Builder();
         b.setClasspath(new File[] { new File("bin") });
         Properties p = new Properties();
+        p.put("build", "xyz");
         p.put("Export-Package", "test*;version=3.1");
         b.setProperties(p);
         b.setPedantic(true);
@@ -1092,6 +1093,7 @@ public class BuilderTest extends TestCase {
         Builder bmaker = new Builder();
         Properties p = new Properties();
         p.put("Bundle-Activator", "test.activator.Activator");
+        p.put("build", "xyz");	// for @Version annotation
         p.put("Private-Package", "test.*");
         bmaker.setProperties(p);
         bmaker.setClasspath(new File[] { new File("bin") });
