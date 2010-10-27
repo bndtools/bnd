@@ -108,7 +108,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				try {
 					if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
 						// Normal service component, we do not process it
-						serviceComponents.put(name, info);
+						serviceComponents.put(name, EMPTY);
 					} else {
 						componentEntry(serviceComponents, name, info);
 					}
@@ -261,7 +261,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 			Resource resource = createComponentResource(name, impl, info);
 			analyzer.getJar().putResource("OSGI-INF/" + name + ".xml", resource);
 
-			components.put("OSGI-INF/" + name + ".xml", info);
+			components.put("OSGI-INF/" + name + ".xml", EMPTY);
 
 		}
 

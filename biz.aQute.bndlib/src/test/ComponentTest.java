@@ -22,6 +22,36 @@ import aQute.lib.osgi.Constants;
 
 public class ComponentTest extends TestCase {
 
+
+	/**
+	 * Test an attribute on an annotation
+	 */
+	
+    @Component(name="annotated")
+    static class Annotated {
+
+        @Reference
+        protected void setLog(LogService log) {
+        }
+
+    }
+    public void testAnnotatedWithAttribute() throws Exception {
+        Builder b = new Builder();
+        b.setClasspath(new File[] { new File("bin") });
+        b.setProperty("Service-Component", "*NoUnbind;log=org.osgi.service.log.LogService");
+        b.setProperty("Private-Package", "test");
+        Jar jar = b.build();
+        Manifest manifest = jar.getManifest();
+        String sc = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
+        assertFalse( sc.contains(";"));
+        System.out.println(b.getErrors());
+        System.out.println(b.getWarnings());
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+
+    }
+    
+	
 	/**
 	 * A non-FQN entry but we demand no annotations, should generate an
 	 * error and no component
