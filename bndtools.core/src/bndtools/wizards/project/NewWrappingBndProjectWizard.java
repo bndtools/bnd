@@ -34,7 +34,7 @@ import bndtools.utils.FileUtils;
 import bndtools.wizards.bndfile.ClasspathEditorWizardPage;
 
 
-class NewWrappingBndProjectWizard extends NewBndProjectWizard {
+class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
 
     final ClasspathEditorWizardPage classPathPage = new ClasspathEditorWizardPage("classPathPage");
 
