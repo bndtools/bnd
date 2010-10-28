@@ -45,7 +45,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 						List<RepositoryPlugin> repos = ws
 								.getPlugins(RepositoryPlugin.class);
 
-						ReleaseJob job = new ReleaseJob(project, repos);
+						ReleaseDialogJob job = new ReleaseDialogJob(project, repos);
 						job.schedule();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block

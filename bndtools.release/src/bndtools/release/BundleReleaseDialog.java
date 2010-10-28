@@ -10,13 +10,10 @@
  *******************************************************************************/
 package bndtools.release;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -39,7 +36,6 @@ public class BundleReleaseDialog extends Dialog {
 	private Project project;
 	private List<JarDiff> diffs;
 	private Combo combo;
-	private String msg;
 	
 	public BundleReleaseDialog(Shell parentShell, Project project, List<JarDiff> compare) {
 		super(parentShell);
@@ -124,38 +120,10 @@ public class BundleReleaseDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		String repository = combo.getText();
-		try {
-			
-			JarDiff.updateProject(project, diffs);
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append("Project : ");
-			sb.append(project.getName());
-			sb.append("\n\n");
-			sb.append("Released :\n");
-			for (JarDiff diff : diffs) {
-				sb.append(diff.getSymbolicName() + "-" + diff.getSuggestedVersion() + ".jar\n");
-				JarDiff.release(project, diff, repository);
-			}
-			sb.append("\n\nto : ");
-			sb.append(repository);
-			msg = sb.toString();
-			
-			// Necessary???
-			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, null);
-			
-			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
-			if (repo != null) {
-				File f = Activator.getLocalRepoLocation(repo);
-				Activator.refreshFile(f);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
+		ReleaseJob job = new ReleaseJob(project, diffs, repository);
+		job.schedule();
+		
 		super.okPressed();
-	}
-	
-	public String getMessage() {
-		return msg;
 	}
 }

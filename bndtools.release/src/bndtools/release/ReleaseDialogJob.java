@@ -24,19 +24,18 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.service.RepositoryPlugin;
 import bndtools.diff.JarDiff;
 import bndtools.release.nl.Messages;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.service.RepositoryPlugin;
-
-public class ReleaseJob extends Job {
+public class ReleaseDialogJob extends Job {
 
 	private final Shell shell;
 	private final Project project;
 	private final List<RepositoryPlugin> repos;
 	
-	public ReleaseJob(Project project, List<RepositoryPlugin> repos) {
+	public ReleaseDialogJob(Project project, List<RepositoryPlugin> repos) {
 		super(Messages.releaseJob);
 		this.project = project;
 		this.repos = repos;
@@ -68,16 +67,15 @@ public class ReleaseJob extends Job {
 				public void run() {
 					BundleReleaseDialog dialog = new BundleReleaseDialog(shell, project, diffs);
 					dialog.open();
-					if (dialog.getMessage() != null) {
-						Activator.getDefault().message(dialog.getMessage());
-					}
 				}
 			};
+
 			if (Display.getCurrent() == null) {
 				Display.getDefault().asyncExec(runnable);
 			} else {
 				runnable.run();
 			}
+			
 			monitor.worked(33);
 	        return Status.OK_STATUS;
         } finally {
