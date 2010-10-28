@@ -1,5 +1,6 @@
 Manifest-Version: 1
 Bundle-ManifestVersion: 2
+Bundle-Version: 0.0.0
 Bundle-Name: bnd
 Bundle-SymbolicName: biz.aQute.bnd; singleton:=true
 Bundle-ClassPath: .,tmp/biz.aQute.bnd.jar
