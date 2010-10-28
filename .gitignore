@@ -19,6 +19,7 @@
 /bndtools.launcher
 /bndtools.runtime.junit
 /cnf/bndtools-*.zip
+/cnf/cache
 
 # my rubbish
 /Foo*
