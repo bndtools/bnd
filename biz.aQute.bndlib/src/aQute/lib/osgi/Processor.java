@@ -611,17 +611,25 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
-		String value;
+		String value = null;
+		Processor source = this;
 
 		if (filter != null && filter.contains(key)) {
 			value = (String) getProperties().get(key);
-		} else
-			value = getProperties().getProperty(key);
+		} else {
+			while( source != null) {
+				value = (String) source.getProperties().get(key);
+				if ( value != null)
+					break;
+				
+				source = source.getParent();
+			}
+		}
 
 		if (value != null)
-			return getReplacer().process(value);
+			return getReplacer().process(value, source);
 		else if (deflt != null)
-			return getReplacer().process(deflt);
+			return getReplacer().process(deflt, this);
 		else
 			return null;
 	}
@@ -827,7 +835,7 @@ public class Processor implements Reporter, Constants, Closeable {
 
 	public Macro getReplacer() {
 		if (replacer == null)
-			return replacer = new Macro(getProperties(), this, getMacroDomains());
+			return replacer = new Macro(this, getMacroDomains());
 		else
 			return replacer;
 	}

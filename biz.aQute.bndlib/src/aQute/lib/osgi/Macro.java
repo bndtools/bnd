@@ -20,13 +20,11 @@ import aQute.libg.version.*;
  * 
  */
 public class Macro implements Replacer {
-	Properties	properties;
 	Processor	domain;
 	Object		targets[];
 	boolean		flattening;
 
-	public Macro(Properties properties, Processor domain, Object... targets) {
-		this.properties = properties;
+	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
 		this.targets = targets;
 		if (targets != null) {
@@ -36,12 +34,8 @@ public class Macro implements Replacer {
 		}
 	}
 
-	public Macro(Processor processor) {
-		this(new Properties(), processor);
-	}
-
-	public String process(String line) {
-		return process(line, null);
+	public String process(String line, Processor source) {
+		return process(line, new Link(source,null,line));
 	}
 
 	String process(String line, Link link) {
@@ -109,13 +103,22 @@ public class Macro implements Replacer {
 		if (key != null) {
 			key = key.trim();
 			if (key.length() > 0) {
-				String value = (String) properties.getProperty(key);
+				Processor source = domain;
+				String value = null;
+				while( source != null) {
+					value = source.getProperties().getProperty(key);
+					if ( value != null )
+						break;
+					
+					source = source.getParent();
+				}
+				
 				if (value != null)
-					return process(value, new Link(link, key));
+					return process(value, new Link(source,link, key));
 
-				value = doCommands(key);
+				value = doCommands(key, link);
 				if (value != null)
-					return process(value, new Link(link, key));
+					return process(value, new Link(source, link, key));
 
 				if (key != null && key.trim().length() > 0) {
 					value = System.getProperty(key);
@@ -142,7 +145,7 @@ public class Macro implements Replacer {
 	 */
 	static Pattern	commands	= Pattern.compile("(?<!\\\\);");
 
-	private String doCommands(String key) {
+	private String doCommands(String key, Link source) {
 		String[] args = commands.split(key);
 		if (args == null || args.length == 0)
 			return null;
@@ -151,6 +154,18 @@ public class Macro implements Replacer {
 			if (args[i].indexOf('\\') >= 0)
 				args[i] = args[i].replaceAll("\\\\;", ";");
 
+		
+		if ( args[0].startsWith("^")) {
+			String varname = args[0].substring(1).trim();
+			
+			Processor parent = source.start.getParent();
+			if ( parent != null)
+				return parent.getProperty(varname);
+			else
+				return null;
+		}
+		
+		
 		Processor rover = domain;
 		while (rover != null) {
 			String result = doCommand(rover, args[0], args);
@@ -324,11 +339,7 @@ public class Macro implements Replacer {
 		if (args.length != 2)
 			throw new RuntimeException("Need a value for the ${def;<value>} macro");
 
-		String value = properties.getProperty(args[1]);
-		if (value == null)
-			return "";
-		else
-			return value;
+		return domain.getProperty(args[1], "");
 	}
 
 	/**
@@ -828,10 +839,12 @@ public class Macro implements Replacer {
 	static class Link {
 		Link	previous;
 		String	key;
+		Processor start;
 
-		public Link(Link previous, String key) {
+		public Link(Processor start, Link previous, String key) {
 			this.previous = previous;
 			this.key = key;
+			this.start = start;
 		}
 
 		public boolean contains(String key) {
@@ -871,13 +884,14 @@ public class Macro implements Replacer {
 		flattening = true;
 		try {
 			Properties flattened = new Properties();
-			for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {
+			Properties source = domain.getProperties();
+			for (Enumeration<?> e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();
 				if (!key.startsWith("_"))
 					if (key.startsWith("-"))
-						flattened.put(key, properties.getProperty(key));
+						flattened.put(key, source.getProperty(key));
 					else
-						flattened.put(key, process(properties.getProperty(key)));
+						flattened.put(key, process(source.getProperty(key)));
 			}
 			return flattened;
 		} finally {
@@ -902,16 +916,6 @@ public class Macro implements Replacer {
 		return Processor.join(list, File.pathSeparator);
 	}
 
-	public static String	_superHelp	= "${super;<key>}, return the value in the parent";
-
-	public String _super(String args[]) {
-		verifyCommand(args, _superHelp, null, 2, 2);
-		Properties parent = getParent(properties);
-		if (parent == null)
-			return null;
-		return process(parent.getProperty(args[1]));
-	}
-
 	public static Properties getParent(Properties p) {
 		try {
 			Field f = Properties.class.getDeclaredField("defaults");
@@ -922,6 +926,10 @@ public class Macro implements Replacer {
 			System.out.println(Arrays.toString(fields));
 			return null;
 		}
+	}
+
+	public String process(String line) {
+		return process(line,domain);
 	}
 
 }

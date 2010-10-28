@@ -8,9 +8,8 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class MacroTest extends TestCase {
-	Processor	proc	= new Processor();
-
 	public void testEnv() {
+		Processor proc = new Processor();
 		String s = proc.getReplacer().process("${env;USER}");
 		assertNotNull(s);
 	}
@@ -21,16 +20,21 @@ public class MacroTest extends TestCase {
 
 	public void testSuper() {
 		Processor top = new Processor();
-		Processor bottom = new Processor(top);
+		Processor middle = new Processor(top);
+		Processor bottom = new Processor(middle);
+		
 		top.setProperty("a", "top.a");
 		top.setProperty("b", "top.b");
 		top.setProperty("c", "top.c");
-		bottom.setProperty("a", "bottom.a");
-		bottom.setProperty("b", "${super;a}");
-		bottom.setProperty("c", "-${super;c}-");
-		assertEquals("bottom.a", bottom.getProperty("a"));
+		top.setProperty("Bundle-Version", "0.0.0");
+		middle.setProperty("a", "middle.a");
+		middle.setProperty("b", "${^a}");
+		middle.setProperty("c", "-${^c}-");
+		middle.setProperty("Bundle-Version", "${^Bundle-Version}");
+		assertEquals("middle.a", bottom.getProperty("a"));
 		assertEquals("top.a", bottom.getProperty("b"));
 		assertEquals("-top.c-", bottom.getProperty("c"));
+		assertEquals("0.0.0", bottom.getProperty("Bundle-Version"));
 	}
 
 	/**
@@ -62,8 +66,8 @@ public class MacroTest extends TestCase {
 	 */
 
 	public void testSystem() throws Exception {
-		Properties p = new Properties();
-		Macro macro = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
 		assertTrue(macro.process("${system;wc;Hello World}").matches("[0-9]+\\s*[0-9]+\\s*[0-9]+"));
 	}
@@ -72,26 +76,25 @@ public class MacroTest extends TestCase {
 	 * Check that variables override macros.
 	 */
 	public void testPriority() {
-		Properties p = new Properties();
-		p.put("now", "not set");
-		Macro macro = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("now", "not set");
+		Macro macro = new Macro(p);
 		assertEquals("not set", macro.process("${now}"));
 
 	}
 
 	public void testNames() {
-		Properties p = new Properties();
-		p.put("a", "a");
-		p.put("aa", "aa");
-		Macro macro = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "a");
+		p.setProperty("aa", "aa");
+		Macro macro = new Macro(p);
 
 		assertEquals("aa", macro.process("${${a}${a}}"));
 	}
 
 	public void testVersion() throws Exception {
-		Properties p = new Properties();
 		Processor proc = new Processor();
-		Macro macro = new Macro(p, proc);
+		Macro macro = new Macro(proc);
 		assertEquals("1.0.0", macro.process("${version;===;1.0.0}"));
 		assertEquals("1.0.1", macro.process("${version;==+;1.0.0}"));
 		assertEquals("1.1.1", macro.process("${version;=++;1.0.0}"));
@@ -119,9 +122,8 @@ public class MacroTest extends TestCase {
 	}
 
 	public void testRange() throws Exception {
-		Properties p = new Properties();
 		Processor proc = new Processor();
-		Macro macro = new Macro(p, proc);
+		Macro macro = new Macro(proc);
 		assertEquals("[1.0,1.0]", macro.process("${range;[==,==];1.0.0}"));
 		assertEquals("[1.0.0,1.0.1]", macro.process("${range;[===,==+];1.0.0}"));
 		assertEquals("[0.1.0,0.1.2)", macro.process("${range;[=+0,=++);0.0.1}"));
@@ -149,8 +151,8 @@ public class MacroTest extends TestCase {
 	 */
 
 	public void testWc() {
-		Properties p = new Properties();
-		Macro macro = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro macro = new Macro(p);
 		String a = macro.process("${lsr;" + new File("src/test").getAbsolutePath() + ";*.java}");
 		assertTrue(a.contains("MacroTest.java"));
 		assertTrue(a.contains("ManifestTest.java"));
@@ -234,34 +236,34 @@ public class MacroTest extends TestCase {
 		p.setProperty("h", "${d}");
 
 		builder.setProperties(p);
-		assertEquals("${infinite:[a,b]}", builder.getProperty("a"));
-		assertEquals("${infinite:[d,h,g,f,e]}", builder.getProperty("d"));
+		assertEquals("${infinite:[a,b,${b}]}", builder.getProperty("a"));
+		assertEquals("${infinite:[d,h,g,f,e,${e}]}", builder.getProperty("d"));
 	}
 
 	public void testTstamp() {
 		String aug152008 = "1218810097322";
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		assertEquals("200808151621", m.process("${tstamp;yyyyMMddHHmm;" + aug152008 + "}"));
 		// assertEquals( "2008", m.process("${tstamp;yyyy}"));
 	}
 
 	public void testIsfile() {
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		assertEquals("true", m.process("${isfile;.project}"));
 		assertEquals("false", m.process("${isfile;thisfiledoesnotexist}"));
 	}
 
 	public void testParentFile() {
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		assertTrue(m.process("${dir;.project}").endsWith("biz.aQute.bndlib"));
 	}
 
 	public void testBasename() {
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		assertEquals("biz.aQute.bndlib", m.process("${basename;${dir;.project}}"));
 	}
 
@@ -283,10 +285,10 @@ public class MacroTest extends TestCase {
 	 */
 
 	public void testDef() {
-		Properties p = new Properties();
-		p.put("set.1", "1");
-		p.put("set.2", "2");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("set.1", "1");
+		p.setProperty("set.2", "2");
+		Macro m = new Macro(p);
 		assertEquals("NO", m.process("${if;${def;set.3};YES;NO}"));
 		assertEquals("YES", m.process("${if;${def;set.1};YES;NO}"));
 		assertEquals("YES", m.process("${if;${def;set.2};YES;NO}"));
@@ -296,16 +298,15 @@ public class MacroTest extends TestCase {
 	 * NEW
 	 */
 	public void testReplace() {
-		Properties p = new Properties();
-		p.put("specs", "a,b, c,    d");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("specs", "a,b, c,    d");
+		Macro m = new Macro(p);
 		assertEquals("xay, xby, xcy, xdy", m.process("${replace;${specs};([^\\s]+);x$1y}"));
 	}
 
 	public void testToClassName() {
-		Properties p = new Properties();
-		proc = new Processor();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		assertEquals("com.acme.test.Test", m.process("${toclassname;com/acme/test/Test.class}"));
 		assertEquals("Test", m.process("$<toclassname;Test.class>"));
 		assertEquals("Test,com.acme.test.Test", m
@@ -320,8 +321,7 @@ public class MacroTest extends TestCase {
 	public void testFindPath() throws IOException {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setJar(new File("jar/asm.jar"));
-		Properties p = new Properties();
-		Macro m = new Macro(p, analyzer);
+		Macro m = new Macro(analyzer);
 
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
@@ -335,38 +335,37 @@ public class MacroTest extends TestCase {
 	}
 
 	public void testWarning() {
-		Properties p = new Properties();
-		p.put("three", "333");
-		p.put("empty", "");
-		p.put("real", "true");
-		proc = new Processor();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("three", "333");
+		p.setProperty("empty", "");
+		p.setProperty("real", "true");
+		Macro m = new Macro(p);
 
 		m.process("    ${warning;xw;1;2;3 ${three}}");
 		m.process("    ${error;xe;1;2;3 ${three}}");
 		m.process("    ${if;1;$<a>}");
-		assertEquals("xw", proc.getWarnings().get(0));
-		assertEquals("1", proc.getWarnings().get(1));
-		assertEquals("2", proc.getWarnings().get(2));
-		assertEquals("3 333", proc.getWarnings().get(3));
+		assertEquals("xw", p.getWarnings().get(0));
+		assertEquals("1", p.getWarnings().get(1));
+		assertEquals("2", p.getWarnings().get(2));
+		assertEquals("3 333", p.getWarnings().get(3));
 
-		assertEquals("xe", proc.getErrors().get(0));
-		assertEquals("1", proc.getErrors().get(1));
-		assertEquals("2", proc.getErrors().get(2));
-		assertEquals("3 333", proc.getErrors().get(3));
+		assertEquals("xe", p.getErrors().get(0));
+		assertEquals("1", p.getErrors().get(1));
+		assertEquals("2", p.getErrors().get(2));
+		assertEquals("3 333", p.getErrors().get(3));
 	}
 
 	public void testNestedReplace() {
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		String value = m.process("xx$(replace;1.2.3-SNAPSHOT;(\\d(\\.\\d)+).*;$1)xx");
-		System.out.println(proc.getWarnings());
+		System.out.println(p.getWarnings());
 		assertEquals("xx1.2.3xx", value);
 
 		assertEquals("xx1.222.3xx", m
 				.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
 
-		p.put("a", "aaaa");
+		p.setProperty("a", "aaaa");
 		assertEquals("[cac]", m.process("$[replace;acaca;a(.*)a;[$1]]"));
 		assertEquals("xxx", m.process("$(replace;yxxxy;[^x]*(x+)[^x]*;$1)"));
 		assertEquals("xxx", m.process("$(replace;yxxxy;([^x]*(x+)[^x]*);$2)"));
@@ -374,16 +373,16 @@ public class MacroTest extends TestCase {
 	}
 
 	public void testParentheses() {
-		Properties p = new Properties();
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		Macro m = new Macro(p);
 		String value = m.process("$(replace;();(\\(\\));$1)");
 		assertEquals("()", value);
 	}
 
 	public void testSimple() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("aaaa", m.process("${a}"));
 		assertEquals("aaaa", m.process("$<a>"));
 		assertEquals("aaaa", m.process("$(a)"));
@@ -394,54 +393,54 @@ public class MacroTest extends TestCase {
 	}
 
 	public void testFilter() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("aa,cc,ee", m.process("${filter;aa,bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("aaaa,cc,ee", m.process("${filter;${a},bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("bb,dd,ff", m.process("${filter;${a},bb,cc,dd,ee,ff;[^ace]+}"));
 	}
 
 	public void testFilterOut() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("bb,dd,ff", m.process("${filterout;aa,bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("bb,dd,ff", m.process("${filterout;${a},bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("aaaa,cc,ee", m.process("${filterout;${a},bb,cc,dd,ee,ff;[^ace]+}"));
 	}
 
 	public void testSort() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,aa}"));
 		assertEquals("aaaa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,$<a>}"));
 	}
 
 	public void testJoin() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc;dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa;bb;cc;dd;ee,ff}"));
 	}
 
 	public void testIf() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("aaaa", m.process("${if;1;$<a>}"));
 		assertEquals("", m.process("${if;;$<a>}"));
 		assertEquals("yes", m.process("${if;;$<a>;yes}"));
 	}
 
 	public void testLiteral() {
-		Properties p = new Properties();
-		p.put("a", "aaaa");
-		Macro m = new Macro(p, proc);
+		Processor p = new Processor();
+		p.setProperty("a", "aaaa");
+		Macro m = new Macro(p);
 		assertEquals("${aaaa}", m.process("${literal;$<a>}"));
 	}
 }
