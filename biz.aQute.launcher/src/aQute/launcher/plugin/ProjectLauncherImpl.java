@@ -1,7 +1,6 @@
 package aQute.launcher.plugin;
 
 import java.io.*;
-import java.util.*;
 
 import aQute.bnd.build.*;
 import aQute.launcher.constants.*;

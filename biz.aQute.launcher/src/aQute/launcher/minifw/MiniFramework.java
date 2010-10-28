@@ -9,7 +9,7 @@ import org.osgi.framework.launch.*;
 
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader	loader;
-	Properties			properties;
+	Properties	properties;
 	Map			bundles	= new HashMap();
 	int			ID		= 1;
 	int			state	= Bundle.INSTALLED;
@@ -18,7 +18,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	public MiniFramework(Map properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
-		
+
 		bundles.put(new Long(0), this);
 		last = loader = getClass().getClassLoader();
 	}
@@ -136,17 +136,39 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public Bundle installBundle(String location) throws BundleException {
-		throw new UnsupportedOperationException();
+		if (location.startsWith("reference:")) 
+			location = location.substring("reference:".length()).trim();
+
+		if (location.startsWith("file:")) 
+			location = location.substring("file:".length()).trim();
+
+		while ( location.startsWith("//"))
+			location = location.substring(1);
+		
+		try {
+			Context c = new Context(this, last, ++ID, location);
+			bundles.put(new Long(c.id), c);
+			last = c;
+			return c;
+		} catch (Exception e) {
+			throw new BundleException("Failed to install", e);
+		}
 	}
 
 	public Bundle installBundle(String location, InputStream in) throws BundleException {
 		Context c;
 		try {
+			in.close();
+			try {
+				URL url = new URL(location);
+			} catch (MalformedURLException e) {
+				throw new BundleException("For the mini framework, the location must be a proper URL even though this is not required by the specification " + location, e);
+			}
 			c = new Context(this, last, ++ID, location);
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new BundleException("Can't install " + location, e);
 		}
 	}

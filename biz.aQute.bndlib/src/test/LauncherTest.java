@@ -9,7 +9,6 @@ import aQute.lib.osgi.*;
 
 public class LauncherTest extends TestCase {
 
-	
 	public void testSimple() throws Exception{
 		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
 		project.clear();

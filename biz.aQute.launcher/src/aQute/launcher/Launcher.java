@@ -34,7 +34,6 @@ public class Launcher implements ServiceListener {
 	private final Timer						timer		= new Timer();
 	private final List<BundleActivator>		embedded	= new ArrayList<BundleActivator>();
 	private TimerTask						watchdog	= null;
-	private boolean							services	= true;
 	private final Map<Bundle, Throwable>	errors		= new HashMap<Bundle, Throwable>();
 
 	public static void main(String[] args) {
@@ -89,7 +88,7 @@ public class Launcher implements ServiceListener {
 
 			// Register the command line with ourselves as the
 			// service.
-			if (services) {
+			if (parms.services) { //  Does not work for our dummy framework
 				Hashtable<String, Object> argprops = new Hashtable<String, Object>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
@@ -426,7 +425,7 @@ public class Launcher implements ServiceListener {
 
 		Framework systemBundle;
 
-		if (services) {
+		if (parms.services) {
 			trace("using META-INF/services");
 			// 3) framework = null, lookup in META-INF/services
 
@@ -518,7 +517,7 @@ public class Launcher implements ServiceListener {
 			out.println("------------------------------- REPORT --------------------------");
 			out.println();
 			row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
-			row(out, "Framework type", services ? "META-INF/services" : "mini framework");
+			row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
 			row(out, "Storage", parms.storageDir);
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
