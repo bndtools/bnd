@@ -30,6 +30,9 @@ import bndtools.classpath.BndContainerInitializer;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
+    private static final String PATH_SRC = "src";
+    private static final String PATH_SRC_BIN = "bin";
+
 	private static final String PATH_TEST_SRC = "test";
 	private static final String PATH_TEST_BIN = "bin_test";
 
@@ -91,12 +94,16 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	public IClasspathEntry[] getSourceClasspathEntries() {
 		IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-		IClasspathEntry[] entries = super.getSourceClasspathEntries();
-		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length + 1];
-		System.arraycopy(entries, 0, newEntries, 0, entries.length);
+		IClasspathEntry[] newEntries = new IClasspathEntry[2];
 
-		newEntries[entries.length] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
+		newEntries[0] = JavaCore.newSourceEntry(projectPath.append(PATH_SRC));
+		newEntries[1] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
 
 		return newEntries;
+	}
+
+	@Override
+    public IPath getOutputLocation() {
+	    return new Path(getProjectName()).makeAbsolute().append(PATH_SRC_BIN);
 	}
 }
