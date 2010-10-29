@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 
@@ -56,8 +57,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
      * @param monitor
      */
     @Override
-    protected BndProject generateBndProject(IProgressMonitor monitor) {
-        BndProject proj = super.generateBndProject(monitor);
+    protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
+        BndProject proj = super.generateBndProject(project, monitor);
 
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {

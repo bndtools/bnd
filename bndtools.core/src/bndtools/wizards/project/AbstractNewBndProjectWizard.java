@@ -72,8 +72,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * Allows for an IProjectTemplate to modify the new Bnd project
      * @param monitor
      */
-    protected BndProject generateBndProject(IProgressMonitor monitor) {
-        return new BndProject();
+    protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
+        return new BndProject(project);
     }
 
     /**
@@ -107,7 +107,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
         }
 
-        BndProject proj = generateBndProject(progress.newChild(1));
+        BndProject proj = generateBndProject(project, progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
         for (Map.Entry<String, URL> resource : proj.getResources().entrySet()) {
