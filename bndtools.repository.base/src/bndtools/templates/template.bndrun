@@ -1,0 +1,8 @@
+-runfw: org.apache.felix.framework
+-runbundles: org.apache.felix.shell,\
+	org.apache.felix.shell.tui,\
+	osgi.cmpn,\
+	org.apache.felix.scr,\
+	org.apache.felix.log,\
+	org.apache.felix.configadmin,\
+	org.apache.felix.metatype
