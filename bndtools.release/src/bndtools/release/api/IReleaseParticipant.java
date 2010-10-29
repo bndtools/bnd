@@ -24,6 +24,14 @@ import aQute.lib.osgi.Jar;
  */
 public interface IReleaseParticipant {
 
+	public enum Scope {
+		PRE_UPDATE_VERSIONS,
+		PRE_RELEASE,
+		PRE_JAR_RELEASE,
+		POST_JAR_RELEASE,
+		POST_RELEASE
+	}
+	
 	/**
 	 * Gives a possibility to rank the registered IReleaseParticipants, are set in plugin.xml
 	 */

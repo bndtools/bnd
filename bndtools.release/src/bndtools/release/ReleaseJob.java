@@ -13,6 +13,7 @@ package bndtools.release;
 import java.io.File;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,8 +23,10 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Jar;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
+import bndtools.release.api.ReleaseUtils;
 
 public class ReleaseJob  extends Job {
 	
@@ -32,7 +35,7 @@ public class ReleaseJob  extends Job {
 	private String repository;
 
 	public ReleaseJob(Project project, List<JarDiff> diffs, String repository) {
-		super("Release Job");
+		super("Bundle Release Job");
 		this.project = project;
 		this.diffs = diffs;
 		this.repository = repository;
@@ -42,27 +45,14 @@ public class ReleaseJob  extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		try {
-			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
-			ReleaseContext context = new ReleaseContext(project, diffs, repo, monitor, project);
 			
-			ReleaseHelper.updateProject(context);
-
-			StringBuilder sb = new StringBuilder();
-			sb.append("Project : ");
-			sb.append(project.getName());
-			sb.append("\n\n");
-			sb.append("Released :\n");
-			boolean ok = true;
-
-			for (JarDiff diff : diffs) {
-				sb.append(diff.getSymbolicName() + "-" + diff.getSuggestedVersion() + ".jar\n");
-				if (!ReleaseHelper.release(context, diff)) {
-					ok = false;
-					break;
-				}
-			}
-			sb.append("\n\nto : ");
-			sb.append(repository);
+			IProject proj = ReleaseUtils.getProject(project);
+			proj.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+			
+			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
+			ReleaseContext context = new ReleaseContext(project, diffs, repo, monitor);
+			
+			boolean ok = ReleaseHelper.release(context, diffs);
 			
 			// Necessary???
 			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
@@ -72,6 +62,19 @@ public class ReleaseJob  extends Job {
 				Activator.refreshFile(f);
 			}
 			if (ok) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Project : ");
+				sb.append(project.getName());
+				sb.append("\n\n");
+				sb.append("Released :\n");
+
+				for (Jar jar : context.getReleasedJars()) {
+					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
+				}
+				
+				sb.append("\n\nto : ");
+				sb.append(repository);
+				
 				Activator.getDefault().message(sb.toString());
 			}
 
