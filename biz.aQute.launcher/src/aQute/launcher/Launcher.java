@@ -170,17 +170,6 @@ public class Launcher implements ServiceListener {
 				}
 				installed.add(b);
 			} catch (BundleException e) {
-				switch (e.getType()) {
-				// Accepted reference
-				case BundleException.MANIFEST_ERROR:
-				case BundleException.RESOLVE_ERROR:
-				case BundleException.ACTIVATOR_ERROR:
-				case BundleException.SECURITY_ERROR:
-				case BundleException.STATECHANGE_ERROR:
-					error("Install: %s error: %s", path, e);
-					return translateToError(e);
-				}
-				
 				trace("failed reference, will try to install %s with input stream", path.getAbsolutePath());
 				String reference = path.toURL().toExternalForm();
 				InputStream in = new FileInputStream(path);
@@ -228,7 +217,7 @@ public class Launcher implements ServiceListener {
 				trace("starting %s", b.getSymbolicName());
 				if (!isFragment(b))
 					b.start();
-				trace("startedg %s", b.getSymbolicName());
+				trace("started  %s", b.getSymbolicName());
 			} catch (BundleException e) {
 				errors.put(b, e);
 				error("Start: %s, cause: %s", b.getBundleId(), e);
