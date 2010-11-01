@@ -35,6 +35,7 @@ public class ErrorDialog extends Dialog {
 	public ErrorDialog(Shell parentShell, String name, List<Error> errors) {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE | SWT.MAX | SWT.MIN);
+		parentShell.setText(Messages.errorDialogTitle);
 		this.name = name;
 		this.errorList = new ErrorList(errors);
 	}

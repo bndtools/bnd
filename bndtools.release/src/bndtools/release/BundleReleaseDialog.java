@@ -41,6 +41,7 @@ public class BundleReleaseDialog extends Dialog {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
 		this.project = project;
+		parentShell.setText(Messages.releaseDialogTitle);
 		release = new BundleRelease(compare);
 		this.diffs = compare;
 	}

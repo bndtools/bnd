@@ -222,17 +222,6 @@ public class ErrorList {
 	    }
 
 	}
-	public static void addFiller(Composite parent)  {
-	    Label separator = new Label(parent, SWT.HORIZONTAL);
-	}
-
-	public static void addSeparator(Composite parent)  {
-	    Label separator = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-	    GridData gridData = new GridData();
-	    gridData.horizontalAlignment = GridData.FILL;
-	    gridData.grabExcessHorizontalSpace = true;
-	    separator.setLayoutData(gridData);
-	}
 	
 	private static class ArrayLabelProvider extends LabelProvider implements ITableLabelProvider {
 
