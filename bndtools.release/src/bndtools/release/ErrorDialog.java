@@ -35,7 +35,6 @@ public class ErrorDialog extends Dialog {
 	public ErrorDialog(Shell parentShell, String name, List<Error> errors) {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE | SWT.MAX | SWT.MIN);
-		parentShell.setText(Messages.errorDialogTitle);
 		this.name = name;
 		this.errorList = new ErrorList(errors);
 	}
@@ -96,6 +95,12 @@ public class ErrorDialog extends Dialog {
 	protected void createButtonsForButtonBar(Composite parent) {
 		// create OK button only
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+	}
+
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(Messages.errorDialogTitle);
 	}
 
 }

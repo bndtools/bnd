@@ -41,7 +41,6 @@ public class BundleReleaseDialog extends Dialog {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
 		this.project = project;
-		parentShell.setText(Messages.releaseDialogTitle);
 		release = new BundleRelease(compare);
 		this.diffs = compare;
 	}
@@ -127,5 +126,11 @@ public class BundleReleaseDialog extends Dialog {
 		job.schedule();
 		
 		super.okPressed();
+	}
+
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(Messages.releaseDialogTitle);
 	}
 }
