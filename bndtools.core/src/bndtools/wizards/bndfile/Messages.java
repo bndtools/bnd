@@ -24,6 +24,17 @@ public class Messages extends NLS {
 	public static String NewWrappingBndFileWizardPage_labelVersion;
 	public static String NewWrappingBndFileWizardPage_messageSpecifyFileName;
 	public static String NewWrappingBndFileWizardPage_title;
+	public static String EnableSubBundlesDialog_btnEnableSubbundles_text;
+	public static String EnableSubBundlesDialog_btnEnableSubbundles_text_1;
+	public static String EnableSubBundlesDialog_grpExistingHeaders_text;
+	public static String EnableSubBundlesDialog_btnEnableSubbundles_text_2;
+	public static String EnableSubBundlesDialog_lblExistingProperties_text;
+	public static String EnableSubBundlesDialog_lblTheCheckedProperties_text;
+	public static String EnableSubBundlesDialog_btnCheckAll_text;
+	public static String EnableSubBundlesDialog_btnUncheckAll_text;
+	public static String EnableSubBundlesDialog_link_text;
+	public static String EnableSubBundlesDialog_btnEnableSubbundles_text_3;
+	public static String EnableSubBundlesDialog_lblHeadercount_text;
 
 	static {
 		// initialize resource bundle

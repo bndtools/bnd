@@ -10,7 +10,10 @@
  *******************************************************************************/
 package bndtools.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -22,11 +25,13 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -34,12 +39,12 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
+import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleBuildPage;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
-import bndtools.editor.pages.PoliciesPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
@@ -58,6 +63,26 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	private final BndEditModel model = new BndEditModel();
 	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
+	private final PropertyChangeListener modelListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (Constants.SUB.equals(evt.getPropertyName())) {
+                @SuppressWarnings("unchecked")
+                List<String> newSubBundles = (List<String>) evt.getNewValue();
+                if (newSubBundles != null && !newSubBundles.isEmpty()) {
+                    removePage(CONTENT_PAGE);
+                    removePage(COMPONENTS_PAGE);
+                    removePage(TEST_SUITES_PAGE);
+                } else {
+                    BndEditor editor = BndEditor.this;
+
+                    ensurePageExists(CONTENT_PAGE, new BundleContentPage(editor, model, CONTENT_PAGE, "Content"), 0);
+                    ensurePageExists(COMPONENTS_PAGE, new ComponentsPage(editor, model, COMPONENTS_PAGE, "Components"), 3);
+                    ensurePageExists(TEST_SUITES_PAGE, new TestSuitesPage(editor, model, TEST_SUITES_PAGE, "Tests"), 4);
+                }
+            }
+        }
+    };
+
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		if(sourcePage.isActive() && sourcePage.isDirty()) {
@@ -69,9 +94,28 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		sourcePage.doSave(monitor);
 	}
 
-	@Override
-	public void doSaveAs() {
-	}
+    protected void ensurePageExists(String pageId, IFormPage page, int index) {
+        IFormPage existingPage = findPage(pageId);
+        if (existingPage != null)
+            return;
+
+        try {
+            addPage(index, page);
+        } catch (PartInitException e) {
+            ErrorDialog.openError(getSite().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding page to editor.", e));
+        }
+    }
+
+    protected void removePage(String pageId) {
+        IFormPage page = findPage(pageId);
+        if (page != null) {
+            removePage(page.getIndex());
+        }
+    }
+
+    @Override
+    public void doSaveAs() {
+    }
 
 	@Override
 	public boolean isSaveAsAllowed() {
@@ -99,11 +143,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		}
 	}
 
-	private void addPagesBnd(String inputName) throws PartInitException {
-        BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
-        addPage(contentPage);
+    private void addPagesBnd(String inputName) throws PartInitException {
+        boolean isProjectFile = Project.BNDFILE.equals(inputName);
 
-        if(Project.BNDFILE.equals(inputName)) {
+        List<String> subBndFiles = model.getSubBndFiles();
+        boolean isSubBundles = subBndFiles != null && !subBndFiles.isEmpty();
+
+        if (!isSubBundles) {
+            BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
+            addPage(contentPage);
+        }
+
+        if (isProjectFile) {
             ProjectBuildPage buildPage = new ProjectBuildPage(this, model, BUILD_PAGE, "Build");
             addPage(buildPage);
 
@@ -114,14 +165,13 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             addPage(buildPage);
         }
 
-        ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
-        addPage(componentsPage);
+        if (!isSubBundles) {
+            ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
+            addPage(componentsPage);
 
-        TestSuitesPage testSuitesPage = new TestSuitesPage(this, model, TEST_SUITES_PAGE, "Tests");
-        addPage(testSuitesPage);
-
-        PoliciesPage importsPage = new PoliciesPage(this, model, POLICIES_PAGE, "Policies");
-        addPage(importsPage);
+            TestSuitesPage testSuitesPage = new TestSuitesPage(this, model, TEST_SUITES_PAGE, "Tests");
+            addPage(testSuitesPage);
+        }
     }
 
     private void addPagesBndRun() throws PartInitException {
@@ -147,6 +197,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 			model.loadFrom(document);
 			model.setProjectFile(Project.BNDFILE.equals(input.getName()));
 			model.setBndResource(resource);
+			model.addPropertyChangeListener(modelListener);
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}
@@ -192,6 +243,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
 	@Override
 	public void dispose() {
+	    if (model != null)
+	        model.removePropertyChangeListener(modelListener);
+
 		IResource resource = ResourceUtil.getResource(getEditorInput());
 
 		super.dispose();

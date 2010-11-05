@@ -81,4 +81,5 @@ Include-Resource: resources,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
 	patricia_trie,\
-	org.eclipse.equinox.preferences
+	org.eclipse.equinox.preferences,\
+	org.eclipse.help.base

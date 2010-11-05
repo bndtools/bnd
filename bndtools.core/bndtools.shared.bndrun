@@ -26,7 +26,36 @@ sdk.bundles: org.eclipse.sdk,\
 	org.eclipse.help.base,\
 	org.eclipse.ui.cheatsheets,\
 	org.apache.lucene,\
-	org.apache.lucene.analysis
+	org.apache.lucene.analysis,\
+	org.eclipse.pde.runtime
+
+help.bundles: \
+	org.eclipse.help,\
+	org.eclipse.help.base,\
+	org.eclipse.help.ui,\
+	org.eclipse.help.webapp,\
+	org.eclipse.help.appserver,\
+	org.apache.lucene,\
+	org.apache.lucene.analysis,\
+	org.eclipse.platform.doc.user,\
+	org.eclipse.ant.core,\
+	org.apache.jasper,\
+	javax.servlet,\
+	javax.servlet.jsp,\
+	org.apache.commons.el,\
+	org.apache.commons.logging,\
+	org.eclipse.equinox.http.jetty,\
+	org.eclipse.equinox.http.servlet,\
+	org.eclipse.equinox.http.registry,\
+	org.eclipse.equinox.jsp.jasper,\
+	org.eclipse.equinox.jsp.jasper.registry,\
+	org.mortbay.jetty.server,\
+	org.mortbay.jetty.util,\
+	org.eclipse.search,\
+	org.eclipse.ui.cheatsheets,\
+	org.eclipse.ui.externaltools,\
+	org.eclipse.ui.intro,\
+	org.eclipse.ui.net
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
@@ -50,7 +79,6 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.equinox.simpleconfigurator,\
 	org.eclipse.equinox.util,\
-	org.eclipse.help,\
 	org.eclipse.jface,\
 	org.eclipse.jface.databinding,\
 	org.eclipse.osgi.services,\
@@ -105,6 +133,7 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
 	org.eclipse.ui.browser,\
+	${help.bundles},\
 	${sdk.bundles},\
 	${p2.bundles},\
 	${workspace.bundles},\
