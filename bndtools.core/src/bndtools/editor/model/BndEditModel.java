@@ -17,29 +17,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
-import aQute.lib.osgi.Processor;
-import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.api.IPersistableBndModel;
+import bndtools.editor.model.conversions.ClauseListConverter;
+import bndtools.editor.model.conversions.CollectionFormatter;
+import bndtools.editor.model.conversions.Converter;
+import bndtools.editor.model.conversions.DefaultBooleanFormatter;
+import bndtools.editor.model.conversions.DefaultFormatter;
+import bndtools.editor.model.conversions.HeaderClauseFormatter;
+import bndtools.editor.model.conversions.MapFormatter;
+import bndtools.editor.model.conversions.NewlineEscapedStringFormatter;
+import bndtools.editor.model.conversions.NoopConverter;
+import bndtools.editor.model.conversions.PropertiesConverter;
+import bndtools.editor.model.conversions.PropertiesEntryFormatter;
+import bndtools.editor.model.conversions.StringEntryConverter;
+import bndtools.editor.model.conversions.VersionedClauseConverter;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
@@ -54,11 +62,13 @@ import bndtools.model.clauses.VersionedClause;
  */
 public class BndEditModel implements IPersistableBndModel {
 
-    private static final String LINE_SEPARATOR = " \\\n\t";
-	private static final String LIST_SEPARATOR = ",\\\n\t";
+    public static final String LINE_SEPARATOR = " \\\n\t";
+	public static final String LIST_SEPARATOR = ",\\\n\t";
+
 	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
 
-	private static final String[] KNOWN_PROPERTIES = new String[] {
+	@SuppressWarnings("deprecation")
+    private static final String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
@@ -80,9 +90,8 @@ public class BndEditModel implements IPersistableBndModel {
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
-	private interface Converter<R,T> {
-		R convert(T input) throws IllegalArgumentException;
-	}
+	private final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
+	private final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
@@ -92,7 +101,91 @@ public class BndEditModel implements IPersistableBndModel {
 	private final Map<String, Object> objectProperties = new HashMap<String, Object>();
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 
-	private final Pattern lineBreakPattern = Pattern.compile("$", Pattern.MULTILINE);
+	// CONVERTERS
+    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
+        public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new VersionedClause(input.getKey(), input.getValue());
+        }
+    });
+    private Converter<List<VersionedClause>, String> runBundlesConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
+    private Converter<String, String> stringConverter = new NoopConverter<String>();
+    private Converter<Boolean, String> includedSourcesConverter = new Converter<Boolean,String>() {
+        public Boolean convert(String string) throws IllegalArgumentException {
+            return Boolean.valueOf(string);
+        }
+    };
+    private Converter<VersionPolicy, String> versionPolicyConverter = new Converter<VersionPolicy,String>() {
+        public VersionPolicy convert(String string) throws IllegalArgumentException {
+            return VersionPolicy.parse(string);
+        }
+    };
+    Converter<List<String>, String> listConverter = new ClauseListConverter<String>(new StringEntryConverter());
+    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
+        public ExportedPackage convert(Entry<String, Map<String, String>> input) {
+            return new ExportedPackage(input.getKey(), input.getValue());
+        }
+    });
+    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
+        public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new ServiceComponent(input.getKey(), input.getValue());
+        }
+    });
+    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
+        public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new ImportPattern(input.getKey(), input.getValue());
+        }
+    });
+    Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
+
+    // FORMATTERS
+    Converter<String, Object> defaultFormatter = new DefaultFormatter();
+    Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
+    Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
+    Converter<String, Collection<? extends String>> stringListFormatter = new CollectionFormatter<String>();
+    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(new HeaderClauseFormatter());
+    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(new PropertiesEntryFormatter());
+
+	@SuppressWarnings("deprecation")
+    public BndEditModel() {
+	    // register converters
+        converters.put(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
+        converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
+        converters.put(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
+        converters.put(Constants.BUNDLE_VERSION, stringConverter);
+        converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
+        converters.put(BndConstants.OUTPUT, stringConverter);
+        converters.put(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
+        converters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
+        converters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
+        converters.put(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
+        converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
+        converters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
+        converters.put(Constants.IMPORT_PACKAGE, importPatternConverter);
+        converters.put(BndConstants.RUNFRAMEWORK, stringConverter);
+        converters.put(aQute.lib.osgi.Constants.SUB, listConverter);
+        converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
+        converters.put(BndConstants.RUNVMARGS, stringConverter);
+        converters.put(BndConstants.TESTSUITES, listConverter);
+
+        formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
+        formatters.put(Constants.BUNDLE_SYMBOLICNAME, newlineEscapeFormatter);
+        formatters.put(Constants.BUNDLE_VERSION, newlineEscapeFormatter);
+        formatters.put(Constants.BUNDLE_ACTIVATOR, newlineEscapeFormatter);
+        formatters.put(BndConstants.OUTPUT, newlineEscapeFormatter);
+        formatters.put(aQute.lib.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
+        formatters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, defaultFormatter);
+        formatters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.CLASSPATH, stringListFormatter);
+        formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
+        formatters.put(Constants.IMPORT_PACKAGE, headerClauseListFormatter);
+        formatters.put(BndConstants.RUNFRAMEWORK, newlineEscapeFormatter);
+        formatters.put(aQute.lib.osgi.Constants.SUB, stringListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
+        formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
+        formatters.put(BndConstants.TESTSUITES, stringListFormatter);
+	}
 
 	public void loadFrom(IDocument document) throws IOException {
 		// Clear and load
@@ -187,81 +280,95 @@ public class BndEditModel implements IPersistableBndModel {
 			e.printStackTrace();
 		}
 	}
+
+	public List<String> getAllPropertyNames() {
+	    List<String> result = new ArrayList<String>(properties.size());
+
+	    @SuppressWarnings("unchecked")
+        Enumeration<String> names = (Enumeration<String>) properties.propertyNames();
+
+	    while (names.hasMoreElements()) {
+	        result.add(names.nextElement());
+	    }
+	    return result;
+	}
+
+    public Object genericGet(String propertyName) {
+        return doGetObject(propertyName, converters.get(propertyName));
+    }
+
+    public void genericSet(String propertyName, Object value) {
+        Object oldValue = genericGet(propertyName);
+        @SuppressWarnings("unchecked")
+        Converter<String, Object> formatter = (Converter<String, Object>) formatters.get(propertyName);
+        doSetObject(propertyName, oldValue, value, formatter);
+    }
+
 	public String getBundleSymbolicName() {
-		return doGetString(Constants.BUNDLE_SYMBOLICNAME);
+		return doGetObject(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
 	}
 
 	public void setBundleSymbolicName(String bundleSymbolicName) {
-		doSetString(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName);
+		doSetObject(Constants.BUNDLE_SYMBOLICNAME, getBundleSymbolicName(), bundleSymbolicName, newlineEscapeFormatter);
 	}
 
 	public String getBundleVersionString() {
-		return doGetString(Constants.BUNDLE_VERSION);
+		return doGetObject(Constants.BUNDLE_VERSION, stringConverter);
 	}
 
 	public void setBundleVersion(String bundleVersion) {
-		doSetString(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion);
+		doSetObject(Constants.BUNDLE_VERSION, getBundleVersionString(), bundleVersion, newlineEscapeFormatter);
 	}
 
 	public String getBundleActivator() {
-		return doGetString(Constants.BUNDLE_ACTIVATOR);
+		return doGetObject(Constants.BUNDLE_ACTIVATOR, stringConverter);
 	}
 
 	public void setBundleActivator(String bundleActivator) {
-		doSetString(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator);
+		doSetObject(Constants.BUNDLE_ACTIVATOR, getBundleActivator(), bundleActivator, newlineEscapeFormatter);
 	}
 
 	public String getOutputFile() {
-		return doGetString(BndConstants.OUTPUT);
+		return doGetObject(BndConstants.OUTPUT, stringConverter);
 	}
 
 	public void setOutputFile(String name) {
-		doSetString(BndConstants.OUTPUT, getOutputFile(), name);
+		doSetObject(BndConstants.OUTPUT, getOutputFile(), name, newlineEscapeFormatter);
 	}
 
-
 	public boolean isIncludeSources() {
-		Boolean objValue = doGetObject(aQute.lib.osgi.Constants.SOURCES, new Converter<Boolean,String>() {
-			public Boolean convert(String string) throws IllegalArgumentException {
-				return Boolean.valueOf(string);
-			}
-		});
-		return objValue != null ? objValue.booleanValue() : false;
+		return doGetObject(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
 	}
 
 	public void setIncludeSources(boolean includeSources) {
 		boolean oldValue = isIncludeSources();
-		String formattedString = includeSources ? Boolean.TRUE.toString() : null;
-		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, formattedString);
+		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, defaultFalseBoolFormatter);
 	}
 
+	@Deprecated
 	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
-		return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, new Converter<VersionPolicy,String>() {
-			public VersionPolicy convert(String string) throws IllegalArgumentException {
-				return VersionPolicy.parse(string);
-			}
-		});
+		return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
 	}
 
+	@Deprecated
 	public void setVersionPolicy(VersionPolicy versionPolicy) {
-		String string = versionPolicy != null ? versionPolicy.toString() : null;
 		VersionPolicy oldValue;
 		try {
 			oldValue = getVersionPolicy();
 		} catch (IllegalArgumentException e) {
 			oldValue = null;
 		}
-		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, string);
+		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, defaultFormatter);
 	}
 	public List<String> getPrivatePackages() {
-		return doGetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+        return doGetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
 	}
 	public void setPrivatePackages(List<? extends String> packages) {
 		List<String> oldPackages = getPrivatePackages();
-		doSetStringList(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages);
+		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
 	public List<String> getClassPath() {
-		return doGetStringList(aQute.lib.osgi.Constants.CLASSPATH);
+		return doGetObject(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
 	}
 	public void addPrivatePackage(String packageName) {
 		List<String> packages = getPrivatePackages();
@@ -274,14 +381,10 @@ public class BndEditModel implements IPersistableBndModel {
 	}
 	public void setClassPath(List<? extends String> classPath) {
 		List<String> oldClassPath = getClassPath();
-		doSetStringList(aQute.lib.osgi.Constants.CLASSPATH, oldClassPath, classPath);
+		doSetObject(aQute.lib.osgi.Constants.CLASSPATH, oldClassPath, classPath, stringListFormatter);
 	}
 	public List<ExportedPackage> getExportedPackages() {
-		return doGetClauseList(Constants.EXPORT_PACKAGE, new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
-			public ExportedPackage convert(Entry<String, Map<String, String>> input) {
-				return new ExportedPackage(input.getKey(), input.getValue());
-			}
-		});
+        return doGetObject(Constants.EXPORT_PACKAGE, exportPackageConverter);
 	}
 	public void setExportedPackages(List<? extends ExportedPackage> exports) {
 		boolean referencesBundleVersion = false;
@@ -295,7 +398,7 @@ public class BndEditModel implements IPersistableBndModel {
 			}
 		}
 		List<ExportedPackage> oldValue = getExportedPackages();
-		doSetClauseList(Constants.EXPORT_PACKAGE, oldValue, exports);
+		doSetObject(Constants.EXPORT_PACKAGE, oldValue, exports, headerClauseListFormatter);
 
 		if(referencesBundleVersion && getBundleVersionString() == null) {
 			setBundleVersion(new Version(0, 0, 0).toString());
@@ -308,84 +411,39 @@ public class BndEditModel implements IPersistableBndModel {
 		setExportedPackages(exports);
 	}
 	public List<ServiceComponent> getServiceComponents() {
-		return doGetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
-			public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new ServiceComponent(input.getKey(), input.getValue());
-			}
-		});
+		return doGetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
 	}
 	public void setServiceComponents(List<? extends ServiceComponent> components) {
 		List<ServiceComponent> oldValue = getServiceComponents();
-		doSetClauseList(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components);
-	}
-	public List<HeaderClause> getHeaderClauses(String name) {
-		return doGetClauseList(name, new Converter<HeaderClause, Entry<String,Map<String,String>>>() {
-			public HeaderClause convert(Entry<String, Map<String, String>> input) {
-				return new HeaderClause(input.getKey(), input.getValue());
-			}
-		});
-	}
-	public void setHeaderClauses(String name, List<? extends HeaderClause> clauses) {
-		List<HeaderClause> oldValue = getHeaderClauses(name);
-		doSetClauseList(name, oldValue, clauses);
+		doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components, headerClauseListFormatter);
 	}
 	public List<ImportPattern> getImportPatterns() {
-		return doGetClauseList(Constants.IMPORT_PACKAGE, new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
-			public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new ImportPattern(input.getKey(), input.getValue());
-			}
-		});
+		return doGetObject(Constants.IMPORT_PACKAGE, importPatternConverter);
 	}
 	public void setImportPatterns(List<? extends ImportPattern> patterns) {
 		List<ImportPattern> oldValue = getImportPatterns();
-		doSetClauseList(Constants.IMPORT_PACKAGE, oldValue, patterns);
+		doSetObject(Constants.IMPORT_PACKAGE, oldValue, patterns, headerClauseListFormatter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#getBuildPath()
-     */
 	public List<VersionedClause> getBuildPath() {
-		return doGetClauseList(aQute.lib.osgi.Constants.BUILDPATH, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
-			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new VersionedClause(input.getKey(), input.getValue());
-			}
-		});
+		return doGetObject(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#setBuildPath(java.util.List)
-     */
 	public void setBuildPath(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
-		doSetClauseList(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths);
+		doSetObject(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#getRunBundles()
-     */
 	public List<VersionedClause> getRunBundles() {
-		return doGetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
-			public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-				return new VersionedClause(input.getKey(), input.getValue());
-			}
-		});
+		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#setRunBundles(java.util.List)
-     */
 	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
-		doSetClauseList(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths);
+		doSetObject(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#getRunFramework()
-     */
 	public String getRunFramework() {
-	    return doGetString(BndConstants.RUNFRAMEWORK);
+	    return doGetObject(BndConstants.RUNFRAMEWORK, stringConverter);
 	}
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#setRunFramework(java.lang.String)
-     */
 	public void setRunFramework(String clause) {
 	    String oldValue = getRunFramework();
-	    doSetString(BndConstants.RUNFRAMEWORK, oldValue, clause);
+	    doSetObject(BndConstants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
 	}
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();
@@ -404,26 +462,17 @@ public class BndEditModel implements IPersistableBndModel {
 		return false;
 	}
 
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#getSubBndFiles()
-     */
 	public List<String> getSubBndFiles() {
-		return doGetStringList(aQute.lib.osgi.Constants.SUB);
+		return doGetObject(aQute.lib.osgi.Constants.SUB, listConverter);
 	}
 
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#setSubBndFiles(java.util.List)
-     */
 	public void setSubBndFiles(List<String> subBndFiles) {
 		List<String> oldValue = getSubBndFiles();
-		doSetStringList(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles);
+		doSetObject(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles, stringListFormatter);
 	}
 
-	/* (non-Javadoc)
-     * @see bndtools.editor.model.IBndModel#getRunProperties()
-     */
 	public Map<String, String> getRunProperties() {
-		return doGetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES);
+		return doGetObject(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
 	}
 
 	/* (non-Javadoc)
@@ -431,14 +480,14 @@ public class BndEditModel implements IPersistableBndModel {
      */
 	public void setRunProperties(Map<String, String> props) {
 		Map<String, String> old = getRunProperties();
-		doSetProperties(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props);
+		doSetObject(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props, propertiesFormatter);
 	}
 
     /* (non-Javadoc)
      * @see bndtools.editor.model.IBndModel#getRunVMArgs()
      */
     public String getRunVMArgs() {
-        return doGetString(BndConstants.RUNVMARGS);
+        return doGetObject(BndConstants.RUNVMARGS, stringConverter);
     }
 
     /* (non-Javadoc)
@@ -446,199 +495,43 @@ public class BndEditModel implements IPersistableBndModel {
      */
     public void setRunVMArgs(String args) {
         String old = getRunVMArgs();
-        doSetString(BndConstants.RUNVMARGS, old, args);
+        doSetObject(BndConstants.RUNVMARGS, old, args, newlineEscapeFormatter);
     }
 
     public List<String> getTestSuites() {
-        return doGetStringList(BndConstants.TESTSUITES);
+        return doGetObject(BndConstants.TESTSUITES, listConverter);
     }
 
     public void setTestSuites(List<String> suites) {
         List<String> old = getTestSuites();
-        doSetStringList(BndConstants.TESTSUITES, old, suites);
+        doSetObject(BndConstants.TESTSUITES, old, suites, stringListFormatter);
     }
 
-
-	<R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
-		R result;
-		if(objectProperties.containsKey(name)) {
-			@SuppressWarnings("unchecked")
-			R temp = (R) objectProperties.get(name);
-			result = temp;
-		} else {
-			if(properties.containsKey(name)) {
-				result = converter.convert(properties.getProperty(name));
-				objectProperties.put(name, result);
-			} else {
-				result = null;
-			}
-		}
-		return result;
-	}
-
-	void doSetObject(String name, Object oldValue, Object newValue, String formattedString) {
-		objectProperties.put(name, newValue);
-		changesToSave.put(name, formattedString);
-		propChangeSupport.firePropertyChange(name, oldValue, newValue);
-	}
-
-	String doGetString(String name) {
-		return doGetObject(name, new Converter<String, String>() {
-			public String convert(String input) throws IllegalArgumentException {
-				return input;
-			}
-		});
-	}
-
-    void doSetString(String name, String oldValue, String newValue) {
-        String formatted = escapeNewLines(newValue);
-        doSetObject(name, oldValue, newValue, formatted);
-    }
-
-    String escapeNewLines(String input) {
-        if(input == null)
-            return null;
-
-        // Shortcut the result for the majority of cases where there is no newline
-        if(input.indexOf('\n') == -1)
-            return input;
-
-        // Build a new string with newlines escaped
-        StringBuilder result = new StringBuilder();
-        int position = 0;
-        while(position < input.length()) {
-            int newlineIndex = input.indexOf('\n', position);
-            if(newlineIndex == -1) {
-                result.append(input.substring(position));
-                break;
-            } else {
-                result.append(input.substring(position, newlineIndex));
-                result.append(LINE_SEPARATOR);
-                position = newlineIndex + 1;
-            }
+    <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
+        R result;
+        if (objectProperties.containsKey(name)) {
+            @SuppressWarnings("unchecked")
+            R temp = (R) objectProperties.get(name);
+            result = temp;
+        } else if (changesToSave.containsKey(name)) {
+            result = converter.convert(changesToSave.get(name));
+            objectProperties.put(name, result);
+        } else if (properties.containsKey(name)) {
+            result = converter.convert(properties.getProperty(name));
+            objectProperties.put(name, result);
+        } else {
+            result = null;
         }
-
-        return result.toString();
+        return result;
     }
 
-	List<String> doGetStringList(String name) {
-		return doGetObject(name, new Converter<List<String>,String>() {
-			public List<String> convert(String string) {
-				List<String> packages = new LinkedList<String>();
-				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(string);
-				for(String packageName : header.keySet()) {
-					packages.add(packageName);
-				}
-				return packages;
-			}
-		});
-	}
+    <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
+        objectProperties.put(name, newValue);
+        changesToSave.put(name, formatter.convert(newValue));
+        propChangeSupport.firePropertyChange(name, oldValue, newValue);
+    }
 
-	void doSetStringList(String name, List<? extends String> oldValue, List<? extends String> newValue) {
-		StringBuilder buffer = new StringBuilder();
-		if(newValue == null || newValue.isEmpty()) {
-			doSetObject(name, oldValue, null, null);
-		} else {
-			for(Iterator<? extends String> iter = newValue.iterator(); iter.hasNext(); ) {
-				String pkg = iter.next();
-				buffer.append(pkg);
-				if(iter.hasNext())
-					buffer.append(LIST_SEPARATOR);
-			}
-			doSetObject(name, oldValue, newValue, buffer.toString());
-		}
-	}
-
-	List<IPath> doGetPathList(String name) {
-		return doGetObject(name, new Converter<List<IPath>,String>() {
-			public List<IPath> convert(String input) {
-				LinkedList<IPath> paths = new LinkedList<IPath>();
-				Map<String, Map<String, String>> header = OSGiHeader.parseHeader(input);
-				for (String pathStr : header.keySet()) {
-					paths.add(new Path(pathStr));
-				}
-				return paths;
-			}
-		});
-	}
-	void doSetPathList(String name, List<? extends IPath> oldValue, List<? extends IPath> newValue) {
-		StringBuilder buffer = new StringBuilder();
-		if(newValue == null || newValue.isEmpty()) {
-			doSetObject(name, oldValue, null, null);
-		} else {
-			for (Iterator<? extends IPath> iter = newValue.iterator(); iter.hasNext();) {
-				IPath path = iter.next();
-				buffer.append(path.toString());
-				if(iter.hasNext())
-					buffer.append(LIST_SEPARATOR);
-			}
-			doSetObject(name, oldValue, newValue, buffer.toString());
-		}
-	}
-
-	<R> List<R> doGetClauseList(String name, final Converter<? extends R, Entry<String, Map<String,String>>> converter) {
-		return doGetObject(name, new Converter<List<R>,String>() {
-			public List<R> convert(String string) throws IllegalArgumentException {
-				List<R> result = new ArrayList<R>();
-				Processor processor = new Processor(properties);
-				Map<String, Map<String, String>> scHeader = processor.parseHeader(string);
-				for (Entry<String, Map<String, String>> entry : scHeader.entrySet()) {
-					result.add(converter.convert(entry));
-				}
-				return result;
-			}
-		});
-	}
-
-	void doSetClauseList(String name, List<? extends HeaderClause> oldValue, List<? extends HeaderClause> newValue) {
-		StringBuilder buffer = new StringBuilder();
-		if(newValue == null || newValue.isEmpty()) {
-			doSetObject(name, oldValue, null, null);
-		} else {
-			for(Iterator<? extends HeaderClause> iter = newValue.iterator(); iter.hasNext(); ) {
-				HeaderClause clause = iter.next();
-				clause.formatTo(buffer);
-				if(iter.hasNext())
-					buffer.append(LIST_SEPARATOR);
-			}
-			doSetObject(name, oldValue, newValue, buffer.toString());
-		}
-	}
-
-	Map<String, String> doGetProperties(String name) {
-		return doGetObject(name, new Converter<Map<String, String>, String>() {
-			public Map<String, String> convert(String input) throws IllegalArgumentException {
-				return OSGiHeader.parseProperties(input);
-			}
-		});
-	}
-
-	void doSetProperties(String propertyName, Map<String, String> oldValue, Map<String, String> newValue) {
-		StringBuilder buffer = new StringBuilder();
-		if(newValue == null || newValue.isEmpty()) {
-			doSetObject(propertyName, oldValue, null, null);
-		} else {
-			for(Iterator<Entry<String, String>> iter = newValue.entrySet().iterator(); iter.hasNext(); ) {
-				Entry<String, String> entry = iter.next();
-
-				String name = entry.getKey();
-				String value = entry.getValue();
-				if(value != null && value.length() > 0) {
-					// Quote commas in the value
-					value = value.replaceAll(",", "','");
-					// Quote equals in the value
-					value = value.replaceAll("=", "'='");
-				}
-				buffer.append(name).append('=').append(value != null ? value : "");
-
-				if(iter.hasNext())
-					buffer.append(LIST_SEPARATOR);
-			}
-			doSetObject(propertyName, oldValue, newValue, buffer.toString());
-		}
-	}
-
-	public void setProjectFile(boolean projectFile) {
+    public void setProjectFile(boolean projectFile) {
 		this.projectFile = projectFile;
 	}
 	public boolean isProjectFile() {

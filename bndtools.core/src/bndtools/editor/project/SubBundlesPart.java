@@ -62,6 +62,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 							subBundleList = null;
 						}
 						markDirty();
+						model.setSubBndFiles(subBundleList);
 					}
 				});
 			}
@@ -149,7 +150,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
-		model.setSubBndFiles(subBundleList);
+		// model changes already committed
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {

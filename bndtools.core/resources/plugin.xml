@@ -475,6 +475,10 @@
        </initializer>
     </extension>
     <extension
+         point="org.eclipse.help.contexts">
+         <contexts file="contexthelp.xml"/>
+    </extension>
+    <extension
          point="bndtools.core.obr">
          <obr label="Apache Felix Releases" url="http://felix.apache.org/obr/releases.xml"/>
     </extension>

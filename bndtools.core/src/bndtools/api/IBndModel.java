@@ -7,28 +7,34 @@ import bndtools.model.clauses.VersionedClause;
 
 public interface IBndModel {
 
-    public List<VersionedClause> getBuildPath();
+    List<String> getAllPropertyNames();
 
-    public void setBuildPath(List<? extends VersionedClause> paths);
+    Object genericGet(String propertyName);
 
-    public List<VersionedClause> getRunBundles();
+    void genericSet(String propertyName, Object value);
 
-    public void setRunBundles(List<? extends VersionedClause> paths);
+    List<VersionedClause> getBuildPath();
 
-    public String getRunFramework();
+    void setBuildPath(List<? extends VersionedClause> paths);
 
-    public void setRunFramework(String clause);
+    List<VersionedClause> getRunBundles();
 
-    public List<String> getSubBndFiles();
+    void setRunBundles(List<? extends VersionedClause> paths);
 
-    public void setSubBndFiles(List<String> subBndFiles);
+    String getRunFramework();
 
-    public Map<String, String> getRunProperties();
+    void setRunFramework(String clause);
 
-    public void setRunProperties(Map<String, String> props);
+    List<String> getSubBndFiles();
 
-    public String getRunVMArgs();
+    void setSubBndFiles(List<String> subBndFiles);
 
-    public void setRunVMArgs(String args);
+    Map<String, String> getRunProperties();
+
+    void setRunProperties(Map<String, String> props);
+
+    String getRunVMArgs();
+
+    void setRunVMArgs(String args);
 
 }

@@ -11,6 +11,8 @@
 package bndtools.wizards.bndfile;
 
 
+import java.io.InputStream;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,6 +30,8 @@ import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
 
 public class NewBndFileWizardPage extends WizardNewFileCreationPage {
+
+    private InputStream initialContents = null;
 
 	public NewBndFileWizardPage(String pageName, IStructuredSelection selection) {
 		super(pageName, selection);
@@ -72,5 +76,14 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 		setMessage(warning, IMessageProvider.WARNING);
 		setErrorMessage(error);
 		return error == null;
+	}
+
+	@Override
+	protected InputStream getInitialContents() {
+	    return initialContents;
+	}
+
+	void setInitialContents(InputStream initialContents) {
+	    this.initialContents = initialContents;
 	}
 }

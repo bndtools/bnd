@@ -3,7 +3,6 @@ package bndtools.utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -51,7 +50,7 @@ public class FileUtils {
 			stream.close();
 		}
 	}
-	public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException, FileNotFoundException {
+	public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(document.get().getBytes());
 		if(file.exists()) {
 			file.setContents(inputStream, false, true, null);
