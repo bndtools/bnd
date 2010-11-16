@@ -3,6 +3,7 @@ package aQute.lib.io;
 import java.io.*;
 import java.net.*;
 import java.nio.*;
+import java.util.*;
 
 public class IO {
 	public static void copy(InputStream in, OutputStream out) throws IOException {
@@ -124,4 +125,25 @@ public class IO {
 		
 		delete(f);
 	}
+
+	public static void drain(InputStream in) throws IOException {
+		byte[] buffer = new byte[10000];
+		try {
+			int size = in.read(buffer);
+			while (size > 0) {
+				size = in.read(buffer);
+			}
+		} finally {
+			in.close();
+		}
+	}
+	
+	
+	public void copy( Collection<?> c, OutputStream out) {
+		PrintStream ps = new PrintStream(out);
+		for ( Object o : c ) {
+			
+		}
+	}
+	
 }

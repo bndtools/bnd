@@ -60,7 +60,6 @@ public interface Constants {
 			IMPORT_SERVICE, EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES,
 			SIGNATURE_TEST												};
 
-	String					BSN_FROM_WORKSPACE							= "-bsnfromworkspace";
 	String					BUILDPATH									= "-buildpath";
 	String					BUMPPOLICY									= "-bumppolicy";
 	String					CONDUIT										= "-conduit";
@@ -73,7 +72,6 @@ public interface Constants {
 	String					FAIL_OK										= "-failok";
 	String					INCLUDE										= "-include";
 	String					INCLUDERESOURCE								= "-includeresource";
-	String					LIB											= "-lib";
 	String					MAKE										= "-make";
 	String					MANIFEST									= "-manifest";
 	String					SAVEMANIFEST								= "-savemanifest";
@@ -123,7 +121,7 @@ public interface Constants {
 	// Deprecated
 	String					CLASSPATH									= "-classpath";
 
-	String					options[]									= { BSN_FROM_WORKSPACE,
+	String					options[]									= { 
 			BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
 			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
 			PEDANTIC, PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,

@@ -15,7 +15,10 @@ import java.util.*;
  * 
  * 
  */
-public class Index {
+public class Index implements Iterable<byte[]> {
+	final static int					LEAF		= 0;
+	final static int					INDEX		= 1;
+
 	final static int					SIGNATURE	= 0;
 	final static int					MAGIC		= 0x494C4458;
 	final static int					KEYSIZE		= 4;
@@ -54,6 +57,44 @@ public class Index {
 			this.leaf = leaf;
 			this.n = 0;
 			buffer = file.map(MapMode.READ_WRITE, number * pageSize, pageSize);
+		}
+
+		Iterator<byte[]> iterator() {
+			return new Iterator<byte[]>() {
+				Iterator<byte[]>	i;
+				int					rover	= 0;
+
+				public byte[] next() {
+					if (leaf) {
+						System.out.println(number + " " + rover + " " + k(rover) + " " + c(rover));
+						return k(rover++);
+					}
+
+					return i.next();
+				}
+
+				public boolean hasNext() {
+					try {
+						if (leaf)
+							return rover < n;
+						else {
+							while (i == null || i.hasNext() == false) {
+								int c = (int) c(rover++);
+								i = getPage(c).iterator();
+							}
+							return i.hasNext();
+						}
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+
+				}
+
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+
+			};
 		}
 
 		void write() throws IOException {
@@ -132,9 +173,8 @@ public class Index {
 				set(0, left.k(0), left.number);
 				set(1, right.k(0), right.number);
 				n = 2;
-				left.buffer.force();
-				right.buffer.force();
-				this.buffer.force();
+				left.write();
+				right.write();
 			}
 			insertNonFull(k, v);
 		}
@@ -204,27 +244,45 @@ public class Index {
 				}
 				child.insertNonFull(k, v);
 			}
+			write();
 		}
 
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("number=").append(number).append("\n");
-			sb.append("leaf=").append(leaf).append("\n");
-			sb.append("n=").append(n).append("\n");
-			sb.append("capacity=").append(capacity).append("\n");
-			sb.append("pageSize=").append(pageSize).append("\n");
-			sb.append("keySize=").append(keySize).append("\n");
-			sb.append("---\n");
-			for (int i = 0; i < n; i++) {
-				byte[] k = k(i);
-				for (int j = 0; j < 4 && j < k.length; j++)
-					sb.append(Integer.toHexString(k[j]));
-				sb.append(" = ");
-				sb.append(c(i));
-				sb.append("\n");
+			try {
+				toString( sb, "");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			sb.append("---\n");
 			return sb.toString();
+		}
+		
+		public void toString( StringBuilder sb, String indent ) throws IOException {
+			for (int i = 0; i < n; i++) {
+				sb.append(String.format("%s %02d:%02d %20s %s %d\n", indent, number, i, hex(k(i), 0, 4), leaf ? "==" : "->", c(i)));
+				if (! leaf ) {
+					long c = c(i);
+					Page sub = getPage((int)c);
+					sub.toString(sb,indent+" ");
+				}
+			}
+		}
+
+		private String hex(byte[] k, int i, int j) {
+			StringBuilder sb = new StringBuilder();
+			
+			while ( i < j) {
+				int b = 0xFF & k[i];
+				sb.append(nibble(k[i]>>4));
+				sb.append(nibble(k[i]));
+				i++;
+			}
+			return sb.toString();
+		}
+
+		private char nibble(int i) {
+			i = i & 0xF;
+			return (char) ( i >= 10 ? i + 'A' - 10 : i + '0');
 		}
 
 	}
@@ -241,7 +299,7 @@ public class Index {
 			nextPage = 1;
 			root = allocate(true);
 			root.n = 1;
-			root.set(0, new byte[0], 0);
+			root.set(0, new byte[KEYSIZE], 0);
 			root.write();
 		} else {
 			if (settings.getInt(SIGNATURE) != MAGIC)
@@ -280,46 +338,16 @@ public class Index {
 		return page;
 	}
 
+	public String toString() {
+		return root.toString();
+	}
+	
 	public void close() throws IOException {
 		file.close();
 		cache.clear();
 	}
 
-	public void report() throws IOException {
-		for (int i = 1; i < nextPage; i++) {
-			Page page = getPage(i);
-			System.out.printf("%4d %s %d\n", i, page.leaf, page.n);
-			for (int j = 0; j < page.n; j++) {
-				System.out.printf("%4s %s = %d\n", "", key(page.k(j)), page.c(j));
-
-			}
-		}
-		System.out.println();
-	}
-
-	String key(byte k[]) {
-		StringBuilder sb = new StringBuilder();
-		for (int j = 0; j < 4 && j < k.length; j++)
-			sb.append(Integer.toHexString(k[j]));
-		return sb.toString();
-	}
-
-	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			for (int i = 1; i < nextPage; i++) {
-				sb.append(getPage(i).toString());
-			}
-			return sb.toString();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public void report(String string) throws IOException {
-		System.out.println("----------------------------");
-		System.out.println(string);
-		System.out.println("----------------------------");
-		report();
+	public Iterator<byte[]> iterator() {
+		return root.iterator();
 	}
 }
