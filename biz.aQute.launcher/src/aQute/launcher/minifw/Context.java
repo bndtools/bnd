@@ -85,6 +85,8 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     }
 
     public URL getEntry(String path) {
+    	if ( path.startsWith("/"))
+    		path = path.substring(1);
         return getResource(path);
     }
 
@@ -276,7 +278,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     }
 
     public String getProperty(String key) {
-        return null;
+        return fw.getProperty(key);
     }
 
     public Object getService(ServiceReference reference) {
