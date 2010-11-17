@@ -10,6 +10,38 @@ import aQute.lib.osgi.*;
 public class BuilderTest extends TestCase {
 	
 	/**
+	 * Test the from: directive on expanding packages.
+	 */
+	public void testFromOSGiDirective() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath( new File("jar/org.eclipse.osgi-3.5.0.jar"));
+		b.setProperty("Export-Package", "org.osgi.framework;from:=osgi");
+		b.build();
+		System.out.println(Processor.join(b.getErrors(),"\n"));
+		System.out.println(Processor.join(b.getWarnings(),"\n"));
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		
+		assertEquals("1.3",b.getExports().get("org.osgi.framework").get("version"));
+	}	
+	
+	public void testFromEclipseDirective() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath( new File("jar/org.eclipse.osgi-3.5.0.jar"));
+		b.setProperty("Export-Package", "org.osgi.framework;from:=org.eclipse.osgi-3.5.0");
+		b.build();
+		System.out.println(Processor.join(b.getErrors(),"\n"));
+		System.out.println(Processor.join(b.getWarnings(),"\n"));
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		
+		assertEquals("1.5",b.getExports().get("org.osgi.framework").get("version"));
+	}	
+	
+	
+	/**
 	 * Test the provide package
 	 */
 	public void testProvidedVersion() throws Exception {

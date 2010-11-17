@@ -422,7 +422,7 @@ public class Builder extends Analyzer {
 				.replaceWithInstruction(getHeader(PRIVATE_PACKAGE));
 		Map<Instruction, Map<String, String>> exportMap = Instruction
 				.replaceWithInstruction(getHeader(EXPORT_PACKAGE));
-		
+
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
 			privateMap.putAll(Instruction.replaceWithInstruction(parseHeader(getProperty(
 					Constants.TESTPACKAGES, "test;presence:=optional"))));
@@ -430,7 +430,7 @@ public class Builder extends Analyzer {
 		if (!privateMap.isEmpty())
 			doExpand(jar, "Private-Package, or -testpackages", privateMap, true);
 
-		if (!exportMap.isEmpty() ) {
+		if (!exportMap.isEmpty()) {
 			Jar exports = new Jar("exports");
 			doExpand(exports, EXPORT_PACKAGE, exportMap, true);
 			jar.addAll(exports);
@@ -500,7 +500,7 @@ public class Builder extends Analyzer {
 				continue;
 
 			String pack = path.replace('/', '.');
-			Instruction instr = matches(included.keySet(), pack, superfluous);
+			Instruction instr = matches(included, pack, superfluous, classpathEntry.getName());
 			if (instr != null) {
 				// System.out.println("Pattern match: " + pack + " " +
 				// instr.getPattern() + " " + instr.isNegated());
@@ -603,9 +603,34 @@ public class Builder extends Analyzer {
 		return SPLIT_DEFAULT;
 	}
 
-	private Instruction matches(Collection<Instruction> instructions, String pack,
-			Set<Instruction> superfluousPatterns) {
-		for (Instruction pattern : instructions) {
+	/**
+	 * Matches the instructions against a package.
+	 * 
+	 * @param instructions The list of instructions
+	 * @param pack The name of the package
+	 * @param superfluousPatterns The total list of patterns, matched patterns are removed
+	 * @param source The name of the source container, can be filtered upon with the from: directive.
+	 * @return
+	 */
+	private Instruction matches(Map<Instruction, Map<String, String>> instructions, String pack,
+			Set<Instruction> superfluousPatterns, String source) {
+		for (Map.Entry<Instruction, Map<String, String>> entry : instructions.entrySet()) {
+			Instruction pattern = entry.getKey();
+			
+			// It is possible to filter on the source of the 
+			// package with the from: directive. This is an
+			// instruction that must match the name of the
+			// source class path entry.
+			
+			String from = entry.getValue().get(FROM_DIRECTIVE);
+			if (from != null) {
+				Instruction f = Instruction.getPattern(from);
+				if (!f.matches(source) || f.isNegated())
+					return null;
+			}
+
+			// Now do the normal
+			// matching
 			if (pattern.matches(pack)) {
 				if (superfluousPatterns != null)
 					superfluousPatterns.remove(pattern);
@@ -1062,13 +1087,14 @@ public class Builder extends Analyzer {
 			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES,
 					"test;presence:=optional")));
 		}
-		Collection<Instruction> instructions = Instruction.replaceWithInstruction(clauses).keySet();
+		Map<Instruction, Map<String, String>> instructions = Instruction
+				.replaceWithInstruction(clauses);
 
 		for (File r : resources) {
 			String cpEntry = getClasspathEntrySuffix(r);
 			if (cpEntry != null) {
 				String pack = Clazz.getPackage(cpEntry);
-				Instruction i = matches(instructions, pack, null);
+				Instruction i = matches(instructions, pack, null, r.getName());
 				if (i != null)
 					return !i.isNegated();
 			}

@@ -107,27 +107,24 @@ public interface Constants {
 	String					TESTPATH									= "-testpath";
 	String					UNDERTEST									= "-undertest";
 	String					VERBOSE										= "-verbose";
-	@Deprecated
-	String					VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
-	@Deprecated
-	String					VERSIONPOLICY_USES							= "-versionpolicy-uses";
-	String					PROVIDER_POLICY							= "-provider-policy";
-	String					CONSUMER_POLICY							= "-consumer-policy";
-	@Deprecated
-	String					VERSIONPOLICY								= "-versionpolicy";
+	@Deprecated String		VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
+	@Deprecated String		VERSIONPOLICY_USES							= "-versionpolicy-uses";
+	String					PROVIDER_POLICY								= "-provider-policy";
+	String					CONSUMER_POLICY								= "-consumer-policy";
+	@Deprecated String		VERSIONPOLICY								= "-versionpolicy";
 	String					WAB											= "-wab";
 	String					WABLIB										= "-wablib";
 
 	// Deprecated
 	String					CLASSPATH									= "-classpath";
 
-	String					options[]									= { 
-			BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
-			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
-			PEDANTIC, PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,
-			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER,
-			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO,
-			RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE	};
+	String					options[]									= { BUILDPATH, BUMPPOLICY,
+			CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS, FAIL_OK,
+			INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC,
+			PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH,
+			SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES,
+			REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST,
+			DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE };
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -172,6 +169,7 @@ public interface Constants {
 	String					VERSION_ATTRIBUTE							= "version";
 	String					BUNDLE_SYMBOLIC_NAME_ATTRIBUTE				= "bundle-symbolic-name";
 	String					BUNDLE_VERSION_ATTRIBUTE					= "bundle-version";
+	String					FROM_DIRECTIVE								= "from:";
 
 	String					KEYSTORE_LOCATION_DIRECTIVE					= "keystore:";
 	String					KEYSTORE_PROVIDER_DIRECTIVE					= "provider:";
@@ -184,7 +182,7 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE,
 			INCLUDE_DIRECTIVE, USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE,
 			KEYSTORE_PROVIDER_DIRECTIVE, KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE,
-			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE, RUNPATH_LAUNCHER_DIRECTIVE
+			COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE, RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE
 
 																		// TODO
 																		};
