@@ -290,10 +290,6 @@ public class Syntax implements Constants {
 
             ),
             new Syntax(
-                    BSN_FROM_WORKSPACE,
-                    "Calculate the default bsn from the workspace directory name + the project directory name. Default is is calculated from the project name.",
-                    "-bsnfromworkspace=true", null, null),
-            new Syntax(
                     BUILDPATH,
                     "Provides the class path for building the jar. The entries are references to the repository",
                     "-buildpath=osgi;version=4.1", "${repo;bsns}",

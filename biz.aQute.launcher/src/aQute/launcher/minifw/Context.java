@@ -62,7 +62,6 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     public Context(MiniFramework fw, ClassLoader parent, int id, String location)
             throws Exception {
         super(new URL[] { new File(location).toURI().toURL() }, parent);
-        URL urls[] = super.getURLs();
         this.fw = fw;
         this.id = id;
         this.location = location;
@@ -85,6 +84,8 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     }
 
     public URL getEntry(String path) {
+    	if ( path.startsWith("/"))
+    		path = path.substring(1);
         return getResource(path);
     }
 
@@ -276,7 +277,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     }
 
     public String getProperty(String key) {
-        return null;
+        return fw.getProperty(key);
     }
 
     public Object getService(ServiceReference reference) {

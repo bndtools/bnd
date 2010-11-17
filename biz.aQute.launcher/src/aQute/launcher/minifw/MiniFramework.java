@@ -47,6 +47,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public URL getEntry(String path) {
+    	if ( path.startsWith("/"))
+    		path = path.substring(1);
 		return loader.getResource(path);
 	}
 
