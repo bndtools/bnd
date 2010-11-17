@@ -62,7 +62,6 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     public Context(MiniFramework fw, ClassLoader parent, int id, String location)
             throws Exception {
         super(new URL[] { new File(location).toURI().toURL() }, parent);
-        URL urls[] = super.getURLs();
         this.fw = fw;
         this.id = id;
         this.location = location;
