@@ -18,6 +18,21 @@ import aQute.libg.version.*;
  * as functions in the macro processor (without the _). Macros can nest to any
  * depth but may not contain loops.
  * 
+ * Add POSIX macros:
+ * ${#parameter}
+    String length.
+
+${parameter%word}
+    Remove smallest suffix pattern.
+
+${parameter%%word}
+    Remove largest suffix pattern.
+
+${parameter#word}
+    Remove smallest prefix pattern.
+
+${parameter##word}
+    Remove largest prefix pattern. 
  */
 public class Macro implements Replacer {
 	Processor	domain;

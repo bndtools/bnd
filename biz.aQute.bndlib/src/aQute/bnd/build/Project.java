@@ -1439,7 +1439,8 @@ public class Project extends Processor {
 	}
 
 	public Collection<String> getRunVM() {
-		return Processor.split(getProperty(RUNVM));
+		Map<String,Map<String,String>> hdr = parseHeader(getProperty(RUNVM));
+		return hdr.keySet();
 	}
 
 	public Map<String, String> getRunProperties() {
