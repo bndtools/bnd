@@ -163,7 +163,7 @@ public class Launcher implements ServiceListener {
 
 			try {
 				trace("will install %s with reference", path.getAbsolutePath());
-				String reference = "reference:" + path.toURL().toExternalForm();
+				String reference = "reference:" + path.toURI().toURL().toExternalForm();
 				Bundle b = systemContext.installBundle(reference);
 				if (b.getLastModified() < path.lastModified()) {
 					b.update();
@@ -171,7 +171,7 @@ public class Launcher implements ServiceListener {
 				installed.add(b);
 			} catch (BundleException e) {
 				trace("failed reference, will try to install %s with input stream", path.getAbsolutePath());
-				String reference = path.toURL().toExternalForm();
+				String reference = path.toURI().toURL().toExternalForm();
 				InputStream in = new FileInputStream(path);
 				try {
 					Bundle b = findBundleByLocation(reference);
@@ -349,7 +349,7 @@ public class Launcher implements ServiceListener {
 		try {
 			PermissionInfo allPermissions[] = new PermissionInfo[] { new PermissionInfo(
 					AllPermission.class.getName(), null, null) };
-			policy = new SimplePermissionPolicy(systemBundle.getBundleContext());
+			policy = new SimplePermissionPolicy(this,systemBundle.getBundleContext());
 
 			// All bundles installed from the script are getting AllPermission
 			// for now.
@@ -672,14 +672,16 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	static class AllPolicy extends Policy {
-		static PermissionCollection	all	= new AllPermissionCollection();
+	static PermissionCollection	all	= new AllPermissionCollection();
+	class AllPolicy extends Policy {
 
 		public PermissionCollection getPermissions(CodeSource codesource) {
+			trace("Granting AllPermission to %s", codesource.getLocation());
 			return all;
 		}
 
 		public void refresh() {
+			trace("Policy refresh");
 		}
 	}
 
