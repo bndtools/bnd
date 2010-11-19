@@ -18,6 +18,7 @@
 /cnf/eclipse-*/bnd.index
 /bndtools.launcher
 /bndtools.runtime.junit
+/bndtools.runtime.obr
 /cnf/bndtools-*.zip
 /cnf/cache
 
