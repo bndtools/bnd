@@ -38,7 +38,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
     private static final Set<String> PROJECT_ONLY_HEADERS = new HashSet<String>(Arrays.asList(new String[] {
             "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm",
-            "-runtrace", "-runframework", "-sub", "-debug"
+            "-runtrace", "-runframework", "-runfw", "-sub", "-debug"
     }));
 
     private final Shell parentShell;
