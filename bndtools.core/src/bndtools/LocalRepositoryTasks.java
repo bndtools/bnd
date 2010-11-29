@@ -1,5 +1,6 @@
 package bndtools;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -229,7 +230,11 @@ public class LocalRepositoryTasks {
         try {
             Jar jar = new Jar("", stream, System.currentTimeMillis());
             jar.setDoNotTouchManifest();
-            localRepo.put(jar);
+            File newFile = localRepo.put(jar);
+
+            RefreshFileJob refreshJob = new RefreshFileJob(newFile);
+            if(refreshJob.isFileInWorkspace())
+                refreshJob.schedule();
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding bundle to repository.", e));
         } finally {

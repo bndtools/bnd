@@ -45,10 +45,12 @@ public class RepositoriesView extends FilteredViewPart {
     private TreeViewer viewer;
 
     private Action collapseAllAction;
+    private Action refreshAction;
     private Action importRepoAction;
     private Action addBundlesAction;
 
     private Action removeBundlesAction;
+
 
     private class BsnFilter extends ViewerFilter {
         private final String filterStr;
@@ -180,11 +182,25 @@ public class RepositoriesView extends FilteredViewPart {
             @Override
             public void run() {
                 viewer.collapseAll();
-            };
+            }
         };
         collapseAllAction.setText("Collapse All");
         collapseAllAction.setToolTipText("Collapse All");
         collapseAllAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/collapseall.gif"));
+
+        refreshAction = new Action() {
+            @Override
+            public void run() {
+                try {
+                    viewer.setInput(Central.getWorkspace());
+                } catch (Exception e) {
+                    Plugin.logError("Error loading repositories", e);
+                }
+            };
+        };
+        refreshAction.setText("Refresh");
+        refreshAction.setToolTipText("Refresh Repositories Tree");
+        refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png"));
 
         importRepoAction = new Action() {
             @Override
@@ -225,10 +241,12 @@ public class RepositoriesView extends FilteredViewPart {
 
     @Override
     protected void fillToolBar(IToolBarManager toolBar) {
+        toolBar.add(refreshAction);
+        toolBar.add(collapseAllAction);
+        toolBar.add(new Separator());
         toolBar.add(importRepoAction);
         toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
-        toolBar.add(collapseAllAction);
 
         super.fillToolBar(toolBar);
     }

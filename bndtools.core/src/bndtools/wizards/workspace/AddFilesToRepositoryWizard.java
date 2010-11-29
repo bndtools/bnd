@@ -20,6 +20,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import bndtools.Plugin;
+import bndtools.RefreshFileJob;
 import bndtools.types.Pair;
 import bndtools.utils.BundleUtils;
 
@@ -78,11 +79,17 @@ public class AddFilesToRepositoryWizard extends Wizard {
             }
 
             try {
-                repository.put(jar);
+                File newFile = repository.put(jar);
+
+                RefreshFileJob refreshJob = new RefreshFileJob(newFile);
+                if(refreshJob.isFileInWorkspace())
+                    refreshJob.schedule();
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
                 continue;
             }
+
+
         }
 
         if(status.isOK()) {
