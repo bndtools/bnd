@@ -904,6 +904,33 @@ public class BuilderTest extends TestCase {
     }
 
     /**
+     * Check Conditional package. First import a subpackage
+     * then let the subpackage import a super package. This went wrong
+     * in the OSGi build. We see such a pattern in the Spring jar.
+     * The package org.springframework.beans.factory.access refers to
+     * org.springframework.beans.factory and org.springframework.beans.
+     * The 
+     */
+    public void testConditionalBaseSuper() throws Exception {
+        Builder b = new Builder();
+        b.setProperty(Constants.CONDITIONAL_PACKAGE, "test.top.*");
+        b.setProperty(Constants.PRIVATE_PACKAGE, "test.top.middle.bottom");
+        b.addClasspath(new File("bin"));
+        Jar dot = b.build();
+        System.out.println("Errors: " + b.getErrors());
+        System.out.println("Warnings: " + b.getWarnings());
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+        
+        assertNotNull( dot.getResource("test/top/middle/bottom/Bottom.class"));
+        assertNotNull( dot.getResource("test/top/middle/Middle.class"));
+        assertNotNull( dot.getResource("test/top/Top.class"));
+
+        assertFalse( b.getImports().containsKey("test.top"));
+        assertFalse( b.getImports().containsKey("test.top.middle"));
+        assertFalse( b.getImports().containsKey("test.top.middle.bottom"));
+    }
+    /**
      * It looks like Conditional-Package can add the same package multiple
      * times. So lets test this.
      */

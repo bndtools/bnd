@@ -400,10 +400,12 @@ public class Jar implements Closeable {
 	public List<String> getPackages() {
 		List<String> list = new ArrayList<String>(directories.size());
 
-		for (Iterator<String> i = directories.keySet().iterator(); i.hasNext();) {
-			String path = i.next();
-			String pack = path.replace('/', '.');
-			list.add(pack);
+		for (Map.Entry<String, Map<String, Resource>> i : directories.entrySet()) {
+			if (i.getValue() != null) {
+				String path = i.getKey();
+				String pack = path.replace('/', '.');
+				list.add(pack);
+			}
 		}
 		return list;
 	}
@@ -447,14 +449,14 @@ public class Jar implements Closeable {
 	 */
 
 	public void calcChecksums(String algorithms[]) throws Exception {
-		if ( algorithms == null )
-			algorithms = new String[] {"SHA", "MD5"};
-		
+		if (algorithms == null)
+			algorithms = new String[] { "SHA", "MD5" };
+
 		MessageDigest digests[] = new MessageDigest[algorithms.length];
 		int n = 0;
-		for  ( String algorithm : algorithms )
+		for (String algorithm : algorithms)
 			digests[n++] = MessageDigest.getInstance(algorithm);
-		
+
 		byte buffer[] = new byte[30000];
 
 		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
@@ -478,55 +480,53 @@ public class Jar implements Closeable {
 		}
 	}
 
-	
-	
-	Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;.*");
+	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;.*");
+
 	public String getBsn() throws IOException {
 		Manifest m = getManifest();
-		if ( m == null)
+		if (m == null)
 			return null;
-		
-		String s  = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+
+		String s = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		Matcher matcher = BSN.matcher(s);
-		if ( matcher.matches()) {
-			return matcher.group(1); 
+		if (matcher.matches()) {
+			return matcher.group(1);
 		}
 		return null;
 	}
-	
+
 	public String getVersion() throws IOException {
 		Manifest m = getManifest();
-		if ( m == null)
+		if (m == null)
 			return null;
 
 		String s = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-		if ( s == null)
+		if (s == null)
 			return null;
-		
+
 		return s.trim();
 	}
-	
-
 
 	/**
 	 * Expand the JAR file to a directory.
 	 * 
-	 * @param dir the dst directory, is not required to exist
-	 * @throws Exception if anything does not work as expected.
+	 * @param dir
+	 *            the dst directory, is not required to exist
+	 * @throws Exception
+	 *             if anything does not work as expected.
 	 */
 	public void expand(File dir) throws IOException {
 		dir = dir.getAbsoluteFile();
 		dir.mkdirs();
-		if ( !dir.isDirectory()) {
+		if (!dir.isDirectory()) {
 			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
 		}
-			
-		for ( Map.Entry<String,Resource> entry : getResources().entrySet()) {
-			File f = getFile( dir, entry.getKey());
+
+		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
+			File f = getFile(dir, entry.getKey());
 			f.getParentFile().mkdirs();
 			copy(entry.getValue().openInputStream(), f);
 		}
 	}
-	
-		
+
 }

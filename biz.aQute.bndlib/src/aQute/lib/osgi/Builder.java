@@ -258,11 +258,8 @@ public class Builder extends Analyzer {
 		if (conditionals.isEmpty())
 			return;
 
-		int size;
-		do {
-			size = dot.getDirectories().size();
+		while (true) {
 			analyze();
-			analyzed = false;
 			Map<String, Map<String, String>> imports = getImports();
 
 			// Match the packages specified in conditionals
@@ -275,16 +272,25 @@ public class Builder extends Analyzer {
 			// packages must also be copied to the bundle
 			for (Map.Entry<String, Map<String, String>> entry : getImports().entrySet()) {
 				String type = entry.getValue().get(IMPORT_DIRECTIVE);
-				if (type != null && type.equals("private"))
+				if (type != null && type.equals(PRIVATE_DIRECTIVE))
 					filtered.put(entry.getKey(), entry.getValue());
 			}
 
 			// remove existing packages to prevent merge errors
 			filtered.keySet().removeAll(dot.getPackages());
+			if (filtered.size() == 0)
+				break;
+
+			int size = dot.getResources().size();
 			doExpand(dot, CONDITIONAL_PACKAGE + " Private imports", Instruction
 					.replaceWithInstruction(filtered), false);
-		} while (dot.getDirectories().size() > size);
-		analyzed = true;
+			
+			// Were there any expansions?
+			if ( size == dot.getResources().size())
+				break;
+			
+			analyzed = false;
+		}
 	}
 
 	/**
@@ -606,22 +612,27 @@ public class Builder extends Analyzer {
 	/**
 	 * Matches the instructions against a package.
 	 * 
-	 * @param instructions The list of instructions
-	 * @param pack The name of the package
-	 * @param superfluousPatterns The total list of patterns, matched patterns are removed
-	 * @param source The name of the source container, can be filtered upon with the from: directive.
+	 * @param instructions
+	 *            The list of instructions
+	 * @param pack
+	 *            The name of the package
+	 * @param superfluousPatterns
+	 *            The total list of patterns, matched patterns are removed
+	 * @param source
+	 *            The name of the source container, can be filtered upon with
+	 *            the from: directive.
 	 * @return
 	 */
 	private Instruction matches(Map<Instruction, Map<String, String>> instructions, String pack,
 			Set<Instruction> superfluousPatterns, String source) {
 		for (Map.Entry<Instruction, Map<String, String>> entry : instructions.entrySet()) {
 			Instruction pattern = entry.getKey();
-			
-			// It is possible to filter on the source of the 
+
+			// It is possible to filter on the source of the
 			// package with the from: directive. This is an
 			// instruction that must match the name of the
 			// source class path entry.
-			
+
 			String from = entry.getValue().get(FROM_DIRECTIVE);
 			if (from != null) {
 				Instruction f = Instruction.getPattern(from);
