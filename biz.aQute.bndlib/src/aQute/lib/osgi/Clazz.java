@@ -764,6 +764,8 @@ public class Clazz {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 
+//		System.out.println("Signature " + signature );
+		
 		// The type signature is kind of weird,
 		// lets skip it for now. Seems to be some kind of
 		// type variable name index but it does not seem to
@@ -1029,8 +1031,7 @@ public class Clazz {
 	 * The syntax of the descriptor is:
 	 * 
 	 * <pre>
-	 *   descriptor ::= ( '(' references ')' )? references
-	 *   references ::= reference *
+	 *   descriptor ::= ( '(' reference * ')' )? reference
 	 *   reference  ::= 'L' classname ( '&lt;' references '&gt;' )? ';' | 'B' | 'Z' | ... | '+' | '-' | '['
 	 * </pre>
 	 * 
@@ -1378,5 +1379,5 @@ public class Clazz {
 		return JAVA.format(major);
 
 	}
-
+	
 }
