@@ -62,10 +62,10 @@ public class CompareTest<O extends Serializable> extends TestCase {
 		assertEquals( Object.class, m.getTypeParameters()[0].getBounds()[0]);
 		
 		m = getClass().getMethod("foo3");
-		assertEquals( 2, m.getTypeParameters().length);
+		assertEquals( 1, m.getTypeParameters().length);
 		assertEquals( "T", m.getTypeParameters()[0].getName() );
-		assertEquals( 1, m.getTypeParameters()[0].getBounds().length);
-		assertEquals( Object.class, m.getTypeParameters()[0].getBounds()[0]);
+		assertEquals( 2, m.getTypeParameters()[0].getBounds().length);
+		assertEquals( Exception.class, m.getTypeParameters()[0].getBounds()[0]);
 		
 		m = getClass().getMethod("foo4");
 		assertEquals( 1, m.getTypeParameters().length);
@@ -79,11 +79,6 @@ public class CompareTest<O extends Serializable> extends TestCase {
 	public A1<Collection<String>[]> a1;
 	
 	<X extends A1> A1<? extends X> bar() { return null; }
-	
-	public void testTypeArguments() throws Exception {
-		Method a1 = getClass().getMethod("a1");
-	}
-	
 	
 	
 	public void testSimple() throws IOException {
