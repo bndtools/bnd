@@ -268,8 +268,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public int flatten(List<Test> list, TestSuite suite) {
 		int realCount = 0;
-		for (Enumeration<Test> e = suite.tests(); e.hasMoreElements();) {
-			Test test = e.nextElement();
+		for (Enumeration<?> e = suite.tests(); e.hasMoreElements();) {
+			Test test = (Test) e.nextElement();
 			list.add(test);
 			if (test instanceof TestSuite)
 				realCount += flatten(list, (TestSuite) test);

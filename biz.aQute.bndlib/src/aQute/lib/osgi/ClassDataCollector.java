@@ -56,4 +56,27 @@ public class ClassDataCollector {
     public void method(int access, String name, String descriptor) {
     }
 
+    /**
+     * The EnclosingMethod attribute
+     * 
+     * @param cName The name of the enclosing class, never null. Name is with slashes.
+     * @param mName The name of the enclosing method in the class with cName or null
+     * @param mDescriptor The descriptor of this type
+     */
+	public void enclosingMethod(String cName, String mName, String mDescriptor) {
+		
+	}
+
+	/**
+	 * The InnerClass attribute
+	 * 
+	 * @param innerClass The name of the inner class (with slashes). Can be null.
+	 * @param outerClass The name of the outer class (with slashes) Can be null.
+	 * @param innerName The name inside the outer class, can be null.
+	 * @param modifiers The access flags 
+	 */
+	public void innerClass(String innerClass, String outerClass, String innerName,
+			int innerClassAccessFlags) {		
+	}
+
 }

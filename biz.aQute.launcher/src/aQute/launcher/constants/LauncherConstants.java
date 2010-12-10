@@ -85,7 +85,8 @@ public class LauncherConstants {
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
 		activators.addAll(split(p.getProperty(LAUNCH_ACTIVATORS), " ,"));
-		runProperties.putAll((Map) p);
+		Map<String,String> map =(Map) p;
+		runProperties.putAll(map);
 	}
 
 	public LauncherConstants() {

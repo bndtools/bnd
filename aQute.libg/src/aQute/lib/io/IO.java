@@ -142,8 +142,9 @@ public class IO {
 	public void copy( Collection<?> c, OutputStream out) {
 		PrintStream ps = new PrintStream(out);
 		for ( Object o : c ) {
-			
+			ps.println(o);
 		}
+		ps.flush();
 	}
 	
 }

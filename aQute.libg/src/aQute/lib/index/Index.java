@@ -273,8 +273,8 @@ public class Index implements Iterable<byte[]> {
 			
 			while ( i < j) {
 				int b = 0xFF & k[i];
-				sb.append(nibble(k[i]>>4));
-				sb.append(nibble(k[i]));
+				sb.append(nibble(b>>4));
+				sb.append(nibble(b));
 				i++;
 			}
 			return sb.toString();

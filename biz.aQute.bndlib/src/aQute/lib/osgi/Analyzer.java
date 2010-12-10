@@ -1004,7 +1004,7 @@ public class Analyzer extends Processor {
 	 * added to a group. The refs also contains the references to the private
 	 * packages.
 	 * 
-	 * @param pack
+	 * @param root
 	 *            name of the root package
 	 * @param todo
 	 *            list of items still to process
@@ -1089,8 +1089,13 @@ public class Analyzer extends Processor {
 				String exportHeader = m.getMainAttributes().getValue(EXPORT_PACKAGE);
 				if (exportHeader != null) {
 					Map<String, Map<String, String>> exported = parseHeader(exportHeader);
-					if (exported != null)
-						classpathExports.putAll(exported);
+					if (exported != null) {
+						for ( Map.Entry<String, Map<String,String>> entry : exported.entrySet()) {
+							if ( ! classpathExports.containsKey(entry.getKey())) {
+								classpathExports.put(entry.getKey(), entry.getValue());								
+							}
+						}
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -1379,6 +1384,8 @@ public class Analyzer extends Processor {
 			}
 			if (!map.containsKey(VERSION_ATTRIBUTE))
 				map.put(key, value);
+			else if ( !map.get(VERSION_ATTRIBUTE).equals(value))
+				System.out.println("duplicate version info for " + dir + " " + value + " and " + map.get(VERSION_ATTRIBUTE));
 		}
 	}
 

@@ -638,7 +638,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
-	public Container getBundle(String bsn, String range, int strategyx, Map<String, String> attrs)
+	@SuppressWarnings("deprecation") public Container getBundle(String bsn, String range, int strategyx, Map<String, String> attrs)
 			throws Exception {
 
 		if ("snapshot".equals(range)) {
@@ -1163,7 +1163,7 @@ public class Project extends Processor {
 	 * bundle with manifest, a manifest is added based on defaults. If it is a
 	 * bundle, but not r4, we try to add the r4 headers.
 	 * 
-	 * @param name
+	 * @param descriptor
 	 * @param in
 	 * @return
 	 * @throws Exception

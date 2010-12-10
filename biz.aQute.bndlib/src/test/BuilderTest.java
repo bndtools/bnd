@@ -9,6 +9,24 @@ import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
 	
+	
+	/**
+	 * bnd seems to pick the wrong version if a packageinfo
+	 * is available multiple times.
+	 * @throws Exception 
+	 */
+
+	public void testMultiplePackageInfo() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath( new File("jar/osgi.core.jar"));
+		b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.service.packageadmin");
+		b.build();
+		String version = b.getImports().get("org.osgi.framework").get(Constants.VERSION_ATTRIBUTE);
+		assertEquals( "[1.3,2)", version);
+	}
+	
+	
 	/**
 	 * Test the from: directive on expanding packages.
 	 */
@@ -37,7 +55,7 @@ public class BuilderTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		
-		assertEquals("1.5",b.getExports().get("org.osgi.framework").get("version"));
+		assertEquals("1.3",b.getExports().get("org.osgi.framework").get("version"));
 	}	
 	
 	

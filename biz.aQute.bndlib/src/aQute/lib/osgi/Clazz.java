@@ -9,24 +9,19 @@ import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
 
 public class Clazz {
-	public static enum JAVA {		
-		UNKNOWN( Integer.MAX_VALUE),
-		OpenJDK7( 51),
-		J2S6( 50),
-		J2SE5(49),
-		JDK1_4(48),
-		JDK1_3(47),
-		JDK1_2(46),
-		JDK1_1(45);
-		
-		final int major;
+	public static enum JAVA {
+		UNKNOWN(Integer.MAX_VALUE), OpenJDK7(51), J2S6(50), J2SE5(49), JDK1_4(48), JDK1_3(47), JDK1_2(
+				46), JDK1_1(45);
+
+		final int	major;
+
 		JAVA(int major) {
 			this.major = major;
 		}
-		
-		static JAVA format( int n ) {
-			for( JAVA e : JAVA.values())
-				if ( e.major == n)
+
+		static JAVA format(int n) {
+			for (JAVA e : JAVA.values())
+				if (e.major == n)
 					return e;
 			return UNKNOWN;
 		}
@@ -34,18 +29,20 @@ public class Clazz {
 		public int getMajor() {
 			return major;
 		}
-		
+
 		public boolean hasAnnotations() {
 			return major >= J2SE5.major;
 		}
+
 		public boolean hasGenerics() {
 			return major >= J2SE5.major;
 		}
+
 		public boolean hasEnums() {
 			return major >= J2SE5.major;
 		}
 	};
-	
+
 	public static enum QUERY {
 		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATION, RUNTIMEANNOTATIONS, CLASSANNOTATIONS
 	};
@@ -732,6 +729,10 @@ public class Clazz {
 			doAnnotations(in, member, RetentionPolicy.CLASS);
 		else if ("RuntimeInvisibleParameterAnnotations".equals(attributeName))
 			doParameterAnnotations(in, member, RetentionPolicy.CLASS);
+		else if ("InnerClasses".equals(attributeName))
+			doInnerClasses(in);
+		else if ("EnclosingMethod".equals(attributeName))
+			doEnclosingMethod(in);
 		else if ("SourceFile".equals(attributeName))
 			doSourceFile(in);
 		else if ("Code".equals(attributeName) && crawl)
@@ -743,6 +744,88 @@ public class Clazz {
 				throw new IllegalArgumentException("Attribute > 2Gb");
 			}
 			in.skipBytes((int) attribute_length);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * EnclosingMethod_attribute { 
+	 * 	u2 attribute_name_index; 
+	 * 	u4 attribute_length; 
+	 * 	u2 class_index
+	 * 	u2 method_index;
+	 * }
+	 * </pre>
+	 * 
+	 * 
+	 * @param in
+	 * @throws IOException
+	 */
+	private void doEnclosingMethod(DataInputStream in) throws IOException {
+		int cIndex = in.readShort();
+		int mIndex = in.readShort();
+
+		if (cd != null) {
+			int nameIndex = intPool[cIndex];
+			String cName = (String) pool[ nameIndex ];
+			
+			String mName = null;
+			String mDescriptor = null;
+			
+			if (mIndex != 0) {
+				Assoc nameAndType = (Assoc) pool[mIndex];
+				mName = (String) pool[nameAndType.a];
+				mDescriptor = (String) pool[nameAndType.b];
+			}
+			cd.enclosingMethod(cName, mName, mDescriptor);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * InnerClasses_attribute {
+	 * 	u2 attribute_name_index; 
+	 * 	u4 attribute_length; 
+	 * 	u2 number_of_classes; {	
+	 * 		u2 inner_class_info_index;
+	 * 		u2 outer_class_info_index; 
+	 * 		u2 inner_name_index; 
+	 * 		u2 inner_class_access_flags;
+	 * 	} classes[number_of_classes];
+	 * }
+	 * </pre>
+	 * 
+	 * @param in
+	 * @throws IOException
+	 */
+	private void doInnerClasses(DataInputStream in) throws IOException {
+		int number_of_classes = in.readShort();
+		for (int i = 0; i < number_of_classes; i++) {
+			int inner_class_info_index = in.readShort();
+			int outer_class_info_index = in.readShort();
+			int inner_name_index = in.readShort();
+			int inner_class_access_flags = in.readShort() & 0xFFFF;
+
+			if (cd != null) {
+				String innerClass = null;
+				String outerClass = null;
+				String innerName = null;
+
+				if (inner_class_info_index != 0) {
+					int nameIndex = intPool[inner_class_info_index];
+					innerClass = (String) pool[nameIndex];
+				}
+
+				if (outer_class_info_index != 0){
+					int nameIndex = intPool[outer_class_info_index];
+					outerClass = (String) pool[nameIndex];
+				}
+
+				if (inner_name_index != 0)
+					innerName = (String) pool[inner_name_index];
+
+				cd.innerClass(innerClass, outerClass, innerName, inner_class_access_flags);
+			}
 		}
 	}
 
@@ -764,8 +847,8 @@ public class Clazz {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 
-//		System.out.println("Signature " + signature );
-		
+		// System.out.println("Signature " + signature );
+
 		// The type signature is kind of weird,
 		// lets skip it for now. Seems to be some kind of
 		// type variable name index but it does not seem to
@@ -1276,9 +1359,9 @@ public class Clazz {
 	 * @param clazz
 	 * @throws Exception
 	 */
-	@SuppressWarnings("deprecation") final static String USEPOLICY = rname(UsePolicy.class);
-	final static String PROVIDERPOLICY = rname(ProviderType.class);
-	
+	@SuppressWarnings("deprecation") final static String	USEPOLICY		= rname(UsePolicy.class);
+	final static String										PROVIDERPOLICY	= rname(ProviderType.class);
+
 	public static void getImplementedPackages(Set<String> implemented, Analyzer analyzer,
 			Clazz clazz) throws Exception {
 		if (clazz.interfaces != null) {
@@ -1294,10 +1377,12 @@ public class Clazz {
 				if (c != null) {
 					boolean consumer = false;
 					Set<String> annotations = c.annotations;
-					if ( annotations  != null )
-						// Override if we marked the interface as a consumer interface
-						consumer = annotations.contains(USEPOLICY) || annotations.contains(PROVIDERPOLICY);
-					
+					if (annotations != null)
+						// Override if we marked the interface as a consumer
+						// interface
+						consumer = annotations.contains(USEPOLICY)
+								|| annotations.contains(PROVIDERPOLICY);
+
 					if (!consumer)
 						implemented.add(getPackage(interf));
 					getImplementedPackages(implemented, analyzer, c);
@@ -1379,5 +1464,5 @@ public class Clazz {
 		return JAVA.format(major);
 
 	}
-	
+
 }

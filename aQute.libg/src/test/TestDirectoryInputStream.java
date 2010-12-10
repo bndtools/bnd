@@ -1,7 +1,6 @@
 package test;
 
 import java.io.*;
-import java.util.jar.*;
 
 import junit.framework.*;
 
