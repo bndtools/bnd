@@ -1384,8 +1384,9 @@ public class Analyzer extends Processor {
 			}
 			if (!map.containsKey(VERSION_ATTRIBUTE))
 				map.put(key, value);
-			else if ( !map.get(VERSION_ATTRIBUTE).equals(value))
-				System.out.println("duplicate version info for " + dir + " " + value + " and " + map.get(VERSION_ATTRIBUTE));
+			else if ( !map.get(VERSION_ATTRIBUTE).equals(value)) {
+				//System.out.println("duplicate version info for " + dir + " " + value + " and " + map.get(VERSION_ATTRIBUTE));
+			}
 		}
 	}
 
