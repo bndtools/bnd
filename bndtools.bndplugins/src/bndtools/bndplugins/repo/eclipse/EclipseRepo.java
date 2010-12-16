@@ -219,6 +219,18 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             mainJar.write(out);
     }
 
+    public File get(String bsn, String range, Strategy strategy) throws Exception {
+        File[] files = get(bsn, range);
+
+        if (files == null || files.length == 0)
+            return null;
+
+        if (strategy == Strategy.LOWEST)
+            return files[0];
+        else
+            return files[files.length - 1];
+    }
+
     public File[] get(String bsn, String range) throws Exception {
         VersionRange r;
         if (range == null || range.equals("latest"))
@@ -256,4 +268,5 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     public String toString() {
         return getName();
     }
+
 }
