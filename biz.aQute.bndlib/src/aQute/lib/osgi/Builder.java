@@ -975,7 +975,16 @@ public class Builder extends Analyzer {
 		if (isTrue(getProperty(NOBUNDLES)))
 			return builders;
 
-		Set<Instruction> subs = Instruction.replaceWithInstruction(parseHeader(sub)).keySet();
+		Map<String,Map<String,String>> subsMap = parseHeader(sub);
+		for ( Iterator<String> i = subsMap.keySet().iterator(); i.hasNext(); ) {
+			File file = getFile(i.next());
+			if ( file.isFile()) {
+				builders.add(getSubBuilder(file));
+				i.remove();
+			}
+		}
+		
+		Set<Instruction> subs = Instruction.replaceWithInstruction(subsMap).keySet();
 
 		List<File> members = new ArrayList<File>(Arrays.asList(getBase().listFiles()));
 
@@ -991,23 +1000,13 @@ public class Builder extends Analyzer {
 				p = p.getParent();
 			}
 
-			// if
-			// (file.getCanonicalFile().equals(getPropertiesFile().getCanonicalFile()))
-			// continue nextFile;
-
 			for (Iterator<Instruction> i = subs.iterator(); i.hasNext();) {
 
 				Instruction instruction = i.next();
 				if (instruction.matches(file.getName())) {
 
 					if (!instruction.isNegated()) {
-
-						Builder builder = getSubBuilder();
-						if (builder != null) {
-							builder.setProperties(file);
-							addClose(builder);
-							builders.add(builder);
-						}
+						builders.add( getSubBuilder(file));
 					}
 
 					// Because we matched (even though we could be negated)
@@ -1017,6 +1016,15 @@ public class Builder extends Analyzer {
 			}
 		}
 		return builders;
+	}
+	
+	public Builder getSubBuilder(File file ) throws Exception {
+		Builder builder = getSubBuilder();
+		if (builder != null) {
+			builder.setProperties(file);
+			addClose(builder);
+		}
+		return builder;
 	}
 
 	public Builder getSubBuilder() throws Exception {
