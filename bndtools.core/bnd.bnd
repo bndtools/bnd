@@ -82,4 +82,5 @@ Include-Resource: resources,\
 	org.eclipse.jdt.junit,\
 	patricia_trie,\
 	org.eclipse.equinox.preferences,\
-	org.eclipse.help.base
+	org.eclipse.help.base,\
+	org.eclipse.ltk.core.refactoring

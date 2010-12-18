@@ -498,4 +498,23 @@
          priority="-2147483648"
          class="bndtools.api.EmptyTemplate" />
    </extension>
+   
+   <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
+      <renameParticipant
+         id="bndtools.refactoring.pkgRenameParticipant"
+         name="Bndtools Package Rename Participant"
+         class="bndtools.refactor.PkgRenameParticipant">
+         <enablement>
+           <with variable="affectedNatures">
+             <iterate operator="or">
+               <equals value="bndtools.core.bndnature"/>
+             </iterate>
+           </with>
+           <with variable="element">
+               <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+           </with>
+         </enablement>
+      </renameParticipant>
+   </extension>
+   
  </plugin>
