@@ -1,5 +1,5 @@
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.7
+Bundle-Version: 0.0.8
 Include-Resource: plugin.xml,\
 	repo=repo
 Import-Package: \

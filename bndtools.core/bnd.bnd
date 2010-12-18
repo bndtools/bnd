@@ -1,6 +1,6 @@
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
-bndlibver: 1.30.0
+bndlibver: 1.31.0
 
 Test: true
 Bundle-SymbolicName: bndtools.core;singleton:=true
