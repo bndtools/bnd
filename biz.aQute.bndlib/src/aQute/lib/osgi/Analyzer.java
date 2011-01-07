@@ -1090,9 +1090,9 @@ public class Analyzer extends Processor {
 				if (exportHeader != null) {
 					Map<String, Map<String, String>> exported = parseHeader(exportHeader);
 					if (exported != null) {
-						for ( Map.Entry<String, Map<String,String>> entry : exported.entrySet()) {
-							if ( ! classpathExports.containsKey(entry.getKey())) {
-								classpathExports.put(entry.getKey(), entry.getValue());								
+						for (Map.Entry<String, Map<String, String>> entry : exported.entrySet()) {
+							if (!classpathExports.containsKey(entry.getKey())) {
+								classpathExports.put(entry.getKey(), entry.getValue());
 							}
 						}
 					}
@@ -1384,8 +1384,9 @@ public class Analyzer extends Processor {
 			}
 			if (!map.containsKey(VERSION_ATTRIBUTE))
 				map.put(key, value);
-			else if ( !map.get(VERSION_ATTRIBUTE).equals(value)) {
-				//System.out.println("duplicate version info for " + dir + " " + value + " and " + map.get(VERSION_ATTRIBUTE));
+			else if (!map.get(VERSION_ATTRIBUTE).equals(value)) {
+				// System.out.println("duplicate version info for " + dir + " "
+				// + value + " and " + map.get(VERSION_ATTRIBUTE));
 			}
 		}
 	}
@@ -1503,6 +1504,8 @@ public class Analyzer extends Processor {
 					Jar jar = getJarFromName(s, "getting classpath");
 					if (jar != null)
 						addClasspath(jar);
+					else
+						warning("Cannot find entry on -classpath: %s", s);
 				}
 		}
 		return classpath;
@@ -1718,13 +1721,15 @@ public class Analyzer extends Processor {
 					} else {
 						// Verify this matches with packageinfo
 						String presentVersion = info.get(VERSION_ATTRIBUTE);
-						try {							
+						try {
 							Version av = new Version(presentVersion);
 							Version bv = new Version(version);
-							if ( !av.equals(bv)) {
-								error("Version from annotation for %s differs with packageinfo or Manifest", Clazz.getPackage(clazz.className));
+							if (!av.equals(bv)) {
+								error(
+										"Version from annotation for %s differs with packageinfo or Manifest",
+										Clazz.getPackage(clazz.className));
 							}
-						} catch( Exception e) {
+						} catch (Exception e) {
 							// Ignore
 						}
 					}

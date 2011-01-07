@@ -11,6 +11,24 @@ public class BuilderTest extends TestCase {
 	
 	
 	/**
+	 * No error is generated when a file is not found.
+	 * 
+	 */
+	
+	public void testFileNotFound() throws Exception {
+		Builder b = new Builder();
+		b.setPedantic(true);
+		b.setProperty("-classpath", "xyz.jar");
+		b.setProperty("Include-Resource", "lib=lib, .project");
+		b.setProperty("-resourceonly", "true");
+		b.build();
+		System.out.println(Processor.join(b.getErrors(),"\n"));
+		System.out.println(Processor.join(b.getWarnings(),"\n"));
+		assertEquals(2, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+	}
+	
+	/**
 	 * bnd seems to pick the wrong version if a packageinfo
 	 * is available multiple times.
 	 * @throws Exception 
