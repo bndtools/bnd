@@ -31,7 +31,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			range = new VersionRange(version);
 
 		List<BsnToMavenPath> plugins = ((Processor) reporter).getPlugins(BsnToMavenPath.class);
-
+		if ( plugins.isEmpty())
+			plugins.add(this);
+		
 		for (BsnToMavenPath cvr : plugins) {
 			String[] paths = cvr.getGroupAndArtifact(bsn);
 			if (paths != null) {
@@ -116,37 +118,26 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		throw new IllegalStateException("Maven does not support the put command");
 	}
 
-	public List<Version> versions(String bsn) {
-		String path = bsn.replace('.', '/');
-		File base = Processor.getFile(root, path);
-		if (!base.isDirectory()) {
-			reporter.warning("Expected a directory %s", base);
-			return null;
+	public List<Version> versions(String bsn) throws Exception {
+		
+		File files[] = get( bsn, null);
+		List<Version> versions = new ArrayList<Version>();
+		for ( File f : files ) {
+			Version v = new Version( f.getParentFile().getName());
+			versions.add(v);
 		}
-
-		List<Version> result = new ArrayList<Version>();
-
-		String[] versions = base.list();
-		for (String v : versions) {
-			v = Analyzer.cleanupVersion(v);
-			if (Verifier.VERSION.matcher(v).matches()) {
-				result.add(new Version(v));
-			} else {
-				if (reporter.isPedantic()) {
-					reporter.warning("Invalid version in maven base directory: %s", base);
-				}
-			}
-		}
-		return result;
+		return versions;
 	}
 
 	public void setProperties(Map<String, String> map) {
+		File home = new File("");
 		String root = map.get("root");
 		if (root == null) {
-			String home = System.getProperty("user.home");
-			root = home + "/.m2/repository";
-		}
-		this.root = Processor.getFile(new File(""), root).getAbsoluteFile();
+			home = new File( System.getProperty("user.home") );
+			this.root = Processor.getFile(home , ".m2/repository").getAbsoluteFile();
+		} else
+			this.root = Processor.getFile(home, root).getAbsoluteFile();
+		
 		if (!this.root.isDirectory()) {
 			reporter.error("Maven repository did not get a proper URL to the repository %s", root);
 		}
@@ -159,16 +150,24 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public String[] getGroupAndArtifact(String bsn) {
-		int n = bsn.lastIndexOf('.');
-		if (n < 0) {
-			return new String[] { bsn, bsn };
+		String groupId;
+		String artifactId;
+		int n = bsn.indexOf('.');
+		
+		while ( n > 0 ) {
+			artifactId = bsn.substring(n+1);
+			groupId = bsn.substring(0,n);
+			
+			File gdir = new File(root, groupId.replace('.',File.separatorChar)).getAbsoluteFile();
+			File adir = new File( gdir, artifactId).getAbsoluteFile();
+			if ( adir.isDirectory() )
+				return new String[] {groupId, artifactId};
+			
+			n = bsn.indexOf('.',n+1);
 		}
-		String groupId = bsn.substring(0, n);
-		String artifactId = bsn.substring(n + 1);
-
-		return new String[] { groupId, artifactId };
+		return null;
 	}
-
+	
 	public String getName() {
 		if (name == null) {
 			return toString();
@@ -189,4 +188,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return null;
 	}
 
+	public void setRoot( File f  ) {
+		root = f;
+	}
 }

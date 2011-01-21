@@ -644,7 +644,7 @@ public class Analyzer extends Processor {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: " + classpath[i]);
+				error("Missing file on classpath: %s", classpath[i]);
 			}
 		}
 		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
