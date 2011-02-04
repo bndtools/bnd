@@ -12,10 +12,12 @@ Bundle-Localization: plugin
 Bundle-ClassPath: .,\
 	bndtools.bndplugins.repos-0.0.0.jar
 
-Import-Package: org.eclipse.core.runtime;registry=!,\
+# 1. JUNit and Felix Shell are optional dependencies.
+# 2. Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: \
 	junit.framework;resolution:=optional,\
 	org.apache.felix.shell;resolution:=optional,\
-	*
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 # Bundle Content
 
