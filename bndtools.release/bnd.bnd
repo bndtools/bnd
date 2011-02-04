@@ -10,25 +10,46 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
 
-Private-Package: bndtools.release.*
+Import-Package: org.eclipse.core.runtime;registry=!,\
+	*
+
+Private-Package: bndtools.release,\
+	bndtools.release.nl
 
 Include-Resource: /=resources
 
 -buildpath: bndtools.bndplugins.repos,\
 	bndtools.diff;version=project, \
 	biz.aQute.bndlib;version=${bndlibver}, \
-	org.eclipse.core.runtime, \
-	org.eclipse.core.resources,\
-	org.eclipse.ui.workbench,\
-	org.eclipse.ui.ide,\
-	org.eclipse.swt.cocoa.macosx.x86_64,\
-	org.eclipse.swt,\
-	org.eclipse.core.jobs,\
-	org.eclipse.equinox.common,\
+	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
+	org.eclipse.core.resources,\
+	org.eclipse.equinox.common,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.swt,\
+	org.eclipse.text,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.ide,\
+	org.eclipse.core.jobs,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
-	org.eclipse.osgi, \
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.views,\
+	org.eclipse.debug.core,\
+	org.eclipse.debug.ui,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.jdt.junit,\
+	org.eclipse.team.core,\
+	org.eclipse.core.filesystem, \
+	org.eclipse.equinox.preferences, \
 	com.springsource.org.objectweb.asm,\
 	com.springsource.org.objectweb.asm.tree,\
 	osgi.core
+Export-Package: bndtools.release.api

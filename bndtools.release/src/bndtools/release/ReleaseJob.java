@@ -10,81 +10,78 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-
-import bndtools.diff.JarDiff;
-import bndtools.release.nl.Messages;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Jar;
+import bndtools.diff.JarDiff;
+import bndtools.release.api.ReleaseContext;
+import bndtools.release.api.ReleaseUtils;
 
-public class ReleaseJob extends Job {
-
-	private final Shell shell;
-	private final Project project;
-	private final List<RepositoryPlugin> repos;
+public class ReleaseJob  extends Job {
 	
-	public ReleaseJob(Project project, List<RepositoryPlugin> repos) {
-		super(Messages.releaseJob);
+	private Project project;
+	private List<JarDiff> diffs;
+	private String repository;
+
+	public ReleaseJob(Project project, List<JarDiff> diffs, String repository) {
+		super("Bundle Release Job");
 		this.project = project;
-		this.repos = repos;
-		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-		setUser(true);
+		this.diffs = diffs;
+		this.repository = repository;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		
-        try {
-	    	monitor.beginTask(Messages.cleaningProject, 100);
-	        try {
-				IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName());
-				proj.build(IncrementalProjectBuilder.FULL_BUILD, null);
-			} catch (CoreException e) {
-				return e.getStatus();
-			}
-			monitor.setTaskName(Messages.releasing);
-			monitor.worked(33);
-			monitor.subTask(Messages.checkingExported);
-			final List<JarDiff> diffs = JarDiff.createJarDiffs(project, repos);
-			if (diffs == null || diffs.size() == 0) {
-				return Status.OK_STATUS;
-			}
-			monitor.worked(33);
+		try {
 			
-			Runnable runnable = new Runnable() {
-				public void run() {
-					BundleReleaseDialog dialog = new BundleReleaseDialog(shell, project, diffs);
-					dialog.open();
-					if (dialog.getMessage() != null) {
-						Activator.getDefault().message(dialog.getMessage());
-					}
-				}
-			};
-			if (Display.getCurrent() == null) {
-				Display.getDefault().asyncExec(runnable);
-			} else {
-				runnable.run();
+			IProject proj = ReleaseUtils.getProject(project);
+			proj.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+			
+			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
+			ReleaseContext context = new ReleaseContext(project, diffs, repo, monitor);
+			
+			boolean ok = ReleaseHelper.release(context, diffs);
+			
+			// Necessary???
+			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
+			
+			if (repo != null) {
+				File f = Activator.getLocalRepoLocation(repo);
+				Activator.refreshFile(f);
 			}
-			monitor.worked(33);
-	        return Status.OK_STATUS;
-        } finally {
-        	
-        	monitor.done();
-        }
+			if (ok) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Project : ");
+				sb.append(project.getName());
+				sb.append("\n\n");
+				sb.append("Released :\n");
 
+				for (Jar jar : context.getReleasedJars()) {
+					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
+				}
+				
+				sb.append("\n\nto : ");
+				sb.append(repository);
+				
+				Activator.getDefault().message(sb.toString());
+			}
+
+		} catch (Exception e) {
+			return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+		}
+
+		return Status.OK_STATUS;
 	}
-	
 }

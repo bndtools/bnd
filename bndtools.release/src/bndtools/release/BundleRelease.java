@@ -66,7 +66,7 @@ public class BundleRelease {
 		gridLayout.marginWidth = 0;
 		gridLayout.marginHeight = 0;
 		container.setLayout(gridLayout);
-		container.setLayoutData(new GridData(SWT.HORIZONTAL, SWT.VERTICAL,
+		container.setLayoutData(new GridData(GridData.FILL, GridData.FILL,
 				true, true));
 
 		Composite comp = new Composite(container, SWT.NONE);
@@ -76,7 +76,7 @@ public class BundleRelease {
 		gridLayout.marginWidth = 0;
 		gridLayout.marginHeight = 0;
 		comp.setLayout(gridLayout);
-		comp.setLayoutData(new GridData(SWT.HORIZONTAL, SWT.VERTICAL, true,
+		comp.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true,
 				true));
 
 		createTreeViewer(comp);
@@ -88,7 +88,7 @@ public class BundleRelease {
 
 		treeViewer = new TreeViewer(container, SWT.H_SCROLL | SWT.V_SCROLL
 				| SWT.BORDER | SWT.FULL_SELECTION);
-		GridData gd = new GridData(SWT.HORIZONTAL, SWT.VERTICAL, true, true);
+		GridData gd = new GridData(GridData.FILL, GridData.FILL, true, true);
 		// gd.grabExcessHorizontalSpace = true;
 		gd.widthHint = 800;
 		gd.heightHint = 550;

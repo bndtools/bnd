@@ -28,6 +28,9 @@ public class Messages extends NLS {
 	public static String releasing;
 	public static String checkingExported;
 	public static String releaseJob;
+	public static String project;
+	public static String releaseDialogTitle;
+	public static String errorDialogTitle;
 
 	static {
 		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);

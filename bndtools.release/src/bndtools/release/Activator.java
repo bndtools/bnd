@@ -11,8 +11,8 @@
 package bndtools.release;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,9 +21,14 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -35,6 +40,8 @@ import org.osgi.framework.ServiceReference;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.release.api.IReleaseParticipant;
+import bndtools.release.api.ReleaseUtils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -406,58 +413,75 @@ public class Activator extends AbstractUIPlugin {
 		}
 		return null;
 	}
-
-    protected static String toLocal(File f) throws Exception {
-		Workspace ws = Activator.getService(Workspace.class);
-		if (ws == null) {
-			return "";
-		}
-        String root = ws.getBase().getAbsolutePath();
-        String path = f.getAbsolutePath().substring(root.length());
-        return path;
-    }
-
+    
 	public static void refreshFile(File f) throws Exception {
 		if (f == null) {
 			return;
 		}
-        String path = toLocal(f);
-        IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+        IResource r = ReleaseUtils.toResource(f);
         if (r != null) {
             r.refreshLocal(IResource.DEPTH_INFINITE, null);
         }
     }
 
 	public static IProject getProject(File f) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        String wsLoc = root.getLocation().toOSString();
-        try {
-			String fLoc = f.getCanonicalPath().toString();
-			if (fLoc.startsWith(wsLoc)) {
-				String s = fLoc.substring(wsLoc.length() + 1);
-				IResource r = root.findMember(s);
-				return r.getProject();
-			}
-		} catch (IOException e) {
-			return null;
-		}
-		return null;
+		IResource res = ReleaseUtils.toResource(f);
+		return res.getProject();
 	}
 
 	public static IPath getPath(File f) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        String wsLoc = root.getLocation().toOSString();
-        try {
-			String fLoc = f.getCanonicalPath().toString();
-			if (fLoc.startsWith(wsLoc)) {
-				String s = fLoc.substring(wsLoc.length() + 1);
-				IResource r = root.findMember(s);
-				return r.getProjectRelativePath();
-			}
-		} catch (IOException e) {
-			return null;
-		}
-		return null;
+		IResource res = ReleaseUtils.toResource(f);
+		return res.getProjectRelativePath();
 	}
+
+	public static List<IReleaseParticipant> getReleaseParticipants() {
+		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsReleaseParticipant");
+		if (elements.length == 0) {
+			return Collections.emptyList();
+		}
+		List<IReleaseParticipant> participants = new ArrayList<IReleaseParticipant>();
+	    for (IConfigurationElement element : elements) {
+            try {
+            	IReleaseParticipant participant = (IReleaseParticipant) element.createExecutableExtension("class");
+            	String strRanking = element.getAttribute("ranking");
+            	int ranking = 0;
+            	if (strRanking != null && strRanking.length() > 0) {
+            		ranking = Integer.valueOf(strRanking); 
+            	}
+            	participant.setRanking(ranking);
+            	participants.add(participant);
+            } catch (CoreException e) {
+                logError("Error executing startup participant", e);
+            }
+        }
+	    return participants;
+	}
+	
+	public static void logError(String message, Throwable exception) {
+		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
+	}
+	public static void log(IStatus status) {
+		Activator instance = plugin;
+		if(instance != null) {
+			instance.getLog().log(status);
+		} else {
+			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Activator.PLUGIN_ID));
+		}
+	}
+    public void error(List<String> errors) {
+        final StringBuffer sb = new StringBuffer();
+        for (String msg : errors) {
+            sb.append(msg);
+            sb.append("\n");
+        }
+
+        async(new Runnable() {
+            public void run() {
+                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                ErrorDialog.openError(null, "Errors during release",
+                        sb.toString(), s);
+            }
+        });
+    }
 
 }

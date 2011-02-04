@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+   <extension-point id="bndtoolsReleaseParticipant" name="Release Participant" schema="schema/bndtoolsReleaseParticipant.exsd"/>
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
