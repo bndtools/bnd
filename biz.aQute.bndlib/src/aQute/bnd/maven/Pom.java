@@ -77,7 +77,6 @@ public class Pom extends WriteResource {
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		project.addAttribute("xmlns:xsi", "");
 		project.addAttribute("xsi:schemaLocation",
 				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
 

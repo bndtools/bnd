@@ -1,7 +1,6 @@
 -sourcepath:					../aQute.libg/src
--pom:
 
-
+Bundle-SCM:						git://github.com/bnd/bnd.git
 Bundle-Vendor: 					aQute SARL http://www.aQute.biz
 Bundle-Copyright:				All files contained in this JAR are licensed under the Apache 2.0 license, unless noted differently in their source (see swing2swt).
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
@@ -22,6 +21,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	aQute.libg;version=project,\
 	osgi.core;version=4.1
 
--pom: true
-
-Bundle-Version: 1.32.0
+Bundle-Version: 1.34.0
