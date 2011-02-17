@@ -28,6 +28,7 @@ felix.obr.packages: \
 	org.xmlpull.v1
 
 Private-Package: bndtools*,\
+	org.bndtools.core.*,\
 	org.ardverk.collection,\
 	${felix.obr.packages},\
 	org.osgi.impl.bundle.obr.resource,\
@@ -56,6 +57,9 @@ Include-Resource: resources,\
 	biz.aQute.bndlib,\
 	org.apache.felix.bundlerepository,\
 	bindex,\
+	libs/stax-api-1.0.1.jar;version=file,\
+	libs/stax2-api-3.1.1.jar;version=file,\
+	libs/woodstox-core-asl-4.1.1.jar;version=file,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -85,4 +89,5 @@ Include-Resource: resources,\
 	patricia_trie,\
 	org.eclipse.equinox.preferences,\
 	org.eclipse.help.base,\
-	org.eclipse.ltk.core.refactoring
+	org.eclipse.ltk.core.refactoring,\
+	org.eclipse.ltk.ui.refactoring

@@ -111,6 +111,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	}
 	void ensureBndBndExists(IProject project) throws CoreException {
 		IFile bndFile = project.getFile(Project.BNDFILE);
+		bndFile.refreshLocal(0, null);
 		if(!bndFile.exists()) {
 			bndFile.create(new ByteArrayInputStream(new byte[0]), 0, null);
 		}
