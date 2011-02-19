@@ -17,6 +17,7 @@ Bundle-ClassPath: .,\
 Import-Package: \
 	junit.framework;resolution:=optional,\
 	org.apache.felix.shell;resolution:=optional,\
+	com.ctc.wstx.stax,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 # Bundle Content
@@ -48,18 +49,13 @@ Export-Package: bndtools.api.*;version=${baseversion},\
 	aQute.bnd.service;version=${bndlibver}, \
 	aQute.lib.osgi;version=${bndlibver}
 
-Include-Resource: resources,\
+Include-Resource: plugin.xml=_plugin.xml,\
+	resources,\
 	${repo;bndtools.bndplugins.repos},\
 	${repo;org.apache.felix.bundlerepository}
-
-# Build and Run
--buildpath: bndtools.bndplugins.repos,\
-	biz.aQute.bndlib,\
-	org.apache.felix.bundlerepository,\
-	bindex,\
-	libs/stax-api-1.0.1.jar;version=file,\
-	libs/stax2-api-3.1.1.jar;version=file,\
-	libs/woodstox-core-asl-4.1.1.jar;version=file,\
+	
+eclipse.deps: \
+	osgi.core,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -74,7 +70,6 @@ Include-Resource: resources,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
-	osgi.core,\
 	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.forms,\
@@ -86,8 +81,21 @@ Include-Resource: resources,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
-	patricia_trie,\
 	org.eclipse.equinox.preferences,\
 	org.eclipse.help.base,\
 	org.eclipse.ltk.core.refactoring,\
-	org.eclipse.ltk.ui.refactoring
+	org.eclipse.ltk.ui.refactoring,\
+	org.eclipse.core.filebuffers
+
+
+# Build and Run
+-buildpath: bndtools.bndplugins.repos,\
+	biz.aQute.bndlib,\
+	org.apache.felix.bundlerepository,\
+	bindex,\
+	patricia_trie,\
+	junit.osgi,\
+	${eclipse.deps},\
+	stax2-api,\
+	woodstox-core-asl,\
+	javax.xml.stream

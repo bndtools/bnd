@@ -225,6 +225,22 @@
             </objectState>
          </visibility>
       </objectContribution>
+      
+      <objectContribution
+         adaptable="true"
+         id="bndtools.mavenPomContribution"
+         objectClass="org.eclipse.core.resources.IFile"
+         nameFilter="pom.xml">
+         <action
+            class="org.bndtools.core.refactor.ui.AdoptPomAction"
+            enablesFor="1"
+            icon="icons/bnd_nature_add.png"
+            id="org.bndtools.adoptPomAction"
+            label="Add OSGi/Bndtools to POM"
+            menubarPath="additions"
+            style="push">
+         </action>
+      </objectContribution>
    </extension>
    <extension
          id="bndproblem"

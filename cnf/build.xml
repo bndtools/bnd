@@ -197,6 +197,9 @@
             <include name="bndtools.release/generated/*.jar"/>
 				<include name="cnf/repo/com.springsource.org.objectweb.asm/com.springsource.org.objectweb.asm-3.1.0.jar"/>
             <include name="cnf/repo/com.springsource.org.objectweb.asm.tree/com.springsource.org.objectweb.asm.tree-3.1.0.jar"/>
+				<include name="cnf/repo/javax.xml.stream/javax.xml.stream-1.0.1.jar"/>
+				<include name="cnf/repo/stax2-api/stax2-api-3.1.1.jar"/>
+				<include name="cnf/repo/woodstox-core-asl/woodstox-core-asl-4.1.1.jar"/>
 			</bundles>
 		</p2.publish.featuresAndBundles>
 	</target>
