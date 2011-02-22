@@ -199,7 +199,10 @@ public class Processor implements Reporter, Constants, Closeable {
 			else
 				f = new File(f, first);
 		}
-		return new File(f, file).getAbsoluteFile();
+		if ( file.equals(".."))
+			return f.getParentFile();
+		else
+			return new File(f, file).getAbsoluteFile();
 	}
 
 	public File getFile(String file) {

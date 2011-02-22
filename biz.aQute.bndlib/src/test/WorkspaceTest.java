@@ -16,4 +16,12 @@ public class WorkspaceTest extends TestCase {
     }
 
     
+    public void testNestedWorkspace() throws Exception {
+        Workspace ws = Workspace.getWorkspace( new File("test/redirectws/wss/ws"));
+        
+        assertEquals( "true", ws.getProperty("testcnf"));
+        assertEquals( "true", ws.getProperty("ext"));
+    }
+
+    
 }

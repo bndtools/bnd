@@ -12,6 +12,7 @@ import javax.naming.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 
 public class Workspace extends Processor {
@@ -43,15 +44,27 @@ public class Workspace extends Processor {
 
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
-		File test = new File(workspaceDir, CNFDIR);
 
-		// Check if we can find a bnd dir higher up so
-		// we can have nested workspaces.
-		if (!test.isDirectory())
-			test = new File(workspaceDir, BNDDIR);
+		// the cnf directory can actually be a
+		// file that redirects
+		while (workspaceDir.isDirectory()) {
+			File test = new File(workspaceDir, CNFDIR);
 
-		if (!test.isDirectory())
-			throw new IllegalArgumentException("No Workspace found from: " + parent);
+			if (!test.exists())
+				test = new File(workspaceDir, BNDDIR);
+
+			if ( test.isDirectory())
+				break;
+			
+			if (test.isFile()) {
+				String redirect = IO.collect(test).trim();
+				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
+				workspaceDir = test;
+			}
+			if (!test.exists())
+				throw new IllegalArgumentException("No Workspace found from: " + parent);
+		}
+
 
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
@@ -84,7 +97,7 @@ public class Workspace extends Processor {
 		if (extensions != null) {
 			for (File extension : extensions) {
 				if (extension.getName().endsWith(".bnd"))
-					doIncludeFile(extension, true, getProperties() );
+					doIncludeFile(extension, true, getProperties());
 			}
 		}
 
