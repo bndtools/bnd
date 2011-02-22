@@ -21,4 +21,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	aQute.libg;version=project,\
 	osgi.core;version=4.1
 
-Bundle-Version: 1.34.0
+Bundle-Version: 1.35.0
