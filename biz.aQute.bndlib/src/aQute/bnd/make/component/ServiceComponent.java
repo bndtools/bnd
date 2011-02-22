@@ -72,6 +72,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		analyzer.getInfo(m, "Service-Component: ");
 		m.close();
+		
 		return false;
 	}
 

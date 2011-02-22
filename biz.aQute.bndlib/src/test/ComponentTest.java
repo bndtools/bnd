@@ -30,6 +30,33 @@ public class ComponentTest extends TestCase {
 		factory.setNamespaceAware(true);
 	}
 	
+	
+	
+	/**
+	 * Test if a reference is made to an interface implemented on a superclass.
+	 * 
+	 * This is from https://github.com/bnd/bnd/issues#issue/23
+	 */
+		
+	public void testProvideFromSuperClass() throws Exception {
+		Builder b = new Builder();
+		b.setClasspath(new File[] { new File("bin") });
+		b.setProperty("Service-Component", "*InheritedActivator");
+		b.setProperty("Private-Package", "test.activator.inherits");
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.build();
+		System.out.println(b.getErrors());
+		System.out.println(b.getWarnings());
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+
+		Manifest m = b.getJar().getManifest();
+		String imports = m.getMainAttributes().getValue("Import-Package"); 
+		assertTrue(imports.contains("org.osgi.framework"));
+	}
+	
+	
+	
 	/**
 	 * Test if a package private method gives us 1.1 + namespace in the XML
 	 */
