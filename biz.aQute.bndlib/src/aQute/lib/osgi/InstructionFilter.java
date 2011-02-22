@@ -14,6 +14,9 @@ public class InstructionFilter implements FileFilter {
 		this.recursive = recursive;
 		this.doNotCopy = doNotCopy;
 	}
+	public InstructionFilter (Instruction instruction, boolean recursive) {
+		this(instruction, recursive, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
+	}
 	public boolean isRecursive() {
 		return recursive;
 	}

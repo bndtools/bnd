@@ -33,13 +33,12 @@ public class Project extends Processor {
 	boolean						preparedPaths;
 	final Collection<Project>	dependson		= new LinkedHashSet<Project>();
 	final Collection<Container>	buildpath		= new LinkedHashSet<Container>();
-	final Collection<Container>	testpath		= new LinkedHashSet<Container>();
+	final Collection<Container>	testpath			= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath			= new LinkedHashSet<Container>();
-	final Collection<String>	runfile			= new LinkedHashSet<String>();
+	final Collection<Container>	runbundles		= new LinkedHashSet<Container>();
 	final Collection<File>		sourcepath		= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath	= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath	= new LinkedHashSet<Container>();
-	final Collection<Container>	runbundles		= new LinkedHashSet<Container>();
 	final Lock					lock			= new ReentrantLock(true);
 	volatile String				lockingReason;
 	volatile Thread				lockingThread;
@@ -168,9 +167,6 @@ public class Project extends Processor {
 					sourcepath.clear();
 					allsourcepath.clear();
 					bootclasspath.clear();
-					runpath.clear();
-					runbundles.clear();
-					testpath.clear();
 
 					// We use a builder to construct all the properties for
 					// use.
@@ -241,9 +237,7 @@ public class Project extends Processor {
 					// before.
 
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
-					doPath(runpath, dependencies, parseRunpath(), bootclasspath);
-					doPath(runbundles, dependencies, parseRunbundles(), null);
-					doPath(testpath, dependencies, parseTestpath(), null);
+					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
 
 					// We now know all dependent projects. But we also depend
 					// on whatever those projects depend on. This creates an
@@ -273,7 +267,8 @@ public class Project extends Processor {
 			trail.remove(this);
 		}
 	}
-
+	
+	
 	public File getSrc() {
 		return new File(getBase(), getProperty("src", "src"));
 	}
@@ -446,13 +441,26 @@ public class Project extends Processor {
 		return testpath;
 	}
 
+	/**
+	 * Handle dependencies for paths that are calculated on demand.
+	 * 
+	 * @param testpath2
+	 * @param parseTestpath
+	 */
+	private void justInTime(Collection<Container> path, List<Container> entries) {
+		if ( path.isEmpty())
+			doPath(path,dependson,entries,null);
+	}
+
 	public Collection<Container> getRunpath() throws Exception {
 		prepare();
+    	justInTime(runpath, parseRunpath());
 		return runpath;
 	}
 
 	public Collection<Container> getRunbundles() throws Exception {
 		prepare();
+		justInTime(runbundles, parseRunbundles());
 		return runbundles;
 	}
 

@@ -923,12 +923,12 @@ public class BuilderTest extends TestCase {
     public void testExportContents() throws Exception {
         Builder builder = new Builder();
         builder.setProperty(Analyzer.INCLUDE_RESOURCE,
-                "test/activator=src/test/activator");
+                "test/activator/inherits=src/test/activator/inherits");
         builder.setProperty("-exportcontents", "*;x=true");
         builder.build();
         Manifest manifest = builder.calcManifest();
         Attributes main = manifest.getMainAttributes();
-        assertEquals("test.activator;x=true", main.getValue("Export-Package"));
+        assertEquals("test.activator.inherits;x=true", main.getValue("Export-Package"));
     }
 
     /**
