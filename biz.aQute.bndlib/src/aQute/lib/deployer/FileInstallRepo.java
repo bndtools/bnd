@@ -68,10 +68,6 @@ public class FileInstallRepo extends FileRepo {
                 + version.getMinor() + "." + version.getMicro() + ".jar";
         File file = new File(dir, fName);
 
-        System.out.println("put" + file.getAbsolutePath() + " "
-                + file.lastModified() + " " + jar.lastModified());
-
-        System.out.println("Updating " + fName);
         jar.write(file);
 
         file = new File(dir, bsn + "-latest.jar");
