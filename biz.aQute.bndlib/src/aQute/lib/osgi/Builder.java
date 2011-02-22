@@ -302,21 +302,26 @@ public class Builder extends Analyzer {
 
 	public void analyze() throws Exception {
 		super.analyze();
-		cleanupVersion(imports);
-		cleanupVersion(exports);
+		cleanupVersion(imports, null);
+		cleanupVersion(exports, getVersion());
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null)
 			setProperty(BUNDLE_VERSION, cleanupVersion(version));
 	}
 
-	public void cleanupVersion(Map<String, Map<String, String>> mapOfMap) {
+	public void cleanupVersion(Map<String, Map<String, String>> mapOfMap, String defaultVersion) {
 		for (Iterator<Map.Entry<String, Map<String, String>>> e = mapOfMap.entrySet().iterator(); e
 				.hasNext();) {
 			Map.Entry<String, Map<String, String>> entry = e.next();
 			Map<String, String> attributes = entry.getValue();
-			if (attributes.containsKey("version")) {
-				attributes.put("version", cleanupVersion(attributes.get("version")));
+			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
+			if (v == null && defaultVersion != null) {
+				v =  getVersion();
+				if ( isPedantic() )
+				warning("%s - No export version, used bundle version %s.", entry.getKey(), v);
 			}
+			if ( v != null)
+				attributes.put(Constants.VERSION_ATTRIBUTE, cleanupVersion(v));
 		}
 	}
 

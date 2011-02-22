@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class BuilderTest extends TestCase {
 
@@ -924,11 +925,15 @@ public class BuilderTest extends TestCase {
         Builder builder = new Builder();
         builder.setProperty(Analyzer.INCLUDE_RESOURCE,
                 "test/activator/inherits=src/test/activator/inherits");
-        builder.setProperty("-exportcontents", "*;x=true");
+        builder.setProperty("-exportcontents", "*;x=true;version=1");
         builder.build();
         Manifest manifest = builder.calcManifest();
         Attributes main = manifest.getMainAttributes();
-        assertEquals("test.activator.inherits;x=true", main.getValue("Export-Package"));
+        Map<String,Map<String,String>> map = OSGiHeader.parseHeader(main.getValue("Export-Package"));
+        Map<String,String> export = map.get("test.activator.inherits");
+        assertNotNull( export );
+        assertEquals("1", export.get("version"));
+        assertEquals("true", export.get("x"));
     }
 
     /**
