@@ -689,7 +689,11 @@ public class Launcher implements ServiceListener {
 		private static final long			serialVersionUID	= 1L;
 		private static Vector<Permission>	list				= new Vector<Permission>();
 
-		{
+		static {
+			list.add( new AllPermission());
+		}
+		
+		{			
 			setReadOnly();
 		}
 
