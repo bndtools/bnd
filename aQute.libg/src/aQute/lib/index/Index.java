@@ -66,7 +66,6 @@ public class Index implements Iterable<byte[]> {
 
 				public byte[] next() {
 					if (leaf) {
-						System.out.println(number + " " + rover + " " + k(rover) + " " + c(rover));
 						return k(rover++);
 					}
 
