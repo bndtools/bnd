@@ -23,9 +23,10 @@ public class BuilderTest extends TestCase {
 		b.setProperty("-resourceonly", "true");
 		b.build();
 		System.out.println(Processor.join(b.getErrors(),"\n"));
+		System.out.println("xx");
 		System.out.println(Processor.join(b.getWarnings(),"\n"));
-		assertEquals(2, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(1, b.getErrors().size());
+		assertEquals(1, b.getWarnings().size());
 	}
 	
 	/**

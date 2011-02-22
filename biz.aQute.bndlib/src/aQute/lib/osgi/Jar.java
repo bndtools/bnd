@@ -1,6 +1,7 @@
 package aQute.lib.osgi;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
@@ -251,7 +252,136 @@ public class Jar implements Closeable {
 			return;
 
 		manifest = clean(manifest);
-		manifest.write(out);
+		outputManifest(manifest, out);
+	}
+
+	/**
+	 * Unfortunately we have to write our own manifest :-( because of a stupid
+	 * bug in the manifest code. It tries to handle UTF-8 but the way it does it
+	 * it makes the bytes platform dependent.
+	 * 
+	 * So the following code outputs the manifest.
+	 * 
+	 * A Manifest consists of
+	 * 
+	 * <pre>
+	 *   'Manifest-Version: 1.0\r\n'
+	 *   main-attributes *
+	 *   \r\n
+	 *   name-section
+	 *   
+	 *   main-attributes ::= attributes
+	 *   attributes      ::= key ': ' value '\r\n'
+	 *   name-section    ::= 'Name: ' name '\r\n' attributes
+	 * </pre>
+	 * 
+	 * Lines in the manifest should not exceed 72 bytes (! this is where the
+	 * manifest screwed up as well when 16 bit unicodes were used).
+	 * 
+	 * <p>
+	 * As a bonus, we can now sort the manifest!
+	 */
+	static Charset	UTF8		= Charset.forName("UTF-8");
+	static byte[]	CONTINUE	= "\r\n ".getBytes(UTF8);
+
+	/**
+	 * Main function to output a manifest properly in UTF-8.
+	 * 
+	 * @param manifest
+	 *            The manifest to output
+	 * @param out
+	 *            The output stream
+	 * @throws IOException
+	 *             when something fails
+	 */
+	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
+		write(out, 0, "Manifest-Version: 1\r\n");
+		attributes(manifest.getMainAttributes(), out);
+		write(out, 0, "\n\r");
+		for (Map.Entry<String, Attributes> entry : manifest.getEntries().entrySet()) {
+			writeEntry(out, "Name", entry.getKey());
+			attributes(entry.getValue(), out);
+		}
+	}
+
+	/**
+	 * Write out an entry, handling proper unicode and line length constraints
+	 * 
+	 */
+	private static void writeEntry(OutputStream out, String name, String value) throws IOException {
+		int n = write(out, 0, name + ": ");
+		n = write(out, n, value);
+		write(out, n, "\r\n");
+	}
+
+	/**
+	 * Convert a string to bytes with UTF8 and then output in max 72 bytes
+	 * 
+	 * @param out
+	 *            the output string
+	 * @param i
+	 *            the current width
+	 * @param s
+	 *            the string to output
+	 * @return the new width
+	 * @throws IOException
+	 *             when something fails
+	 */
+	private static int write(OutputStream out, int i, String s) throws IOException {
+		byte[] bytes = s.getBytes(UTF8);
+		return write(out, i, bytes);
+	}
+
+	/**
+	 * Write the bytes but ensure that the line length does not exceed 72
+	 * characters. If it is more than 70 characters, we just put a cr/lf +
+	 * space.
+	 * 
+	 * @param out
+	 *            The output stream
+	 * @param width
+	 *            The nr of characters output in a line before this method
+	 *            started
+	 * @param bytes
+	 *            the bytes to output
+	 * @return the nr of characters in the last line
+	 * @throws IOException
+	 *             if something fails
+	 */
+	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
+		for (int i = 0; i < bytes.length; i++) {
+			if (width >= 70) { // we need to add the \n\r!
+				out.write(CONTINUE);
+				width = 1;
+			}
+			out.write(bytes[i]);
+			width++;
+		}
+		return width;
+	}
+
+	/**
+	 * Output an Attributes map. We will sort this map before outputing.
+	 * 
+	 * @param value
+	 *            the attrbutes
+	 * @param out
+	 *            the output stream
+	 * @throws IOException
+	 *             when something fails
+	 */
+	private static void attributes(Attributes value, OutputStream out) throws IOException {
+		TreeMap<String, String> map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+		for (Map.Entry<Object, Object> entry : value.entrySet()) {
+			map.put(entry.getKey().toString(), entry.getValue().toString());
+		}
+
+		map.remove("Manifest-Version"); // get rid of
+		// manifest
+		// version
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			writeEntry(out, entry.getKey(), entry.getValue());
+		}
 	}
 
 	private static Manifest clean(Manifest org) {
