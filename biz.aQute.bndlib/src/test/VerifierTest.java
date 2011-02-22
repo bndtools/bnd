@@ -218,7 +218,7 @@ public class VerifierTest extends TestCase {
     public void testSimple() throws Exception {
         File cp[] = { new File("jar/mina.jar") };
         Properties p = new Properties();
-        p.put("Export-Package", "org.apache.mina.*");
+        p.put("Export-Package", "org.apache.mina.*;version=1");
         p.put("Import-Package", "*");
         p.put("DynamicImport-Package", "org.slf4j");
         Builder bmaker = new Builder();
@@ -231,6 +231,8 @@ public class VerifierTest extends TestCase {
                 "org.slf4j") >= 0);
         assertTrue(m.getMainAttributes().getValue("DynamicImport-Package")
                 .indexOf("org.slf4j") >= 0);
+        System.out.println(Processor.join( bmaker.getErrors(),"\n"));
+        System.out.println(Processor.join( bmaker.getWarnings(),"\n"));
         assertTrue(bmaker.getErrors().size() == 0);
         assertTrue(bmaker.getWarnings().size() == 0);
     }

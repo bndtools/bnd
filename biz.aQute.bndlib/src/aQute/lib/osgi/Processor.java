@@ -28,7 +28,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	private File			base			= new File("").getAbsoluteFile();
 	private List<Closeable>	toBeClosed		= newList();
 
-	Properties		properties;
+	Properties				properties;
 	private Macro			replacer;
 	private long			lastModified;
 	private File			propertiesFile;
@@ -421,7 +421,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	}
 
 	public void setProperties(Properties properties) {
-		doIncludes(getBase(), properties, new HashSet<String>());
+		doIncludes(getBase(), properties);
 		this.properties.putAll(properties);
 	}
 
@@ -446,8 +446,10 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * @param p
 	 * @param done
 	 * @throws IOException
+	 * @throws IOException
 	 */
-	private void doIncludes(File ubase, Properties p, Set<String> done) {
+
+	private void doIncludes(File ubase, Properties p) {
 		String includes = p.getProperty(INCLUDE);
 		if (includes != null) {
 			includes = getReplacer().process(includes);
@@ -470,40 +472,47 @@ public class Processor implements Reporter, Constants, Closeable {
 				}
 				try {
 					File file = getFile(ubase, value).getAbsoluteFile();
-					if (file.isFile()) {
-						if (included != null && included.contains(file)) {
-							error("Cyclic include of " + file);
-						} else {
-							addIncluded(file);
-							updateModified(file.lastModified(), "Include " + value);
-							InputStream in = new FileInputStream(file);
-							Properties sub;
-							if (file.getName().toLowerCase().endsWith(".mf")) {
-								sub = getManifestAsProperties(in);
-							} else
-								sub = loadProperties(in, file.getAbsolutePath());
-							in.close();
-
-							doIncludes(file.getParentFile(), sub, done);
-							// make sure we do not override properties
-							if (overwrite) {
-								p.putAll(sub);
-							} else {
-								for ( Map.Entry<?,?>  entry : sub.entrySet()) {
-									if ( !properties.containsKey(entry.getKey()))
-										setProperty((String) entry.getKey(), (String) entry.getValue());
-								}
-							}
-						}
-					} else {
-						if (fileMustExist)
-							error("Included file " + file
-									+ (file.exists() ? " does not exist" : " is directory"));
-					}
+					if (!file.isFile() && fileMustExist) {
+						error("Included file " + file
+								+ (file.exists() ? " does not exist" : " is directory"));
+					} else
+						doIncludeFile(file,overwrite, p);
 				} catch (IOException e) {
 					if (fileMustExist)
 						error("Error in processing included file: " + value, e);
 				}
+			}
+		}
+	}
+
+	/**
+	 * @param file
+	 * @param parent
+	 * @param done
+	 * @param overwrite
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	protected void doIncludeFile(File file, boolean overwrite, Properties target)
+			throws FileNotFoundException, IOException {
+		if (included != null && included.contains(file)) {
+			error("Cyclic or multiple include of " + file);
+		} else {
+			addIncluded(file);
+			updateModified(file.lastModified(), file.toString());
+			InputStream in = new FileInputStream(file);
+			Properties sub;
+			if (file.getName().toLowerCase().endsWith(".mf")) {
+				sub = getManifestAsProperties(in);
+			} else
+				sub = loadProperties(in, file.getAbsolutePath());
+			in.close();
+
+			doIncludes(file.getParentFile(), sub);
+			// make sure we do not override properties
+			for (Map.Entry<?, ?> entry : sub.entrySet()) {
+				if (overwrite || !target.containsKey(entry.getKey()))
+					target.setProperty((String) entry.getKey(), (String) entry.getValue());
 			}
 		}
 	}
@@ -617,11 +626,11 @@ public class Processor implements Reporter, Constants, Closeable {
 		if (filter != null && filter.contains(key)) {
 			value = (String) getProperties().get(key);
 		} else {
-			while( source != null) {
+			while (source != null) {
 				value = (String) source.getProperties().get(key);
-				if ( value != null)
+				if (value != null)
 					break;
-				
+
 				source = source.getParent();
 			}
 		}
@@ -1088,12 +1097,12 @@ public class Processor implements Reporter, Constants, Closeable {
 		return pluginLoader;
 	}
 
-	
 	/*
 	 * Check if this is a valid project.
 	 */
 	public boolean exists() {
-		return base != null && base.isDirectory() && propertiesFile != null && propertiesFile.isFile();
+		return base != null && base.isDirectory() && propertiesFile != null
+				&& propertiesFile.isFile();
 	}
 
 	public boolean isOk() {
@@ -1237,5 +1246,7 @@ public class Processor implements Reporter, Constants, Closeable {
 		target.delete();
 	}
 
-	public boolean isTrace() { return trace; }
+	public boolean isTrace() {
+		return trace;
+	}
 }

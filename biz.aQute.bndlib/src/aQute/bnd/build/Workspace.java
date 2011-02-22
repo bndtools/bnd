@@ -24,8 +24,8 @@ public class Workspace extends Processor {
 	final Map<String, Project>					models		= newHashMap();
 	final Map<String, Action>					commands	= newMap();
 	final CachedFileRepo						cachedRepo;
-	final File buildDir;
-	
+	final File									buildDir;
+
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project)
@@ -44,15 +44,15 @@ public class Workspace extends Processor {
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 		File test = new File(workspaceDir, CNFDIR);
-		
+
 		// Check if we can find a bnd dir higher up so
 		// we can have nested workspaces.
-		if ( !test.isDirectory())
+		if (!test.isDirectory())
 			test = new File(workspaceDir, BNDDIR);
 
-		if ( !test.isDirectory())
+		if (!test.isDirectory())
 			throw new IllegalArgumentException("No Workspace found from: " + parent);
-		
+
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
 			Workspace ws;
@@ -74,11 +74,22 @@ public class Workspace extends Processor {
 			buildDir = new File(dir, CNFDIR).getAbsoluteFile();
 
 		this.buildDir = buildDir;
-		
+
 		File buildFile = new File(buildDir, BUILDFILE).getAbsoluteFile();
 		if (!buildFile.isFile())
 			warning("No Build File in " + dir);
+
+		File extDir = new File(this.buildDir, "ext");
+		File[] extensions = extDir.listFiles();
+		if (extensions != null) {
+			for (File extension : extensions) {
+				if (extension.getName().endsWith(".bnd"))
+					doIncludeFile(extension, true, getProperties() );
+			}
+		}
+
 		setProperties(buildFile, dir);
+
 		cachedRepo = new CachedFileRepo();
 		addBasicPlugin(cachedRepo);
 	}
@@ -93,13 +104,12 @@ public class Workspace extends Processor {
 			project = new Project(this, projectDir);
 			if (!project.isValid())
 				return null;
-			
+
 			models.put(bsn, project);
 			return project;
 		}
 	}
 
-	
 	public boolean isPresent(String name) {
 		return models.containsKey(name);
 	}
@@ -169,16 +179,17 @@ public class Workspace extends Processor {
 	}
 
 	class CachedFileRepo extends FileRepo {
-		final Lock lock = new ReentrantLock();
-		boolean	inited;
+		final Lock	lock	= new ReentrantLock();
+		boolean		inited;
 
 		CachedFileRepo() {
 			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
 
 		protected void init() throws Exception {
-			if ( lock.tryLock(50, TimeUnit.SECONDS) == false)
-				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");			
+			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
+				throw new TimeLimitExceededException(
+						"Cached File Repo is locked and can't acquire it");
 			try {
 				if (!inited) {
 					inited = true;
@@ -202,7 +213,8 @@ public class Workspace extends Processor {
 				while (jentry != null) {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
-						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime()==0) {
+						if (!dest.isFile() || dest.lastModified() < jentry.getTime()
+								|| jentry.getTime() == 0) {
 							dest.getParentFile().mkdirs();
 							FileOutputStream out = new FileOutputStream(dest);
 							try {

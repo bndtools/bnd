@@ -9,8 +9,11 @@ public class WorkspaceTest extends TestCase {
     
     public void testWorkspace() throws Exception {
         Workspace ws = Workspace.getWorkspace( new File("test/w o r k s p a c e"));
-        String s = ws.getProperty("project");
-        System.out.println(s);
+        
+        assertEquals( "parent", ws.getProperty("override"));
+        assertEquals( "true", ws.getProperty("ext"));
+        assertEquals( "abcdef", ws.getProperty("test"));
     }
 
+    
 }

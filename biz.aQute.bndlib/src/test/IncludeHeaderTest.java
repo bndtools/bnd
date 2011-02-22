@@ -7,7 +7,8 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class IncludeHeaderTest extends TestCase {
-    
+
+	
     public void testTopBottom() throws Exception {
         Analyzer analyzer = new Analyzer();
         analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
