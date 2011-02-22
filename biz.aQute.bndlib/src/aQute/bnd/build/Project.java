@@ -26,20 +26,20 @@ import aQute.libg.sed.*;
 
 public class Project extends Processor {
 
-	final static String			DEFAULT_ACTIONS	= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
-	public final static String	BNDFILE			= "bnd.bnd";
-	public final static String	BNDCNF			= "cnf";
+	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	public final static String	BNDFILE					= "bnd.bnd";
+	public final static String	BNDCNF					= "cnf";
 	final Workspace				workspace;
 	boolean						preparedPaths;
-	final Collection<Project>	dependson		= new LinkedHashSet<Project>();
-	final Collection<Container>	buildpath		= new LinkedHashSet<Container>();
-	final Collection<Container>	testpath			= new LinkedHashSet<Container>();
-	final Collection<Container>	runpath			= new LinkedHashSet<Container>();
-	final Collection<Container>	runbundles		= new LinkedHashSet<Container>();
-	final Collection<File>		sourcepath		= new LinkedHashSet<File>();
-	final Collection<File>		allsourcepath	= new LinkedHashSet<File>();
-	final Collection<Container>	bootclasspath	= new LinkedHashSet<Container>();
-	final Lock					lock			= new ReentrantLock(true);
+	final Collection<Project>	dependson				= new LinkedHashSet<Project>();
+	final Collection<Container>	buildpath				= new LinkedHashSet<Container>();
+	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
+	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
+	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
+	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
+	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
+	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
+	final Lock					lock					= new ReentrantLock(true);
 	volatile String				lockingReason;
 	volatile Thread				lockingThread;
 
@@ -49,7 +49,8 @@ public class Project extends Processor {
 	int							revision;
 	File						files[];
 	private long				buildtime;
-	static List<Project>		trail			= new ArrayList<Project>();
+	static List<Project>		trail					= new ArrayList<Project>();
+	boolean						delayRunDependencies	= false;
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -167,6 +168,9 @@ public class Project extends Processor {
 					sourcepath.clear();
 					allsourcepath.clear();
 					bootclasspath.clear();
+					testpath.clear();
+					runpath.clear();
+					runbundles.clear();
 
 					// We use a builder to construct all the properties for
 					// use.
@@ -238,6 +242,10 @@ public class Project extends Processor {
 
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
+					if ( !delayRunDependencies) {
+						doPath(runpath, dependencies, parseRunpath(), null);
+						doPath(runbundles, dependencies, parseRunbundles(), null);
+					}
 
 					// We now know all dependent projects. But we also depend
 					// on whatever those projects depend on. This creates an
@@ -267,8 +275,7 @@ public class Project extends Processor {
 			trail.remove(this);
 		}
 	}
-	
-	
+
 	public File getSrc() {
 		return new File(getBase(), getProperty("src", "src"));
 	}
@@ -448,13 +455,13 @@ public class Project extends Processor {
 	 * @param parseTestpath
 	 */
 	private void justInTime(Collection<Container> path, List<Container> entries) {
-		if ( path.isEmpty())
-			doPath(path,dependson,entries,null);
+		if (delayRunDependencies && path.isEmpty())
+			doPath(path, dependson, entries, null);
 	}
 
 	public Collection<Container> getRunpath() throws Exception {
 		prepare();
-    	justInTime(runpath, parseRunpath());
+		justInTime(runpath, parseRunpath());
 		return runpath;
 	}
 
@@ -646,8 +653,8 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
-	@SuppressWarnings("deprecation") public Container getBundle(String bsn, String range, int strategyx, Map<String, String> attrs)
-			throws Exception {
+	@SuppressWarnings("deprecation") public Container getBundle(String bsn, String range,
+			int strategyx, Map<String, String> attrs) throws Exception {
 
 		if ("snapshot".equals(range)) {
 			return getBundleFromProject(bsn, attrs);
@@ -869,8 +876,8 @@ public class Project extends Processor {
 			else {
 				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-"
 						+ container.getVersion() + " : " + container.getError() + ">>");
-				
-				if ( isPedantic() ) {
+
+				if (isPedantic()) {
 					warning("Could not expand repo path request: %s ", container);
 				}
 			}
@@ -1447,7 +1454,7 @@ public class Project extends Processor {
 	}
 
 	public Collection<String> getRunVM() {
-		Map<String,Map<String,String>> hdr = parseHeader(getProperty(RUNVM));
+		Map<String, Map<String, String>> hdr = parseHeader(getProperty(RUNVM));
 		return hdr.keySet();
 	}
 
@@ -1534,4 +1541,13 @@ public class Project extends Processor {
 		return buildtime;
 	}
 
+	/**
+	 * Make this project delay the calculation of the run dependencies.
+	 * 
+	 * The run dependencies calculation can be done in prepare or until the
+	 * dependencies are actually needed.
+	 */
+	public void setDelayRunDependencies(boolean x) {
+		delayRunDependencies = x;
+	}
 }
