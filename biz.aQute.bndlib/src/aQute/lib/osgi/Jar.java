@@ -31,11 +31,11 @@ public class Jar implements Closeable {
 		this.name = name;
 	}
 
-	public Jar(String name, File dirOrFile) throws ZipException, IOException {
+	public Jar(String name, File dirOrFile, Pattern doNotCopy) throws ZipException, IOException {
 		this(name);
 		source = dirOrFile;
 		if (dirOrFile.isDirectory())
-			FileResource.build(this, dirOrFile, Analyzer.doNotCopy);
+			FileResource.build(this, dirOrFile, doNotCopy);
 		else if (dirOrFile.isFile()) {
 			zipFile = ZipResource.build(this, dirOrFile);
 		} else {
@@ -57,8 +57,8 @@ public class Jar implements Closeable {
 		in.close();
 	}
 
-	public Jar(File jar) throws IOException {
-		this(getName(jar), jar);
+	public Jar(File f) throws IOException {
+		this(getName(f), f, null);
 	}
 
 	/**
@@ -81,6 +81,10 @@ public class Jar implements Closeable {
 
 	public Jar(String string, InputStream resourceAsStream) throws IOException {
 		this(string, resourceAsStream, 0);
+	}
+
+	public Jar(String string, File file ) throws ZipException, IOException {
+		this(string,file, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
 	}
 
 	public void setName(String name) {

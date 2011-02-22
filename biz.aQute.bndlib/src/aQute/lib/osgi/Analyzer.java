@@ -34,7 +34,7 @@ import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
 
-	static Pattern							doNotCopy				= Pattern.compile("CVS|.svn");
+
 	static String							version;
 	static Pattern							versionPattern			= Pattern
 																			.compile("(\\d+\\.\\d+)\\.\\d+.*");
@@ -64,6 +64,7 @@ public class Analyzer extends Processor {
 	String									versionPolicyImplemented;
 	boolean									diagnostics				= false;
 	SortedSet<Clazz.JAVA>					formats					= new TreeSet<Clazz.JAVA>();
+	private boolean							inited;
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -692,14 +693,13 @@ public class Analyzer extends Processor {
 	}
 
 	protected void begin() {
-		super.begin();
+		if (inited == false) {
+			inited = true;
+			super.begin();
 
-		updateModified(getBndLastModified(), "bnd last modified");
-		String doNotCopy = getProperty(DONOTCOPY);
-		if (doNotCopy != null)
-			Analyzer.doNotCopy = Pattern.compile(doNotCopy);
-
-		verifyManifestHeadersCase(getProperties());
+			updateModified(getBndLastModified(), "bnd last modified");
+			verifyManifestHeadersCase(getProperties());
+		}
 	}
 
 	/**

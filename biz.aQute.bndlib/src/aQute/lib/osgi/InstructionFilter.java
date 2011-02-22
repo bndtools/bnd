@@ -1,22 +1,24 @@
 package aQute.lib.osgi;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.*;
+import java.util.regex.*;
 
 public class InstructionFilter implements FileFilter {
 
 	private Instruction instruction;
 	private boolean recursive;
+	private Pattern doNotCopy;
 	
-	public InstructionFilter (Instruction instruction, boolean recursive) {
+	public InstructionFilter (Instruction instruction, boolean recursive, Pattern doNotCopy) {
 		this.instruction = instruction;
 		this.recursive = recursive;
+		this.doNotCopy = doNotCopy;
 	}
 	public boolean isRecursive() {
 		return recursive;
 	}
 	public boolean accept(File pathname) {
-		if (Analyzer.doNotCopy.matcher(pathname.getName()).matches()) {
+		if (doNotCopy != null && doNotCopy.matcher(pathname.getName()).matches()) {
 			return false;
 		}
 

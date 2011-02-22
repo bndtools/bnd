@@ -8,6 +8,31 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class BuilderTest extends TestCase {
+
+	/**
+	* Check if do not copy works on files
+	*/
+	
+	public void testDoNotCopy() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("-donotcopy", ".*\\.jar|\\..*");
+		b.setProperty( "Include-Resource", "jar");
+		b.build();
+		System.out.println(Processor.join(b.getErrors(),"\n"));
+		System.out.println(Processor.join(b.getWarnings(),"\n"));
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		
+		Set<String> names = b.getJar().getResources().keySet();
+		assertEquals( 6, names.size());
+		assertTrue( names.contains("AnnotationWithJSR14.jclass"));
+		assertTrue( names.contains("mandatorynoversion.bnd"));
+		assertTrue( names.contains("mina.bar"));
+		assertTrue( names.contains("minax.bnd"));
+		assertTrue( names.contains("rox.bnd"));
+		assertTrue( names.contains("WithAnnotations.jclass"));
+	}
 	
 	
 	/**
@@ -19,7 +44,7 @@ public class BuilderTest extends TestCase {
 		Builder b = new Builder();
 		b.setPedantic(true);
 		b.setProperty("-classpath", "xyz.jar");
-		b.setProperty("Include-Resource", "lib=lib, .project");
+		b.setProperty("Include-Resource", "lib=lib, jar/osgi.jar");
 		b.setProperty("-resourceonly", "true");
 		b.build();
 		System.out.println(Processor.join(b.getErrors(),"\n"));

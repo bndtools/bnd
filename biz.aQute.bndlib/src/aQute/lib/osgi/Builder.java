@@ -3,6 +3,7 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.*;
 import java.util.zip.*;
 
 import aQute.bnd.make.*;
@@ -21,6 +22,7 @@ import aQute.bnd.service.*;
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
+	Pattern						xdoNotCopy			= null;
 	private static final int	SPLIT_MERGE_LAST	= 1;
 	private static final int	SPLIT_MERGE_FIRST	= 2;
 	private static final int	SPLIT_ERROR			= 3;
@@ -115,7 +117,7 @@ public class Builder extends Analyzer {
 	 * do nothing.
 	 */
 	public void init() throws Exception {
-
+		begin();
 	}
 
 	/**
@@ -284,11 +286,11 @@ public class Builder extends Analyzer {
 			int size = dot.getResources().size();
 			doExpand(dot, CONDITIONAL_PACKAGE + " Private imports", Instruction
 					.replaceWithInstruction(filtered), false);
-			
+
 			// Were there any expansions?
-			if ( size == dot.getResources().size())
+			if (size == dot.getResources().size())
 				break;
-			
+
 			analyzed = false;
 		}
 	}
@@ -499,7 +501,7 @@ public class Builder extends Analyzer {
 				.getDirectories().entrySet()) {
 			String path = directory.getKey();
 
-			if (doNotCopy.matcher(getName(path)).matches())
+			if (doNotCopy(getName(path)))
 				continue;
 
 			if (directory.getValue() == null)
@@ -755,9 +757,9 @@ public class Builder extends Analyzer {
 
 		InstructionFilter iFilter = null;
 		if (filter != null) {
-			iFilter = new InstructionFilter(Instruction.getPattern(filter), recursive);
+			iFilter = new InstructionFilter(Instruction.getPattern(filter), recursive, getDoNotCopy());
 		} else {
-			iFilter = new InstructionFilter(null, recursive);
+			iFilter = new InstructionFilter(null, recursive, getDoNotCopy());
 		}
 
 		Map<String, File> files = newMap();
@@ -772,7 +774,7 @@ public class Builder extends Analyzer {
 	private void resolveFiles(File dir, FileFilter filter, boolean recursive, String path,
 			Map<String, File> files, boolean flatten) {
 
-		if (Analyzer.doNotCopy.matcher(dir.getName()).matches()) {
+		if (doNotCopy(dir.getName())) {
 			return;
 		}
 
@@ -854,7 +856,7 @@ public class Builder extends Analyzer {
 
 	private void copy(Jar jar, String path, File from, boolean preprocess, Map<String, String> extra)
 			throws Exception {
-		if (doNotCopy.matcher(from.getName()).matches())
+		if (doNotCopy(from.getName()))
 			return;
 
 		if (from.isDirectory()) {
@@ -975,15 +977,15 @@ public class Builder extends Analyzer {
 		if (isTrue(getProperty(NOBUNDLES)))
 			return builders;
 
-		Map<String,Map<String,String>> subsMap = parseHeader(sub);
-		for ( Iterator<String> i = subsMap.keySet().iterator(); i.hasNext(); ) {
+		Map<String, Map<String, String>> subsMap = parseHeader(sub);
+		for (Iterator<String> i = subsMap.keySet().iterator(); i.hasNext();) {
 			File file = getFile(i.next());
-			if ( file.isFile()) {
+			if (file.isFile()) {
 				builders.add(getSubBuilder(file));
 				i.remove();
 			}
 		}
-		
+
 		Set<Instruction> subs = Instruction.replaceWithInstruction(subsMap).keySet();
 
 		List<File> members = new ArrayList<File>(Arrays.asList(getBase().listFiles()));
@@ -1006,7 +1008,7 @@ public class Builder extends Analyzer {
 				if (instruction.matches(file.getName())) {
 
 					if (!instruction.isNegated()) {
-						builders.add( getSubBuilder(file));
+						builders.add(getSubBuilder(file));
 					}
 
 					// Because we matched (even though we could be negated)
@@ -1017,8 +1019,8 @@ public class Builder extends Analyzer {
 		}
 		return builders;
 	}
-	
-	public Builder getSubBuilder(File file ) throws Exception {
+
+	public Builder getSubBuilder(File file) throws Exception {
 		Builder builder = getSubBuilder();
 		if (builder != null) {
 			builder.setProperties(file);
@@ -1149,4 +1151,29 @@ public class Builder extends Analyzer {
 		return null;
 	}
 
+	/**
+	 * doNotCopy
+	 * 
+	 * The doNotCopy variable maintains a patter for files that should not be
+	 * copied. There is a default {@link #DEFAULT_DO_NOT_COPY} but this ca be
+	 * overridden with the {@link Constants#DONOTCOPY} property.
+	 */
+
+	public boolean doNotCopy(String v) {
+		return getDoNotCopy().matcher(v).matches();
+	}
+
+	public Pattern getDoNotCopy() {
+		if (xdoNotCopy == null) {
+			String string = null;
+			try {
+				string = getProperty(DONOTCOPY, DEFAULT_DO_NOT_COPY);
+				xdoNotCopy = Pattern.compile(string);
+			} catch (Exception e) {
+				error("Invalid value for %s, value is %s", DONOTCOPY, string);
+				xdoNotCopy = Pattern.compile(DEFAULT_DO_NOT_COPY);
+			}
+		}
+		return xdoNotCopy;
+	}
 }

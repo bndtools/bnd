@@ -49,7 +49,7 @@ public class FileResource implements Resource {
 
 	static void traverse(Jar jar, int rootlength, File directory,
 			Pattern doNotCopy) {
-		if (doNotCopy.matcher(directory.getName()).matches())
+		if (doNotCopy != null && doNotCopy.matcher(directory.getName()).matches())
 			return;
 
 		File files[] = directory.listFiles();
