@@ -279,11 +279,13 @@ public class ServiceComponent implements AnalyzerPlugin {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.print("<component name='" + name + "'");
-			if (namespace != null) {
-				pw.print(" xmlns='" + namespace + "'");
-			}
+			if (namespace != null)
+				pw.print("<scr:component xmlns:scr='" + namespace + "'");
+			else
+				pw.print("<component");
+			
 
+			doAttribute(pw, name, "name");
 			doAttribute(pw, info.get(COMPONENT_FACTORY), "factory");
 			doAttribute(pw, info.get(COMPONENT_IMMEDIATE), "immediate", "false", "true");
 			doAttribute(pw, info.get(COMPONENT_ENABLED), "enabled", "true", "false");
@@ -311,7 +313,12 @@ public class ServiceComponent implements AnalyzerPlugin {
 			provide(pw, provides, servicefactory, impl);
 			properties(pw, info);
 			reference(info, pw);
-			pw.println("</component>");
+			
+			if (namespace != null)
+				pw.println("</scr:component>");
+			else
+				pw.println("</component>");
+			
 			pw.close();
 			byte[] data = out.toByteArray();
 			out.close();

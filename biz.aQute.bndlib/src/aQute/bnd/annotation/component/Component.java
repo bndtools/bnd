@@ -2,32 +2,31 @@ package aQute.bnd.annotation.component;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.CLASS)
-@Target(ElementType.TYPE)
-public @interface Component {
-    String RNAME                = "LaQute/bnd/annotation/component/Component;";
-    String PROVIDE              = "provide";
-    String NAME                 = "name";
-    String FACTORY              = "factory";
-    String SERVICEFACTORY       = "servicefactory";
-    String IMMEDIATE            = "immediate";
-    String CONFIGURATION_POLICY = "configurationPolicy";
-    String ENABLED              = "enabled";
-    String PROPERTIES           = "properties";
+@Retention(RetentionPolicy.CLASS) @Target(ElementType.TYPE) public @interface Component {
+	String	RNAME					= "LaQute/bnd/annotation/component/Component;";
+	String	PROVIDE					= "provide";
+	String	NAME					= "name";
+	String	FACTORY					= "factory";
+	String	SERVICEFACTORY			= "servicefactory";
+	String	IMMEDIATE				= "immediate";
+	String	CONFIGURATION_POLICY	= "configurationPolicy";
+	String	ENABLED					= "enabled";
+	String	PROPERTIES				= "properties";
+	String	VERSION					= "version";
 
-    String name() default "";
+	String name() default "";
 
-    Class<?>[] provide() default Object.class;
+	Class<?>[] provide() default Object.class;
 
-    String factory() default "";
+	String factory() default "";
 
-    boolean servicefactory() default false;
+	boolean servicefactory() default false;
 
-    boolean enabled() default true;
+	boolean enabled() default true;
 
-    boolean immediate() default false;
+	boolean immediate() default false;
 
-    ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
+	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
 
-    String[] properties() default "";
+	String[] properties() default "";
 }
