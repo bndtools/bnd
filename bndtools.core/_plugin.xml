@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+   <!-- Extension Points -->
    <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
    <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
    <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
    <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
+   
+   <!-- Popup Menus -->
+   <!--
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -21,6 +25,7 @@
          </action>
       </objectContribution>
    </extension>
+   -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -120,15 +125,6 @@
          label="OSGi"
          visible="false">
 
-         <!--
-         <menu
-            id="bndtools.actions.menu"
-            label="Bnd OSGi"
-            path="additions">
-            <separator name="group1"/>
-         </menu>
-         -->
-         
          <action
             id="bndtools.actions.newBundle"
             label="New Bundle Descriptor"
@@ -226,6 +222,7 @@
          </visibility>
       </objectContribution>
       
+      <!-- TEMPORARY DISABLE MAVEN ACTIONS
       <objectContribution
          adaptable="true"
          id="bndtools.mavenPomContribution"
@@ -241,6 +238,7 @@
             style="push">
          </action>
       </objectContribution>
+      -->
    </extension>
    <extension
          id="bndproblem"

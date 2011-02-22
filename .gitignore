@@ -1,5 +1,6 @@
 # Eclipse workspace metadata
 /.metadata
+/External Plug-in Libraries
 
 # Eclipse compiler output
 /*/bin
@@ -21,6 +22,3 @@
 /bndtools.runtime.obr
 /cnf/bndtools-*.zip
 /cnf/cache
-
-# my rubbish
-/Foo*

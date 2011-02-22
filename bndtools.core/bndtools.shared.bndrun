@@ -62,6 +62,7 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.apache.felix.bundlerepository,\
 	stax2-api,\
 	woodstox-core-asl,\
+	javax.xml,\
 	javax.xml.stream,\
 	com.ibm.icu,\
 	org.eclipse.core.commands,\
