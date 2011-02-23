@@ -3,14 +3,134 @@ package test;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.*;
 import java.util.zip.*;
 
 import junit.framework.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 
 public class ManifestTest extends TestCase {
-   
+
+	public void testNameSection() throws Exception {
+        Builder b = new Builder();
+        b.setProperty("Export-Package", "org.osgi.framework");        
+        b.addClasspath( new File("jar/osgi.jar"));
+        
+        Jar jar = b.build();
+        jar.calcChecksums(null);
+        File f = File.createTempFile("abc", ".jar");
+        f.deleteOnExit();
+        jar.write(f);
+        
+        jar = new Jar(f);
+        f.delete();
+        
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+        Resource r = jar.getResource("META-INF/MANIFEST.MF");        
+        assertNotNull( r );
+
+        String ms = IO.collect( r.openInputStream());
+        
+        Manifest m = new Manifest( r.openInputStream());
+        
+        assertEquals( 31, m.getEntries().size());
+        
+        Attributes ba = m.getAttributes("org/osgi/framework/BundleActivator.class");
+        assertNotNull(ba);
+        assertEquals(  "RTRhr3kadnulINegRhpmog==", ba.getValue("MD5-Digest"));
+        
+        Attributes bundle = m.getAttributes("org/osgi/framework/Bundle.class");
+        assertNotNull(bundle);
+        assertEquals(  "fpQdL60w3CQK+7xlXtM6oA==", bundle.getValue("MD5-Digest"));
+        
+        Attributes sl = m.getAttributes("org/osgi/framework/ServiceListener.class");
+        assertNotNull(sl);
+        assertEquals(  "nzDRN19MrTJG+LP8ayKZITZ653g=", sl.getValue("SHA-Digest"));
+        
+	}
+
+	public void testUnicode() throws Exception {
+        Builder b = new Builder();
+        String longSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416\u1417\u1418\u1419\u141A\u141B\u141C\u141D\u141E\u141F\u1420\u1421\u1422\u1422\u1423\u1424\u1425\u1426\u1427\u1428\u1429\u1429\u142A\u142B\u142C\u142D\u142E\u142F\u1430\u1431\u1432\u1433\u1434\u1435\u1436\u1437\u1438\u1439\u143A\u143B\u143C\u143D\u143E\u143F\u1440\u1441\u1442\u1443\u1444\u1444\u1445\u1446\u1447\u1448\u1449\u144A\u144B\u144C\u144D";
+        String shortSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416";
+        assertEquals( 66, shortSentence.getBytes("UTF8").length);
+        assertEquals( 22, shortSentence.length());
+        
+        b.setProperty("A1", shortSentence);
+        b.setProperty("A11", shortSentence);
+        b.setProperty("A111", shortSentence);
+        b.setProperty("A1111", shortSentence);
+        b.setProperty("Long", longSentence);
+        
+        b.setProperty( "-resourceonly", "true");
+        b.setProperty( "Include-Resource", "jar/osgi.jar");
+        Jar jar = b.build();
+        File f = File.createTempFile("abc", ".jar");
+        f.deleteOnExit();
+        jar.write(f);
+        
+        jar = new Jar(f);
+        f.delete();
+        
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+        Resource r = jar.getResource("META-INF/MANIFEST.MF");        
+        assertNotNull( r );
+        
+        Manifest m = new Manifest( r.openInputStream());
+        String ms = IO.collect(r.openInputStream());
+        
+        assertEquals( shortSentence, m.getMainAttributes().getValue("A1"));
+        assertEquals( shortSentence, m.getMainAttributes().getValue("A11"));
+        assertEquals( shortSentence, m.getMainAttributes().getValue("A111"));
+        assertEquals( shortSentence, m.getMainAttributes().getValue("A1111"));
+        assertEquals( longSentence, m.getMainAttributes().getValue("Long"));
+        
+	}
+	
+	
+	
+    public void test72() throws Exception {
+        Builder b = new Builder();
+        b.setProperty("H65","01234567890123456789012345678901234567890123456789012345678901234");
+        b.setProperty("H66","012345678901234567890123456789012345678901234567890123456789012345");
+        b.setProperty("H67","0123456789012345678901234567890123456789012345678901234567890123456");
+        b.setProperty("H68","01234567890123456789012345678901234567890123456789012345678901234567");
+        b.setProperty("H69","012345678901234567890123456789012345678901234567890123456789012345678");
+        b.setProperty( "-resourceonly", "true");
+        b.setProperty( "Include-Resource", "jar/osgi.jar");
+        Jar jar = b.build();
+        File f = File.createTempFile("abc", ".jar");
+        f.deleteOnExit();
+        jar.write(f);
+        
+        jar = new Jar(f);
+        f.delete();
+        
+        assertEquals(0, b.getErrors().size());
+        assertEquals(0, b.getWarnings().size());
+        Resource r = jar.getResource("META-INF/MANIFEST.MF");        
+        assertNotNull( r );
+        
+        Manifest m = new Manifest( r.openInputStream());
+        String ms = IO.collect( r.openInputStream());
+        
+        assertEquals( 65, m.getMainAttributes().getValue("H65").length());
+        assertEquals( 66, m.getMainAttributes().getValue("H66").length());
+        assertEquals( 67, m.getMainAttributes().getValue("H67").length());
+        assertEquals( 68, m.getMainAttributes().getValue("H68").length());
+        assertEquals( 69, m.getMainAttributes().getValue("H69").length());
+        
+        assertTrue( Pattern.compile("H65: \\d{65}\r\n").matcher(ms).find());
+        assertTrue( Pattern.compile("H66: \\d{66}\r\n").matcher(ms).find());
+        assertTrue( Pattern.compile("H67: \\d{67}\r\n").matcher(ms).find());
+        assertTrue( Pattern.compile("H68: \\d{67}\r\n 7\r\n").matcher(ms).find());
+        assertTrue( Pattern.compile("H69: \\d{67}\r\n 78\r\n").matcher(ms).find());
+    }
     
+	
     public void testNoManifest() throws Exception {
         Builder b = new Builder();
         b.setProperty("-nomanifest","true");

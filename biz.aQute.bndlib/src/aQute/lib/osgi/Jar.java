@@ -1,14 +1,16 @@
 package aQute.lib.osgi;
 
+import static aQute.lib.io.IO.*;
+
 import java.io.*;
 import java.nio.charset.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.jar.Attributes.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
-import static aQute.lib.io.IO.*;
 import aQute.lib.base64.*;
 import aQute.libg.reporter.*;
 
@@ -299,12 +301,17 @@ public class Jar implements Closeable {
 	 *             when something fails
 	 */
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
-		write(out, 0, "Manifest-Version: 1\r\n");
+		writeEntry(out, "Manifest-Version", "1");
 		attributes(manifest.getMainAttributes(), out);
-		write(out, 0, "\n\r");
-		for (Map.Entry<String, Attributes> entry : manifest.getEntries().entrySet()) {
-			writeEntry(out, "Name", entry.getKey());
-			attributes(entry.getValue(), out);
+		
+		TreeSet<String> keys = new TreeSet<String>();
+		for ( Object o : manifest.getEntries().keySet())
+			keys.add( o.toString());
+
+		for (String key : keys) {
+			write(out,0, "\r\n");
+			writeEntry(out, "Name", key);
+			attributes(manifest.getAttributes(key), out);
 		}
 	}
 
@@ -315,7 +322,7 @@ public class Jar implements Closeable {
 	private static void writeEntry(OutputStream out, String name, String value) throws IOException {
 		int n = write(out, 0, name + ": ");
 		n = write(out, n, value);
-		write(out, n, "\r\n");
+		write(out, 0, "\r\n");
 	}
 
 	/**
@@ -354,7 +361,7 @@ public class Jar implements Closeable {
 	 */
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		for (int i = 0; i < bytes.length; i++) {
-			if (width >= 70) { // we need to add the \n\r!
+			if (width >= 72) { // we need to add the \n\r!
 				out.write(CONTINUE);
 				width = 1;
 			}
@@ -596,6 +603,10 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
 			Resource r = entry.getValue();
 			Attributes attributes = getManifest().getAttributes(entry.getKey());
+			if ( attributes == null ) {
+				attributes = new Attributes();
+				getManifest().getEntries().put(entry.getKey(), attributes);
+			}
 			InputStream in = r.openInputStream();
 			try {
 				for (MessageDigest d : digests)
