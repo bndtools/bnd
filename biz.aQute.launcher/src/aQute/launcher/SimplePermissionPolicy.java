@@ -122,7 +122,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		if (in != null) {
 			List<PermissionInfo> permissions = new ArrayList<PermissionInfo>();
 			try {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF8"));
 				String line;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();

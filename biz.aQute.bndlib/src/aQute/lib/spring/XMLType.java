@@ -37,7 +37,7 @@ public class XMLType {
         ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
         bout.close();
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(bin));
+        BufferedReader br = new BufferedReader(new InputStreamReader(bin, "UTF8"));
 
         String line = br.readLine();
         while (line != null) {

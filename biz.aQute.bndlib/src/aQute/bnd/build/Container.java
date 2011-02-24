@@ -153,7 +153,7 @@ public class Container {
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
 			InputStream in = new FileInputStream(file);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
 			try {
 				String line;
 				while ((line = rd.readLine()) != null) {

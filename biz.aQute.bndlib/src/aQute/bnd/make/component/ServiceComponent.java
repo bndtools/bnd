@@ -278,7 +278,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				throws IOException {
 			String namespace = getNamespace(info);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
 			if (namespace != null)
 				pw.print("<scr:component xmlns:scr='" + namespace + "'");

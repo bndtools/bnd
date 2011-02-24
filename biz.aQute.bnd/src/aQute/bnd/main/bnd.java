@@ -983,8 +983,8 @@ public class bnd extends Processor {
 
 			Resource r = jar.getResource(path);
 			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r.openInputStream());
-				OutputStreamWriter or = new OutputStreamWriter(out);
+				InputStreamReader ir = new InputStreamReader(r.openInputStream(), Constants.DEFAULT_CHARSET);
+				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
 					copy(ir, or);
 				} finally {
@@ -1156,7 +1156,7 @@ public class bnd extends Processor {
 		name = name.substring(n + 1);
 
 		InputStreamReader rds = new InputStreamReader(in, charset);
-		OutputStreamWriter wrt = new OutputStreamWriter(out);
+		OutputStreamWriter wrt = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 		if (output != null)
 			if (output.isDirectory())
 				wrt = new FileWriter(new File(output, name));
@@ -1803,7 +1803,7 @@ public class bnd extends Processor {
 
 		File r = getFile(reportDir + "/summary.xml");
 		FileOutputStream out = new FileOutputStream(r);
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out));
+		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
 		try {
 			summary.print(0, pw);
 		} finally {
@@ -1980,7 +1980,7 @@ public class bnd extends Processor {
 		}
 		Jar j = new Jar(f);
 		try {
-			Writer output = new OutputStreamWriter(out);
+			Writer output = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 			while (i < args.length) {
 				String path = args[i++];
 
@@ -1990,7 +1990,7 @@ public class bnd extends Processor {
 				else {
 					InputStream in = r.openInputStream();
 					try {
-						InputStreamReader rds = new InputStreamReader(in);
+						InputStreamReader rds = new InputStreamReader(in, Constants.DEFAULT_CHARSET);
 						copy(rds, output);
 						output.flush();
 					} finally {

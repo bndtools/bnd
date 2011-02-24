@@ -116,7 +116,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         Thread tin = new Thread() {
             public void run() {
                 try {
-                    BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
+                    BufferedReader rdr = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
                     String line = rdr.readLine();
                     while (line != null) {
                         sb.append(line);

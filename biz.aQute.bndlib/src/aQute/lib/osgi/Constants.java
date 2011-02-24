@@ -1,5 +1,6 @@
 package aQute.lib.osgi;
 
+import java.nio.charset.*;
 import java.util.regex.*;
 
 public interface Constants {
@@ -202,7 +203,7 @@ public interface Constants {
 	String					DEFAULT_BND_EXTENSION						= ".bnd";
 	String					DEFAULT_JAR_EXTENSION						= ".jar";
 	String					DEFAULT_BAR_EXTENSION						= ".bar";
-	String					DEFAULT_BNDRUN_EXTENSION						= ".bndrun";
+	String					DEFAULT_BNDRUN_EXTENSION					= ".bndrun";
 	String[]				METAPACKAGES								= { "META-INF", "OSGI-INF",
 			"OSGI-OPT"													};
 
@@ -225,4 +226,6 @@ public interface Constants {
 	String					DEFAULT_TESTER_BSN							= "biz.aQute.junit";
 
 	String					DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git";
+
+	Charset					DEFAULT_CHARSET								= Charset.forName("UTF8");
 }

@@ -92,7 +92,7 @@ public class LibSync extends Processor {
 
 	private void parse(InputStream in, String prefix, List<String> to) throws Exception {
 		try {
-			InputStreamReader r = new InputStreamReader(in);
+			InputStreamReader r = new InputStreamReader(in, Constants.DEFAULT_CHARSET);
 			BufferedReader br = new BufferedReader(r);
 			String line = br.readLine();
 			while (line != null) {

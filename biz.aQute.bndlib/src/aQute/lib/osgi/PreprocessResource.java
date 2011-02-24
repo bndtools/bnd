@@ -15,11 +15,11 @@ public class PreprocessResource extends AbstractResource {
 
     protected byte[] getBytes() throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream(2000);
-        OutputStreamWriter osw = new OutputStreamWriter(bout);
+        OutputStreamWriter osw = new OutputStreamWriter(bout, Constants.DEFAULT_CHARSET);
         PrintWriter pw = new PrintWriter(osw);
         InputStream in = resource.openInputStream();
         try {
-            BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
+            BufferedReader rdr = new BufferedReader(new InputStreamReader(in,"UTF8"));
             String line = rdr.readLine();
             while (line != null) {
                 line = processor.getReplacer().process(line);

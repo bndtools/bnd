@@ -8,7 +8,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 	String					next;
 
 	public LineCollection(InputStream in) throws IOException {
-		this(new InputStreamReader(in));
+		this(new InputStreamReader(in, "UTF8"));
 	}
 
 	public LineCollection(Reader reader) throws IOException {

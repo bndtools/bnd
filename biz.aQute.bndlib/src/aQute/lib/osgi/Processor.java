@@ -926,7 +926,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	}
 
 	static public String read(InputStream in) throws Exception {
-		InputStreamReader ir = new InputStreamReader(in);
+		InputStreamReader ir = new InputStreamReader(in, "UTF8");
 		StringBuilder sb = new StringBuilder();
 
 		try {

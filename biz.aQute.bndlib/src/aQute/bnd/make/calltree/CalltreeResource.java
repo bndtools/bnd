@@ -57,7 +57,7 @@ public class CalltreeResource extends WriteResource {
      * method.
      */
     public void write(OutputStream out) throws IOException {
-        OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
+        OutputStreamWriter osw = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
         PrintWriter pw = new PrintWriter(osw);
         try {
             writeCalltree(pw, classes);

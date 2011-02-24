@@ -37,7 +37,7 @@ public class CoverageResource extends WriteResource {
                     service);
             Tag coverage = toTag(table);
             PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
-                    "UTF-8"));
+                    Constants.DEFAULT_CHARSET));
             try {
                 coverage.print(0, pw);
             } finally {

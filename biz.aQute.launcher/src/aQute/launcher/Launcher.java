@@ -467,7 +467,7 @@ public class Launcher implements ServiceListener {
 
 			InputStream in = url.openStream();
 			try {
-				BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
+				BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 				String line;
 				while ((line = rdr.readLine()) != null) {
 					trace(line);

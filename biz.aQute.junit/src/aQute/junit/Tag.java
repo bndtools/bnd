@@ -240,7 +240,7 @@ public class Tag {
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
 			InputStream in = url.openStream();
-			BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
+			BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
 			try {
 				String line = rdr.readLine();
 				if (line != null) {
