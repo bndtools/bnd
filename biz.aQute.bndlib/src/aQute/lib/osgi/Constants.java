@@ -202,6 +202,7 @@ public interface Constants {
 	String					DEFAULT_BND_EXTENSION						= ".bnd";
 	String					DEFAULT_JAR_EXTENSION						= ".jar";
 	String					DEFAULT_BAR_EXTENSION						= ".bar";
+	String					DEFAULT_BNDRUN_EXTENSION						= ".bndrun";
 	String[]				METAPACKAGES								= { "META-INF", "OSGI-INF",
 			"OSGI-OPT"													};
 

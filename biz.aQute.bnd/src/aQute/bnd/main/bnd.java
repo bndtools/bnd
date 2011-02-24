@@ -172,6 +172,8 @@ public class bnd extends Processor {
 			getInfo(maven);
 		} else if ("global".equals(args[i])) {
 			global(args, ++i);
+		} else if ("exec".equals(args[i])) {
+			doRun(args[++i]);
 		} else if ("print".equals(args[i])) {
 			doPrint(args, ++i);
 		} else if ("graph".equals(args[i])) {
@@ -225,11 +227,28 @@ public class bnd extends Processor {
 			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
 				doPrint(path, -1);
+			else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
+				doRun(path);
 			else
 				error("Unknown file %s", path);
 			i++;
 		}
 		return true;
+	}
+
+	private void doRun(String path) throws Exception {
+		File file = getFile(path);
+		if ( ! file.isFile())
+			throw new FileNotFoundException(path);
+		
+		File projectDir = file.getParentFile();
+		File workspaceDir = projectDir.getParentFile();
+		if ( workspaceDir == null ) {
+			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
+		}
+		Workspace ws = Workspace.getWorkspace(workspaceDir);
+		Project project = new Project(ws,projectDir, file);
+		project.run();
 	}
 
 	private void bump(String[] args, int i) throws Exception {
