@@ -22,22 +22,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -196,7 +191,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		model.refresh();
 	}
 	void rebuildBndProject(IProject project, IProgressMonitor monitor) throws CoreException {
-		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		IJavaProject javaProject = JavaCore.create(project);
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
@@ -227,47 +221,10 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				deliverableJars.add(deliverable.getFile());
 			}
 
-			model.build();
-			progress.worked(1);
-
-			File targetDir = model.getTarget();
-			IContainer target = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
-			target.refreshLocal(IResource.DEPTH_INFINITE, null);
-
-			// Clear any JARs in the target directory that have not just been built by Bnd
-			final File[] targetJars = model.getTarget().listFiles(new FileFilter() {
-                public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(".jar");
-                }
-            });
-			WorkspaceJob deleteJob = new WorkspaceJob("delete") {
-                @Override
-                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                    SubMonitor progress = SubMonitor.convert(monitor);
-                    for (File targetJar : targetJars) {
-                        if(!deliverableJars.contains(targetJar)) {
-                            IFile wsFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(targetJar.getAbsolutePath()));
-                            if(wsFile != null && wsFile.exists()) {
-                                wsFile.delete(true, progress.newChild(1));
-                            }
-                        }
-                    }
-                    return Status.OK_STATUS;
-                }
-			};
-			deleteJob.schedule();
+			BndBuildJob.scheduleBuild(bndFile, model, deliverableJars);
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));
 		}
 
-		// Report errors
-		List<String> errors = new ArrayList<String>(model.getErrors());
-		for (String errorMessage : errors) {
-			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
-			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-			marker.setAttribute(IMarker.MESSAGE, errorMessage);
-			marker.setAttribute(IMarker.LINE_NUMBER, 1);
-			model.clear();
-		}
 	}
 }
