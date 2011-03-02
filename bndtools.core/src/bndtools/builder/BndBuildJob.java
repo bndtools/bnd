@@ -68,7 +68,7 @@ public class BndBuildJob extends Job {
     private final Set<File> deliverableJars;
 
     private BndBuildJob(IFile bndFile, Project model, Set<File> deliverableJars) {
-        super("Bnd Build : " + bndFile.getFullPath().toString());
+        super("Bnd: " + bndFile.getProject().getName());
         this.bndFile = bndFile;
 
         this.model = model;
@@ -83,10 +83,10 @@ public class BndBuildJob extends Job {
 
         try {
             // Do the build
-            if (Thread.interrupted()) return Status.CANCEL_STATUS;
+            if (Thread.interrupted()) return Status.OK_STATUS;
             model.build();
             progress.worked(1);
-            if (Thread.interrupted()) return Status.CANCEL_STATUS;
+            if (Thread.interrupted()) return Status.OK_STATUS;
 
             final File targetDir = model.getTarget();
             IWorkspaceRunnable refreshAndDeleteAction = new IWorkspaceRunnable() {
@@ -120,10 +120,15 @@ public class BndBuildJob extends Job {
 
             return Status.OK_STATUS;
         } catch (InterruptedException e) {
-            return Status.CANCEL_STATUS;
+            return Status.OK_STATUS;
         } catch (Exception e) {
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building Bnd project.", e);
         }
+    }
+
+    @Override
+    public boolean belongsTo(Object family) {
+        return family == BndBuildJob.class;
     }
 
 }

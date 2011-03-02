@@ -250,7 +250,11 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             IResourceDelta delta = event.getDelta();
             delta = delta.findMember(file.getFullPath());
             if (delta != null) {
-                refresh();
+                IFormPage page = (IFormPage) getManagedForm().getContainer();
+                if(page.isActive())
+                    refresh();
+                else
+                    markStale();
             }
         }
     }

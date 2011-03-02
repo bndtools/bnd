@@ -23,7 +23,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -40,6 +43,7 @@ import aQute.libg.header.OSGiHeader;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.builder.BndBuildJob;
 import bndtools.builder.BndProjectNature;
 
 public class OSGiLaunchDelegate extends JavaLaunchDelegate {
@@ -52,12 +56,27 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 2);
+
+        System.out.println("Waiting for background builds...");
+        waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        System.out.println("Background builds complete");
+
         Properties launchProps = generateLaunchProperties(configuration);
         saveLaunchPropsFile(getLaunchPropertiesFile(configuration), launchProps);
-
         registerLaunchPropertiesRegenerator(configuration, launch);
 
-        super.launch(configuration, mode, launch, monitor);
+        super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+    }
+
+    protected void waitForBuilds(IProgressMonitor monitor) {
+        try {
+            Job.getJobManager().join(BndBuildJob.class, monitor);
+        } catch (OperationCanceledException e) {
+            // Ignore
+        } catch (InterruptedException e) {
+            // Ignore
+        }
     }
 
     protected File getLaunchPropertiesFile(ILaunchConfiguration configuration) throws CoreException {

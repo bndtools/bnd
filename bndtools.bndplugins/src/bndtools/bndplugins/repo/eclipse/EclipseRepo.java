@@ -42,21 +42,20 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             throw new IllegalArgumentException(
                     "Location must be set on an EclipseRepo plugin");
 
-        root = new File(location);
-        if (!root.isDirectory())
-            throw new IllegalArgumentException(
-                    "Repository is not a valid directory " + root);
-
-        if (!new File(root, "plugins").isDirectory())
-            throw new IllegalArgumentException(
-                    "Repository is not a valid directory (no plugins directory)"
-                            + root);
-
         name = map.get(NAME);
         if (name == null || name.length() == 0)
             name = "Eclipse SDK";
 
-        index = readIndex();
+        File oldRoot = root;
+        root = new File(location);
+        if (!root.isDirectory())
+            throw new IllegalArgumentException("Repository is not a valid directory: " + root);
+
+        if (!new File(root, "plugins").isDirectory())
+            throw new IllegalArgumentException("Repository is not a valid directory (no 'plugins' sub-directory): " + root);
+
+        if (!root.equals(oldRoot))
+            index = readIndex();
     }
 
     private Map<String, Map<String, File>> readIndex() {

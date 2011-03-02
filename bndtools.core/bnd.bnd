@@ -2,7 +2,6 @@ baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
 bndlibver: 1.31.0
 
-Test: true
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: ${version}
 Bundle-Activator: bndtools.Plugin
@@ -27,32 +26,25 @@ felix.obr.packages: \
 	org.apache.felix.utils.*,\
 	org.kxml2.io,\
 	org.xmlpull.v1
-
+	
 Private-Package: bndtools*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
-	${felix.obr.packages},\
 	org.osgi.impl.bundle.obr.resource,\
-	org.osgi.service.obr
-
-Conditional-Package: aQute.bnd.*,\
-	aQute.lib.*,\
-	aQute.service.*
+	org.osgi.service.obr,\
+	${felix.obr.packages}
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
 	bndtools.editor.model;version=${baseversion},\
-	aQute.libg.*;version=${bndlibver},\
-	aQute.lib.osgi;version=${bndlibver},\
 	bndtools.model.clauses;version=${baseversion},\
-	aQute.bnd.build;version=${bndlibver}, \
-	aQute.bnd.service;version=${bndlibver}, \
-	aQute.lib.osgi;version=${bndlibver}
+	aQute.libg.*;version=${bndlibver},\
+	aQute.lib.*;version=${bndlibver},\
+	aQute.bnd.*;version=${bndlibver}
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources,\
-	${repo;bndtools.bndplugins.repos},\
-	${repo;org.apache.felix.bundlerepository}
+	${repo;bndtools.bndplugins.repos}
 	
 eclipse.deps: \
 	osgi.core,\
