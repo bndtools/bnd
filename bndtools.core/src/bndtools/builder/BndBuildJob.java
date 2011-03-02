@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -17,6 +18,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
@@ -39,7 +41,7 @@ public class BndBuildJob extends Job {
     }
 
     private static void replaceJob(String key, Job newJob) {
-        Job oldJob = null;
+        final Job oldJob;
         synchronized (instances) {
             oldJob = instances.remove(key);
             instances.put(key, newJob);
@@ -49,8 +51,13 @@ public class BndBuildJob extends Job {
             JobChangeAdapter jobListener = new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
+                    Thread jobThread = null;
+                    if (oldJob instanceof BndBuildJob)
+                        jobThread = ((BndBuildJob) oldJob).threadRef.get();
+
                     long timeToDie = System.currentTimeMillis() - cancelledTime;
-                    String message = MessageFormat.format("---> Cancelled job took {0}ms to die.", timeToDie);
+                    long jobThreadId = jobThread != null ? jobThread.getId() : 0;
+                    String message = MessageFormat.format("Cancelled Bnd Build (thread ID {0}) took {1}ms to die.", jobThreadId, timeToDie);
 
                     System.out.println(message);
                     if (timeToDie > 1000) {
@@ -66,6 +73,7 @@ public class BndBuildJob extends Job {
     private final IFile bndFile;
     private final Project model;
     private final Set<File> deliverableJars;
+    private final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
 
     private BndBuildJob(IFile bndFile, Project model, Set<File> deliverableJars) {
         super("Bnd: " + bndFile.getProject().getName());
@@ -77,11 +85,11 @@ public class BndBuildJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        SubMonitor progress = SubMonitor.convert(monitor, 2);
-
-        final IWorkspace workspace = bndFile.getWorkspace();
-
         try {
+            threadRef.set(Thread.currentThread());
+            SubMonitor progress = SubMonitor.convert(monitor, 2);
+            final IWorkspace workspace = bndFile.getWorkspace();
+
             // Do the build
             if (Thread.interrupted()) return Status.OK_STATUS;
             model.build();
@@ -120,15 +128,29 @@ public class BndBuildJob extends Job {
 
             return Status.OK_STATUS;
         } catch (InterruptedException e) {
+            System.out.println("Bnd Build job received interrupt signal, thread ID: " + Thread.currentThread().getId());
+            return Status.OK_STATUS;
+        } catch (OperationCanceledException e) {
             return Status.OK_STATUS;
         } catch (Exception e) {
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building Bnd project.", e);
+        } finally {
+            System.out.println("Bnd Build job exiting, thread ID: " + Thread.currentThread().getId());
         }
     }
 
     @Override
     public boolean belongsTo(Object family) {
         return family == BndBuildJob.class;
+    }
+
+    @Override
+    protected void canceling() {
+        Thread thread = threadRef.get();
+        if (thread != null) {
+            System.out.println("Sending interrupt signal to thread: " + thread.getId());
+            thread.interrupt();
+        }
     }
 
 }

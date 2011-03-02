@@ -222,7 +222,6 @@
          </visibility>
       </objectContribution>
       
-      <!-- TEMPORARY DISABLE MAVEN ACTIONS
       <objectContribution
          adaptable="true"
          id="bndtools.mavenPomContribution"
@@ -233,12 +232,11 @@
             enablesFor="1"
             icon="icons/bnd_nature_add.png"
             id="org.bndtools.adoptPomAction"
-            label="Add OSGi/Bndtools to POM"
+            label="Add OSGi/Bnd Support"
             menubarPath="additions"
             style="push">
          </action>
       </objectContribution>
-      -->
    </extension>
    <extension
          id="bndproblem"
