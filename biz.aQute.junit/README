@@ -1,0 +1,3 @@
+The junit project is a plugin that extends the ProjectTester.java class to run OSGi tests
+inside a framework.
+
