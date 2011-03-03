@@ -1,0 +1,40 @@
+README bnd
+bnd is a swiss army knife for OSGi, it creates manifest headers for you based on 
+analyzing the class code, it verifies your settings, it manages project dependencies,
+gives you quote of the day, diffs jars, and much more. 
+
+The git repository contains all code. It contains the following projects:
+
+1) bndlib     - Core library function, also contains most tests
+2) bnd        - Command line tool, eclipse plugin, and ant plugin
+3) launcher   - A launcher plugin for bnd
+4) libg       - Small simple library utilities that are useful outside bnd
+5) junit      - A tester plugin for JUnit 3.8 testing for bnd
+6) cnf        - The bnd project directory, contains the repo with dependencies
+7) demo       - A project used in testing
+
+Eclipse
+bnd is build with itself, which can create some headaches. Overall, you want 
+to your work therefore in Eclipse with a recent bnd.jar in the Eclipse dropins
+folder. Currently, bndtools is not yet ready for bnd itself :-( however, that is
+being worked on. Once bndtools handles the bnd launcher/tester then the eclipse
+plugin will be removed. Until that moment, we need to use the old code in Eclipse.
+It is advised to not mix bnd and bndtools but use different instances of Eclipse.
+
+Building
+The workspace root has a build.xml that builds all project in proper order. Due
+to the fact that bnd builds itself there are certain cases where you get an error
+during build. Trying again should fix the issue.
+
+Each project directory has a build.xml. The following targets are available:
+
+ant build (default) - Build
+ant clean           - Clean the project
+ant test            - Run a bnd OSGi test
+ant junit           - Run standard JUnit tests in the test package
+
+Outputs are stored in the tmp directory in the different projects.
+
+Testing
+The main tests are in the bndlib project. These are standard JUnit tests.
+
