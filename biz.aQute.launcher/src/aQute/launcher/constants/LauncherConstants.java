@@ -62,7 +62,8 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
 		p.setProperty(LAUNCH_KEEP, keep + "");
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
-		p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages);
+		if ( systemPackages != null)
+			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages+"");
 		p.setProperty(LAUNCH_TRACE, trace + "");
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));

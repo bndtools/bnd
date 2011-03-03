@@ -62,7 +62,7 @@ public class ProjectLauncherImpl extends ProjectLauncher  {
 		if (!getSystemPackages().isEmpty()) {
 			lc.systemPackages = Processor.printClauses(getSystemPackages(), null);
 		}
-
+		
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
 			lc.getProperties().store(out, "Launching " + project);
