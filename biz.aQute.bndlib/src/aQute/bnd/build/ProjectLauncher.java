@@ -52,21 +52,27 @@ public abstract class ProjectLauncher {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
-		for ( File file : project.toFile(project.getRunbundles()) )
+		for (File file : project.toFile(project.getRunbundles()))
 			runbundles.add(file.getAbsolutePath());
 		File[] builds = project.build();
 		if (builds != null)
-			for ( File file : builds )
-			runbundles.add(file.getAbsolutePath());
-		
+			for (File file : builds)
+				runbundles.add(file.getAbsolutePath());
+
 		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
-	
+
+		// For backward compatibility with bndtools launcher
+		List<Container> fws = project.getBundles(Project.STRATEGY_HIGHEST, project
+				.getProperty("-runfw"));
+		runpath.addAll( fws);
+
 		for (Container c : runpath) {
 			addClasspath(c);
 		}
+
 		runvm.addAll(project.getRunVM());
 		runproperties = project.getRunProperties();
 	}
@@ -95,8 +101,8 @@ public abstract class ProjectLauncher {
 					if (manifest != null) {
 						Map<String, Map<String, String>> exports = project.parseHeader(manifest
 								.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-						for ( Map.Entry<String,Map<String,String>> e : exports.entrySet()) {
-							if ( ! runsystempackages.containsKey(e.getKey()))
+						for (Map.Entry<String, Map<String, String>> e : exports.entrySet()) {
+							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());
 						}
 
@@ -164,9 +170,9 @@ public abstract class ProjectLauncher {
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
 		int result = java.execute(System.in, System.out, System.err);
-		if ( result == Integer.MIN_VALUE)
+		if (result == Integer.MIN_VALUE)
 			return TIMEDOUT;
-		
+
 		reportResult(result);
 		return result;
 	}
