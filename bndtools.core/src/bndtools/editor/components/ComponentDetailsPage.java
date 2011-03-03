@@ -755,6 +755,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			
 			// Provides Section
 			provides = (selected != null) ? selected.getListAttrib(ServiceComponent.COMPONENT_PROVIDE) : new LinkedList<String>();
+			if (provides == null) 
+			    provides = new LinkedList<String>();
 			viewerProvide.setInput(provides);
 			
 			// References section
