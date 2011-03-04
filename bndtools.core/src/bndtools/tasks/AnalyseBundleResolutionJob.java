@@ -170,6 +170,8 @@ public class AnalyseBundleResolutionJob extends Job {
 	}
 	void mergeCapabilities(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {
 		Jar jar = builder.getJar();
+		if (jar == null) 
+		    return;
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
 			return;
