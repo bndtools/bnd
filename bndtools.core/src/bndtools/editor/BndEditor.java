@@ -42,7 +42,6 @@ import aQute.bnd.build.Project;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.pages.BundleBuildPage;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.ProjectBuildPage;
@@ -160,9 +159,6 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
             ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
             addPage(runPage);
-        } else {
-            BundleBuildPage buildPage = new BundleBuildPage(this, model, BUILD_PAGE, "Build");
-            addPage(buildPage);
         }
 
         if (!isSubBundles) {
