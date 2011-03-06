@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +36,7 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
@@ -54,24 +56,31 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
     private static final String EMPTY = "";
     private static final String ANY_VERSION = "0"; //$NON-NLS-1$
 
+    private ProjectLauncher bndLauncher = null;
+
     @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
 
-        System.out.println("Waiting for background builds...");
         waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-        System.out.println("Background builds complete");
 
-        Properties launchProps = generateLaunchProperties(configuration);
-        saveLaunchPropsFile(getLaunchPropertiesFile(configuration), launchProps);
-        registerLaunchPropertiesRegenerator(configuration, launch);
+        try {
+            Project project = getBndProject(configuration);
+            bndLauncher = project.getProjectLauncher();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
+        }
+
+        // TODO: call launcher.update() when necessary
+        // registerLaunchPropertiesRegenerator(configuration, launch);
 
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
     protected void waitForBuilds(IProgressMonitor monitor) {
+        SubMonitor progress = SubMonitor.convert(monitor, "Waiting for background Bnd builds to complete...", 1);
         try {
-            Job.getJobManager().join(BndBuildJob.class, monitor);
+            Job.getJobManager().join(BndBuildJob.class, progress.newChild(1));
         } catch (OperationCanceledException e) {
             // Ignore
         } catch (InterruptedException e) {
@@ -286,16 +295,28 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public String getMainTypeName(ILaunchConfiguration configuration) throws CoreException {
-        return LAUNCHER_MAIN_CLASS;
+        assertBndLauncher();
+        return bndLauncher.getMainTypeName();
+    }
+
+    private void assertBndLauncher() throws CoreException {
+        if (bndLauncher == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launcher was not initialised.", null));
     }
 
     @Override
     public String getProgramArguments(ILaunchConfiguration configuration) throws CoreException {
-        String args = "\"" + getLaunchPropertiesFile(configuration).getAbsolutePath() + "\"";
-        if(enableDebugOption(configuration)) {
-            args += " --debug";
+        assertBndLauncher();
+
+        StringBuilder builder = new StringBuilder();
+
+        Collection<String> args = bndLauncher.getArguments();
+        for (Iterator<String> iter = args.iterator(); iter.hasNext();) {
+            builder.append(iter.next());
+            if (iter.hasNext()) builder.append(" ");
         }
-        return args;
+
+        return builder.toString();
     }
 
     protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
@@ -345,29 +366,22 @@ public class OSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
-        Project model = getBndProject(configuration);
-
-        // Get the framework bundle
-        File fwkBundle = findFramework(model);
-
-        // Get the launcher bundle
-        File launcherBundle = findBundle(model, LAUNCHER_BSN, ANY_VERSION);
-        if (launcherBundle == null) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Could not find launcher bundle {0}.", LAUNCHER_BSN), null));
-        }
-
-        // Set the classpath
-        String[] classpath = new String[2];
-        classpath[0] = launcherBundle.getAbsolutePath();
-        classpath[1] = fwkBundle.getAbsolutePath();
-
-        return classpath;
+        assertBndLauncher();
+        Collection<String> paths = bndLauncher.getClasspath();
+        return paths.toArray(new String[paths.size()]);
     }
 
     @Override
     public String getVMArguments(ILaunchConfiguration configuration) throws CoreException {
-        Project model = getBndProject(configuration);
-        String args = model.getProperty(BndConstants.RUNVMARGS, "");
+        assertBndLauncher();
+
+        StringBuilder builder = new StringBuilder();
+        Collection<String> runVM = bndLauncher.getRunVM();
+        for (Iterator<String> iter = runVM.iterator(); iter.hasNext();) {
+            builder.append(iter.next());
+            if (iter.hasNext()) builder.append(" ");
+        }
+        String args = builder.toString();
 
         // Following code copied from AbstractJavaLaunchConfigurationDelegate
         int libraryPath = args.indexOf("-Djava.library.path"); //$NON-NLS-1$
