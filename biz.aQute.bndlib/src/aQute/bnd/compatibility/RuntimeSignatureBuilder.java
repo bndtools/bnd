@@ -134,7 +134,7 @@ public class RuntimeSignatureBuilder {
 		if (t instanceof ParameterizedType) {
 			// C<P..>
 			ParameterizedType pt = (ParameterizedType) t;
-			Scope reference = root.getScope(identity((Class<?>)pt.getRawType()));			
+			/*Scope reference =*/ root.getScope(identity((Class<?>)pt.getRawType()));			
 			Type args[] = pt.getActualTypeArguments();
 			GenericType[] arguments = new GenericType[args.length];
 			int n = 0;
@@ -146,7 +146,7 @@ public class RuntimeSignatureBuilder {
 //			TypeVariable tv = (TypeVariable) t;
 //			return new GenericType(source,tv.getName(), null);
 		} else if (t instanceof WildcardType) {
-			WildcardType wc = (WildcardType) t;
+//			WildcardType wc = (WildcardType) t;
 //			wc.
 		} else if (t instanceof GenericArrayType) {
 

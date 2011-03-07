@@ -4,8 +4,6 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-import org.osgi.util.measurement.*;
-
 import junit.framework.*;
 
 public class CompareTest<O extends Serializable> extends TestCase {
