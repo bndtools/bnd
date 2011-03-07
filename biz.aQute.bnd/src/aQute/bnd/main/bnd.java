@@ -248,6 +248,8 @@ public class bnd extends Processor {
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
 		Project project = new Project(ws,projectDir, file);
+		project.setTrace(isTrace());
+		project.setPedantic(isPedantic());
 		project.run();
 	}
 

@@ -1149,6 +1149,7 @@ public class Project extends Processor {
 
 	public void run() throws Exception {
 		ProjectLauncher pl = getProjectLauncher();
+		pl.setTrace(isTrace());
 		pl.launch();
 	}
 
