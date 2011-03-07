@@ -64,6 +64,8 @@ public interface Constants {
 	String					BUILDPATH									= "-buildpath";
 	String					BUMPPOLICY									= "-bumppolicy";
 	String					CONDUIT										= "-conduit";
+	String					COMPILER_SOURCE								= "-source";
+	String					COMPILER_TARGET								= "-target";
 	String					DEPENDSON									= "-dependson";
 	String					DEPLOY										= "-deploy";
 	String					DEPLOYREPO									= "-deployrepo";

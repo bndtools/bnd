@@ -7,7 +7,6 @@ import java.nio.charset.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
-import java.util.jar.Attributes.*;
 import java.util.regex.*;
 import java.util.zip.*;
 

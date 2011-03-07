@@ -31,10 +31,11 @@ public class Launcher implements ServiceListener {
 	private Runnable						mainThread;
 	private PackageAdmin					padmin;
 	private static File						propertiesFile;
-	private final Timer						timer		= new Timer();
-	private final List<BundleActivator>		embedded	= new ArrayList<BundleActivator>();
-	private TimerTask						watchdog	= null;
-	private final Map<Bundle, Throwable>	errors		= new HashMap<Bundle, Throwable>();
+	private final Timer						timer				= new Timer();
+	private final List<BundleActivator>		embedded			= new ArrayList<BundleActivator>();
+	private TimerTask						watchdog			= null;
+	private final Map<Bundle, Throwable>	errors				= new HashMap<Bundle, Throwable>();
+	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<File, Bundle>();
 
 	public static void main(String[] args) {
 		try {
@@ -68,7 +69,19 @@ public class Launcher implements ServiceListener {
 
 			public void run() {
 				if (begin < propertiesFile.lastModified()) {
-					update();
+					try {
+						FileInputStream in = new FileInputStream(propertiesFile);
+						Properties properties = new Properties();
+						try {
+							properties.load(in);
+						} finally {
+							in.close();
+						}
+						parms = new LauncherConstants(properties);						
+						update();
+					} catch (Exception e) {
+						error("Error in updating the framework from the properties: %s", e);
+					}
 					begin = propertiesFile.lastModified();
 				}
 			}
@@ -88,7 +101,7 @@ public class Launcher implements ServiceListener {
 
 			// Register the command line with ourselves as the
 			// service.
-			if (parms.services) { //  Does not work for our dummy framework
+			if (parms.services) { // Does not work for our dummy framework
 				Hashtable<String, Object> argprops = new Hashtable<String, Object>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
@@ -155,78 +168,7 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this,
 				"(&(objectclass=java.lang.Runnable)(main.thread=true))");
 
-		// Install the set of bundles
-		List<Bundle> installed = new ArrayList<Bundle>();
-
-		for (Object i : parms.runbundles) {
-			File path = new File((String) i).getAbsoluteFile();
-
-			try {
-				trace("will install %s with reference", path.getAbsolutePath());
-				String reference = "reference:" + path.toURI().toURL().toExternalForm();
-				Bundle b = systemContext.installBundle(reference);
-				if (b.getLastModified() < path.lastModified()) {
-					b.update();
-				}
-				installed.add(b);
-			} catch (BundleException e) {
-				trace("failed reference, will try to install %s with input stream", path.getAbsolutePath());
-				String reference = path.toURI().toURL().toExternalForm();
-				InputStream in = new FileInputStream(path);
-				try {
-					Bundle b = findBundleByLocation(reference);
-					if (b != null) {
-						trace("already installed");
-						if (b.getLastModified() < path.lastModified()) {
-							b.update(in);
-							trace("updated");
-						}
-					} else {
-						b = systemContext.installBundle(reference, in);
-						installed.add(b);
-						trace("installed");
-					}
-				} catch (BundleException ee) {
-					error("Install: %s error: %s", path, ee);
-					return translateToError(ee);
-				} finally {
-					in.close();
-				}
-			}
-		}
-		trace("all bundles installed %s", parms.runbundles);
-
-		// From now on, the bundles are on their own. They have
-		// by default AllPermission, but if they install bundles
-		// they will not automatically get AllPermission anymore
-		if (security)
-			policy.setDefaultPermissions(null);
-
-		// Get the resolved status
-		if (padmin != null && padmin.resolveBundles(null) == false) {
-			error("could not resolve the bundles");
-			//return LauncherConstants.RESOLVE_ERROR;
-		}
-
-		// Now start all the installed bundles in the same order
-		// (unless they're a fragment)
-
-		for (Iterator<Bundle> i = installed.iterator(); i.hasNext();) {
-			Bundle b = (Bundle) i.next();
-			try {
-				trace("starting %s", b.getSymbolicName());
-				if (!isFragment(b))
-					b.start();
-				trace("started  %s", b.getSymbolicName());
-			} catch (BundleException e) {
-				errors.put(b, e);
-				error("Start: %s, cause: %s", b.getBundleId(), e);
-				return translateToError(e);
-			} catch (RuntimeException e) {
-				errors.put(b, e);
-				throw e;
-			}
-		}
+		update();
 
 		if (parms.trace) {
 			report(out);
@@ -261,13 +203,125 @@ public class Launcher implements ServiceListener {
 		return LauncherConstants.OK;
 	}
 
-	private Bundle findBundleByLocation(String location) {
-		Bundle bs[] = systemBundle.getBundleContext().getBundles();
-		for (Bundle b : bs) {
-			if (location.equals(b.getLocation()))
-				return b;
+	/**
+	 * @param systemContext
+	 * @throws MalformedURLException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void update() throws Exception {
+		trace("Updating framework with %s", parms.runbundles);
+		
+		// Turn the bundle location paths into files
+		List<File> desired = new ArrayList<File>();
+		for (Object o : parms.runbundles) {
+			File file = new File((String) o).getAbsoluteFile();
+			if (!file.exists())
+				error("Bundle files does not exist: " + file);
+			else
+				desired.add(file);
 		}
-		return null;
+
+		// deleted = old - new
+		List<File> tobedeleted = new ArrayList<File>(installedBundles.keySet());
+		tobedeleted.removeAll(desired);
+
+		// updated = old /\ new
+		List<File> tobeupdated = new ArrayList<File>(installedBundles.keySet());
+		tobeupdated.retainAll(desired);
+
+		// install = new - old
+		List<File> tobeinstalled = new ArrayList<File>(desired);
+		tobeinstalled.removeAll(installedBundles.keySet());
+
+		List<Bundle> tobestarted = new ArrayList<Bundle>();
+
+		for (File f : tobedeleted)
+			try {
+				trace("uninstalling %s", f);
+				installedBundles.get(f).uninstall();
+				installedBundles.remove(f);
+			} catch (Exception e) {
+				error("Failed to uninstall bundle %s, exception %s", f, e);
+			}
+
+		for (File f : tobeinstalled)
+			try {
+				trace("installing %s", f);
+				Bundle b = install(f);
+				installedBundles.put(f, b);
+				tobestarted.add(b);
+			} catch (Exception e) {
+				error("Failed to uninstall bundle %s, exception %s", f, e);
+			}
+
+		for (File f : tobeupdated)
+			try {
+				Bundle b = installedBundles.get(f);
+				if (b.getLastModified() < f.lastModified()) {
+					trace("updating %s", f);
+					tobestarted.add(b);
+					b.stop();
+					b.update();
+				} else
+					trace("bundle is still current according to timestamp %s", f);
+			} catch (Exception e) {
+				error("Failed to update bundle %s, exception %s", f, e);
+			}
+
+		if (padmin != null)
+			padmin.refreshPackages(null);
+
+		trace("bundles administered %s", installedBundles.keySet());
+
+		// From now on, the bundles are on their own. They have
+		// by default AllPermission, but if they install bundles
+		// they will not automatically get AllPermission anymore
+		if (security)
+			policy.setDefaultPermissions(null);
+
+		// Get the resolved status
+		if (padmin != null && padmin.resolveBundles(null) == false) {
+			error("could not resolve the bundles");
+			// return LauncherConstants.RESOLVE_ERROR;
+		}
+
+		// Now start all the installed bundles in the same order
+		// (unless they're a fragment)
+		for (Bundle b : tobestarted) {
+			try {
+				trace("starting %s", b.getSymbolicName());
+				if (!isFragment(b))
+					b.start();
+				trace("started  %s", b.getSymbolicName());
+			} catch (BundleException e) {
+				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b
+						.getVersion(), e);
+			}
+		}
+
+	}
+
+	Bundle install(File f) throws Exception {
+		BundleContext context = systemBundle.getBundleContext();
+		try {
+			trace("will install %s with reference", f.getAbsolutePath());
+			String reference = "reference:" + f.toURI().toURL().toExternalForm();
+			Bundle b = context.installBundle(reference);
+			if (b.getLastModified() < f.lastModified()) {
+				b.update();
+			}
+			return b;
+		} catch (BundleException e) {
+			trace("failed reference, will try to install %s with input stream", f.getAbsolutePath());
+			String reference = f.toURI().toURL().toExternalForm();
+			InputStream in = new FileInputStream(f);
+			try {
+				return context.installBundle(reference, in);
+			} finally {
+				in.close();
+			}
+		}
 	}
 
 	private void doTimeoutHandler() {
@@ -306,50 +360,11 @@ public class Launcher implements ServiceListener {
 		wait.start();
 	}
 
-	void update() {
-		Bundle[] bundles = systemBundle.getBundleContext().getBundles();
-		List<Bundle> tobeupdated = new ArrayList<Bundle>();
-
-		for (Bundle b : bundles) {
-			String location = b.getLocation();
-			File f = new File(location);
-			if (parms.runbundles.contains(f)) {
-				if (b.getLastModified() < f.lastModified()) {
-					tobeupdated.add(b);
-					try {
-						b.stop();
-					} catch (BundleException e) {
-						// Ignore for now
-					}
-				}
-			}
-		}
-
-		for (Bundle b : tobeupdated) {
-			try {
-				b.update();
-			} catch (BundleException e) {
-				out.println("Failed to update " + b.getLocation());
-			}
-		}
-		if (padmin != null)
-			padmin.refreshPackages(null);
-
-		for (Bundle b : tobeupdated) {
-			try {
-				b.start();
-			} catch (BundleException e) {
-				out.println("Failed to start " + b.getLocation());
-			}
-		}
-
-	}
-
 	private void doSecurity() {
 		try {
 			PermissionInfo allPermissions[] = new PermissionInfo[] { new PermissionInfo(
 					AllPermission.class.getName(), null, null) };
-			policy = new SimplePermissionPolicy(this,systemBundle.getBundleContext());
+			policy = new SimplePermissionPolicy(this, systemBundle.getBundleContext());
 
 			// All bundles installed from the script are getting AllPermission
 			// for now.
@@ -673,6 +688,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	static PermissionCollection	all	= new AllPermissionCollection();
+
 	class AllPolicy extends Policy {
 
 		public PermissionCollection getPermissions(CodeSource codesource) {
@@ -690,10 +706,10 @@ public class Launcher implements ServiceListener {
 		private static Vector<Permission>	list				= new Vector<Permission>();
 
 		static {
-			list.add( new AllPermission());
+			list.add(new AllPermission());
 		}
-		
-		{			
+
+		{
 			setReadOnly();
 		}
 

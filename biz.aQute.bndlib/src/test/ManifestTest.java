@@ -31,7 +31,7 @@ public class ManifestTest extends TestCase {
         Resource r = jar.getResource("META-INF/MANIFEST.MF");        
         assertNotNull( r );
 
-        String ms = IO.collect( r.openInputStream());
+//        String ms = IO.collect( r.openInputStream());
         
         Manifest m = new Manifest( r.openInputStream());
         
@@ -80,7 +80,7 @@ public class ManifestTest extends TestCase {
         assertNotNull( r );
         
         Manifest m = new Manifest( r.openInputStream());
-        String ms = IO.collect(r.openInputStream());
+//        String ms = IO.collect(r.openInputStream());
         
         assertEquals( shortSentence, m.getMainAttributes().getValue("A1"));
         assertEquals( shortSentence, m.getMainAttributes().getValue("A11"));

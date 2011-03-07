@@ -15,6 +15,7 @@ The git repository contains all code. It contains the following projects:
 5) junit      - A tester plugin for JUnit 3.8 testing for bnd
 6) cnf        - The bnd project directory, contains the repo with dependencies
 7) demo       - A project used in testing
+8) compiler   - A wrapped version of the eclipse java compiler
 
 API
 All code is Apache 2.0 Licensed so you can do what you want with the source code. 
