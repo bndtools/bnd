@@ -33,7 +33,8 @@ public class ProjectLauncherImpl extends ProjectLauncher  {
 	}
 
 	public void update() throws Exception {
-		propertiesFile.setLastModified(System.currentTimeMillis());
+		updateFromProject();
+		writeProperties();
 	}
 
 	public int launch() throws Exception {
@@ -44,10 +45,19 @@ public class ProjectLauncherImpl extends ProjectLauncher  {
 	public void prepare() throws Exception {
 		if (prepared)
 			return;
+		prepared = true;
 
+		writeProperties();
+	}
+
+	/**
+	 * @throws Exception
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void writeProperties() throws Exception, FileNotFoundException, IOException {
 		project.trace("preparing the aQute launcher plugin");
 
-		prepared = true;
 		LauncherConstants lc = new LauncherConstants();
 
 		lc.runProperties = getRunProperties();
