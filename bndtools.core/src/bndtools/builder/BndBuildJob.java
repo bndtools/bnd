@@ -101,7 +101,7 @@ public class BndBuildJob extends Job {
                 public void run(IProgressMonitor monitor) throws CoreException {
                     // Refresh target directory resources
                     IContainer target = workspace.getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
-                    target.refreshLocal(IResource.DEPTH_INFINITE, null);
+                    target.refreshLocal(1, null);
 
                     // Clear any JARs in the target directory that have not just been built by Bnd
                     IResource[] members = target.members();

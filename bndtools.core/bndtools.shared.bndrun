@@ -4,7 +4,9 @@
 
 -runfw: org.eclipse.osgi
 
-workspace.bundles: bndtools.repository.base;version=snapshot,\
+workspace.bundles: \
+	bndtools.core;version=snapshot,\
+	bndtools.repository.base;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.repository.orbit;version=snapshot,\
 	bndtools.diff;version=snapshot,\
@@ -148,5 +150,4 @@ crossplatform.vmargs: -Xmx512m -XX:MaxPermSize=256m
 crossplatform.runprops: eclipse.application=org.eclipse.ui.ide.workbench,\
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
-	bndtools.launcher.defaultStart=activationPolicy,\
 	eclipse.consoleLog=

@@ -104,12 +104,13 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
                 projectModel.genericSet(propertyName, null);
                 newBundleModel.genericSet(propertyName, value);
             }
+
+            // Save the project model
+            projectModel.saveChangesTo(projectDocument);
+            FileUtils.writeFully(projectDocument, projectFile, false);
         }
 
-        // Save the project model and generate the new bundle model
-        projectModel.saveChangesTo(projectDocument);
-        FileUtils.writeFully(projectDocument, projectFile, false);
-
+        // Generate the new bundle model
         Document newBundleDocument = new Document();
         newBundleModel.saveChangesTo(newBundleDocument);
 

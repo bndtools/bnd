@@ -6,7 +6,7 @@
 	org.eclipse.equinox.security.win32.x86,\
 	org.eclipse.core.filesystem.win32.x86
 
--vmargs: ${crossplatform.vmargs}
+-runvm: ${crossplatform.vmargs}
 
 -runproperties: ${crossplatform.runprops},\
 	osgi.ws=win32,\

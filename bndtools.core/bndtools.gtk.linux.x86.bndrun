@@ -4,7 +4,7 @@
 	org.eclipse.swt.gtk.linux.x86,\
 	org.eclipse.core.filesystem.linux.x86
 
--vmargs: ${crossplatform.vmargs}
+-runvm: ${crossplatform.vmargs}
 
 -runproperties: ${crossplatform.runprops},\
 	osgi.ws=gtk,\

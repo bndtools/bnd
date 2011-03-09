@@ -8,7 +8,7 @@
 	org.eclipse.core.filesystem.macosx,\
 	org.eclipse.jdt.launching.macosx
 
--vmargs: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
+-runvm: -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
 
 -runproperties: ${crossplatform.runprops},\
 	osgi.ws=cocoa,\
