@@ -62,8 +62,11 @@ public abstract class ProjectLauncher {
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
-		for (File file : project.toFile(project.getRunbundles()))
+		Collection<Container> run = project.getRunbundles();
+		
+		for (File file : project.toFile(run))
 			runbundles.add(file.getAbsolutePath());
+		
 		File[] builds = project.build();
 		if (builds != null)
 			for (File file : builds)

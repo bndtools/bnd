@@ -292,7 +292,7 @@ public class Launcher implements ServiceListener {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				if (!isFragment(b))
-					b.start();
+					b.start(Bundle.START_ACTIVATION_POLICY);
 				trace("started  %s", b.getSymbolicName());
 			} catch (BundleException e) {
 				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b
