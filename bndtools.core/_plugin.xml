@@ -345,7 +345,7 @@
    
    	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 	    <launchConfigurationType
-           delegate="bndtools.launch.OSGiLaunchDelegate"
+           delegate="bndtools.launch.OSGiRunLaunchDelegate"
            id="bndtools.launch"
            modes="run, debug"
            name="OSGi Framework"
