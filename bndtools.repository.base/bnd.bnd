@@ -1,10 +1,17 @@
+-buildpath: bndtools.core;version=snapshot
+
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Version: 0.0.11
+
 Include-Resource: plugin.xml=_plugin.xml,\
-	repo=repo
+	repo=repo,\
+	repo/biz.aQute.bnd/=${repo;biz.aQute.bnd},\
+	repo/biz.aQute.bnd.annotation/=${repo;biz.aQute.bnd.annotation},\
+	repo/biz.aQute.bndlib/=${repo;biz.aQute.bndlib},\
+	repo/bndtools.runtime.eclipse.applaunch/=${repo;bndtools.runtime.eclipse.applaunch}
+
+Private-Package: bndtools.templates
 Import-Package: \
 	bndtools.api.repository;version="[0,1)",\
 	bndtools.api.repository.impl;version="[0,1)",\
 	*
--buildpath: bndtools.core;version=snapshot
-Private-Package: bndtools.templates
