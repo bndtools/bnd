@@ -1,7 +1,6 @@
 package bndtools.launch;
 
 import java.text.MessageFormat;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -38,13 +37,6 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     // A couple of hacks to make sure the JUnit plugin is active and notices our launch.
     @Override
     public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
-        System.out.println("$$$ DEBUG LAUNCH PARAMETERS");
-        Map attribs = configuration.getAttributes();
-        for (Object entry : attribs.entrySet()) {
-            System.out.println(entry.toString());
-        }
-        System.out.println("$$$ END DEBUG LAUNCH PARAMETERS");
-
         // start the JUnit plugin
         try {
             Bundle jdtJUnitBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), JDT_JUNIT_BSN, null);
@@ -100,7 +92,11 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         bndEclipseTester.setPort(port);
         launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(port));
 
-        bndTester.getProjectLauncher().setTrace(true);
+        // Enable tracing?
+        bndTester.getProjectLauncher().setTrace(enableTraceOption(configuration));
+
+        // Keep alive?
+        bndTester.setContinuous(enableKeepAlive(configuration));
 
         // Check if we were asked to re-run a specific test class/method
         String testClass = configuration.getAttribute("org.eclipse.jdt.launching.MAIN_TYPE", (String) null);
@@ -116,6 +112,15 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     private void assertBndEclipseTester() throws CoreException {
         if (bndEclipseTester == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd/Eclipse tester was not initialised.", null));
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean enableKeepAlive(ILaunchConfiguration configuration) throws CoreException {
+        boolean keepAlive = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
+        if (keepAlive == LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE) {
+            keepAlive = configuration.getAttribute(LaunchConstants.ATTR_OLD_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
+        }
+        return keepAlive;
     }
 
     @Override

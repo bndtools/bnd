@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -154,5 +155,17 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             }
         }
         return args;
+    }
+    @SuppressWarnings("deprecation")
+    protected boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
+        boolean trace = configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
+        String logLevelStr = configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, (String) null);
+        if (logLevelStr != null) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
+                    MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
+            Level logLevel = Level.parse(logLevelStr);
+            trace |= logLevel.intValue() <= Level.FINE.intValue();
+        }
+        return trace;
     }
 }

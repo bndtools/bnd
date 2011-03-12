@@ -3,7 +3,6 @@ package bndtools.launch;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -59,13 +58,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
         bndLauncher.setKeep(!clean);
 
-        boolean trace = enableTraceOption(configuration);
-        bndLauncher.setTrace(trace);
-    }
-
-    private boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
-        Level logLevel = Level.parse(configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.DEFAULT_LOGLEVEL));
-        return logLevel.intValue() <= Level.FINE.intValue();
+        bndLauncher.setTrace(enableTraceOption(configuration));
     }
 
     /**

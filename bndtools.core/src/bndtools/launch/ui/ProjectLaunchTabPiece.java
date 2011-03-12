@@ -49,9 +49,15 @@ import bndtools.utils.FileExtensionFilter;
 public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
     private static final String PROP_LAUNCH_TARGET = "targetName";
+    private static final String PROP_ENABLE_TRACE = "enableTrace";
 
+    // Model State
     private String targetName = "";
+    private boolean enableTrace = false;
+
+    // View
     private Text launchTargetTxt;
+    private Button enableTraceBtn;
 
     public Control createControl(Composite parent) {
         Group projectGroup = new Group(parent, SWT.NONE);
@@ -66,6 +72,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
         Button bndrunBrowseBtn = new Button(projectGroup, SWT.PUSH);
         bndrunBrowseBtn.setText("Browse Run Files");
+
+        enableTraceBtn = new Button(projectGroup, SWT.CHECK);
+        enableTraceBtn.setText("Enable launcher tracing.");
 
         // LISTENERS
         projectNameBrowseBtn.addSelectionListener(new SelectionAdapter() {
@@ -86,6 +95,15 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                 targetName = launchTargetTxt.getText();
                 setDirty(true);
                 firePropertyChange(PROP_LAUNCH_TARGET, oldName, targetName);
+            }
+        });
+        enableTraceBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean oldValue = enableTrace;
+                enableTrace = enableTraceBtn.getSelection();
+                setDirty(true);
+                firePropertyChange(PROP_ENABLE_TRACE, oldValue, enableTrace);
             }
         });
 
@@ -175,6 +193,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             else
                 configuration.removeAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME);
         }
+
+        configuration.setAttribute(LaunchConstants.ATTR_TRACE, enableTrace);
+        configuration.removeAttribute(LaunchConstants.ATTR_LOGLEVEL);
     }
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
@@ -184,6 +205,8 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         if (targetName != null) {
             launchTargetTxt.setText(targetName);
         }
+        enableTrace = configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
+        enableTraceBtn.setSelection(enableTrace);
     }
 
     @Override
@@ -219,5 +242,6 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     }
 
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
+        configuration.setAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
     }
 }

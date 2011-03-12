@@ -14,8 +14,7 @@ public class OSGiLaunchTab extends GenericStackedLaunchTab {
     protected ILaunchTabPiece[] createStack() {
         return new ILaunchTabPiece[] {
                 new ProjectLaunchTabPiece(),
-                new FrameworkLaunchTabPiece(),
-                new LoggingLaunchTabPiece()
+                new FrameworkLaunchTabPiece()
         };
     }
 
