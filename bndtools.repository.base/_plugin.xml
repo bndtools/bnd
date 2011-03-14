@@ -9,9 +9,18 @@
          </description>
       </repository>
    </extension>
+   
    <extension point="bndtools.core.projectTemplates">
       <template name="Component Development (Declarative Services)"
          priority="100"
-         class="bndtools.templates.ComponentTemplate" />
+         class="bndtools.templates.ComponentTemplate"
+         docHtml="html/componentTemplate.html"/>
+   </extension>
+   
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Integration Testing"
+         priority="200"
+         class="bndtools.templates.IntegrationTestingTemplate"
+         docHtml="html/integrationTestTemplate.html"/>
    </extension>
 </plugin>

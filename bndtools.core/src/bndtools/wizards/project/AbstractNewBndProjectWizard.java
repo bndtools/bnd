@@ -18,6 +18,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -39,6 +40,7 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.BndProject;
+import bndtools.utils.FileUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
@@ -116,15 +118,18 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     }
 
     protected IFile importResource(IProject project, String fullPath, URL url, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 2);
+
         IFile p = project.getFile(fullPath);
         InputStream is = null;
         try {
             is = url.openStream();
 
             if (p.exists()) {
-                p.setContents(is, false, true, monitor);
+                p.setContents(is, false, true, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
             } else {
-                p.create(is, false, monitor);
+                FileUtils.recurseCreate(p.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                p.create(is, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             }
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));

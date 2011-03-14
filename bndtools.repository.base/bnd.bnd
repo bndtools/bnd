@@ -8,7 +8,8 @@ Include-Resource: plugin.xml=_plugin.xml,\
 	repo/biz.aQute.bnd/=${repo;biz.aQute.bnd},\
 	repo/biz.aQute.bnd.annotation/=${repo;biz.aQute.bnd.annotation},\
 	repo/biz.aQute.bndlib/=${repo;biz.aQute.bndlib},\
-	repo/bndtools.runtime.eclipse.applaunch/=${repo;bndtools.runtime.eclipse.applaunch}
+	repo/bndtools.runtime.eclipse.applaunch/=${repo;bndtools.runtime.eclipse.applaunch},\
+	html=html
 
 Private-Package: bndtools.templates
 Import-Package: \

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,7 +47,7 @@ import bndtools.editor.model.conversions.NewlineEscapedStringFormatter;
 import bndtools.editor.model.conversions.NoopConverter;
 import bndtools.editor.model.conversions.PropertiesConverter;
 import bndtools.editor.model.conversions.PropertiesEntryFormatter;
-import bndtools.editor.model.conversions.StringEntryConverter;
+import bndtools.editor.model.conversions.SimpleListConverter;
 import bndtools.editor.model.conversions.VersionedClauseConverter;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
@@ -119,7 +120,8 @@ public class BndEditModel implements IPersistableBndModel {
             return VersionPolicy.parse(string);
         }
     };
-    Converter<List<String>, String> listConverter = new ClauseListConverter<String>(new StringEntryConverter());
+    @SuppressWarnings("unchecked")
+    Converter<List<String>, String> listConverter = new SimpleListConverter(new NoopConverter<String>());
     ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
         public ExportedPackage convert(Entry<String, Map<String, String>> input) {
             return new ExportedPackage(input.getKey(), input.getValue());
@@ -166,6 +168,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
         converters.put(BndConstants.RUNVMARGS, stringConverter);
         converters.put(BndConstants.TESTSUITES, listConverter);
+        converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
@@ -499,12 +502,22 @@ public class BndEditModel implements IPersistableBndModel {
     }
 
     public List<String> getTestSuites() {
-        return doGetObject(BndConstants.TESTSUITES, listConverter);
+        List<String> testCases = doGetObject(aQute.lib.osgi.Constants.TESTCASES, listConverter);
+        testCases = testCases != null ? testCases : Collections.<String>emptyList();
+
+        List<String> testSuites = doGetObject(BndConstants.TESTSUITES, listConverter);
+        testSuites = testSuites != null ? testSuites : Collections.<String>emptyList();
+
+        List<String> result = new ArrayList<String>(testCases.size() + testSuites.size());
+        result.addAll(testCases);
+        result.addAll(testSuites);
+        return result;
     }
 
     public void setTestSuites(List<String> suites) {
         List<String> old = getTestSuites();
-        doSetObject(BndConstants.TESTSUITES, old, suites, stringListFormatter);
+        doSetObject(aQute.lib.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
+        doSetObject(BndConstants.TESTSUITES, null, null, stringListFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

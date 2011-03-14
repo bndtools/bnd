@@ -1,0 +1,48 @@
+package bndtools.templates;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+import aQute.lib.osgi.Constants;
+import bndtools.api.IBndModel;
+import bndtools.api.IBndProject;
+import bndtools.api.IProjectTemplate;
+import bndtools.model.clauses.VersionedClause;
+
+public class IntegrationTestingTemplate implements IProjectTemplate {
+
+    private static final String ALL_TEST_CASES_MACRO = "${classes;CONCRETE;EXTENDS;junit.framework.TestCase}"; //$NON-NLS-1$
+
+    @Override
+    public void modifyInitialBndModel(IBndModel model) {
+        List<VersionedClause> newBuildPath = new ArrayList<VersionedClause>();
+
+        List<VersionedClause> oldBuildPath = model.getBuildPath();
+        if (oldBuildPath != null) newBuildPath.addAll(oldBuildPath);
+
+        newBuildPath.add(createBundleRef("osgi.core", "[4.1,5)"));
+        newBuildPath.add(createBundleRef("osgi.cmpn", null));
+        newBuildPath.add(createBundleRef("junit.osgi", null));
+        model.setBuildPath(newBuildPath);
+
+        model.setTestSuites(Arrays.asList(ALL_TEST_CASES_MACRO));
+
+        model.setRunFramework("org.apache.felix.framework");
+    }
+
+    VersionedClause createBundleRef(String bsn, String version) {
+        HashMap<String, String> attribs = new HashMap<String, String>();
+        if (version != null)
+            attribs.put(Constants.VERSION_ATTRIBUTE, version);
+        return new VersionedClause(bsn, attribs);
+    }
+
+    @Override
+    public void modifyInitialBndProject(IBndProject project) {
+        URL testSrc = IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt");
+        project.addResource("src/org/example/tests/ExampleTest.java", testSrc);
+    }
+}

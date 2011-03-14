@@ -2,7 +2,6 @@ package bndtools.editor.contents;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +17,6 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,7 +26,6 @@ import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -55,7 +50,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -67,10 +61,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.UIConstants;
 import bndtools.editor.components.Messages;
 import bndtools.editor.model.BndEditModel;
-import bndtools.model.clauses.ExportedPackage;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
 
@@ -194,6 +186,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
         this.model = (BndEditModel) form.getInput();
         this.model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
+        this.model.addPropertyChangeListener(Constants.TESTCASES, this);
     }
 
     @Override
@@ -205,71 +198,31 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 
     private void validate() {
-        IMessageManager msgs = getManagedForm().getMessageManager();
-        msgs.removeMessages();
-
-        int i = 0;
-        for (final String fqName : testSuites) {
-            int lastDot = fqName.lastIndexOf('.');
-            if(lastDot == -1) {
-                String error = "The default package is not permitted.";
-                IAction[] fixes = new Action[] {
-                    new Action(MessageFormat.format("Remove entry \"{0}\"", fqName)) {
-                        @Override
-                        public void run() {
-                            testSuites.remove(fqName);
-                            viewer.remove(fqName);
-                        }
-                    }
-                };
-                msgs.addMessage("_defaultPkg" +  i++, error, fixes, IMessageProvider.ERROR);
-            } else {
-                final String packageName = fqName.substring(0, lastDot);
-                final BndEditModel model = (BndEditModel) getManagedForm().getInput();
-                if(!model.isIncludedPackage(packageName)) {
-                    String message = MessageFormat.format("Package \"{0}\" is not included in the bundle.", packageName);
-                    IAction[] fixes = new Action[] {
-                        new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
-                            @Override
-                            public void run() {
-                                model.addPrivatePackage(packageName);
-                                markDirty();
-                            };
-                        },
-                        new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
-                            @Override
-                            public void run() {
-                                model.addExportedPackage(new ExportedPackage(packageName, null));
-                                markDirty();
-                            };
-                        }
-                    };
-                    msgs.addMessage("_nonincluded_pkg" + i++, message, fixes, IMessageProvider.WARNING);
-                }
-            }
-        }
     }
 
     @Override
     public void commit(boolean onSave) {
         try {
             model.removePropertyChangeListener(BndConstants.TESTSUITES, this);
+            model.removePropertyChangeListener(Constants.TESTCASES, this);
             model.setTestSuites(testSuites.isEmpty() ? null : testSuites);
         } finally {
             model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
+            model.addPropertyChangeListener(Constants.TESTCASES, this);
             super.commit(onSave);
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(BndConstants.TESTSUITES.equals(evt.getPropertyName())) {
+        String propertyName = evt.getPropertyName();
+        if(BndConstants.TESTSUITES.equals(propertyName) || Constants.TESTCASES.equals(propertyName)) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
             if(page.isActive()) {
                 refresh();
             } else {
                 markStale();
             }
-        } else if(Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName()) || Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
+        } else if(Constants.PRIVATE_PACKAGE.equals(propertyName) || Constants.EXPORT_PACKAGE.equals(propertyName)) {
             validate();
         }
     }
@@ -363,19 +316,8 @@ class TestSuiteLabelProvider extends StyledCellLabelProvider {
     private Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
     @Override
     public void update(ViewerCell cell) {
-        StyledString label;
-
         String fqName = (String) cell.getElement();
-        int lastDot = fqName.lastIndexOf('.');
-        if(lastDot == -1) {
-            label = new StyledString(fqName);
-            label.append(" <<default pkg>>", UIConstants.ERROR_STYLER);
-        } else {
-            label = new StyledString(fqName.substring(lastDot + 1));
-            label.append(" (" + fqName.substring(0, lastDot) + ")", StyledString.QUALIFIER_STYLER);
-        }
-        cell.setText(label.getString());
-        cell.setStyleRanges(label.getStyleRanges());
+        cell.setText(fqName);
         cell.setImage(suiteImg);
     }
     @Override

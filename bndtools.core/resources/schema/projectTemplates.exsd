@@ -49,9 +49,6 @@
 
    <element name="template">
       <complexType>
-         <sequence>
-            <element ref="description"/>
-         </sequence>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
@@ -79,15 +76,17 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="docHtml" type="string">
+            <annotation>
+               <documentation>
+                  Optional reference to an HTML document describing this template.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="resource"/>
+               </appinfo>
+            </annotation>
+         </attribute>
       </complexType>
-   </element>
-
-   <element name="description" type="string">
-      <annotation>
-         <appinfo>
-            <meta.element translatable="true"/>
-         </appinfo>
-      </annotation>
    </element>
 
    <annotation>

@@ -37,4 +37,8 @@ public interface IBndModel {
 
     void setRunVMArgs(String args);
 
+    void setTestSuites(List<String> suites);
+
+    List<String> getTestSuites();
+
 }

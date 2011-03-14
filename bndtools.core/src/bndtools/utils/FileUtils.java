@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -14,9 +15,11 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
@@ -32,6 +35,19 @@ public class FileUtils {
 			return new Document(string);
 		}
 		return null;
+	}
+
+	public static void recurseCreate(IContainer container, IProgressMonitor monitor) throws CoreException {
+	    SubMonitor progress = SubMonitor.convert(monitor, 2);
+	    if (container == null || container.exists())
+	        return;
+
+	    recurseCreate(container.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+
+	    if (container instanceof IFolder)
+	        ((IFolder) container).create(false, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+	    else
+	        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Cannot create new projects or workspace roots automatically.", null));
 	}
 
 	public static byte[] readFully(InputStream stream) throws IOException {
