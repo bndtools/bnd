@@ -361,11 +361,20 @@
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
    </extension>
+   
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester id="org.bndtools.core.launchPropertyTester"
+         namespace="org.bndtools.core"
+         properties="isInBndJavaProject"
+         class="bndtools.launch.LaunchPropertyTester"
+         type="org.eclipse.jdt.core.IJavaElement"/>
+   </extension>
+   
    <!-- LAUNCH SHORTCUTS -->
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            label="OSGi JUnit"
+            label="OSGi JUnit Test"
             icon="icons/bricks_junit.png"
             class="bndtools.launch.JUnitShortcut"
             modes="run, debug"
@@ -383,11 +392,10 @@
                            <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
                         </and>
                         
-                        <!-- bnd.bnd file -->
-                        <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                        <!-- bnd.bnd or *.bndrun file -->
+                        <test property="org.eclipse.core.resources.name" value="bnd.bnd" forcePluginActivation="true"/>
+                        <test property="org.eclipse.core.resources.extension" value="bndrun" forcePluginActivation="true"/>
                         
-                        <!-- *.bndrun file -->
-                        <test property="org.eclipse.core.resources.extension" value="bndrun"/>
                      </or>
                   </iterate>
                </with>
@@ -435,6 +443,39 @@
                </with>
             </enablement>
          </contextualLaunch>
+      </shortcut>
+      
+      <shortcut
+            label="OSGi JUnit Test"
+            icon="icons/bricks_junit.png"
+            class="bndtools.launch.JUnitShortcut"
+            modes="run, debug"
+            id="bndtools.launch.junitClassShortcut">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.jdt.core.IJavaElement">
+                        <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+                        <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
+                        <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="org.eclipse.jdt.junit.launchconfig">
+         </configurationType>
+         <description
+               description="Debug a JUnit Test in an OSGi Framework"
+               mode="debug">
+         </description>
+         <description
+               description="Run an OSGi JUnit Test in an OSGi framework"
+               mode="run">
+         </description>
       </shortcut>
    </extension>
    

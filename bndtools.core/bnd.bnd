@@ -71,13 +71,15 @@ eclipse.deps: \
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.debug,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
 	org.eclipse.equinox.preferences,\
 	org.eclipse.help.base,\
 	org.eclipse.ltk.core.refactoring,\
 	org.eclipse.ltk.ui.refactoring,\
-	org.eclipse.core.filebuffers
+	org.eclipse.core.filebuffers,\
+	org.eclipse.core.expressions
 
 
 # Build and Run
