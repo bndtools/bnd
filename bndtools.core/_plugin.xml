@@ -179,7 +179,7 @@
             objectClass="org.eclipse.core.resources.IProject">
          <action
                class="bndtools.builder.ToggleNatureAction"
-               enablesFor="1"
+               enablesFor="+"
                icon="icons/bnd_nature_add.png"
                id="bndtools.addBndNatureAction"
                label="Add Bnd OSGi Project Nature"
