@@ -13,6 +13,8 @@ import java.lang.annotation.*;
 	String	ENABLED					= "enabled";
 	String	PROPERTIES				= "properties";
 	String	VERSION					= "version";
+	String	DESIGNATE				= "designate";
+	String	DESIGNATE_FACTORY		= "designateFactory";
 
 	String name() default "";
 
@@ -28,5 +30,9 @@ import java.lang.annotation.*;
 
 	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
 
-	String[] properties() default "";
+	String[] properties() default {};
+
+	Class<?> designate() default Object.class;
+
+	Class<?> designateFactory() default Object.class;
 }

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import javax.xml.namespace.*;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
@@ -17,33 +18,166 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
+import aQute.bnd.annotation.metatype.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Constants;
 
 public class ComponentTest extends TestCase {
-	final SimpleContext scr_v1_1_0 = new SimpleContext("scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
-	final XPath xp = XPathFactory.newInstance().newXPath();
-	final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	
+	final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
+	final XPathFactory				xpathf	= XPathFactory.newInstance();
+	final XPath						xpath	= xpathf.newXPath();
+	DocumentBuilder					db;
+
 	{
-		xp.setNamespaceContext(scr_v1_1_0);
-		factory.setNamespaceAware(true);
+		try {
+			dbf.setNamespaceAware(true);
+			db = dbf.newDocumentBuilder();
+			xpath.setNamespaceContext(new NamespaceContext() {
+
+				public Iterator getPrefixes(String namespaceURI) {
+					return Arrays.asList("md", "scr").iterator();
+				}
+
+				public String getPrefix(String namespaceURI) {
+					if (namespaceURI.equals("http://www.osgi.org/xmlns/metatype/v1.1.0"))
+						return "md";
+					if (namespaceURI.equals("http://www.osgi.org/xmlns/scr/v1.1.0"))
+						return "scr";
+
+					return null;
+				}
+
+				public String getNamespaceURI(String prefix) {
+					if (prefix.equals("md"))
+						return "http://www.osgi.org/xmlns/metatype/v1.1.0";
+					else if (prefix.equals("scr"))
+						return "http://www.osgi.org/xmlns/scr/v1.1.0";
+					else
+						return null;
+				}
+			});
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-	
-	
-	
+
+	/**
+	 * Test config with metatype
+	 */
+
+	@Component(name = "config", designateFactory = Config.class, configurationPolicy = ConfigurationPolicy.require) static class MetatypeConfig {
+		interface Config {
+			String name();
+		}
+	}
+
+	@Component(designate = Config.class) static class MetatypeConfig2 {
+		interface Config {
+			String name();
+		}
+	}
+
+	public void testConfig() throws Exception {
+		Builder b = new Builder();
+		b.setExceptions(true);
+		b.setClasspath(new File[] { new File("bin") });
+		b.setProperty("Service-Component", "*MetatypeConfig*");
+		b.setProperty("Private-Package", "test");
+		b.build();
+		System.out.println(b.getErrors());
+		System.out.println(b.getWarnings());
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		System.out.println(b.getJar().getResources().keySet());
+
+		// Check component name
+		{
+			Resource cr = b.getJar().getResource("OSGI-INF/config.xml");
+			cr.write(System.out);
+			Document d = db.parse(cr.openInputStream());
+			assertEquals("config", xpath.evaluate("/scr:component/@name", d, XPathConstants.STRING));
+		}
+
+		// Check if config properly linked
+		{
+			Resource mr = b.getJar().getResource("OSGI-INF/metatype/config.xml");
+			mr.write(System.out);
+			Document d = db.parse(mr.openInputStream());
+			assertEquals("config", xpath.evaluate("//Designate/@factoryPid", d,
+					XPathConstants.STRING));
+			assertEquals("config", xpath.evaluate("//Object/@ocdref", d,
+					XPathConstants.STRING));
+		}
+
+		// Now with default name
+		{
+			Resource cr2 = b.getJar()
+					.getResource("OSGI-INF/test.ComponentTest$MetatypeConfig2.xml");
+			cr2.write(System.out);
+			Document d = db.parse(cr2.openInputStream());
+			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate("//scr:component/@name",
+					d, XPathConstants.STRING));
+		}
+		{
+			Resource mr2 = b.getJar().getResource(
+					"OSGI-INF/metatype/test.ComponentTest$MetatypeConfig2.xml");
+			mr2.write(System.out);
+			Document d = db.parse(mr2.openInputStream());
+			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate(
+					"//Designate/@pid", d, XPathConstants.STRING));
+			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate("//Object/@ocdref", d,
+					XPathConstants.STRING));
+		}
+	}
+
+	/**
+	 * Test properties
+	 */
+	@Metadata.OCD static interface Config {
+		String name();
+	}
+
+	@Component(name = "props", properties = { "a=1", "b=3", "c=1|2|3" }, designate = Config.class, designateFactory = Config.class) static class PropertiesAndConfig {
+		@Activate protected void activate(ComponentContext c) {
+		}
+	}
+
+	public void testPropertiesAndConfig() throws Exception {
+		Builder b = new Builder();
+		b.setExceptions(true);
+		b.setClasspath(new File[] { new File("bin") });
+		b.setProperty("Service-Component", "*PropertiesAndConfig");
+		b.setProperty("Private-Package", "test");
+		b.build();
+		System.out.println(b.getErrors());
+		System.out.println(b.getWarnings());
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+
+		Resource cr = b.getJar().getResource("OSGI-INF/props.xml");
+		cr.write(System.out);
+		{
+			Document doc = doc(b, "props");
+			assertEquals("1", xpath.evaluate("scr:component/property[@name='a']/@value", doc));
+			assertEquals("3", xpath.evaluate("scr:component/property[@name='b']/@value", doc));
+			assertEquals("\n1\n2\n3\n", xpath.evaluate("scr:component/property[@name='c']", doc));
+		}
+
+	}
+
 	/**
 	 * Test if a reference is made to an interface implemented on a superclass.
 	 * 
 	 * This is from https://github.com/bnd/bnd/issues#issue/23
 	 */
-		
+
 	public void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
-		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath(new File("jar/osgi.jar"));
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -51,12 +185,10 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Manifest m = b.getJar().getManifest();
-		String imports = m.getMainAttributes().getValue("Import-Package"); 
+		String imports = m.getMainAttributes().getValue("Import-Package");
 		assertTrue(imports.contains("org.osgi.framework"));
 	}
-	
-	
-	
+
 	/**
 	 * Test if a package private method gives us 1.1 + namespace in the XML
 	 */
@@ -84,13 +216,15 @@ public class ComponentTest extends TestCase {
 
 		{
 			Document doc = doc(b, "packageprotected");
-			Object o = xp.evaluate("component", doc, XPathConstants.NODE);
+			Object o = xpath.evaluate("component", doc, XPathConstants.NODE);
 			assertNotNull(o);
 		}
 		{
-			Document doc = doc(b, "packageprivate");
-			Object o = xp.evaluate("scr:component", doc, XPathConstants.NODE);
-			assertNotNull(o);
+			Resource r = b.getJar().getResource("OSGI-INF/packageprivate.xml");
+			r.write(System.out);
+			assertNotNull(r);
+			Document doc = db.parse(r.openInputStream());
+			assertNotNull(xpath.evaluate("//scr:component/@name", doc, XPathConstants.STRING));
 		}
 
 	}
@@ -190,8 +324,8 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "nounbind");
-		assertEquals("setLog", xp.evaluate("component/reference/@bind", doc));
-		assertEquals("", xp.evaluate("component/reference/@unbind", doc));
+		assertEquals("setLog", xpath.evaluate("component/reference/@bind", doc));
+		assertEquals("", xpath.evaluate("component/reference/@unbind", doc));
 	}
 
 	@Component(name = "explicitunbind") static class ExplicitUnbind {
@@ -213,8 +347,8 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "explicitunbind");
-		assertEquals("setLog", xp.evaluate("component/reference/@bind", doc));
-		assertEquals("killLog", xp.evaluate("component/reference/@unbind", doc));
+		assertEquals("setLog", xpath.evaluate("component/reference/@bind", doc));
+		assertEquals("killLog", xpath.evaluate("component/reference/@unbind", doc));
 	}
 
 	/**
@@ -253,21 +387,19 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		
 		{
 			Document doc = doc(b, "ncomp");
-			Node o = (Node) xp.evaluate("component", doc, XPathConstants.NODE);
+			Node o = (Node) xpath.evaluate("component", doc, XPathConstants.NODE);
 			assertNotNull("Expected ncomp to have old namespace", o);
 		}
-		
-//		Node node = doc.getElementsByTagName("component").item(0);
-//		assertNotNull(node.getNamespaceURI());
-//		doc = doc(b, "ndcomp");
-//		assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
-//		doc = doc(b, "nbcomp");
-//		assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
-	}
 
+		// Node node = doc.getElementsByTagName("component").item(0);
+		// assertNotNull(node.getNamespaceURI());
+		// doc = doc(b, "ndcomp");
+		// assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
+		// doc = doc(b, "nbcomp");
+		// assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
+	}
 
 	/**
 	 * Test the same bind method names
@@ -382,6 +514,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "wacomp");
+		assertEquals("whatever", xpath.evaluate("scr:component/@activate",doc,XPathConstants.STRING));
 		assertAttribute(doc, "whatever", "scr:component/@activate");
 	}
 
@@ -442,11 +575,13 @@ public class ComponentTest extends TestCase {
 
 		Document doc = doc(b, "mcomp");
 		assertAttribute(doc, "bindWithMap", "scr:component/reference/@bind");
-		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/reference/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService",
+				"scr:component/reference/@interface");
 
 		doc = doc(b, "rcomp");
 		assertAttribute(doc, "bindReference", "scr:component/reference/@bind");
-		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/reference/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService",
+				"scr:component/reference/@interface");
 	}
 
 	/**
@@ -474,7 +609,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "xcomp");
-		print(doc,"");
+		print(doc, "");
 		assertAttribute(doc, "bind", "component/reference/@bind");
 		assertAttribute(doc, "dynamic", "component/reference/@policy");
 		assertAttribute(doc, "0..n", "component/reference/@cardinality");
@@ -527,8 +662,8 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "acomp");
-		assertEquals("addLogMultiple", xp.evaluate("//@bind", doc));
-		assertEquals("", xp.evaluate("//@unbind", doc));
+		assertEquals("addLogMultiple", xpath.evaluate("//@bind", doc));
+		assertEquals("", xpath.evaluate("//@unbind", doc));
 
 		assertAttribute(doc, "logMultiple", "scr:component/reference[1]/@name");
 		assertAttribute(doc, "addLogMultiple", "scr:component/reference[1]/@bind");
@@ -603,34 +738,40 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "acomp");
-		print(doc,"");
-		assertAttribute(doc, "test.ComponentTest.MyComponent", "scr:component/implementation/@class");
+		print(doc, "");
+		assertAttribute(doc, "test.ComponentTest$MyComponent",
+				"scr:component/implementation/@class");
 		assertAttribute(doc, "acomp", "scr:component/@name");
 		assertAttribute(doc, "abc", "scr:component/@factory");
 		assertAttribute(doc, "true", "scr:component/service/@servicefactory");
 		assertAttribute(doc, "activatex", "scr:component/@activate");
 		assertAttribute(doc, "modifiedx", "scr:component/@modified");
 		assertAttribute(doc, "deactivatex", "scr:component/@deactivate");
-		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/service/provide/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService",
+				"scr:component/service/provide/@interface");
 		assertAttribute(doc, "(abc=3)", "scr:component/reference/@target");
 		assertAttribute(doc, "setLog", "scr:component/reference/@bind");
 		assertAttribute(doc, "unsetLog", "scr:component/reference/@unbind");
 		assertAttribute(doc, "0..1", "scr:component/reference/@cardinality");
 	}
 
-	public void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
+	public void assertAttribute(Document doc, String value, String expr)
+			throws XPathExpressionException {
 		System.out.println(expr);
-		String o = (String) xp.evaluate( expr, doc, XPathConstants.STRING);
+		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
+		if ( o == null ) {
+			
+		}
 		assertNotNull(o);
-		assertEquals( value, o);
+		assertEquals(value, o);
 	}
 
 	Document doc(Builder b, String name) throws Exception {
 		Jar jar = b.getJar();
-
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(jar.getResource("OSGI-INF/" + name + ".xml")
-				.openInputStream()));
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		assertNotNull(r);
+		Document doc = db.parse(r.openInputStream());
+		r.write(System.out);
 		return doc;
 	}
 
@@ -676,14 +817,13 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		print(b.getJar().getResource("OSGI-INF/test.activator.Activator.xml"), System.out);
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(b.getJar().getResource(
+		Document doc = db.parse(new InputSource(b.getJar().getResource(
 				"OSGI-INF/test.activator.Activator.xml").openInputStream()));
 
 		return doc.getDocumentElement();
 	}
 
-	private void print(Resource resource, OutputStream out) throws IOException {
+	private void print(Resource resource, OutputStream out) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			byte[] buffer = new byte[1024];
@@ -723,8 +863,7 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
+		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
 				.openInputStream()));
 
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0)
@@ -752,8 +891,7 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(jar.getResource(
+		Document doc = db.parse(new InputSource(jar.getResource(
 				"OSGI-INF/test.activator.Activator.xml").openInputStream()));
 
 		NodeList l = doc.getElementsByTagName("property");
@@ -919,15 +1057,15 @@ public class ComponentTest extends TestCase {
 	}
 
 	private void print(Node doc, String indent) {
-		System.out.println( indent + doc);
+		System.out.println(indent + doc);
 		NamedNodeMap attributes = doc.getAttributes();
-		if ( attributes != null)
-			for ( int i =0; i<attributes.getLength(); i++) {
-				print( attributes.item(i), indent+"  ");
+		if (attributes != null)
+			for (int i = 0; i < attributes.getLength(); i++) {
+				print(attributes.item(i), indent + "  ");
 			}
 		NodeList nl = doc.getChildNodes();
-		for ( int i =0; i<nl.getLength(); i++) {
-			print( nl.item(i), indent+"  ");
+		for (int i = 0; i < nl.getLength(); i++) {
+			print(nl.item(i), indent + "  ");
 		}
 	}
 
