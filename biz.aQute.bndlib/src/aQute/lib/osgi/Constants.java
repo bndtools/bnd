@@ -76,8 +76,10 @@ public interface Constants {
 	String					INCLUDE										= "-include";
 	String					INCLUDERESOURCE								= "-includeresource";
 	String					MAKE										= "-make";
+	String					METATYPE									= "-metatype";
 	String					MANIFEST									= "-manifest";
 	String					SAVEMANIFEST								= "-savemanifest";
+	String					NODEFAULTVERSION							= "-nodefaultversion";
 	String					NOEXTRAHEADERS								= "-noextraheaders";
 	String					NOMANIFEST									= "-nomanifest";
 	String					NOUSES										= "-nouses";
