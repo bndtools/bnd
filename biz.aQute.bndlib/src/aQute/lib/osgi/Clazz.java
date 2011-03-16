@@ -2,8 +2,10 @@ package aQute.lib.osgi;
 
 import java.io.*;
 import java.lang.annotation.*;
+import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
+import java.util.regex.*;
 
 import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
@@ -96,6 +98,8 @@ public class Clazz {
 
 	// instantiated.
 
+	final static int				ACC_ENUM		= 0x04000;
+
 	static protected class Assoc {
 		Assoc(byte tag, int a, int b) {
 			this.tag = tag;
@@ -120,6 +124,7 @@ public class Clazz {
 		final public String	clazz;
 		final public String	name;
 		final public String	descriptor;
+		public String		signature;
 
 		public boolean equals(Object other) {
 			if (!(other instanceof MethodDef))
@@ -151,15 +156,34 @@ public class Clazz {
 		public String toString() {
 			return getPretty();
 		}
+		
+		public boolean isEnum() {
+			return (access & ACC_ENUM ) != 0;
+		}
 	}
 
 	static public class MethodDef extends FieldDef {
+		Pattern	METHOD_DESCRIPTOR	= Pattern.compile("\\((.*)\\)(.+)");
+
 		public MethodDef(int access, String clazz, String method, String descriptor) {
 			super(access, clazz, method, descriptor);
 		}
 
 		public boolean isConstructor() {
 			return name.equals("<init>") || name.equals("<clinit>");
+		}
+
+		public String getReturnType() {
+			String use = descriptor;
+			if (signature != null)
+				use = signature;
+
+			Matcher m = METHOD_DESCRIPTOR.matcher(use);
+			if (!m.matches())
+				throw new IllegalArgumentException("Not a valid method descriptor: " + descriptor);
+
+			String returnType = m.group(2);
+			return objectDescriptorToFQN(returnType);
 		}
 
 		public String getPretty() {
@@ -278,6 +302,7 @@ public class Clazz {
 
 	boolean				isAbstract;
 	boolean				isPublic;
+	boolean isEnum;
 	boolean				hasRuntimeAnnotations;
 	boolean				hasClassAnnotations;
 
@@ -300,13 +325,14 @@ public class Clazz {
 	String				zuper;
 	ClassDataCollector	cd			= null;
 	Resource			resource;
+	FieldDef			last		= null;
 
 	public Clazz(String path, Resource resource) {
 		this.path = path;
 		this.resource = resource;
 	}
 
-	public Set<String> parseClassFile() throws IOException {
+	public Set<String> parseClassFile() throws Exception {
 		return parseClassFileWithCollector(null);
 	}
 
@@ -314,7 +340,7 @@ public class Clazz {
 		return parseClassFile(in, null);
 	}
 
-	public Set<String> parseClassFileWithCollector(ClassDataCollector cd) throws IOException {
+	public Set<String> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			return parseClassFile(in, cd);
@@ -420,6 +446,7 @@ public class Clazz {
 		int access_flags = in.readUnsignedShort(); // access
 		isAbstract = (access_flags & ACC_ABSTRACT) != 0;
 		isPublic = (access_flags & ACC_PUBLIC) != 0;
+		isEnum = (access_flags & ACC_ENUM) != 0;
 
 		int this_class = in.readUnsignedShort();
 		className = (String) pool[intPool[this_class]];
@@ -470,8 +497,8 @@ public class Clazz {
 					crawl = true;
 				}
 				if (cd != null)
-					cd.field(new FieldDef(access_flags, className, name, pool[descriptor_index]
-							.toString()));
+					cd.field(last = new FieldDef(access_flags, className, name,
+							pool[descriptor_index].toString()));
 				descriptors.add(new Integer(descriptor_index));
 				doAttributes(in, ElementType.FIELD, false);
 			}
@@ -508,8 +535,11 @@ public class Clazz {
 				descriptors.add(new Integer(descriptor_index));
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
-				if (cd != null)
-					cd.method(new MethodDef(access_flags, className, name, descriptor));
+				if (cd != null) {
+					MethodDef mdef = new MethodDef(access_flags, className, name, descriptor);
+					last = mdef;
+					cd.method(mdef);
+				}
 
 				if ("<init>".equals(name)) {
 					doAttributes(in, ElementType.CONSTRUCTOR, crawl);
@@ -767,11 +797,11 @@ public class Clazz {
 
 		if (cd != null) {
 			int nameIndex = intPool[cIndex];
-			String cName = (String) pool[ nameIndex ];
-			
+			String cName = (String) pool[nameIndex];
+
 			String mName = null;
 			String mDescriptor = null;
-			
+
 			if (mIndex != 0) {
 				Assoc nameAndType = (Assoc) pool[mIndex];
 				mName = (String) pool[nameAndType.a];
@@ -816,7 +846,7 @@ public class Clazz {
 					innerClass = (String) pool[nameIndex];
 				}
 
-				if (outer_class_info_index != 0){
+				if (outer_class_info_index != 0) {
 					int nameIndex = intPool[outer_class_info_index];
 					outerClass = (String) pool[nameIndex];
 				}
@@ -855,6 +885,12 @@ public class Clazz {
 		// conform to the language specification.
 		if (member != ElementType.TYPE)
 			parseDescriptor(signature);
+
+		if (last != null)
+			last.signature = signature;
+
+		if (cd != null)
+			cd.signature(signature);
 	}
 
 	/**
@@ -1346,8 +1382,6 @@ public class Clazz {
 
 	public String getFQN() {
 		String s = getClassName().replace('/', '.');
-		if (s.indexOf('$') > 0)
-			return s.replace('$', '.');
 		return s;
 	}
 
@@ -1359,8 +1393,8 @@ public class Clazz {
 	 * @param clazz
 	 * @throws Exception
 	 */
-	@SuppressWarnings("deprecation") final static String	USEPOLICY		= rname(UsePolicy.class);
-	final static String										PROVIDERPOLICY	= rname(ProviderType.class);
+	@SuppressWarnings("deprecation") final static String	USEPOLICY		= toDescriptor(UsePolicy.class);
+	final static String										PROVIDERPOLICY	= toDescriptor(ProviderType.class);
 
 	public static void getImplementedPackages(Set<String> implemented, Analyzer analyzer,
 			Clazz clazz) throws Exception {
@@ -1402,7 +1436,7 @@ public class Clazz {
 
 	// String RNAME = "LaQute/bnd/annotation/UsePolicy;";
 
-	public static String rname(Class<?> clazz) {
+	public static String toDescriptor(Class<?> clazz) {
 		StringBuilder sb = new StringBuilder();
 		sb.append('L');
 		sb.append(clazz.getName().replace('.', '/'));
@@ -1444,25 +1478,90 @@ public class Clazz {
 		return cname.substring(n + 1, cname.length());
 	}
 
-	public static String pathToDotted(String path) {
-		String s = path.replace('/', '.');
-		if (s.endsWith(".class"))
-			return s.substring(s.length() - 5);
-		else
-			return s;
+	public static String fqnToPath(String dotted) {
+		return dotted.replace('.', '/') + ".class";
 	}
 
-	public static String dottedToPath(String dotted) {
-		return dotted.replace('.', '/');
+	public static String pathToFqn(String path) {
+		return path.replace('/', '.').substring(0, path.length() - 6);
 	}
 
 	public boolean isPublic() {
 		return isPublic;
 	}
 
+	public boolean isEnum() {
+		return isEnum;
+	}
+
 	public JAVA getFormat() {
 		return JAVA.format(major);
 
+	}
+
+	public static String objectDescriptorToFQN(String string) {
+		if (string.startsWith("L") && string.endsWith(";"))
+			return string.substring(1, string.length() - 1).replace('/', '.');
+
+		switch (string.charAt(0)) {
+		case 'B':
+			return "byte";
+		case 'C':
+			return "char";
+		case 'I':
+			return "int";
+		case 'S':
+			return "short";
+		case 'D':
+			return "double";
+		case 'F':
+			return "float";
+		case 'J':
+			return "long";
+		case 'Z':
+			return "boolean";
+		case '[': // Array
+			return objectDescriptorToFQN(string.substring(1)) + "[]";
+		}
+		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
+	}
+
+	public static String internalToFqn(String string) {
+		return string.replace('/', '.');
+	}
+
+	public static String unCamel(String id) {
+		StringBuilder out = new StringBuilder();
+		for (int i = 0; i < id.length(); i++) {
+			if (id.charAt(i) == '_' || id.charAt(i) == '$') {
+				if (i != 0 && !Character.isWhitespace(out.charAt(i - 1)))
+					out.append(' ');
+				continue;
+			}
+
+			int n = i;
+			while (n < id.length() && Character.isUpperCase(id.charAt(n))) {
+				n++;
+			}
+			if (n == i)
+				out.append(id.charAt(i));
+			else {
+				boolean tolower = (n - i) == 1;
+				if (i > 0 && !Character.isWhitespace(out.charAt(out.length() - 1)))
+					out.append(' ');
+
+				for (; i < n;) {
+					if (tolower)
+						out.append(Character.toLowerCase(id.charAt(i)));
+					else
+						out.append(id.charAt(i));
+					i++;
+				}
+				i--;
+			}
+		}
+		out.replace(0, 1, Character.toUpperCase(out.charAt(0)) + "");
+		return out.toString();
 	}
 
 }
