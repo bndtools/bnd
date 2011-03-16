@@ -9,7 +9,7 @@ import aQute.lib.osgi.*;
 
 public class DiffTest extends TestCase {
 
-    public void testSimple() throws IOException {
+    public void testSimple() throws Exception {
         aQute.lib.jardiff.Diff diff = new Diff();
         Map<String,Object> map = diff.diff(new Jar(new File("jar/ds.jar")), new Jar(new File("jar/asm.jar")), false);
         

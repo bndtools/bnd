@@ -6,14 +6,14 @@ public abstract class WriteResource implements Resource {
 	long 	lastModified;
 	String	extra;
 
-	public InputStream openInputStream() throws IOException {
+	public InputStream openInputStream() throws Exception {
 	    PipedInputStream pin = new PipedInputStream();
 	    final PipedOutputStream pout = new PipedOutputStream(pin);
 	    Thread t = new Thread() {
 	        public void run() {
 	            try {
                     write(pout);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
                     try {
@@ -28,7 +28,7 @@ public abstract class WriteResource implements Resource {
 	    return pin;
 	}
 
-	public abstract void write(OutputStream out) throws IOException;
+	public abstract void write(OutputStream out) throws IOException, Exception;
 	
 	public abstract long lastModified();
 

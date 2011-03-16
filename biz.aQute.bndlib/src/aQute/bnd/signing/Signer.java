@@ -127,7 +127,7 @@ public class Signer extends Processor {
     }
 
     private void doManifest(Jar jar, String[] digestNames,
-            MessageDigest[] algorithms, OutputStream out) throws IOException {
+            MessageDigest[] algorithms, OutputStream out) throws Exception {
 
         for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
             String name = entry.getKey();
@@ -151,7 +151,7 @@ public class Signer extends Processor {
     }
 
     private void digest(MessageDigest[] algorithms, Resource r)
-            throws IOException {
+            throws Exception {
         InputStream in = r.openInputStream();
         byte[] data = new byte[1024];
         int size = in.read(data);

@@ -84,8 +84,8 @@ public class Jar implements Closeable {
 		this(string, resourceAsStream, 0);
 	}
 
-	public Jar(String string, File file ) throws ZipException, IOException {
-		this(string,file, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
+	public Jar(String string, File file) throws ZipException, IOException {
+		this(string, file, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
 	}
 
 	public void setName(String name) {
@@ -166,7 +166,7 @@ public class Jar implements Closeable {
 		return duplicates;
 	}
 
-	public Manifest getManifest() throws IOException {
+	public Manifest getManifest() throws Exception {
 		if (manifest == null) {
 			Resource manifestResource = getResource("META-INF/MANIFEST.MF");
 			if (manifestResource != null) {
@@ -204,7 +204,7 @@ public class Jar implements Closeable {
 		write(new File(file));
 	}
 
-	public void write(OutputStream out) throws IOException {
+	public void write(OutputStream out) throws Exception {
 		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out)
 				: new JarOutputStream(out);
 		Set<String> done = new HashSet<String>();
@@ -228,7 +228,7 @@ public class Jar implements Closeable {
 		jout.finish();
 	}
 
-	private void doManifest(Set<String> done, ZipOutputStream jout) throws IOException {
+	private void doManifest(Set<String> done, ZipOutputStream jout) throws Exception {
 		if (nomanifest)
 			return;
 
@@ -248,7 +248,7 @@ public class Jar implements Closeable {
 	 * @throws IOException
 	 */
 
-	public void writeManifest(OutputStream out) throws IOException {
+	public void writeManifest(OutputStream out) throws Exception {
 		writeManifest(getManifest(), out);
 	}
 
@@ -302,13 +302,13 @@ public class Jar implements Closeable {
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
 		writeEntry(out, "Manifest-Version", "1");
 		attributes(manifest.getMainAttributes(), out);
-		
+
 		TreeSet<String> keys = new TreeSet<String>();
-		for ( Object o : manifest.getEntries().keySet())
-			keys.add( o.toString());
+		for (Object o : manifest.getEntries().keySet())
+			keys.add(o.toString());
 
 		for (String key : keys) {
-			write(out,0, "\r\n");
+			write(out, 0, "\r\n");
 			writeEntry(out, "Name", key);
 			attributes(manifest.getAttributes(key), out);
 		}
@@ -429,7 +429,7 @@ public class Jar implements Closeable {
 	}
 
 	private void writeResource(ZipOutputStream jout, Set<String> directories, String path,
-			Resource resource) throws IOException {
+			Resource resource) throws Exception {
 		if (resource == null)
 			return;
 
@@ -444,12 +444,7 @@ public class Jar implements Closeable {
 		if (resource.getExtra() != null)
 			ze.setExtra(resource.getExtra().getBytes());
 		jout.putNextEntry(ze);
-		try {
-			resource.write(jout);
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Cannot write resource: " + path + " " + resource
-					+ " exception: " + e);
-		}
+		resource.write(jout);
 		jout.closeEntry();
 	}
 
@@ -602,7 +597,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
 			Resource r = entry.getValue();
 			Attributes attributes = getManifest().getAttributes(entry.getKey());
-			if ( attributes == null ) {
+			if (attributes == null) {
 				attributes = new Attributes();
 				getManifest().getEntries().put(entry.getKey(), attributes);
 			}
@@ -626,7 +621,7 @@ public class Jar implements Closeable {
 
 	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;.*");
 
-	public String getBsn() throws IOException {
+	public String getBsn() throws Exception {
 		Manifest m = getManifest();
 		if (m == null)
 			return null;
@@ -639,7 +634,7 @@ public class Jar implements Closeable {
 		return null;
 	}
 
-	public String getVersion() throws IOException {
+	public String getVersion() throws Exception {
 		Manifest m = getManifest();
 		if (m == null)
 			return null;
@@ -659,7 +654,7 @@ public class Jar implements Closeable {
 	 * @throws Exception
 	 *             if anything does not work as expected.
 	 */
-	public void expand(File dir) throws IOException {
+	public void expand(File dir) throws Exception {
 		dir = dir.getAbsoluteFile();
 		dir.mkdirs();
 		if (!dir.isDirectory()) {

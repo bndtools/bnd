@@ -710,7 +710,7 @@ public class Analyzer extends Processor {
 	 */
 
 	public boolean checkClass(String interfaceName) {
-		String path = interfaceName.replace('.', '/') + ".class";
+		String path = Clazz.fqnToPath(interfaceName);
 		if (classspace.containsKey(path))
 			return true;
 
@@ -798,7 +798,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * 
-	 * @param manifest
+	 * @param manifests
 	 * @throws Exception
 	 */
 	void merge(Manifest result, Manifest old) throws IOException {
@@ -1057,7 +1057,7 @@ public class Analyzer extends Processor {
 	 * 
 	 * @throws IOException
 	 */
-	void analyzeClasspath() throws IOException {
+	void analyzeClasspath() throws Exception {
 		classpathExports = newHashMap();
 		for (Iterator<Jar> c = getClasspath().iterator(); c.hasNext();) {
 			Jar current = c.next();
@@ -1537,7 +1537,7 @@ public class Analyzer extends Processor {
 	protected Map<String, Clazz> analyzeBundleClasspath(Jar dot,
 			Map<String, Map<String, String>> bundleClasspath,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
-			Map<String, Set<String>> uses) throws IOException {
+			Map<String, Set<String>> uses) throws Exception {
 		Map<String, Clazz> classSpace = new HashMap<String, Clazz>();
 		Set<String> hide = Create.set();
 
@@ -1599,7 +1599,7 @@ public class Analyzer extends Processor {
 	 */
 	private void analyzeJar(Jar jar, String prefix, Map<String, Clazz> classSpace,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
-			Map<String, Set<String>> uses, Set<String> hide) throws IOException {
+			Map<String, Set<String>> uses, Set<String> hide) throws Exception {
 
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix) && !hide.contains(path)) {
@@ -1702,10 +1702,10 @@ public class Analyzer extends Processor {
 	static Pattern	OBJECT_REFERENCE	= Pattern.compile("L([^/]+/)*([^;]+);");
 
 	private void parsePackageInfoClass(final Clazz clazz, final Map<String, String> info)
-			throws IOException {
+			throws Exception {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			@Override public void annotation(Annotation a) {
-				if (a.name.equals(Clazz.rname(aQute.bnd.annotation.Version.class))) {
+				if (a.name.equals(Clazz.toDescriptor(aQute.bnd.annotation.Version.class))) {
 
 					// Check version
 					String version = a.get("value");
@@ -1733,7 +1733,7 @@ public class Analyzer extends Processor {
 							// Ignore
 						}
 					}
-				} else if (a.name.equals(Clazz.rname(Export.class))) {
+				} else if (a.name.equals(Clazz.toDescriptor(Export.class))) {
 
 					// Check mandatory attributes
 					Map<String, String> attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY),

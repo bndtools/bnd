@@ -27,12 +27,12 @@ public class FileResource implements Resource {
 		return ":" + file.getName() + ":";
 	}
 
-	public void write(OutputStream out) throws IOException {
+	public void write(OutputStream out) throws Exception {
 		copy(this, out);
 	}
 
 	static synchronized void copy(Resource resource, OutputStream out)
-			throws IOException {
+			throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			byte buffer[] = new byte[20000];
