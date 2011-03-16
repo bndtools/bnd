@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -48,6 +49,7 @@ import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.launch.LaunchConstants;
+import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
@@ -269,11 +271,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         if (delta.getKind() == IResourceDelta.REMOVED) {
             if ((delta.getFlags() & IResourceDelta.MOVED_TO) > 0) {
                 IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
-                FileEditorInput newInput = new FileEditorInput(file);
+                final FileEditorInput newInput = new FileEditorInput(file);
 
                 setInput(newInput);
-                setPartNameForInput(newInput);
-                sourcePage.setInput(newInput);
+                Display display = getEditorSite().getShell().getDisplay();
+                if (display != null) {
+                    SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
+                        public void run() {
+                            setPartNameForInput(newInput);
+                            sourcePage.setInput(newInput);
+                        }
+                    });
+                }
             } else {
                 close(false);
             }

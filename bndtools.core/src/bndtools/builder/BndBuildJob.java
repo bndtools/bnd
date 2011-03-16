@@ -108,8 +108,13 @@ public class BndBuildJob extends Job {
                     for (IResource targetFile : members) {
                         if (targetFile.getType() == IResource.FILE && "jar".equalsIgnoreCase(targetFile.getFileExtension())) {
                             File fsfile = new File(targetFile.getLocationURI());
-                            if (!deliverableJars.contains(fsfile))
-                                targetFile.delete(true, null);
+                            if (!deliverableJars.contains(fsfile)) {
+                                try {
+                                    targetFile.delete(true, null);
+                                } catch (CoreException e) {
+                                    Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error deleting resource: " + targetFile.getFullPath(), e));
+                                }
+                            }
                         }
                     }
                 }

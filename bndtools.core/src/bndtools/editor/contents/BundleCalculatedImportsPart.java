@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -208,25 +209,29 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         super.refresh();
 
         IFile file = getEditorFile();
-        if(file != null) {
-            final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] { file.getLocation().toFile() });
-            final Display display = tree.getDisplay();
-            job.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    if(job.getResult().isOK()) {
-                        final List<ImportPackage> imports = job.getImportResults();
-                        display.asyncExec(new Runnable() {
-                            public void run() {
-                                if(tree != null && !tree.isDisposed())
-                                    viewer.setInput(imports);
-                            }
-                        });
-                    }
+        if (file == null)
+            return;
+        IPath location = file.getLocation();
+        if (location == null)
+            return;
+
+        final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] { location.toFile() });
+        final Display display = tree.getDisplay();
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                if(job.getResult().isOK()) {
+                    final List<ImportPackage> imports = job.getImportResults();
+                    display.asyncExec(new Runnable() {
+                        public void run() {
+                            if(tree != null && !tree.isDisposed())
+                                viewer.setInput(imports);
+                        }
+                    });
                 }
-            });
-            job.schedule();
-        }
+            }
+        });
+        job.schedule();
     }
 
     private IFile getEditorFile() {

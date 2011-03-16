@@ -225,6 +225,7 @@ public class BundleContentPage extends FormPage {
     @Override
     public void dispose() {
         super.dispose();
-        greyTitleBarColour.dispose();
+        if (greyTitleBarColour != null)
+            greyTitleBarColour.dispose();
     }
 }
