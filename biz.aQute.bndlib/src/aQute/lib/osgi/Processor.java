@@ -9,6 +9,7 @@ import java.util.jar.*;
 import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
 import aQute.bnd.make.metatype.*;
+import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
@@ -485,7 +486,7 @@ public class Processor implements Reporter, Constants, Closeable {
 								+ (file.exists() ? " does not exist" : " is directory"));
 					} else
 						doIncludeFile(file, overwrite, p);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					if (fileMustExist)
 						error("Error in processing included file: " + value, e);
 				}
@@ -502,7 +503,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * @throws IOException
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target)
-			throws FileNotFoundException, IOException {
+			throws Exception {
 		if (included != null && included.contains(file)) {
 			error("Cyclic or multiple include of " + file);
 		} else {
@@ -512,7 +513,9 @@ public class Processor implements Reporter, Constants, Closeable {
 			Properties sub;
 			if (file.getName().toLowerCase().endsWith(".mf")) {
 				sub = getManifestAsProperties(in);
-			} else
+			} else if ( file.getName().endsWith(".xml"))
+				sub = parseXml(file);
+			else
 				sub = loadProperties(in, file.getAbsolutePath());
 			in.close();
 
@@ -522,6 +525,15 @@ public class Processor implements Reporter, Constants, Closeable {
 				if (overwrite || !target.containsKey(entry.getKey()))
 					target.setProperty((String) entry.getKey(), (String) entry.getValue());
 			}
+		}
+	}
+
+	private Properties parseXml(File file) throws Exception {
+		PomParser pp = new PomParser();
+		try {
+			return pp.getProperties(file);
+		} finally {
+			getInfo(pp);
 		}
 	}
 
