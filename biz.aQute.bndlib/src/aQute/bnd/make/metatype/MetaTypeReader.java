@@ -104,7 +104,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		}
 
 		String type = getType(rtype);
-		boolean required = true;
+		boolean required = ad ==null || ad.deflt() == null;
 		String deflt = null;
 		String max = null;
 		String min = null;
@@ -287,16 +287,12 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			String name = Clazz.unCamel(Clazz.getShortName(clazz.getFQN()));
 			String description = null;
 			String localization = id;
-			String designatePid = this.designatePid;
 			boolean factory = this.factory;
 
-			if (override) {
-				// Seems an error in Felix Metatype
-				// requires that the OCD has an ID that matches the PID :-(
-				id = designatePid;
-			} else if (ocd.id() != null)
+			if (ocd.id() != null)
 				id = ocd.id();
 
+			
 			if (ocd.name() != null)
 				name = ocd.name();
 
@@ -306,16 +302,14 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			if (ocd.description() != null)
 				description = ocd.description();
 
-			if (!override) {
-				if (ocdAnnotation.get("designate") != null) {
-					factory = false;
-					designatePid = ocdAnnotation.get("designate");
-				} else if (ocdAnnotation.get("designateFactory") != null) {
+			String pid = id;
+			if (override) {
+				pid = this.designatePid;
+				factory = this.factory;
+				id = this.designatePid; // for the felix problems
+			} else {
+				if (ocdAnnotation.get("factory") != null) {
 					factory = true;
-					designatePid = ocdAnnotation.get("designateFactory");
-				} else {
-					factory = false;
-					designatePid = id;
 				}
 			}
 
@@ -328,9 +322,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			for (Map.Entry<MethodDef, Metadata.AD> entry : methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
-			this.designate.addAttribute("pid", designatePid);
+			this.designate.addAttribute("pid", pid);
 			if (factory)
-				this.designate.addAttribute("factoryPid", designatePid);
+				this.designate.addAttribute("factoryPid", pid);
 
 			this.object.addAttribute("ocdref", id);
 

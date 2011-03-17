@@ -60,18 +60,9 @@ public interface Metadata {
 		String description() default NULL;
 
 		/**
-		 * Will create a designate element with the given PID.
-		 * 
-		 * @return the pid for a unitary desgnate element.
+		 * Defines if this is for a factory or not.
 		 */
-		String designate() default NULL;
-
-		/**
-		 * Will create a designate element with the given factory pid.
-		 * 
-		 * @return the factory pid
-		 */
-		String designateFactory() default NULL;
+		boolean factory() default false;
 	}
 
 	/**
@@ -155,7 +146,7 @@ public interface Metadata {
 		 * 
 		 * @return
 		 */
-		boolean required() default false;
+		boolean required() default true;
 
 		/**
 		 * Provide labels for options. These labels must match the values. If no

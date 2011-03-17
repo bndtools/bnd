@@ -15,6 +15,15 @@ public class Configurable<T> {
 		return c.cast(o);
 	}
 
+	public static <T> T createConfigurable(Class<T> c, Dictionary<?, ?> properties) {
+		Map<Object,Object> alt = new HashMap<Object,Object>();
+		for( Enumeration<?> e = properties.keys(); e.hasMoreElements(); ) {
+			Object key = e.nextElement();
+			alt.put(key, properties.get(key));
+		}
+		return createConfigurable(c, alt);
+	}
+
 	static class ConfigurableHandler implements InvocationHandler {
 		final Map<?, ?>	properties;
 		final ClassLoader			loader;
@@ -92,7 +101,8 @@ public class Configurable<T> {
 					else
 						return true;
 				}
-				resultType = Boolean.class;
+				return true;
+				
 			} else if (resultType == byte.class || resultType == Byte.class) {
 				if (Number.class.isAssignableFrom(actualType))
 					return ((Number) o).byteValue();
@@ -169,6 +179,7 @@ public class Configurable<T> {
 								"Unknown interface for a collection, no concrete class found: "
 										+ resultType);
 				}
+				
 				@SuppressWarnings("unchecked") Collection<Object> result = (Collection<Object>) resultType
 						.newInstance();
 				Type componentType = pType.getActualTypeArguments()[0];
@@ -177,6 +188,8 @@ public class Configurable<T> {
 					result.add(convert(componentType, i));
 				}
 				return result;
+			} else if (pType.getRawType() == Class.class) {
+				return loader.loadClass(o.toString());
 			}
 			throw new IllegalArgumentException("cannot convert to " + pType
 					+ " because it uses generics and is not a Collection");
@@ -209,8 +222,17 @@ public class Configurable<T> {
 			if (o instanceof Collection)
 				return (Collection<?>) o;
 
-			if (o.getClass().isArray())
-				return Arrays.asList((Object[]) o);
+			if (o.getClass().isArray()) {
+				if ( o.getClass().getComponentType().isPrimitive()) {
+					int length = Array.getLength(o);
+					List<Object> result = new ArrayList<Object>(length);
+					for ( int i=0; i<length; i++) {
+						result.add( Array.get(o, i));
+					}
+					return result;
+				} else
+					return Arrays.asList((Object[]) o);
+			}
 
 			if ( o instanceof String) {
 				String s = (String)o;
