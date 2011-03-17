@@ -1504,6 +1504,8 @@ public class Clazz {
 			return string.substring(1, string.length() - 1).replace('/', '.');
 
 		switch (string.charAt(0)) {
+		case 'V':
+			return "void";
 		case 'B':
 			return "byte";
 		case 'C':
