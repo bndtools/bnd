@@ -12,12 +12,8 @@ package bndtools.diff;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,8 +39,6 @@ import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Resource;
 import aQute.libg.header.OSGiHeader;
-import aQute.libg.sed.Replacer;
-import aQute.libg.sed.Sed;
 import aQute.libg.version.VersionRange;
 
 public class JarDiff {
@@ -55,13 +49,13 @@ public class JarDiff {
 	public static final int PKG_SEVERITY_MAJOR = 30; // Class deleted, method changed or deleted
 
 	private static final String VERSION = "version";
-	
+
 	protected Map<String, PackageInfo> packages = new TreeMap<String, PackageInfo>();
 
 	protected String bundleSymbolicName;
 
 	protected String suggestedVersion;
-	
+
 	public void setSuggestedVersion(String suggestedVersion) {
 		this.suggestedVersion = suggestedVersion;
 	}
@@ -75,8 +69,8 @@ public class JarDiff {
 		this.previousJar = previousJar;
 	}
 
-	public void compare() throws IOException {
-		
+	public void compare() throws Exception {
+
 		Manifest projectManifest = projectJar.getManifest();
 		Map<String, Map<String, String>> projectExportedPackages = OSGiHeader.parseHeader((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.EXPORT_PACKAGE)), null);
 		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.IMPORT_PACKAGE)), null);
@@ -85,10 +79,10 @@ public class JarDiff {
 		if (idx > -1) {
 			symbName = symbName.substring(0, idx);
 		}
-		
+
 		bundleSymbolicName  = symbName;// (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
 		version = removeVersionQualifier((String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_VERSION))); // This is the version from the .bnd file
-		
+
 		Map<String, Map<String, String>> previousPackages;
 		Map<String, Map<String, String>> previousImportedPackages;
 		Manifest previousManifest = null;
@@ -96,7 +90,7 @@ public class JarDiff {
 			previousManifest = previousJar.getManifest();
 			previousPackages = OSGiHeader.parseHeader((String) previousManifest.getMainAttributes().get(new Attributes.Name(Constants.EXPORT_PACKAGE)), null);
 			previousImportedPackages = OSGiHeader.parseHeader((String) previousManifest.getMainAttributes().get(new Attributes.Name(Constants.IMPORT_PACKAGE)), null);
-			
+
 			// If no version in projectJar use previous version
 			if (version == null) {
 				version = removeVersionQualifier((String) previousManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_VERSION)));
@@ -105,17 +99,17 @@ public class JarDiff {
 			previousPackages = Collections.emptyMap();
 			previousImportedPackages = Collections.emptyMap();
 		}
-		
+
 		String prevName = (String) projectManifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
 		idx = prevName.indexOf(';');
 		if (idx > -1) {
 			prevName = prevName.substring(0, idx);
 		}
-		
+
 		if (bundleSymbolicName != null && prevName != null && !bundleSymbolicName.equals(prevName)) {
 			throw new IllegalArgumentException(Constants.BUNDLE_SYMBOLICNAME + " must be equal");
 		}
-		
+
 		for (String packageName : projectImportedPackages.keySet()) {
 			// New or modified packages
 			PackageInfo pi = packages.get(packageName);
@@ -144,7 +138,7 @@ public class JarDiff {
 				}
 				// No change
 				if (projectVersion != null && previousVersion != null) {
-					if (projectVersion.getHigh().equals(previousVersion.getHigh()) && 
+					if (projectVersion.getHigh().equals(previousVersion.getHigh()) &&
 							projectVersion.getLow().equals(previousVersion.getLow())) {
 						pi.setVersionRange(previousVersion.toString());
 						continue;
@@ -155,7 +149,7 @@ public class JarDiff {
 					pi.setSuggestedVersionRange(projectVersion.toString());
 					continue;
 				}
-				
+
 				if (projectVersion != null) {
 					pi.setSeverity(PKG_SEVERITY_MAJOR);
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_NEW);
@@ -175,7 +169,7 @@ public class JarDiff {
 				// Removed Packages
 				Map<String, String> prevPackageMap = previousImportedPackages.get(packageName);
 				String previousVersion = prevPackageMap.get(VERSION);
-				
+
 				PackageInfo pi = packages.get(packageName);
 				if (pi == null) {
 					pi = new PackageInfo(this, packageName);
@@ -186,7 +180,7 @@ public class JarDiff {
 				pi.setChangeCode(PackageInfo.CHANGE_CODE_REMOVED);
 				pi.setVersionRange(previousVersion);
 			}
-		}		
+		}
 
 		for (String packageName : projectExportedPackages.keySet()) {
 			// New or modified packages
@@ -196,13 +190,13 @@ public class JarDiff {
 				packages.put(packageName, pi);
 			}
 			pi.setExported(true);
-			
+
 			Map<String, String> packageMap = projectExportedPackages.get(packageName);
 			String projectVersion = packageMap.get(VERSION);
 			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, projectVersion);
-			
+
 			Set<ClassInfo> cis = pi.getClasses();
-			
+
 			String previousVersion = null;
 			Set<ClassInfo> previousClasses = null;
 
@@ -211,7 +205,7 @@ public class JarDiff {
 				previousVersion = prevPackageMap.get(VERSION);
 				previousClasses = getClassesFromPackage(pi, previousJar, packageName, previousVersion);
 			}
-			
+
 			for (ClassInfo ci : projectClasses) {
 				ClassInfo prevCi = null;
 				if (previousClasses != null) {
@@ -231,7 +225,7 @@ public class JarDiff {
 					}
 				}
 			}
-			
+
 			if (pi.getSeverity() > PKG_SEVERITY_NONE) {
 				if (previousClasses == null) {
 					// New package
@@ -245,13 +239,13 @@ public class JarDiff {
 
 			if (pi.getSeverity() == PKG_SEVERITY_NONE) {
 				if (previousClasses != null && previousVersion == null) {
-					// No change, but version missing on package 
+					// No change, but version missing on package
 					pi.setSeverity(PKG_SEVERITY_VERSION_MISSING);
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_VERSION_MISSING);
 					pi.setSuggestedVersion(getVersion());
 				}
 			}
-			
+
 			if (previousClasses != null) {
 				pi.setVersion(previousVersion);
 				for (ClassInfo prevCi : previousClasses) {
@@ -265,17 +259,17 @@ public class JarDiff {
 							}
 							pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
 						}
-					}	
+					}
 				}
 			}
 		}
-		
+
 		for (String packageName : previousPackages.keySet()) {
 			if (!projectExportedPackages.containsKey(packageName)) {
 				// Removed Packages
 				Map<String, String> prevPackageMap = previousPackages.get(packageName);
 				String previousVersion = prevPackageMap.get(VERSION);
-				
+
 				PackageInfo pi = packages.get(packageName);
 				if (pi == null) {
 					pi = new PackageInfo(this, packageName);
@@ -283,7 +277,7 @@ public class JarDiff {
 				}
 				pi.setExported(true);
 				pi.setChangeCode(PackageInfo.CHANGE_CODE_REMOVED);
-				
+
 				Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName, previousVersion);
 				pi.setClasses(previousClasses);
 				pi.setSeverity(PKG_SEVERITY_MAJOR);
@@ -297,7 +291,7 @@ public class JarDiff {
 	}
 
 	private int getModificationSeverity(ClassInfo clazz, ClassInfo previousClass) {
-		
+
 		int severity = PKG_SEVERITY_NONE;
 		if (clazz != null) {
 			for (MethodInfo method : clazz.getMethods()) {
@@ -305,14 +299,14 @@ public class JarDiff {
 				if (prevMethod == null) {
 					severity =  PKG_SEVERITY_MINOR;
 					method.setChangeCode(MethodInfo.CHANGE_NEW);
-				} 
+				}
 			}
 			for (FieldInfo field : clazz.getFields()) {
 				FieldInfo prevField = findField(previousClass, field);
 				if (prevField == null) {
 					severity =  PKG_SEVERITY_MINOR;
 					field.setChangeCode(FieldInfo.CHANGE_NEW);
-				} 
+				}
 			}
 		}
 
@@ -353,7 +347,7 @@ public class JarDiff {
 
 		return severity;
 	}
-	
+
 	private MethodInfo findMethod(ClassInfo info, MethodInfo methodToFind) {
 		if (info == null) {
 			return null;
@@ -414,7 +408,7 @@ public class JarDiff {
 					ClassReader cr = new ClassReader(baos.toByteArray());
 					ClassInfo ca = new ClassInfo(pi);
 					cr.accept(ca, 0);
-					
+
 					for (int i = 0; i < ca.methods.size(); i++) {
 						MethodNode mn = (MethodNode) ca.methods.get(i);
 						// Ignore anything but public methods
@@ -554,17 +548,17 @@ public class JarDiff {
 			project.refresh();
 			List<Builder> builders = project.getBuilder(null).getSubBuilders();
 			for (Builder b : builders) {
-				
+
 				Jar jar = b.build();
-				
+
 				//List<String> errors = b.getErrors();
-				
+
 				String bundleVersion = b.getProperty(Constants.BUNDLE_VERSION);
 				if (bundleVersion == null) {
 				    b.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
 					bundleVersion = "0.0.0";
 				}
-				
+
 				String unqualifiedVersion = removeVersionQualifier(bundleVersion);
 				Version projectVersion = Version.parseVersion(unqualifiedVersion);
 
@@ -587,7 +581,7 @@ public class JarDiff {
 						return null;
 					}
 				}
-				
+
 				Jar currentJar = null;
 				for (RepositoryPlugin repo : repos) {
 					VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
@@ -602,7 +596,7 @@ public class JarDiff {
 						return null;
 					}
 				}
-	
+
 				JarDiff diff = new JarDiff(jar, currentJar);
 				diff.compare();
 				diff.calculateVersions();
@@ -613,18 +607,18 @@ public class JarDiff {
 			e1.printStackTrace();
 		}
 
-		
+
 		return diffs;
 	}
-	
+
 	public void calculateVersions() {
 
 		String bundleVersion = version == null ? "0.0.0" : version;
-		
+
 		String unqualifiedVersion = removeVersionQualifier(bundleVersion);
 
 		int highestSeverity = PKG_SEVERITY_NONE;
-		
+
 		for (PackageInfo pi : getExportedPackages()) {
 			if (pi.getChangeCode() != PackageInfo.CHANGE_CODE_MODIFIED) {
 				continue;
@@ -638,7 +632,7 @@ public class JarDiff {
 				highestSeverity = pi.getSeverity();
 			}
 			switch(pi.getSeverity()) {
-			case PKG_SEVERITY_MINOR : 
+			case PKG_SEVERITY_MINOR :
 				mask = "=+0";
 				break;
 			case PKG_SEVERITY_MAJOR :
@@ -654,7 +648,7 @@ public class JarDiff {
 				pi.setSuggestedVersion(version);
 			}
 		}
-		
+
 		for (PackageInfo pi : getImportedPackages()) {
 			if (pi.getChangeCode() != PackageInfo.CHANGE_CODE_REMOVED) {
 				continue;
@@ -664,7 +658,7 @@ public class JarDiff {
 				highestSeverity = pi.getSeverity();
 			}
 			switch(pi.getSeverity()) {
-			case PKG_SEVERITY_MINOR : 
+			case PKG_SEVERITY_MINOR :
 				mask = "=+0";
 				break;
 			case PKG_SEVERITY_MAJOR :
@@ -680,10 +674,10 @@ public class JarDiff {
 				pi.setSuggestedVersion(version);
 			}
 		}
-		
+
 		String mask;
 		switch(highestSeverity) {
-		case PKG_SEVERITY_MINOR : 
+		case PKG_SEVERITY_MINOR :
 			mask = "=+0";
 			break;
 		case PKG_SEVERITY_MAJOR :
@@ -695,7 +689,7 @@ public class JarDiff {
 
 		String suggestedVersion = _version(new String[] { "", mask, unqualifiedVersion});
 		this.suggestedVersion = suggestedVersion;
-		
+
 		for (PackageInfo pi : getExportedPackages()) {
 			if (pi.getChangeCode() != PackageInfo.CHANGE_CODE_NEW) {
 				continue;
@@ -751,7 +745,7 @@ public class JarDiff {
 		return sb.toString();
 
 	}
-	
+
 	private static String getVersionString(Jar jar, String packageName) {
 		Resource resource = jar.getResource(getResourcePath(packageName, "packageinfo"));
 		if (resource == null) {
@@ -762,7 +756,7 @@ public class JarDiff {
 		try {
 			is = resource.openInputStream();
 			packageInfo.load(is);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
 			if (is != null) {
@@ -773,8 +767,8 @@ public class JarDiff {
 		return version;
 
 	}
-	
-	
+
+
 	private static String getResourcePath(String packageName, String resourceName) {
 		String s = packageName.replace('.', '/');
 		s += "/" + resourceName;
@@ -812,7 +806,7 @@ public class JarDiff {
 		for (PackageInfo pi : diff.getNewExportedPackages()) {
 			out.println(pi.getPackageName() + (pi.getSuggestedVersion() != null ? " -> Suggested version: " + pi.getSuggestedVersion() : ""));
 		}
-		
+
 		out.println();
 		out.println("Deleted Packages:");
 		out.println("==================");
@@ -821,11 +815,11 @@ public class JarDiff {
 		}
 
 	}
-		
+
 	public String getSymbolicName() {
 		return bundleSymbolicName;
 	}
-	
+
 	protected static String removeVersionQualifier(String version) {
 		if (version == null) {
 			return null;
@@ -844,11 +838,11 @@ public class JarDiff {
 		}
 		return sb.toString();
 	}
-	
+
 	public String getVersion() {
 		return version;
 	}
-	
+
 	public String getSuggestedVersion() {
 		return suggestedVersion;
 	}

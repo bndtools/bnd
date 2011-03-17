@@ -11,7 +11,6 @@
 package bndtools.release.api;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,18 +44,18 @@ public class ReleaseUtils {
 	/**
 	 * Get the Jar name as it appears in the Repository e.g. bndtools.release-1.0.0.jar
 	 * @param jar
-	 * @return 
+	 * @return
 	 */
 	public static String getJarFileName(Jar jar) {
 		try {
 			String symbName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 			String version = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 			return symbName + '-' + stripVersionQualifier(version) + ".jar";
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * Strips the qualifier part of a version string.
 	 * @param version
@@ -72,11 +71,11 @@ public class ReleaseUtils {
 		sb.append(ver.getMicro());
 		return sb.toString();
 	}
-	
+
 	public static String getBundleSymbolicName(Jar jar) {
 		try {
 			return jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -84,7 +83,7 @@ public class ReleaseUtils {
 	public static String getBundleVersion(Jar jar) {
 		try {
 			return jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -110,12 +109,12 @@ public class ReleaseUtils {
 		}
 		return resource;
 	}
-	
+
 	public static IProject getProject(Project project) {
 		IResource res = toResource(project.getBase());
 		return res.getProject();
 	}
-	
+
 	public static IFile getJarFileLocation(RepositoryPlugin repository, Jar jar) {
 		IFolder repoRoot = ReleaseUtils.getLocalRepoLocation(repository);
 		String symbName = ReleaseUtils.getBundleSymbolicName(jar);
@@ -124,7 +123,7 @@ public class ReleaseUtils {
 		IFolder repoSymbNameFolder = repoRoot.getFolder(symbName);
 		return repoSymbNameFolder.getFile(jarName);
 	}
-	
+
 	/**
 	 * If the bundle repository is shared e.g. CVS, this will return the remote file revision if it exists
 	 * @param repository
@@ -141,20 +140,20 @@ public class ReleaseUtils {
 		}
 
 		IFile path = getJarFileLocation(repository, jar);
-		
+
 		IFileRevision[] revs = getTeamRevisions(path, IFileHistoryProvider.SINGLE_REVISION, new NullProgressMonitor());
 		if (revs == null) {
 			return null;
 		}
 		return revs.length == 0 ? null : revs[0];
-		
+
 	}
-	
+
 	/**
-	 * Returns the file revisions for the given resource. 
-	 * If the flags contains IFileHistoryProvider.SINGLE_REVISION then only the revision corresponding 
-	 * to the base corresponding to the local resource is fetched. If the flags contains 
-	 * IFileHistoryProvider.SINGLE_LINE_OF_DESCENT the resulting history will be restricted to a single 
+	 * Returns the file revisions for the given resource.
+	 * If the flags contains IFileHistoryProvider.SINGLE_REVISION then only the revision corresponding
+	 * to the base corresponding to the local resource is fetched. If the flags contains
+	 * IFileHistoryProvider.SINGLE_LINE_OF_DESCENT the resulting history will be restricted to a single
 	 * line-of-descent (e.g. a single branch).
 	 * @param resource
 	 * @param flags
@@ -168,7 +167,7 @@ public class ReleaseUtils {
 		if (provider == null) {
 			return null;
 		}
-		
+
 		IFileHistory history = provider.getFileHistoryProvider().getFileHistoryFor(resource, flags, monitor);
 		if (history == null) {
 			return new IFileRevision[0];
@@ -186,7 +185,7 @@ public class ReleaseUtils {
 	public static boolean isTeamProjectUpToDate(IProject project, IProgressMonitor monitor) throws CoreException {
 		return getTeamOutOfSyncResources(project, monitor).length == 0;
 	}
-	
+
 	public static IResource[] getTeamOutOfSyncResources(IProject project, IProgressMonitor monitor) throws CoreException {
 		RepositoryProvider provider = RepositoryProvider.getProvider(project);
 		if (provider == null) {
@@ -194,7 +193,7 @@ public class ReleaseUtils {
 		}
 		Subscriber subscriber = provider.getSubscriber();
 		subscriber.refresh(new IResource[] {project}, IResource.DEPTH_INFINITE, monitor);
-		
+
 		SyncInfoSet sis = new SyncInfoSet();
 		subscriber.collectOutOfSync(new IResource[] {project}, IResource.DEPTH_INFINITE, sis, monitor);
 		List<IResource> res = new ArrayList<IResource>();

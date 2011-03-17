@@ -2,7 +2,6 @@ package bndtools.bndplugins.repo.eclipse;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +70,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             } catch (IllegalArgumentException e) {
                 if(reporter != null) reporter.error("Error adding file '%s' to index: %s", pluginFile.getName(), e.getMessage());
                 continue;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 if(reporter != null) reporter.error("Error reading file '%s': %s", pluginFile.getName(), e.getMessage());
                 continue;
             }
@@ -91,7 +90,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         return index;
     }
 
-    BundleIdentity getBundleIdentity(File pluginFile) throws IOException, IllegalArgumentException {
+    BundleIdentity getBundleIdentity(File pluginFile) throws Exception {
         String name = pluginFile.getName();
         if(pluginFile.isFile()) {
             if(name.toLowerCase().endsWith(".jar"))
@@ -201,14 +200,14 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
                 mergeSource(pluginFile, sourceFile, augmentedFile);
             }
             return augmentedFile;
-        } catch (IOException e) {
+        } catch (Exception e) {
             if(reporter != null)
                 reporter.error("Error merging plugin and source JARs");
             return null;
         }
     }
 
-    private void mergeSource(File pluginFile, File sourceFile, File augmentedFile) throws IOException {
+    private void mergeSource(File pluginFile, File sourceFile, File augmentedFile) throws Exception {
             Jar mainJar = new Jar(pluginFile);
             mainJar.setDoNotTouchManifest();
             Jar sourceJar = new Jar(sourceFile);

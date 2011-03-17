@@ -18,7 +18,7 @@ Private-Package: bndtools.release,\
 
 Include-Resource: /=resources
 
--buildpath: bndtools.bndplugins.repos,\
+-buildpath: bndtools.bndplugins.repos;version=latest,\
 	bndtools.diff;version=project, \
 	biz.aQute.bndlib;version=${bndlibver}, \
 	org.eclipse.core.runtime,\

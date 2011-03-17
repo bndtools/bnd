@@ -44,7 +44,7 @@ Export-Package: bndtools.api.*;version=${baseversion},\
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources,\
-	${repo;bndtools.bndplugins.repos}
+	${repo;bndtools.bndplugins.repos;latest}
 	
 eclipse.deps: \
 	osgi.core,\
@@ -83,7 +83,7 @@ eclipse.deps: \
 
 
 # Build and Run
--buildpath: bndtools.bndplugins.repos,\
+-buildpath: bndtools.bndplugins.repos;version=latest,\
 	biz.aQute.bndlib,\
 	org.apache.felix.bundlerepository,\
 	bindex,\
