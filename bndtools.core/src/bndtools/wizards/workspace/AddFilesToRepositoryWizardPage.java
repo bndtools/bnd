@@ -1,7 +1,6 @@
 package bndtools.wizards.workspace;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -91,7 +90,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             String version = attribs.getValue(Constants.BUNDLE_VERSION);
 
             bsnMap.put(file, Pair.newInstance(bsn, version));
-        } catch (IOException e) {
+        } catch (Exception e) {
             Plugin.logError("Error reading JAR file content", e);
         } finally {
             if(jar != null)

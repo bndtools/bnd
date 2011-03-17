@@ -83,10 +83,10 @@ public class AnalyseBundleResolutionJob extends Job {
     				}
     				builderMap.put(inputFile, builder);
     				mergeCapabilities(exports, usedBy, bundleVersions, builder);
-    			} catch (IOException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
     			} catch (CoreException e) {
+    			    // TODO Auto-generated catch block
+    			    e.printStackTrace();
+    			} catch (Exception e) {
     				// TODO Auto-generated catch block
     				e.printStackTrace();
     			}
@@ -101,7 +101,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
 			try {
 				mergeRequirements(imports, exports, usedBy, requiredBundles, bundleVersions, builder);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -168,9 +168,9 @@ public class AnalyseBundleResolutionJob extends Job {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
 	}
-	void mergeCapabilities(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {
+	void mergeCapabilities(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
-		if (jar == null) 
+		if (jar == null)
 		    return;
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
@@ -226,7 +226,7 @@ public class AnalyseBundleResolutionJob extends Job {
         }
 	}
 	void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy,
-	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws IOException {
+	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)

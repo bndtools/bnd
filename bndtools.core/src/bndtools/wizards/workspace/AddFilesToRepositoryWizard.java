@@ -3,7 +3,6 @@ package bndtools.wizards.workspace;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -73,7 +72,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
                  String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
                  if(version == null) version = "0";
                  selectedBundles.add(Pair.newInstance(bsn, version));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;
             }
