@@ -173,29 +173,28 @@ public class TemplateSelectionWizardPage extends WizardPage {
     }
 
     private void showTemplateDescription(IConfigurationElement element) {
-        boolean found = false;
-
-        String htmlAttr = element.getAttribute("docHtml");
-        if (htmlAttr != null) {
-            String bsn = element.getContributor().getName();
-            Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
-            if (bundle != null) {
-                URL htmlUrl = bundle.getResource(htmlAttr);
-                try {
-                    byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-                    programmaticBrowserChange = true;
-                    browser.setText(new String(bytes));
-                    found = true;
-                } catch (IOException e) {
-                    // Ignore
-                } finally {
-                    programmaticBrowserChange = false;
+        try {
+            programmaticBrowserChange = true;
+            boolean found = false;
+            String htmlAttr = element.getAttribute("docHtml");
+            if (htmlAttr != null) {
+                String bsn = element.getContributor().getName();
+                Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
+                if (bundle != null) {
+                    URL htmlUrl = bundle.getResource(htmlAttr);
+                        byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
+                        browser.setText(new String(bytes));
+                        found = true;
                 }
             }
+            if (!found)
+                browser.setText("No description available.");
+        } catch (IOException e) {
+            Plugin.logError("Error reading project template description HTML.", e);
+        } finally {
+            programmaticBrowserChange = false;
         }
 
-        if (!found)
-            browser.setText("No description available.");
     }
 
     @Override
@@ -208,7 +207,11 @@ public class TemplateSelectionWizardPage extends WizardPage {
             StatusTextListener statusTextListener = new StatusTextListener() {
                 public void changed(StatusTextEvent event) {
                     if (!programmaticBrowserChange) {
-                        String message = MessageFormat.format("Open page \"{0}\" in an external browser.", event.text);
+                        String message;
+                        if (event.text == null || event.text.length() == 0 || "about:blank".equalsIgnoreCase(event.text))
+                            message = "";
+                        else
+                            message = MessageFormat.format("Open page \"{0}\" in an external browser.", event.text);
                         lblBrowserStatus.setText(message);
                     }
                 }

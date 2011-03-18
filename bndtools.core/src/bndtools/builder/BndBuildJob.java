@@ -133,14 +133,11 @@ public class BndBuildJob extends Job {
 
             return Status.OK_STATUS;
         } catch (InterruptedException e) {
-            System.out.println("Bnd Build job received interrupt signal, thread ID: " + Thread.currentThread().getId());
             return Status.OK_STATUS;
         } catch (OperationCanceledException e) {
             return Status.OK_STATUS;
         } catch (Exception e) {
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building Bnd project.", e);
-        } finally {
-            System.out.println("Bnd Build job exiting, thread ID: " + Thread.currentThread().getId());
         }
     }
 

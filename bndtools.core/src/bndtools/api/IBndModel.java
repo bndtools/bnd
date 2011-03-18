@@ -3,6 +3,7 @@ package bndtools.api;
 import java.util.List;
 import java.util.Map;
 
+import bndtools.editor.model.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
 public interface IBndModel {
@@ -40,5 +41,13 @@ public interface IBndModel {
     void setTestSuites(List<String> suites);
 
     List<String> getTestSuites();
+
+    void setServiceComponents(List<? extends ServiceComponent> components);
+
+    List<ServiceComponent> getServiceComponents();
+
+    void setPrivatePackages(List<? extends String> packages);
+
+    List<String> getPrivatePackages();
 
 }

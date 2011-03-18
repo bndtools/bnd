@@ -1,12 +1,15 @@
 package bndtools.templates;
 
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
+import bndtools.editor.model.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
 public class ComponentTemplate implements IProjectTemplate {
@@ -36,10 +39,15 @@ public class ComponentTemplate implements IProjectTemplate {
         model.setRunBundles(runPath);
 
         model.setRunFramework("org.apache.felix.framework");
+
+        model.setServiceComponents(Arrays.asList(new ServiceComponent[] { new ServiceComponent("*", null) }));
+        model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
     }
 
     @Override
     public void modifyInitialBndProject(IBndProject project) {
+        URL componentSrc = IntegrationTestingTemplate.class.getResource("ExampleComponent.java.txt");
+        project.addResource("src/org/example/ExampleComponent.java", componentSrc);
     }
 
 }

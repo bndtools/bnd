@@ -363,10 +363,10 @@ public class BndEditModel implements IPersistableBndModel {
 		}
 		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, defaultFormatter);
 	}
-	public List<String> getPrivatePackages() {
+    public List<String> getPrivatePackages() {
         return doGetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
 	}
-	public void setPrivatePackages(List<? extends String> packages) {
+    public void setPrivatePackages(List<? extends String> packages) {
 		List<String> oldPackages = getPrivatePackages();
 		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
