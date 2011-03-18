@@ -134,7 +134,7 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test properties
 	 */
-	@Metadata.OCD static interface Config {
+	@Meta.OCD static interface Config {
 		String name();
 	}
 

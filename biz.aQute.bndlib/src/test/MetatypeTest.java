@@ -15,8 +15,10 @@ import junit.framework.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.annotation.metatype.*;
+import aQute.bnd.make.metatype.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.libg.generics.*;
 
 public class MetatypeTest extends TestCase {
 	DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
@@ -46,6 +48,142 @@ public class MetatypeTest extends TestCase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	
+	
+	/**
+	 * Test method naming options with '.' and reserved names
+	 */
+	
+	@Meta.OCD
+	public static interface Naming {
+		String secret();
+		String _secret(); // .secret
+		String __secret(); // _secret
+		String $new(); // new
+		String $$new(); // $new
+		String a_b_c(); // a.b.c
+		String a__b__c(); // a_b_c
+		String _a__b(); // .a_b
+		String $$$$$$$$a__b(); // $$$$a_b
+		String $$$$$$$$a_b(); // $$$$a.b
+		String a$(); // a
+		String a$$(); // a$
+		String a$$$(); // a$
+		String a$$$$(); // a$$
+		String a$$_$$(); // a$.$
+		String a$$__$$(); // a$_$
+		String a_$_(); // a..
+		
+		@Meta.AD(id="secret")
+		String xsecret();
+		@Meta.AD(id=".secret")
+		String x_secret();
+		@Meta.AD(id="_secret")
+		String x__secret(); // _secret
+		@Meta.AD(id="new")
+		String x$new(); // new
+		@Meta.AD(id="$new")
+		String x$$new(); // $new
+		@Meta.AD(id="a.b.c")
+		String xa_b_c(); // a.b.c
+		@Meta.AD(id="a_b_c")
+		String xa__b__c(); // a_b_c
+		@Meta.AD(id=".a_b")
+		String x_a__b(); // .a_b
+		@Meta.AD(id="$$$$a_b")
+		String x$$$$$$$$a__b(); // $$$$a_b
+		@Meta.AD(id="$$$$a.b")
+		String x$$$$$$$$a_b(); // $$$$a.b
+		@Meta.AD(id="a")
+		String xa$(); // a
+		@Meta.AD(id="a$")
+		String xa$$(); // a$
+		@Meta.AD(id="a$")
+		String xa$$$(); // a$
+		@Meta.AD(id="a$$")
+		String xa$$$$(); // a$$
+		@Meta.AD(id="a$.$")
+		String xa$$_$$(); // a$.$
+		@Meta.AD(id="a$_$")
+		String xa$$__$$(); // a$_$
+		@Meta.AD(id="a..")
+		String xa_$_(); // a..
+	}
+	
+	public void testNaming() throws Exception {
+		Map<String,Object> map = Create.map();
+		
+		map.put("_secret", "_secret");
+		map.put("_secret", "_secret");
+		map.put(".secret", ".secret");
+		map.put("$new", "$new");
+		map.put("new", "new");
+		map.put("secret", "secret");
+		map.put("a_b_c", "a_b_c");
+		map.put("a.b.c", "a.b.c");
+		map.put(".a_b", ".a_b");
+		map.put("$$$$a_b", "$$$$a_b");
+		map.put("$$$$a.b", "$$$$a.b");
+		map.put("a", "a");
+		map.put("a$", "a$");
+		map.put("a$$", "a$$");
+		map.put("a$.$", "a$.$");
+		map.put("a$_$", "a$_$");
+		map.put("a..", "a..");
+		
+		Naming trt = Configurable.createConfigurable(Naming.class, map);
+		
+		// By name
+		assertEquals( "secret", trt.secret() );
+		assertEquals( "_secret", trt.__secret() );
+		assertEquals( ".secret", trt._secret() );
+		assertEquals( "new", trt.$new() );
+		assertEquals( "$new", trt.$$new() );
+		assertEquals( "a.b.c", trt.a_b_c() );
+		assertEquals( "a_b_c", trt.a__b__c() );
+		assertEquals( ".a_b", trt._a__b() );
+		assertEquals( "$$$$a.b", trt.$$$$$$$$a_b() );
+		assertEquals( "$$$$a_b", trt.$$$$$$$$a__b() );
+		assertEquals( "a", trt.a$() );
+		assertEquals( "a$", trt.a$$() );
+		assertEquals( "a$", trt.a$$$() );
+		assertEquals( "a$.$", trt.a$$_$$() );
+		assertEquals( "a$_$", trt.a$$__$$() );
+		assertEquals( "a..", trt.a_$_() );
+
+		// By AD
+		assertEquals( "secret", trt.xsecret() );
+		assertEquals( "_secret", trt.x__secret() );
+		assertEquals( ".secret", trt.x_secret() );
+		assertEquals( "new", trt.x$new() );
+		assertEquals( "$new", trt.x$$new() );
+		assertEquals( "a.b.c", trt.xa_b_c() );
+		assertEquals( "a_b_c", trt.xa__b__c() );
+		assertEquals( ".a_b", trt.x_a__b() );
+		assertEquals( "$$$$a.b", trt.x$$$$$$$$a_b() );
+		assertEquals( "$$$$a_b", trt.x$$$$$$$$a__b() );
+		assertEquals( "a", trt.xa$() );
+		assertEquals( "a$", trt.xa$$() );
+		assertEquals( "a$", trt.xa$$$() );
+		assertEquals( "a$.$", trt.xa$$_$$() );
+
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test");
+		b.setProperty("-metatype", "*");
+		b.build();
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.MetatypeTest$Naming.xml");
+		IO.copy(r.openInputStream(), System.out);
+
+		Document d = db.parse(r.openInputStream());
+		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
+				.getNamespaceURI());
+		
 	}
 
 	/**
@@ -275,7 +413,7 @@ public class MetatypeTest extends TestCase {
 	 * Test enum handling
 	 */
 
-	@Metadata.OCD public static interface Enums {
+	@Meta.OCD public static interface Enums {
 		enum X {
 			requireConfiguration, optionalConfiguration, ignoreConfiguration
 		};
@@ -316,28 +454,28 @@ public class MetatypeTest extends TestCase {
 	/**
 	 * Test the OCD settings
 	 */
-	@Metadata.OCD() public static interface OCDEmpty {
+	@Meta.OCD() public static interface OCDEmpty {
 	}
 
-	@Metadata.OCD(description = "description") public static interface OCDDescription {
+	@Meta.OCD(description = "description") public static interface OCDDescription {
 	}
 
-	@Metadata.OCD() public static interface OCDDesignatePidOnly {
+	@Meta.OCD() public static interface OCDDesignatePidOnly {
 	}
 
-	@Metadata.OCD(factory = true) public static interface OCDDesignatePidFactory {
+	@Meta.OCD(factory = true) public static interface OCDDesignatePidFactory {
 	}
 
-	@Metadata.OCD(id = "id") public static interface OCDId {
+	@Meta.OCD(id = "id") public static interface OCDId {
 	}
 
-	@Metadata.OCD(id = "id") public static interface OCDIdWithPid {
+	@Meta.OCD(id = "id") public static interface OCDIdWithPid {
 	}
 
-	@Metadata.OCD(localization = "localization") public static interface OCDLocalization {
+	@Meta.OCD(localization = "localization") public static interface OCDLocalization {
 	}
 
-	@Metadata.OCD(name = "name") public static interface OCDName {
+	@Meta.OCD(name = "name") public static interface OCDName {
 	}
 
 	public void testOCD() throws Exception {
@@ -405,42 +543,42 @@ public class MetatypeTest extends TestCase {
 	 * Test the AD settings.
 	 */
 
-	@Metadata.OCD(description = "advariations") public static interface TestAD {
-		@Metadata.AD String noSettings();
+	@Meta.OCD(description = "advariations") public static interface TestAD {
+		@Meta.AD String noSettings();
 
-		@Metadata.AD(id = "id") String withId();
+		@Meta.AD(id = "id") String withId();
 
-		@Metadata.AD(name = "name") String withName();
+		@Meta.AD(name = "name") String withName();
 
-		@Metadata.AD(max = "1") String withMax();
+		@Meta.AD(max = "1") String withMax();
 
-		@Metadata.AD(min = "-1") String withMin();
+		@Meta.AD(min = "-1") String withMin();
 
-		@Metadata.AD(deflt = "deflt") String withDefault();
+		@Meta.AD(deflt = "deflt") String withDefault();
 
-		@Metadata.AD(cardinality = 0) String[] withC0();
+		@Meta.AD(cardinality = 0) String[] withC0();
 
-		@Metadata.AD(cardinality = 1) String[] withC1();
+		@Meta.AD(cardinality = 1) String[] withC1();
 
-		@Metadata.AD(cardinality = -1) Collection<String> withC_1();
+		@Meta.AD(cardinality = -1) Collection<String> withC_1();
 
-		@Metadata.AD(cardinality = -1) String[] withC_1ButArray();
+		@Meta.AD(cardinality = -1) String[] withC_1ButArray();
 
-		@Metadata.AD(cardinality = 1) Collection<String> withC1ButCollection();
+		@Meta.AD(cardinality = 1) Collection<String> withC1ButCollection();
 
-		@Metadata.AD(type = "String") int withInt();
+		@Meta.AD(type = Meta.Type.String) int withInt();
 
-		@Metadata.AD(type = "Integer") String withString();
+		@Meta.AD(type = Meta.Type.Integer) String withString();
 
-		@Metadata.AD(description = "description") String a();
+		@Meta.AD(description = "description") String a();
 
-		@Metadata.AD(optionValues = { "a", "b" }) String valuesOnly();
+		@Meta.AD(optionValues = { "a", "b" }) String valuesOnly();
 
-		@Metadata.AD(optionValues = { "a", "b" }, optionLabels = { "A", "B" }) String labelsAndValues();
+		@Meta.AD(optionValues = { "a", "b" }, optionLabels = { "A", "B" }) String labelsAndValues();
 
-		@Metadata.AD(required = true) String required();
+		@Meta.AD(required = true) String required();
 
-		@Metadata.AD(required = false) String notRequired();
+		@Meta.AD(required = false) String notRequired();
 	}
 
 	public void testAD() throws Exception {
@@ -469,9 +607,9 @@ public class MetatypeTest extends TestCase {
 		assertAD(d, "withC1", "With c1", "withC1", null, null, null, 1, "String", null, null, null);
 		assertAD(d, "withC0", "With c0", "withC0", null, null, null, 2147483647, "String", null,
 				null, null);
-		assertAD(d, "withC_1", "With c1", "withC_1", null, null, null, -1, "String", null, null,
+		assertAD(d, "withC_1", "With c 1", "withC.1", null, null, null, -1, "String", null, null,
 				null);
-		assertAD(d, "withC_1ButArray", "With c1 but array", "withC_1ButArray", null, null, null,
+		assertAD(d, "withC_1ButArray", "With c 1 but array", "withC.1ButArray", null, null, null,
 				-1, "String", null, null, null);
 		assertAD(d, "withC1ButCollection", "With c1 but collection", "withC1ButCollection", null,
 				null, null, 1, "String", null, null, null);
@@ -509,7 +647,7 @@ public class MetatypeTest extends TestCase {
 	/**
 	 * Test all the return types.
 	 */
-	@Metadata.OCD(description = "simple", name = "TestSimple") public static interface TestReturnTypes {
+	@Meta.OCD(description = "simple", name = "TestSimple") public static interface TestReturnTypes {
 		boolean rpBoolean();
 
 		byte rpByte();
@@ -623,7 +761,7 @@ public class MetatypeTest extends TestCase {
 		// Primitives
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rpBoolean']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rpByte']/@type", d));
-		assertEquals("Char", xpath.evaluate("//OCD/AD[@id='rpCharacter']/@type", d));
+		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rpCharacter']/@type", d));
 		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rpShort']/@type", d));
 		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rpInt']/@type", d));
 		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rpLong']/@type", d));
@@ -633,7 +771,7 @@ public class MetatypeTest extends TestCase {
 		// Primitive Wrappers
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rBoolean']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rByte']/@type", d));
-		assertEquals("Char", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
+		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
 		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rShort']/@type", d));
 		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rInt']/@type", d));
 		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rLong']/@type", d));
@@ -643,7 +781,7 @@ public class MetatypeTest extends TestCase {
 		// Primitive Arrays
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rpaBoolean']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rpaByte']/@type", d));
-		assertEquals("Char", xpath.evaluate("//OCD/AD[@id='rpaCharacter']/@type", d));
+		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rpaCharacter']/@type", d));
 		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rpaShort']/@type", d));
 		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rpaInt']/@type", d));
 		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rpaLong']/@type", d));
@@ -662,7 +800,7 @@ public class MetatypeTest extends TestCase {
 		// Wrapper + Object arrays
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='raBoolean']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='raByte']/@type", d));
-		assertEquals("Char", xpath.evaluate("//OCD/AD[@id='raCharacter']/@type", d));
+		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='raCharacter']/@type", d));
 		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='raShort']/@type", d));
 		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='raInt']/@type", d));
 		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='raLong']/@type", d));
@@ -685,7 +823,7 @@ public class MetatypeTest extends TestCase {
 		// Wrapper + Object collections
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rBooleans']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rBytes']/@type", d));
-		assertEquals("Char", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
+		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
 		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rShorts']/@type", d));
 		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rInts']/@type", d));
 		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rLongs']/@type", d));
@@ -712,8 +850,8 @@ public class MetatypeTest extends TestCase {
 	 * @author aqute
 	 * 
 	 */
-	@Metadata.OCD(description = "simple", name = "TestSimple") public static interface TestSimple {
-		@Metadata.AD String simple();
+	@Meta.OCD(description = "simple", name = "TestSimple") public static interface TestSimple {
+		@Meta.AD String simple();
 
 		String[] notSoSimple();
 

@@ -1535,8 +1535,9 @@ public class Clazz {
 	public static String unCamel(String id) {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < id.length(); i++) {
-			if (id.charAt(i) == '_' || id.charAt(i) == '$') {
-				if (i != 0 && !Character.isWhitespace(out.charAt(i - 1)))
+			char c = id.charAt(i);
+			if (c == '_' || c == '$' || c == '.') {
+				if (out.length() > 0 && !Character.isWhitespace(out.charAt(out.length() - 1)))
 					out.append(' ');
 				continue;
 			}
@@ -1562,6 +1563,8 @@ public class Clazz {
 				i--;
 			}
 		}
+		if ( id.startsWith("."))
+			out.append(" *");
 		out.replace(0, 1, Character.toUpperCase(out.charAt(0)) + "");
 		return out.toString();
 	}

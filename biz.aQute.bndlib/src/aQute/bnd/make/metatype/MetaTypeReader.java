@@ -33,7 +33,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	boolean						factory;
 
 	// AD
-	Map<MethodDef, Metadata.AD>	methods		= new LinkedHashMap<MethodDef, Metadata.AD>();
+	Map<MethodDef, Meta.AD>	methods		= new LinkedHashMap<MethodDef, Meta.AD>();
 
 	// OCD
 	Annotation					ocdAnnotation;
@@ -47,8 +47,8 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 
 	public void annotation(Annotation annotation) {
 		try {
-			Metadata.OCD ocd = annotation.getAnnotation(Metadata.OCD.class);
-			Metadata.AD ad = annotation.getAnnotation(Metadata.AD.class);
+			Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
+			Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
 			if (ocd != null) {
 				this.ocdAnnotation = annotation;
 			}
@@ -78,11 +78,11 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	static Pattern	COLLECTION	= Pattern
 										.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
 
-	private void addMethod(MethodDef method, Metadata.AD ad) throws Exception {
+	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
 		// Set all the defaults.
 		String rtype = method.getReturnType();
-		String id = method.name;
+		String id = Configurable.mangleMethodName(method.name);
 		String name = Clazz.unCamel(id);
 
 		int cardinality = 0;
@@ -103,7 +103,8 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			}
 		}
 
-		String type = getType(rtype);
+		Meta.Type type = getType(rtype);
+		
 		boolean required = ad ==null || ad.deflt() == null;
 		String deflt = null;
 		String max = null;
@@ -147,10 +148,6 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			if (ad.deflt() != null)
 				deflt = ad.deflt();
 		}
-
-		// Verify
-		if (!type.matches("Long|Double|Float|Integer|Byte|Char|Boolean|Short|String"))
-			reporter.error("Invalid AD type for %s, %s", clazz.getFQN(), type);
 
 		if (optionValues != null) {
 			if (optionLabels == null || optionLabels.length == 0) {
@@ -198,7 +195,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		return values.toArray(new String[values.size()]);
 	}
 
-	String getType(String rtype) {
+	Meta.Type getType(String rtype) {
 		if (rtype.endsWith("[]")) {
 			rtype = rtype.substring(0, rtype.length() - 2);
 			if (rtype.endsWith("[]"))
@@ -206,23 +203,23 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		}
 
 		if ("boolean".equals(rtype) || Boolean.class.getName().equals(rtype))
-			return "Boolean";
+			return Meta.Type.Boolean;
 		else if ("byte".equals(rtype) || Byte.class.getName().equals(rtype))
-			return "Byte";
+			return Meta.Type.Byte;
 		else if ("char".equals(rtype) || Character.class.getName().equals(rtype))
-			return "Char";
+			return Meta.Type.Character;
 		else if ("short".equals(rtype) || Short.class.getName().equals(rtype))
-			return "Short";
+			return Meta.Type.Short;
 		else if ("int".equals(rtype) || Integer.class.getName().equals(rtype))
-			return "Integer";
+			return Meta.Type.Integer;
 		else if ("long".equals(rtype) || Long.class.getName().equals(rtype))
-			return "Long";
+			return Meta.Type.Long;
 		else if ("float".equals(rtype) || Float.class.getName().equals(rtype))
-			return "Float";
+			return Meta.Type.Float;
 		else if ("double".equals(rtype) || Double.class.getName().equals(rtype))
-			return "Double";
+			return Meta.Type.Double;
 		else
-			return "String";
+			return Meta.Type.String;
 	}
 
 	@Override public void method(MethodDef mdef) {
@@ -275,11 +272,11 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		if (!finished) {
 			finished = true;
 			clazz.parseClassFileWithCollector(this);
-			Metadata.OCD ocd = null;
+			Meta.OCD ocd = null;
 			if (this.ocdAnnotation != null)
-				ocd = this.ocdAnnotation.getAnnotation(Metadata.OCD.class);
+				ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
 			else
-				ocd = Configurable.createConfigurable(Metadata.OCD.class,
+				ocd = Configurable.createConfigurable(Meta.OCD.class,
 						new HashMap<String, Object>());
 
 			// defaults
@@ -319,7 +316,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			this.ocd.addAttribute("localization", localization);
 
 			// do ADs
-			for (Map.Entry<MethodDef, Metadata.AD> entry : methods.entrySet())
+			for (Map.Entry<MethodDef, Meta.AD> entry : methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			this.designate.addAttribute("pid", pid);

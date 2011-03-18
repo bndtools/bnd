@@ -22,7 +22,7 @@ public class MetatypePlugin implements AnalyzerPlugin {
 		Jar jar = analyzer.getJar();
 		for (String name : map.keySet()) {
 			Collection<Clazz> metatypes = analyzer.getClasses("", QUERY.ANNOTATION.toString(),
-					Metadata.OCD.class.getName(), // 
+					Meta.OCD.class.getName(), // 
 					QUERY.NAMED.toString(), name //
 					);
 			for (Clazz c : metatypes) {

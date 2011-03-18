@@ -34,19 +34,13 @@ public class Configurable<T> {
 		}
 
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			Metadata.AD ad = method.getAnnotation(Metadata.AD.class);
-			String id = method.getName();
+			Meta.AD ad = method.getAnnotation(Meta.AD.class);
+			String id = Configurable.mangleMethodName(method.getName());
 
-			if (ad != null) {
-				if (id == Metadata.NULL)
-					id = method.getName();
-			}
+			if (ad != null && ad.id() != Meta.NULL)
+				id = ad.id();
+
 			Object o = properties.get(id);
-			if (o == null)
-				o = properties.get(id.replace('_', '.'));
-
-			if (o == null && id.startsWith("_"))
-				o = properties.get(id.substring(1));
 
 			if (o == null) {
 				if (ad != null) {
@@ -55,7 +49,7 @@ public class Configurable<T> {
 								+ method.getName());
 
 					o = ad.deflt();
-					if (o.equals(Metadata.NULL))
+					if (o.equals(Meta.NULL))
 						o = null;
 				}
 			}
@@ -242,5 +236,24 @@ public class Configurable<T> {
 			return Arrays.asList(o);
 		}
 
+	}
+	
+	
+	public static String mangleMethodName(String id) {
+		StringBuilder sb = new StringBuilder(id);
+		for ( int i =0; i<sb.length(); i++) {
+			char c  = sb.charAt(i);
+			boolean twice = i < sb.length()-1 && sb.charAt(i+1) ==c;
+			if ( c == '$' || c == '_') {
+				if ( twice )
+					sb.deleteCharAt(i+1);
+				else 
+					if ( c == '$')
+						sb.deleteCharAt(i--); // Remove dollars
+					else
+						sb.setCharAt(i, '.'); // Make _ into .
+			}				
+		}
+		return sb.toString();
 	}
 }

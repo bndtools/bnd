@@ -11,7 +11,19 @@ import java.lang.annotation.*;
  * @ConsumerInterface
  */
 
-public interface Metadata {
+public interface Meta {
+	enum Type {
+		Boolean,
+		Byte,
+		Character,
+		Short,
+		Integer,
+		Long,
+		Float,
+		Double,
+		String,
+		Password
+	}
 
 	/**
 	 * Constant NULL for default usage
@@ -102,7 +114,7 @@ public interface Metadata {
 		 * 
 		 * @return the type to be used.
 		 */
-		String type() default "String";
+		Type type() default Type.String;
 
 		/**
 		 * The cardinality of the attribute. If not explicitly set it will be
