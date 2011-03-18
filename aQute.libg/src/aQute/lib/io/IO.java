@@ -146,5 +146,14 @@ public class IO {
 		}
 		ps.flush();
 	}
+
 	
+	public static Throwable close(Closeable in) {
+		try {
+			in.close();
+			return null;
+		} catch( Throwable e) {
+			return e;
+		}
+	}
 }

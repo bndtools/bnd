@@ -56,7 +56,7 @@ public class CalltreeResource extends WriteResource {
      * The write method is called to write the resource. We just call the static
      * method.
      */
-    public void write(OutputStream out) throws IOException {
+    public void write(OutputStream out) throws Exception {
         OutputStreamWriter osw = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
         PrintWriter pw = new PrintWriter(osw);
         try {
@@ -74,7 +74,7 @@ public class CalltreeResource extends WriteResource {
      * @throws IOException Any errors
      */
     public static void writeCalltree(PrintWriter out, Collection<Clazz> classes)
-            throws IOException {
+            throws Exception {
 
         final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> using = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>();
         final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> usedby = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>();

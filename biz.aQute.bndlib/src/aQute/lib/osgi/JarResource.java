@@ -19,11 +19,11 @@ public class JarResource implements Resource {
 	}
 
 
-	public void write(OutputStream out) throws IOException {
+	public void write(OutputStream out) throws Exception {
 		jar.write(out);
 	}
 	
-	public InputStream openInputStream() throws IOException {
+	public InputStream openInputStream() throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		write(out);
 		out.close();

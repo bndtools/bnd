@@ -3,10 +3,13 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.jar.*;
 
 import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
+import aQute.bnd.make.metatype.*;
+import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
@@ -17,6 +20,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	public static String	DEFAULT_PLUGINS	= "";								// "aQute.lib.spring.SpringComponent";
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public static String	LIST_SPLITTER	= "\\\\?\\s*,\\s*";
+	static Executor			executor;
 	private List<String>	errors			= new ArrayList<String>();
 	private List<String>	warnings		= new ArrayList<String>();
 	boolean					pedantic;
@@ -41,6 +45,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	HashSet<String>			missingCommand;
 	List<Object>			basicPlugins	= new ArrayList<Object>();
 
+	
 	public Processor() {
 		properties = new Properties();
 	}
@@ -199,7 +204,7 @@ public class Processor implements Reporter, Constants, Closeable {
 			else
 				f = new File(f, first);
 		}
-		if ( file.equals(".."))
+		if (file.equals(".."))
 			return f.getParentFile();
 		else
 			return new File(f, file).getAbsoluteFile();
@@ -254,6 +259,7 @@ public class Processor implements Reporter, Constants, Closeable {
 		list.add(new MakeBnd());
 		list.add(new MakeCopy());
 		list.add(new ServiceComponent());
+		list.add(new MetatypePlugin());
 		list.addAll(basicPlugins);
 
 		for (Map.Entry<String, Map<String, String>> entry : plugins.entrySet()) {
@@ -479,8 +485,8 @@ public class Processor implements Reporter, Constants, Closeable {
 						error("Included file " + file
 								+ (file.exists() ? " does not exist" : " is directory"));
 					} else
-						doIncludeFile(file,overwrite, p);
-				} catch (IOException e) {
+						doIncludeFile(file, overwrite, p);
+				} catch (Exception e) {
 					if (fileMustExist)
 						error("Error in processing included file: " + value, e);
 				}
@@ -496,8 +502,8 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	protected void doIncludeFile(File file, boolean overwrite, Properties target)
-			throws FileNotFoundException, IOException {
+	public void doIncludeFile(File file, boolean overwrite, Properties target)
+			throws Exception {
 		if (included != null && included.contains(file)) {
 			error("Cyclic or multiple include of " + file);
 		} else {
@@ -507,7 +513,9 @@ public class Processor implements Reporter, Constants, Closeable {
 			Properties sub;
 			if (file.getName().toLowerCase().endsWith(".mf")) {
 				sub = getManifestAsProperties(in);
-			} else
+			} else if ( file.getName().endsWith(".xml"))
+				sub = parseXml(file);
+			else
 				sub = loadProperties(in, file.getAbsolutePath());
 			in.close();
 
@@ -517,6 +525,15 @@ public class Processor implements Reporter, Constants, Closeable {
 				if (overwrite || !target.containsKey(entry.getKey()))
 					target.setProperty((String) entry.getKey(), (String) entry.getValue());
 			}
+		}
+	}
+
+	private Properties parseXml(File file) throws Exception {
+		PomParser pp = new PomParser();
+		try {
+			return pp.getProperties(file);
+		} finally {
+			getInfo(pp);
 		}
 	}
 
@@ -1252,4 +1269,11 @@ public class Processor implements Reporter, Constants, Closeable {
 	public boolean isTrace() {
 		return trace;
 	}
+
+	public static Executor getExecutor() {
+		if ( executor == null) 
+			executor = Executors.newCachedThreadPool();
+		return executor;
+	}
+	
 }

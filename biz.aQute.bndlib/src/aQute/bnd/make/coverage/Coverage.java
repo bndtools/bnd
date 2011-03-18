@@ -27,14 +27,14 @@ public class Coverage {
      */
     public static Map<MethodDef, List<MethodDef>> getCrossRef(
             Collection<Clazz> source, Collection<Clazz> dest)
-            throws IOException {
+            throws Exception {
         final Map<MethodDef, List<MethodDef>> catalog = buildCatalog(dest);
         crossRef(source, catalog);
         return catalog;
     }
 
     private static void crossRef(Collection<Clazz> source,
-            final Map<MethodDef, List<MethodDef>> catalog) throws IOException {
+            final Map<MethodDef, List<MethodDef>> catalog) throws Exception {
         for (final Clazz clazz : source) {
             clazz.parseClassFileWithCollector(new ClassDataCollector() {
                 MethodDef source;
@@ -43,7 +43,7 @@ public class Coverage {
                     MethodDef def = new MethodDef(0, clazz.getFQN(),
                             "<implements>", "()V");
                     for (String interfaceName : names) {
-                        interfaceName = interfaceName.replace('/','.');
+                        interfaceName = Clazz.internalToFqn(interfaceName);
                         for (Map.Entry<MethodDef, List<MethodDef>> entry : catalog
                                 .entrySet()) {
                             String catalogClass = entry.getKey().clazz;
@@ -72,7 +72,7 @@ public class Coverage {
     }
 
     private static Map<MethodDef, List<MethodDef>> buildCatalog(
-            Collection<Clazz> sources) throws IOException {
+            Collection<Clazz> sources) throws Exception {
         final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<MethodDef, List<MethodDef>>();
         for (final Clazz clazz : sources) {
             clazz.parseClassFileWithCollector(new ClassDataCollector() {

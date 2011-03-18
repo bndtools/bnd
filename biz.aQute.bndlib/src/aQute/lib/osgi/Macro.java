@@ -655,14 +655,16 @@ public class Macro implements Replacer {
 	}
 
 	String version(Version version, String mask) {
-		if (version == null)
-			version = new Version(domain.getProperty("@"));
 		if (version == null) {
-			domain
-					.error(
-							"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
-							mask);
-			version = new Version("0");
+			String v = domain.getProperty("@");
+			if (v == null) {
+				domain
+						.error(
+								"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
+								mask);
+				v = "0";
+			}
+			version = new Version(v);
 		}
 
 		StringBuilder sb = new StringBuilder();

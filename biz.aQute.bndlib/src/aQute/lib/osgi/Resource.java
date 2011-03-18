@@ -3,8 +3,8 @@ package aQute.lib.osgi;
 import java.io.*;
 
 public interface Resource {
-	InputStream openInputStream() throws IOException ;
-	void write(OutputStream out) throws IOException;
+	InputStream openInputStream() throws Exception ;
+	void write(OutputStream out) throws Exception;
 	long lastModified();
 	void setExtra(String extra);
 	String getExtra();

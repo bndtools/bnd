@@ -23,6 +23,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.lib.deployer.*;
+import aQute.lib.io.*;
 import aQute.lib.jardiff.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
@@ -241,16 +242,31 @@ public class bnd extends Processor {
 		if ( ! file.isFile())
 			throw new FileNotFoundException(path);
 		
+		
 		File projectDir = file.getParentFile();
 		File workspaceDir = projectDir.getParentFile();
 		if ( workspaceDir == null ) {
 			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
-		Project project = new Project(ws,projectDir, file);
+		
+		File bndbnd = new File( projectDir,Project.BNDFILE);
+		Project project;
+		if ( bndbnd.isFile()) {
+			project = new Project(ws, projectDir, bndbnd);
+			project.doIncludeFile(file, true, project.getProperties());
+		} else
+			project = new Project(ws,projectDir, file);
+		
 		project.setTrace(isTrace());
 		project.setPedantic(isPedantic());
-		project.run();
+		try {
+			project.run();
+			
+		} catch( Exception e ) {
+			error("Failed to run %s: %s", project, e);
+		}
+		getInfo(project);
 	}
 
 	private void bump(String[] args, int i) throws Exception {
@@ -791,6 +807,7 @@ public class bnd extends Processor {
 	final static int	USES		= 32;
 	final static int	USEDBY		= 64;
 	final static int	COMPONENT	= 128;
+	final static int	METATYPE	= 256;
 
 	static final int	HEX			= 0;
 
@@ -814,6 +831,8 @@ public class bnd extends Processor {
 				options |= USEDBY;
 			else if ("-component".startsWith(args[i]))
 				options |= COMPONENT;
+			else if ("-metatype".startsWith(args[i]))
+				options |= METATYPE;
 			else if ("-all".startsWith(args[i]))
 				options = -1;
 			else {
@@ -904,6 +923,10 @@ public class bnd extends Processor {
 
 			if ((options & COMPONENT) != 0) {
 				printComponents(out, jar);
+			}
+
+			if ((options & METATYPE) != 0) {
+				printMetatype(out, jar);
 			}
 
 			if ((options & LIST) != 0) {
@@ -1001,6 +1024,27 @@ public class bnd extends Processor {
 		out.println();
 	}
 
+	/**
+	 * Print the metatypes in this JAR.
+	 * 
+	 * @param jar
+	 */
+	private void printMetatype(PrintStream out, Jar jar) throws Exception {
+		out.println("[METATYPE]");
+		Manifest manifest = jar.getManifest();
+		if (manifest == null) {
+			out.println("No manifest");
+			return;
+		}
+
+		Map<String, Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
+		for ( Map.Entry<String,Resource> entry : map.entrySet()) {
+			out.println(entry.getKey());
+			IO.copy(entry.getValue().openInputStream(), out);
+			out.println();
+		}
+		out.println();
+	}
 	Map<String, Set<String>> invertMapOfCollection(Map<String, Set<String>> map) {
 		Map<String, Set<String>> result = new TreeMap<String, Set<String>>();
 		for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
@@ -1381,7 +1425,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	void doDiff(String args[], int first) throws IOException {
+	void doDiff(String args[], int first) throws Exception {
 		File base = new File("");
 		boolean strict = false;
 		Jar targets[] = new Jar[2];

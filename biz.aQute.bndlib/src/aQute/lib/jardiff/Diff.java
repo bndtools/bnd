@@ -18,7 +18,7 @@ public class Diff {
      * @throws IOException
      */
     public Map<String, Object> diff(Jar a, Jar b, boolean strict)
-            throws IOException {
+            throws Exception {
         Map<String, Object> different = new TreeMap<String, Object>();
         compareManifest(different, a.getManifest(), b.getManifest(), strict);
         diff(different, a.getResources().keySet(), b.getResources().keySet());

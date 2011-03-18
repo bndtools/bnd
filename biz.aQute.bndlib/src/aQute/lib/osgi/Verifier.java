@@ -1,6 +1,5 @@
 package aQute.lib.osgi;
 
-import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -530,7 +529,7 @@ public class Verifier extends Analyzer {
         return false;
     }
 
-    public void verify() throws IOException {
+    public void verify() throws Exception {
         if (classSpace == null)
             classSpace = analyzeBundleClasspath(dot,
                     parseHeader(getHeader(Analyzer.BUNDLE_CLASSPATH)),

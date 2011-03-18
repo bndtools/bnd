@@ -19,41 +19,54 @@ import aQute.libg.generics.*;
  * 
  */
 public abstract class ProjectLauncher {
-	private final Project							project;
-	private long									timeout				= 60 * 60 * 1000;
-	private final Collection<String>				classpath			= new ArrayList<String>();
-	private final List<String>						runbundles			= Create.list();
-	private final List<String>						runvm				= new ArrayList<String>();
-	private final Map<String, String>				runproperties;
-	private Command									java;
-	private final Map<String, Map<String, String>>	runsystempackages;
-	private final List<String>						activators			= Create.list();
+	private final Project						project;
+	private long								timeout				= 60 * 60 * 1000;
+	private final Collection<String>			classpath			= new ArrayList<String>();
+	private List<String>						runbundles			= Create.list();
+	private final List<String>					runvm				= new ArrayList<String>();
+	private Map<String, String>					runproperties;
+	private Command								java;
+	private Map<String, Map<String, String>>	runsystempackages;
+	private final List<String>					activators			= Create.list();
 
-	private boolean									trace;
-	private boolean									keep;
-	private int										framework;
+	private boolean								trace;
+	private boolean								keep;
+	private int									framework;
 
-	public final static int							SERVICES			= 10111;
-	public final static int							NONE				= 20123;
+	public final static int						SERVICES			= 10111;
+	public final static int						NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int							OK					= 0;
-	public final static int							WARNING				= -1;
-	public final static int							ERROR				= -2;
-	public final static int							TIMEDOUT			= -3;
-	public final static int							UPDATE_NEEDED		= -4;
-	public final static int							CANCELED			= -5;
-	public final static int							DUPLICATE_BUNDLE	= -6;
-	public final static int							RESOLVE_ERROR		= -7;
-	public final static int							ACTIVATOR_ERROR		= -8;
-	public final static int							CUSTOM_LAUNCHER		= -128;
+	public final static int						OK					= 0;
+	public final static int						WARNING				= -1;
+	public final static int						ERROR				= -2;
+	public final static int						TIMEDOUT			= -3;
+	public final static int						UPDATE_NEEDED		= -4;
+	public final static int						CANCELED			= -5;
+	public final static int						DUPLICATE_BUNDLE	= -6;
+	public final static int						RESOLVE_ERROR		= -7;
+	public final static int						ACTIVATOR_ERROR		= -8;
+	public final static int						CUSTOM_LAUNCHER		= -128;
 
-	public final static String						EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public final static String					EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
-		for (File file : project.toFile(project.getRunbundles()))
+		updateFromProject();
+	}
+
+	/**
+	 * Collect all the aspect from the project and set the 
+	 * local fields from them. Should be called
+	 * 
+	 * @throws Exception
+	 */
+	protected void updateFromProject() throws Exception {
+		Collection<Container> run = project.getRunbundles();
+		
+		for (File file : project.toFile(run))
 			runbundles.add(file.getAbsolutePath());
+		
 		File[] builds = project.build();
 		if (builds != null)
 			for (File file : builds)
@@ -67,7 +80,7 @@ public abstract class ProjectLauncher {
 		// For backward compatibility with bndtools launcher
 		List<Container> fws = project.getBundles(Project.STRATEGY_HIGHEST, project
 				.getProperty("-runfw"));
-		runpath.addAll( fws);
+		runpath.addAll(fws);
 
 		for (Container c : runpath) {
 			addClasspath(c);

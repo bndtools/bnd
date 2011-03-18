@@ -177,8 +177,7 @@ public class Builder extends Analyzer {
 				for (String part : parts) {
 					File sub = getFile(f.getParentFile(), part);
 					if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {
-						warning(
-								"Invalid Class-Path entry %s in %s, must exist and must reside in same directory",
+						warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory",
 								sub, f);
 					} else {
 						addWabLib(dot, sub);
@@ -195,7 +194,7 @@ public class Builder extends Analyzer {
 	 * 
 	 * @param dot
 	 */
-	private void doSaveManifest(Jar dot) throws IOException {
+	private void doSaveManifest(Jar dot) throws Exception {
 		String output = getProperty(SAVEMANIFEST);
 		if (output == null)
 			return;
@@ -284,8 +283,8 @@ public class Builder extends Analyzer {
 				break;
 
 			int size = dot.getResources().size();
-			doExpand(dot, CONDITIONAL_PACKAGE + " Private imports", Instruction
-					.replaceWithInstruction(filtered), false);
+			doExpand(dot, CONDITIONAL_PACKAGE + " Private imports",
+					Instruction.replaceWithInstruction(filtered), false);
 
 			// Were there any expansions?
 			if (size == dot.getResources().size())
@@ -316,11 +315,16 @@ public class Builder extends Analyzer {
 			Map<String, String> attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
-				v =  getVersion();
-				if ( isPedantic() )
-				warning("%s - No export version, used bundle version %s.", entry.getKey(), v);
+				if (!isTrue(getProperty(Constants.NODEFAULTVERSION))) {
+					v = defaultVersion;
+					if (isPedantic())
+						warning("Used bundle version %s for exported package %s", v, entry.getKey());
+				} else {
+					if (isPedantic())
+						warning("No export version for exported package %s", entry.getKey());
+				}
 			}
-			if ( v != null)
+			if (v != null)
 				attributes.put(Constants.VERSION_ATTRIBUTE, cleanupVersion(v));
 		}
 	}
@@ -762,7 +766,8 @@ public class Builder extends Analyzer {
 
 		InstructionFilter iFilter = null;
 		if (filter != null) {
-			iFilter = new InstructionFilter(Instruction.getPattern(filter), recursive, getDoNotCopy());
+			iFilter = new InstructionFilter(Instruction.getPattern(filter), recursive,
+					getDoNotCopy());
 		} else {
 			iFilter = new InstructionFilter(null, recursive, getDoNotCopy());
 		}

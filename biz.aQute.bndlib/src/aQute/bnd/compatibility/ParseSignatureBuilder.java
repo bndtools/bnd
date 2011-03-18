@@ -11,7 +11,7 @@ public class ParseSignatureBuilder {
 		this.root = root;
 	}
 	
-	public void add( Jar jar ) throws IOException {
+	public void add( Jar jar ) throws Exception {
 		for ( Resource r : jar.getResources().values()) {
 			InputStream in = r.openInputStream();
 			try {

@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
+import aQute.bnd.make.metatype.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.*;
@@ -30,6 +31,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 	public final static String			COMPONENT_OPTIONAL				= "optional:";
 	public final static String			COMPONENT_PROPERTIES			= "properties:";
 	public final static String			COMPONENT_IMPLEMENTATION		= "implementation:";
+	public final static String			COMPONENT_DESIGNATE				= "designate:";
+	public final static String			COMPONENT_DESIGNATEFACTORY		= "designateFactory:";
 	public final static String			COMPONENT_DESCRIPTORS			= ".descriptors:";
 
 	// v1.1.0
@@ -46,21 +49,20 @@ public class ServiceComponent implements AnalyzerPlugin {
 			COMPONENT_MULTIPLE, COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES,
 			COMPONENT_IMPLEMENTATION, COMPONENT_SERVICEFACTORY, COMPONENT_VERSION,
 			COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED, COMPONENT_ACTIVATE,
-			COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS };
+			COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS, COMPONENT_DESIGNATE,
+			COMPONENT_DESIGNATEFACTORY									};
 
 	public final static Set<String>		SET_COMPONENT_DIRECTIVES		= new HashSet<String>(
-																				Arrays
-																						.asList(componentDirectives));
+																				Arrays.asList(componentDirectives));
 
 	public final static Set<String>		SET_COMPONENT_DIRECTIVES_1_1	= //
 																		new HashSet<String>(
-																				Arrays
-																						.asList(
-																								COMPONENT_VERSION,
-																								COMPONENT_CONFIGURATION_POLICY,
-																								COMPONENT_MODIFIED,
-																								COMPONENT_ACTIVATE,
-																								COMPONENT_DEACTIVATE));
+																				Arrays.asList(
+																						COMPONENT_VERSION,
+																						COMPONENT_CONFIGURATION_POLICY,
+																						COMPONENT_MODIFIED,
+																						COMPONENT_ACTIVATE,
+																						COMPONENT_DEACTIVATE));
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
@@ -72,7 +74,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		analyzer.getInfo(m, "Service-Component: ");
 		m.close();
-		
+
 		return false;
 	}
 
@@ -114,6 +116,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 						componentEntry(serviceComponents, name, info);
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					error("Invalid Service-Component header: %s %s, throws %s", name, info, e);
 				}
 			}
@@ -156,8 +159,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 				// Annotations possible!
 
-				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATION
-						.toString(), Component.class.getName(), // 
+				Collection<Clazz> annotatedComponents = analyzer.getClasses("",
+						QUERY.ANNOTATION.toString(), Component.class.getName(), //
 						QUERY.NAMED.toString(), name //
 						);
 
@@ -213,8 +216,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 					if (c.getFormat().hasAnnotations())
 						break;
 				}
-				error(
-						"Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
+				error("Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
 						name);
 			}
 			return not;
@@ -235,8 +237,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 			// Override the component info without manifest
 			// entries. We merge the properties though.
 
-			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES), map
-					.remove(COMPONENT_PROPERTIES));
+			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES),
+					map.remove(COMPONENT_PROPERTIES));
 			if (merged != null && merged.length() > 0)
 				map.put(COMPONENT_PROPERTIES, merged);
 			map.putAll(info);
@@ -258,12 +260,48 @@ public class ServiceComponent implements AnalyzerPlugin {
 			// Check if such a class exists
 			analyzer.referTo(impl);
 
+			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false) ||
+			designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
+			
+			// If we had a designate, we want a default configuration policy of require.
+			if ( designate && info.get(COMPONENT_CONFIGURATION_POLICY)==null)
+				info.put(COMPONENT_CONFIGURATION_POLICY, "require");
+			
 			// We have a definition, so make an XML resources
 			Resource resource = createComponentResource(name, impl, info);
 			analyzer.getJar().putResource("OSGI-INF/" + name + ".xml", resource);
 
 			components.put("OSGI-INF/" + name + ".xml", EMPTY);
 
+		}
+
+		/**
+		 * Create a Metatype and Designate record out of the given
+		 * configurations.
+		 * 
+		 * @param name
+		 * @param config
+		 */
+		private boolean designate(String name, String config, boolean factory) {
+			if (config == null)
+				return false;
+
+			for (String c : Processor.split(config)) {
+				Clazz clazz = analyzer.getClassspace().get(Clazz.fqnToPath(c));
+				if (clazz != null) {
+					analyzer.referTo(c);
+					MetaTypeReader r = new MetaTypeReader(clazz, analyzer);
+					r.setDesignate(name, factory);
+					String rname = "OSGI-INF/metatype/" + name + ".xml";
+
+					analyzer.getJar().putResource(rname, r);
+				} else {
+					analyzer.error(
+							"Cannot find designated configuration class %s for component %s", c,
+							name);
+				}
+			}
+			return true;
 		}
 
 		/**
@@ -284,7 +322,6 @@ public class ServiceComponent implements AnalyzerPlugin {
 				pw.print("<scr:component xmlns:scr='" + namespace + "'");
 			else
 				pw.print("<component");
-			
 
 			doAttribute(pw, name, "name");
 			doAttribute(pw, info.get(COMPONENT_FACTORY), "factory");
@@ -307,19 +344,18 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 			if (servicefactory && Processor.isTrue(info.get(COMPONENT_IMMEDIATE))) {
 				// TODO can become error() if it is up to me
-				warning(
-						"For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %(%s)",
+				warning("For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %(%s)",
 						name, impl);
 			}
 			provide(pw, provides, servicefactory, impl);
 			properties(pw, info);
 			reference(info, pw);
-			
+
 			if (namespace != null)
 				pw.println("</scr:component>");
 			else
 				pw.println("</component>");
-			
+
 			pw.close();
 			byte[] data = out.toByteArray();
 			out.close();
@@ -331,8 +367,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				if (matches.length != 0) {
 					if (matches.length == 1 && matches[0].equals(JIDENTIFIER)) {
 						if (!Verifier.isIdentifier(value))
-							error(
-									"Component attribute %s has value %s but is not a Java identifier",
+							error("Component attribute %s has value %s but is not a Java identifier",
 									name, value);
 					} else {
 

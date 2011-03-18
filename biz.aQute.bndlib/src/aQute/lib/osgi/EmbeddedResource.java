@@ -66,7 +66,7 @@ public class EmbeddedResource implements Resource {
 		return lastModified;
 	}
 
-	public static void build(Jar sub, Resource resource) throws IOException {
+	public static void build(Jar sub, Resource resource) throws Exception {
 			InputStream in = resource.openInputStream();
 			build(sub,in, resource.lastModified());
 			in.close();

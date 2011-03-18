@@ -47,7 +47,7 @@ public class Command {
 		TimerTask timer = null;
 		OutputStream stdin = process.getOutputStream();
 		final InputStreamHandler handler = in != null ? new InputStreamHandler(in, stdin) : null;
-
+		
 		if (timeout != 0) {
 			timer = new TimerTask() {
 				public void run() {
@@ -169,6 +169,7 @@ public class Command {
 				int c = in.read();
 				while (c >= 0) {
 					stdin.write(c);
+					stdin.flush();
 					c = in.read();
 				}
 			} catch (InterruptedIOException e) {

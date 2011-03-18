@@ -190,17 +190,17 @@ public class Launcher implements ServiceListener {
 				}
 			}
 		}
+		int result = LauncherConstants.OK;
 		for (BundleActivator activator : embedded)
 			try {
 				trace("starting activator %s", activator);
 				activator.start(systemContext);
 			} catch (Exception e) {
 				error("Starting activator %s : %s", activator, e);
-				e.printStackTrace();
-				return LauncherConstants.ERROR;
+				result = LauncherConstants.ERROR;
 			}
 
-		return LauncherConstants.OK;
+		return result;
 	}
 
 	/**
@@ -260,8 +260,10 @@ public class Launcher implements ServiceListener {
 				Bundle b = installedBundles.get(f);
 				if (b.getLastModified() < f.lastModified()) {
 					trace("updating %s", f);
-					tobestarted.add(b);
-					b.stop();
+					if ( b.getState() == Bundle.ACTIVE) {
+						tobestarted.add(b);
+						b.stop();
+					}
 					b.update();
 				} else
 					trace("bundle is still current according to timestamp %s", f);
@@ -288,11 +290,14 @@ public class Launcher implements ServiceListener {
 
 		// Now start all the installed bundles in the same order
 		// (unless they're a fragment)
+		
+		
+		trace("Will start bundles: %s" ,tobestarted);
 		for (Bundle b : tobestarted) {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				if (!isFragment(b))
-					b.start();
+					b.start(Bundle.START_ACTIVATION_POLICY);
 				trace("started  %s", b.getSymbolicName());
 			} catch (BundleException e) {
 				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b
@@ -543,15 +548,18 @@ public class Launcher implements ServiceListener {
 					out.println("Id    State Modified      Location");
 
 					for (int i = 0; i < bundles.length; i++) {
-						File f = new File(bundles[i].getLocation());
+						String loc = bundles[i].getLocation();
+						loc = loc.replaceAll("\\w+:", "");
+						File f = new File(loc);
 						out.print(fill(Long.toString(bundles[i].getBundleId()), 6));
 						out.print(fill(toState(bundles[i].getState()), 6));
 						if (f.exists())
 							out.print(fill(toDate(f.lastModified()), 14));
 						else
 							out.print(fill("<>", 14));
+						
 						if (errors.containsKey(bundles[i])) {
-							out.print(fill(bundles[i].getLocation(), 50));
+							out.print(fill(loc, 50));
 							out.print(errors.get(bundles[i]).getMessage());
 						} else
 							out.print(bundles[i].getLocation());

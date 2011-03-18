@@ -86,7 +86,7 @@ public class RuntimeSignatureBuilder {
 		return local;
 	}
 
-	private Scope getEnclosingScope(Class<?> c) {
+	@SuppressWarnings("unused") private Scope getEnclosingScope(Class<?> c) {
 		Method m = c.getEnclosingMethod();
 		if (m != null) {
 			Scope s = getGlobalScope(m.getDeclaringClass());

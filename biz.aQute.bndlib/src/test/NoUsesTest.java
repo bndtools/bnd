@@ -116,7 +116,7 @@ public class NoUsesTest extends TestCase {
 			return (String) clause.get("uses:");			
 	}
 	
-	void assertOk(Analyzer bmaker) throws IOException {
+	void assertOk(Analyzer bmaker) throws Exception {
 		System.out.println(bmaker.getErrors());
 		System.out.println(bmaker.getWarnings());
 		bmaker.getJar().getManifest().write(System.out);

@@ -8,6 +8,43 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class VersionPolicyTest extends TestCase {
+	
+	/**
+	 * Test disable default package versions.
+	 */
+    public void testDisableDefaultPackageVersion() throws Exception {
+        Builder a = new Builder();
+        a.addClasspath(new File("bin"));
+        a.setProperty("Bundle-Version", "1.2.3");
+        a.setProperty("Export-Package", "test.refer");
+        a.setProperty("-nodefaultversion", "true");
+        Jar jar = a.build();
+        
+        Manifest m = jar.getManifest();
+        Map<String, Map<String, String>> exports = Processor.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE), null);
+        Map<String,String> attrs = exports.get("test.refer");
+        assertNotNull(attrs);
+        assertNull( attrs.get("version"));
+    }
+	
+	/**
+	 * Test default package versions.
+	 */
+    public void testDefaultPackageVersion() throws Exception {
+        Builder a = new Builder();
+        a.addClasspath(new File("bin"));
+        a.setProperty("Bundle-Version", "1.2.3");
+        a.setProperty("Export-Package", "test.refer");
+        Jar jar = a.build();
+        
+        Manifest m = jar.getManifest();
+        Map<String, Map<String, String>> exports = Processor.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE), null);
+        Map<String,String> attrs = exports.get("test.refer");
+        assertNotNull(attrs);
+        assertEquals( "1.2.3", attrs.get("version"));
+    }
+	
+	
 
     /**
      * Test import provide:.

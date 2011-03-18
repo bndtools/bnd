@@ -79,4 +79,7 @@ public class ClassDataCollector {
 			int innerClassAccessFlags) {		
 	}
 
+	public void signature(String signature) {
+	}
+
 }

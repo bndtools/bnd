@@ -75,11 +75,27 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			setBoolean(COMPONENT_IMMEDIATE, annotation.get(Component.IMMEDIATE), false);
 			setBoolean(COMPONENT_SERVICEFACTORY, annotation.get(Component.SERVICEFACTORY), false);
 
+			if( annotation.get(Component.DESIGNATE)!= null) {
+				String configs = annotation.get(Component.DESIGNATE);
+				if ( configs != null ) {
+					set(COMPONENT_DESIGNATE, Clazz.objectDescriptorToFQN(configs),"");
+				}
+			}
+				
+			if( annotation.get(Component.DESIGNATE_FACTORY)!= null) {
+				String configs = annotation.get(Component.DESIGNATE_FACTORY);
+				if ( configs != null ) {
+					set(COMPONENT_DESIGNATEFACTORY, Clazz.objectDescriptorToFQN(configs),"");
+				}
+			}
+				
+				
 			setVersion((String)annotation.get(Component.VERSION));
 			
 			String configurationPolicy = annotation.get(Component.CONFIGURATION_POLICY);
 			if (configurationPolicy != null)
-				set(COMPONENT_CONFIGURATION_POLICY, configurationPolicy.toLowerCase(), "<>");
+				set(COMPONENT_CONFIGURATION_POLICY, configurationPolicy.toLowerCase(), "");
+			
 			doProperties(annotation);
 
 			Object[] provides = (Object[]) annotation.get(Component.PROVIDE);
@@ -90,7 +106,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				if (interfaces != null) {
 					p = new String[interfaces.length];
 					for (int i = 0; i < interfaces.length; i++)
-						p[i] = interfaces[i].replace('/', '.');
+						p[i] = Clazz.internalToFqn(interfaces[i]);
 				} else
 					p = new String[0];
 			} else {
@@ -121,6 +137,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				setVersion(V1_1);
 				set(COMPONENT_ACTIVATE, method, "<>");
 			}
+			
+			
 
 		} else if (annotation.getName().equals(Deactivate.RNAME)) {
 			if (!checkMethod())
@@ -167,13 +185,13 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			String service = annotation.get(Reference.SERVICE);
 
 			if (service != null) {
-				service = service.substring(1, service.length() - 1).replace('/', '.');
+				service = Clazz.objectDescriptorToFQN(service);
 			} else {
 				// We have to find the type of the current method to
 				// link it to the referenced service.
 				Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
 				if (m.matches()) {
-					service = m.group(1).replace('/', '.');
+					service = Clazz.internalToFqn(m.group(1));
 				} else
 					throw new IllegalArgumentException(
 							"Cannot detect the type of a Component Reference from the descriptor: "

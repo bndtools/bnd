@@ -19,7 +19,7 @@ public class URLResource implements Resource {
 		return ":" + url.getPath() + ":";
 	}
 
-	public void write(OutputStream out) throws IOException {
+	public void write(OutputStream out) throws Exception {
 		FileResource.copy(this, out);
 	}
 

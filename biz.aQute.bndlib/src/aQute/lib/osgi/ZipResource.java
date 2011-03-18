@@ -65,7 +65,7 @@ public class ZipResource implements Resource {
         }
     }
 
-    public void write(OutputStream out) throws IOException {
+    public void write(OutputStream out) throws Exception {
         FileResource.copy(this, out);
     }
 
