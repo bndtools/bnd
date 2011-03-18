@@ -68,10 +68,22 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
 
-		p.putAll(runProperties);
+		for ( Map.Entry<String, String> entry : runProperties.entrySet()) {
+			if ( entry.getValue() == null)
+				p.remove(entry.getKey());
+			else
+				p.put(entry.getKey(), entry.getValue());
+			
+		}
 		return p;
 	}
 
+	/**
+	 * Empty constructor for the plugin
+	 */
+	
+	public LauncherConstants() {
+	}
 	/**
 	 * Create a constants from properties.
 	 * 
@@ -90,8 +102,6 @@ public class LauncherConstants {
 		runProperties.putAll(map);
 	}
 
-	public LauncherConstants() {
-	}
 
 	private Collection<? extends String> split(String property, String string) {
 		List<String> result = new ArrayList<String>();
