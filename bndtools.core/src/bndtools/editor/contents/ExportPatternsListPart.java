@@ -121,7 +121,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             missingPkgInfoDirs = findSourcePackagesWithoutPackageInfo(pkgs);
         } catch (Exception e) {
             ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null,
-                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding wsource package for exported 1packages.", e));
+                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
             missingPkgInfoDirs = Collections.emptyMap();
         }
 	    Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
