@@ -223,8 +223,8 @@ public class bnd extends Processor {
 		while (i < args.length) {
 			String path = args[i];
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-				doBuild(getFile(path), new File[0], new File[0], null, "", new File(path)
-						.getParentFile(), 0, new HashSet<File>());
+				doBuild(getFile(path), new File[0], new File[0], null, "",
+						new File(path).getParentFile(), 0, new HashSet<File>());
 			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
 				doPrint(path, -1);
@@ -239,31 +239,30 @@ public class bnd extends Processor {
 
 	private void doRun(String path) throws Exception {
 		File file = getFile(path);
-		if ( ! file.isFile())
+		if (!file.isFile())
 			throw new FileNotFoundException(path);
-		
-		
+
 		File projectDir = file.getParentFile();
 		File workspaceDir = projectDir.getParentFile();
-		if ( workspaceDir == null ) {
+		if (workspaceDir == null) {
 			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
-		
-		File bndbnd = new File( projectDir,Project.BNDFILE);
+
+		File bndbnd = new File(projectDir, Project.BNDFILE);
 		Project project;
-		if ( bndbnd.isFile()) {
+		if (bndbnd.isFile()) {
 			project = new Project(ws, projectDir, bndbnd);
 			project.doIncludeFile(file, true, project.getProperties());
 		} else
-			project = new Project(ws,projectDir, file);
-		
+			project = new Project(ws, projectDir, file);
+
 		project.setTrace(isTrace());
 		project.setPedantic(isPedantic());
 		try {
 			project.run();
-			
-		} catch( Exception e ) {
+
+		} catch (Exception e) {
 			error("Failed to run %s: %s", project, e);
 		}
 		getInfo(project);
@@ -285,8 +284,7 @@ public class bnd extends Processor {
 			else if (mask.equalsIgnoreCase("micro"))
 				mask = "==+";
 			else if (!mask.matches("(+=0){1,3}")) {
-				error(
-						"Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
+				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
 						mask);
 				return;
 			}
@@ -449,8 +447,8 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(), v
-					.getMinor(), v.getMicro(), c.getFile());
+			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
+					v.getMinor(), v.getMicro(), c.getFile());
 		}
 
 	}
@@ -773,8 +771,7 @@ public class bnd extends Processor {
 
 	private void doHelp(String[] args, int i) {
 		if (args.length <= i) {
-			out
-					.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
+			out.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
 			out.println("See http://www.aQute.biz/Code/Bnd");
 		} else {
 			while (args.length > i) {
@@ -783,8 +780,7 @@ public class bnd extends Processor {
 				} else if ("print".equals(args[i])) {
 					out.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
 				} else if ("build".equals(args[i])) {
-					out
-							.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
+					out.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
 					out.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
 				} else if ("eclipse".equals(args[i])) {
 					out.println("bnd eclipse");
@@ -1008,7 +1004,8 @@ public class bnd extends Processor {
 
 			Resource r = jar.getResource(path);
 			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r.openInputStream(), Constants.DEFAULT_CHARSET);
+				InputStreamReader ir = new InputStreamReader(r.openInputStream(),
+						Constants.DEFAULT_CHARSET);
 				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
 					copy(ir, or);
@@ -1038,13 +1035,16 @@ public class bnd extends Processor {
 		}
 
 		Map<String, Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
-		for ( Map.Entry<String,Resource> entry : map.entrySet()) {
-			out.println(entry.getKey());
-			IO.copy(entry.getValue().openInputStream(), out);
+		if (map != null) {
+			for (Map.Entry<String, Resource> entry : map.entrySet()) {
+				out.println(entry.getKey());
+				IO.copy(entry.getValue().openInputStream(), out);
+				out.println();
+			}
 			out.println();
 		}
-		out.println();
 	}
+
 	Map<String, Set<String>> invertMapOfCollection(Map<String, Set<String>> map) {
 		Map<String, Set<String>> result = new TreeMap<String, Set<String>>();
 		for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
@@ -1607,8 +1607,7 @@ public class bnd extends Processor {
 					error("-bsn and -version must be set before spring command is used");
 				} else {
 					String url = String
-							.format(
-									"http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
+							.format("http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
 									bsn, version);
 					repoPut(writable, p, url, bsn, version);
 				}
@@ -1872,8 +1871,8 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile
-				.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
+				testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
 		ProjectTester tester = project.getProjectTester();
@@ -2106,9 +2105,9 @@ public class bnd extends Processor {
 		for (File file : files) {
 			Jar jar = new Jar(file);
 			try {
-				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(
-						BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(
-						BUNDLE_VERSION));
+				System.out.printf("%40s-%-10s",
+						jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar
+								.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
 				libsync.submit(jar);
 				getInfo(libsync);
 				System.out.printf("     ok\n");
@@ -2141,16 +2140,16 @@ public class bnd extends Processor {
 				System.out.printf("%-30s %s\n", key, settings.globalGet(key, "<>"));
 		} else {
 			while (i < args.length) {
-				boolean remove=false;
-				if ( "-remove".equals(args[i])) {
+				boolean remove = false;
+				if ("-remove".equals(args[i])) {
 					remove = true;
 					i++;
 				}
 				if (i + 1 == args.length) {
-					if ( remove )
+					if (remove)
 						settings.globalRemove(args[i]);
 					else
-						System.out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));						
+						System.out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));
 					i++;
 				} else {
 					settings.globalSet(args[i], args[i + 1]);
