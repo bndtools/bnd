@@ -1,0 +1,7 @@
+This is a project that contains lots of small utilties, each in their own package. This
+library is intended to be used with the bnd Conditinal-Package header. This header
+will include all packages in a given namespace. Just put the JAR of this project on
+your claspath and then:
+
+  Conditional-Package: aQute.lib.*, aQute.libg.*
+

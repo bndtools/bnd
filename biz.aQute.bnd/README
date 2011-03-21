@@ -1,0 +1,7 @@
+The bnd project creates a Jar that has the following functions:
+
+- Command line utility (has a Main-Class)
+- An Eclipse plugin (this will be replaced soon with bndtools)
+- An ant plugin
+
+

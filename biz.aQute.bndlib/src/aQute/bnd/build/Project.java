@@ -242,7 +242,7 @@ public class Project extends Processor {
 
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
-					if ( !delayRunDependencies) {
+					if (!delayRunDependencies) {
 						doPath(runpath, dependencies, parseRunpath(), null);
 						doPath(runbundles, dependencies, parseRunbundles(), null);
 					}
@@ -940,6 +940,10 @@ public class Project extends Processor {
 	 */
 
 	public File[] getBuildFiles() throws Exception {
+		return getBuildFiles(true);
+	}
+
+	public File[] getBuildFiles(boolean buildIfAbsent) throws Exception {
 		File f = new File(getTarget(), BUILDFILES);
 		if (f.isFile()) {
 			FileReader fin = new FileReader(f);
@@ -959,7 +963,10 @@ public class Project extends Processor {
 				fin.close();
 			}
 		}
-		return buildLocal(false);
+		if (buildIfAbsent)
+			return buildLocal(false);
+		else
+			return null;
 	}
 
 	/**
