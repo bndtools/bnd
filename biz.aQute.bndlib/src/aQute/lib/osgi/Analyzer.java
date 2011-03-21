@@ -23,17 +23,18 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.jar.*;
-import java.util.jar.Attributes.*;
+import java.util.jar.Attributes.Name;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.collections.*;
+import aQute.lib.osgi.Clazz.QUERY;
 import aQute.libg.generics.*;
+import aQute.libg.tarjan.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
-
 
 	static String							version;
 	static Pattern							versionPattern			= Pattern
@@ -300,8 +301,9 @@ public class Analyzer extends Processor {
 		boolean noExtraHeaders = "true".equalsIgnoreCase(getProperty(NOEXTRAHEADERS));
 
 		if (!noExtraHeaders) {
-			main.putValue(CREATED_BY, System.getProperty("java.version") + " ("
-					+ System.getProperty("java.vendor") + ")");
+			main.putValue(CREATED_BY,
+					System.getProperty("java.version") + " (" + System.getProperty("java.vendor")
+							+ ")");
 			main.putValue(TOOL, "Bnd-" + getBndVersion());
 			main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
 		}
@@ -451,8 +453,7 @@ public class Analyzer extends Processor {
 			}
 			attrs.putValue(name, getProperty(header));
 		} else {
-			warning(
-					"Invalid header (starts with @ but does not seem to be for the Name section): %s",
+			warning("Invalid header (starts with @ but does not seem to be for the Name section): %s",
 					header);
 		}
 	}
@@ -883,11 +884,11 @@ public class Analyzer extends Processor {
 	 */
 	/**
 	 * I could no longer argue why the groups are needed :-( See what happens
-	 * ... The commented out part calculated the groups and then removed the
-	 * imports from there. Now we only remove imports that have internal
-	 * references. Using internal code for an exported package means that a
-	 * bundle cannot import that package from elsewhere because its assumptions
-	 * might be violated if it receives a substitution. //
+	 * ... The getGroups calculated the groups and then removed the imports from
+	 * there. Now we only remove imports that have internal references. Using
+	 * internal code for an exported package means that a bundle cannot import
+	 * that package from elsewhere because its assumptions might be violated if
+	 * it receives a substitution. //
 	 */
 	Map<String, Map<String, String>> doExportsToImports(Map<String, Map<String, String>> exports) {
 
@@ -931,32 +932,6 @@ public class Analyzer extends Processor {
 			}
 		}
 
-		// // Calculate the unique unconnected groups.
-		// Map<String, Set<String>> groups = newMap();
-		// for (String p : imports) {
-		// Set<String> uses = this.uses.get(p);
-		// merge(imports, groups, p, p);
-		// if (uses != null)
-		// for (String refers : uses) {
-		// merge(imports, groups, p, refers);
-		// }
-		// }
-		// Set<Set<String>> unique = new HashSet<Set<String>>(groups.values());
-		//
-		// // remove any export that is either referenced from
-		// // a private package or that is referring to
-		// // a private package. This is all based on the group
-		// for (Set<String> group : unique) {
-		// // Remove any imported packages.
-		// group.retainAll(contained.keySet());
-		// boolean exportRefsPrivate = group.retainAll(exports.keySet());
-		// boolean privateRefsExport = intersects(privateReferences, group);
-		//
-		// if (!privateRefsExport || exportRefsPrivate) {
-		// imports.removeAll(group);
-		// }
-		// }
-
 		// Clean up attributes and generate result map
 		Map<String, Map<String, String>> result = newMap();
 		for (Iterator<String> i = toBeImported.iterator(); i.hasNext();) {
@@ -996,50 +971,6 @@ public class Analyzer extends Processor {
 				return true;
 		return false;
 	}
-
-	/**
-	 * This method uses recursion to combine packages that refer to each other.
-	 * It will take a root package and then use the uses constrains to find any
-	 * references. Any used package is recursively considered. All packages are
-	 * added to a group. The refs also contains the references to the private
-	 * packages.
-	 * 
-	 * @param root
-	 *            name of the root package
-	 * @param todo
-	 *            list of items still to process
-	 * @param group
-	 *            the group we're working on
-	 * @param refs
-	 *            the uses from the group
-	 */
-	// private void merge(Set<String> imports, Map<String, Set<String>> groups,
-	// String a, String b) {
-	// Set<String> as = groups.get(a);
-	// Set<String> bs = groups.get(b);
-	// if (as == null && bs == null) {
-	// Set<String> result = newSet();
-	// result.add(a);
-	// result.add(b);
-	// groups.put(a, result);
-	// groups.put(b, result);
-	// } else if (as == null) {
-	// bs.add(a);
-	// if (imports.contains(a))
-	// groups.put(a, bs);
-	// } else if (bs == null) {
-	// as.add(b);
-	// if (imports.contains(b))
-	// groups.put(b, as);
-	// } else if (as == bs) {
-	// return;
-	// } else {
-	// // as!=null bs != null
-	// // pick one.
-	// as.addAll(bs);
-	// groups.put(b, as);
-	// }
-	// }
 
 	public boolean referred(String packageName) {
 		// return true;
@@ -1120,8 +1051,8 @@ public class Analyzer extends Processor {
 					augmentVersion(importAttributes, exporterAttributes);
 					augmentMandatory(importAttributes, exporterAttributes);
 					if (exporterAttributes.containsKey(IMPORT_DIRECTIVE))
-						importAttributes.put(IMPORT_DIRECTIVE, exporterAttributes
-								.get(IMPORT_DIRECTIVE));
+						importAttributes.put(IMPORT_DIRECTIVE,
+								exporterAttributes.get(IMPORT_DIRECTIVE));
 				}
 
 				fixupAttributes(importAttributes);
@@ -1406,8 +1337,8 @@ public class Analyzer extends Processor {
 					Map<String, Resource> dir = entry.getValue();
 					String name = entry.getKey().replace('/', '.');
 					if (dir != null) {
-						out.printf("                                      %-30s %d\n", name, dir
-								.size());
+						out.printf("                                      %-30s %d\n", name,
+								dir.size());
 					} else {
 						out.printf("                                      %-30s <<empty>>\n", name);
 					}
@@ -1725,8 +1656,7 @@ public class Analyzer extends Processor {
 							Version av = new Version(presentVersion);
 							Version bv = new Version(version);
 							if (!av.equals(bv)) {
-								error(
-										"Version from annotation for %s differs with packageinfo or Manifest",
+								error("Version from annotation for %s differs with packageinfo or Manifest",
 										Clazz.getPackage(clazz.className));
 							}
 						} catch (Exception e) {
@@ -2059,11 +1989,10 @@ public class Analyzer extends Processor {
 	 */
 
 	public String _exporters(String args[]) throws Exception {
-		Macro
-				.verifyCommand(
-						args,
-						"${exporters;<packagename>}, returns the list of jars that export the given package",
-						null, 2, 2);
+		Macro.verifyCommand(
+				args,
+				"${exporters;<packagename>}, returns the list of jars that export the given package",
+				null, 2, 2);
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		String pack = args[1].replace('.', '/');
@@ -2142,4 +2071,30 @@ public class Analyzer extends Processor {
 			referred.put(pack, new LinkedHashMap<String, String>());
 	}
 
+	/**
+	 * Calculate the groups inside the bundle. A group consists of packages
+	 * that have a reference to each other.
+	 */
+	
+	public MultiMap<Set<String>, String>	getGroups() {
+		MultiMap<String,String> map = new MultiMap<String,String>();		
+		Set<String> keys = uses.keySet();
+		
+		for ( Map.Entry<String,Set<String>> entry : uses.entrySet()) {
+			Set<String> newSet = new HashSet<String>(entry.getValue());
+			newSet.retainAll(keys);
+			map.put(entry.getKey(), newSet);
+		}
+		
+		// Calculate strongly connected packages
+		Set<Set<String>> scc = Tarjan.tarjan(map);
+		
+		MultiMap<Set<String>,String> grouped = new MultiMap<Set<String>,String>();
+		for ( Set<String> group : scc) {
+			for ( String p : group ) {
+				grouped.addAll(group, uses.get(p));
+			}
+		}
+		return grouped;
+	}
 }
