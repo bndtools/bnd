@@ -1,6 +1,7 @@
 package bndtools.refactor;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -45,6 +46,7 @@ import org.eclipse.text.edits.TextEdit;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
+import bndtools.utils.FileUtils;
 import bndtools.utils.TextUtils;
 
 public class AdoptMavenPomProcessor extends RefactoringProcessor {
@@ -58,9 +60,6 @@ public class AdoptMavenPomProcessor extends RefactoringProcessor {
     private static final String PLUGINS_TAG_OPEN = "<plugins>";
     private static final String PLUGINS_TAG_CLOSE = "</plugins>";
     private static final String NEWLINE = "\n";
-
-    private static final String TEMPLATE_BND_BND = "-classpath: target/classes";
-
 
     private final IFile pomFile;
 
@@ -153,8 +152,15 @@ public class AdoptMavenPomProcessor extends RefactoringProcessor {
         // Create bnd.bnd
         IFile bndFile = pomFile.getProject().getFile(Project.BNDFILE);
         bndFile.refreshLocal(0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-        if (!bndFile.exists())
-            rootChange.add(new CreateTextFileChange(bndFile.getFullPath(), TEMPLATE_BND_BND, "UTF-8", "text"));
+        if (!bndFile.exists()) {
+            try {
+                InputStream templateBndStream = AdoptMavenPomProcessor.class.getResourceAsStream("maven-bnd.bnd");
+                String templateBnd = new String(FileUtils.readFully(templateBndStream), "UTF-8");
+                rootChange.add(new CreateTextFileChange(bndFile.getFullPath(), templateBnd, "UTF-8", "text"));
+            } catch (IOException e) {
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to read template bnd.bnd resource.", e));
+            }
+        }
 
         // Edit POM
         TextFileChange pomChange = new TextFileChange("Add OSGi build settings to POM", pomFile);

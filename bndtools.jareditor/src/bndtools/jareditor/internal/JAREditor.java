@@ -28,11 +28,13 @@ import bndtools.utils.SWTConcurrencyUtil;
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
     JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
+    JARPrintPage printPage = new JARPrintPage(this, "printPage", "Print");
 
     @Override
     protected void addPages() {
         try {
             addPage(contentPage);
+            addPage(printPage);
         } catch (PartInitException e) {
             e.printStackTrace();
         }
