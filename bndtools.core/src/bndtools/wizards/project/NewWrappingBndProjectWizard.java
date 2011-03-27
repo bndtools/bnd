@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.osgi.framework.Constants;
 
-import aQute.lib.osgi.Jar;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ExportedPackage;
@@ -36,7 +35,8 @@ import bndtools.wizards.bndfile.JarListWizardPage;
 
 class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
 
-    final JarListWizardPage classPathPage = new JarListWizardPage("classPathPage");
+    private final JarListWizardPage classPathPage = new JarListWizardPage("classPathPage");
+    private final PackageListWizardPage packageListPage = new PackageListWizardPage("packageListPage");
 
     NewWrappingBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
@@ -46,18 +46,30 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
         classPathPage.addPropertyChangeListener(JarListWizardPage.PROP_PATHS, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Collection<IPath> paths = classPathPage.getPaths();
+                packageListPage.setJarPaths(paths);
+
                 IPath firstPath = paths != null && !paths.isEmpty() ? paths.iterator().next() : null;
                 String name = firstPath != null ? firstPath.lastSegment() : "";
                 if(name.toLowerCase().endsWith(".jar"))
                     name = name.substring(0, name.length() - 4);
-                pageOne.setProjectName(name);
+
+                packageListPage.setProjectName(name);
             }
         });
+
+        packageListPage.addPropertyChangeListener("projectName", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                pageOne.setProjectName((String) evt.getNewValue());
+            }
+        });
+
+        setNeedsProgressMonitor(true);
     }
 
     @Override
     public void addPages() {
         addPage(classPathPage);
+        addPage(packageListPage);
         super.addPages();
     }
 
@@ -68,23 +80,16 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
         List<ExportedPackage> exports = new ArrayList<ExportedPackage>();
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
 
+        // Add JARs to project build path
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         Collection<IPath> paths = classPathPage.getPaths();
         if (paths != null && !paths.isEmpty()) {
             int workRemaining = paths.size();
-
             SubMonitor progress = SubMonitor.convert(monitor, workRemaining);
 
             for (IPath path : paths) {
                 File file = FileUtils.toFile(wsroot, path);
                 if (file != null && file.isFile() && file.getName().toLowerCase().endsWith(".jar")) {
-                    try {
-                        addExportsForJar(exports, file, progress.newChild(1));
-                        progress.worked(1);
-                    } catch (IOException e) {
-                        Plugin.logError("Error reading JAR: " + file.getAbsolutePath(), e);
-                    }
-
                     VersionedClause buildPathEntry = new VersionedClause("lib/" + file.getName(), new HashMap<String, String>());
                     buildPathEntry.setVersionRange("file");
                     buildPath.add(buildPathEntry);
@@ -93,38 +98,20 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
             }
         }
 
+        // Add package exports
+        List<IPath> selectedPackages = packageListPage.getSelectedPackages();
+        for (IPath pkg : selectedPackages) {
+            Map<String, String> props = new HashMap<String, String>();
+            props.put(Constants.VERSION_ATTRIBUTE, BndEditModel.BUNDLE_VERSION_MACRO);
+            ExportedPackage export = new ExportedPackage(pkg.toString().replace('/', '.'), props);
+
+            exports.add(export);
+        }
+
         model.setBuildPath(buildPath);
         model.setExportedPackages(exports);
 
         return model;
-    }
-
-    private void addExportsForJar(List<ExportedPackage> exports, File jarFile, IProgressMonitor monitor) throws IOException {
-        SubMonitor progress = SubMonitor.convert(monitor, 3);
-
-        Jar jar = null;
-        List<String> packages;
-        try {
-            jar = new Jar(jarFile);
-            packages = jar.getPackages();
-            progress.worked(2);
-        } finally {
-            if (jar != null) jar.close();
-        }
-
-        if(packages != null && !packages.isEmpty()) {
-            progress.setWorkRemaining(packages.size());
-            for (String packageName : packages) {
-                if (!"meta-inf".equalsIgnoreCase(packageName)) {
-                    Map<String, String> props = new HashMap<String, String>();
-                    props.put(Constants.VERSION_ATTRIBUTE, BndEditModel.BUNDLE_VERSION_MACRO);
-                    ExportedPackage export = new ExportedPackage(packageName, props);
-
-                    exports.add(export);
-                }
-                progress.worked(1);
-            }
-        }
     }
 
     @Override
@@ -140,6 +127,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
             IFolder libFolder = project.getFolder("lib");
             libFolder.create(false, true, progress.newChild(1));
 
+            // Copy JARs into project lib folder.
             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
             for (IPath path : paths) {
                 File file = FileUtils.toFile(wsroot, path);
