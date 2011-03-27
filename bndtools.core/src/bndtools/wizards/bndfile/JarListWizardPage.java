@@ -14,8 +14,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.jar.Manifest;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -24,6 +26,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,11 +55,13 @@ import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
+import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Jar;
 import bndtools.Plugin;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
 
-public class ClasspathEditorWizardPage extends WizardPage {
+public class JarListWizardPage extends WizardPage {
 
     public static final String PROP_PATHS = "paths";
 
@@ -68,7 +73,7 @@ public class ClasspathEditorWizardPage extends WizardPage {
 	private Button btnAddExternal;
 	private Button btnRemove;
 
-	public ClasspathEditorWizardPage(final String pageName) {
+	public JarListWizardPage(final String pageName) {
 		super(pageName);
 	}
 
@@ -220,6 +225,7 @@ public class ClasspathEditorWizardPage extends WizardPage {
 
 	    paths.addAll(added);
 	    propertySupport.firePropertyChange(PROP_PATHS, oldPaths, paths);
+	    checkExistingBundles();
     }
 
     private void removeFromPaths(List<IPath> removed) {
@@ -228,6 +234,7 @@ public class ClasspathEditorWizardPage extends WizardPage {
 
         paths.removeAll(removed);
         propertySupport.firePropertyChange(PROP_PATHS, oldPaths, paths);
+        checkExistingBundles();
     }
 
     @Override
@@ -239,6 +246,48 @@ public class ClasspathEditorWizardPage extends WizardPage {
 		btnRemove.setEnabled(!viewer.getSelection().isEmpty());
 		getContainer().updateButtons();
 		getContainer().updateMessage();
+	}
+
+    private void checkExistingBundles() {
+        List<IPath> alreadyBundles = new LinkedList<IPath>();
+        for (IPath path : paths) {
+            Jar jar = null;
+            try {
+                if (path.isAbsolute()) {
+                    jar = new Jar(path.toFile());
+                } else {
+                    path = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path);
+                    jar = new Jar(path.toFile());
+                }
+
+                Manifest manifest = jar.getManifest();
+                if (manifest != null) {
+                    String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+                    if (bsn != null) {
+                        alreadyBundles.add(path);
+                    }
+                }
+            } catch (Exception e) {
+                Plugin.logError("Error inspecting JAR file: " + path.toString(), e);
+            } finally {
+                if (jar != null)
+                    jar.close();
+            }
+        }
+
+        String warning = null;
+        if (!alreadyBundles.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("The following JAR files are already bundles: ");
+            for (Iterator<IPath> iterator = alreadyBundles.iterator(); iterator.hasNext();) {
+                IPath path = iterator.next();
+                builder.append(path.toString());
+                if (iterator.hasNext())
+                    builder.append("; ");
+            }
+            warning = builder.toString();
+        }
+        setMessage(warning, IMessageProvider.WARNING);
 	}
 
 	public Collection<IPath> getPaths() {

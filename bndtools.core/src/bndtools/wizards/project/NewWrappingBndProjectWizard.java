@@ -31,19 +31,19 @@ import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.FileUtils;
-import bndtools.wizards.bndfile.ClasspathEditorWizardPage;
+import bndtools.wizards.bndfile.JarListWizardPage;
 
 
 class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
 
-    final ClasspathEditorWizardPage classPathPage = new ClasspathEditorWizardPage("classPathPage");
+    final JarListWizardPage classPathPage = new JarListWizardPage("classPathPage");
 
     NewWrappingBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
 
         setWindowTitle("Wrap JAR as OSGi Bundle Project");
 
-        classPathPage.addPropertyChangeListener(ClasspathEditorWizardPage.PROP_PATHS, new PropertyChangeListener() {
+        classPathPage.addPropertyChangeListener(JarListWizardPage.PROP_PATHS, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Collection<IPath> paths = classPathPage.getPaths();
                 IPath firstPath = paths != null && !paths.isEmpty() ? paths.iterator().next() : null;
