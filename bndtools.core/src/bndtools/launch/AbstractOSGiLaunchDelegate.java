@@ -12,10 +12,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
@@ -24,12 +21,12 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Workspace;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.builder.BndBuildJob;
 import bndtools.builder.BndProjectNature;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
     protected void waitForBuilds(IProgressMonitor monitor) {
+        /*
         SubMonitor progress = SubMonitor.convert(monitor, "Waiting for background Bnd builds to complete...", 1);
         try {
             Job.getJobManager().join(BndBuildJob.class, progress.newChild(1));
@@ -38,6 +35,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         } catch (InterruptedException e) {
             // Ignore
         }
+        */
     }
     protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
         Project result;
