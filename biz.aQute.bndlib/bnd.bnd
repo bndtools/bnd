@@ -11,7 +11,14 @@ Bundle-Name: 					aQute Bundle Tool Library
 Bundle-Description:				A library for manipulating and generating bundles
 Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*, aQute.lib.*
-Export-Package:                 aQute.bnd.annotation.*, aQute.lib.osgi, aQute.bnd.build, aQute.bnd.service.*, aQute.libg.reporter, aQute.libg.version, aQute.libg.sed
+Export-Package: aQute.bnd.annotation.*,\
+	aQute.lib.osgi,\
+	aQute.bnd.build,\
+	aQute.bnd.service.*,\
+	aQute.libg.reporter;version=1.0,\
+	aQute.libg.version,\
+	aQute.libg.reporter,\
+	aQute.libg.sed
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
 Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
