@@ -10,6 +10,19 @@ import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
 
 public class Clazz {
+
+	public class ClassConstant {
+		int	cname;
+
+		public ClassConstant(int class_index) {
+			this.cname = class_index;
+		}
+
+		public String getName() {
+			return (String) pool[cname];
+		}
+	}
+
 	public static enum JAVA {
 		UNKNOWN(Integer.MAX_VALUE), OpenJDK7(51), J2S6(50), J2SE5(49), JDK1_4(48), JDK1_3(47), JDK1_2(
 				46), JDK1_1(45);
@@ -124,6 +137,7 @@ public class Clazz {
 		final public String	name;
 		final public String	descriptor;
 		public String		signature;
+		public Object		constant;
 
 		public boolean equals(Object other) {
 			if (!(other instanceof MethodDef))
@@ -155,9 +169,9 @@ public class Clazz {
 		public String toString() {
 			return getPretty();
 		}
-		
+
 		public boolean isEnum() {
-			return (access & ACC_ENUM ) != 0;
+			return (access & ACC_ENUM) != 0;
 		}
 	}
 
@@ -301,7 +315,7 @@ public class Clazz {
 
 	boolean				isAbstract;
 	boolean				isPublic;
-	boolean isEnum;
+	boolean				isEnum;
 	boolean				hasRuntimeAnnotations;
 	boolean				hasClassAnnotations;
 
@@ -588,14 +602,14 @@ public class Clazz {
 
 	private void constantFloat(DataInputStream in, int poolIndex) throws IOException {
 		if (cd != null)
-			pool[poolIndex] = in.readInt();
+			pool[poolIndex] = in.readFloat(); // ALU
 		else
 			in.skipBytes(4);
 	}
 
 	private void constantInteger(DataInputStream in, int poolIndex) throws IOException {
 		if (cd != null)
-			intPool[poolIndex] = in.readInt();
+			pool[poolIndex] = in.readInt();
 		else
 			in.skipBytes(4);
 	}
@@ -647,6 +661,8 @@ public class Clazz {
 		int class_index = in.readUnsignedShort();
 		classes.add(new Integer(class_index));
 		intPool[poolIndex] = class_index;
+		ClassConstant c = new ClassConstant(class_index);
+		pool[poolIndex] = c;
 	}
 
 	/**
@@ -768,6 +784,8 @@ public class Clazz {
 			doCode(in);
 		else if ("Signature".equals(attributeName))
 			doSignature(in, member);
+		else if ("ConstantValue".equals(attributeName))
+			doConstantValue(in);
 		else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
@@ -890,6 +908,22 @@ public class Clazz {
 
 		if (cd != null)
 			cd.signature(signature);
+	}
+
+	/**
+	 * Handle a constant value call the data collector with it
+	 */
+	void doConstantValue(DataInputStream in) throws IOException {
+		int constantValue_index = in.readUnsignedShort();
+		if (cd == null)
+			return;
+
+		Object object = pool[constantValue_index];
+		if (object == null)
+			object = pool[intPool[constantValue_index]];
+
+		last.constant = object;
+		cd.constant(object);
 	}
 
 	/**
@@ -1562,7 +1596,7 @@ public class Clazz {
 				i--;
 			}
 		}
-		if ( id.startsWith("."))
+		if (id.startsWith("."))
 			out.append(" *");
 		out.replace(0, 1, Character.toUpperCase(out.charAt(0)) + "");
 		return out.toString();

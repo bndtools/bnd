@@ -7,9 +7,25 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
+
+class ConstantValues {
+	public static final boolean	f		= false;
+	public static final boolean	t		= true;
+	public static final byte	bt		= Byte.MAX_VALUE;
+	public static final short	shrt	= Short.MAX_VALUE;
+	public static final char	chr		= Character.MAX_VALUE;
+	public static final int		intgr	= Integer.MAX_VALUE;
+	public static final long	lng		= Long.MAX_VALUE;
+	public static final float	flt		= Float.MAX_VALUE;
+	public static final double	dbl		= Double.MAX_VALUE;
+	public static final String	strng	= "blabla";
+	// Classes somehow are not treated as constants
+//	public static final Class			clss	= Object.class;
+}
 
 interface WithGenerics<VERYLONGTYPE, X extends Jar> {
 	List<? super VERYLONGTYPE> baz2();
@@ -54,6 +70,45 @@ class Implemented implements Plugin {
 }
 
 public class ClassParserTest extends TestCase {
+
+	/**
+	 * Test the constant values
+	 * 
+	 * @throws Exception
+	 */
+
+
+	public void testConstantValues() throws Exception {
+		final Map<String, Object> values = new HashMap<String, Object>();
+		Clazz c = new Clazz("ConstantValues", new FileResource(IO.getFile(
+				new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
+		c.parseClassFileWithCollector(new ClassDataCollector() {
+			Clazz.FieldDef	last;
+
+			@Override public void field(Clazz.FieldDef referenced) {
+				last = referenced;
+			}
+
+			@Override public void constant(Object value) {
+				values.put(last.name, value);
+			}
+
+		});
+
+		assertEquals(1, values.get("t"));
+		assertEquals(0, values.get("f"));
+		assertEquals((int) Byte.MAX_VALUE, values.get("bt"));
+		assertEquals((int) Short.MAX_VALUE, values.get("shrt"));
+		assertEquals((int) Character.MAX_VALUE, values.get("chr"));
+		assertEquals(Integer.MAX_VALUE, values.get("intgr"));
+		assertEquals(Long.MAX_VALUE, values.get("lng"));
+		assertEquals(Float.MAX_VALUE, values.get("flt"));
+		assertEquals(Double.MAX_VALUE, values.get("dbl"));
+		assertEquals("blabla", values.get("strng"));
+
+//		Classes are special
+//		assertEquals("java.lang.Object", ((Clazz.ClassConstant) values.get("clss")).getName());
+	}
 
 	public void testGeneric() throws Exception {
 		print(System.out, WithGenerics.class.getField("field").getGenericType());
@@ -224,8 +279,7 @@ public class ClassParserTest extends TestCase {
 		clazz.parseClassFile(in);
 
 		System.out.println(clazz.getReferred());
-		clazz
-				.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;");
+		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;");
 		assertTrue(clazz.getReferred().contains("com.linkedin.member2.pub.profile.core.view"));
 	}
 

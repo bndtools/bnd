@@ -82,4 +82,7 @@ public class ClassDataCollector {
 	public void signature(String signature) {
 	}
 
+	public void constant(Object object) {
+	}
+
 }
