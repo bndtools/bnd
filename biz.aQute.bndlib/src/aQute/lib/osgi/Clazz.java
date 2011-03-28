@@ -2,7 +2,6 @@ package aQute.lib.osgi;
 
 import java.io.*;
 import java.lang.annotation.*;
-import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
 import java.util.regex.*;

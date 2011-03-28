@@ -294,5 +294,10 @@ public abstract class ProjectLauncher {
 		for (Container c : deflts)
 			addClasspath(c);
 	}
+	
+	/**
+	 * Create a self executable.
+	 */
 
+	public Jar executable() throws Exception { throw new UnsupportedOperationException(); }
 }

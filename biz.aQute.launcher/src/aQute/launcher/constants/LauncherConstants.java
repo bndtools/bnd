@@ -23,7 +23,6 @@ public class LauncherConstants {
 	// Start custom errors from here
 	public final static int		CUSTOM_LAUNCHER			= -128;
 
-	
 	// Local names
 	final static String			LAUNCH_SERVICES			= "launch.services";
 	final static String			LAUNCH_STORAGE_DIR		= "launch.storage.dir";
@@ -41,7 +40,6 @@ public class LauncherConstants {
 	 * service under its impl. class with this property set to a String[].
 	 */
 
-
 	public boolean				services;
 	public File					storageDir				= new File("");
 	public boolean				keep;
@@ -54,6 +52,7 @@ public class LauncherConstants {
 
 	/**
 	 * Translate a constants to properties.
+	 * 
 	 * @return
 	 */
 	public Properties getProperties() {
@@ -62,18 +61,18 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
 		p.setProperty(LAUNCH_KEEP, keep + "");
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
-		if ( systemPackages != null)
-			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages+"");
+		if (systemPackages != null)
+			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages + "");
 		p.setProperty(LAUNCH_TRACE, trace + "");
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
 
-		for ( Map.Entry<String, String> entry : runProperties.entrySet()) {
-			if ( entry.getValue() == null)
+		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
+			if (entry.getValue() == null)
 				p.remove(entry.getKey());
 			else
 				p.put(entry.getKey(), entry.getValue());
-			
+
 		}
 		return p;
 	}
@@ -81,9 +80,10 @@ public class LauncherConstants {
 	/**
 	 * Empty constructor for the plugin
 	 */
-	
+
 	public LauncherConstants() {
 	}
+
 	/**
 	 * Create a constants from properties.
 	 * 
@@ -98,10 +98,9 @@ public class LauncherConstants {
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
 		activators.addAll(split(p.getProperty(LAUNCH_ACTIVATORS), " ,"));
-		Map<String,String> map =(Map) p;
+		Map<String, String> map = (Map) p;
 		runProperties.putAll(map);
 	}
-
 
 	private Collection<? extends String> split(String property, String string) {
 		List<String> result = new ArrayList<String>();

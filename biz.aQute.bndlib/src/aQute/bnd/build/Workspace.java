@@ -248,4 +248,9 @@ public class Workspace extends Processor {
 	public List<RepositoryPlugin> getRepositories() {
 		return getPlugins(RepositoryPlugin.class);
 	}
+
+	public static Workspace getWorkspace(String path) throws Exception {
+		File file = IO.getFile( new File(""), path);
+		return getWorkspace(file);
+	}
 }
