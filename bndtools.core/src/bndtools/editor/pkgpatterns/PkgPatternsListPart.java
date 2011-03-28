@@ -106,7 +106,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         removeItem.setToolTipText("Remove");
         removeItem.setEnabled(false);
 
-		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
+		Table table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 		viewer = new TableViewer(table);
 		viewer.setUseHashlookup(false);
 		viewer.setContentProvider(new ArrayContentProvider());

@@ -101,7 +101,8 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 
-		table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION);
+		table = toolkit.createTable(composite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
+
 		viewer = new TableViewer(table);
 		viewer.setUseHashlookup(true);
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -109,6 +110,8 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 
 		final Button btnAdd = toolkit.createButton(composite, Messages.ComponentListPart_addButton, SWT.PUSH);
 		final Button btnRemove = toolkit.createButton(composite, Messages.ComponentListPart_RemoveButton, SWT.PUSH);
+
+		toolkit.paintBordersFor(section);
 
 		// Listeners
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {

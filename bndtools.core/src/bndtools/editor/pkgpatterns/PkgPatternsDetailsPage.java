@@ -83,7 +83,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		mainSection.setClient(mainComposite);
 
 		toolkit.createLabel(mainComposite, "Pattern:");
-		txtName = toolkit.createText(mainComposite, "");
+		txtName = toolkit.createText(mainComposite, "", SWT.BORDER);
 		ControlDecoration decPattern = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, mainComposite);
 		decPattern.setImage(assistDecor.getImage());
 		decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
@@ -108,7 +108,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		});
 
 		toolkit.createLabel(mainComposite, "Version:");
-		txtVersion = toolkit.createText(mainComposite, "");
+		txtVersion = toolkit.createText(mainComposite, "", SWT.BORDER);
 
 		/*
 		Section attribsSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);

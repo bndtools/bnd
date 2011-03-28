@@ -549,7 +549,8 @@
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
          priority="-2147483648"
-         class="bndtools.api.EmptyTemplate" />
+         class="bndtools.api.EmptyTemplate"
+         docHtml="html/emptyTemplate.html"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">

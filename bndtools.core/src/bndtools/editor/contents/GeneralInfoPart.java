@@ -129,13 +129,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		section.setClient(composite);
 
 		toolkit.createLabel(composite, "Symbolic Name:");
-		txtBSN = toolkit.createText(composite, "");
+		txtBSN = toolkit.createText(composite, "", SWT.BORDER);
 
 		toolkit.createLabel(composite, "Version:");
-		txtVersion = toolkit.createText(composite, "");
+		txtVersion = toolkit.createText(composite, "", SWT.BORDER);
 
 		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
-		txtActivator = toolkit.createText(composite, "");
+		txtActivator = toolkit.createText(composite, "", SWT.BORDER);
 
 		// Content Proposal for the Activator field
 		ContentProposalAdapter activatorProposalAdapter = null;

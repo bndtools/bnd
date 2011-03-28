@@ -96,7 +96,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
-        Table table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+        Table table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 
         viewer = new TableViewer(table);
         viewer.setContentProvider(new ArrayContentProvider());

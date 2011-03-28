@@ -103,7 +103,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 
-		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI);
+		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());

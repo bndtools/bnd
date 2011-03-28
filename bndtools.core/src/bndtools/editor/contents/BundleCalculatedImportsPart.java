@@ -93,7 +93,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
 //        toolkit.createLabel(composite, Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
 
-        tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION);
+        tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new ImportTreeContentProvider());
