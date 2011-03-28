@@ -32,6 +32,7 @@ import aQute.lib.collections.*;
 import aQute.lib.osgi.Clazz.QUERY;
 import aQute.libg.generics.*;
 import aQute.libg.tarjan.*;
+import aQute.libg.version.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
@@ -572,12 +573,12 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Get the version from the manifest, a lot of work!
+	 * Get the version for this bnd
 	 * 
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
-		return getBndInfo("version", "<unknown version>");
+		return getBndInfo("version", "1.42.1");
 	}
 
 	public long getBndLastModified() {
@@ -700,6 +701,8 @@ public class Analyzer extends Processor {
 
 			updateModified(getBndLastModified(), "bnd last modified");
 			verifyManifestHeadersCase(getProperties());
+
+
 		}
 	}
 
@@ -2072,29 +2075,52 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calculate the groups inside the bundle. A group consists of packages
-	 * that have a reference to each other.
+	 * Calculate the groups inside the bundle. A group consists of packages that
+	 * have a reference to each other.
 	 */
-	
-	public MultiMap<Set<String>, String>	getGroups() {
-		MultiMap<String,String> map = new MultiMap<String,String>();		
+
+	public MultiMap<Set<String>, String> getGroups() {
+		MultiMap<String, String> map = new MultiMap<String, String>();
 		Set<String> keys = uses.keySet();
-		
-		for ( Map.Entry<String,Set<String>> entry : uses.entrySet()) {
+
+		for (Map.Entry<String, Set<String>> entry : uses.entrySet()) {
 			Set<String> newSet = new HashSet<String>(entry.getValue());
 			newSet.retainAll(keys);
 			map.put(entry.getKey(), newSet);
 		}
-		
+
 		// Calculate strongly connected packages
 		Set<Set<String>> scc = Tarjan.tarjan(map);
-		
-		MultiMap<Set<String>,String> grouped = new MultiMap<Set<String>,String>();
-		for ( Set<String> group : scc) {
-			for ( String p : group ) {
+
+		MultiMap<Set<String>, String> grouped = new MultiMap<Set<String>, String>();
+		for (Set<String> group : scc) {
+			for (String p : group) {
 				grouped.addAll(group, uses.get(p));
 			}
 		}
 		return grouped;
 	}
+	
+	
+	/**
+	 * Ensure that we are running on the correct bnd.
+	 */
+	void doRequireBnd() {
+		String require = getProperty(REQUIRE_BND);
+		if (require != null)
+			try {
+				VersionRange range = new VersionRange(require);
+				String bndVersion = getBndVersion();
+				if (bndVersion != null) {
+					Version v = new Version(bndVersion);
+					if (!range.includes(v))
+						error("%s requires version %s but this bnd is actually version %s", this,
+								range, bndVersion);
+				}
+			} catch (Exception e) {
+				error("Do not understand format of %s, it is %s, gave error: %s", REQUIRE_BND,
+						require, e);
+			}
+	}
+
 }

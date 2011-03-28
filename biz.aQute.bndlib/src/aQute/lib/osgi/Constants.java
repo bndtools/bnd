@@ -119,6 +119,7 @@ public interface Constants {
 	@Deprecated String		VERSIONPOLICY								= "-versionpolicy";
 	String					WAB											= "-wab";
 	String					WABLIB										= "-wablib";
+	String					REQUIRE_BND									= "-require-bnd";
 
 	// Deprecated
 	String					CLASSPATH									= "-classpath";

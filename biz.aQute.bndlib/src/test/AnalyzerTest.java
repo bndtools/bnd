@@ -19,6 +19,25 @@ class T3 extends T2 {
 
 public class AnalyzerTest extends TestCase {
 
+	/**
+	 * Test if require works
+	 * @throws Exception
+	 */
+	
+	public void testRequire() throws Exception {
+    	Builder b = new Builder();
+    	b.addClasspath( new File("jar/osgi.jar"));
+    	b.setProperty("Private-Package", "org.osgi.framework");
+    	b.setProperty("-require-bnd", "10000");
+    	b.build();
+    	System.out.println( b.getErrors());
+    	System.out.println( b.getWarnings());
+    	assertEquals(1, b.getErrors().size());
+    	assertEquals(0, b.getWarnings().size());
+    	
+	}
+	
+	
     public void testComponentImportReference() throws Exception {
     	Builder b = new Builder();
     	b.addClasspath( new File("jar/osgi.jar"));

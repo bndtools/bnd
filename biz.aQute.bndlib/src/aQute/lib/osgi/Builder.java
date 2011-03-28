@@ -113,12 +113,13 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Allow any local initialization by subclasses before we build. Default is
-	 * do nothing.
+	 * Allow any local initialization by subclasses before we build.
 	 */
 	public void init() throws Exception {
 		begin();
+		doRequireBnd();
 	}
+
 
 	/**
 	 * Turn this normal bundle in a web and add any resources.
