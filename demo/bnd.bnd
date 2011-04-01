@@ -1,4 +1,3 @@
--buildpath: osgi.core
 Private-Package: com.example.demo
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
@@ -24,3 +23,8 @@ Private-Package: test
 Import-Package: \
 	junit.framework;resolution:=optional,\
 	*
+
+-buildpath: osgi.core,\
+	ee.minimum;version=1.2.1,\
+	junit.osgi
+	
