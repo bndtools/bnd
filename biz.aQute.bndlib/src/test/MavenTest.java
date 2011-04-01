@@ -10,6 +10,28 @@ import aQute.libg.version.*;
 
 public class MavenTest extends TestCase {
 	Processor	processor	= new Processor();
+	
+	
+	
+	
+	
+	/**
+	 * Test the maven repositories.
+	 * @throws Exception 
+	 */
+	
+	public void testMavenRepo() throws Exception {
+		Maven maven = new Maven();
+		Pom pom = maven.getPom("dom4j", "dom4j", "1.6.1");
+		System.out.println( pom.getGroupId() + " = "  + pom.getArtifactId() + "-" + pom.getVersion());
+		
+		System.out.println( pom.getDependencies(Pom.Scope.compile));
+		
+		File artifact = pom.getArtifact();
+		System.out.println(artifact);
+	}
+	
+	
 
 	/**
 	 * Test the pom parser which will turn the pom into a set of properties,

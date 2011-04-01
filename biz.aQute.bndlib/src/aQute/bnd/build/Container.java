@@ -8,7 +8,7 @@ import aQute.lib.osgi.*;
 
 public class Container {
 	public enum TYPE {
-		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
+		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR, MAVEN
 	}
 
 	final File					file;
@@ -145,9 +145,7 @@ public class Container {
 		List<Container> result = project.newList();
 
 		// Are ww a library? If no, we are the result
-		if (getType() != TYPE.LIBRARY)
-			result.add(this);
-		else {
+		if (getType() == TYPE.LIBRARY) {
 			// We are a library, parse the file. This is
 			// basically a specification clause per line.
 			// I.e. you can do bsn; version, bsn2; version. But also
@@ -166,7 +164,11 @@ public class Container {
 			} finally {
 				in.close();
 			}
-		}
+		} else if ( getType()== TYPE.MAVEN ) {
+			
+		} else
+			result.add(this);
+
 		return result;
 	}
 

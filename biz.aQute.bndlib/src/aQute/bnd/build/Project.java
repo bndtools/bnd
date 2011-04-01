@@ -42,7 +42,6 @@ public class Project extends Processor {
 	final Lock					lock					= new ReentrantLock(true);
 	volatile String				lockingReason;
 	volatile Thread				lockingThread;
-
 	File						output;
 	File						target;
 	boolean						inPrepare;
@@ -687,6 +686,11 @@ public class Project extends Processor {
 		if (range != null && range.equals("latest"))
 			useStrategy = STRATEGY_HIGHEST;
 
+//		if ( bsn.indexOf('+')>0) {
+//			return getMavenContainer(bsn,range,useStrategy,attrs);
+//		}
+		
+		
 		// Maybe we want an exact match this time.
 		// In that case we limit the range to be exactly
 		// the version specified. We ignore it when a range
@@ -1558,4 +1562,31 @@ public class Project extends Processor {
 	public void setDelayRunDependencies(boolean x) {
 		delayRunDependencies = x;
 	}
+
+//	public Container getMavenContainer(String bsn, String version, int useStrategy,
+//			Map<String, String> attrs) throws Exception {
+//		String[] parts = bsn.split("+");
+//		if (parts.length != 2)
+//			return null;
+//
+//		String groupId = parts[0];
+//		String artifactId = parts[1];
+//
+//		if (version != null) {
+//			error("Maven dependency version not set for %s - %s", groupId, artifactId);
+//			return null;
+//		}
+//		if (!Verifier.VERSION.matcher(version).matches()) {
+//			error(
+//					"Invalid version %s for maven dependency %s - %s. For maven, ranges are not allowed",
+//					version, groupId, artifactId);
+//			return null;
+//		}
+//
+//		Pom pom = workspace.getMaven().getPom(groupId, artifactId, version);
+//		
+//		List<Pom> dependencies = pom.getDependencies( useStrategy == STRATEGY_HIGHEST ? Pom.Scope.runtime : Pom.Scope.compile);
+//		
+//		
+//	}
 }

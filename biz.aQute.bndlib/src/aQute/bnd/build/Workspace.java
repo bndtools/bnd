@@ -9,6 +9,7 @@ import java.util.jar.*;
 
 import javax.naming.*;
 
+import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
@@ -26,6 +27,7 @@ public class Workspace extends Processor {
 	final Map<String, Action>					commands	= newMap();
 	final CachedFileRepo						cachedRepo;
 	final File									buildDir;
+	final Maven									maven		= new Maven();
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -53,9 +55,9 @@ public class Workspace extends Processor {
 			if (!test.exists())
 				test = new File(workspaceDir, BNDDIR);
 
-			if ( test.isDirectory())
+			if (test.isDirectory())
 				break;
-			
+
 			if (test.isFile()) {
 				String redirect = IO.collect(test).trim();
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
@@ -64,7 +66,6 @@ public class Workspace extends Processor {
 			if (!test.exists())
 				throw new IllegalArgumentException("No Workspace found from: " + parent);
 		}
-
 
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
@@ -250,7 +251,12 @@ public class Workspace extends Processor {
 	}
 
 	public static Workspace getWorkspace(String path) throws Exception {
-		File file = IO.getFile( new File(""), path);
+		File file = IO.getFile(new File(""), path);
 		return getWorkspace(file);
 	}
+
+	public Maven getMaven() {
+		return maven;
+	}
+
 }

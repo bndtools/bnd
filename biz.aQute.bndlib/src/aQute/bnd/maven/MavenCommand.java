@@ -148,7 +148,7 @@ public class MavenCommand extends Processor {
 		
 		try {
 			Manifest manifest = jar.getManifest();
-			Pom pom = new Pom(manifest);
+			PomFromManifest pom = new PomFromManifest(manifest);
 			if (scm != null)
 				pom.setSCM(scm);
 			
