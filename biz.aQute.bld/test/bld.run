@@ -1,0 +1,5 @@
+-repo : ../cnf/repo
+-runbundles: \
+	org.apache.felix.gogo.console, \
+	org.apache.felix.gogo.runtime, \
+	org.apache.felix.gogo.commands
