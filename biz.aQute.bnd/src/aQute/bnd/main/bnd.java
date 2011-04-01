@@ -164,7 +164,8 @@ public class bnd extends Processor {
 	}
 
 	boolean doCommand(String args[], int i) throws Exception {
-		trace("command %s", args[i]);
+		String cmd = args[i];
+		trace("command %s", cmd);
 		if ("wrap".equals(args[i])) {
 			doWrap(args, ++i);
 		} else if ("maven".equals(args[i])) {
@@ -213,9 +214,14 @@ public class bnd extends Processor {
 			doHelp(args, ++i);
 		} else if ("macro".equals(args[i])) {
 			doMacro(args, ++i);
-		} else
+		} else if ("merge".equals(args[i])) {
+			doMerge(args, ++i);
+		} else {
+			trace("command %s not found", cmd);
 			return false;
+		}
 
+		trace("command %s executed", cmd);
 		return true;
 	}
 
@@ -223,8 +229,8 @@ public class bnd extends Processor {
 		while (i < args.length) {
 			String path = args[i];
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-				doBuild(getFile(path), new File[0], new File[0], null, "",
-						new File(path).getParentFile(), 0, new HashSet<File>());
+				doBuild(getFile(path), new File[0], new File[0], null, "", new File(path)
+						.getParentFile(), 0, new HashSet<File>());
 			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
 				doPrint(path, -1);
@@ -284,7 +290,8 @@ public class bnd extends Processor {
 			else if (mask.equalsIgnoreCase("micro"))
 				mask = "==+";
 			else if (!mask.matches("(+=0){1,3}")) {
-				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
+				error(
+						"Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
 						mask);
 				return;
 			}
@@ -447,8 +454,8 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
-					v.getMinor(), v.getMicro(), c.getFile());
+			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(), v
+					.getMinor(), v.getMicro(), c.getFile());
 		}
 
 	}
@@ -671,7 +678,7 @@ public class bnd extends Processor {
 			output.getParentFile().mkdirs();
 
 			if ((options & BUILD_POM) != 0) {
-				Resource r = new Pom(jar.getManifest());
+				Resource r = new PomFromManifest(jar.getManifest());
 				jar.putResource("pom.xml", r);
 				String path = output.getName().replaceAll("\\.jar$", ".pom");
 				if (path.equals(output.getName()))
@@ -771,7 +778,8 @@ public class bnd extends Processor {
 
 	private void doHelp(String[] args, int i) {
 		if (args.length <= i) {
-			out.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
+			out
+					.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
 			out.println("See http://www.aQute.biz/Code/Bnd");
 		} else {
 			while (args.length > i) {
@@ -780,7 +788,8 @@ public class bnd extends Processor {
 				} else if ("print".equals(args[i])) {
 					out.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
 				} else if ("build".equals(args[i])) {
-					out.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
+					out
+							.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
 					out.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
 				} else if ("eclipse".equals(args[i])) {
 					out.println("bnd eclipse");
@@ -1607,7 +1616,8 @@ public class bnd extends Processor {
 					error("-bsn and -version must be set before spring command is used");
 				} else {
 					String url = String
-							.format("http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
+							.format(
+									"http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
 									bsn, version);
 					repoPut(writable, p, url, bsn, version);
 				}
@@ -1871,8 +1881,8 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
-				testFile.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile
+				.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
 		ProjectTester tester = project.getProjectTester();
@@ -2105,9 +2115,9 @@ public class bnd extends Processor {
 		for (File file : files) {
 			Jar jar = new Jar(file);
 			try {
-				System.out.printf("%40s-%-10s",
-						jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar
-								.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
+				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(
+						BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(
+						BUNDLE_VERSION));
 				libsync.submit(jar);
 				getInfo(libsync);
 				System.out.printf("     ok\n");
@@ -2156,6 +2166,80 @@ public class bnd extends Processor {
 					i += 2;
 				}
 			}
+		}
+	}
+
+	/**
+	 * Merge a bundle with its source.
+	 * 
+	 * @throws Exception
+	 */
+
+	public void doMerge(String args[], int i) throws Exception {
+		File out = null;
+		String prefix = "";
+		boolean maven;
+
+		List<Jar> sourcePath = new ArrayList<Jar>();
+		while (i < args.length - 1) {
+			String arg = args[i++];
+			if (arg.equals("-o")) {
+				out = getFile(arg);
+			} else if (arg.equals("-maven")) {
+				maven = true;
+			} else {
+				File source = getFile(arg);
+				if (source.exists()) {
+					Jar jar = new Jar(source);
+					addClose(jar);
+					sourcePath.add(jar);
+				} else {
+					error("Sourec file/dir does not exist");
+				}
+			}
+		}
+		if (i >= args.length) {
+			error("No binary file specified");
+			return;
+		}
+
+		File binary = getFile(args[i]);
+		Jar output = new Jar(binary);
+		try {
+			Analyzer analyzer = new Analyzer();
+			analyzer.setJar(output);
+			analyzer.analyze();
+
+			outer: for (Clazz clazz : analyzer.getClassspace().values()) {
+				String sourcename = clazz.getSourceFile();
+				String path = clazz.getPath();
+				int n = path.lastIndexOf('/');
+				if ( n >= 0) {
+					path = path.substring(0,n+1);
+				} else
+					path = "";
+
+				String cname = path + sourcename;
+				for (Jar source : sourcePath) {
+					Resource r = source.getResource(cname);
+					if (r != null) {
+						output.putResource("OSGI-OPT/src/" + cname, r);
+						continue outer;
+					}
+				}
+				error("Source not found %s", cname);
+			}
+
+			if (out == null) {
+				File backup = new File(binary.getAbsolutePath() + ".bak");
+				binary.renameTo(backup);
+				out = binary;
+			}
+			output.write(out);
+		} finally {
+			output.close();
+			for ( Jar jar : sourcePath )
+				jar.close();
 		}
 	}
 
