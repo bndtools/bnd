@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
+import java.util.regex.*;
 
 import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
@@ -45,7 +46,6 @@ public class Processor implements Reporter, Constants, Closeable {
 	HashSet<String>			missingCommand;
 	List<Object>			basicPlugins	= new ArrayList<Object>();
 
-	
 	public Processor() {
 		properties = new Properties();
 	}
@@ -502,8 +502,7 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public void doIncludeFile(File file, boolean overwrite, Properties target)
-			throws Exception {
+	public void doIncludeFile(File file, boolean overwrite, Properties target) throws Exception {
 		if (included != null && included.contains(file)) {
 			error("Cyclic or multiple include of " + file);
 		} else {
@@ -513,7 +512,7 @@ public class Processor implements Reporter, Constants, Closeable {
 			Properties sub;
 			if (file.getName().toLowerCase().endsWith(".mf")) {
 				sub = getManifestAsProperties(in);
-			} else if ( file.getName().endsWith(".xml"))
+			} else if (file.getName().endsWith(".xml"))
 				sub = parseXml(file);
 			else
 				sub = loadProperties(in, file.getAbsolutePath());
@@ -1271,9 +1270,30 @@ public class Processor implements Reporter, Constants, Closeable {
 	}
 
 	public static Executor getExecutor() {
-		if ( executor == null) 
+		if (executor == null)
 			executor = Executors.newCachedThreadPool();
 		return executor;
 	}
-	
+
+	public static long getDuration(String tm, long dflt) {
+		if (tm == null)
+			return dflt;
+
+		tm = tm.toUpperCase();
+		TimeUnit unit = TimeUnit.MILLISECONDS;
+		Matcher m = Pattern
+				.compile(
+						"\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?")
+				.matcher(tm);
+		if (m.matches()) {
+			long duration = Long.parseLong(tm);
+			String u = m.group(2);
+			if (u != null)
+				unit = TimeUnit.valueOf(u);
+			duration = TimeUnit.MILLISECONDS.convert(duration, unit);
+			return duration;
+		}
+		return dflt;
+	}
+
 }

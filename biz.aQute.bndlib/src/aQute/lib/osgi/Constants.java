@@ -103,6 +103,7 @@ public interface Constants {
 	String					RUNVM										= "-runvm";
 	String					RUNTRACE									= "-runtrace";
 	String					RUNFRAMEWORK								= "-runframework";
+	String					RUNTIMEOUT									= "-runtimeout";
 	String					RUNFRAMEWORK_SERVICES						= "services";
 	String					RUNFRAMEWORK_NONE							= "none";
 	String					REPORTNEWER									= "-reportnewer";

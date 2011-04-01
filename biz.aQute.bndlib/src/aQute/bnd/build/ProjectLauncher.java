@@ -20,7 +20,7 @@ import aQute.libg.generics.*;
  */
 public abstract class ProjectLauncher {
 	private final Project						project;
-	private long								timeout				= 60 * 60 * 1000;
+	private long								timeout				= 0;
 	private final Collection<String>			classpath			= new ArrayList<String>();
 	private List<String>						runbundles			= Create.list();
 	private final List<String>					runvm				= new ArrayList<String>();
@@ -75,6 +75,9 @@ public abstract class ProjectLauncher {
 		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
+		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+		
+		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT),0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
 		// For backward compatibility with bndtools launcher

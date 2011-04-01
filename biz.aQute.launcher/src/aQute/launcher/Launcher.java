@@ -359,6 +359,8 @@ public class Launcher implements ServiceListener {
 					}
 				} catch (InterruptedException e) {
 					System.exit(CANCELED);
+				} finally {
+					System.err.println("System exiting due to timeout of " + parms.timeout);
 				}
 			}
 		};
