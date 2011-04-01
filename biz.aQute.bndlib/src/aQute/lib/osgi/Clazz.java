@@ -608,10 +608,9 @@ public class Clazz {
 	}
 
 	private void constantInteger(DataInputStream in, int poolIndex) throws IOException {
+		intPool[poolIndex] = in.readInt();
 		if (cd != null)
-			pool[poolIndex] = in.readInt();
-		else
-			in.skipBytes(4);
+			pool[poolIndex] = intPool[poolIndex];
 	}
 
 	protected void pool(Object[] pool, int[] intPool) {
@@ -1134,7 +1133,7 @@ public class Clazz {
 
 		case 'Z': // Boolean
 			const_value_index = in.readUnsignedShort();
-			return intPool[const_value_index] == 0 ? false : true;
+			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false : true;
 
 		case 'e': // enum constant
 			int type_name_index = in.readUnsignedShort();
