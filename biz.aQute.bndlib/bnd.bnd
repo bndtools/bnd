@@ -17,7 +17,6 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.service.*,\
 	aQute.libg.reporter;version=1.0,\
 	aQute.libg.version,\
-	aQute.libg.reporter,\
 	aQute.libg.sed
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
 Include-Resource: 				LICENSE
