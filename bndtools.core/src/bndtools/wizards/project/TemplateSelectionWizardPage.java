@@ -173,24 +173,28 @@ public class TemplateSelectionWizardPage extends WizardPage {
     }
 
     private void showTemplateDescription(IConfigurationElement element) {
-        try {
-            programmaticBrowserChange = true;
-            boolean found = false;
+        String browserText = "";
+        if (element != null) {
+            browserText = "No description available.";
             String htmlAttr = element.getAttribute("docHtml");
             if (htmlAttr != null) {
                 String bsn = element.getContributor().getName();
                 Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
                 if (bundle != null) {
                     URL htmlUrl = bundle.getResource(htmlAttr);
+                    try {
                         byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-                        browser.setText(new String(bytes));
-                        found = true;
+                        browserText = new String(bytes);
+                    } catch (IOException e) {
+                        Plugin.logError("Error reading project template description HTML.", e);
+                    }
                 }
             }
-            if (!found)
-                browser.setText("No description available.");
-        } catch (IOException e) {
-            Plugin.logError("Error reading project template description HTML.", e);
+        }
+
+        try {
+            programmaticBrowserChange = true;
+            browser.setText(browserText);
         } finally {
             programmaticBrowserChange = false;
         }

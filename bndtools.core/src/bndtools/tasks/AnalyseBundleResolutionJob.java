@@ -81,6 +81,7 @@ public class AnalyseBundleResolutionJob extends Job {
     				} else {
     					builder = setupBuilderForJarFile(inputFile);
     				}
+    				if (builder == null) continue;
     				builderMap.put(inputFile, builder);
     				mergeCapabilities(exports, usedBy, bundleVersions, builder);
     			} catch (CoreException e) {
@@ -151,6 +152,7 @@ public class AnalyseBundleResolutionJob extends Job {
 		// Calculate the manifest
 		try {
 			Project bndProject = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
+			if (bndProject == null) return null;
 			Builder builder;
 			if(file.getName().equals(Project.BNDFILE)) {
 			    builder = bndProject.getSubBuilders().iterator().next();

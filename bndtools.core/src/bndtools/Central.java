@@ -48,8 +48,9 @@ public class Central {
                 try {
                     model = Workspace.getProject(projectDir);
                 } catch (IllegalArgumentException e) {
-                    initialiseWorkspace();
-                    model = Workspace.getProject(projectDir);
+//                    initialiseWorkspace();
+//                    model = Workspace.getProject(projectDir);
+                    return null;
                 }
                 if (workspace == null) {
                     model.getWorkspace();
@@ -160,10 +161,12 @@ public class Central {
         try {
             workspace = Workspace.getWorkspace(wsdir);
         } catch (IllegalArgumentException e) {
-            // Ensure the workspace is configured
-            initialiseWorkspace();
-            // Retry
-            workspace = Workspace.getWorkspace(wsdir);
+            return null;
+
+            // // Ensure the workspace is configured
+            // initialiseWorkspace();
+            // // Retry
+            // workspace = Workspace.getWorkspace(wsdir);
         }
         workspace.addBasicPlugin(new FilesystemUpdateListener());
 

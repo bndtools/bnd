@@ -92,6 +92,7 @@ public class CnfSetupWizard extends Wizard {
 		}
 
 		if (confirmation.getDecision() == Decision.SKIP) {
+		    /*
 			try {
 				getContainer().run(false, false, new CnfSetupTask(true));
 				return true;
@@ -101,6 +102,8 @@ public class CnfSetupWizard extends Wizard {
 			} catch (InterruptedException e) {
 				// ignore
 			}
+			*/
+		    return true;
 		}
 
 		try {

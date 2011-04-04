@@ -13,6 +13,7 @@ package bndtools.builder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -133,7 +134,12 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 	void incrementalRebuild(IResourceDelta delta, IProject project, IProgressMonitor monitor) {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		Project model = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
-		// model.refresh();
+        if (model == null) {
+            // Don't try to build... no bnd workspace configured
+            Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.",
+                    project.getName()), null));
+            return;
+        }
 
 		try {
 			List<File> affectedFiles = new ArrayList<File>();
@@ -200,6 +206,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		IJavaProject javaProject = JavaCore.create(project);
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
+        if (model == null) {
+            // Don't try to build... no bnd workspace configured
+            Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
+                    MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.", project.getName()), null));
+            return;
+        }
+
 		model.refresh();
 		model.setChanged();
 
