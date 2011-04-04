@@ -76,13 +76,13 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
                         if(monitor.isCanceled())
                             throw new InterruptedException();
                     } catch (CoreException e) {
-                        ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-                                "An error occurred while enabling sub-bundles", e));
                         throw new InvocationTargetException(e);
                     }
                 }
             });
         } catch (InvocationTargetException e) {
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+                    "An error occurred while enabling sub-bundles", e.getCause()));
             return false;
         } catch (InterruptedException e) {
             return false;

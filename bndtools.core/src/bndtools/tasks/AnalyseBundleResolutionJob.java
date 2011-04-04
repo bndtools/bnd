@@ -177,7 +177,8 @@ public class AnalyseBundleResolutionJob extends Job {
 			return;
 
 		Attributes attribs = manifest.getMainAttributes();
-		Map<String, Map<String, String>> exportsMap = Processor.parseHeader(attribs.getValue(Constants.EXPORT_PACKAGE), null);
+		String exportPkgStr = attribs.getValue(Constants.EXPORT_PACKAGE);
+        Map<String, Map<String, String>> exportsMap = Processor.parseHeader(exportPkgStr, null);
 
 		// Merge the exports
 		Map<String, Set<String>> uses = builder.getUses();

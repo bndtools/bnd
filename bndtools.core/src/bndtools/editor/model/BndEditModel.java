@@ -86,7 +86,8 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.SUB,
 		BndConstants.RUNFRAMEWORK,
 		BndConstants.RUNVMARGS,
-		BndConstants.TESTSUITES
+		BndConstants.TESTSUITES,
+		aQute.lib.osgi.Constants.TESTCASES
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -188,6 +189,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
         formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
         formatters.put(BndConstants.TESTSUITES, stringListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -304,6 +306,9 @@ public class BndEditModel implements IPersistableBndModel {
         Object oldValue = genericGet(propertyName);
         @SuppressWarnings("unchecked")
         Converter<String, Object> formatter = (Converter<String, Object>) formatters.get(propertyName);
+        if (formatter == null)
+            throw new IllegalArgumentException("No formatter for property: " + propertyName);
+
         doSetObject(propertyName, oldValue, value, formatter);
     }
 
