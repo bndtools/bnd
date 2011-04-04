@@ -1,6 +1,9 @@
 package bndtools.preferences.ui;
 
 
+import java.text.MessageFormat;
+
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -16,8 +19,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.utils.ModificationLock;
+import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
     public BndPreferencePage() {
@@ -37,6 +42,14 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		Composite composite = new Composite(parent, SWT.NONE);
 
 		// Create controls
+		Group cnfCheckGroup = new Group(composite, SWT.NONE);
+		cnfCheckGroup.setText("Configuration Project");
+
+		final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
+		btnNoCheckCnf.setText(MessageFormat.format("Do not check for the Bnd Configuration project (\"{0}\").", Project.BNDCNF));
+		final Button btnCheckCnfNow = new Button(cnfCheckGroup, SWT.PUSH);
+		btnCheckCnfNow.setText("Check Now");
+
 		Group enableSubBundlesGroup = new Group(composite, SWT.NONE);
 		enableSubBundlesGroup.setText(Messages.BndPreferencePage_titleSubBundles);
 
@@ -46,12 +59,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		btnNever.setText(Messages.BndPreferencePage_optionNeverEnable);
 		Button btnPrompt = new Button(enableSubBundlesGroup, SWT.RADIO);
 		btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
-
-		Group cnfCheckGroup = new Group(composite, SWT.NONE);
-		cnfCheckGroup.setText("Configuration Project");
-
-		final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
-		btnNoCheckCnf.setText("Do not check for the Bnd Configuration project.");
 
 		Group exportsGroup = new Group(composite, SWT.NONE);
 		exportsGroup.setText( "Exported Source Packages");
@@ -75,6 +82,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		}
 		btnNoAskPackageInfo.setSelection(noAskPackageInfo);
 		btnNoCheckCnf.setSelection(noCheckCnf);
+		btnCheckCnfNow.setEnabled(!noCheckCnf);
 
 		// Listeners
 		SelectionAdapter adapter = new SelectionAdapter() {
@@ -106,6 +114,15 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		    @Override
 		    public void widgetSelected(SelectionEvent e) {
 		        noCheckCnf = btnNoCheckCnf.getSelection();
+		        btnCheckCnfNow.setEnabled(!noCheckCnf);
+		    }
+        });
+		btnCheckCnfNow.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        if (!CnfSetupWizard.showIfNeeded(true)) {
+		            MessageDialog.openInformation(getShell(), "Bnd Configuration", "The configuration project exists and does not need to be updated.");
+		        }
 		    }
         });
 
@@ -133,6 +150,10 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		exportsGroup.setLayout(layout);
 
 		cnfCheckGroup.setLayout(new GridLayout(1, false));
+		gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+		btnNoCheckCnf.setLayoutData(gd);
+		gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+		btnCheckCnfNow.setLayoutData(gd);
 
 		return composite;
 	}

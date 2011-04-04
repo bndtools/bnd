@@ -31,15 +31,22 @@ public class CnfSetupWizard extends Wizard {
 		this.confirmation = confirmation;
 	}
 
-	/**
-	 * Show the wizard if it needs to be shown (i.e. the cnf project does not
-	 * exist and the preference to show the wizard has not been disabled). This
-	 * method is safe to call from a non-UI thread.
-	 */
-	public static void showIfNeeded() {
-		final Operation operation = determineNecessaryOperation();
+    /**
+     * Show the wizard if it needs to be shown (i.e. the cnf project does not
+     * exist and the preference to show the wizard has not been disabled). This
+     * method is safe to call from a non-UI thread.
+     *
+     * @param overridePreference
+     *            If this parameter is {@code true} then the dialog will be
+     *            shown irrespective of the workspace preference.
+     *
+     * @return Whether any dialog or wizard was shown. The false return may be
+     *         used to decide whether to give the user alternative feedback.
+     */
+	public static boolean showIfNeeded(boolean overridePreference) {
+		final Operation operation = determineNecessaryOperation(overridePreference);
 		if (operation == null)
-			return;
+			return false;
 
 		SWTConcurrencyUtil.execForDisplay(PlatformUI.getWorkbench().getDisplay(), true, new Runnable() {
 
@@ -58,6 +65,7 @@ public class CnfSetupWizard extends Wizard {
 			}
 
 		});
+		return true;
 	}
 
 	private static boolean isDisabled() {
@@ -70,8 +78,8 @@ public class CnfSetupWizard extends Wizard {
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, disabled);
 	}
 
-	private static Operation determineNecessaryOperation() {
-		if (isDisabled())
+	private static Operation determineNecessaryOperation(boolean overridePreference) {
+		if (!overridePreference && isDisabled())
 			return null;
 		if (!LocalRepositoryTasks.isBndWorkspaceConfigured())
 			return Operation.CREATE;
