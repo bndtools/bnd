@@ -178,6 +178,21 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 						break;
 					} else if(builder.isInScope(affectedFiles)) {
 						rebuild = true;
+
+                        // Delete the bundle if any contained resource was
+                        // deleted... to force rebuild
+                        for (File file : affectedFiles) {
+                            if ((IResourceDelta.REMOVED & visitor.queryDeltaKind(file)) > 0) {
+                                String bsn = builder.getBsn();
+                                File f = new File(model.getTarget(), bsn + ".jar");
+                                try {
+                                    if (f.isFile()) f.delete();
+                                } catch (Exception e) {
+                                    Plugin.logError("Error deleting file: " + f.getAbsolutePath(), e);
+                                }
+                            }
+                        }
+
 						break;
 					}
 					progress.worked(1);
