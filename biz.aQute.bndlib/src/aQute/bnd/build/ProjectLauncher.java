@@ -62,6 +62,8 @@ public abstract class ProjectLauncher {
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
+		project.refresh();
+		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
 		
 		for (File file : project.toFile(run))
