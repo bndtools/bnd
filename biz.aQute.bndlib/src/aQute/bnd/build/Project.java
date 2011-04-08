@@ -36,6 +36,7 @@ public class Project extends Processor {
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
+	File						runstorage;
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
@@ -210,6 +211,10 @@ public class Project extends Processor {
 						target.mkdirs();
 						getWorkspace().changedFile(target);
 					}
+					
+					// Where the launched OSGi framework stores stuff
+					String runStorageStr = getProperty(Constants.RUNSTORAGE);
+					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
 
 					// We might have some other projects we want build
 					// before we do anything, but these projects are not in
@@ -468,6 +473,11 @@ public class Project extends Processor {
 		prepare();
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
+	}
+	
+	public File getRunStorage() throws Exception {
+		prepare();
+		return runstorage;
 	}
 
 	public Collection<File> getSourcePath() throws Exception {

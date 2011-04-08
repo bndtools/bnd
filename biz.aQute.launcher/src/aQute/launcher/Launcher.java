@@ -42,6 +42,7 @@ public class Launcher implements ServiceListener {
 			String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
 			assert path != null;
 			propertiesFile = new File(path).getAbsoluteFile();
+			propertiesFile.deleteOnExit();
 			FileInputStream in = new FileInputStream(propertiesFile);
 			Properties properties = new Properties();
 			try {

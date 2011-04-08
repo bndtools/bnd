@@ -28,6 +28,7 @@ public abstract class ProjectLauncher {
 	private Command								java;
 	private Map<String, Map<String, String>>	runsystempackages;
 	private final List<String>					activators			= Create.list();
+	private File								storageDir;
 
 	private boolean								trace;
 	private boolean								keep;
@@ -93,6 +94,11 @@ public abstract class ProjectLauncher {
 
 		runvm.addAll(project.getRunVM());
 		runproperties = project.getRunProperties();
+		
+		storageDir = project.getRunStorage();
+		if (storageDir == null) {
+			storageDir = new File(project.getTarget(), "fw");
+		}
 	}
 
 	private int getRunframework(String property) {
@@ -169,6 +175,10 @@ public abstract class ProjectLauncher {
 
 	public Map<String, String> getRunProperties() {
 		return runproperties;
+	}
+	
+	public File getStorageDir() {
+		return storageDir;
 	}
 
 	public abstract String getMainTypeName();
