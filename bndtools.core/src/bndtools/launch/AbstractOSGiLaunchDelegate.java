@@ -37,32 +37,44 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
         */
     }
-    protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
-        Project result;
 
+    protected IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
         String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if(target == null) {
-            // For compatibility with launches created in previous versions
-            target = getJavaProjectName(configuration);
-        }
-        if(target == null) {
+        if(target == null || target.length() == 0) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified", null));
         }
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
         if(targetResource == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target \"{0}\" does not exist.", target), null));
+        return targetResource;
+    }
+
+    protected Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
+        Project result;
+
+        IResource targetResource = getTargetResource(configuration);
 
         IProject project = targetResource.getProject();
         File projectDir = project.getLocation().toFile();
         if(targetResource.getType() == IResource.FILE) {
             if(!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN))
-                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target file \"{0}\" is not a .bndrun file.", target), null));
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target file \"{0}\" is not a .bndrun file.", targetResource.getFullPath().toString()), null));
 
             // Get the synthetic "run" project (based on a .bndrun file)
             File runFile = targetResource.getLocation().toFile();
+            File bndbnd = new File(runFile.getParentFile(), Project.BNDFILE);
             try {
-                result = new Project(Central.getWorkspace(), projectDir, runFile);
+                if (bndbnd.isFile()) {
+                    Project parent = new Project(Central.getWorkspace(), projectDir, bndbnd);
+                    result = new Project(Central.getWorkspace(), projectDir, runFile);
+                    result.setParent(parent);
+
+//                    result = new Project(Central.getWorkspace(), projectDir, bndbnd);
+//                    result.doIncludeFile(runFile, true, result.getProperties());
+                } else {
+                    result = new Project(Central.getWorkspace(), projectDir, runFile);
+                }
             } catch (Exception e) {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(), project.getName()), e));
             }

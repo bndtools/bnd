@@ -52,7 +52,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     private static final String PROP_ENABLE_TRACE = "enableTrace";
 
     // Model State
-    private String targetName = "";
+    private String targetName = null;
     private boolean enableTrace = false;
 
     // View
@@ -154,11 +154,10 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             Object[] files = dialog.getResult();
             if(files != null && files.length == 1) {
                 IPath path = ((IResource) files[0]).getFullPath().makeRelative();
-                targetName = path.toString();
+                launchTargetTxt.setText(path.toString());
             } else {
-                targetName = "";
+                launchTargetTxt.setText("");
             }
-            launchTargetTxt.setText(targetName);
         }
     }
 

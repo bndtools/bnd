@@ -72,7 +72,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
      * @throws CoreException
      */
     private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
-        final IPath propsPath = Central.toPath(project, project.getPropertiesFile());
+        final IResource targetResource = getTargetResource(launch.getLaunchConfiguration());
+        final IPath bndbndPath = Central.toPath(project, project.getPropertiesFile());
 
         final IPath targetPath;
         try {
@@ -86,7 +87,9 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     final AtomicBoolean update = new AtomicBoolean(false);
 
                     // Was the properties file (bnd.bnd or *.bndrun) included in the delta?
-                    IResourceDelta propsDelta = event.getDelta().findMember(propsPath);
+                    IResourceDelta propsDelta = event.getDelta().findMember(bndbndPath);
+                    if (propsDelta == null && targetResource.getType() == IResource.FILE)
+                        propsDelta = event.getDelta().findMember(targetResource.getFullPath());
                     if (propsDelta != null) {
                         if (propsDelta.getKind() == IResourceDelta.CHANGED) {
                             update.set(true);
