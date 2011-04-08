@@ -149,8 +149,8 @@ public class Launcher implements ServiceListener {
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
 
-		if (parms.timeout != 0)
-			doTimeoutHandler();
+		System.out.println("Starting timeout handler");
+		doTimeoutHandler();
 
 		doSecurity();
 
