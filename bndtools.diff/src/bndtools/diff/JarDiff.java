@@ -192,8 +192,8 @@ public class JarDiff {
 			pi.setExported(true);
 
 			Map<String, String> packageMap = projectExportedPackages.get(packageName);
-			String projectVersion = packageMap.get(VERSION);
-			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, projectVersion);
+			String packageVersion = packageMap.get(VERSION);
+			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, packageVersion);
 
 			Set<ClassInfo> cis = pi.getClasses();
 
@@ -230,6 +230,7 @@ public class JarDiff {
 				if (previousClasses == null) {
 					// New package
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_NEW);
+					pi.setSuggestedVersion(packageVersion);
 				} else {
 					// Modified package
 					pi.setVersion(previousVersion);
@@ -613,9 +614,6 @@ public class JarDiff {
 
 	public void calculateVersions() {
 
-		String bundleVersion = version == null ? "0.0.0" : version;
-
-		String unqualifiedVersion = removeVersionQualifier(bundleVersion);
 
 		int highestSeverity = PKG_SEVERITY_NONE;
 
@@ -687,6 +685,9 @@ public class JarDiff {
 			mask = "==+";
 		}
 
+		String bundleVersion = version == null ? "0.0.0" : version;
+		String unqualifiedVersion = removeVersionQualifier(bundleVersion);
+
 		String suggestedVersion = _version(new String[] { "", mask, unqualifiedVersion});
 		this.suggestedVersion = suggestedVersion;
 
@@ -699,7 +700,9 @@ public class JarDiff {
 			if (version != null) {
 				pi.setSuggestedVersion(version);
 			} else {
-				pi.setSuggestedVersion(suggestedVersion);
+				if (pi.getSuggestedVersion() == null || pi.getSuggestedVersion().length() == 0 || "0.0.0".equals(pi.getSuggestedVersion())) {
+					pi.setSuggestedVersion(suggestedVersion);
+				}
 			}
 		}
 	}
