@@ -412,8 +412,8 @@ public class JarDiff {
 
 					for (int i = 0; i < ca.methods.size(); i++) {
 						MethodNode mn = (MethodNode) ca.methods.get(i);
-						// Ignore anything but public methods
-						if ((mn.access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) {
+						// Ignore anything but public and protected methods
+						if ((mn.access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC || (mn.access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED) {
 							MethodInfo mi = new MethodInfo(mn, ca);
 							ca.addPublicMethod(mi);
 						}
@@ -421,7 +421,7 @@ public class JarDiff {
 					for (int i = 0; i < ca.fields.size(); i++) {
 						FieldNode mn = (FieldNode) ca.fields.get(i);
 						// Ignore anything but public fields
-						if ((mn.access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) {
+						if ((mn.access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC || (mn.access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED) {
 							FieldInfo mi = new FieldInfo(mn, ca);
 							ca.addPublicField(mi);
 						}
