@@ -418,7 +418,7 @@ public class Activator extends AbstractUIPlugin {
 		if (f == null) {
 			return;
 		}
-        IResource r = ReleaseUtils.toResource(f);
+        IResource r = ReleaseUtils.toWorkspaceResource(f);
         if (r != null) {
             r.refreshLocal(IResource.DEPTH_INFINITE, null);
         }

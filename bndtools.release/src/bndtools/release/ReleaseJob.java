@@ -27,6 +27,7 @@ import aQute.lib.osgi.Jar;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;
+import bndtools.release.nl.Messages;
 
 public class ReleaseJob  extends Job {
 	
@@ -35,7 +36,7 @@ public class ReleaseJob  extends Job {
 	private String repository;
 
 	public ReleaseJob(Project project, List<JarDiff> diffs, String repository) {
-		super("Bundle Release Job");
+		super(Messages.bundleReleaseJob);
 		this.project = project;
 		this.diffs = diffs;
 		this.repository = repository;
@@ -45,7 +46,7 @@ public class ReleaseJob  extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		try {
-			
+						
 			IProject proj = ReleaseUtils.getProject(project);
 			proj.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 			
@@ -54,7 +55,6 @@ public class ReleaseJob  extends Job {
 			
 			boolean ok = ReleaseHelper.release(context, diffs);
 			
-			// Necessary???
 			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
 			
 			if (repo != null) {
@@ -63,16 +63,20 @@ public class ReleaseJob  extends Job {
 			}
 			if (ok) {
 				StringBuilder sb = new StringBuilder();
-				sb.append("Project : ");
+				sb.append(Messages.project);
+				sb.append(" : ");
 				sb.append(project.getName());
 				sb.append("\n\n");
-				sb.append("Released :\n");
+				sb.append(Messages.released);
+				sb.append(" :\n");
 
 				for (Jar jar : context.getReleasedJars()) {
 					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
 				}
 				
-				sb.append("\n\nto : ");
+				sb.append("\n\n");
+				sb.append(Messages.releasedTo);
+				sb.append(" : ");
 				sb.append(repository);
 				
 				Activator.getDefault().message(sb.toString());

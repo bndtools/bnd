@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -34,6 +35,10 @@ public class ReleaseAction implements IObjectActionDelegate {
 	public void run(IAction action) {
 
 		if (locations != null) {
+			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
+				return;
+			}
+			
 			for (int i = 0; i < locations.length; i++) {
 				File mf = locations[i].getLocation().toFile();
 				if (mf.getName().equals(Project.BNDFILE)) {
@@ -48,8 +53,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 						ReleaseDialogJob job = new ReleaseDialogJob(project, repos);
 						job.schedule();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						throw new RuntimeException(e);
 					}
 				}
 			}
