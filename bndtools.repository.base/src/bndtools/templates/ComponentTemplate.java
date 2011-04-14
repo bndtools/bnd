@@ -1,6 +1,5 @@
 package bndtools.templates;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,8 +45,8 @@ public class ComponentTemplate implements IProjectTemplate {
 
     @Override
     public void modifyInitialBndProject(IBndProject project) {
-        URL componentSrc = IntegrationTestingTemplate.class.getResource("ExampleComponent.java.txt");
-        project.addResource("src/org/example/ExampleComponent.java", componentSrc);
+        project.addResource("src/org/example/ExampleComponent.java", ComponentTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource("test/org/example/ExampleComponentTest.java", ComponentTemplate.class.getResource("ExampleComponentTest.java.txt"));
     }
 
 }

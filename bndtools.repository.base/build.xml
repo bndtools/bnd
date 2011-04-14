@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="project" default="build"> 
+<project name="bndtools.repository.base" default="build"> 
 	<import file="../cnf/build.xml"/>
+	
+	<target name="updateBndFromRepo">
+		<delete dir="repo/biz.aQute.junit"/>
+		<delete dir="repo/biz.aQute.launcher"/>
+		
+		<copy todir="repo">
+			<fileset dir="../cnf/repo">
+				<include name="biz.aQute.junit/**"/>
+				<include name="biz.aQute.launcher/**"/>
+			</fileset>
+		</copy>
+	</target>
 </project>
