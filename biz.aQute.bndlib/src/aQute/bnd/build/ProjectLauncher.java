@@ -176,6 +176,10 @@ public abstract class ProjectLauncher {
 	public Map<String, String> getRunProperties() {
 		return runproperties;
 	}
+	
+	public File getStorageDir() {
+		return storageDir;
+	}
 
 	public File getStorageDir() {
 		return storageDir;

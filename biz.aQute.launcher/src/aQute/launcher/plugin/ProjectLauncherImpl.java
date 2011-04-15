@@ -1,10 +1,9 @@
 package aQute.launcher.plugin;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.jar.*;
-
-import sun.security.action.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
@@ -23,7 +22,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super(project);
 		project.trace("created a aQute launcher plugin");
 		this.project = project;
-		propertiesFile = new File(project.getTarget(), "launch.properties");
+		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
+		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}", propertiesFile.getAbsolutePath()));
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "="
 				+ propertiesFile.getAbsolutePath());
 
@@ -80,7 +80,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = new LauncherConstants();
 
 		lc.runProperties = getRunProperties();
-		lc.storageDir = new File(project.getTarget(), "fw");
+		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();
 		lc.runbundles.addAll(getRunBundles());
 		lc.trace = getTrace();

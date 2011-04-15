@@ -215,6 +215,10 @@ public class Project extends Processor {
 						target.mkdirs();
 						getWorkspace().changedFile(target);
 					}
+					
+					// Where the launched OSGi framework stores stuff
+					String runStorageStr = getProperty(Constants.RUNSTORAGE);
+					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
 
 					// Where the launched OSGi framework stores stuff
 					String runStorageStr = getProperty(Constants.RUNSTORAGE);
@@ -522,6 +526,11 @@ public class Project extends Processor {
 		prepare();
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
+	}
+	
+	public File getRunStorage() throws Exception {
+		prepare();
+		return runstorage;
 	}
 
 	public File getRunStorage() throws Exception {

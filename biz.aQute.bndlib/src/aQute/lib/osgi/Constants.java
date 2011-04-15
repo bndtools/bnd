@@ -98,6 +98,7 @@ public interface Constants {
 	String					RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String					RUNBUNDLES									= "-runbundles";
 	String					RUNPATH										= "-runpath";
+	String					RUNSTORAGE									= "-runstorage";
 	String					RUNPATH_MAIN_DIRECTIVE						= "main:";
 	String					RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
 	String					RUNVM										= "-runvm";
