@@ -2,6 +2,7 @@ package aQute.bnd.make.metatype;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.metatype.*;
@@ -238,7 +239,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	public InputStream openInputStream() throws IOException {
 		final PipedInputStream pin = new PipedInputStream();
 		final PipedOutputStream pout = new PipedOutputStream(pin);
-		Processor.getExecutor().execute(new Runnable() {
+		getExecutor().execute(new Runnable() {
 			public void run() {
 				try {
 					write(pout);
@@ -250,6 +251,10 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			}
 		});
 		return pin;
+	}
+
+	private Executor getExecutor() {
+		return reporter.getPlugin(Executor.class);
 	}
 
 	public void setExtra(String extra) {

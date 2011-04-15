@@ -619,7 +619,7 @@ public class Jar implements Closeable {
 		}
 	}
 
-	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;.*");
+	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
 
 	public String getBsn() throws Exception {
 		Manifest m = getManifest();

@@ -213,10 +213,6 @@ public interface Constants {
 	String[]				METAPACKAGES								= { "META-INF", "OSGI-INF",
 			"OSGI-OPT"													};
 
-	int						STRATEGY_HIGHEST							= 1;
-	int						STRATEGY_EXACT								= 0;
-	int						STRATEGY_LOWEST								= -1;
-
 	String					CURRENT_VERSION								= "@";
 	String					CURRENT_PACKAGE								= "@package";
 

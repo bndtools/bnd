@@ -4,11 +4,12 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.osgi.*;
 
 public class Container {
 	public enum TYPE {
-		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR, MAVEN
+		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
 	}
 
 	final File					file;
@@ -18,8 +19,8 @@ public class Container {
 	final String				error;
 	final Project				project;
 	final Map<String, String>	attributes;
-	private long	manifestTime;
-	private Manifest	manifest;
+	private long				manifestTime;
+	private Manifest			manifest;
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
 			Map<String, String> attributes) {
@@ -151,21 +152,20 @@ public class Container {
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
 			InputStream in = new FileInputStream(file);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(in,
+					Constants.DEFAULT_CHARSET));
 			try {
 				String line;
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
-						List<Container> list = project.getBundles(Workspace.STRATEGY_EXACT, line);
+						List<Container> list = project.getBundles(Strategy.HIGHEST, line);
 						result.addAll(list);
 					}
 				}
 			} finally {
 				in.close();
 			}
-		} else if ( getType()== TYPE.MAVEN ) {
-			
 		} else
 			result.add(this);
 

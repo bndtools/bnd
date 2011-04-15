@@ -4,6 +4,8 @@ import junit.framework.*;
 
 public class PackTest extends TestCase {
 
+	public void testNot() {}
+	
 //	public void testSimple() throws Exception {
 //		Workspace ws= Workspace.getWorkspace("/Ws/aQute");
 //		Project p = ws.getProject("aQute.metatype");

@@ -8,7 +8,7 @@ import aQute.libg.version.*;
 
 public interface RepositoryPlugin {
 	public enum Strategy {
-		LOWEST, HIGHEST
+		LOWEST, HIGHEST, EXACT
 	}
 
 	/**
@@ -41,7 +41,7 @@ public interface RepositoryPlugin {
 	 * @throws Exception
 	 *             when anything goes wrong
 	 */
-	File get(String bsn, String range, Strategy strategy) throws Exception;
+	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
 
 	/**
 	 * Answer if this repository can be used to store files.

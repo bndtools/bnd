@@ -86,18 +86,19 @@ public class RuntimeSignatureBuilder {
 		return local;
 	}
 
-	@SuppressWarnings("unused") private Scope getEnclosingScope(Class<?> c) {
+	private Scope getEnclosingScope(Class<?> c) {
 		Method m = c.getEnclosingMethod();
 		if (m != null) {
 			Scope s = getGlobalScope(m.getDeclaringClass());
 			return s.getScope(identity(m));
 		}
-		Constructor cnstr = c.getEnclosingConstructor();
-		if (m != null) {
-			Scope s = getGlobalScope(cnstr.getDeclaringClass());
-			return s.getScope(identity(cnstr));
-
-		}
+// TODO
+//		Constructor cnstr = c.getEnclosingConstructor();
+//		if (m != null) {
+//			Scope s = getGlobalScope(cnstr.getDeclaringClass());
+//			return s.getScope(identity(cnstr));
+//
+//		}
 		Class<?> enclosingClass = c.getEnclosingClass();
 		if (enclosingClass != null) {
 			return getGlobalScope(enclosingClass);

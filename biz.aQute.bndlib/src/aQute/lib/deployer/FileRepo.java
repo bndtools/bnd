@@ -6,6 +6,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
@@ -248,8 +249,26 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		}
 		return name;
 	}
-	public File get(String bsn, String range, Strategy strategy) throws Exception {
-		File[] files = get(bsn, range);
+	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
+		if ( version == null)
+			version = "0.0.0";
+		
+		if ( strategy == Strategy.EXACT) {				
+			VersionRange vr = new VersionRange(version);
+			if ( vr.isRange())
+				return null;
+			
+			File file = IO.getFile(root, bsn + "/" + version +"/" + bsn + "-" + version + ".jar");
+			if ( file.isFile())
+				return file;
+			else
+				return null;
+
+		}
+		File[] files = get(bsn, version);
+		if ( files == null)
+			return null;
+		
 		if (files.length >= 0) {
 			switch (strategy) {
 			case LOWEST:

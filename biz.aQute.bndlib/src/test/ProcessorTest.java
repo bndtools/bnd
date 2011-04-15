@@ -5,6 +5,12 @@ import aQute.lib.osgi.*;
 
 public class ProcessorTest extends TestCase{
 
+	
+	public void testPlugins() {
+		
+	}
+	
+	
     public void testDuplicates() {
         assertEquals("", Processor.removeDuplicateMarker("~") );
         

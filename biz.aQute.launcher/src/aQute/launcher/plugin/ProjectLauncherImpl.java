@@ -7,6 +7,7 @@ import java.util.jar.*;
 import sun.security.action.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.launcher.constants.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
@@ -120,7 +121,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		List<String> paths = Create.list();
 		paths.addAll( getRunpath());
-		paths.add( project.getBundle("biz.aQute.launcher", null, STRATEGY_HIGHEST, null).getFile().getAbsolutePath());
+		paths.add( project.getBundle("biz.aQute.launcher", null, Strategy.HIGHEST, null).getFile().getAbsolutePath());
 		
 		for ( String path : paths) {
 			File f = IO.getFile(project.getBase(), path);

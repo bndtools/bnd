@@ -7,6 +7,8 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import aQute.bnd.make.*;
+import aQute.bnd.make.component.*;
+import aQute.bnd.make.metatype.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 
@@ -119,7 +121,6 @@ public class Builder extends Analyzer {
 		begin();
 		doRequireBnd();
 	}
-
 
 	/**
 	 * Turn this normal bundle in a web and add any resources.
@@ -961,6 +962,7 @@ public class Builder extends Analyzer {
 				jar.setName(builder.getBsn());
 				result.add(jar);
 			} catch (Exception e) {
+				e.printStackTrace();
 				error("Sub Building " + builder.getBsn(), e);
 			}
 			if (builder != this)
@@ -1187,4 +1189,21 @@ public class Builder extends Analyzer {
 		}
 		return xdoNotCopy;
 	}
+
+	/**
+	 */
+
+	static MakeBnd			makeBnd				= new MakeBnd();
+	static MakeCopy			makeCopy			= new MakeCopy();
+	static ServiceComponent	serviceComponent	= new ServiceComponent();
+	static MetatypePlugin	metatypePlugin		= new MetatypePlugin();
+
+	@Override protected void setTypeSpecificPlugins(Set<Object> list) {
+		list.add(makeBnd);
+		list.add(makeCopy);
+		list.add(serviceComponent);
+		list.add(metatypePlugin);
+		super.setTypeSpecificPlugins(list);
+	}
+
 }

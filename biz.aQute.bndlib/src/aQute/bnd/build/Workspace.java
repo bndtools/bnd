@@ -9,7 +9,7 @@ import java.util.jar.*;
 
 import javax.naming.*;
 
-import aQute.bnd.maven.*;
+import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
@@ -27,8 +27,8 @@ public class Workspace extends Processor {
 	final Map<String, Action>					commands	= newMap();
 	final CachedFileRepo						cachedRepo;
 	final File									buildDir;
-	final Maven									maven		= new Maven();
-
+	final Maven									maven		= new Maven(Processor.getExecutor());
+	
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project)
@@ -103,9 +103,7 @@ public class Workspace extends Processor {
 		}
 
 		setProperties(buildFile, dir);
-
 		cachedRepo = new CachedFileRepo();
-		addBasicPlugin(cachedRepo);
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -259,4 +257,10 @@ public class Workspace extends Processor {
 		return maven;
 	}
 
+	
+	@Override
+	protected void setTypeSpecificPlugins( Set<Object> list) {
+		list.add(maven);
+		list.add(cachedRepo);
+	}
 }

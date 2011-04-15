@@ -8,25 +8,25 @@ import aQute.lib.osgi.*;
 
 public class IncludeHeaderTest extends TestCase {
 
-	public void testMavenInclude() throws Exception {
-		String b = "pom.modelVersion=b\n";
-		File bb = new File("b.props");
-		write(bb, b );
-		bb.deleteOnExit();
-		
-		Analyzer analyzer = new Analyzer();
-		Properties x = new Properties();
-		x.put("pom.modelVersion", "set");		
-		x.put("pom.scope.test", "set");		
-		x.put("-include", "~maven/pom.xml,b.props");
-		analyzer.setProperties(x);
-		System.out.println(analyzer.getErrors());
-		System.out.println(analyzer.getWarnings());
-		assertEquals("b", analyzer.getProperty("pom.modelVersion")); // from b
-		assertEquals("org.apache.felix.metatype", analyzer.getProperty("pom.artifactId")); // from pom
-		assertEquals("org.apache.felix", analyzer.getProperty("pom.groupId")); // from parent pom
-		assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
-	}
+//	public void testMavenInclude() throws Exception {
+//		String b = "pom.modelVersion=b\n";
+//		File bb = new File("b.props");
+//		write(bb, b );
+//		bb.deleteOnExit();
+//		
+//		Analyzer analyzer = new Analyzer();
+//		Properties x = new Properties();
+//		x.put("pom.modelVersion", "set");		
+//		x.put("pom.scope.test", "set");		
+//		x.put("-include", "~maven/pom.xml,b.props");
+//		analyzer.setProperties(x);
+//		System.out.println(analyzer.getErrors());
+//		System.out.println(analyzer.getWarnings());
+//		assertEquals("b", analyzer.getProperty("pom.modelVersion")); // from b
+//		assertEquals("org.apache.felix.metatype", analyzer.getProperty("pom.artifactId")); // from pom
+//		assertEquals("org.apache.felix", analyzer.getProperty("pom.groupId")); // from parent pom
+//		assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
+//	}
 	
     public void testTopBottom() throws Exception {
         Analyzer analyzer = new Analyzer();

@@ -184,7 +184,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     }
 
 
-	public File get(String bsn, String range, Strategy strategy) throws Exception {
+	public File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
 		File[] files = get(bsn, range);
 		if (files.length >= 0) {
 			switch (strategy) {

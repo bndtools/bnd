@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
@@ -28,6 +29,7 @@ public abstract class ProjectLauncher {
 	private Command								java;
 	private Map<String, Map<String, String>>	runsystempackages;
 	private final List<String>					activators			= Create.list();
+	private File								storageDir;
 
 	private boolean								trace;
 	private boolean								keep;
@@ -56,8 +58,8 @@ public abstract class ProjectLauncher {
 	}
 
 	/**
-	 * Collect all the aspect from the project and set the 
-	 * local fields from them. Should be called
+	 * Collect all the aspect from the project and set the local fields from
+	 * them. Should be called
 	 * 
 	 * @throws Exception
 	 */
@@ -65,10 +67,10 @@ public abstract class ProjectLauncher {
 		project.refresh();
 		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
-		
+
 		for (File file : project.toFile(run))
 			runbundles.add(file.getAbsolutePath());
-		
+
 		File[] builds = project.build();
 		if (builds != null)
 			for (File file : builds)
@@ -78,13 +80,12 @@ public abstract class ProjectLauncher {
 		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
-		
-		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT),0);
+
+		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
 		// For backward compatibility with bndtools launcher
-		List<Container> fws = project.getBundles(Project.STRATEGY_HIGHEST, project
-				.getProperty("-runfw"));
+		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty("-runfw"));
 		runpath.addAll(fws);
 
 		for (Container c : runpath) {
@@ -93,6 +94,11 @@ public abstract class ProjectLauncher {
 
 		runvm.addAll(project.getRunVM());
 		runproperties = project.getRunProperties();
+
+		storageDir = project.getRunStorage();
+		if (storageDir == null) {
+			storageDir = new File(project.getTarget(), "fw");
+		}
 	}
 
 	private int getRunframework(String property) {
@@ -169,6 +175,10 @@ public abstract class ProjectLauncher {
 
 	public Map<String, String> getRunProperties() {
 		return runproperties;
+	}
+
+	public File getStorageDir() {
+		return storageDir;
 	}
 
 	public abstract String getMainTypeName();
@@ -295,14 +305,16 @@ public abstract class ProjectLauncher {
 	 *            The default spec for default jars
 	 */
 	public void addDefault(String defaultSpec) throws Exception {
-		Collection<Container> deflts = project.getBundles(Project.STRATEGY_HIGHEST, defaultSpec);
+		Collection<Container> deflts = project.getBundles(Strategy.HIGHEST, defaultSpec);
 		for (Container c : deflts)
 			addClasspath(c);
 	}
-	
+
 	/**
 	 * Create a self executable.
 	 */
 
-	public Jar executable() throws Exception { throw new UnsupportedOperationException(); }
+	public Jar executable() throws Exception {
+		throw new UnsupportedOperationException();
+	}
 }

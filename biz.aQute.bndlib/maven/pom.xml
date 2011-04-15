@@ -63,7 +63,7 @@
                     <instructions>
                         <Bundle-Category>osgi</Bundle-Category>
                         <Bundle-SymbolicName>
-                            ${artifactId}
+                            ${pom.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-DocURL>
                             http://felix.apache.org/site/apache-felix-metatype-service.html

@@ -7,44 +7,41 @@ import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.make.*;
-import aQute.bnd.make.component.*;
-import aQute.bnd.make.metatype.*;
-import aQute.bnd.maven.*;
+import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
-public class Processor implements Reporter, Constants, Closeable {
+public class Processor implements Reporter, Registry, Constants, Closeable {
 	// TODO handle include files out of date
-	public static String	DEFAULT_PLUGINS	= "";								// "aQute.lib.spring.SpringComponent";
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public static String	LIST_SPLITTER	= "\\\\?\\s*,\\s*";
-	static Executor			executor;
-	private List<String>	errors			= new ArrayList<String>();
-	private List<String>	warnings		= new ArrayList<String>();
-	boolean					pedantic;
-	boolean					trace;
-	boolean					exceptions;
-	boolean					fileMustExist	= true;
+	public static String			LIST_SPLITTER	= "\\\\?\\s*,\\s*";
+	private List<String>			errors			= new ArrayList<String>();
+	private List<String>			warnings		= new ArrayList<String>();
+	boolean							pedantic;
+	boolean							trace;
+	boolean							exceptions;
+	boolean							fileMustExist	= true;
 
-	List<Object>			plugins;
-	private File			base			= new File("").getAbsoluteFile();
-	private List<Closeable>	toBeClosed		= newList();
+	Set<Object>					plugins;
+	private File					base			= new File("").getAbsoluteFile();
+	private Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
 
-	Properties				properties;
-	private Macro			replacer;
-	private long			lastModified;
-	private File			propertiesFile;
-	private boolean			fixup			= true;
-	long					modified;
-	Processor				parent;
-	Set<File>				included;
-	CL						pluginLoader;
-	Collection<String>		filter;
-	HashSet<String>			missingCommand;
-	List<Object>			basicPlugins	= new ArrayList<Object>();
+	Properties						properties;
+	private Macro					replacer;
+	private long					lastModified;
+	private File					propertiesFile;
+	private boolean					fixup			= true;
+	long							modified;
+	Processor						parent;
+	Set<File>						included;
+	CL								pluginLoader;
+	Collection<String>				filter;
+	HashSet<String>					missingCommand;
+	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
+	static ExecutorService			executor		= Executors.newCachedThreadPool();
 
 	public Processor() {
 		properties = new Properties();
@@ -98,32 +95,49 @@ public class Processor implements Reporter, Constants, Closeable {
 		}
 	}
 
+	/**
+	 * A processor can mark itself current for a thread.
+	 * 
+	 * @return
+	 */
+	private Processor current() {
+		Processor p = current.get();
+		if (p == null)
+			return this;
+		else
+			return p;
+	}
+
 	public void warning(String string, Object... args) {
+		Processor p = current();
 		String s = String.format(string, args);
-		if (!warnings.contains(s))
-			warnings.add(s);
+		if (!p.warnings.contains(s))
+			p.warnings.add(s);
 	}
 
 	public void error(String string, Object... args) {
-		if (isFailOk())
-			warning(string, args);
+		Processor p = current();
+		if (p.isFailOk())
+			p.warning(string, args);
 		else {
 			String s = String.format(string, args);
-			if (!errors.contains(s))
-				errors.add(s);
+			if (!p.errors.contains(s))
+				p.errors.add(s);
 		}
 	}
 
 	public void error(String string, Throwable t, Object... args) {
-		if (isFailOk())
-			warning(string + ": " + t, args);
+		Processor p = current();
+
+		if (p.isFailOk())
+			p.warning(string + ": " + t, args);
 		else {
-			errors.add("Exception: " + t.getMessage());
+			p.errors.add("Exception: " + t.getMessage());
 			String s = String.format(string, args);
-			if (!errors.contains(s))
-				errors.add(s);
+			if (!p.errors.contains(s))
+				p.errors.add(s);
 		}
-		if (exceptions)
+		if (p.exceptions)
 			t.printStackTrace();
 	}
 
@@ -176,38 +190,19 @@ public class Processor implements Reporter, Constants, Closeable {
 	}
 
 	public void progress(String s, Object... args) {
-		// System.out.println(s);
+		trace(s, args);
 	}
 
 	public boolean isPedantic() {
-		return pedantic;
+		return current().pedantic;
 	}
 
-	public void setPedantic(boolean pedantic) { // System.out.println("Set
-		// pedantic: " + pedantic + " "
-		// + this );
+	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
 	}
 
 	public static File getFile(File base, String file) {
-		File f = new File(file);
-		if (f.isAbsolute())
-			return f;
-		int n;
-
-		f = base.getAbsoluteFile();
-		while ((n = file.indexOf('/')) > 0) {
-			String first = file.substring(0, n);
-			file = file.substring(n + 1);
-			if (first.equals(".."))
-				f = f.getParentFile();
-			else
-				f = new File(f, first);
-		}
-		if (file.equals(".."))
-			return f.getParentFile();
-		else
-			return new File(f, file).getAbsoluteFile();
+		return IO.getFile(base, file);
 	}
 
 	public File getFile(String file) {
@@ -223,12 +218,28 @@ public class Processor implements Reporter, Constants, Closeable {
 	 */
 	public <T> List<T> getPlugins(Class<T> clazz) {
 		List<T> l = new ArrayList<T>();
-		List<Object> all = getPlugins();
+		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
 			if (clazz.isInstance(plugin))
 				l.add(clazz.cast(plugin));
 		}
 		return l;
+	}
+
+	/**
+	 * Returns the first plugin it can find of the given type.
+	 * 
+	 * @param <T>
+	 * @param clazz
+	 * @return
+	 */
+	public <T> T getPlugin(Class<T> clazz) {
+		Set<Object> all = getPlugins();
+		for (Object plugin : all) {
+			if (clazz.isInstance(plugin))
+				return clazz.cast(plugin);
+		}
+		return null;
 	}
 
 	/**
@@ -240,32 +251,43 @@ public class Processor implements Reporter, Constants, Closeable {
 	 * 
 	 * @return
 	 */
-	protected synchronized List<Object> getPlugins() {
-		// if (parent != null) {
-		// List<Object> val = parent.getPlugins();
-		// getInfo(parent);
-		// return val;
-		// }
+	protected synchronized Set<Object> getPlugins() {
 		if (this.plugins != null)
 			return this.plugins;
 
 		missingCommand = new HashSet<String>();
-		String spe = getProperty(Analyzer.PLUGIN, DEFAULT_PLUGINS);
+		Set<Object> list = new LinkedHashSet<Object>();
+
+		// The owner of the plugin is always in there.
+		list.add(this);
+		setTypeSpecificPlugins(list);
+
+		if (parent != null)
+			list.addAll(parent.getPlugins());
+
+		// We only use plugins now when they are defined on our level
+		// and not if it is in our parent. We inherit from our parent
+		// through the previous block.
+
+		if (properties.containsKey(PLUGIN)) {
+			String spe = getProperty(PLUGIN);
+			if (spe.equals(NONE))
+				return new LinkedHashSet<Object>();
+
+			loadPlugins(list, spe);
+		}
+
+		return this.plugins = list;
+	}
+
+	/**
+	 * @param list
+	 * @param spe
+	 */
+	protected void loadPlugins(Set<Object> list, String spe) {
 		Map<String, Map<String, String>> plugins = parseHeader(spe);
-		List<Object> list = new ArrayList<Object>();
-
-		// Add the default plugins. Only if non is specified
-		// will they be removed.
-		list.add(new MakeBnd());
-		list.add(new MakeCopy());
-		list.add(new ServiceComponent());
-		list.add(new MetatypePlugin());
-		list.addAll(basicPlugins);
-
 		for (Map.Entry<String, Map<String, String>> entry : plugins.entrySet()) {
 			String key = (String) entry.getKey();
-			if (key.equals(NONE))
-				return this.plugins = newList();
 
 			try {
 				CL loader = getLoader();
@@ -288,15 +310,13 @@ public class Processor implements Reporter, Constants, Closeable {
 				try {
 					Class<?> c = (Class<?>) loader.loadClass(key);
 					Object plugin = c.newInstance();
-					if (plugin instanceof Plugin) {
-						((Plugin) plugin).setProperties(entry.getValue());
-						((Plugin) plugin).setReporter(this);
-					}
+					customize(plugin, entry.getValue());
 					list.add(plugin);
 				} catch (Throwable t) {
 					// We can defer the error if the plugin specifies
 					// a command name. In that case, we'll verify that
-					// a bnd file does not contain any references to a plugin
+					// a bnd file does not contain any references to a
+					// plugin
 					// command. The reason this feature was added was
 					// to compile plugin classes with the same build.
 					String commands = entry.getValue().get(COMMAND_DIRECTIVE);
@@ -310,9 +330,28 @@ public class Processor implements Reporter, Constants, Closeable {
 			} catch (Throwable e) {
 				error("Problem loading the plugin: " + key + " exception: " + e);
 			}
-
 		}
-		return this.plugins = list;
+	}
+
+	protected void setTypeSpecificPlugins(Set<Object> list) {
+		list.add(executor);
+	}
+
+	/**
+	 * @param plugin
+	 * @param entry
+	 */
+	protected <T> T customize(T plugin, Map<String, String> map) {
+		if (plugin instanceof Plugin) {
+			if (map != null)
+				((Plugin) plugin).setProperties(map);
+
+			((Plugin) plugin).setReporter(this);
+		}
+		if (plugin instanceof RegistryPlugin) {
+			((RegistryPlugin) plugin).setRegistry(this);
+		}
+		return plugin;
 	}
 
 	public boolean isFailOk() {
@@ -334,7 +373,8 @@ public class Processor implements Reporter, Constants, Closeable {
 	}
 
 	public void trace(String msg, Object... parms) {
-		if (trace) {
+		Processor p = current();
+		if (p.trace) {
 			System.out.printf("# " + msg + "\n", parms);
 		}
 	}
@@ -512,10 +552,9 @@ public class Processor implements Reporter, Constants, Closeable {
 			Properties sub;
 			if (file.getName().toLowerCase().endsWith(".mf")) {
 				sub = getManifestAsProperties(in);
-			} else if (file.getName().endsWith(".xml"))
-				sub = parseXml(file);
-			else
+			} else
 				sub = loadProperties(in, file.getAbsolutePath());
+
 			in.close();
 
 			doIncludes(file.getParentFile(), sub);
@@ -524,15 +563,6 @@ public class Processor implements Reporter, Constants, Closeable {
 				if (overwrite || !target.containsKey(entry.getKey()))
 					target.setProperty((String) entry.getKey(), (String) entry.getValue());
 			}
-		}
-	}
-
-	private Properties parseXml(File file) throws Exception {
-		PomParser pp = new PomParser();
-		try {
-			return pp.getProperties(file);
-		} finally {
-			getInfo(pp);
 		}
 	}
 
@@ -851,8 +881,7 @@ public class Processor implements Reporter, Constants, Closeable {
 			sb.append("=");
 
 			boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
-					.length() - 1) == '"')
-					|| Verifier.TOKEN.matcher(value).matches();
+					.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
 			if (!clean)
 				sb.append("\"");
 			sb.append(value);
@@ -1224,55 +1253,14 @@ public class Processor implements Reporter, Constants, Closeable {
 		return join(result);
 	}
 
-	/**
-	 * Add an additional plugin that is always added to the plugins. This safes
-	 * you from going through the string based approach.
-	 */
-
-	public synchronized void addBasicPlugin(Object o) {
-		basicPlugins.add(o);
-		if (plugins != null)
-			plugins.add(o);
-	}
-
-	/**
-	 * Remove an additional plugin that is always added to the plugins.
-	 */
-
-	public synchronized void removeBasicPlugin(Object o) {
-		basicPlugins.remove(o);
-		if (plugins != null)
-			plugins.remove(o);
-	}
-
 	public synchronized Class<?> getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
 		cl.add(jar.toURI().toURL());
 		return cl.loadClass(type);
 	}
 
-	static public void delete(File target) {
-		if (target.getParentFile() == null)
-			throw new IllegalArgumentException("Can not delete root!");
-		if (!target.exists())
-			return;
-
-		if (target.isDirectory()) {
-			File sub[] = target.listFiles();
-			for (File s : sub)
-				delete(s);
-		}
-		target.delete();
-	}
-
 	public boolean isTrace() {
-		return trace;
-	}
-
-	public static Executor getExecutor() {
-		if (executor == null)
-			executor = Executors.newCachedThreadPool();
-		return executor;
+		return current().trace;
 	}
 
 	public static long getDuration(String tm, long dflt) {
@@ -1296,4 +1284,32 @@ public class Processor implements Reporter, Constants, Closeable {
 		return dflt;
 	}
 
+	/**
+	 * Set the current command thread. This must be balanced with the
+	 * {@link #end(Processor)} method. The method returns the previous command
+	 * owner or null.
+	 * 
+	 * The command owner will receive all warnings and error reports.
+	 */
+
+	protected Processor beginHandleErrors(String message) {
+		trace("begin %s", message);
+		Processor previous = current.get();
+		current.set(this);
+		return previous;
+	}
+
+	/**
+	 * End a command. Will restore the previous command owner.
+	 * 
+	 * @param previous
+	 */
+	protected void endHandleErrors(Processor previous) {
+		trace("end");
+		current.set(previous);
+	}
+
+	public static Executor getExecutor() {
+		return executor;
+	}
 }
