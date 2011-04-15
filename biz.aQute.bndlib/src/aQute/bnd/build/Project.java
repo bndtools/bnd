@@ -9,8 +9,12 @@ import java.util.concurrent.locks.*;
 import java.util.jar.*;
 
 import aQute.bnd.help.*;
+import aQute.bnd.maven.support.Pom.Scope;
+import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.libg.generics.*;
@@ -36,6 +40,7 @@ public class Project extends Processor {
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
+	File						runstorage;
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
@@ -211,6 +216,10 @@ public class Project extends Processor {
 						getWorkspace().changedFile(target);
 					}
 
+					// Where the launched OSGi framework stores stuff
+					String runStorageStr = getProperty(Constants.RUNSTORAGE);
+					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
+
 					// We might have some other projects we want build
 					// before we do anything, but these projects are not in
 					// our path. The -dependson allows you to build them before.
@@ -331,19 +340,19 @@ public class Project extends Processor {
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
-		return getBundles(Constants.STRATEGY_LOWEST, getProperty(Constants.BUILDPATH));
+		return getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
 	}
 
 	private List<Container> parseRunpath() throws Exception {
-		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNPATH));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNPATH));
 	}
 
 	private List<Container> parseRunbundles() throws Exception {
-		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.RUNBUNDLES));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES));
 	}
 
 	private List<Container> parseTestpath() throws Exception {
-		return getBundles(Constants.STRATEGY_HIGHEST, getProperty(Constants.TESTPATH));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH));
 	}
 
 	/**
@@ -360,7 +369,7 @@ public class Project extends Processor {
 	 *            The header
 	 * @return
 	 */
-	public List<Container> getBundles(int strategyx, String spec) throws Exception {
+	public List<Container> getBundles(Strategy strategyx, String spec) throws Exception {
 		List<Container> result = new ArrayList<Container>();
 		Map<String, Map<String, String>> bundles = parseHeader(spec);
 
@@ -372,6 +381,12 @@ public class Project extends Processor {
 				Map<String, String> attrs = entry.getValue();
 
 				Container found = null;
+
+				// Check if we have to use the maven pom ...
+				if (bsn.equals("pom")) {
+					doMavenPom(strategyx, result, attrs.get("scope"));
+					continue;
+				}
 
 				String versionRange = attrs.get("version");
 
@@ -409,6 +424,7 @@ public class Project extends Processor {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
 					}
 				}
+
 				if (found != null) {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
@@ -430,6 +446,44 @@ public class Project extends Processor {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	/**
+	 * The user selected pom in a path. This will place the pom as well as its
+	 * dependencies on the list
+	 * 
+	 * @param strategyx
+	 *            the strategy to use.
+	 * @param result
+	 *            The list of result containers
+	 * @param attrs
+	 *            The attributes
+	 * @throws Exception
+	 *             anything goes wrong
+	 */
+	public void doMavenPom(Strategy strategyx, List<Container> result, String scopes)
+			throws Exception {
+		File pomFile = getFile("pom.xml");
+		if (!pomFile.isFile())
+			error("Specified to use pom.xml but the project directory does not contain a pom.xml file");
+		else {
+			ProjectPom pom = getWorkspace().getMaven().createProjectModel(pomFile);
+			if (scopes == null) {
+				if (strategyx == Strategy.LOWEST)
+					scopes = "compile";
+				else
+					scopes = "runtime";
+			}
+			for (String scope : Processor.split(scopes)) {
+				Scope sc = Scope.valueOf(scope);
+				Set<Pom> dependencies = pom.getDependencies(sc);
+				for (Pom sub : dependencies) {
+					File artifact = sub.getArtifact();
+					Container container = new Container(artifact);
+					result.add(container);
+				}
+			}
+		}
 	}
 
 	public Collection<Project> getDependson() throws Exception {
@@ -468,6 +522,11 @@ public class Project extends Processor {
 		prepare();
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
+	}
+
+	public File getRunStorage() throws Exception {
+		prepare();
+		return runstorage;
 	}
 
 	public Collection<File> getSourcePath() throws Exception {
@@ -583,7 +642,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File release(String name, Jar jar) throws Exception {
-		List<RepositoryPlugin> plugins = getRepositories();
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {
@@ -652,8 +711,8 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
-	@SuppressWarnings("deprecation") public Container getBundle(String bsn, String range,
-			int strategyx, Map<String, String> attrs) throws Exception {
+	public Container getBundle(String bsn, String range, Strategy strategyx,
+			Map<String, String> attrs) throws Exception {
 
 		if ("snapshot".equals(range)) {
 			return getBundleFromProject(bsn, attrs);
@@ -665,51 +724,45 @@ public class Project extends Processor {
 				return c;
 		}
 
-		List<RepositoryPlugin> plugins = getRepositories();
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		;
 
-		int useStrategy = strategyx;
+		Strategy useStrategy = strategyx;
 		if (attrs != null) {
 			String overrideStrategy = attrs.get("strategy");
 
 			if (overrideStrategy != null) {
 				if ("highest".equalsIgnoreCase(overrideStrategy))
-					useStrategy = STRATEGY_HIGHEST;
+					useStrategy = Strategy.HIGHEST;
 				else if ("lowest".equalsIgnoreCase(overrideStrategy))
-					useStrategy = STRATEGY_LOWEST;
+					useStrategy = Strategy.LOWEST;
 				else if ("exact".equalsIgnoreCase(overrideStrategy))
-					useStrategy = STRATEGY_EXACT;
+					useStrategy = Strategy.EXACT;
 			}
 		}
 
 		// If someone really wants the latest, lets give it to them.
 		// regardless of they asked for a lowest strategy
 		if (range != null && range.equals("latest"))
-			useStrategy = STRATEGY_HIGHEST;
+			useStrategy = Strategy.HIGHEST;
 
-//		if ( bsn.indexOf('+')>0) {
-//			return getMavenContainer(bsn,range,useStrategy,attrs);
-//		}
-		
-		
+		// if ( bsn.indexOf('+')>0) {
+		// return getMavenContainer(bsn,range,useStrategy,attrs);
+		// }
+
 		// Maybe we want an exact match this time.
 		// In that case we limit the range to be exactly
 		// the version specified. We ignore it when a range
 		// is used instead of a version
-		if (useStrategy == STRATEGY_EXACT && range != null) {
-			if (range.indexOf('(') < 0 && range.indexOf('[') < 0 && range.indexOf(',') < 0) {
-				range = range.trim();
-				range = "[" + range + "," + range + "]";
-			}
-		}
-		for (RepositoryPlugin plugin : plugins) {
-			File[] results = plugin.get(bsn, range);
-			if (results != null && results.length > 0) {
-				File f = results[useStrategy == STRATEGY_LOWEST ? 0 : results.length - 1];
 
-				if (f.getName().endsWith("lib"))
-					return new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs);
+		for (RepositoryPlugin plugin : plugins) {
+			File result = plugin.get(bsn, range, useStrategy, attrs);
+			if (result != null) {
+				if (result.getName().endsWith("lib"))
+					return new Container(this, bsn, range, Container.TYPE.LIBRARY, result, null,
+							attrs);
 				else
-					return new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs);
+					return new Container(this, bsn, range, Container.TYPE.REPO, result, null, attrs);
 			}
 		}
 
@@ -753,7 +806,8 @@ public class Project extends Processor {
 	 *            bundle
 	 */
 	public void deploy(String name, File file) throws Exception {
-		List<RepositoryPlugin> plugins = getRepositories();
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		;
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {
@@ -839,17 +893,19 @@ public class Project extends Processor {
 
 		String bsns = args[1];
 		String version = null;
-		int strategy = Constants.STRATEGY_HIGHEST;
+		Strategy strategy = Strategy.HIGHEST;
 
 		if (args.length > 2) {
 			version = args[2];
 			if (args.length == 4) {
 				if (args[3].equalsIgnoreCase("HIGHEST"))
-					strategy = Constants.STRATEGY_HIGHEST;
+					strategy = Strategy.HIGHEST;
 				else if (args[3].equalsIgnoreCase("LOWEST"))
-					strategy = STRATEGY_LOWEST;
+					strategy = Strategy.LOWEST;
+				else if (args[3].equalsIgnoreCase("EXACT"))
+					strategy = Strategy.EXACT;
 				else
-					error("${repo;<bsn>;<version>;<'highest'|'lowest'>} macro requires a strategy of 'highest' or 'lowest', and is "
+					error("${repo;<bsn>;<version>;<'highest'|'lowest'|'exact'>} macro requires a strategy of 'highest' or 'lowest', and is "
 							+ args[3]);
 			}
 		}
@@ -862,10 +918,6 @@ public class Project extends Processor {
 			add(paths, container);
 		}
 		return join(paths);
-	}
-
-	private List<RepositoryPlugin> getRepositories() {
-		return getWorkspace().getRepositories();
 	}
 
 	private void add(List<String> paths, Container container) throws Exception {
@@ -1147,10 +1199,10 @@ public class Project extends Processor {
 	public void clean() throws Exception {
 		File target = getTarget();
 		if (target.isDirectory() && target.getParentFile() != null) {
-			delete(target);
+			IO.delete(target);
 		}
 		if (getOutput().isDirectory())
-			delete(getOutput());
+			IO.delete(getOutput());
 		getOutput().mkdirs();
 	}
 
@@ -1497,7 +1549,7 @@ public class Project extends Processor {
 		// one
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
-		withDefault.addAll(getBundles(STRATEGY_HIGHEST, defaultHandler));
+		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler));
 
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
@@ -1563,30 +1615,4 @@ public class Project extends Processor {
 		delayRunDependencies = x;
 	}
 
-//	public Container getMavenContainer(String bsn, String version, int useStrategy,
-//			Map<String, String> attrs) throws Exception {
-//		String[] parts = bsn.split("+");
-//		if (parts.length != 2)
-//			return null;
-//
-//		String groupId = parts[0];
-//		String artifactId = parts[1];
-//
-//		if (version != null) {
-//			error("Maven dependency version not set for %s - %s", groupId, artifactId);
-//			return null;
-//		}
-//		if (!Verifier.VERSION.matcher(version).matches()) {
-//			error(
-//					"Invalid version %s for maven dependency %s - %s. For maven, ranges are not allowed",
-//					version, groupId, artifactId);
-//			return null;
-//		}
-//
-//		Pom pom = workspace.getMaven().getPom(groupId, artifactId, version);
-//		
-//		List<Pom> dependencies = pom.getDependencies( useStrategy == STRATEGY_HIGHEST ? Pom.Scope.runtime : Pom.Scope.compile);
-//		
-//		
-//	}
 }
