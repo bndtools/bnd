@@ -178,6 +178,8 @@ public class bnd extends Processor {
 			doRun(args[++i]);
 		} else if ("print".equals(args[i])) {
 			doPrint(args, ++i);
+		} else if ("lib".equals(args[i])) {
+			doLib(args, ++i);
 		} else if ("graph".equals(args[i])) {
 			doDot(args, ++i);
 		} else if ("create-repo".equals(args[i])) {
@@ -229,8 +231,8 @@ public class bnd extends Processor {
 		while (i < args.length) {
 			String path = args[i];
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-				doBuild(getFile(path), new File[0], new File[0], null, "", new File(path)
-						.getParentFile(), 0, new HashSet<File>());
+				doBuild(getFile(path), new File[0], new File[0], null, "",
+						new File(path).getParentFile(), 0, new HashSet<File>());
 			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
 				doPrint(path, -1);
@@ -290,8 +292,7 @@ public class bnd extends Processor {
 			else if (mask.equalsIgnoreCase("micro"))
 				mask = "==+";
 			else if (!mask.matches("(+=0){1,3}")) {
-				error(
-						"Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
+				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
 						mask);
 				return;
 			}
@@ -454,8 +455,8 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(), v
-					.getMinor(), v.getMicro(), c.getFile());
+			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
+					v.getMinor(), v.getMicro(), c.getFile());
 		}
 
 	}
@@ -778,8 +779,7 @@ public class bnd extends Processor {
 
 	private void doHelp(String[] args, int i) {
 		if (args.length <= i) {
-			out
-					.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
+			out.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
 			out.println("See http://www.aQute.biz/Code/Bnd");
 		} else {
 			while (args.length > i) {
@@ -788,8 +788,7 @@ public class bnd extends Processor {
 				} else if ("print".equals(args[i])) {
 					out.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
 				} else if ("build".equals(args[i])) {
-					out
-							.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
+					out.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
 					out.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
 				} else if ("eclipse".equals(args[i])) {
 					out.println("bnd eclipse");
@@ -1616,8 +1615,7 @@ public class bnd extends Processor {
 					error("-bsn and -version must be set before spring command is used");
 				} else {
 					String url = String
-							.format(
-									"http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
+							.format("http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
 									bsn, version);
 					repoPut(writable, p, url, bsn, version);
 				}
@@ -1806,7 +1804,7 @@ public class bnd extends Processor {
 		Workspace ws = new Workspace(cwd);
 		File reportDir = getFile("reports");
 
-		delete(reportDir);
+		IO.delete(reportDir);
 		reportDir.mkdirs();
 
 		Tag summary = new Tag("summary");
@@ -1881,8 +1879,8 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile
-				.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
+				testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
 		ProjectTester tester = project.getProjectTester();
@@ -2115,9 +2113,9 @@ public class bnd extends Processor {
 		for (File file : files) {
 			Jar jar = new Jar(file);
 			try {
-				System.out.printf("%40s-%-10s", jar.getManifest().getMainAttributes().getValue(
-						BUNDLE_SYMBOLICNAME), jar.getManifest().getMainAttributes().getValue(
-						BUNDLE_VERSION));
+				System.out.printf("%40s-%-10s",
+						jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar
+								.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
 				libsync.submit(jar);
 				getInfo(libsync);
 				System.out.printf("     ok\n");
@@ -2214,8 +2212,8 @@ public class bnd extends Processor {
 				String sourcename = clazz.getSourceFile();
 				String path = clazz.getPath();
 				int n = path.lastIndexOf('/');
-				if ( n >= 0) {
-					path = path.substring(0,n+1);
+				if (n >= 0) {
+					path = path.substring(0, n + 1);
 				} else
 					path = "";
 
@@ -2238,9 +2236,87 @@ public class bnd extends Processor {
 			output.write(out);
 		} finally {
 			output.close();
-			for ( Jar jar : sourcePath )
+			for (Jar jar : sourcePath)
 				jar.close();
 		}
+	}
+
+	/**
+	 * Create lib file on a directory.
+	 * 
+	 * @throws Exception
+	 * 
+	 * @throws Exception
+	 */
+
+	public void doLib(String args[], int i) throws Exception {
+		File out = null;
+		List<File> files = new ArrayList<File>();
+
+		while (i < args.length) {
+			String arg = args[i++];
+			if ("-o".equals(arg)) {
+				out = getFile(args[i++]);
+			} else if (arg.startsWith("-")) {
+				error("Unknown option: %s", arg);
+			} else
+				files.add(getFile(arg));
+		}
+		if (files.isEmpty()) {
+			error("No files specified for lib");
+			return;
+		}
+
+		if (out == null) {
+			out = getFile(files.get(0).getName() + ".lib");
+		}
+
+		System.out.println("Using " + out);
+		Writer w = new FileWriter(out);
+		try {
+			for (File file : files) {
+				System.out.println("And using " + file);
+				if (file.isDirectory())
+					doLib(file, w);
+				else if (file.isFile())
+					doSingleFileLib(file, w);
+				else if (!file.equals(out))
+					error("Not a file %s", file);
+			}
+		} finally {
+			w.close();
+		}
+	}
+
+	public void doLib(File dir, Appendable out) throws Exception {
+		for (File file : dir.listFiles()) {
+			doSingleFileLib(file, out);
+		}
+	}
+
+	/**
+	 * @param out
+	 * @param file
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	void doSingleFileLib(File file, Appendable out) throws IOException, Exception {
+		Jar jar = new Jar(file);
+		String bsn = jar.getBsn();
+		System.out.println(bsn);
+		String version = jar.getVersion();
+		jar.close();
+		if (bsn == null) {
+			error("No valid bsn for %s", file);
+			bsn = "not set";
+		}
+		if (version == null)
+			version = "0";
+
+		Version v = new Version(version);
+		v = new Version(v.getMajor(), v.getMinor(), v.getMicro());
+		out.append(bsn);
+		out.append(";version=" + v +"\n");  // '[" + v + "," + v + "]'\n");
 	}
 
 }
