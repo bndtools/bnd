@@ -24,7 +24,7 @@ public class IO {
 		}
 	}
 
-	public static void copy( InputStream in, ByteBuffer bb ) throws IOException {
+	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
 		byte[] buffer = new byte[10000];
 		try {
 			int size = in.read(buffer);
@@ -36,7 +36,7 @@ public class IO {
 			in.close();
 		}
 	}
-	
+
 	public static void copy(File a, File b) throws IOException {
 		FileOutputStream out = new FileOutputStream(b);
 		try {
@@ -84,46 +84,51 @@ public class IO {
 	public static String collect(InputStream a) throws IOException {
 		return collect(a, "UTF-8");
 	}
-	
+
 	public static String collect(Reader a) throws IOException {
 		StringWriter sw = new StringWriter();
-		char [] buffer = new char[10000];
+		char[] buffer = new char[10000];
 		int size = a.read(buffer);
-		while ( size > 0) {
+		while (size > 0) {
 			sw.write(buffer, 0, size);
 			size = a.read(buffer);
 		}
 		return sw.toString();
 	}
-	
-	public static File getFile( File dir, String path) {
-		int n = path.indexOf('/');
-		if ( n == 0 ) {
-			return getFile( File.listRoots()[0], path.substring(1));
-		}
-		if ( n < 0 ) {
-			return new File(dir,path);
-		}
 
-		String part = path.substring(0, n);
-		String remainder = path.substring(n+1);
-		dir = new File( dir, part);
-		return getFile(dir, remainder);
+	public static File getFile(File base, String file) {
+		File f = new File(file);
+		if (f.isAbsolute())
+			return f;
+		int n;
+
+		f = base.getAbsoluteFile();
+		while ((n = file.indexOf('/')) > 0) {
+			String first = file.substring(0, n);
+			file = file.substring(n + 1);
+			if (first.equals(".."))
+				f = f.getParentFile();
+			else
+				f = new File(f, first);
+		}
+		if (file.equals(".."))
+			return f.getParentFile();
+		else
+			return new File(f, file).getAbsoluteFile();
 	}
-	
+
 	public static void delete(File f) {
 		f = f.getAbsoluteFile();
-		if ( f.getParentFile() == null )
+		if (f.getParentFile() == null)
 			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
-		
 
-		if ( f.isDirectory()) {
-			File [] subs = f.listFiles();
-			for ( File sub : subs) 
+		if (f.isDirectory()) {
+			File[] subs = f.listFiles();
+			for (File sub : subs)
 				delete(sub);
 		}
-		
-		delete(f);
+
+		f.delete();
 	}
 
 	public static void drain(InputStream in) throws IOException {
@@ -137,22 +142,20 @@ public class IO {
 			in.close();
 		}
 	}
-	
-	
-	public void copy( Collection<?> c, OutputStream out) {
+
+	public void copy(Collection<?> c, OutputStream out) {
 		PrintStream ps = new PrintStream(out);
-		for ( Object o : c ) {
+		for (Object o : c) {
 			ps.println(o);
 		}
 		ps.flush();
 	}
 
-	
 	public static Throwable close(Closeable in) {
 		try {
 			in.close();
 			return null;
-		} catch( Throwable e) {
+		} catch (Throwable e) {
 			return e;
 		}
 	}

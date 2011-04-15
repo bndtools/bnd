@@ -11,6 +11,10 @@ public class LineCollection implements Iterator<String>, Closeable {
 		this(new InputStreamReader(in, "UTF8"));
 	}
 
+	public LineCollection(File in) throws IOException {
+		this(new FileReader(in));
+	}
+
 	public LineCollection(Reader reader) throws IOException {
 		this(new BufferedReader(reader));
 	}
