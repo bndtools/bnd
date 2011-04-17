@@ -42,6 +42,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	HashSet<String>					missingCommand;
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
+	static Random					random;
 
 	public Processor() {
 		properties = new Properties();
