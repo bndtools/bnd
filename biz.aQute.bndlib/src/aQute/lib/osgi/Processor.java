@@ -7,7 +7,6 @@ import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
@@ -15,19 +14,25 @@ import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class Processor implements Reporter, Registry, Constants, Closeable {
+	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
+	static ExecutorService			executor		= Executors.newCachedThreadPool();
+	static Random					random			= new Random();
+
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public static String			LIST_SPLITTER	= "\\\\?\\s*,\\s*";
-	private List<String>			errors			= new ArrayList<String>();
-	private List<String>			warnings		= new ArrayList<String>();
+	final List<String>				errors			= new ArrayList<String>();
+	final List<String>				warnings		= new ArrayList<String>();
+	final Set<Object>				basicPlugins	= new HashSet<Object>();
+	final Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
+	Set<Object>						plugins;
+
 	boolean							pedantic;
 	boolean							trace;
 	boolean							exceptions;
 	boolean							fileMustExist	= true;
 
-	Set<Object>					plugins;
 	private File					base			= new File("").getAbsoluteFile();
-	private Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
 
 	Properties						properties;
 	private Macro					replacer;
@@ -40,8 +45,6 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	CL								pluginLoader;
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
-	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
-	static ExecutorService			executor		= Executors.newCachedThreadPool();
 
 	public Processor() {
 		properties = new Properties();
@@ -335,6 +338,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		list.add(executor);
+		list.add(random);
+		list.addAll(basicPlugins);
 	}
 
 	/**
@@ -415,7 +420,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 				// Who cares?
 			}
 		}
-		toBeClosed = null;
+		toBeClosed.clear();
 	}
 
 	public String _basedir(String args[]) {
@@ -1283,7 +1288,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		}
 		return dflt;
 	}
-	
+
 	/**
 	 * Generate a random string, which is guaranteed to be a valid Java
 	 * identifier (first character is an ASCII letter, subsequent characters are
@@ -1296,16 +1301,18 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			try {
 				numchars = Integer.parseInt(args[1]);
 			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("Invalid character count parameter in ${random} macro.");
+				throw new IllegalArgumentException(
+						"Invalid character count parameter in ${random} macro.");
 			}
 		}
-		
+
 		if (random == null)
 			random = new Random();
-		
+
 		char[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
-		
+		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+				.toCharArray();
+
 		char[] array = new char[numchars];
 		for (int i = 0; i < numchars; i++) {
 			char c;
@@ -1315,7 +1322,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 				c = alphanums[random.nextInt(alphanums.length)];
 			array[i] = c;
 		}
-		
+
 		return new String(array);
 	}
 
@@ -1346,5 +1353,24 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	public static Executor getExecutor() {
 		return executor;
+	}
+
+	/**
+	 * These plugins are added to the total list of plugins. The separation
+	 * is necessary because the list of plugins is refreshed now and then
+	 * so we need to be able to add them at any moment in time.
+	 * 
+	 * @param plugin
+	 */
+	public synchronized void addBasicPlugin(Object plugin) {
+		basicPlugins.add(plugin);
+		if (plugins != null)
+			plugins.add(plugin);
+	}
+
+	public synchronized void removeBasicPlugin(Object plugin) {
+		basicPlugins.remove(plugin);
+		if (plugins != null)
+			plugins.remove(plugin);
 	}
 }

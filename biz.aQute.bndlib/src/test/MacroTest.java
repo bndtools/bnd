@@ -13,7 +13,23 @@ public class MacroTest extends TestCase {
 		String s = proc.getReplacer().process("${env;USER}");
 		assertNotNull(s);
 	}
-
+	
+	/**
+	 * Test the random macro
+	 */
+	public void testRandom() {
+		Processor top = new Processor();
+		top.setProperty("a","${random}");
+		top.setProperty("a12","${random;12}");
+		String a = top.getProperty("a");
+		System.out.println(a);
+		assertEquals(8, a.length());
+		String a12 = top.getProperty("a12");
+		System.out.println(a12);
+		assertEquals(12, a12.length());
+		assertNotSame(a, a12);
+	}
+	
 	/**
 	 * Testing an example with nesting that was supposd not to work
 	 */
