@@ -12,15 +12,74 @@ import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.libg.qtokens.*;
 
+/**
+ * Example usage
+ * <pre>
+ * <project name="test path with bnd" default="run-test" basedir=".">
+ *    <property file="run-demo.properties"/>
+ *    <target name="run-test" description="show bnd usage with classpathref">
+ *      <path id="run.demo.id" >
+ *        <pathelement location="demo/classes"/>
+ *        <fileset dir="${libs.demo.dir}">
+ *          <include name="*.jar"/>
+ *        </fileset>
+ *      </path>
+ *      <path id="bnd.path.id" >
+ *        <fileset dir="dist">
+ *          <include name="*.jar"/>
+ *        </fileset>
+ *      </path>
+ *      <path id="descriptors.id" >
+ *        <fileset dir="demo/bnd">
+ *          <include name="*.bnd"/>
+ *        </fileset>
+ *      </path>
+ * 
+ *      <taskdef classpathref="bnd.path.id" classname="aQute.bnd.ant.BndTask" name="bnd"/>
+ *      <bnd classpathref="run.demo.id"  eclipse="false" failok="false" exceptions="true" 
+ *               output="demo/generated"  bndFiles="descriptors.id"/>
+ * 
+ * <!-- sample usage with nested paths -->
+ * 
+ * 	    <bnd eclipse="false" failok="false" exceptions="true" output="demo/generated">
+ * 		  <classpath>
+ * 		    <pathelement location="demo/classes"/>
+ * 		      <fileset dir="${libs.demo.dir}">
+ * 			    <include name="*.jar"/>
+ *      	  </fileset>	 	
+ * 		  </classpath>
+ * 		  <bndfiles>
+ * 		    <fileset dir="demo/bnd">
+ * 		      <include name="*.bnd"/>
+ * 		    </fileset>				
+ * 		  <bndfiles>
+ *      </bnd> 
+ *    </target>
+ *  </project>
+ * </pre>
+ * 
+ */
 public class BndTask extends BaseTask {
-	String	command;
-	File	basedir;
+	String			command;
+	File			basedir;
 
-	boolean	failok;
-	boolean	exceptions;
-	boolean	print;
+	boolean			failok;
+	boolean			exceptions;
+	boolean			print;
+
+	// flags aiming to know how classpath & bnd descriptors were set
+	private boolean	classpathDirectlySet;
+	private Path	classpathReference;
+	private Path	bndfilePath;
 
 	public void execute() throws BuildException {
+		// JME add - ensure every required parameter is present
+		// handle cases where mutual exclusion live..
+		// this is the ANT tradition ..
+		validate();
+		updateClasspath();
+		updateBndFiles();
+
 		if (command == null) {
 			executeBackwardCompatible();
 			return;
@@ -37,7 +96,7 @@ public class BndTask extends BaseTask {
 			project.setExceptions(true);
 			project.setTrace(trace);
 			project.setPedantic(pedantic);
-			
+
 			project.action(command);
 
 			if (report(project))
@@ -200,12 +259,7 @@ public class BndTask extends BaseTask {
 			for (int i = 0; i < path.length; i++)
 				classpath.add(new File(path[i]));
 		}
-	}
-
-	public void setClasspath(Path p) {
-		String[] path = p.list();
-		for (int i = 0; i < path.length; i++)
-			classpath.add(new File(path[i]));
+		classpathDirectlySet = true;
 	}
 
 	public void setEclipse(boolean eclipse) {
@@ -262,4 +316,76 @@ public class BndTask extends BaseTask {
 		this.inherit = inherit;
 	}
 
+	public void setClasspathref(Reference reference) {
+		classpathReference = createPath(reference);
+	}
+
+	public void setBndfilePath(Reference reference) {
+		assertPathNotSet(bndfilePath, "bnd files are already set");
+		bndfilePath = createPath(reference);
+	}
+
+	public void addClasspath(Path path) {
+		assertPathNotSet(classpathReference, "Classpath reference is already set");
+		classpathReference = path;
+	}
+
+	public void addBndfiles(Path path) {
+		assertPathNotSet(bndfilePath, "bnd files are already set");
+		bndfilePath = path;
+	}
+
+	private Path createPath(Reference r) {
+		Path path = new Path(getProject()).createPath();
+		path.setRefid(r);
+		return path;
+	}
+
+	private void assertPathNotSet(Path path, String message) {
+		if (path != null) {
+			throw new BuildException(message);
+		}
+	}
+
+	/**
+	 * validate required parameters before starting execution
+	 * 
+	 * @throws BuildException
+	 *             , if build is impossible
+	 */
+	protected void validate() {
+		// no one of the 2 classpaths handling styles are defined
+		// how could bnd work ?
+		if (classpath == null && classpathReference == null) {
+			log("Unable to get a classpath ...attributes not set");
+			throw new BuildException("No one of the classpath or classpathref defined...");
+		}
+		if (classpathDirectlySet == true && classpathReference != null) {
+			log("Unable to choose between classpath & classpathref !!");
+			throw new BuildException("Can't choose between classpath & classpathref");
+		}
+	}
+
+	// updates classpath for classpathref and nested classpath
+
+	private void updateClasspath() {
+		log("Updating classpath after classpathref setting");
+		if (classpathReference == null) {
+			return;
+		}
+		addFilesFrom(classpathReference, classpath);
+	} // updateClasspath()
+
+	private void updateBndFiles() {
+		if (bndfilePath == null) {
+			return;
+		}
+		addFilesFrom(bndfilePath, files);
+	}
+
+	private void addFilesFrom(Path path, List<File> files) {
+		for (String fileName : path.list()) {
+			files.add(new File(fileName.replace('\\', '/')));
+		}
+	}
 }
