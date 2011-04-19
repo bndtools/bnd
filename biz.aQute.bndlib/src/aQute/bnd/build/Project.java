@@ -220,10 +220,6 @@ public class Project extends Processor {
 					String runStorageStr = getProperty(Constants.RUNSTORAGE);
 					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
 
-					// Where the launched OSGi framework stores stuff
-					String runStorageStr = getProperty(Constants.RUNSTORAGE);
-					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
-
 					// We might have some other projects we want build
 					// before we do anything, but these projects are not in
 					// our path. The -dependson allows you to build them before.
@@ -528,11 +524,6 @@ public class Project extends Processor {
 		return runbundles;
 	}
 	
-	public File getRunStorage() throws Exception {
-		prepare();
-		return runstorage;
-	}
-
 	public File getRunStorage() throws Exception {
 		prepare();
 		return runstorage;

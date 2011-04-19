@@ -181,10 +181,6 @@ public abstract class ProjectLauncher {
 		return storageDir;
 	}
 
-	public File getStorageDir() {
-		return storageDir;
-	}
-
 	public abstract String getMainTypeName();
 
 	public abstract void update() throws Exception;
