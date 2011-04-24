@@ -217,7 +217,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             mainJar.write(out);
     }
 
-    public File get(String bsn, String range, Strategy strategy) throws Exception {
+    public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
         File[] files = get(bsn, range);
 
         if (files == null || files.length == 0)

@@ -45,4 +45,9 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         URL testSrc = IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt");
         project.addResource("src/org/example/tests/ExampleTest.java", testSrc);
     }
+
+    @Override
+    public boolean enableTestSourceFolder() {
+        return false;
+    }
 }

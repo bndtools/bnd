@@ -49,4 +49,9 @@ public class ComponentTemplate implements IProjectTemplate {
         project.addResource("test/org/example/ExampleComponentTest.java", ComponentTemplate.class.getResource("ExampleComponentTest.java.txt"));
     }
 
+    @Override
+    public boolean enableTestSourceFolder() {
+        return true;
+    }
+
 }

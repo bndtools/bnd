@@ -10,6 +10,9 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
@@ -22,8 +25,14 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     private final TemplateSelectionWizardPage templatePage = new TemplateSelectionWizardPage();
 
-    NewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
+    NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
+
+        templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                pageOne.setProjectTemplate((IProjectTemplate) evt.getNewValue());
+            }
+        });
     }
 
     @Override

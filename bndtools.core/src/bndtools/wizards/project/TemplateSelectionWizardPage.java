@@ -1,5 +1,7 @@
 package bndtools.wizards.project;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,6 +51,9 @@ import bndtools.utils.FileUtils;
 import bndtools.utils.PriorityConfigurationElementCompator;
 
 public class TemplateSelectionWizardPage extends WizardPage {
+
+    static final String PROP_TEMPLATE = "template";
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private Table table;
     private TableViewer viewer;
@@ -165,7 +170,9 @@ public class TemplateSelectionWizardPage extends WizardPage {
         String error = null;
         try {
             showTemplateDescription(element);
+            IProjectTemplate oldTemplate = selectedTemplate;
             selectedTemplate = element != null ? (IProjectTemplate) element.createExecutableExtension("class") : null;
+            propSupport.firePropertyChange(PROP_TEMPLATE, oldTemplate, selectedTemplate);
         } catch (CoreException e) {
             error = e.getMessage();
         }
@@ -250,5 +257,23 @@ public class TemplateSelectionWizardPage extends WizardPage {
             img.dispose();
         }
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+
 
 }

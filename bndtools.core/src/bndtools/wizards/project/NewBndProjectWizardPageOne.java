@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import bndtools.api.IProjectTemplate;
 import bndtools.classpath.BndContainerInitializer;
 
 
@@ -35,6 +36,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	private static final String PATH_TEST_SRC = "test";
 	private static final String PATH_TEST_BIN = "bin_test";
+
+    private IProjectTemplate projectTemplate;
 
 	NewBndProjectWizardPageOne() {
 		setTitle("Create a Bnd OSGi Project");
@@ -90,20 +93,26 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		return result.toArray(new IClasspathEntry[result.size()]);
 	}
 
-	@Override
-	public IClasspathEntry[] getSourceClasspathEntries() {
-		IPath projectPath = new Path(getProjectName()).makeAbsolute();
+    @Override
+    public IClasspathEntry[] getSourceClasspathEntries() {
+        IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-		IClasspathEntry[] newEntries = new IClasspathEntry[2];
+        IClasspathEntry[] newEntries = new IClasspathEntry[2];
 
-		newEntries[0] = JavaCore.newSourceEntry(projectPath.append(PATH_SRC));
-		newEntries[1] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
+        newEntries[0] = JavaCore.newSourceEntry(projectPath.append(PATH_SRC));
 
-		return newEntries;
-	}
+        if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
+            newEntries[1] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
+
+        return newEntries;
+    }
 
 	@Override
     public IPath getOutputLocation() {
 	    return new Path(getProjectName()).makeAbsolute().append(PATH_SRC_BIN);
 	}
+
+    public void setProjectTemplate(IProjectTemplate projectTemplate) {
+        this.projectTemplate = projectTemplate;
+    }
 }

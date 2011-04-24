@@ -10,4 +10,8 @@ public class EmptyTemplate implements IProjectTemplate {
         // noop
     }
 
+    public boolean enableTestSourceFolder() {
+        return true;
+    }
+
 }

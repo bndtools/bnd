@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import bndtools.bindex.AbstractIndexer;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.Requestor;
@@ -45,7 +46,7 @@ public class BundleResourceRequestor implements Requestor<Collection<? extends R
             }
 
             for (VersionedClause bundle : bundles) {
-                Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Project.STRATEGY_HIGHEST, null);
+                Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Strategy.HIGHEST, null);
 
                 if (container.getType() != TYPE.ERROR) {
                     String uri = container.getFile().toURI().toString();

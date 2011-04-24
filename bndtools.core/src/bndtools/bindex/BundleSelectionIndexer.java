@@ -13,6 +13,7 @@ import org.osgi.service.obr.Resource;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import bndtools.model.clauses.VersionedClause;
 
 public class BundleSelectionIndexer extends AbstractIndexer {
@@ -39,7 +40,7 @@ public class BundleSelectionIndexer extends AbstractIndexer {
             int work = selection.size();
             SubMonitor progress = SubMonitor.convert(monitor, work);
             for (VersionedClause bundle : selection) {
-                Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Project.STRATEGY_HIGHEST, null);
+                Container container = project.getBundle(bundle.getName(), bundle.getVersionRange(), Strategy.HIGHEST, null);
 
                 if (container.getType() != TYPE.ERROR) {
                     File file = container.getFile();
