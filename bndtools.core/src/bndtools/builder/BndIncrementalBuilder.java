@@ -142,12 +142,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         }
 
 		try {
-			List<File> affectedFiles = new ArrayList<File>();
-			final File targetDir = model.getTarget();
-			FileFilter generatedFilter = new FileFilter() {
-				public boolean accept(File pathname) {
-					return !FileUtils.isAncestor(targetDir, pathname);
-				}
+            List<File> affectedFiles = new ArrayList<File>();
+            final File targetDir = model.getTarget();
+            final File output = model.getOutput();
+            FileFilter generatedFilter = new FileFilter() {
+                public boolean accept(File pathname) {
+                    return !FileUtils.isAncestor(targetDir, pathname) && !FileUtils.isAncestor(output, pathname);
+                }
 			};
 			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
 			delta.accept(visitor);
@@ -157,6 +158,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			boolean rebuild = false;
 			List<File> deletedBnds = new LinkedList<File>();
 
+			File srcDir = model.getSrc();
+			
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
 				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
@@ -166,6 +169,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 						deletedBnds.add(file);
 					}
 					break;
+				}
+				// Check if source file was changed instead of class file
+				if (FileUtils.isAncestor(srcDir, file)) {
+				    rebuild = true;
+				    break;
 				}
 			}
 			if(!rebuild && !affectedFiles.isEmpty()) {
