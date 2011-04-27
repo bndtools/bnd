@@ -76,6 +76,7 @@ public class ReleaseUtils {
 		try {
 			return jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
@@ -92,7 +93,7 @@ public class ReleaseUtils {
 		try {
 			Method m = repository.getClass().getMethod("getRoot");
 			if (m.getReturnType() == File.class) {
-				return (IFolder) toResource((File)m.invoke(repository));
+				return (IFolder) toWorkspaceResource((File)m.invoke(repository));
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -100,7 +101,7 @@ public class ReleaseUtils {
  		return null;
 	}
 
-	public static IResource toResource(File workspaceFile) {
+	public static IResource toWorkspaceResource(File workspaceFile) {
 		IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IPath workingCopyPath = Path.fromOSString(workspaceFile.getAbsolutePath());
 		IResource resource = wsRoot.getContainerForLocation(workingCopyPath);
@@ -110,8 +111,15 @@ public class ReleaseUtils {
 		return resource;
 	}
 
+	public static IResource toResource(File file) {
+		IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
+		IPath workingCopyPath = Path.fromOSString(file.getAbsolutePath());
+		IFile resource = wsRoot.getFileForLocation(workingCopyPath);
+		return resource;
+	}
+
 	public static IProject getProject(Project project) {
-		IResource res = toResource(project.getBase());
+		IResource res = toWorkspaceResource(project.getBase());
 		return res.getProject();
 	}
 

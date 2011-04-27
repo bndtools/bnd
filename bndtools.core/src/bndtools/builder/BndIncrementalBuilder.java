@@ -144,12 +144,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         }
 
 		try {
-			List<File> affectedFiles = new ArrayList<File>();
-			final File targetDir = model.getTarget();
-			FileFilter generatedFilter = new FileFilter() {
-				public boolean accept(File pathname) {
-					return !FileUtils.isAncestor(targetDir, pathname);
-				}
+            List<File> affectedFiles = new ArrayList<File>();
+            final File targetDir = model.getTarget();
+            final File output = model.getOutput();
+            FileFilter generatedFilter = new FileFilter() {
+                public boolean accept(File pathname) {
+                    return !FileUtils.isAncestor(targetDir, pathname) && !FileUtils.isAncestor(output, pathname);
+                }
 			};
 			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
 			delta.accept(visitor);
