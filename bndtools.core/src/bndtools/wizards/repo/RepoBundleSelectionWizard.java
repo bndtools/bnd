@@ -3,6 +3,7 @@ package bndtools.wizards.repo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -84,25 +85,30 @@ public class RepoBundleSelectionWizard extends Wizard {
         List<VersionedClause> result;
 
         if (useResolver) {
-            List<VersionedClause> selected = selectionPage.getSelectedBundles();
+            Collection<Resource> selected = requirementsPage.getSelected();
             List<Resource> required = requirementsPage.getRequired();
 
             result = new ArrayList<VersionedClause>(selected.size() + required.size());
-            result.addAll(selected);
-
+            for (Resource resource : selected) {
+                result.add(toVersionedClause(resource));
+            }
             for (Resource resource : required) {
-                String bsn = resource.getSymbolicName();
-                Version version = resource.getVersion();
-
-                VersionedClause clause = new VersionedClause(bsn, new HashMap<String, String>());
-                if (version != null)
-                    clause.setVersionRange(version.toString());
-                result.add(clause);
+                result.add(toVersionedClause(resource));
             }
         } else {
             result = selectionPage.getSelectedBundles();
         }
         return result;
+    }
+
+    VersionedClause toVersionedClause(Resource resource) {
+        String bsn = resource.getSymbolicName();
+        Version version = resource.getVersion();
+
+        VersionedClause clause = new VersionedClause(bsn, new HashMap<String, String>());
+        if (version != null)
+            clause.setVersionRange(version.toString());
+        return clause;
     }
 
 }
