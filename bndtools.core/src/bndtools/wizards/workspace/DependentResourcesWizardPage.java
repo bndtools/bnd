@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Table;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.bindex.AbstractIndexer;
+import bndtools.bindex.IRepositoryIndexProvider;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.Requestor;
 
@@ -44,7 +45,7 @@ public class DependentResourcesWizardPage extends WizardPage {
 
     private final RepositoryAdmin repoAdmin;
     private final AbstractIndexer installedIndexer;
-    private final List<AbstractIndexer> indexers = new ArrayList<AbstractIndexer>();
+    private final List<IRepositoryIndexProvider> indexProviders = new ArrayList<IRepositoryIndexProvider>();
 
     private Requestor<Collection<? extends Resource>> selectedRequestor;
 
@@ -70,11 +71,11 @@ public class DependentResourcesWizardPage extends WizardPage {
         this.installedIndexer = installedIndexer;
 
         setTitle("Requirements");
-        setDescription("Review requirements of the selected bundles. All bundles in the upper lists will be installed.");
+        setDescription("Review requirements of the selected bundles. All bundles in the \"Required\" list will be installed.");
     }
 
-    public void addRepositoryIndexer(AbstractIndexer repoIndexer) {
-        indexers.add(repoIndexer);
+    public void addRepositoryIndexProvider(IRepositoryIndexProvider provider) {
+        indexProviders.add(provider);
     }
 
     public void setSelectedBundles(final Project project, final Collection<? extends VersionedClause> bundles) {
@@ -93,18 +94,16 @@ public class DependentResourcesWizardPage extends WizardPage {
 
     /**
      * Create contents of the wizard.
+     *
      * @param parent
      */
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
 
-        Composite topPanel = new Composite(composite, SWT.NULL);
-
-        new Label(topPanel, SWT.NONE).setText("Selected Resources:");
-        new Label(topPanel, SWT.NONE).setText("Required Resources:");
-
-        Table selectedTable = new Table(topPanel, SWT.BORDER);
-        Table requiredTable = new Table(topPanel, SWT.BORDER);
+        new Label(composite, SWT.NONE).setText("Selected Resources:");
+        new Label(composite, SWT.NONE).setText("Required:");
+        Table selectedTable = new Table(composite, SWT.BORDER);
+        Table requiredTable = new Table(composite, SWT.BORDER);
 
         selectedViewer = new TableViewer(selectedTable);
         selectedViewer.setContentProvider(new ArrayContentProvider());
@@ -114,9 +113,9 @@ public class DependentResourcesWizardPage extends WizardPage {
         requiredViewer.setContentProvider(new ArrayContentProvider());
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
 
-        Label separator = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+        new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        new Label(composite, SWT.NONE).setText("Optional Resources:");
+        new Label(composite, SWT.NONE).setText("Optional:");
         optionalViewer = createOptionalPanel(composite);
         optionalViewer.setAllChecked(false);
 
@@ -135,39 +134,36 @@ public class DependentResourcesWizardPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         composite.setLayoutData(gd);
 
-        topPanel.setLayout(new GridLayout(2, true));
-        topPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        layout = new GridLayout(2, true);
+        layout.horizontalSpacing = 10;
+        composite.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 100;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 4);
         selectedTable.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.heightHint = 100;
         requiredTable.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        separator.setLayoutData(gd);
-
-        layout = new GridLayout();
-        layout.verticalSpacing = 10;
-        composite.setLayout(layout);
-
         setControl(composite);
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
     }
 
-    private void addResources(Collection<? extends Resource> adding) {
+    void addResources(Collection<? extends Resource> adding) {
         selected.addAll(adding);
+        selectedViewer.add(adding.toArray());
+        modifiedSelection = true;
     }
 
-    private void refreshBundles() {
+    void refreshBundles() {
         required.clear();
         availableOptional.clear();
         checkedOptional.clear();
 
         IRunnableWithProgress operation = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                int work = 4 + indexers.size();
+                int work = 4 + indexProviders.size();
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
                 try {
@@ -176,9 +172,9 @@ public class DependentResourcesWizardPage extends WizardPage {
 
                     repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
 
-                    for (AbstractIndexer indexer : indexers) {
-                        indexer.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                        repoAdmin.addRepository(indexer.getUrl().toExternalForm());
+                    for (IRepositoryIndexProvider provider : indexProviders) {
+                        provider.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                        repoAdmin.addRepository(provider.getUrl().toExternalForm());
                         --work;
                     }
 
@@ -190,20 +186,23 @@ public class DependentResourcesWizardPage extends WizardPage {
                     }
 
                     boolean resolved = resolver.resolve(Resolver.NO_SYSTEM_BUNDLE | Resolver.NO_LOCAL_RESOURCES);
-                    progress.worked(1); work--;
+                    progress.worked(1);
+                    work--;
 
                     Resource[] tmp;
                     tmp = resolver.getRequiredResources();
 
                     // Add to the required set
                     for (Resource resource : tmp) {
-                        if (!isInstalledResource(resource)) required.add(resource);
+                        if (!isInstalledResource(resource))
+                            required.add(resource);
                     }
 
                     // Add to the optional set
                     tmp = resolver.getOptionalResources();
                     for (Resource resource : tmp) {
-                        if (isInstalledResource(resource)) continue;
+                        if (isInstalledResource(resource))
+                            continue;
 
                         boolean direct = false;
                         Reason[] reasons = resolver.getReason(resource);
@@ -221,8 +220,8 @@ public class DependentResourcesWizardPage extends WizardPage {
                     e.printStackTrace();
                 } finally {
                     repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
-                    for (AbstractIndexer indexer : indexers) {
-                        repoAdmin.removeRepository(indexer.getUrl().toExternalForm());
+                    for (IRepositoryIndexProvider provider : indexProviders) {
+                        repoAdmin.removeRepository(provider.getUrl().toExternalForm());
                     }
                 }
             }
@@ -249,8 +248,9 @@ public class DependentResourcesWizardPage extends WizardPage {
 
         boolean installed = false;
         for (String category : resource.getCategories()) {
-            if(category.equals(installedCategory)) {
-                installed = true; break;
+            if (category.equals(installedCategory)) {
+                installed = true;
+                break;
             }
         }
 
@@ -277,18 +277,14 @@ public class DependentResourcesWizardPage extends WizardPage {
         viewer.setLabelProvider(new ResourceLabelProvider());
 
         Button checkAll = new Button(container, SWT.PUSH);
-        checkAll.setText("Check All");
+        checkAll.setText("All");
 
         Button uncheckAll = new Button(container, SWT.PUSH);
-        uncheckAll.setText("Uncheck All");
-
-        Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-        separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        uncheckAll.setText("Clear");
 
         btnAddAndResolve = new Button(container, SWT.NONE);
         btnAddAndResolve.setText("Add and Resolve");
         btnAddAndResolve.setEnabled(false);
-
 
         // LISTENERS
         checkAll.addSelectionListener(new SelectionAdapter() {
@@ -322,9 +318,7 @@ public class DependentResourcesWizardPage extends WizardPage {
         btnAddAndResolve.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                addResources(checkedOptional);
-                refreshBundles();
-                updateButtonAndMessage();
+                addAndResolveSelectedOptionalResources();
             }
         });
 
@@ -340,21 +334,29 @@ public class DependentResourcesWizardPage extends WizardPage {
         layout.marginHeight = 0;
         container.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 4);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
         gd.heightHint = 100;
-        gd.widthHint = 400;
         table.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        gd = new GridData(SWT.FILL, SWT.BOTTOM, false, false);
         checkAll.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        gd = new GridData(SWT.FILL, SWT.TOP, false, false);
         uncheckAll.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1);
+        gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
         btnAddAndResolve.setLayoutData(gd);
+        new Label(container, SWT.NONE);
 
         return viewer;
+    }
+
+    void addAndResolveSelectedOptionalResources() {
+        addResources(checkedOptional);
+
+        refreshBundles();
+
+        updateButtonAndMessage();
     }
 
     private void updateButtonAndMessage() {

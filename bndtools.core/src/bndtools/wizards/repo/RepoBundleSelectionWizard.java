@@ -3,21 +3,20 @@ package bndtools.wizards.repo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
-import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
 import org.apache.felix.utils.log.Logger;
 import org.eclipse.jface.wizard.Wizard;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.bindex.BundleSelectionIndexer;
-import bndtools.bindex.LocalRepositoryIndexer;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.wizards.workspace.DependentResourcesWizardPage;
 
@@ -30,7 +29,6 @@ public class RepoBundleSelectionWizard extends Wizard {
 
     private final RepoBundleSelectionWizardPage selectionPage;
     private final DependentResourcesWizardPage requirementsPage;
-
 
     /**
      * Create a wizard for editing the specified list of bundles. The supplied
@@ -54,9 +52,9 @@ public class RepoBundleSelectionWizard extends Wizard {
         addPage(selectionPage);
 
         if (useResolver) {
-            LocalRepositoryIndexer repoIndexer = new LocalRepositoryIndexer(true);
-            requirementsPage.addRepositoryIndexer(repoIndexer);
-
+            requirementsPage.addRepositoryIndexProvider(new LocalRepositoryIndexProvider());
+            selectionIndexer.setSelection(bundles);
+            requirementsPage.setSelectedBundles(project, bundles);
             addPage(requirementsPage);
 
             selectionPage.addPropertyChangeListener(RepoBundleSelectionWizardPage.PROP_SELECTION, new PropertyChangeListener() {
@@ -88,17 +86,18 @@ public class RepoBundleSelectionWizard extends Wizard {
         if (useResolver) {
             List<VersionedClause> selected = selectionPage.getSelectedBundles();
             List<Resource> required = requirementsPage.getRequired();
-            Resolver resolver = requirementsPage.getResolver();
 
             result = new ArrayList<VersionedClause>(selected.size() + required.size());
             result.addAll(selected);
 
             for (Resource resource : required) {
                 String bsn = resource.getSymbolicName();
-                Reason[] reason = resolver.getReason(resource);
-                // WTF
+                Version version = resource.getVersion();
 
-                System.out.println("What now...");
+                VersionedClause clause = new VersionedClause(bsn, new HashMap<String, String>());
+                if (version != null)
+                    clause.setVersionRange(version.toString());
+                result.add(clause);
             }
         } else {
             result = selectionPage.getSelectedBundles();

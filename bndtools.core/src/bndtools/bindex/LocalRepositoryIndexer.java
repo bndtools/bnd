@@ -79,11 +79,11 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
             if (bundleFile.getName().toLowerCase().endsWith(".jar")) {
                 BundleInfo info = new BundleInfo(bindex, bundleFile);
                 ResourceImpl resource = info.build();
-                resource.setURL(bundleFile.toURI().toURL());
-
-                resource.addCategory(CATEGORY);
-
-                resources.add(resource);
+                if (isValidRuntimeBundle(resource)) {
+                    resource.setURL(bundleFile.toURI().toURL());
+                    resource.addCategory(CATEGORY);
+                    resources.add(resource);
+                }
             }
             progress.worked(1);
         }
@@ -103,14 +103,14 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
             File bundleFile = new File(project.getTarget(), builder.getBsn() + ".jar");
             BundleInfo info = new BundleInfo(bindex, bundleFile);
             ResourceImpl resource = info.build();
+            if (isValidRuntimeBundle(resource)) {
+                resource.setURL(bundleFile.toURI().toURL());
 
-            resource.setURL(bundleFile.toURI().toURL());
-
-            resource.addCategory(CATEGORY);
-            if(workspaceCategory != null)
-                resource.addCategory(workspaceCategory);
-
-            resources.add(resource);
+                resource.addCategory(CATEGORY);
+                if(workspaceCategory != null)
+                    resource.addCategory(workspaceCategory);
+                resources.add(resource);
+            }
             progress.worked(1);
         }
     }

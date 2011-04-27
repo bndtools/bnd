@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -18,9 +21,22 @@ import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.Tag;
 import org.osgi.service.obr.Resource;
 
-public abstract class AbstractIndexer {
+public abstract class AbstractIndexer implements IRepositoryIndexProvider {
+
+    public static final String CATEGORY_NO_RUNTIME = "NORUNTIME";
+    public static final String REQUIREMENT_EXCLUDE = "exclude";
+
+    public static final Set<String> EXCLUDED_BSNS = new HashSet<String>(Arrays.asList(new String[] {
+            "osgi.core",
+            "org.eclipse.osgi",
+            "org.apache.felix.framework",
+            "org.knopflerfish.framework",
+            "ee.minimum",
+            "org.osgi.ee.minimum"
+    }));
 
     private URL url = null;
+    private File outputFile = null;
 
     protected abstract String getTaskLabel();
 
@@ -37,10 +53,15 @@ public abstract class AbstractIndexer {
             return;
 
         // Setup Bindex
-        File tempRepoFile;
+        File repoFile;
         RepositoryImpl bindex;
-        tempRepoFile = File.createTempFile("repository", ".xml");
-        tempRepoFile.deleteOnExit();
+        if (outputFile != null)
+            repoFile = outputFile;
+        else {
+            repoFile = File.createTempFile("repository", ".xml");
+            repoFile.deleteOnExit();
+        }
+        url = repoFile.toURI().toURL();
         bindex = new RepositoryImpl(url);
 
         progress.worked(1);
@@ -61,7 +82,7 @@ public abstract class AbstractIndexer {
         progress.worked(1);
         workRemaining--;
         Tag tag = doIndex(resources, "LocalRepo");
-        PrintWriter printWriter = new PrintWriter(tempRepoFile);
+        PrintWriter printWriter = new PrintWriter(repoFile);
         try {
             tag.print(0, printWriter);
         } finally {
@@ -69,7 +90,14 @@ public abstract class AbstractIndexer {
         }
         progress.worked(1);
         workRemaining--;
-        url = tempRepoFile.toURI().toURL();
+    }
+
+    public File getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(File outputFile) {
+        this.outputFile = outputFile;
     }
 
     public URL getUrl() {
@@ -100,6 +128,11 @@ public abstract class AbstractIndexer {
         else {
             return "no-symbolic-name";
         }
+    }
+
+    protected boolean isValidRuntimeBundle(Resource resource) {
+        String symbolicName = resource.getSymbolicName();
+        return !EXCLUDED_BSNS.contains(symbolicName);
     }
 
 }

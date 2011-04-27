@@ -2,18 +2,31 @@ package bndtools.editor.project;
 
 import java.util.List;
 
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Constants;
+import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
+
+    private Image wizardImg;
+
 	public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(Constants.RUNBUNDLES, parent, toolkit, style);
 	}
@@ -24,6 +37,29 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 		super.createSection(section, toolkit);
 	}
 	@Override
+	protected void fillToolBar(ToolBar toolbar) {
+	    createAddItemTool(toolbar);
+	    createWizardItemtool(toolbar);
+	    createRemoveItemTool(toolbar);
+	}
+	protected ToolItem createWizardItemtool(ToolBar toolbar) {
+	    if (wizardImg == null)
+	        wizardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/wand.png").createImage();
+
+        ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
+
+        tool.setImage(wizardImg);
+        tool.setToolTipText("Add Bundle");
+        tool.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAddWizard();
+            }
+        });
+
+        return tool;
+    }
+    @Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
 		gd.heightHint = 200;
@@ -41,10 +77,28 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) {
         // Need to get the project from the input model...
 	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false);
-
-        wizard.setSelectionPageTitle("Project Run Path");
-        wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
+        setSelectionWizardTitleAndMessage(wizard);
 
 	    return wizard;
+	}
+    void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
+        wizard.setSelectionPageTitle("Project Run Path");
+        wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
+    }
+    private void doAddWizard() {
+        Project project = getProject();
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true);
+        setSelectionWizardTitleAndMessage(wizard);
+
+        WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+        if (dialog.open() == Window.OK) {
+            setBundles(wizard.getSelectedBundles());
+        }
+    }
+	@Override
+	public void dispose() {
+	    if (wizardImg != null)
+	        wizardImg.dispose();
+	    super.dispose();
 	}
 }

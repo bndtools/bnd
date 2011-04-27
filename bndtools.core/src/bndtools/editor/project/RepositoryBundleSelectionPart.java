@@ -70,25 +70,59 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
 	private BndEditModel model;
 	private List<VersionedClause> bundles;
+    private ToolItem removeItemTool;
 
 	protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
 		this.propertyName = propertyName;
 		createSection(getSection(), toolkit);
 	}
+
+    protected ToolItem createAddItemTool(ToolBar toolbar) {
+        ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
+
+        tool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        tool.setToolTipText("Add Bundle");
+        tool.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAdd();
+            }
+        });
+
+        return tool;
+    }
+
+    protected ToolItem createRemoveItemTool(ToolBar toolbar) {
+        ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
+
+        tool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+        tool.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        tool.setToolTipText("Remove");
+        tool.setEnabled(false);
+        tool.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doRemove();
+            }
+        });
+
+        return tool;
+    }
+
+    protected ToolItem getRemoveItemTool() {
+        return removeItemTool;
+    }
+
+    protected void fillToolBar(ToolBar toolbar) {
+        createAddItemTool(toolbar);
+        this.removeItemTool = createRemoveItemTool(toolbar);
+    }
 	void createSection(Section section, FormToolkit toolkit) {
 		// Toolbar buttons
 		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
 		section.setTextClient(toolbar);
-		final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-		addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
-		addItem.setToolTipText("Add Bundle");
-
-		final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
-		removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-		removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
-		removeItem.setToolTipText("Remove");
-		removeItem.setEnabled(false);
+		fillToolBar(toolbar);
 
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
@@ -99,13 +133,15 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new VersionedClauseLabelProvider());
 
-		// Listeners
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				removeItem.setEnabled(!viewer.getSelection().isEmpty());
-			}
-		});
-		ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
+        // Listeners
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                ToolItem remove = getRemoveItemTool();
+                if (remove != null)
+                    remove.setEnabled(!viewer.getSelection().isEmpty());
+            }
+        });
+        ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
             @Override
             public void dragEnter(DropTargetEvent event) {
                 super.dragEnter(event);
@@ -231,18 +267,6 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance() },
 		            dropAdapter);
 
-		addItem.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				doAdd();
-			}
-		});
-		removeItem.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				doRemove();
-			}
-		});
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -268,15 +292,23 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		return new GridData(SWT.FILL, SWT.FILL, true, false);
 	}
 
+	protected List<VersionedClause> getBundles() {
+	    return bundles;
+	}
+
+	protected void setBundles(List<VersionedClause> bundles) {
+	    this.bundles = bundles;
+	    viewer.setInput(bundles);
+	    markDirty();
+	}
+
     private void doAdd() {
         Project project = getProject();
-        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, bundles);
+        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, getBundles());
         if (wizard != null) {
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
             if (dialog.open() == Window.OK) {
-                bundles = wizard.getSelectedBundles();
-                viewer.setInput(bundles);
-                markDirty();
+                setBundles(wizard.getSelectedBundles());
             }
         }
     }

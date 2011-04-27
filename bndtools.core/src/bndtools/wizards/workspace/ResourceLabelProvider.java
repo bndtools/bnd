@@ -19,7 +19,7 @@ class ResourceLabelProvider extends StyledCellLabelProvider {
 
         StyledString string = new StyledString(resource.getSymbolicName());
         string.append(" (" + resource.getVersion() + ")", StyledString.COUNTER_STYLER);
-        string.append(" " + resource.getURI(), StyledString.DECORATIONS_STYLER);
+        //string.append(" " + resource.getURI(), StyledString.DECORATIONS_STYLER);
 
         cell.setText(string.getString());
         cell.setStyleRanges(string.getStyleRanges());

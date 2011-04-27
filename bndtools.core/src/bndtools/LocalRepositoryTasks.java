@@ -52,6 +52,7 @@ import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import aQute.libg.version.Version;
 import bndtools.api.repository.RemoteRepository;
+import bndtools.bindex.LocalRepositoryIndexer;
 import bndtools.utils.BundleUtils;
 import bndtools.utils.NullReporter;
 import bndtools.utils.ProgressReportingInputStream;
@@ -402,6 +403,18 @@ public class LocalRepositoryTasks {
         IProject cnfProject = getCnfProject();
         ProjectScope cnfProjectPrefs = new ProjectScope(cnfProject);
         return cnfProjectPrefs.getNode(Plugin.PLUGIN_ID);
+    }
+
+    public static void indexRepositories(IProgressMonitor monitor) throws Exception {
+        IProject cnf = getCnfProject();
+        IFile repoFile = cnf.getFile("repository.xml");
+
+        LocalRepositoryIndexer indexer = new LocalRepositoryIndexer(false);
+        indexer.setOutputFile(new File(repoFile.getLocationURI()));
+
+        SubMonitor progress = SubMonitor.convert(monitor, 3);
+        indexer.initialise(progress.newChild(2, SubMonitor.SUPPRESS_NONE));
+        repoFile.refreshLocal(IResource.DEPTH_ZERO, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
 }

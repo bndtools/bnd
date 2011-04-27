@@ -49,6 +49,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
+import bndtools.RepositoryIndexerJob;
 import bndtools.classpath.BndContainer;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.utils.FileUtils;
@@ -84,6 +85,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				incrementalRebuild(delta, project, monitor);
 		}
 		setLastBuildTime(project, System.currentTimeMillis());
+		RepositoryIndexerJob.runIfNeeded();
 		return new IProject[]{ project.getWorkspace().getRoot().getProject(Project.BNDCNF)};
 	}
 	private void setLastBuildTime(IProject project, long time) {
