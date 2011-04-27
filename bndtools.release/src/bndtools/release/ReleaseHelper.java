@@ -44,7 +44,7 @@ import bndtools.release.api.ReleaseUtils;
 public class ReleaseHelper {
 
 	public static void updateProject(ReleaseContext context) throws Exception {
-		
+
 		Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
 		for (Builder builder : builders) {
 
@@ -57,7 +57,7 @@ public class ReleaseHelper {
 					updatePackageInfoFile(context.getProject(), pi);
 				}
 			}
-			
+
 			for (PackageInfo pi : current.getNewExportedPackages()) {
 				updatePackageInfoFile(context.getProject(), pi);
 			}
@@ -65,16 +65,16 @@ public class ReleaseHelper {
 			updateBundleVersion(context, current);
    		}
 	}
-	
+
 	private static void updateBundleVersion(ReleaseContext context, JarDiff current) throws IOException, CoreException {
-		
+
 		String bundleVersion = current.getSuggestedVersion();
 		if (bundleVersion != null) {
-			
+
 			File file = context.getProject().getPropertiesFile();
-		
+
 			final IFile resource = (IFile) ReleaseUtils.toResource(file);
-			
+
 			IDocument document = FileUtils.readFully(resource);
 
 			final BndEditModel model = new BndEditModel();
@@ -85,13 +85,13 @@ public class ReleaseHelper {
 				//TODO: Handle macros / variables
 			}
 			model.setBundleVersion(bundleVersion);
-			
+
 			final IDocument finalDoc = document;
 			Runnable run = new Runnable() {
 
 				public void run() {
 					model.saveChangesTo(finalDoc);
-					
+
 					try {
 						FileUtils.writeFully(finalDoc, resource, false);
 						resource.refreshLocal(IResource.DEPTH_ZERO, null);
@@ -129,18 +129,18 @@ public class ReleaseHelper {
 			displayErrors(context, Scope.PRE_UPDATE_VERSIONS);
 			return false;
 		}
-		
+
 		ReleaseHelper.updateProject(context);
-		
+
 		IProject proj = ReleaseUtils.getProject(context.getProject());
 		proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
-		
+
 		if (!preRelease(context, participants)) {
 			postRelease(context, participants, false);
 			displayErrors(context, Scope.PRE_RELEASE);
 			return false;
 		}
-		
+
 		for (JarDiff jarDiff : jarDiffs) {
 			Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
 			Builder builder = null;
@@ -156,11 +156,11 @@ public class ReleaseHelper {
 				}
 			}
 		}
-		
+
 		postRelease(context, participants, ret);
 		return ret;
 	}
-	
+
 	private static void handleBuildErrors(ReleaseContext context, Reporter reporter, Jar jar) {
 		String symbName = null;
 		String version = null;
@@ -172,7 +172,7 @@ public class ReleaseHelper {
 			context.getErrorHandler().error(symbName, version, message);
 		}
 	}
-	
+
 	private static void handleReleaseErrors(ReleaseContext context, Reporter reporter, String symbolicName, String version) {
 		for (String message : reporter.getErrors()) {
 			context.getErrorHandler().error(symbolicName, version, message);
@@ -180,7 +180,7 @@ public class ReleaseHelper {
 	}
 
 	private static void displayErrors(ReleaseContext context, Scope scope) {
-		
+
 		final String name = context.getProject().getName();
 		final List<Error> errors = context.getErrorHandler().getErrors();
 		if (errors.size() > 0) {
@@ -197,18 +197,18 @@ public class ReleaseHelper {
 			} else {
 				runnable.run();
 			}
-		
+
 		}
-		
+
 	}
 
 	private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
 
 		context.getProject().refresh();
 		context.getProject().setChanged();
-		
+
 		Jar jar = builder.build();
-		
+
 		handleBuildErrors(context, builder, jar);
 
 		String symbName = ReleaseUtils.getBundleSymbolicName(jar);
@@ -220,11 +220,11 @@ public class ReleaseHelper {
 			displayErrors(context, Scope.PRE_JAR_RELEASE);
 			return false;
 		}
-		
+
 		context.getProject().release(context.getRepository().getName(), jar);
 		context.getProject().refresh();
-	
-		File file = context.getRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST);
+
+		File file = context.getRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);
 		Jar releasedJar = null;
 		if (file != null) {
 			ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
@@ -232,38 +232,38 @@ public class ReleaseHelper {
 		}
 		if (releasedJar == null) {
 			handleReleaseErrors(context, context.getProject(), symbName, version);
-			
+
 			postRelease(context, participants, false);
 			displayErrors(context, Scope.POST_JAR_RELEASE);
 			return false;
 		}
 		context.addReleasedJar(releasedJar);
-		
+
 		postJarRelease(context, participants, releasedJar);
 		return true;
 	}
-	
+
 	private static void updatePackageInfoFile(Project project, PackageInfo packageInfo) throws Exception {
 		String path = packageInfo.getPackageName().replace('.', '/') + "/packageinfo";
 		File file = getSourceFile(project, path);
-		
+
 		// If package/classes are copied into the bundle through Private-Package etc, there will be no source
 		if (!file.getParentFile().exists()) {
 			return;
 		}
-		
+
 		FileOutputStream fos = new FileOutputStream(file);
 		PrintWriter pw = new PrintWriter(fos);
 		pw.println("version " + packageInfo.getSuggestedVersion());
 		pw.flush();
 		pw.close();
 		ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
-		
+
 		File binary = IO.getFile(project.getOutput(), path);
 		IO.copy(file, binary);
 		ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
 	}
-	
+
 	private static File getSourceFile(Project project, String path) {
 		String src = project.getProperty("src", "src");
 		return project.getFile(src + "/" + path);
@@ -288,7 +288,7 @@ public class ReleaseHelper {
 		}
 		return true;
 	}
-	
+
 	private static boolean preJarRelease(ReleaseContext context, List<IReleaseParticipant> participants, Jar jar) {
 		context.setCurrentScope(Scope.PRE_JAR_RELEASE);
 		for (IReleaseParticipant participant : participants) {
