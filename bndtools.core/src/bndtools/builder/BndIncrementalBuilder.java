@@ -160,6 +160,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			boolean rebuild = false;
 			List<File> deletedBnds = new LinkedList<File>();
 
+			File srcDir = model.getSrc();
+			
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
 				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
@@ -169,6 +171,11 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 						deletedBnds.add(file);
 					}
 					break;
+				}
+				// Check if source file was changed instead of class file
+				if (FileUtils.isAncestor(srcDir, file)) {
+				    rebuild = true;
+				    break;
 				}
 			}
 			if(!rebuild && !affectedFiles.isEmpty()) {
