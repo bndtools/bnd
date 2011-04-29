@@ -144,8 +144,10 @@ public class RepoBundleSelectionWizard extends Wizard {
             clause.setVersionRange("latest");
         } else {
             Version version = resource.getVersion();
-            if (version != null)
-                clause.setVersionRange(version.toString());
+            if (version != null) {
+                Version newVersion = new Version(version.getMajor(), version.getMinor(), version.getMicro());
+                clause.setVersionRange(newVersion.toString());
+            }
         }
         return clause;
     }
