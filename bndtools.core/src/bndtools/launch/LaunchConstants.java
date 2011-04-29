@@ -3,6 +3,7 @@ package bndtools.launch;
 
 
 public interface LaunchConstants {
+    public static String EXT_BND = ".bnd";
     public static String EXT_BNDRUN = ".bndrun";
 
     public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
@@ -20,6 +21,7 @@ public interface LaunchConstants {
 
     @Deprecated
     public static String ATTR_LOGLEVEL = "logLevel";
+
 
     @Deprecated
     public static final String ATTR_OLD_JUNIT_KEEP_ALIVE = "bndtools.runtime.junit.keepAlive";

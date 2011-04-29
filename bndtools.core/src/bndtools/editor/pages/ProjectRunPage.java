@@ -15,6 +15,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.project.LaunchPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
 import bndtools.editor.project.RunPropertiesPart;
@@ -55,10 +56,13 @@ public class ProjectRunPage extends FormPage {
 		RunBundlesPart runBundlesPart = new RunBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
 		managedForm.addPart(runBundlesPart);
 
-        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+		LaunchPart launchPart = new LaunchPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED);
+		managedForm.addPart(launchPart);
+
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
 		managedForm.addPart(runPropertiesPart);
 
-		RunVMArgsPart vmArgsPart = new RunVMArgsPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+		RunVMArgsPart vmArgsPart = new RunVMArgsPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE);
 		managedForm.addPart(vmArgsPart);
 
 		sashForm.hookResizeListener();
@@ -88,6 +92,9 @@ public class ProjectRunPage extends FormPage {
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		runBundlesPart.getSection().setLayoutData(gd);
+
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+		launchPart.getSection().setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		runPropertiesPart.getSection().setLayoutData(gd);

@@ -89,7 +89,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
             }
         } else {
             IFile file = ResourceUtil.getFile(input);
-            if(file != null && file.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+            if(file != null && (file.getName().endsWith(LaunchConstants.EXT_BNDRUN) || file.getName().endsWith(LaunchConstants.EXT_BND))) {
                 launch(file.getFullPath(), mode);
             }
         }
