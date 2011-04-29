@@ -409,7 +409,7 @@ public class LocalRepositoryTasks {
         IProject cnf = getCnfProject();
         IFile repoFile = cnf.getFile("repository.xml");
 
-        LocalRepositoryIndexer indexer = new LocalRepositoryIndexer(false);
+        LocalRepositoryIndexer indexer = new LocalRepositoryIndexer();
         indexer.setOutputFile(new File(repoFile.getLocationURI()));
 
         SubMonitor progress = SubMonitor.convert(monitor, 3);

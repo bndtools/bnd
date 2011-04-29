@@ -1,16 +1,19 @@
 package bndtools.wizards.workspace;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
+import org.apache.felix.bundlerepository.impl.CapabilityImpl;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,22 +37,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
-import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.bindex.AbstractIndexer;
+import bndtools.bindex.FelixGlobalCapabilityGenerator;
 import bndtools.bindex.IRepositoryIndexProvider;
-import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.Requestor;
 
 public class DependentResourcesWizardPage extends WizardPage {
 
     private final RepositoryAdmin repoAdmin;
-    private final AbstractIndexer installedIndexer;
     private final List<IRepositoryIndexProvider> indexProviders = new ArrayList<IRepositoryIndexProvider>();
 
     private Requestor<Collection<? extends Resource>> selectedRequestor;
 
-    private final Set<Resource> selected = new HashSet<Resource>();
+    private final Set<Resource> selected = new LinkedHashSet<Resource>();
     private final List<Resource> required = new ArrayList<Resource>();
     private final List<Resource> availableOptional = new ArrayList<Resource>();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
@@ -62,13 +62,14 @@ public class DependentResourcesWizardPage extends WizardPage {
     private boolean modifiedSelection = false;
     private Resolver resolver = null;
 
+    private File systemBundle;
+
     /**
      * Create the wizard.
      */
-    public DependentResourcesWizardPage(RepositoryAdmin repoAdmin, AbstractIndexer installedIndexer) {
+    public DependentResourcesWizardPage(RepositoryAdmin repoAdmin, Collection<? extends IRepositoryIndexProvider> indexes) {
         super("wizardPage");
         this.repoAdmin = repoAdmin;
-        this.installedIndexer = installedIndexer;
 
         setTitle("Requirements");
         setDescription("Review requirements of the selected bundles. All bundles in the \"Required\" list will be installed.");
@@ -78,18 +79,18 @@ public class DependentResourcesWizardPage extends WizardPage {
         indexProviders.add(provider);
     }
 
-    public void setSelectedBundles(final Project project, final Collection<? extends VersionedClause> bundles) {
-        selectedRequestor = new BundleResourceRequestor(repoAdmin, installedIndexer, bundles, project);
+    public void setSelectedResourcesRequestor(final Requestor<Collection<? extends Resource>> resourceRequestor) {
+        selected.clear();
+        selectedRequestor = resourceRequestor;
         modifiedSelection = true;
     }
 
-    void setSelectedResources(final Collection<? extends Resource> resources) {
-        selectedRequestor = new Requestor<Collection<? extends Resource>>() {
+    public void setSelectedResources(final Collection<? extends Resource> resources) {
+        setSelectedResourcesRequestor(new Requestor<Collection<? extends Resource>>() {
             public Collection<? extends Resource> request(IProgressMonitor monitor) throws InvocationTargetException {
                 return resources;
             }
-        };
-        modifiedSelection = true;
+        });
     }
 
     /**
@@ -113,8 +114,6 @@ public class DependentResourcesWizardPage extends WizardPage {
         requiredViewer.setContentProvider(new ArrayContentProvider());
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
 
-        new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
         new Label(composite, SWT.NONE).setText("Optional:");
         optionalViewer = createOptionalPanel(composite);
         optionalViewer.setAllChecked(false);
@@ -134,20 +133,18 @@ public class DependentResourcesWizardPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         composite.setLayoutData(gd);
 
-        layout = new GridLayout(2, true);
+        layout = new GridLayout(2, false);
         layout.horizontalSpacing = 10;
         composite.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 4);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
         selectedTable.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 100;
+        gd.heightHint = 150;
         requiredTable.setLayoutData(gd);
 
         setControl(composite);
-        new Label(composite, SWT.NONE);
-        new Label(composite, SWT.NONE);
     }
 
     void addResources(Collection<? extends Resource> adding) {
@@ -167,43 +164,70 @@ public class DependentResourcesWizardPage extends WizardPage {
                 SubMonitor progress = SubMonitor.convert(monitor, "", work);
 
                 try {
-                    installedIndexer.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                    --work;
-
-                    repoAdmin.addRepository(installedIndexer.getUrl().toExternalForm());
-
+                    // Add indexes
                     for (IRepositoryIndexProvider provider : indexProviders) {
                         provider.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                         repoAdmin.addRepository(provider.getUrl().toExternalForm());
                         --work;
                     }
 
+                    // Create resolver and add selected resources
                     resolver = repoAdmin.resolver();
-                    Collection<? extends Resource> newSelected = selectedRequestor.request(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                    selected.addAll(newSelected);
+                    selected.addAll(selectedRequestor.request(progress.newChild(1, SubMonitor.SUPPRESS_NONE)));
                     for (Resource resource : selected) {
                         resolver.add(resource);
                     }
 
+                    // Add global capabilities
+                    if (systemBundle == null)
+                        throw new IllegalStateException("System bundle not defined");
+                    FelixGlobalCapabilityGenerator globalCapabilityGenerator = new FelixGlobalCapabilityGenerator(systemBundle);
+                    globalCapabilityGenerator.initialise("1.6");
+                    for (Capability capability : globalCapabilityGenerator.getCapabilities()) {
+                        resolver.addGlobalCapability(capability);
+                    }
+
+                    // Resolve and report missing stuff
                     boolean resolved = resolver.resolve(Resolver.NO_SYSTEM_BUNDLE | Resolver.NO_LOCAL_RESOURCES);
                     progress.worked(1);
+                    Reason[] unsatisfiedRequirements = resolver.getUnsatisfiedRequirements();
+                    for (Reason reason : unsatisfiedRequirements) {
+                        if (reason.getRequirement().isOptional())
+                            continue;
+                        if (selected.contains(reason.getResource()) || required.contains(reason.getResource())) {
+                            System.err.println("Unsatisfied: " + reason.getRequirement() + " required by " + reason.getResource());
+                            Reason[] reasons = resolver.getReason(reason.getResource());
+                            if (reasons != null) {
+                                System.out.println(reason.getResource() + " was required because: ");
+                                for (Reason reason2 : reasons) {
+                                    System.out.println("   " + reason2.getRequirement() + " required by " + reason2.getResource());
+                                }
+                            }
+                        } else {
+                            System.out.println(reason.getRequirement() + " required by " + reason.getResource());
+                        }
+                    }
                     work--;
 
-                    Resource[] tmp;
-                    tmp = resolver.getRequiredResources();
 
                     // Add to the required set
-                    for (Resource resource : tmp) {
-                        if (!isInstalledResource(resource))
-                            required.add(resource);
+                    for (Resource resource : resolver.getRequiredResources()) {
+                        if (resource.getURI() == null)
+                            // This is the fake "resource" representing global capabilities
+                            continue;
+
+                        required.add(resource);
+                        Reason[] reasons = resolver.getReason(resource);
+                        if (reasons != null) {
+                            System.out.println("Adding resource " + resource + " for the following reasons:");
+                            for (Reason reason : reasons) {
+                                System.out.println("   " + reason.getRequirement() + " REQUIRED BY " + reason.getResource());
+                            }
+                        }
                     }
 
                     // Add to the optional set
-                    tmp = resolver.getOptionalResources();
-                    for (Resource resource : tmp) {
-                        if (isInstalledResource(resource))
-                            continue;
-
+                    for (Resource resource : resolver.getOptionalResources()) {
                         boolean direct = false;
                         Reason[] reasons = resolver.getReason(resource);
                         for (Reason reason : reasons) {
@@ -212,14 +236,13 @@ public class DependentResourcesWizardPage extends WizardPage {
                                 break;
                             }
                         }
-                        if (direct)
+//                        if (direct)
                             availableOptional.add(resource);
                     }
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 } finally {
-                    repoAdmin.removeRepository(installedIndexer.getUrl().toExternalForm());
                     for (IRepositoryIndexProvider provider : indexProviders) {
                         repoAdmin.removeRepository(provider.getUrl().toExternalForm());
                     }
@@ -243,8 +266,9 @@ public class DependentResourcesWizardPage extends WizardPage {
         }
     }
 
+    /*
     private boolean isInstalledResource(Resource resource) {
-        String installedCategory = installedIndexer.getCategory();
+        String installedCategory = installedIndexProvider.getCategory();
 
         boolean installed = false;
         for (String category : resource.getCategories()) {
@@ -255,6 +279,19 @@ public class DependentResourcesWizardPage extends WizardPage {
         }
 
         return installed;
+    }
+    */
+
+    void addEECapabilities(Resolver resolver) {
+        String[] ees = new String[] {
+                "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6"
+        };
+
+        for (String ee : ees) {
+            CapabilityImpl capability = new CapabilityImpl("ee");
+            capability.addProperty("ee", ee);
+            resolver.addGlobalCapability(capability);
+        }
     }
 
     @Override
@@ -353,9 +390,7 @@ public class DependentResourcesWizardPage extends WizardPage {
 
     void addAndResolveSelectedOptionalResources() {
         addResources(checkedOptional);
-
         refreshBundles();
-
         updateButtonAndMessage();
     }
 
@@ -381,6 +416,10 @@ public class DependentResourcesWizardPage extends WizardPage {
 
     public Resolver getResolver() {
         return resolver;
+    }
+
+    public void setSystemBundle(File systemBundle) {
+        this.systemBundle = systemBundle;
     }
 
 }

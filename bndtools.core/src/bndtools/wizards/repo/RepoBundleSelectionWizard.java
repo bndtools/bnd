@@ -2,7 +2,9 @@ package bndtools.wizards.repo;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -15,17 +17,22 @@ import org.eclipse.jface.wizard.Wizard;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import bndtools.Plugin;
-import bndtools.bindex.BundleSelectionIndexer;
+import bndtools.bindex.IRepositoryIndexProvider;
+import bndtools.bindex.WorkspaceIndexer;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.wizards.workspace.DependentResourcesWizardPage;
+import bndtools.wizards.workspace.RepositoryResourceRequestor;
 
 public class RepoBundleSelectionWizard extends Wizard {
 
+    private static final String WORKSPACE_CATEGORY = "__workspace__";
+
     private final RepositoryAdmin repoAdmin;
 
-	private final Project sourceProject;
     private final boolean useResolver;
 
     private final RepoBundleSelectionWizardPage selectionPage;
@@ -39,36 +46,56 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      */
     public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver) {
-        this.sourceProject = project;
         this.useResolver = useResolver;
 
         selectionPage = new RepoBundleSelectionWizardPage(project);
 
         BundleContext context = Plugin.getDefault().getBundleContext();
-        repoAdmin = new RepositoryAdminImpl(context, new Logger(context));
-        final BundleSelectionIndexer selectionIndexer = new BundleSelectionIndexer(project);
-        requirementsPage = new DependentResourcesWizardPage(repoAdmin, selectionIndexer);
+        repoAdmin = new RepositoryAdminImpl(new DummyBundleContext(), new Logger(context));
+
+        // Setup repository indexers / index providers
+        LocalRepositoryIndexProvider localRepoIndex = new LocalRepositoryIndexProvider();
+        WorkspaceIndexer workspaceIndex = new WorkspaceIndexer(WORKSPACE_CATEGORY);
+        final List<IRepositoryIndexProvider> indexList = Arrays.asList(new IRepositoryIndexProvider[] { localRepoIndex, workspaceIndex });
+
+        requirementsPage = new DependentResourcesWizardPage(repoAdmin, indexList);
+        try {
+            Container systemBundle = project.getBundle("org.apache.felix.framework", null, Strategy.HIGHEST, null);
+            requirementsPage.setSystemBundle(systemBundle.getFile());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);
 
         if (useResolver) {
             requirementsPage.addRepositoryIndexProvider(new LocalRepositoryIndexProvider());
-            selectionIndexer.setSelection(bundles);
-            requirementsPage.setSelectedBundles(project, bundles);
+            requirementsPage.addRepositoryIndexProvider(workspaceIndex);
+
+            requirementsPage.setSelectedResourcesRequestor(new RepositoryResourceRequestor(repoAdmin, indexList, bundles, project));
             addPage(requirementsPage);
 
             selectionPage.addPropertyChangeListener(RepoBundleSelectionWizardPage.PROP_SELECTION, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     List<VersionedClause> sel = selectionPage.getSelectedBundles();
-                    selectionIndexer.setSelection(sel);
-                    requirementsPage.setSelectedBundles(project, sel);
+                    requirementsPage.setSelectedResourcesRequestor(new RepositoryResourceRequestor(repoAdmin, indexList, sel, project));
                 }
             });
         }
     }
 
-	@Override
+	File getSystemBundleFile(Project project) {
+	    try {
+            Container container = project.getBundle("org.apache.felix.framework", null, Strategy.HIGHEST, null);
+            return container.getFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
 	public boolean performFinish() {
 		return true;
 	}
@@ -103,11 +130,23 @@ public class RepoBundleSelectionWizard extends Wizard {
 
     VersionedClause toVersionedClause(Resource resource) {
         String bsn = resource.getSymbolicName();
-        Version version = resource.getVersion();
+
+        boolean workspace = false;
+        for (String category : resource.getCategories()) {
+            if (WORKSPACE_CATEGORY.equals(category)) {
+                workspace = true;
+                break;
+            }
+        }
 
         VersionedClause clause = new VersionedClause(bsn, new HashMap<String, String>());
-        if (version != null)
-            clause.setVersionRange(version.toString());
+        if (workspace) {
+            clause.setVersionRange("latest");
+        } else {
+            Version version = resource.getVersion();
+            if (version != null)
+                clause.setVersionRange(version.toString());
+        }
         return clause;
     }
 

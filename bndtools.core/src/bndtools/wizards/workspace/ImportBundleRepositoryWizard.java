@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.felix.bundlerepository.RepositoryAdmin;
@@ -22,7 +23,8 @@ import org.eclipse.ui.IWorkbench;
 import org.osgi.framework.BundleContext;
 
 import bndtools.Plugin;
-import bndtools.bindex.LocalRepositoryIndexer;
+import bndtools.bindex.IRepositoryIndexProvider;
+import bndtools.wizards.repo.LocalRepositoryIndexProvider;
 
 public class ImportBundleRepositoryWizard extends Wizard implements IImportWizard {
 
@@ -43,7 +45,8 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
 
         bundlePage = new RemoteRepositoryBundleSelectionPage(repoAdmin);
         repoPage = new OBRSelectionPage(repoAdmin, bundlePage);
-        dependenciesPage = new DependentResourcesWizardPage(repoAdmin, new LocalRepositoryIndexer(false));
+
+        dependenciesPage = new DependentResourcesWizardPage(repoAdmin, Arrays.asList(new IRepositoryIndexProvider[] { new LocalRepositoryIndexProvider() }));
 
         bundlePage.addPropertyChangeListener(RemoteRepositoryBundleSelectionPage.PROP_SELECTION, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

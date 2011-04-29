@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import aQute.bnd.build.Project;
 import bndtools.RepositoryIndexerJob;
 import bndtools.bindex.IRepositoryIndexProvider;
+import bndtools.bindex.LocalRepositoryIndexer;
 
 public class LocalRepositoryIndexProvider implements IRepositoryIndexProvider {
 
@@ -34,6 +35,10 @@ public class LocalRepositoryIndexProvider implements IRepositoryIndexProvider {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getCategory() {
+        return LocalRepositoryIndexer.CATEGORY;
     }
 
 }

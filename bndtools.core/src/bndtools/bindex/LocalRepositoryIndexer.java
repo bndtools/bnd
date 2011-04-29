@@ -1,7 +1,6 @@
 package bndtools.bindex;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,26 +10,14 @@ import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.service.obr.Resource;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Builder;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.libg.version.Version;
 import bndtools.Central;
 
 public class LocalRepositoryIndexer extends AbstractIndexer {
 
-    private static final String CATEGORY = "__local_repo__";
-
-    private final boolean includeWorkspace;
-
-    private String workspaceCategory = null;
-
-    public LocalRepositoryIndexer(boolean includeWorkspace) {
-        this.includeWorkspace = includeWorkspace;
-    }
-
-    public void setWorkspaceCategory(String workspaceCategory) {
-        this.workspaceCategory = workspaceCategory;
-    }
+    public static final String CATEGORY = "__local_repo__";
 
     @Override
     public String getCategory() {
@@ -39,17 +26,9 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
 
     @Override
     protected void generateResources(RepositoryImpl bindex, List<Resource> result, IProgressMonitor monitor) throws Exception {
-        SubMonitor progress = SubMonitor.convert(monitor, 6);
-
         List<RepositoryPlugin> bndRepos = Central.getWorkspace().getRepositories();
         if (bndRepos != null) {
-            processRepos(bndRepos, bindex, result, progress.newChild(4));
-        }
-        progress.setWorkRemaining(2);
-
-        if (includeWorkspace) {
-            Collection<Project> projects = Central.getWorkspace().getAllProjects();
-            processProjects(projects, bindex, result, progress.newChild(2));
+            processRepos(bndRepos, bindex, result, monitor);
         }
     }
 
@@ -66,17 +45,19 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
     private void processRepoBundles(RepositoryPlugin bndRepo, List<String> bsns, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
         SubMonitor progress = SubMonitor.convert(monitor, bsns.size());
         for (String bsn : bsns) {
-            File[] files = bndRepo.get(bsn, null);
-            if (files != null) {
-                processRepoFiles(files, bindex, resources, progress.newChild(1));
+            List<Version> versions = bndRepo.versions(bsn);
+            if (versions != null) {
+                processRepoVersions(bndRepo, bsn, versions, bindex, resources, progress.newChild(1));
             }
         }
     }
 
-    private void processRepoFiles(File[] files, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
-        SubMonitor progress = SubMonitor.convert(monitor, files.length);
-        for (File bundleFile : files) {
-            if (bundleFile.getName().toLowerCase().endsWith(".jar")) {
+
+    private void processRepoVersions(RepositoryPlugin bndRepo, String bsn, List<Version> versions, RepositoryImpl bindex, List<Resource> resources, SubMonitor monitor) {
+        SubMonitor progress = SubMonitor.convert(monitor, versions.size());
+        for (Version version : versions) {
+            try {
+                File bundleFile = bndRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
                 BundleInfo info = new BundleInfo(bindex, bundleFile);
                 ResourceImpl resource = info.build();
                 if (isValidRuntimeBundle(resource)) {
@@ -84,34 +65,12 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
                     resource.addCategory(CATEGORY);
                     resources.add(resource);
                 }
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                progress.worked(1);
             }
-            progress.worked(1);
-        }
-    }
-
-    private void processProjects(Collection<Project> projects, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
-        SubMonitor progress = SubMonitor.convert(monitor, projects.size());
-        for (Project project : projects) {
-            Collection<? extends Builder> builders = project.getSubBuilders();
-            processProjectBuilders(project, builders, bindex, resources, progress.newChild(1));
-        }
-    }
-
-    private void processProjectBuilders(Project project, Collection<? extends Builder> builders, RepositoryImpl bindex, List<Resource> resources, IProgressMonitor monitor) throws Exception {
-        SubMonitor progress = SubMonitor.convert(monitor, builders.size());
-        for (Builder builder : builders) {
-            File bundleFile = new File(project.getTarget(), builder.getBsn() + ".jar");
-            BundleInfo info = new BundleInfo(bindex, bundleFile);
-            ResourceImpl resource = info.build();
-            if (isValidRuntimeBundle(resource)) {
-                resource.setURL(bundleFile.toURI().toURL());
-
-                resource.addCategory(CATEGORY);
-                if(workspaceCategory != null)
-                    resource.addCategory(workspaceCategory);
-                resources.add(resource);
-            }
-            progress.worked(1);
         }
     }
 

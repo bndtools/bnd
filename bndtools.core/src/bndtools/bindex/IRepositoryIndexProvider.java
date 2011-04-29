@@ -10,4 +10,6 @@ public interface IRepositoryIndexProvider {
 
     URL getUrl();
 
+    String getCategory();
+
 }

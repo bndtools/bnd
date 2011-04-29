@@ -10,39 +10,52 @@ import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
 import org.apache.felix.bundlerepository.Resource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import bndtools.bindex.AbstractIndexer;
+import bndtools.bindex.IRepositoryIndexProvider;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.Requestor;
 
-public class BundleResourceRequestor implements Requestor<Collection<? extends Resource>> {
+public class RepositoryResourceRequestor implements Requestor<Collection<? extends Resource>> {
 
     private final RepositoryAdmin repoAdmin;
-    private final AbstractIndexer indexer;
+    private final Collection<? extends IRepositoryIndexProvider> indexProviders;
     private final Collection<? extends VersionedClause> bundles;
     private final Project project;
 
-    public BundleResourceRequestor(RepositoryAdmin repoAdmin, AbstractIndexer indexer, Collection<? extends VersionedClause> bundles, Project project) {
+    public RepositoryResourceRequestor(RepositoryAdmin repoAdmin, Collection<? extends IRepositoryIndexProvider> indexProviders, Collection<? extends VersionedClause> bundles, Project project) {
         this.repoAdmin = repoAdmin;
-        this.indexer = indexer;
+        this.indexProviders = indexProviders;
         this.bundles = bundles;
         this.project = project;
+    }
+
+    void processIndex(IRepositoryIndexProvider indexProvider, Map<String, Resource> urisToResources, IProgressMonitor monitor) throws Exception {
+        try {
+            indexProvider.initialise(monitor);
+            Repository repo = repoAdmin.addRepository(indexProvider.getUrl().toExternalForm());
+
+            Resource[] resources = repo.getResources();
+            for (Resource resource : resources) {
+                if (!urisToResources.containsKey(resource.getURI()))
+                    urisToResources.put(resource.getURI(), resource);
+            }
+        } finally {
+            repoAdmin.removeRepository(indexProvider.getUrl().toExternalForm());
+        }
     }
 
     public Collection<? extends Resource> request(IProgressMonitor monitor) throws InvocationTargetException {
         Collection<Resource> result = new ArrayList<Resource>(bundles.size());
         try {
-            indexer.initialise(monitor);
-            Repository repo = repoAdmin.addRepository(indexer.getUrl().toExternalForm());
-
-            Resource[] resources = repo.getResources();
+            SubMonitor progress = SubMonitor.convert(monitor, indexProviders.size());
             Map<String, Resource> urisToResources = new HashMap<String, Resource>();
-            for (Resource resource : resources) {
-                urisToResources.put(resource.getURI(), resource);
+            for (IRepositoryIndexProvider indexProvider : indexProviders) {
+                processIndex(indexProvider, urisToResources, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             }
 
             for (VersionedClause bundle : bundles) {
@@ -58,8 +71,6 @@ public class BundleResourceRequestor implements Requestor<Collection<? extends R
             }
         } catch (Exception e) {
             throw new InvocationTargetException(e);
-        } finally {
-            repoAdmin.removeRepository(indexer.getUrl().toExternalForm());
         }
         return result;
     }

@@ -6,6 +6,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Version;
 
 import bndtools.Plugin;
 
@@ -17,9 +18,21 @@ class ResourceLabelProvider extends StyledCellLabelProvider {
     public void update(ViewerCell cell) {
         Resource resource = (Resource) cell.getElement();
 
-        StyledString string = new StyledString(resource.getSymbolicName());
-        string.append(" (" + resource.getVersion() + ")", StyledString.COUNTER_STYLER);
-        //string.append(" " + resource.getURI(), StyledString.DECORATIONS_STYLER);
+        String name = resource.getSymbolicName();
+        if (name == null)
+            name = resource.toString();
+        if (name == null)
+            name = "<unknown>";
+
+        StyledString string = new StyledString(name);
+
+        Version version = resource.getVersion();
+        if (version != null)
+            string.append(" (" + resource.getVersion() + ")", StyledString.COUNTER_STYLER);
+
+//        String uri = resource.getURI();
+//        if (uri != null)
+//            string.append(" " + uri, StyledString.DECORATIONS_STYLER);
 
         cell.setText(string.getString());
         cell.setStyleRanges(string.getStyleRanges());
