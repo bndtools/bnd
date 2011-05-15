@@ -266,7 +266,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 
 		}
 		File[] files = get(bsn, version);
-		if ( files == null)
+		if ( files == null || files.length == 0)
 			return null;
 		
 		if (files.length >= 0) {
