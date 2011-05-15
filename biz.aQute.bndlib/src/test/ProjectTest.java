@@ -157,5 +157,25 @@ public class ProjectTest extends TestCase {
 		assertEquals(size, project.getProperties().size());
 		assertEquals("sometime", newv.getQualifier());
 	}
+	
+	public void testRunBuilds() throws Exception {
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+
+		// Running a .bnd includes built bundles by default
+		Project p1 = ws.getProject("p1");
+		assertTrue(p1.getRunBuilds());
+
+		// Can override the default by specifying -runbuilds: false
+		Project p2 = ws.getProject("p2");
+		assertFalse(p2.getRunBuilds());
+		
+		// Running a .bndrun DOES NOT include built bundles by default
+		Project p1a = new Project(ws, new File("test/ws/p1"), new File("test/ws/p1/p1a.bndrun"));
+		assertFalse(p1a.getRunBuilds());
+
+		// ... unless we override the default by specifying -runbuilds: true
+		Project p1b = new Project(ws, new File("test/ws/p1"), new File("test/ws/p1/p1b.bndrun"));
+		assertTrue(p1b.getRunBuilds());
+	}
 
 }

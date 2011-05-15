@@ -528,6 +528,16 @@ public class Project extends Processor {
 		prepare();
 		return runstorage;
 	}
+	
+	public boolean getRunBuilds() {
+		boolean result;
+		String runBuildsStr = getProperty(Constants.RUNBUILDS);
+		if (runBuildsStr == null)
+			result = !getPropertiesFile().getName().toLowerCase().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
+		else
+			result = Boolean.parseBoolean(runBuildsStr);
+		return result;
+	}
 
 	public Collection<File> getSourcePath() throws Exception {
 		prepare();
