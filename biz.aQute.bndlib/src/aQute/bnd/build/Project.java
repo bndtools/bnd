@@ -528,6 +528,16 @@ public class Project extends Processor {
 		prepare();
 		return runstorage;
 	}
+	
+	public boolean getRunBuilds() {
+		boolean result;
+		String runBuildsStr = getProperty(Constants.RUNBUILDS);
+		if (runBuildsStr == null)
+			result = !getPropertiesFile().getName().toLowerCase().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
+		else
+			result = Boolean.parseBoolean(runBuildsStr);
+		return result;
+	}
 
 	public Collection<File> getSourcePath() throws Exception {
 		prepare();
@@ -1083,9 +1093,9 @@ public class Project extends Processor {
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
 				f.delete();
-				jar.write(f);
 				if (!f.getParentFile().isDirectory())
 					f.getParentFile().mkdirs();
+				jar.write(f);
 
 				getWorkspace().changedFile(f);
 			} else {
