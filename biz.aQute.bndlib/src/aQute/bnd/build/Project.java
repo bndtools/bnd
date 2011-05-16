@@ -1093,9 +1093,9 @@ public class Project extends Processor {
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
 				f.delete();
-				jar.write(f);
 				if (!f.getParentFile().isDirectory())
 					f.getParentFile().mkdirs();
+				jar.write(f);
 
 				getWorkspace().changedFile(f);
 			} else {
