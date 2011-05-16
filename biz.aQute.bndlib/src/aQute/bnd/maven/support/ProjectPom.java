@@ -84,15 +84,15 @@ public class ProjectPom extends Pom {
 
 	}
 
-	private void print(Node node, String indent) {
-		System.out.print(indent);
-		System.out.println(node.getNodeName());
-		Node rover = node.getFirstChild();
-		while ( rover != null) {
-			print( rover, indent+" ");
-			rover = rover.getNextSibling();
-		}
-	}
+//	private void print(Node node, String indent) {
+//		System.out.print(indent);
+//		System.out.println(node.getNodeName());
+//		Node rover = node.getFirstChild();
+//		while ( rover != null) {
+//			print( rover, indent+" ");
+//			rover = rover.getNextSibling();
+//		}
+//	}
 
 	/**
 	 * @param parentArtifactId

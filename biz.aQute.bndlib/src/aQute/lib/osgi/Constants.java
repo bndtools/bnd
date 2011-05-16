@@ -112,6 +112,7 @@ public interface Constants {
 	String					TESTPACKAGES								= "-testpackages";
 	String					TESTREPORT									= "-testreport";
 	String					TESTPATH									= "-testpath";
+	String					TESTCONTINUOUS								= "-testcontinuous";
 	String					UNDERTEST									= "-undertest";
 	String					VERBOSE										= "-verbose";
 	@Deprecated String		VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
@@ -132,7 +133,7 @@ public interface Constants {
 			PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH,
 			SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES,
 			REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST,
-			DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE };
+			DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE, TESTCONTINUOUS };
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
