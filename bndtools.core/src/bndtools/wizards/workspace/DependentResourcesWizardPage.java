@@ -38,7 +38,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
 import bndtools.Plugin;
-import bndtools.bindex.FelixGlobalCapabilityGenerator;
+import bndtools.api.EE;
+import bndtools.bindex.GlobalCapabilityGenerator;
 import bndtools.bindex.IRepositoryIndexProvider;
 import bndtools.utils.Requestor;
 
@@ -181,9 +182,8 @@ public class DependentResourcesWizardPage extends WizardPage {
                     // Add global capabilities
                     if (systemBundle == null)
                         throw new IllegalStateException("System bundle not defined");
-                    FelixGlobalCapabilityGenerator globalCapabilityGenerator = new FelixGlobalCapabilityGenerator(systemBundle);
-                    globalCapabilityGenerator.initialise("1.6");
-                    for (Capability capability : globalCapabilityGenerator.getCapabilities()) {
+                    GlobalCapabilityGenerator capabilityGenerator = new GlobalCapabilityGenerator(systemBundle);
+                    for (Capability capability : capabilityGenerator.listCapabilities(EE.J2SE_1_5)) {
                         resolver.addGlobalCapability(capability);
                     }
 

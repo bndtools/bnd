@@ -2,6 +2,7 @@ package bndtools.wizards.repo;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
     private final Project sourceProject;
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
+    private File[] implicitBundles;
 
 	TreeViewer availableViewer;
 	Text selectionSearchTxt;
@@ -104,8 +106,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             return true;
         }
     };
-
-
 
     protected RepoBundleSelectionWizardPage(Project sourceProject) {
 		super("bundleSelectionPage");
@@ -347,6 +347,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public void setImplicitBundles(File[] builds) {
+        this.implicitBundles = builds;
     }
 
 

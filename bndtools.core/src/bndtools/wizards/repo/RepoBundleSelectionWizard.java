@@ -66,6 +66,14 @@ public class RepoBundleSelectionWizard extends Wizard {
             e.printStackTrace();
         }
 
+        if (project.getRunBuilds()) {
+            try {
+                File[] builds = project.build();
+                selectionPage.setImplicitBundles(builds);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);
 

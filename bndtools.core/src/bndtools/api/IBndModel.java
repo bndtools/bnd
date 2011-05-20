@@ -24,7 +24,7 @@ public interface IBndModel {
 
     String getRunFramework();
 
-    void setRunFramework(String clause);
+    void setRunFramework(String framework);
 
     List<String> getSubBndFiles();
 

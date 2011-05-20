@@ -5,6 +5,7 @@
    <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
    <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
    <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
+   <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
    
    <!-- Popup Menus -->
    <!--
@@ -569,6 +570,12 @@
            </with>
          </enablement>
       </renameParticipant>
+   </extension>
+   
+   <extension point="bndtools.core.osgiFrameworks">
+      <framework name="Apache Felix" bsn="org.apache.felix.framework" icon="icons/felix.gif"/>
+      <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
+      <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
    </extension>
    
  </plugin>

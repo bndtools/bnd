@@ -85,7 +85,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				incrementalRebuild(delta, project, monitor);
 		}
 		setLastBuildTime(project, System.currentTimeMillis());
-		RepositoryIndexerJob.runIfNeeded();
+		if (Project.BNDCNF.equalsIgnoreCase(project.getName()) || "bnd".equalsIgnoreCase(project.getName()))
+		    RepositoryIndexerJob.runIfNeeded();
 		return new IProject[]{ project.getWorkspace().getRoot().getProject(Project.BNDCNF)};
 	}
 	private void setLastBuildTime(IProject project, long time) {
@@ -161,7 +162,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			List<File> deletedBnds = new LinkedList<File>();
 
 			File srcDir = model.getSrc();
-			
+
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
 				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {

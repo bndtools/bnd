@@ -51,6 +51,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
@@ -317,8 +318,13 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         Project project = null;
         try {
             BndEditModel model = (BndEditModel) getManagedForm().getInput();
-            File projectDir = model.getBndResource().getProject().getLocation().toFile();
-            project = Workspace.getProject(projectDir);
+            IResource resource = model.getBndResource();
+            File projectDir = resource.getProject().getLocation().toFile();
+            if (Project.BNDFILE.equals(resource.getName())) {
+                project = Workspace.getProject(projectDir);
+            } else {
+                project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
+            }
         } catch (Exception e) {
             Plugin.logError("Error getting project from editor model", e);
         }
