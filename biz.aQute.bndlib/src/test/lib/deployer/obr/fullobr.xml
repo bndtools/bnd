@@ -1,0 +1,553 @@
+<?xml version='1.0' encoding='utf-8'?>
+<?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
+
+<repository lastmodified='20110425120125.066' name='Untitled'>
+  <resource id='name.njbartlett.osgi.emf.minimal/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='file:bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar' version='2.7.0.201104130744'>
+    <size>
+      2005961
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='name.njbartlett.osgi.emf.minimal'/>
+      <p n='symbolicname' v='name.njbartlett.osgi.emf.minimal'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common'/>
+      <p n='uses' v='org.eclipse.core.runtime,org.eclipse.emf.common.util,org.osgi.framework'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.notify'/>
+      <p n='uses' v='org.eclipse.emf.common.util'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.notify.impl'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.common.notify'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.util'/>
+      <p n='uses' v='org.eclipse.core.runtime,org.eclipse.emf.common'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.impl,org.eclipse.emf.ecore.util'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.util,org.eclipse.emf.ecore,org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource,org.eclipse.emf.common.notify.impl,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.common,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.xml.type'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.plugin'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,org.eclipse.core.runtime,org.osgi.framework,org.eclipse.emf.ecore,org.xml.sax.helpers,org.xml.sax,org.eclipse.emf.ecore.impl,org.eclipse.core.resources,org.eclipse.emf.common,org.eclipse.emf.common.util,javax.xml.parsers,org.eclipse.emf.ecore.util,org.eclipse.emf.ecore.resource.impl'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.resource'/>
+      <p n='uses' v='org.eclipse.core.runtime.content,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.common.util,org.eclipse.emf.ecore,org.eclipse.emf.common.notify'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.resource.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,javax.crypto.spec,javax.crypto,org.eclipse.emf.common.util,org.eclipse.emf.ecore,org.eclipse.emf.ecore.util,org.eclipse.core.runtime,org.eclipse.core.runtime.content,org.eclipse.emf.common,org.eclipse.emf.ecore.plugin,org.eclipse.core.resources,org.eclipse.emf.common.notify.impl,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.impl'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.ecore.util,org.eclipse.emf.ecore'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type'/>
+      <p n='uses' v='org.eclipse.emf.ecore.util,org.eclipse.emf.ecore,org.eclipse.emf.common.util,javax.xml.datatype,javax.xml.namespace'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type.internal'/>
+      <p n='uses' v='org.eclipse.emf.ecore.xml.type,javax.xml.namespace,org.eclipse.emf.ecore.plugin,org.eclipse.emf.common.util,org.eclipse.emf.ecore.xml.type.util,javax.xml.datatype'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type.util'/>
+      <p n='uses' v='org.xml.sax,org.eclipse.emf.ecore.xml.type,javax.xml.namespace,javax.xml.datatype,org.xml.sax.helpers,org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore,org.eclipse.emf.ecore.xml.type.internal,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.util'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.util'/>
+      <p n='uses' v='org.eclipse.emf.common.notify,org.eclipse.emf.ecore,org.eclipse.emf.common.util,org.eclipse.emf.ecore.xml.type,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.ecore.impl,org.eclipse.emf.common.notify.impl,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=javax.crypto)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.crypto
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.crypto.spec)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.crypto.spec
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.datatype)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.datatype
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.parsers
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.resources)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.resources
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.runtime)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.runtime
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.runtime.content)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.runtime.content
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.notify)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.notify
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.plugin)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.plugin
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.internal)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.internal
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.6.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=[1.6.0,2.0.0)
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.helpers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.helpers
+    </require>
+  </resource>
+  <resource id='name.njbartlett.osgi.emf.minimal/2.6.1.v20100914-1218' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='file:bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar' version='2.6.1.v20100914-1218'>
+    <size>
+      2029922
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='name.njbartlett.osgi.emf.minimal'/>
+      <p n='symbolicname' v='name.njbartlett.osgi.emf.minimal'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common'/>
+      <p n='uses' v='org.eclipse.core.runtime,org.eclipse.emf.common.util,org.osgi.framework'/>
+      <p n='version' t='version' v='2.6.0.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.notify'/>
+      <p n='uses' v='org.eclipse.emf.common.util'/>
+      <p n='version' t='version' v='2.6.0.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.notify.impl'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.common.notify'/>
+      <p n='version' t='version' v='2.6.0.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.common.util'/>
+      <p n='uses' v='org.eclipse.core.runtime,org.eclipse.emf.common'/>
+      <p n='version' t='version' v='2.6.0.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.impl,org.eclipse.emf.ecore.util'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.util,org.eclipse.emf.ecore,org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource,org.eclipse.emf.common.notify.impl,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.common,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.xml.type'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.plugin'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,org.eclipse.core.runtime,org.osgi.framework,org.eclipse.emf.ecore,org.xml.sax.helpers,org.xml.sax,org.eclipse.emf.ecore.impl,org.eclipse.core.resources,org.eclipse.emf.common,org.eclipse.emf.common.util,javax.xml.parsers,org.eclipse.emf.ecore.resource.impl'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.resource'/>
+      <p n='uses' v='org.eclipse.core.runtime.content,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.common.util,org.eclipse.emf.ecore,org.eclipse.emf.common.notify'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.resource.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,javax.crypto.spec,javax.crypto,org.eclipse.emf.common.util,org.eclipse.emf.ecore,org.eclipse.emf.ecore.util,org.eclipse.core.runtime,org.eclipse.core.runtime.content,org.eclipse.emf.common,org.eclipse.emf.ecore.plugin,org.eclipse.core.resources,org.eclipse.emf.common.notify.impl,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.impl'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='uses' v='org.eclipse.emf.common.util,org.eclipse.emf.ecore.util,org.eclipse.emf.ecore'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type'/>
+      <p n='uses' v='org.eclipse.emf.ecore.util,org.eclipse.emf.ecore,org.eclipse.emf.common.util,javax.xml.datatype,javax.xml.namespace'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type.internal'/>
+      <p n='uses' v='org.eclipse.emf.ecore.xml.type,javax.xml.namespace,org.eclipse.emf.ecore.plugin,org.eclipse.emf.common.util,org.eclipse.emf.ecore.xml.type.util,javax.xml.datatype'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xml.type.util'/>
+      <p n='uses' v='org.xml.sax,org.eclipse.emf.ecore.xml.type,javax.xml.datatype,javax.xml.namespace,org.xml.sax.helpers,org.eclipse.emf.common.util,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore,org.eclipse.emf.ecore.xml.type.internal,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.util'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.util'/>
+      <p n='uses' v='org.eclipse.emf.common.notify,org.eclipse.emf.ecore,org.eclipse.emf.common.util,org.eclipse.emf.ecore.xml.type,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.ecore.impl,org.eclipse.emf.common.notify.impl,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.plugin,org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='version' t='version' v='2.6.1.v20100914-1218'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=javax.crypto)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.crypto
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.crypto.spec)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.crypto.spec
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.datatype)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.datatype
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.parsers
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.resources)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.resources
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.runtime)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.runtime
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.core.runtime.content)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.core.runtime.content
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.notify)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.notify
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.plugin)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.plugin
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.internal)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.internal
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.5.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=[1.5.0,2.0.0)
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.helpers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.helpers
+    </require>
+  </resource>
+  <resource id='name.njbartlett.osgi.emf.xmi/2.5.0.v20100521-1846' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='file:bundles/name.njbartlett.osgi.emf.xmi-2.5.0.jar' version='2.5.0.v20100521-1846'>
+    <size>
+      357938
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='name.njbartlett.osgi.emf.xmi'/>
+      <p n='symbolicname' v='name.njbartlett.osgi.emf.xmi'/>
+      <p n='version' t='version' v='2.5.0.v20100521-1846'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi'/>
+      <p n='uses' v='org.eclipse.emf.ecore,org.w3c.dom,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.util,org.eclipse.emf.common.util,org.eclipse.emf.common,org.xml.sax.ext,org.xml.sax,javax.xml.parsers,org.eclipse.emf.ecore.xml.type'/>
+      <p n='version' t='version' v='2.5.0.v20100521-1846'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.xmi,org.eclipse.emf.ecore,org.eclipse.emf.ecore.util,org.w3c.dom,org.eclipse.emf.common.util,org.xml.sax,org.xml.sax.helpers,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore.xml.type,org.eclipse.emf.common,org.eclipse.emf.ecore.impl,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.ecore.xmi.util,org.eclipse.emf.ecore.xml.type.internal,javax.xml.namespace,org.xml.sax.ext,javax.xml.parsers,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='version' t='version' v='2.5.0.v20100521-1846'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi.util'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.util,org.eclipse.emf.ecore.xmi,org.eclipse.emf.common.util,org.eclipse.emf.common,org.eclipse.emf.ecore.xmi.impl,org.eclipse.emf.ecore.resource.impl,org.w3c.dom,org.xml.sax,org.eclipse.emf.ecore,org.eclipse.emf.ecore.impl'/>
+      <p n='version' t='version' v='2.5.0.v20100521-1846'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.parsers
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.notify)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.notify
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.internal)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.internal
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.w3c.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.w3c.dom
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.ext)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.ext
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.helpers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.helpers
+    </require>
+  </resource>
+  <resource id='name.njbartlett.osgi.emf.xmi/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='file:bundles/name.njbartlett.osgi.emf.xmi-2.7.0.jar' version='2.7.0.201104130744'>
+    <size>
+      362154
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='name.njbartlett.osgi.emf.xmi'/>
+      <p n='symbolicname' v='name.njbartlett.osgi.emf.xmi'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi'/>
+      <p n='uses' v='org.eclipse.emf.ecore,org.w3c.dom,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.util,org.eclipse.emf.common.util,org.eclipse.emf.common,org.xml.sax.ext,org.xml.sax,javax.xml.parsers,org.eclipse.emf.ecore.xml.type'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi.impl'/>
+      <p n='uses' v='org.eclipse.emf.ecore.xmi,org.eclipse.emf.ecore,org.eclipse.emf.ecore.util,org.w3c.dom,org.eclipse.emf.common.util,org.xml.sax,org.xml.sax.helpers,org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.resource.impl,org.eclipse.emf.ecore.xml.type,org.eclipse.emf.common,org.eclipse.emf.ecore.impl,org.eclipse.emf.ecore.xml.type.util,org.eclipse.emf.ecore.xmi.util,org.eclipse.emf.ecore.xml.type.internal,javax.xml.namespace,org.xml.sax.ext,javax.xml.parsers,org.eclipse.emf.common.notify,org.eclipse.emf.ecore.xml.namespace'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.emf.ecore.xmi.util'/>
+      <p n='uses' v='org.eclipse.emf.ecore.resource,org.eclipse.emf.ecore.util,org.eclipse.emf.ecore.xmi,org.eclipse.emf.common.util,org.eclipse.emf.common,org.eclipse.emf.ecore.xmi.impl,org.eclipse.emf.ecore.resource.impl,org.w3c.dom,org.xml.sax,org.eclipse.emf.ecore,org.eclipse.emf.ecore.impl'/>
+      <p n='version' t='version' v='2.7.0.201104130744'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.parsers
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.notify)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.notify
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.common.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.common.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.resource.impl)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.resource.impl
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.namespace
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.internal)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.internal
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.emf.ecore.xml.type.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.emf.ecore.xml.type.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.w3c.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.w3c.dom
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.ext)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.ext
+    </require>
+    <require extend='false' filter='(&amp;(package=org.xml.sax.helpers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.xml.sax.helpers
+    </require>
+  </resource>
+  <resource id='org.apache.felix.shell/1.4.2' presentationname='Apache Felix Shell Service' symbolicname='org.apache.felix.shell' uri='file:bundles/org.apache.felix.shell-1.4.2.jar' version='1.4.2'>
+    <description>
+      A simple OSGi command shell service.
+    </description>
+    <size>
+      62719
+    </size>
+    <license>
+      http://www.apache.org/licenses/LICENSE-2.0.txt
+    </license>
+    <documentation>
+      http://www.apache.org/
+    </documentation>
+    <capability name='service'>
+      <p n='service' v='org.apache.felix.shell.ShellService'/>
+    </capability>
+    <capability name='service'>
+      <p n='service' v='org.ungoverned.osgi.service.shell.ShellService'/>
+    </capability>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='Apache Felix Shell Service'/>
+      <p n='symbolicname' v='org.apache.felix.shell'/>
+      <p n='version' t='version' v='1.4.2'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.ungoverned.osgi.service.shell'/>
+      <p n='uses' v='org.osgi.framework'/>
+      <p n='version' t='version' v='1.0.0'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.osgi.service.log'/>
+      <p n='uses' v='org.osgi.framework'/>
+      <p n='version' t='version' v='1.3.0'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.apache.felix.shell'/>
+      <p n='uses' v='org.osgi.framework'/>
+      <p n='version' t='version' v='1.0.0'/>
+    </capability>
+    <require extend='false' filter='(service=org.osgi.service.startlevel.StartLevel)' multiple='true' name='service' optional='false'>
+      Import Service org.osgi.service.startlevel.StartLevel
+    </require>
+    <require extend='false' filter='(service=org.osgi.service.packageadmin.PackageAdmin)' multiple='true' name='service' optional='false'>
+      Import Service org.osgi.service.packageadmin.PackageAdmin
+    </require>
+    <require extend='false' filter='(&amp;(package=org.apache.felix.shell)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.apache.felix.shell ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.4.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=1.4.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.log)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.log ;version=1.3.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.packageadmin)(version&gt;=1.2.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.packageadmin ;version=1.2.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.startlevel)(version&gt;=1.1.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.startlevel ;version=1.1.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.ungoverned.osgi.service.shell)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.ungoverned.osgi.service.shell ;version=1.0.0
+    </require>
+  </resource>
+  <resource id='org.apache.felix.shell.tui/1.4.1' presentationname='Apache Felix Shell TUI' symbolicname='org.apache.felix.shell.tui' uri='file:bundles/org.apache.felix.shell.tui-1.4.1.jar' version='1.4.1'>
+    <description>
+      A simple textual user interface for Felix' shell service.
+    </description>
+    <size>
+      12740
+    </size>
+    <license>
+      http://www.apache.org/licenses/LICENSE-2.0.txt
+    </license>
+    <documentation>
+      http://felix.apache.org/site/apache-felix-shell-tui.html
+    </documentation>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='Apache Felix Shell TUI'/>
+      <p n='symbolicname' v='org.apache.felix.shell.tui'/>
+      <p n='version' t='version' v='1.4.1'/>
+    </capability>
+    <require extend='false' filter='(service=org.apache.felix.shell.ShellService)' multiple='true' name='service' optional='false'>
+      Import Service org.apache.felix.shell.ShellService
+    </require>
+    <require extend='false' filter='(&amp;(package=org.apache.felix.shell)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.apache.felix.shell ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=1.3.0
+    </require>
+  </resource>
+  <resource id='org.example.dummy/1.0.0' presentationname='Dummy' symbolicname='org.example.dummy' uri='http://127.0.0.1:18080/bundles/dummybundle.jar' version='1.0.0'>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='Dummy'/>
+      <p n='symbolicname' v='org.example.dummy'/>
+      <p n='version' t='version' v='1.0.0'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.example.dummy'/>
+      <p n='version' t='version' v='1.0.0'/>
+    </capability>
+  </resource>
+</repository>

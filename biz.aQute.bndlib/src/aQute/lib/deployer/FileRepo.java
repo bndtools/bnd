@@ -41,7 +41,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		String location = (String) map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException(
-					"Location muse be set on a FileRepo plugin");
+					"Location must be set on a FileRepo plugin");
 
 		root = new File(location);
 		if (!root.isDirectory())
