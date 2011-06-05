@@ -8,7 +8,6 @@ workspace.bundles: \
 	bndtools.core;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
-	bndtools.repository.orbit;version=snapshot,\
 	bndtools.diff;version=snapshot,\
 	bndtools.release;version=snapshot
 
@@ -24,11 +23,6 @@ p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.jarprocessor
 
 sdk.bundles: org.eclipse.sdk,\
-	org.eclipse.help.ui,\
-	org.eclipse.help.base,\
-	org.eclipse.ui.cheatsheets,\
-	org.apache.lucene,\
-	org.apache.lucene.analysis,\
 	org.eclipse.pde.runtime
 
 help.bundles: \
@@ -119,7 +113,6 @@ crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.ui,\
 	org.eclipse.ltk.core.refactoring,\
-	org.eclipse.search,\
 	org.eclipse.ui.navigator.resources,\
 	org.eclipse.ui.navigator,\
 	org.eclipse.ui.views.properties.tabbed,\
