@@ -1,7 +1,7 @@
 -buildpath: bndtools.core;version=snapshot
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.17
+Bundle-Version: 0.0.18
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	repo=repo,\
