@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class OBR implements Plugin, RepositoryPlugin {
 	public static final String LOCATION = "location";
 	public static final String CACHE = "cache";
 	
-	static final String FILE_URI_PREFIX = "file:";
+	static final String FILE_SCHEME = "file";
 	
 	boolean initialised = false;
 	final Map<String, SortedMap<Version, Resource>> pkgResourceMap = new HashMap<String, SortedMap<Version, Resource>>();
@@ -252,40 +253,40 @@ public class OBR implements Plugin, RepositoryPlugin {
 	}
 	
 	File mapResourceToFile(Resource resource) throws Exception {
+		return mapUrlToFile(resource.getBaseUrl(), resource.getUrl());
+	}
+
+	File mapUrlToFile(String baseUrlStr, String urlStr) throws Exception {
 		File result;
 		
-		String urlStr = resource.getUrl();
-		if (urlStr.startsWith(FILE_URI_PREFIX)) {
-			String path = urlStr.substring(FILE_URI_PREFIX.length());
-			if (path.length() > 0 && path.charAt(0) != '/') {
-				String baseUrlStr = resource.getBaseUrl();
-				if (baseUrlStr != null && baseUrlStr.startsWith(FILE_URI_PREFIX)) {
-					File baseFile = new File(baseUrlStr.substring(FILE_URI_PREFIX.length()));
-					File baseDir = baseFile.getParentFile();
-					result = new File(baseDir, path);
-				} else {
-					result = new File(path);
-				}
-			} else {
-				result = new File(path);
-			}
+		URI baseUri = new URI(baseUrlStr);
+		URI uri = new URI(urlStr);
+		if (FILE_SCHEME.equals(uri.getScheme())) {
+			String path = uri.getSchemeSpecificPart();
+			if (path.length() > 0 && path.charAt(0) != '/')
+				uri = new URI(null, null, path, null);
+		}
+		uri = baseUri.resolve(uri);
+		
+		if (FILE_SCHEME.equals(uri.getScheme())) {
+			result = new File(uri.getPath());
 		} else {
-			URL url = new URL(urlStr);
-			result = getOrCreateCacheFile(url);
+			result = getOrCreateCacheFile(uri);
 		}
 		
 		return result;
 	}
-
-	File getOrCreateCacheFile(URL url) throws IOException {
+	
+	File getOrCreateCacheFile(URI uri) throws IOException {
 		File result;
+		
 		ensureCacheDirExists();
-		result = mapPath(url.getFile());
+		result = mapPath(uri.getPath());
 		if (result.exists()) {
 			if (!result.isFile())
 				throw new IOException(String.format("Cannot create cache file '%s': a directory or other node with that name exists.", result.getAbsolutePath()));
 		} else {
-			copyToFile(url, result);
+			copyToFile(uri, result);
 		}
 		return result;
 	}
@@ -302,11 +303,11 @@ public class OBR implements Plugin, RepositoryPlugin {
 		}
 	}
 
-	void copyToFile(URL url, File file) throws IOException {
+	void copyToFile(URI uri, File file) throws IOException {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
-			in = url.openStream();
+			in = uri.toURL().openStream();
 			out = new FileOutputStream(file);
 			
 			byte[] buf = new byte[1024];
