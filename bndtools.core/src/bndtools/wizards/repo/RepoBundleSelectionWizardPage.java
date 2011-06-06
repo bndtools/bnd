@@ -73,6 +73,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     ViewerFilter sourceProjectFilter = new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
+            /*
             if (sourceProject == null)
                 return true;
             if (element instanceof Project) {
@@ -81,6 +82,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
                 if (viewerProject.getBase().equals(sourceProject.getBase()))
                     return false;
             }
+            */
             return true;
         }
     };
