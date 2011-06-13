@@ -54,7 +54,7 @@
 			</head>
 			<body style="width:800px">
 				<h2>Summary</h2>
-				<p>The following table provides a sumary of the test information.</p>
+				<p>The following table provides a summary of the test information.</p>
 				<table>
 					<tr>
 						<th>Property Key</th>
