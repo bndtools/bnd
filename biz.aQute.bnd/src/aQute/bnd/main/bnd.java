@@ -2175,8 +2175,8 @@ public class bnd extends Processor {
 
 	public void doMerge(String args[], int i) throws Exception {
 		File out = null;
-		String prefix = "";
-		boolean maven;
+//		String prefix = "";
+//		boolean maven;
 
 		List<Jar> sourcePath = new ArrayList<Jar>();
 		while (i < args.length - 1) {
@@ -2184,7 +2184,7 @@ public class bnd extends Processor {
 			if (arg.equals("-o")) {
 				out = getFile(arg);
 			} else if (arg.equals("-maven")) {
-				maven = true;
+//				maven = true;
 			} else {
 				File source = getFile(arg);
 				if (source.exists()) {
