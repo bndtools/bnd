@@ -1,25 +1,56 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-import java.util.jar.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.jar.Manifest;
 
-import aQute.bnd.help.*;
+import aQute.bnd.help.Syntax;
+import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.Pom.Scope;
-import aQute.bnd.maven.support.*;
-import aQute.bnd.service.*;
+import aQute.bnd.maven.support.ProjectPom;
+import aQute.bnd.service.CommandPlugin;
+import aQute.bnd.service.DependencyContributor;
+import aQute.bnd.service.Deploy;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.bnd.service.action.*;
-import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.eclipse.*;
-import aQute.libg.generics.*;
-import aQute.libg.header.*;
-import aQute.libg.sed.*;
+import aQute.bnd.service.Scripter;
+import aQute.bnd.service.action.Action;
+import aQute.bnd.service.action.NamedAction;
+import aQute.lib.io.IO;
+import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Instruction;
+import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Processor;
+import aQute.lib.osgi.Resource;
+import aQute.lib.osgi.eclipse.EclipseClasspath;
+import aQute.libg.generics.Create;
+import aQute.libg.header.OSGiHeader;
+import aQute.libg.sed.Sed;
 
 /**
  * This class is NOT threadsafe
@@ -340,7 +371,9 @@ public class Project extends Processor {
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
-		return getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
+		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
+		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles);
+		return bundles;
 	}
 
 	private List<Container> parseRunpath() throws Exception {
@@ -446,6 +479,83 @@ public class Project extends Processor {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	public void appendPackages(Strategy strategyx, String spec, Collection<? super Container> result) throws Exception {
+		Map<String, Map<String, String>> packages = parseHeader(spec);
+		
+		for (Entry<String, Map<String, String>> entry : packages.entrySet()) {
+			String pkgName = entry.getKey();
+			Map<String, String> attrs = entry.getValue();
+			
+			Container found = null;
+			
+			String versionRange = attrs.get(Constants.VERSION_ATTRIBUTE);
+			if ("latest".equals(versionRange) || "snapshot".equals(versionRange)) {
+				found = getPackage(pkgName, versionRange, strategyx, attrs);
+			}
+			if (found == null) {
+				found = getPackage(pkgName, versionRange, strategyx, attrs);
+			}
+			
+			if (found != null) {
+				List<Container> libs = found.getMembers();
+				for (Container cc : libs) {
+					if (result.contains(cc))
+						warning("Multiple bundles with the same final URL: " + cc);
+					result.add(cc);
+				}
+			} else {
+				// Oops, not a bundle in sight :-(
+				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR,
+						null, "package " + pkgName + ";version=" + versionRange + " not found", attrs);
+				result.add(x);
+				warning("Can not find URL for package " + pkgName);
+			}
+		}
+	}
+
+	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs) throws Exception {
+		if ("snapshot".equals(range))
+			return new Container(this, "", range, Container.TYPE.ERROR, null, "snapshot not supported for package lookups", null);
+		
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		
+		Strategy useStrategy = strategyx;
+		if (attrs != null) {
+			String overrideStrategy = attrs.get("strategy");
+			if (overrideStrategy != null) {
+				if ("highest".equalsIgnoreCase(overrideStrategy))
+					useStrategy = Strategy.HIGHEST;
+				else if ("lowest".equalsIgnoreCase(overrideStrategy))
+					useStrategy = Strategy.LOWEST;
+				else if ("exact".equalsIgnoreCase(overrideStrategy))
+					useStrategy = Strategy.EXACT;
+			}
+		}
+		if ("latest".equals(range))
+			useStrategy = Strategy.HIGHEST;
+		
+		Map<String, String> props = new HashMap<String, String>();
+		props.putAll(attrs);
+		props.put("package", packageName);
+		
+		for (RepositoryPlugin plugin : plugins) {
+			try {
+				File result = plugin.get(null, range, useStrategy, props);
+				if (result != null) {
+					if (result.getName().endsWith("lib"))
+						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null,
+								attrs);
+					else
+						return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
+				}
+			} catch (Exception e) {
+				// Ignore... lots of repos will fail here
+			}
+		}
+		
+		return new Container(this, "X", range, Container.TYPE.ERROR, null, "package " + packageName + ";version=" + range + " Not found in " + plugins, null);
 	}
 
 	/**

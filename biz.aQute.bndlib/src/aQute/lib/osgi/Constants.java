@@ -62,6 +62,7 @@ public interface Constants {
 			SIGNATURE_TEST												};
 
 	String					BUILDPATH									= "-buildpath";
+	String					BUILDPACKAGES								= "-buildpackages";
 	String					BUMPPOLICY									= "-bumppolicy";
 	String					CONDUIT										= "-conduit";
 	String					COMPILER_SOURCE								= "-source";
