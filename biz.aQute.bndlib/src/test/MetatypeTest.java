@@ -110,6 +110,11 @@ public class MetatypeTest extends TestCase {
 		String xa$$__$$(); // a$_$
 		@Meta.AD(id="a..")
 		String xa_$_(); // a..
+		
+		String noid();
+		
+		@Meta.AD(id=Meta.NULL)
+		String nullid();
 	}
 	
 	public void testNaming() throws Exception {
@@ -132,6 +137,8 @@ public class MetatypeTest extends TestCase {
 		map.put("a$.$", "a$.$");
 		map.put("a$_$", "a$_$");
 		map.put("a..", "a..");
+		map.put("noid", "noid");
+		map.put("nullid", "nullid");
 		
 		Naming trt = Configurable.createConfigurable(Naming.class, map);
 		
@@ -152,6 +159,8 @@ public class MetatypeTest extends TestCase {
 		assertEquals( "a$.$", trt.a$$_$$() );
 		assertEquals( "a$_$", trt.a$$__$$() );
 		assertEquals( "a..", trt.a_$_() );
+		assertEquals( "noid", trt.noid() );
+		assertEquals( "nullid", trt.nullid() );
 
 		// By AD
 		assertEquals( "secret", trt.xsecret() );
