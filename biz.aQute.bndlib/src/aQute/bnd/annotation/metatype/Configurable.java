@@ -37,7 +37,7 @@ public class Configurable<T> {
 			Meta.AD ad = method.getAnnotation(Meta.AD.class);
 			String id = Configurable.mangleMethodName(method.getName());
 
-			if (ad != null && ad.id() != Meta.NULL)
+			if (ad != null && !ad.id().equals(Meta.NULL))
 				id = ad.id();
 
 			Object o = properties.get(id);
