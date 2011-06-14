@@ -106,7 +106,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 
 		Meta.Type type = getType(rtype);
 		
-		boolean required = ad ==null || ad.deflt() == null;
+		boolean required = ad ==null || ad.required();
 		String deflt = null;
 		String max = null;
 		String min = null;
