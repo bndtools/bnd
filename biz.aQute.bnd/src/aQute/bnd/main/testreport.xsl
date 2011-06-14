@@ -108,6 +108,12 @@
 					</tr>
 					<xsl:for-each select="/testsuite/testcase">
 						<xsl:variable name="total" select="count(error) + count(failure)" />
+						<xsl:variable name="class" select="@classname" />
+						<xsl:if test="not(preceding-sibling::*[@classname=$class])">
+							<tr>
+								<th colspan="5"><xsl:value-of select="$class"/></th>
+							</tr>
+						</xsl:if>
 						<tr>
 							<td width="15px">
 								<xsl:attribute name="class">
