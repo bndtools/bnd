@@ -148,6 +148,13 @@ public class bnd extends Processor {
 		for (String msg : getWarnings()) {
 			System.err.println(n++ + " : " + msg);
 		}
+		
+		if ( getErrors().size() != 0) {
+			System.err.flush();
+			System.out.flush();
+			Thread.sleep(1000);
+			System.exit(getErrors().size());
+		}
 	}
 
 	boolean doProject(Project project, String[] args, int i) throws Exception {
@@ -1870,7 +1877,8 @@ public class bnd extends Processor {
 			pw.close();
 			out.close();
 		}
-		System.err.println("Errors: " + errors);
+		if ( errors != 0)
+			error("Errors found %s", errors);
 	}
 
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
@@ -1890,7 +1898,9 @@ public class bnd extends Processor {
 				testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
+
 		ProjectTester tester = project.getProjectTester();
+
 		getInfo(project, project.toString() + ": ");
 
 		if (!isOk())
