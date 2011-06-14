@@ -136,9 +136,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			if (ad.description() != null)
 				description = ad.description();
 
-			if (ad.optionLabels() == null)
+			if (ad.optionLabels() != null)
 				optionLabels = ad.optionLabels();
-			if (ad.optionValues() == null)
+			if (ad.optionValues() != null )
 				optionValues = ad.optionValues();
 
 			if (ad.min() != null)
