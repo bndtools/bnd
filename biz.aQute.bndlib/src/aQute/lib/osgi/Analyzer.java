@@ -308,13 +308,8 @@ public class Analyzer extends Processor {
 			main.putValue(TOOL, "Bnd-" + getBndVersion());
 			main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
 		}
-		List<String> skipped = new ArrayList<String>();
-		String exportHeader = printClauses(exports, "uses:|include:|exclude:|mandatory:|"
-				+ IMPORT_DIRECTIVE, true, skipped);
-		if ( !skipped.isEmpty()) {
-			warning("Removed directive(s) on export because they are not standard nor start with 'x-': %s, allowed directives are: uses:, include:, exclude:, and mandatory:", skipped );
-			skipped.clear();
-		}
+		
+		String exportHeader = printClauses(exports, true);
 		
 
 		if (exportHeader.length() > 0)
@@ -324,9 +319,7 @@ public class Analyzer extends Processor {
 
 		Map<String, Map<String, String>> temp = removeKeys(imports, "java.");
 		if (!temp.isEmpty()) {
-			main.putValue(IMPORT_PACKAGE, printClauses(temp, "resolution:", skipped));
-			warning("Removed directive(s) on import because they are not standard nor start with 'x-': %s, allowed directive is resolution:", skipped );
-			skipped.clear();
+			main.putValue(IMPORT_PACKAGE, printClauses(temp));
 		} else {
 			main.remove(IMPORT_PACKAGE);
 		}
@@ -335,18 +328,18 @@ public class Analyzer extends Processor {
 		temp.keySet().removeAll(exports.keySet());
 
 		if (!temp.isEmpty())
-			main.putValue(PRIVATE_PACKAGE, printClauses(temp, "", null));
+			main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 		else
 			main.remove(PRIVATE_PACKAGE);
 
 		if (!ignored.isEmpty()) {
-			main.putValue(IGNORE_PACKAGE, printClauses(ignored, "", null));
+			main.putValue(IGNORE_PACKAGE, printClauses(ignored));
 		} else {
 			main.remove(IGNORE_PACKAGE);
 		}
 
 		if (bundleClasspath != null && !bundleClasspath.isEmpty())
-			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath, "", null));
+			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath));
 		else
 			main.remove(BUNDLE_CLASSPATH);
 

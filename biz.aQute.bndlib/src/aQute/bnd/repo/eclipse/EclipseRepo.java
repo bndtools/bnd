@@ -85,7 +85,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 
     private void write(File index, Map<String, Map<String, String>> map)
             throws Exception {
-        String s = Processor.printClauses(map, null);
+        String s = Processor.printClauses(map);
         index.getParentFile().mkdirs();
         FileWriter fw = new FileWriter(index);
         try {

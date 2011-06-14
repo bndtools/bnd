@@ -186,7 +186,7 @@ public class ManifestTest extends TestCase {
 		clause.put("version4", "   \"0.0\"    ");
 		clause.put("version5", "   0.0    ");
 		map.put("alpha", clause);
-		String s = Processor.printClauses(map,"");
+		String s = Processor.printClauses(map);
 		assertTrue( s.indexOf("version1=0")>=0);
 		assertTrue( s.indexOf("version2=\"0.0\"")>=0);
 		assertTrue( s.indexOf("version3=\"0.0\"")>=0);

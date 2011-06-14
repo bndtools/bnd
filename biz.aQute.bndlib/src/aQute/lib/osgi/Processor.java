@@ -842,17 +842,11 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 *            map { name => Map { attribute|directive => value } }
 	 * @return the clauses
 	 */
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives, List<String> skipped) {
-		return printClauses(exports, allowedDirectives, false, skipped);
-	}
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives) {
-		return printClauses(exports, allowedDirectives, false, null);
+	public static String printClauses(Map<String, Map<String, String>> exports) {
+		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives, boolean checkMultipleVersions, List<String> skipped) {
+	public static String printClauses(Map<String, Map<String, String>> exports,boolean checkMultipleVersions) {
 		StringBuffer sb = new StringBuffer();
 		String del = "";
 		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
@@ -867,25 +861,21 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			String outname = removeDuplicateMarker(name);
 			sb.append(del);
 			sb.append(outname);
-			printClause(clause, allowedDirectives, sb, skipped);
+			printClause(clause,  sb);
 			del = ",";
 		}
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, String allowedDirectives,
-			StringBuffer sb, List<String> skipped) {
+	public static void printClause(Map<String, String> map, 
+			StringBuffer sb) {
 
 		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
 			String key = j.next();
 
 			// Skip directives we do not recognize
-			if (!key.startsWith("x-") && key.endsWith(":")
-					&& (allowedDirectives == null || allowedDirectives.indexOf(key) < 0)) {
-				if ( skipped != null)
-					skipped.add(key);
+			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
 				continue;
-			}
 
 			String value = ((String) map.get(key)).trim();
 			sb.append(";");

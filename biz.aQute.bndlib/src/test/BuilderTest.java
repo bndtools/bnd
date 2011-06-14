@@ -23,7 +23,8 @@ public class BuilderTest extends TestCase {
 		Manifest m = jar.getManifest();
 		String s = m.getMainAttributes().getValue("Export-Package");
 		assertTrue( s.contains("x-foo:"));
-		assertFalse( s.contains("bar:"));
+		assertEquals( 1, b.getWarnings().size());
+		assertTrue( b.getWarnings().get(0).contains("bar:"));
 	}
 
 	/**
