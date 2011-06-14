@@ -64,7 +64,7 @@ public class Launcher implements ServiceListener {
 		this.parms = new LauncherConstants(properties);
 
 		out = System.err;
-		trace("inited runbundles=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
+		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 		watchdog = new TimerTask() {
 			long	begin	= propertiesFile.lastModified();
 
@@ -336,6 +336,8 @@ public class Launcher implements ServiceListener {
 			public void run() {
 				try {
 					FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
+					trace( "framework event " + result + " " + result.getType());
+					Thread.sleep(1000);
 					switch (result.getType()) {
 					case FrameworkEvent.STOPPED:
 						System.exit(LauncherConstants.OK);
@@ -790,6 +792,7 @@ public class Launcher implements ServiceListener {
 		out.println(sb);
 		if (e != null && parms.trace)
 			e.printStackTrace(out);
+		out.flush();
 	}
 
 	public void error(String msg, Object... objects) {
