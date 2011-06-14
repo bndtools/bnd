@@ -843,12 +843,16 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @return the clauses
 	 */
 	public static String printClauses(Map<String, Map<String, String>> exports,
+			String allowedDirectives, List<String> skipped) {
+		return printClauses(exports, allowedDirectives, false, skipped);
+	}
+	public static String printClauses(Map<String, Map<String, String>> exports,
 			String allowedDirectives) {
-		return printClauses(exports, allowedDirectives, false);
+		return printClauses(exports, allowedDirectives, false, null);
 	}
 
 	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives, boolean checkMultipleVersions) {
+			String allowedDirectives, boolean checkMultipleVersions, List<String> skipped) {
 		StringBuffer sb = new StringBuffer();
 		String del = "";
 		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
@@ -863,22 +867,25 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			String outname = removeDuplicateMarker(name);
 			sb.append(del);
 			sb.append(outname);
-			printClause(clause, allowedDirectives, sb);
+			printClause(clause, allowedDirectives, sb, skipped);
 			del = ",";
 		}
 		return sb.toString();
 	}
 
 	public static void printClause(Map<String, String> map, String allowedDirectives,
-			StringBuffer sb) {
+			StringBuffer sb, List<String> skipped) {
 
 		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
 			String key = j.next();
 
 			// Skip directives we do not recognize
 			if (!key.startsWith("x-") && key.endsWith(":")
-					&& (allowedDirectives == null || allowedDirectives.indexOf(key) < 0))
+					&& (allowedDirectives == null || allowedDirectives.indexOf(key) < 0)) {
+				if ( skipped != null)
+					skipped.add(key);
 				continue;
+			}
 
 			String value = ((String) map.get(key)).trim();
 			sb.append(";");
