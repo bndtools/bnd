@@ -54,6 +54,7 @@ public abstract class ProjectLauncher {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
+
 		updateFromProject();
 	}
 
@@ -64,7 +65,8 @@ public abstract class ProjectLauncher {
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
-		project.refresh();
+		// pkr: could not use this because this is killing the runtests.
+		// project.refresh();
 		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
 		
