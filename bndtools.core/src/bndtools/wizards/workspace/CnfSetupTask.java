@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
+import aQute.bnd.service.RepositoryPlugin;
 import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
 
@@ -31,7 +32,8 @@ class CnfSetupTask extends WorkspaceModifyOperation {
 		SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository...", 4);
 
 		LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1, 0));
-		LocalRepositoryTasks.installImplicitRepositoryContents(skipRepoContent, status, progress.newChild(2, 0));
+		RepositoryPlugin localRepo = LocalRepositoryTasks.getLocalRepository();
+		LocalRepositoryTasks.installImplicitRepositoryContents(skipRepoContent, status, progress.newChild(2, 0), localRepo);
 		LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1, 0));
 		if (!status.isOK())
 			throw new CoreException(status);

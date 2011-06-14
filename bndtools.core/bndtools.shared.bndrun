@@ -54,7 +54,9 @@ help.bundles: \
 	org.eclipse.ui.net
 
 # TODO: separate this morass into more coherent libs!
-crossplatform.bundles: bndtools.runtime.eclipse.applaunch,\
+crossplatform.bundles:\
+	biz.aQute.bndlib,\
+	bndtools.runtime.eclipse.applaunch,\
 	org.apache.felix.bundlerepository,\
 	stax2-api,\
 	woodstox-core-asl,\

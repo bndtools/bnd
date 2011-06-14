@@ -196,6 +196,7 @@
 				<include name="bndtools.diff/generated/*.jar"/>
 				<include name="bndtools.release/generated/*.jar"/>
 				
+				<include name="cnf/repo/biz.aQute.bndlib/biz.aQute.bndlib-1.44.0.jar"/>
 				<include name="cnf/repo/com.springsource.org.objectweb.asm/com.springsource.org.objectweb.asm-3.1.0.jar"/>
 				<include name="cnf/repo/com.springsource.org.objectweb.asm.tree/com.springsource.org.objectweb.asm.tree-3.1.0.jar"/>
 				<include name="cnf/repo/javax.xml/javax.xml-1.3.4.jar"/>

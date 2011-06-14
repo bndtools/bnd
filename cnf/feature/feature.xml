@@ -106,6 +106,13 @@ This Agreement is governed by the laws of the State of New York and the intellec
    <url>
       <update label="Bndtools" url="http://bndtools-updates.s3.amazonaws.com/"/>
    </url>
+   
+   <plugin
+         id="biz.aQute.bndlib"
+         download-size="0"
+         install-size="0"
+         version="1.44.0"
+         unpack="false"/>
 
    <plugin
          id="bndtools.core"

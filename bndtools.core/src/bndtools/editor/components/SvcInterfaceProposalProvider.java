@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,16 +37,14 @@ import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 
-import aQute.bnd.plugin.Activator;
-
 public class SvcInterfaceProposalProvider extends CachingContentProposalProvider {
-	
+
 	private IJavaSearchContext searchContext;
-	
+
 	public SvcInterfaceProposalProvider(IJavaSearchContext searchContext) {
 		this.searchContext = searchContext;
 	}
-	
+
 	public SvcInterfaceProposalProvider(final IJavaProject javaProject) {
 		this(new IJavaSearchContext() {
 			public IJavaProject getJavaProject() {
@@ -58,13 +55,13 @@ public class SvcInterfaceProposalProvider extends CachingContentProposalProvider
 			}
 		});
 	}
-	
+
 	@Override
 	protected boolean match(String contents, int position, IContentProposal proposal) {
 		final String prefix = contents.substring(0, position).toLowerCase();
 		return ((JavaContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix);
 	}
-	
+
 	@Override
 	protected List<IContentProposal> doGenerateProposals(String contents, int position) {
 		final String prefix = contents.substring(0, position);
@@ -86,7 +83,7 @@ public class SvcInterfaceProposalProvider extends CachingContentProposalProvider
 				}
 			}
 		};
-		
+
 		try {
 			if(searchContext.getRunContext() == null) {
 				runnable.run(new NullProgressMonitor());

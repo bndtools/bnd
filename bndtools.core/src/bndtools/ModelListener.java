@@ -1,4 +1,4 @@
-package aQute.bnd.plugin;
+package bndtools;
 
 import aQute.bnd.build.*;
 

@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
@@ -46,17 +45,15 @@ import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 
-import aQute.bnd.plugin.Activator;
-
 public class ComponentNameProposalProvider extends CachingContentProposalProvider {
-	
+
 	protected static final String XML_SUFFIX = ".xml";
 	private final IJavaSearchContext searchContext;
 
 	public ComponentNameProposalProvider(IJavaSearchContext searchContext) {
 		this.searchContext = searchContext;
 	}
-	
+
 	public ComponentNameProposalProvider(final IJavaProject javaProject) {
 		this(new IJavaSearchContext() {
 			public IJavaProject getJavaProject() {
@@ -67,7 +64,7 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 			}
 		});
 	}
-	
+
 	@Override
 	protected boolean match(String contents, int position, IContentProposal proposal) {
 		String lowerCasePrefix = contents.substring(0, position).toLowerCase();
@@ -79,13 +76,13 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 		}
 		return false;
 	}
-	
+
 	@Override
 	protected List<IContentProposal> doGenerateProposals(String contents, int position) {
 		final String prefix = contents.substring(0, position);
 		IJavaProject javaProject = searchContext.getJavaProject();
 		final List<IContentProposal> result = new ArrayList<IContentProposal>(100);
-		
+
 		// Resource matches
 		IProject project = javaProject.getProject();
 		try {
@@ -104,11 +101,12 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 		} catch (CoreException e) {
 			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for resources.", e));
 		}
-		
+
 		// Class matches
 		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 		final TypeNameRequestor requestor = new TypeNameRequestor() {
-			public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path) {
+			@Override
+            public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path) {
 				if(!Flags.isAbstract(modifiers) && (Flags.isPublic(modifiers) || Flags.isProtected(modifiers))) {
 					result.add(new JavaContentProposal(new String(packageName), new String(simpleTypeName), false));
 				}
@@ -138,16 +136,16 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 		}
 		return result;
 	}
-	
+
 	ILabelProvider createLabelProvider() {
 		return new ClassOrResourceLabelProvider();
 	}
-	
+
 	private static class ResourceProposal implements IContentProposal {
-		
+
 		final String name;
 		final String fullPath;
-		
+
 		public ResourceProposal(IResource resource) {
 			name = resource.getName();
 			fullPath = resource.getProjectRelativePath().toString();
@@ -171,17 +169,17 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 			return fullPath;
 		}
 	}
-	
+
 	private static class ClassOrResourceLabelProvider extends LabelProvider {
-		
+
 		private Image xmlImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/xml_file_obj.gif").createImage();
 		private Image classImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/class_obj.gif").createImage();
-		
+
 		@Override
 		public String getText(Object element) {
 			return ((IContentProposal) element).getLabel();
 		}
-		
+
 		@Override
 		public Image getImage(Object element) {
 			Image result = null;

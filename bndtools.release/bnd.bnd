@@ -15,6 +15,7 @@ Import-Package: org.eclipse.core.runtime;registry=!,\
 
 Private-Package: bndtools.release,\
 	bndtools.release.nl
+Conditional-Package: aQute.lib.io
 
 Include-Resource: /=resources
 

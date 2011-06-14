@@ -16,7 +16,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.project.BuildPathPart;
-import bndtools.editor.project.BuildSectionPart;
 import bndtools.editor.project.ClassPathPart;
 import bndtools.editor.project.SubBundlesPart;
 import bndtools.utils.MessageHyperlinkAdapter;
@@ -59,8 +58,8 @@ public class ProjectBuildPage extends FormPage {
         ClassPathPart classPathPart = new ClassPathPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(classPathPart);
 
-        BuildSectionPart buildPart = new BuildSectionPart(panel2, tk, Section.TITLE_BAR);
-        managedForm.addPart(buildPart);
+//        BuildSectionPart buildPart = new BuildSectionPart(panel2, tk, Section.TITLE_BAR);
+//        managedForm.addPart(buildPart);
 
         sashForm.hookResizeListener();
 
@@ -90,7 +89,7 @@ public class ProjectBuildPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         classPathPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        buildPart.getSection().setLayoutData(gd);
+//        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+//        buildPart.getSection().setLayoutData(gd);
     };
 }

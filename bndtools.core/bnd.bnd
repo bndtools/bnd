@@ -1,6 +1,5 @@
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
-bndlibver: 1.44.0
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: ${version}
@@ -27,20 +26,20 @@ felix.obr.packages: \
 	org.kxml2.io,\
 	org.xmlpull.v1
 	
-Private-Package: bndtools*,\
+Private-Package: bndtools,\
+	bndtools.*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
 	org.osgi.impl.bundle.obr.resource,\
 	org.osgi.service.obr,\
-	${felix.obr.packages}
+	${felix.obr.packages},\
+
+Conditional-Package: aQute.libg.*
 
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
 	bndtools.editor.model;version=${baseversion},\
-	bndtools.model.clauses;version=${baseversion},\
-	aQute.libg.*;version=${bndlibver},\
-	aQute.lib.*;version=${bndlibver},\
-	aQute.bnd.*;version=${bndlibver}
+	bndtools.model.clauses;version=${baseversion}
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources,\
@@ -84,7 +83,7 @@ eclipse.deps: \
 
 # Build and Run
 -buildpath: bndtools.bndplugins.repos;version=latest,\
-	biz.aQute.bndlib,\
+	biz.aQute.bndlib;version=1.44,\
 	org.apache.felix.bundlerepository,\
 	bindex,\
 	patricia_trie,\

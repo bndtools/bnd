@@ -1,4 +1,5 @@
--buildpath: bndtools.core;version=snapshot
+-buildpath: bndtools.core;version=snapshot,\
+	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Version: 0.0.18

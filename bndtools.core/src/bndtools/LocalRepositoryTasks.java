@@ -47,14 +47,12 @@ import org.osgi.service.prefs.Preferences;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.deployer.FileRepo;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import aQute.libg.version.Version;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.bindex.LocalRepositoryIndexer;
 import bndtools.utils.BundleUtils;
-import bndtools.utils.NullReporter;
 import bndtools.utils.ProgressReportingInputStream;
 
 public class LocalRepositoryTasks {
@@ -100,27 +98,30 @@ public class LocalRepositoryTasks {
             cnfProject.open(progress.newChild(1));
         }
 
-        IFolder repoFolder = getLocalRepositoryFolder(cnfProject);
+        IFolder repoFolder = getInitialLocalRepositoryFolder(cnfProject);
         if(!repoFolder.exists())
             repoFolder.create(true, true, progress.newChild(1));
         else
             progress.worked(1);
     }
 
-    @Deprecated
     public static RepositoryPlugin getLocalRepository() throws CoreException {
-        FileRepo repo = new FileRepo();
+        List<RepositoryPlugin> repos;
         try {
-            repo.setReporter(Central.getWorkspace());
+            Workspace workspace = Central.getWorkspace();
+            repos = workspace.getRepositories();
         } catch (Exception e) {
-            repo.setReporter(new NullReporter());
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying repositories from workspace.", e));
         }
 
-        Map<String, String> props = new HashMap<String, String>();
-        props.put("location", getLocalRepositoryFolder(getCnfProject()).getLocation().toString());
-        repo.setProperties(props);
+        if (repos == null || repos.isEmpty())
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No repositories configured in the workspace.", null));
 
-        return repo;
+        for (RepositoryPlugin repo : repos) {
+            if (repo.canWrite())
+                return repo;
+        }
+        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No writeable repositories configured in the workspace.", null));
     }
 
     private static class ImplicitRepositoryWrapper {
@@ -175,14 +176,12 @@ public class LocalRepositoryTasks {
         return result;
     }
 
-    public static IStatus installImplicitRepositoryContents(boolean skipContent, MultiStatus status, IProgressMonitor monitor) throws CoreException {
+    public static IStatus installImplicitRepositoryContents(boolean skipContent, MultiStatus status, IProgressMonitor monitor, RepositoryPlugin repository) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
         Map<String, Version> updatedVersions = new HashMap<String, Version>(installedVersions);
         boolean updated = false;
-
-        RepositoryPlugin localRepo = getLocalRepository();
 
         // Copy in the implicit repository contributions
         List<ImplicitRepositoryWrapper> implicitRepos = getImplicitRepositories(status);
@@ -196,7 +195,7 @@ public class LocalRepositoryTasks {
             Version installedVersion = updatedVersions.get(wrapper.contributorBSN);
             if (installedVersion == null || wrapper.contributorVersion.compareTo(installedVersion) > 0) {
                 if (!skipContent)
-                    initialiseAndInstallRepository(wrapper.repository, localRepo, status, progress.newChild(1));
+                    initialiseAndInstallRepository(wrapper.repository, repository, status, progress.newChild(1));
                 updatedVersions.put(wrapper.contributorBSN, wrapper.contributorVersion);
                 updated = true;
             }
@@ -247,8 +246,7 @@ public class LocalRepositoryTasks {
         SubMonitor progress = SubMonitor.convert(monitor, 1);
         IWorkspaceRunnable refreshOp = new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
-                IFolder folder = getLocalRepositoryFolder(getCnfProject());
-                folder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+                getCnfProject().getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
             }
         };
         ResourcesPlugin.getWorkspace().run(refreshOp, progress.newChild(1));
@@ -307,7 +305,7 @@ public class LocalRepositoryTasks {
         }
     }
 
-    static IFolder getLocalRepositoryFolder(IProject cnfProject) {
+    static IFolder getInitialLocalRepositoryFolder(IProject cnfProject) {
         return cnfProject.getFolder(PATH_REPO_FOLDER);
     }
 

@@ -3,7 +3,7 @@ Bundle-Version: 1.0.0.${tstamp;yyyyMMdd-HHmm}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource: resources
 
--buildpath: biz.aQute.bnd,\
+-buildpath: biz.aQute.bndlib,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.ui.editors,\
@@ -23,9 +23,9 @@ Include-Resource: resources
 	org.eclipse.core.jobs,\
 	org.eclipse.text
 Private-Package: bndtools.jareditor.internal,\
-	bndtools.utils,\
-	aQute.bnd.main,\
-	aQute.bnd.libsync
+	bndtools.utils
+Conditional-Package: aQute.lib.io,\
+	aQute.libg.generics
 
 Import-Package: org.eclipse.ui*;ui.workbench=!;texteditor=!,\
 	*

@@ -14,7 +14,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,18 +30,16 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import bndtools.Plugin;
 
-import aQute.bnd.plugin.Activator;
-
 @SuppressWarnings("restriction")
 public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
 
 	private final BndEditor formEditor;
 	private final String id;
 	private String lastLoaded;
-	
+
 	private int index;
 	private boolean stale = false;
-	
+
 	private final PropertyChangeListener propChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			stale = true;
@@ -50,12 +47,12 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	};
 
 	private Control control;
-	
+
 	public BndSourceEditorPage(String id, BndEditor formEditor) {
 		this.id = id;
 		this.formEditor = formEditor;
 	}
-	
+
 	@Override
 	public void dispose() {
 		this.formEditor.getBndModel().removePropertyChangeListener(propChangeListener);
@@ -77,7 +74,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
@@ -85,7 +82,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	public IManagedForm getManagedForm() {
 		return null;
 	}
-	
+
 	@Override
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
@@ -127,7 +124,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 			commit(false);
 		}
 	}
-	
+
 	void commit(boolean onSave) {
 		try {
 			// Only commit changes to the model if the document text has

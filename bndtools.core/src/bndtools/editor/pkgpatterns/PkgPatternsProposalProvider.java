@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.TreeSet;
 
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -39,10 +38,8 @@ import bndtools.Plugin;
 import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 
-import aQute.bnd.plugin.Activator;
-
 public class PkgPatternsProposalProvider extends CachingContentProposalProvider {
-	
+
 	private final IJavaSearchContext searchContext;
 
 	public PkgPatternsProposalProvider(IJavaSearchContext searchContext) {
@@ -52,7 +49,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 	@Override
 	protected Collection<? extends IContentProposal> doGenerateProposals(String contents, int position) {
 		String prefix = contents.substring(0, position);
-		
+
 		final int replaceFromPos;
 		if(prefix.startsWith("!")) { //$NON-NLS-1$
 			prefix = prefix.substring(1);
@@ -71,7 +68,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 			}
 		};
 		final TreeSet<PkgPatternProposal> result = new TreeSet<PkgPatternProposal>(comparator);
-		
+
 		final IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { searchContext.getJavaProject() });
 		final SearchPattern pattern = SearchPattern.createPattern("*" + prefix + "*", IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
 		final SearchRequestor requestor = new SearchRequestor() {
@@ -81,7 +78,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 				// Reject the default package and any package starting with "java." since these cannot be imported
 				if(pkg.isDefaultPackage() || pkg.getElementName().startsWith("java."))
 					return;
-	
+
 				result.add(new PkgPatternProposal(pkg, false, replaceFromPos));
 				result.add(new PkgPatternProposal(pkg, true, replaceFromPos));
 			}
@@ -95,7 +92,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 				}
 			}
 		};
-		
+
 		try {
 			IRunnableContext runContext = searchContext.getRunContext();
 			if(runContext != null) {

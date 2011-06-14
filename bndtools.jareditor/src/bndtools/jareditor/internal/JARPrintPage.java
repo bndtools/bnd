@@ -58,12 +58,12 @@ public class JARPrintPage extends FormPage {
     private String print(File file) throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(bos);
-        aQute.bnd.main.bnd x = new aQute.bnd.main.bnd();
-        x.setOut(ps);
+        Printer printer = new Printer();
+        printer.setOut(ps);
 
         // TODO: METATYPE throws NPE
         int options = 255;
-        x.doPrint(file.getAbsolutePath(), options);
+        printer.doPrint(file.getAbsolutePath(), options);
         ps.close();
         return new String( bos.toByteArray());
     }

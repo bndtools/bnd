@@ -27,8 +27,6 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Activator;
-import aQute.bnd.plugin.ModelListener;
 import aQute.bnd.service.Refreshable;
 
 public class Central {

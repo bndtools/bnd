@@ -20,8 +20,8 @@ import org.eclipse.jdt.core.JavaCore;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.ModelListener;
 import bndtools.Central;
+import bndtools.ModelListener;
 import bndtools.Plugin;
 
 /**
