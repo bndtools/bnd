@@ -111,7 +111,8 @@
 						<xsl:variable name="class" select="@classname" />
 						<xsl:if test="not(preceding-sibling::*[@classname=$class])">
 							<tr>
-								<th colspan="5"><xsl:value-of select="$class"/></th>
+							    <th/>
+								<th colspan="4"><xsl:value-of select="$class"/></th>
 							</tr>
 						</xsl:if>
 						<tr>
@@ -133,14 +134,16 @@
 							<td class="code">
 								<xsl:value-of select="@name" />
 								<xsl:if test="failure or error">
-									<ul>
-										<xsl:for-each select="failure">
-											<li><xsl:value-of select="@message" /></li>
-										</xsl:for-each>
-										<xsl:for-each select="error">
-											<li><xsl:value-of select="@message" /></li>
-										</xsl:for-each>
-									</ul>
+									<xsl:if test="failure[not(.)] or failure[not(.)]">
+										<ul>
+											<xsl:for-each select="failure[not(.)]">
+												<li><xsl:value-of select="@message" /></li>
+											</xsl:for-each>
+											<xsl:for-each select="error[not(.)]">
+												<li><xsl:value-of select="@message" /></li>
+											</xsl:for-each>
+										</ul>
+									</xsl:if>
 									<pre id="{@name}" style="display:none">
 										<xsl:for-each select="failure">
 											<div class="code">
