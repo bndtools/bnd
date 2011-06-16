@@ -69,6 +69,7 @@ public class FileInstallRepo extends FileRepo {
         File file = new File(dir, fName);
 
         jar.write(file);
+        fireBundleAdded(jar, file);
 
         file = new File(dir, bsn + "-latest.jar");
         if (file.isFile() && file.lastModified() < jar.lastModified()) {
