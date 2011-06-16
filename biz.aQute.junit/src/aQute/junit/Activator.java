@@ -68,7 +68,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	void automatic() {
-		final File reportDir = new File(context.getProperty(TESTER_DIR));
+		String testerDir = context.getProperty(TESTER_DIR);
+		if ( testerDir == null)
+			testerDir ="testdir";
+		
+		final File reportDir = new File(testerDir);
 		final List<Bundle> queue = new Vector<Bundle>();
 
 		trace("adding Bundle Listener for getting test bundle events");
