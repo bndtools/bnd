@@ -25,14 +25,15 @@ class Activator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "aQute.bmaker";
 
     // The shared instance
-    private static Activator   plugin;
-    BundleContext              context;
+    static volatile Activator       instance;
+    BundleContext                   context;
+    RepositoryListenerPluginTracker repoListenerTracker;
 
     /**
      * The constructor
      */
     public Activator() {
-        plugin = this;
+        instance = this;
     }
 
     /*
@@ -43,12 +44,15 @@ class Activator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        plugin = this;
+        instance = this;
         this.context = context;
 
         Hashtable<String,Object> p = new Hashtable<String, Object>();
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d", "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
+
+        repoListenerTracker = new RepositoryListenerPluginTracker(context);
+        repoListenerTracker.open();
     }
 
     /*
@@ -58,7 +62,8 @@ class Activator extends AbstractUIPlugin {
      */
     @Override
     public void stop(BundleContext context) throws Exception {
-        plugin = null;
+        repoListenerTracker.close();
+        instance = null;
         super.stop(context);
     }
 
@@ -68,7 +73,7 @@ class Activator extends AbstractUIPlugin {
      * @return the shared instance
      */
     public static Activator getDefault() {
-        return plugin;
+        return instance;
     }
 
     /**

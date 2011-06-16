@@ -15,11 +15,9 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -167,19 +165,11 @@ public class Central {
             // workspace = Workspace.getWorkspace(wsdir);
         }
         workspace.addBasicPlugin(new FilesystemUpdateListener());
+        workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
 
-        Activator.getDefault().getBundleContext().registerService(Workspace.class.getName(), workspace, null);
+        Activator.instance.context.registerService(Workspace.class.getName(), workspace, null);
 
         return workspace;
-    }
-
-    private static void initialiseWorkspace() throws CoreException {
-        IWorkspaceRunnable wsop = new IWorkspaceRunnable() {
-            public void run(IProgressMonitor monitor) throws CoreException {
-                LocalRepositoryTasks.configureBndWorkspace(monitor);
-            }
-        };
-        ResourcesPlugin.getWorkspace().run(wsop, null);
     }
 
     public void changed(Project model) {
