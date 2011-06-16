@@ -34,8 +34,6 @@ Private-Package: bndtools,\
 	org.osgi.service.obr,\
 	${felix.obr.packages},\
 
-Conditional-Package: aQute.libg.*
-
 Export-Package: bndtools.api.*;version=${baseversion},\
 	bndtools.types;version=${baseversion},\
 	bndtools.editor.model;version=${baseversion},\
