@@ -192,16 +192,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		if (regex != null)
 			pattern = Instruction.getPattern(regex);
 
-		String list[] = root.list();
 		List<String> result = new ArrayList<String>();
-		if (root != null) {
-			for (String f : list) {
-				if (pattern == null || pattern.matches(f))
-					result.add(f);
-			}
-		} else 
-			if ( reporter != null)
-				reporter.error("FileRepo root directory (%s) does not exist", root);
+		if (root == null) {
+			if (reporter != null) reporter.error("FileRepo root directory is not set.");
+		} else {
+			String list[] = root.list();
+			if (list != null) {
+				for (String f : list) {
+					if (pattern == null || pattern.matches(f))
+						result.add(f);
+				}
+			} else 
+				if ( reporter != null)
+					reporter.error("FileRepo root directory (%s) does not exist", root);
+		}
 
 		return result;
 	}
