@@ -11,13 +11,14 @@ import aQute.lib.osgi.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
 	public static String LOCATION = "location";
 	public static String READONLY = "readonly";
 	public static String NAME = "name";
 
 	File[] EMPTY_FILES = new File[0];
 	protected File root;
+	Registry registry;
 	boolean canWrite = true;
 	Pattern REPO_FILE = Pattern
 			.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
@@ -163,6 +164,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
 			reporter.progress("Updated " + file.getAbsolutePath());
+			fireBundleAdded(jar, file);
 		} else {
 			reporter.progress("Did not update " + jar
 					+ " because repo has a newer version");
@@ -173,7 +175,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		if (file.exists() && file.lastModified() < jar.lastModified()) {
 			jar.write(file);
 		}
+		
 		return file;
+	}
+
+	protected void fireBundleAdded(Jar jar, File file) {
+		if (registry == null)
+			return;
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		for (RepositoryListenerPlugin listener : listeners) {
+			try {
+				listener.bundleAdded(this, jar, file);
+			} catch (Exception e) {
+				if (reporter != null)
+					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+		}
 	}
 
 	public void setLocation(String string) {
@@ -192,16 +209,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 		if (regex != null)
 			pattern = Instruction.getPattern(regex);
 
-		String list[] = root.list();
 		List<String> result = new ArrayList<String>();
-		if (root != null) {
-			for (String f : list) {
-				if (pattern == null || pattern.matches(f))
-					result.add(f);
-			}
-		} else 
-			if ( reporter != null)
-				reporter.error("FileRepo root directory (%s) does not exist", root);
+		if (root == null) {
+			if (reporter != null) reporter.error("FileRepo root directory is not set.");
+		} else {
+			String list[] = root.list();
+			if (list != null) {
+				for (String f : list) {
+					if (pattern == null || pattern.matches(f))
+						result.add(f);
+				}
+			} else 
+				if ( reporter != null)
+					reporter.error("FileRepo root directory (%s) does not exist", root);
+		}
 
 		return result;
 	}
@@ -278,5 +299,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable {
 			}
 		}
 		return null;
+	}
+
+	public void setRegistry(Registry registry) {
+		this.registry = registry;
 	}
 }
