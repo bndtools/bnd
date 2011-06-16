@@ -17,7 +17,9 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.service.*,\
 	aQute.libg.reporter;version=1.0,\
 	aQute.libg.version,\
-	aQute.libg.sed
+	aQute.libg.sed,\
+	aQute.libg.header,\
+	aQute.libg.qtokens
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
 Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
