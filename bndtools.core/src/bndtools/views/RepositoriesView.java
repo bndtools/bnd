@@ -28,19 +28,24 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Jar;
+import bndtools.Activator;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 import bndtools.wizards.workspace.ImportBundleRepositoryWizard;
 
-public class RepositoriesView extends FilteredViewPart {
+public class RepositoriesView extends FilteredViewPart implements RepositoryListenerPlugin {
 
     private TreeViewer viewer;
 
@@ -49,8 +54,7 @@ public class RepositoriesView extends FilteredViewPart {
     private Action importRepoAction;
     private Action addBundlesAction;
 
-    private Action removeBundlesAction;
-
+    private ServiceRegistration registration;
 
     private class BsnFilter extends ViewerFilter {
         private final String filterStr;
@@ -157,6 +161,13 @@ public class RepositoriesView extends FilteredViewPart {
 
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
+        registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
+    }
+
+    @Override
+    public void dispose() {
+        registration.unregister();
+        super.dispose();
     }
 
     boolean addFilesToRepository(RepositoryPlugin repo, File[] files) {
@@ -249,5 +260,13 @@ public class RepositoriesView extends FilteredViewPart {
         toolBar.add(new Separator());
 
         super.fillToolBar(toolBar);
+    }
+
+    public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
+        if (viewer != null) SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+            public void run() {
+                viewer.refresh(repository);
+            }
+        });
     }
 }
