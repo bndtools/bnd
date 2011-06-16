@@ -25,7 +25,7 @@ public class RepositoryIndexerJob extends Job {
     public static void runIfNeeded() {
         IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
         IFile repoFile = cnfProject.getFile("repository.xml");
-//        if (!repoFile.exists()) {
+        if (!repoFile.exists()) {
             RepositoryIndexerJob job = new RepositoryIndexerJob("Indexing repositories...");
             job.setSystem(true);
             job.addJobChangeListener(new JobChangeAdapter() {
@@ -38,7 +38,7 @@ public class RepositoryIndexerJob extends Job {
             if (jobRef.compareAndSet(null, job)) {
                 job.schedule();
             }
-//        }
+        }
     }
 
     public static void joinRunningInstance(IProgressMonitor monitor) throws InterruptedException {
