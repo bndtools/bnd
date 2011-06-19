@@ -50,4 +50,8 @@ public interface IBndModel {
 
     List<String> getPrivatePackages();
 
+    void setSystemPackages(List<? extends String> packages);
+
+    List<String> getSystemPackages();
+
 }

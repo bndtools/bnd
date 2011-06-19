@@ -27,11 +27,14 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         newBuildPath.add(createBundleRef("osgi.core", "[4.1,5)"));
         newBuildPath.add(createBundleRef("osgi.cmpn", null));
         newBuildPath.add(createBundleRef("junit.osgi", null));
+        newBuildPath.add(createBundleRef("org.mockito.mockito-all", null));
         model.setBuildPath(newBuildPath);
 
         model.setTestSuites(Arrays.asList(ALL_TEST_CASES_MACRO));
         model.setRunFramework("org.apache.felix.framework");
-        model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
+        model.setPrivatePackages(Arrays.asList(new String[] { "org.example.tests" }));
+        model.setRunBundles(Arrays.asList(new VersionedClause[] { createBundleRef("org.mockito.mockito-all", null) }));
+        model.setSystemPackages(Arrays.asList(new String[] { "sun.reflect" }));
     }
 
     VersionedClause createBundleRef(String bsn, String version) {

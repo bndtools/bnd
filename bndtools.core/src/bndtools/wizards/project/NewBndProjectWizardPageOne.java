@@ -97,14 +97,13 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-        IClasspathEntry[] newEntries = new IClasspathEntry[2];
-
-        newEntries[0] = JavaCore.newSourceEntry(projectPath.append(PATH_SRC));
+        List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
+        newEntries.add(JavaCore.newSourceEntry(projectPath.append(PATH_SRC)));
 
         if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
-            newEntries[1] = JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN));
+            newEntries.add(JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN)));
 
-        return newEntries;
+        return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
     }
 
 	@Override

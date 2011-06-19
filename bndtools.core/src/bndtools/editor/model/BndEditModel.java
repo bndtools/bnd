@@ -375,6 +375,13 @@ public class BndEditModel implements IPersistableBndModel {
 		List<String> oldPackages = getPrivatePackages();
 		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
+    public List<String> getSystemPackages() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, listConverter);
+    }
+    public void setSystemPackages(List<? extends String> packages) {
+        List<String> oldPackages = getSystemPackages();
+        doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, stringListFormatter);
+    }
 	public List<String> getClassPath() {
 		return doGetObject(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
 	}
