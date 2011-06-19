@@ -2,7 +2,7 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.18
+Bundle-Version: 0.0.19
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	repo=repo,\
@@ -14,6 +14,6 @@ Include-Resource: plugin.xml=_plugin.xml,\
 
 Private-Package: bndtools.templates
 Import-Package: \
-	bndtools.api.repository;version="[0,1)",\
-	bndtools.api.repository.impl;version="[0,1)",\
+	bndtools.api.repository,\
+	bndtools.api.repository.impl,\
 	*
