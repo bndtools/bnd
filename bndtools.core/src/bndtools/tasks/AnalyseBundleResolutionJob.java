@@ -85,11 +85,9 @@ public class AnalyseBundleResolutionJob extends Job {
     				builderMap.put(inputFile, builder);
     				mergeCapabilities(exports, usedBy, bundleVersions, builder);
     			} catch (CoreException e) {
-    			    // TODO Auto-generated catch block
-    			    e.printStackTrace();
+    			    Plugin.logError("Error in bnd resolution analysis.", e);
     			} catch (Exception e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
+                    Plugin.logError("Error in bnd resolution analysis.", e);
     			}
 		    }
 		}

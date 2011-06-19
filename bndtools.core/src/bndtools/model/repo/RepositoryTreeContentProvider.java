@@ -98,7 +98,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     }
 
     void addRepositoryPlugins(List<Object> result, Workspace workspace) {
+        workspace.getErrors().clear();
         List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
+        for (String error : workspace.getErrors()) {
+            Plugin.logError(error, null);
+        }
         for (RepositoryPlugin repoPlugin : repoPlugins) {
             if (!CACHE_REPOSITORY.equals(repoPlugin.getName()))
                 result.add(repoPlugin);
