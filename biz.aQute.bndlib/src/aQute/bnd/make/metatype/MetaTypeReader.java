@@ -106,7 +106,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 
 		Meta.Type type = getType(rtype);
 		
-		boolean required = ad ==null || ad.deflt() == null;
+		boolean required = ad ==null || ad.required();
 		String deflt = null;
 		String max = null;
 		String min = null;
@@ -136,9 +136,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			if (ad.description() != null)
 				description = ad.description();
 
-			if (ad.optionLabels() == null)
+			if (ad.optionLabels() != null)
 				optionLabels = ad.optionLabels();
-			if (ad.optionValues() == null)
+			if (ad.optionValues() != null )
 				optionValues = ad.optionValues();
 
 			if (ad.min() != null)

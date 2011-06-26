@@ -1396,7 +1396,7 @@ public class Project extends Processor {
 	public void test() throws Exception {
 		clear();
 		ProjectTester tester = getProjectTester();
-		tester.setContinuous(false);
+		tester.setContinuous(isTrue( getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();
 
 		if (!isOk()) {

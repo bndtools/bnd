@@ -70,7 +70,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		Map<String, Map<String, String>> l = m.doServiceComponent();
 
-		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l, ""));
+		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
 
 		analyzer.getInfo(m, "Service-Component: ");
 		m.close();

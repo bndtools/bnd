@@ -148,6 +148,13 @@ public class bnd extends Processor {
 		for (String msg : getWarnings()) {
 			System.err.println(n++ + " : " + msg);
 		}
+		
+		if ( getErrors().size() != 0) {
+			System.err.flush();
+			System.out.flush();
+			Thread.sleep(1000);
+			System.exit(getErrors().size());
+		}
 	}
 
 	boolean doProject(Project project, String[] args, int i) throws Exception {
@@ -1811,36 +1818,43 @@ public class bnd extends Processor {
 		summary.addAttribute("date", new Date());
 		summary.addAttribute("ws", ws.getBase());
 
-		boolean hadOne = false;
-		for (; i < args.length; i++) {
-			if (args[i].startsWith("-reportdir")) {
-				reportDir = getFile(args[i]).getAbsoluteFile();
-				if (!reportDir.isDirectory())
-					error("reportdir must be a directory " + reportDir);
-			} else if (args[i].startsWith("-title")) {
-				summary.addAttribute("title", args[++i]);
-			} else if (args[i].startsWith("-dir")) {
-				cwd = getFile(args[++i]).getAbsoluteFile();
-			} else if (args[i].startsWith("-workspace")) {
-				File tmp = getFile(args[++i]).getAbsoluteFile();
-				ws = Workspace.getWorkspace(tmp);
-			} else {
-				File f = getFile(args[i]);
-				errors += runtTest(f, ws, reportDir, summary);
-				hadOne = true;
-			}
-		}
+		try {
+			boolean hadOne = false;
 
-		if (!hadOne) {
-			// See if we had any, if so, just use all files in
-			// the current directory
-			File[] files = cwd.listFiles();
-			for (File f : files) {
-				if (f.getName().endsWith(".bnd"))
+			for (; i < args.length; i++) {
+				if (args[i].startsWith("-reportdir")) {
+					reportDir = getFile(args[i]).getAbsoluteFile();
+					if (!reportDir.isDirectory())
+						error("reportdir must be a directory " + reportDir);
+				} else if (args[i].startsWith("-title")) {
+					summary.addAttribute("title", args[++i]);
+				} else if (args[i].startsWith("-dir")) {
+					cwd = getFile(args[++i]).getAbsoluteFile();
+				} else if (args[i].startsWith("-workspace")) {
+					File tmp = getFile(args[++i]).getAbsoluteFile();
+					ws = Workspace.getWorkspace(tmp);
+				} else {
+					File f = getFile(args[i]);
 					errors += runtTest(f, ws, reportDir, summary);
+					hadOne = true;
+				}
 			}
-		}
 
+			if (!hadOne) {
+				// See if we had any, if so, just use all files in
+				// the current directory
+				File[] files = cwd.listFiles();
+				for (File f : files) {
+					if (f.getName().endsWith(".bnd")) {
+						errors += runtTest(f, ws, reportDir, summary);
+					}
+				}
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+			error("FAILURE IN RUNTESTS",e);
+			errors++;
+		}
 		if (errors > 0)
 			summary.addAttribute("errors", errors);
 
@@ -1863,7 +1877,8 @@ public class bnd extends Processor {
 			pw.close();
 			out.close();
 		}
-		System.out.println("Errors: " + errors);
+		if ( errors != 0)
+			error("Errors found %s", errors);
 	}
 
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
@@ -1876,18 +1891,20 @@ public class bnd extends Processor {
 		if (!testFile.isFile()) {
 			error("No bnd file: %s", testFile);
 			test.addAttribute("exception", "No bnd file found");
-			return 1;
+			throw new FileNotFoundException("No bnd file found for " + testFile.getAbsolutePath());
 		}
 
 		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
 				testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
+
 		ProjectTester tester = project.getProjectTester();
+
 		getInfo(project, project.toString() + ": ");
 
 		if (!isOk())
-			return -1;
+			throw new IllegalStateException("Errors found while creating the bnd test project " + testFile.getAbsolutePath());
 
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
@@ -1947,7 +1964,7 @@ public class bnd extends Processor {
 			}
 		} catch (Exception e) {
 			test.addAttribute("failed", e);
-			return 1;
+			throw e;
 		} finally {
 			long duration = System.currentTimeMillis() - start;
 			test.addAttribute("duration", (duration + 500) / 1000);
@@ -2175,8 +2192,8 @@ public class bnd extends Processor {
 
 	public void doMerge(String args[], int i) throws Exception {
 		File out = null;
-		String prefix = "";
-		boolean maven;
+		// String prefix = "";
+		// boolean maven;
 
 		List<Jar> sourcePath = new ArrayList<Jar>();
 		while (i < args.length - 1) {
@@ -2184,7 +2201,7 @@ public class bnd extends Processor {
 			if (arg.equals("-o")) {
 				out = getFile(arg);
 			} else if (arg.equals("-maven")) {
-				maven = true;
+				// maven = true;
 			} else {
 				File source = getFile(arg);
 				if (source.exists()) {
@@ -2316,7 +2333,7 @@ public class bnd extends Processor {
 		Version v = new Version(version);
 		v = new Version(v.getMajor(), v.getMinor(), v.getMicro());
 		out.append(bsn);
-		out.append(";version=" + v +"\n");  // '[" + v + "," + v + "]'\n");
+		out.append(";version=" + v + "\n"); // '[" + v + "," + v + "]'\n");
 	}
 
 }

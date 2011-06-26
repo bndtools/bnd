@@ -306,8 +306,13 @@ public class Builder extends Analyzer {
 		cleanupVersion(imports, null);
 		cleanupVersion(exports, getVersion());
 		String version = getProperty(BUNDLE_VERSION);
-		if (version != null)
-			setProperty(BUNDLE_VERSION, cleanupVersion(version));
+		if (version != null) {
+			version = cleanupVersion(version);
+			if ( version.endsWith(".SNAPSHOT")) {
+				version = version.replaceAll("SNAPSHOT$", getProperty(SNAPSHOT,"SNAPSHOT"));
+			}
+			setProperty(BUNDLE_VERSION, version);
+		}
 	}
 
 	public void cleanupVersion(Map<String, Map<String, String>> mapOfMap, String defaultVersion) {

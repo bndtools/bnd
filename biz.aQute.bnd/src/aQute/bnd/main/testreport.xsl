@@ -54,7 +54,7 @@
 			</head>
 			<body style="width:800px">
 				<h2>Summary</h2>
-				<p>The following table provides a sumary of the test information.</p>
+				<p>The following table provides a summary of the test information.</p>
 				<table>
 					<tr>
 						<th>Property Key</th>
@@ -108,6 +108,13 @@
 					</tr>
 					<xsl:for-each select="/testsuite/testcase">
 						<xsl:variable name="total" select="count(error) + count(failure)" />
+						<xsl:variable name="class" select="@classname" />
+						<xsl:if test="not(preceding-sibling::*[@classname=$class])">
+							<tr>
+							    <th/>
+								<th colspan="4"><xsl:value-of select="$class"/></th>
+							</tr>
+						</xsl:if>
 						<tr>
 							<td width="15px">
 								<xsl:attribute name="class">
@@ -127,14 +134,16 @@
 							<td class="code">
 								<xsl:value-of select="@name" />
 								<xsl:if test="failure or error">
-									<ul>
-										<xsl:for-each select="failure">
-											<li><xsl:value-of select="@message" /></li>
-										</xsl:for-each>
-										<xsl:for-each select="error">
-											<li><xsl:value-of select="@message" /></li>
-										</xsl:for-each>
-									</ul>
+									<xsl:if test="failure[not(.)] or failure[not(.)]">
+										<ul>
+											<xsl:for-each select="failure[not(.)]">
+												<li><xsl:value-of select="@message" /></li>
+											</xsl:for-each>
+											<xsl:for-each select="error[not(.)]">
+												<li><xsl:value-of select="@message" /></li>
+											</xsl:for-each>
+										</ul>
+									</xsl:if>
 									<pre id="{@name}" style="display:none">
 										<xsl:for-each select="failure">
 											<div class="code">

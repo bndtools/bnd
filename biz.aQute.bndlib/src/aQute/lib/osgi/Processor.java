@@ -20,7 +20,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public static String			LIST_SPLITTER	= "\\\\?\\s*,\\s*";
+	public static String			LIST_SPLITTER	= "\\s*,\\s*";
 	final List<String>				errors			= new ArrayList<String>();
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
@@ -842,13 +842,11 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 *            map { name => Map { attribute|directive => value } }
 	 * @return the clauses
 	 */
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives) {
-		return printClauses(exports, allowedDirectives, false);
+	public static String printClauses(Map<String, Map<String, String>> exports) {
+		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			String allowedDirectives, boolean checkMultipleVersions) {
+	public static String printClauses(Map<String, Map<String, String>> exports,boolean checkMultipleVersions) {
 		StringBuffer sb = new StringBuffer();
 		String del = "";
 		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
@@ -863,21 +861,20 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			String outname = removeDuplicateMarker(name);
 			sb.append(del);
 			sb.append(outname);
-			printClause(clause, allowedDirectives, sb);
+			printClause(clause,  sb);
 			del = ",";
 		}
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, String allowedDirectives,
+	public static void printClause(Map<String, String> map, 
 			StringBuffer sb) {
 
 		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
 			String key = j.next();
 
 			// Skip directives we do not recognize
-			if (!key.startsWith("x-") && key.endsWith(":")
-					&& (allowedDirectives == null || allowedDirectives.indexOf(key) < 0))
+			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
 				continue;
 
 			String value = ((String) map.get(key)).trim();

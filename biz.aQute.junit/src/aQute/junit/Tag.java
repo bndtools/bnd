@@ -218,7 +218,18 @@ public class Tag {
 				if (content instanceof String) {
 					if (cdata) {
 						pw.print("<![CDATA[");
-						pw.print(content);
+						StringBuffer sb = new StringBuffer();
+						sb.append(content);
+						
+						// Unbelievable but Richard had cases
+						// where the contents matched the end ]]>
+						// specifier, so clean it up
+						int l = sb.indexOf("]]>");
+						while ( l >=0) {
+							sb.insert(l+2, '\\');
+							l = sb.indexOf("]]>", l+2);
+						}
+						pw.print(sb);
 						pw.print("]]>");
 					} else
 						formatted(pw, indent + 2, 60, escape((String) content));

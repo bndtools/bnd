@@ -534,6 +534,17 @@ public class Verifier extends Analyzer {
             classSpace = analyzeBundleClasspath(dot,
                     parseHeader(getHeader(Analyzer.BUNDLE_CLASSPATH)),
                     contained, referred, uses);
+        
+        
+        verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE);
+        verifyDirectives("Import-Package", "resolution:");
+        verifyDirectives("Require-Bundle", "visibility:|resolution:");
+        verifyDirectives("Fragment-Host", "resolution:");
+        verifyDirectives("Provide-Capability", "effective:|uses:");
+        verifyDirectives("Require-Capability", "effective:|resolve:|filter:");
+        verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:");
+        
+        
         verifyManifestFirst();
         verifyActivator();
         verifyActivationPolicy();
@@ -561,6 +572,30 @@ public class Verifier extends Analyzer {
     }
 
     /**
+     * Verify if the header does not contain any other directives
+     * 
+     * @param header
+     * @param directives
+     */
+    private void verifyDirectives(String header, String directives) {
+    	Pattern pattern = Pattern.compile(directives);
+    	Map<String,Map<String,String>> map = parseHeader(manifest.getMainAttributes().getValue(header));
+    	for ( Map.Entry<String, Map<String,String>> entry : map.entrySet()) {
+    		for ( String key : entry.getValue().keySet()) {
+    			if ( key.endsWith(":")) {
+    				if ( ! key.startsWith("x-")) {
+    					Matcher m = pattern.matcher(key);
+    					if ( m.matches())
+    						continue;
+    					
+    					warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header, directives.replace('|', ','));
+    				}
+    			}
+    		}
+    	}
+	}
+
+	/**
      * Verify the use clauses
      */
     private void verifyUses() {

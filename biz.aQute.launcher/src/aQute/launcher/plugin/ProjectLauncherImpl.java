@@ -89,7 +89,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.activators.addAll(getActivators());
 
 		if (!getSystemPackages().isEmpty()) {
-			lc.systemPackages = Processor.printClauses(getSystemPackages(), null);
+			lc.systemPackages = Processor.printClauses(getSystemPackages());
 		}
 		return lc;
 		

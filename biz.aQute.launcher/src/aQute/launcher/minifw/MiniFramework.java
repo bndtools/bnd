@@ -31,9 +31,14 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		long deadline = System.currentTimeMillis() + timeout;
 
 		while (state != Bundle.UNINSTALLED) {
-			long wait = deadline - System.currentTimeMillis();
-			if (wait <= 0)
-				return new FrameworkEvent(FrameworkEvent.WAIT_TIMEDOUT, this, null);
+			if (timeout != 0) {
+				long wait = deadline - System.currentTimeMillis();
+				if (wait <= 0)
+					return new FrameworkEvent(FrameworkEvent.WAIT_TIMEDOUT, this, null);
+			} else {
+				;
+			}
+			Thread.sleep(100);
 		}
 		return new FrameworkEvent(FrameworkEvent.STOPPED, this, null);
 	}
@@ -47,8 +52,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public URL getEntry(String path) {
-    	if ( path.startsWith("/"))
-    		path = path.substring(1);
+		if (path.startsWith("/"))
+			path = path.substring(1);
 		return loader.getResource(path);
 	}
 
@@ -138,15 +143,15 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public Bundle installBundle(String location) throws BundleException {
-		if (location.startsWith("reference:")) 
+		if (location.startsWith("reference:"))
 			location = location.substring("reference:".length()).trim();
 
-		if (location.startsWith("file:")) 
+		if (location.startsWith("file:"))
 			location = location.substring("file:".length()).trim();
 
-		while ( location.startsWith("//"))
+		while (location.startsWith("//"))
 			location = location.substring(1);
-		
+
 		try {
 			Context c = new Context(this, last, ++ID, location);
 			bundles.put(new Long(c.id), c);
@@ -164,7 +169,9 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			try {
 				URL url = new URL(location);
 			} catch (MalformedURLException e) {
-				throw new BundleException("For the mini framework, the location must be a proper URL even though this is not required by the specification " + location, e);
+				throw new BundleException(
+						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
+								+ location, e);
 			}
 			c = new Context(this, last, ++ID, location);
 			bundles.put(new Long(c.id), c);

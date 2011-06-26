@@ -55,11 +55,6 @@ public class JUnitEclipseReport implements TestReporter {
         message("%RUNTIME", "" + (System.currentTimeMillis() - startTime));
         out.flush();
         out.close();
-        try {
-            in.close();
-        } catch (Exception ioe) {
-            // ignore
-        }
     }
 
     public void addError(Test test, Throwable t) {
@@ -128,9 +123,16 @@ public class JUnitEclipseReport implements TestReporter {
         }
     }
 
-    public void aborted() {
-       
+    public void aborted() {   
         end();
     }
+
+	public void close() {
+        try {
+            in.close();
+        } catch (Exception ioe) {
+            // ignore
+        }		
+	}
 
 }

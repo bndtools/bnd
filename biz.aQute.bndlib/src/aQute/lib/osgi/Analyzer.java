@@ -308,8 +308,9 @@ public class Analyzer extends Processor {
 			main.putValue(TOOL, "Bnd-" + getBndVersion());
 			main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
 		}
-		String exportHeader = printClauses(exports, "uses:|include:|exclude:|mandatory:|"
-				+ IMPORT_DIRECTIVE, true);
+		
+		String exportHeader = printClauses(exports, true);
+		
 
 		if (exportHeader.length() > 0)
 			main.putValue(EXPORT_PACKAGE, exportHeader);
@@ -318,7 +319,7 @@ public class Analyzer extends Processor {
 
 		Map<String, Map<String, String>> temp = removeKeys(imports, "java.");
 		if (!temp.isEmpty()) {
-			main.putValue(IMPORT_PACKAGE, printClauses(temp, "resolution:"));
+			main.putValue(IMPORT_PACKAGE, printClauses(temp));
 		} else {
 			main.remove(IMPORT_PACKAGE);
 		}
@@ -327,18 +328,18 @@ public class Analyzer extends Processor {
 		temp.keySet().removeAll(exports.keySet());
 
 		if (!temp.isEmpty())
-			main.putValue(PRIVATE_PACKAGE, printClauses(temp, ""));
+			main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 		else
 			main.remove(PRIVATE_PACKAGE);
 
 		if (!ignored.isEmpty()) {
-			main.putValue(IGNORE_PACKAGE, printClauses(ignored, ""));
+			main.putValue(IGNORE_PACKAGE, printClauses(ignored));
 		} else {
 			main.remove(IGNORE_PACKAGE);
 		}
 
 		if (bundleClasspath != null && !bundleClasspath.isEmpty())
-			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath, ""));
+			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath));
 		else
 			main.remove(BUNDLE_CLASSPATH);
 

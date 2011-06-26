@@ -18,7 +18,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	boolean				continuous	= false;
 	boolean				trace		= false;
 	PrintStream			out			= System.err;
-
+	JUnitEclipseReport	jUnitEclipseReport;
+	
 	public Activator() {
 		super("bnd Runtime Test Bundle");
 	}
@@ -31,6 +32,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public void stop(BundleContext context) throws Exception {
 		active = false;
+		if ( jUnitEclipseReport != null)
+			jUnitEclipseReport.close();
 		interrupt();
 		join(10000);
 	}
@@ -39,8 +42,15 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
 		String testcases = context.getProperty(TESTER_NAMES);
-		if (context.getProperty(TESTER_PORT) != null)
+		if (context.getProperty(TESTER_PORT) != null) {
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
+			try {
+				jUnitEclipseReport = new JUnitEclipseReport(port);
+			} catch (Exception e) {
+				System.err.println("Cannot create link Eclipse JUnit on port " + port);
+				System.exit(-2);
+			}
+		}
 
 		if (testcases == null) {
 			trace("automatic testing of all bundles with Test-Cases header");
@@ -58,7 +68,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	void automatic() {
-		final File reportDir = new File(context.getProperty(TESTER_DIR));
+		String testerDir = context.getProperty(TESTER_DIR);
+		if ( testerDir == null)
+			testerDir ="testdir";
+		
+		final File reportDir = new File(testerDir);
 		final List<Bundle> queue = new Vector<Bundle>();
 
 		trace("adding Bundle Listener for getting test bundle events");
@@ -76,6 +90,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		}
 
 		trace("starting queue");
+		int result = 0;
 		outer: while (active) {
 			Bundle bundle;
 			synchronized (queue) {
@@ -94,9 +109,13 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				trace("received bundle to test: %s", bundle.getLocation());
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
-					int result = test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
-					if ( !continuous)
+					trace("test will run");
+					result += test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
+					trace("test ran");
+					if ( queue.isEmpty() && !continuous) {
+						trace( "queue " + queue );
 						System.exit(result);
+					}
 				} finally {
 					if (report != null)
 						report.close();
@@ -176,7 +195,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				add(reporters, result, basic);
 
 				if (port > 0) {
-					add(reporters, result, new JUnitEclipseReport(port));
+					add(reporters, result, jUnitEclipseReport);
 				}
 
 				if (report != null) {
