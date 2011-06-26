@@ -48,13 +48,13 @@ public class OBR implements Plugin, RepositoryPlugin {
 	File cacheDir;
 
 	public void setProperties(Map<String, String> map) {
+		String locationsStr = map.get(LOCATION);
 		try {
-			String locationsStr = map.get(LOCATION);
 			if (locationsStr == null)
-				throw new IllegalArgumentException("Location must be set of an OBR plugin");
+				throw new IllegalArgumentException("Location must be set on an OBR plugin");
 			locations = parseLocations(locationsStr);
 		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException("Invalid location property", e);
+			throw new IllegalArgumentException(String.format("Invalid location, unable to parse as URL list: %s", locationsStr), e);
 		}
 		
 		String cacheDirStr = map.get(CACHE);
