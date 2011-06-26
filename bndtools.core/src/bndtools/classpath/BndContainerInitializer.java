@@ -4,7 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -12,6 +14,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
+import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -130,7 +133,23 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 //                    }
                 }
 
-                cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null);
+                IAccessRule[] accessRules;
+                String packageList = c.getAttributes().get("packages");
+                if (packageList != null) {
+                    List<IAccessRule> tmp = new LinkedList<IAccessRule>();
+                    StringTokenizer tokenizer = new StringTokenizer(packageList, ",");
+                    while (tokenizer.hasMoreTokens()) {
+                        String token = tokenizer.nextToken();
+                        String pathStr = token.replace('.', '/') + "/*";
+                        tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                    }
+                    tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                    accessRules = tmp.toArray(new IAccessRule[tmp.size()]);
+                } else {
+                    accessRules = null;
+                }
+
+                cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
                 result.add(cpe);
             }
         }
