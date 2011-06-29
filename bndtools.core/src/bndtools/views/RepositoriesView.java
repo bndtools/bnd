@@ -1,6 +1,7 @@
 package bndtools.views;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
@@ -30,6 +31,8 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
@@ -203,6 +206,12 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
             @Override
             public void run() {
                 try {
+                    Workspace workspace = Central.getWorkspace();
+                    List<RepositoryPlugin> repos = workspace.getPlugins(RepositoryPlugin.class);
+                    for (RepositoryPlugin repo : repos) {
+                        if (repo instanceof Refreshable)
+                            ((Refreshable) repo).refresh();
+                    }
                     viewer.setInput(Central.getWorkspace());
                 } catch (Exception e) {
                     Plugin.logError("Error loading repositories", e);

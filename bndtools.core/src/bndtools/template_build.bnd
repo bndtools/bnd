@@ -28,5 +28,7 @@ javac.debug:  on
 # Bnd Options
 -sources:       true
 -sourcepath:    ${project}/src 
--plugin:        aQute.lib.deployer.FileRepo;location=${repo}
+-plugin:        aQute.lib.deployer.FileRepo;location=${repo},\
+                aQute.lib.deployer.obr.OBR;location=file:${build}/repository.xml;cache=${workspace}/.obrcache
+
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"

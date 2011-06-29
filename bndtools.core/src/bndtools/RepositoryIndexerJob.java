@@ -18,7 +18,7 @@ public class RepositoryIndexerJob extends Job {
 
     private static final AtomicReference<Job> jobRef = new AtomicReference<Job>(null);
 
-    private RepositoryIndexerJob(String name) {
+    RepositoryIndexerJob(String name) {
         super(name);
     }
 
