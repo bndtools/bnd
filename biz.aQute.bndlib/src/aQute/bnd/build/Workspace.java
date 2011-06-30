@@ -260,6 +260,7 @@ public class Workspace extends Processor {
 	
 	@Override
 	protected void setTypeSpecificPlugins( Set<Object> list) {
+		super.setTypeSpecificPlugins(list);
 		list.add(maven);
 		list.add(cachedRepo);
 	}
