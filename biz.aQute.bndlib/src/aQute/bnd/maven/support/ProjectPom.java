@@ -130,8 +130,8 @@ public class ProjectPom extends Pom {
 		}
 	}
 
-	public Set<Pom> getDependencies(Scope scope) throws Exception {
-		return getDependencies(scope, repositories.toArray(new URI[0]));
+	public Set<Pom> getDependencies(Action action) throws Exception {
+		return getDependencies(action, repositories.toArray(new URI[0]));
 	}
 
 	// Match any macros

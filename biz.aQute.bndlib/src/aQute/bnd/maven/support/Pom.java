@@ -16,9 +16,23 @@ public abstract class Pom {
 	static {
 		dbf.setNamespaceAware(false);
 	}
+	
+	public enum Action {
+		compile, run, test;
+	}
 
 	public enum Scope {
-		compile, runtime, provided, system, import_, test
+		compile, runtime, system, import_, provided, test, ;
+		
+		private boolean includes(Scope other) {
+			if (other == this) return true;
+			switch (this) {
+			case compile:
+				return other == provided || other == test;
+			default:
+				return false;
+			}
+		}
 	};
 
 	final Maven			maven;
@@ -71,6 +85,27 @@ public abstract class Pom {
 		public Pom getPom() throws Exception {
 			return maven.getPom(groupId, artifactId, version);
 		}
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("Dependency [");
+			if (groupId != null)
+				builder.append("groupId=").append(groupId).append(", ");
+			if (artifactId != null)
+				builder.append("artifactId=").append(artifactId).append(", ");
+			if (version != null)
+				builder.append("version=").append(version).append(", ");
+			if (type != null)
+				builder.append("type=").append(type).append(", ");
+			if (scope != null)
+				builder.append("scope=").append(scope).append(", ");
+			builder.append("optional=").append(optional).append(", ");
+			if (exclusions != null)
+				builder.append("exclusions=").append(exclusions);
+			builder.append("]");
+			return builder.toString();
+		}
+		
 	}
 
 	public Pom(Maven maven, File pomFile, URI home) throws Exception {
@@ -158,7 +193,7 @@ public abstract class Pom {
 		}
 	}
 
-	public Set<Pom> getDependencies(Scope scope, URI... urls) throws Exception {
+	public Set<Pom> getDependencies(Action action, URI... urls) throws Exception {
 		Set<Pom> result = new LinkedHashSet<Pom>();
 
 		List<Rover> queue = new ArrayList<Rover>();
@@ -175,12 +210,19 @@ public abstract class Pom {
 
 			String name = groupId + "+" + artifactId;
 
-			if (rover.excludes(name))
+			if (rover.excludes(name) || dep.optional)
 				continue;
-
-			if (dep.scope == scope && !dep.optional) {
+			
+			boolean include = false;
+			if (dep.scope == Scope.compile) {
+				include = true;
+			} else if (dep.scope == Scope.test) {
+				include = rover.previous == null && (action == Action.compile || action == Action.test);
+			} else if (dep.scope == Scope.runtime) {
+				include = action == Action.run;
+			}
+			if (include) {
 				Pom sub = maven.getPom(groupId, artifactId, version, urls);
-
 				if (!result.contains(sub)) {
 					result.add(sub);
 					for (Dependency subd : sub.dependencies) {
@@ -200,9 +242,9 @@ public abstract class Pom {
 		return groupId + "+" + artifactId + "-" + version;
 	}
 
-	public File getLibrary(Scope scope, URI... repositories) throws Exception {
+	public File getLibrary(Action action, URI... repositories) throws Exception {
 		MavenEntry entry = maven.getEntry(this);
-		File file = new File(entry.dir, scope + ".lib");
+		File file = new File(entry.dir, action + ".lib");
 
 		if (file.isFile() && file.lastModified() >= getPomFile().lastModified())
 			return file;
@@ -212,7 +254,7 @@ public abstract class Pom {
 		Writer writer = new FileWriter(file);
 		doEntry(writer,this);
 		try {
-			for (Pom dep : getDependencies(scope, repositories)) {
+			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}
 		} finally {

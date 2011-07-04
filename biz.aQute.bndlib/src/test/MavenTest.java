@@ -235,7 +235,7 @@ public class MavenTest extends TestCase {
 		// URL("http://repository.springsource.com/maven/bundles/external"));
 		System.out.println(pom.getGroupId() + " + " + pom.getArtifactId() + "-" + pom.getVersion());
 
-		System.out.println(pom.getDependencies(Pom.Scope.compile));
+		System.out.println(pom.getDependencies(Pom.Action.compile));
 
 		File artifact = pom.getArtifact();
 		System.out.println(artifact);

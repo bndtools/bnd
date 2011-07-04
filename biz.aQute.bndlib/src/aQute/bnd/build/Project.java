@@ -628,27 +628,21 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             anything goes wrong
 	 */
-	public void doMavenPom(Strategy strategyx, List<Container> result, String scopes)
+	public void doMavenPom(Strategy strategyx, List<Container> result, String action)
 			throws Exception {
 		File pomFile = getFile("pom.xml");
 		if (!pomFile.isFile())
 			error("Specified to use pom.xml but the project directory does not contain a pom.xml file");
 		else {
 			ProjectPom pom = getWorkspace().getMaven().createProjectModel(pomFile);
-			if (scopes == null) {
-				if (strategyx == Strategy.LOWEST)
-					scopes = "compile";
-				else
-					scopes = "runtime";
-			}
-			for (String scope : Processor.split(scopes)) {
-				Scope sc = Scope.valueOf(scope);
-				Set<Pom> dependencies = pom.getDependencies(sc);
-				for (Pom sub : dependencies) {
-					File artifact = sub.getArtifact();
-					Container container = new Container(artifact);
-					result.add(container);
-				}
+			if (action == null)
+				action = "compile";
+			Pom.Action act = Pom.Action.valueOf(action);
+			Set<Pom> dependencies = pom.getDependencies(act);
+			for (Pom sub : dependencies) {
+				File artifact = sub.getArtifact();
+				Container container = new Container(artifact);
+				result.add(container);
 			}
 		}
 	}
