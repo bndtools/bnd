@@ -70,8 +70,11 @@ public abstract class ProjectLauncher {
 		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
 		
-		for (File file : project.toFile(run))
-			runbundles.add(file.getAbsolutePath());
+		for (Container container : run) {
+			File file = container.getFile();
+			if (file != null && file.isFile())
+				runbundles.add(file.getAbsolutePath());
+		}
 
 		if (project.getRunBuilds()) {
 			File[] builds = project.build();
