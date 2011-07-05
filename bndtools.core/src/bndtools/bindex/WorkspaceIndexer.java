@@ -54,12 +54,12 @@ public class WorkspaceIndexer extends AbstractIndexer {
             File bundleFile = new File(project.getTarget(), builder.getBsn() + ".jar");
             BundleInfo info = new BundleInfo(bindex, bundleFile);
             ResourceImpl resource = info.build();
-            if (isValidRuntimeBundle(resource)) {
-                resource.setURL(bundleFile.toURI().toURL());
 
-                resource.addCategory(category);
-                resources.add(resource);
-            }
+            resource.setURL(bundleFile.toURI().toURL());
+            resource.addCategory(category);
+            customizeResourceEntry(resource);
+
+            resources.add(resource);
             progress.worked(1);
         }
     }

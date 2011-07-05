@@ -17,6 +17,7 @@ import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
+import org.osgi.impl.bundle.obr.resource.RequirementImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.Tag;
 import org.osgi.service.obr.Resource;
@@ -26,7 +27,7 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
     public static final String CATEGORY_NO_RUNTIME = "NORUNTIME";
     public static final String REQUIREMENT_EXCLUDE = "exclude";
 
-    public static final Set<String> EXCLUDED_BSNS = new HashSet<String>(Arrays.asList(new String[] {
+    public static final Set<String> BUILD_ONLY_BSNS = new HashSet<String>(Arrays.asList(new String[] {
             "osgi.core",
             "org.eclipse.osgi",
             "org.apache.felix.framework",
@@ -130,9 +131,13 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
         }
     }
 
-    protected boolean isValidRuntimeBundle(Resource resource) {
-        String symbolicName = resource.getSymbolicName();
-        return !EXCLUDED_BSNS.contains(symbolicName);
+    protected void customizeResourceEntry(ResourceImpl resource) {
+        String bsn = resource.getSymbolicName();
+        if (BUILD_ONLY_BSNS.contains(bsn)) {
+            RequirementImpl modeRequirement = new RequirementImpl("mode");
+            modeRequirement.setFilter("(mode=build)");
+            resource.addRequirement(modeRequirement);
+        }
     }
 
 }

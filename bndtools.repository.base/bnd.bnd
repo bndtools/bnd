@@ -2,7 +2,7 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.20
+Bundle-Version: 0.0.21
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	repo=repo,\

@@ -60,11 +60,13 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
                 File bundleFile = bndRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
                 BundleInfo info = new BundleInfo(bindex, bundleFile);
                 ResourceImpl resource = info.build();
-                if (isValidRuntimeBundle(resource)) {
-                    resource.setURL(bundleFile.toURI().toURL());
-                    resource.addCategory(CATEGORY);
-                    resources.add(resource);
-                }
+
+                resource.setURL(bundleFile.toURI().toURL());
+                resource.addCategory(CATEGORY);
+
+                customizeResourceEntry(resource);
+
+                resources.add(resource);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
