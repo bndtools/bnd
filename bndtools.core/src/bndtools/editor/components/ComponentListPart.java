@@ -144,7 +144,11 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				doAdd();
+				try {
+                    doAdd();
+                } catch (Exception x) {
+                    Plugin.logError("Error adding component", x);
+                }
 			}
 		});
 		btnRemove.addSelectionListener(new SelectionAdapter() {
@@ -164,18 +168,22 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 	}
-	void doAdd() {
+	void doAdd() throws Exception {
 		String name;
 		ServiceComponent component;
 		int i = 0;
 		while(true) {
-			name = (i == 0 ? "new" : "new" + i++); //$NON-NLS-1$ //$NON-NLS-2$
+		    if (i == 0)
+		        name = "new"; //$NON-NLS-1$
+		    else
+		        name = String.format("new%d", i); //$NON-NLS-1$
 			if(!componentMap.containsKey(name)) {
 				component = new ServiceComponent(name, new HashMap<String, String>());
 				componentMap.put(name, component);
 				componentNames.add(name);
 				break;
 			}
+			if (i > 100) throw new Exception("Unable to find a free component name after 100 tries!");
 		}
 		viewer.add(name);
 		viewer.setSelection(new StructuredSelection(name), true);

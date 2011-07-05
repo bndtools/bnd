@@ -30,7 +30,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import bndtools.Plugin;
 
-@SuppressWarnings("restriction")
 public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
 
 	private final BndEditor formEditor;

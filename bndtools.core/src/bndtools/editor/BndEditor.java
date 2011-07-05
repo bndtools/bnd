@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -84,6 +85,8 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         }
     };
 
+    private final AtomicBoolean saving = new AtomicBoolean(false);
+
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		if(sourcePage.isActive() && sourcePage.isDirty()) {
@@ -92,7 +95,16 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 			commitPages(true);
 			sourcePage.refresh();
 		}
-		sourcePage.doSave(monitor);
+	    try {
+	        boolean saveLocked = this.saving.compareAndSet(false, true);
+	        if (!saveLocked) {
+	            Plugin.logError("Tried to save while already saving", null);
+	            return;
+	        }
+	        sourcePage.doSave(monitor);
+		} finally {
+		    this.saving.set(false);
+		}
 	}
 
     protected void ensurePageExists(String pageId, IFormPage page, int index) {
@@ -204,22 +216,17 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         docProvider.addElementStateListener(new IElementStateListener() {
             public void elementMoved(Object originalElement, Object movedElement) {
             }
-
             public void elementDirtyStateChanged(Object element, boolean isDirty) {
             }
-
             public void elementDeleted(Object element) {
             }
-
             public void elementContentReplaced(Object element) {
                 try {
-                    System.out.println("--> Content Replaced");
                     model.loadFrom(docProvider.getDocument(element));
                 } catch (IOException e) {
                     Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
                 }
             }
-
             public void elementContentAboutToBeReplaced(Object element) {
             }
         });
@@ -285,6 +292,20 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
                 }
             } else {
                 close(false);
+            }
+        } else if ((delta.getKind() & (IResourceDelta.CONTENT | IResourceDelta.CHANGED)) > 0) {
+            if (!saving.get()) {
+                final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+                final IDocument document = docProvider.getDocument(getEditorInput());
+                SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
+                    public void run() {
+                        try {
+                            model.loadFrom(document);
+                        } catch (IOException e) {
+                            Plugin.logError("Failed to reload document", e);
+                        }
+                    }
+                });
             }
         }
     }

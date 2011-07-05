@@ -134,6 +134,13 @@
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate">
          </action>
+         <action
+            id="bndtools.actions.openBrowser"
+            label="Open Web Browser"
+            toolbarPath="Normal/OSGi"
+            icon="icons/browser.gif"
+            tooltip="Open Web Browser"
+            class="org.bndtools.core.actions.OpenBrowserActionDelegate"/>
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
