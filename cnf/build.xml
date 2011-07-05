@@ -24,10 +24,9 @@
 		<taskdef resource="aQute/bnd/ant/taskdef.properties">
 			<classpath>
 				<path location="${workspacedir}/cnf/biz.aQute.bnd.jar"/>
-				<path location="${workspacedir}/cnf/buildlib/bndtools.bndplugins.repos.jar"/>
+				<!--<path location="${workspacedir}/cnf/buildlib/bndtools.bndplugins.repos.jar"/>-->
 			</classpath>
 		</taskdef>
-			<!-- classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" /-->
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 

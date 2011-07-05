@@ -7,8 +7,6 @@ Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
-Bundle-ClassPath: .,\
-	bndtools.bndplugins.repos-0.0.0.jar
 
 # 1. JUNit and Felix Shell are optional dependencies.
 # 2. Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
@@ -43,6 +41,7 @@ Include-Resource: plugin.xml=_plugin.xml,\
 	resources,\
 	${repo;bndtools.bndplugins.repos;latest}
 	
+# Build and Run
 eclipse.deps: \
 	osgi.core,\
 	org.eclipse.core.runtime,\
@@ -77,11 +76,7 @@ eclipse.deps: \
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.core.filebuffers,\
 	org.eclipse.core.expressions
-
-
-# Build and Run
--buildpath: bndtools.bndplugins.repos;version=latest,\
-	biz.aQute.bndlib;version=1.44,\
+-buildpath: biz.aQute.bndlib;version=1.44,\
 	org.apache.felix.bundlerepository,\
 	bindex,\
 	patricia_trie,\

@@ -57,7 +57,6 @@ help.bundles: \
 crossplatform.bundles:\
 	biz.aQute.bndlib,\
 	bndtools.runtime.eclipse.applaunch,\
-	org.apache.felix.bundlerepository,\
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml,\
