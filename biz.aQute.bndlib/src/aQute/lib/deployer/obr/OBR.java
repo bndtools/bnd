@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -22,8 +23,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.xml.sax.SAXException;
 
+import aQute.bnd.build.ResolverMode;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
@@ -127,8 +132,8 @@ public class OBR implements Plugin, RepositoryPlugin {
 			pkgResourceMap.clear();
 			IResourceListener pkgMapper = new IResourceListener() {
 				public boolean processResource(Resource resource) {
-					List<Capability> capabilities = resource.getCapabilities();
-					for (Capability capability : capabilities) {
+					
+					for (Capability capability : resource.getCapabilities()) {
 						if (CapabilityType.PACKAGE.getTypeName().equals(capability.getName())) {
 							String pkgName = null;
 							String versionStr = null;
@@ -213,7 +218,7 @@ public class OBR implements Plugin, RepositoryPlugin {
 			return null;
 		Resource[] resources = narrowVersions(versionMap, rangeStr);
 		
-		List<File> files = mapResourcesToFiles(resources);
+		List<File> files = mapResourcesToFiles(resources, null);
 		return (File[]) files.toArray(new File[files.size()]);
 	}
 
@@ -243,11 +248,35 @@ public class OBR implements Plugin, RepositoryPlugin {
 		return resources;
 	}
 	
-	List<File> mapResourcesToFiles(Resource[] resources) throws Exception {
+	List<File> mapResourcesToFiles(Resource[] resources, ResolverMode mode) throws Exception {
+		Properties modeCapability = new Properties();
+		if (mode != null)
+			modeCapability.setProperty(CapabilityType.MODE.getTypeName(), mode.name());
+		
 		List<File> list = new ArrayList<File>(resources.length);
 		for (Resource resource : resources) {
-			File file = mapResourceToFile(resource);
-			if (file != null) list.add(file);
+			boolean modeMatches;
+			Require modeRequire = resource.findRequire(CapabilityType.MODE.getTypeName());
+			if (modeRequire == null)
+				modeMatches = true;
+			else if (modeRequire.getFilter() == null)
+				modeMatches = false;
+			else {
+				try {
+					Filter filter = FrameworkUtil.createFilter(modeRequire.getFilter());
+					modeMatches = filter.match(modeCapability);
+				} catch (InvalidSyntaxException e) {
+					if (reporter != null)
+						reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
+					modeMatches = false;
+				}
+			}
+			
+			if (modeMatches) {
+				File file = mapResourceToFile(resource);
+				if (file != null)
+					list.add(file);
+			}
 		}
 		return list;
 	}
@@ -335,9 +364,12 @@ public class OBR implements Plugin, RepositoryPlugin {
 		if (bsn != null)
 			result = resolveBundle(bsn, range, strategy);
 		else {
-			String pkgName = properties.get("package");
+			String pkgName = properties.get(CapabilityType.PACKAGE.getTypeName());
+			String modeName = properties.get(CapabilityType.MODE.getTypeName());
+			
+			ResolverMode mode = (modeName != null) ? ResolverMode.valueOf(modeName) : null;
 			if (pkgName != null)
-				result = resolvePackage(pkgName, range, strategy);
+				result = resolvePackage(pkgName, range, strategy, mode);
 			else
 				throw new IllegalArgumentException("Cannot resolve bundle: neither bsn nor package specified.");
 		}
@@ -367,7 +399,7 @@ public class OBR implements Plugin, RepositoryPlugin {
 		return selected;
 	}
 
-	File resolvePackage(String pkgName, String rangeStr, Strategy strategy) throws Exception {
+	File resolvePackage(String pkgName, String rangeStr, Strategy strategy, ResolverMode mode) throws Exception {
 		init();
 		if (rangeStr == null) rangeStr = "0.0.0";
 		
@@ -376,7 +408,7 @@ public class OBR implements Plugin, RepositoryPlugin {
 			return null;
 		
 		Resource[] resources = narrowVersions(versionMap, rangeStr);
-		List<File> files = mapResourcesToFiles(resources);
+		List<File> files = mapResourcesToFiles(resources, mode);
 		
 		File selected;
 		if (files == null || files.isEmpty())

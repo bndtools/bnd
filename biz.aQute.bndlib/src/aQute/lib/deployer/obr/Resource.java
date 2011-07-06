@@ -17,15 +17,18 @@ public class Resource {
 	private final String url;
 	private final String version;
 	private final List<Capability> capabilities;
+	private final List<Require> requires;
 
-	private Resource(String id, String presentationName, String symbolicName, String baseUrl, String url, String version, List<Capability> capabilities) {
+	private Resource(String id, String presentationName, String symbolicName, String baseUrl, String url, String version, List<Capability> capabilities, List<Require> requires) {
 		this.id = id;
 		this.presentationName = presentationName;
 		this.symbolicName = symbolicName;
 		this.baseUrl = baseUrl;
 		this.url = url;
 		this.version = version;
+		
 		this.capabilities = capabilities;
+		this.requires = requires;
 	}
 	
 	public static class Builder {
@@ -36,6 +39,7 @@ public class Resource {
 		private String url;
 		private String version;
 		private final List<Capability> capabilities = new LinkedList<Capability>();
+		private final List<Require> requires = new LinkedList<Require>();
 		
 		public Builder setId(String id) {
 			this.id = id;
@@ -69,13 +73,17 @@ public class Resource {
 			this.capabilities.add(capabilityBuilder.build());
 			return this;
 		}
+		public Builder addRequire(Require require) {
+			this.requires.add(require);
+			return this;
+		}
 		
 		public Resource build() {
 			if (id == null) throw new IllegalStateException("'id' field is not initialised");
 			if (symbolicName == null) throw new IllegalStateException("'symbolicName' field is not initialised");
 			if (url == null) throw new IllegalStateException("'url' field is not initialised");
 			
-			return new Resource(id, presentationName, symbolicName, baseUrl, url, version, Collections.unmodifiableList(capabilities));
+			return new Resource(id, presentationName, symbolicName, baseUrl, url, version, Collections.unmodifiableList(capabilities), Collections.unmodifiableList(requires));
 		}
 	}
 
@@ -106,7 +114,21 @@ public class Resource {
 	public List<Capability> getCapabilities() {
 		return capabilities;
 	}
+	
+	public List<Require> getRequires() {
+		return requires;
+	}
+	
+	public Require findRequire(String name) {
+		for (Require require : requires) {
+			if (name.equals(require.getName()))
+				return require;
+		}
+		return null;
+	}
+	
 
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -184,5 +206,5 @@ public class Resource {
 			return false;
 		return true;
 	}
-	
+
 }

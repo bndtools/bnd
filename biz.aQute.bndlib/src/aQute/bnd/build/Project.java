@@ -31,7 +31,6 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.help.Syntax;
 import aQute.bnd.maven.support.Pom;
-import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.maven.support.ProjectPom;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
@@ -373,7 +372,7 @@ public class Project extends Processor {
 
 	private List<Container> parseBuildpath() throws Exception {
 		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
-		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles);
+		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles, ResolverMode.build);
 		return bundles;
 	}
 
@@ -492,7 +491,7 @@ public class Project extends Processor {
 	 *            The value of the @{code -buildpackages} instruction.
 	 * @throws Exception
 	 */
-	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles) throws Exception {
+	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles, ResolverMode mode) throws Exception {
 		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
 		
 		Map<String, Map<String, String>> packages = parseHeader(spec);
@@ -504,10 +503,10 @@ public class Project extends Processor {
 			
 			String versionRange = attrs.get(Constants.VERSION_ATTRIBUTE);
 			if ("latest".equals(versionRange) || "snapshot".equals(versionRange))
-				found = getPackage(pkgName, versionRange, strategyx, attrs);
+				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
 
 			if (found == null)
-				found = getPackage(pkgName, versionRange, strategyx, attrs);
+				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
 
 			if (found != null) {
 				// Skip if this bundle was already resolved by a previous stage (i.e. bsn-based resolution).
@@ -571,13 +570,14 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs) throws Exception {
+	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs, ResolverMode mode) throws Exception {
 		if ("snapshot".equals(range))
 			return new Container(this, "", range, Container.TYPE.ERROR, null, "snapshot not supported for package lookups", null);
 		
 		if (attrs == null)
 			attrs = new HashMap<String, String>(2);
 		attrs.put("package", packageName);
+		attrs.put("mode", mode.name());
 		
 		Strategy useStrategy = findStrategy(attrs, strategyx, range);
 		
