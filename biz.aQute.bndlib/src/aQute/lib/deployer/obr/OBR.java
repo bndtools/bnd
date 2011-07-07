@@ -9,7 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +33,8 @@ import org.xml.sax.SAXException;
 import aQute.bnd.build.ResolverMode;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
+import aQute.libg.generics.Create;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
@@ -132,16 +134,15 @@ public class OBR implements Plugin, RepositoryPlugin {
 			pkgResourceMap.clear();
 			IResourceListener pkgMapper = new IResourceListener() {
 				public boolean processResource(Resource resource) {
-					
 					for (Capability capability : resource.getCapabilities()) {
 						if (CapabilityType.PACKAGE.getTypeName().equals(capability.getName())) {
 							String pkgName = null;
 							String versionStr = null;
 							
 							for (Property prop : capability.getProperties()) {
-								if (CapabilityType.PACKAGE.getTypeName().equals(prop.getName()))
+								if (Property.PACKAGE.equals(prop.getName()))
 									pkgName = prop.getValue();
-								else if (Constants.VERSION_ATTRIBUTE.equals(prop.getName()))
+								else if (Property.VERSION.equals(prop.getName()))
 									versionStr = prop.getValue();
 							}
 							
@@ -216,17 +217,17 @@ public class OBR implements Plugin, RepositoryPlugin {
 		SortedMap<Version, Resource> versionMap = bsnMap.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
-		Resource[] resources = narrowVersions(versionMap, rangeStr);
+		List<Resource> resources = narrowVersions(versionMap, rangeStr);
+		List<File> files = mapResourcesToFiles(resources);
 		
-		List<File> files = mapResourcesToFiles(resources, null);
 		return (File[]) files.toArray(new File[files.size()]);
 	}
 
-	Resource[] narrowVersions(SortedMap<Version, Resource> versionMap, String rangeStr) {
-		Resource[] resources;
+	List<Resource> narrowVersions(SortedMap<Version, Resource> versionMap, String rangeStr) {
+		List<Resource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
-			resources = new Resource[] { versionMap.get(highest) };
+			result = Create.list(new Resource[] { versionMap.get(highest) });
 		} else {
 			VersionRange range = rangeStr != null ? new VersionRange(rangeStr) : null;
 			
@@ -234,51 +235,55 @@ public class OBR implements Plugin, RepositoryPlugin {
 			if (range != null && range.getLow() != null)
 				versionMap = versionMap.tailMap(range.getLow());
 			
-			List<Resource> matched = new ArrayList<Resource>(versionMap.size());
+			result = new ArrayList<Resource>(versionMap.size());
 			for (Version version : versionMap.keySet()) {
 				if (range == null || range.includes(version))
-					matched.add(versionMap.get(version));
+					result.add(versionMap.get(version));
 				
 				// optimisation: skip versions definitely higher than the range
 				if (range != null && range.isRange() && version.compareTo(range.getHigh()) >= 0)
 					break;
 			}
-			resources = (Resource[]) matched.toArray(new Resource[matched.size()]);
 		}
-		return resources;
+		return result;
 	}
 	
-	List<File> mapResourcesToFiles(Resource[] resources, ResolverMode mode) throws Exception {
-		Properties modeCapability = new Properties();
-		if (mode != null)
-			modeCapability.setProperty(CapabilityType.MODE.getTypeName(), mode.name());
+	void filterResourcesByResolverMode(Collection<Resource> resources, ResolverMode mode) {
+		assert mode != null;
 		
-		List<File> list = new ArrayList<File>(resources.length);
-		for (Resource resource : resources) {
-			boolean modeMatches;
+		Properties modeCapability = new Properties();
+		modeCapability.setProperty(CapabilityType.MODE.getTypeName(), mode.name());
+		
+		for (Iterator<Resource> iter = resources.iterator(); iter.hasNext(); ) {
+			Resource resource = iter.next();
+			
 			Require modeRequire = resource.findRequire(CapabilityType.MODE.getTypeName());
 			if (modeRequire == null)
-				modeMatches = true;
+				continue;
 			else if (modeRequire.getFilter() == null)
-				modeMatches = false;
+				iter.remove();
 			else {
 				try {
 					Filter filter = FrameworkUtil.createFilter(modeRequire.getFilter());
-					modeMatches = filter.match(modeCapability);
+					if (!filter.match(modeCapability))
+						iter.remove();
 				} catch (InvalidSyntaxException e) {
 					if (reporter != null)
 						reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
-					modeMatches = false;
+					iter.remove();
 				}
 			}
-			
-			if (modeMatches) {
-				File file = mapResourceToFile(resource);
-				if (file != null)
-					list.add(file);
-			}
 		}
-		return list;
+	}
+	
+	List<File> mapResourcesToFiles(Collection<Resource> resources) throws Exception {
+		List<File> result = new ArrayList<File>(resources.size());
+		
+		for (Resource resource : resources) {
+			result.add(mapResourceToFile(resource));
+		}
+		
+		return result;
 	}
 	
 	File mapResourceToFile(Resource resource) throws Exception {
@@ -365,11 +370,12 @@ public class OBR implements Plugin, RepositoryPlugin {
 			result = resolveBundle(bsn, range, strategy);
 		else {
 			String pkgName = properties.get(CapabilityType.PACKAGE.getTypeName());
-			String modeName = properties.get(CapabilityType.MODE.getTypeName());
 			
+			String modeName = properties.get(CapabilityType.MODE.getTypeName());
 			ResolverMode mode = (modeName != null) ? ResolverMode.valueOf(modeName) : null;
+			
 			if (pkgName != null)
-				result = resolvePackage(pkgName, range, strategy, mode);
+				result = resolvePackage(pkgName, range, strategy, mode, properties);
 			else
 				throw new IllegalArgumentException("Cannot resolve bundle: neither bsn nor package specified.");
 		}
@@ -399,7 +405,7 @@ public class OBR implements Plugin, RepositoryPlugin {
 		return selected;
 	}
 
-	File resolvePackage(String pkgName, String rangeStr, Strategy strategy, ResolverMode mode) throws Exception {
+	File resolvePackage(String pkgName, String rangeStr, Strategy strategy, ResolverMode mode, Map<String, String> props) throws Exception {
 		init();
 		if (rangeStr == null) rangeStr = "0.0.0";
 		
@@ -407,22 +413,43 @@ public class OBR implements Plugin, RepositoryPlugin {
 		if (versionMap == null)
 			return null;
 		
-		Resource[] resources = narrowVersions(versionMap, rangeStr);
-		List<File> files = mapResourcesToFiles(resources, mode);
+		List<Resource> resources = narrowVersions(versionMap, rangeStr);
+		if (mode != null)
+			filterResourcesByResolverMode(resources, mode);
 		
-		File selected;
-		if (files == null || files.isEmpty())
+		
+		Resource selected;
+		if (resources == null || resources.isEmpty())
 			selected = null;
 		else {
 			switch (strategy) {
 			case LOWEST:
-				selected = files.get(0);
+				selected = resources.get(0);
 				break;
 			default:
-				selected = files.get(files.size() - 1);
+				selected = resources.get(resources.size() - 1);
+			}
+			expandPackageUses(pkgName, selected, props);
+		}
+		return selected != null ? mapResourceToFile(selected) : null;
+	}
+
+	void expandPackageUses(String pkgName, Resource resource, Map<String, String> props) {
+		StringBuilder internalUses = new StringBuilder();
+		internalUses.append(pkgName);
+		
+		Capability capability = resource.findPackageCapability(pkgName);
+		Property usesProp = capability.findProperty(Property.USES);
+		if (usesProp != null) {
+			StringTokenizer tokenizer = new StringTokenizer(usesProp.getValue(), ",");
+			while (tokenizer.hasMoreTokens()) {
+				String usesPkgName = tokenizer.nextToken();
+				Capability usesPkgCap = resource.findPackageCapability(usesPkgName);
+				if (usesPkgCap != null)
+					internalUses.append(',').append(usesPkgName);
 			}
 		}
-		return selected;
+		props.put("packages", internalUses.toString());
 	}
 
 	File findExactMatch(String identity, String version, Map<String, SortedMap<Version, Resource>> resourceMap) throws Exception {

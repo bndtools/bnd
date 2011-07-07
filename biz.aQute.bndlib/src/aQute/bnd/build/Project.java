@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -494,8 +495,12 @@ public class Project extends Processor {
 	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles, ResolverMode mode) throws Exception {
 		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
 		
-		Map<String, Map<String, String>> packages = parseHeader(spec);
-		for (Entry<String, Map<String, String>> entry : packages.entrySet()) {
+		List<Entry<String, Map<String, String>>> queue = new LinkedList<Map.Entry<String,Map<String,String>>>();
+		queue.addAll(parseHeader(spec).entrySet());
+		
+		while (!queue.isEmpty()) {
+			Entry<String, Map<String, String>> entry = queue.remove(0);
+			
 			String pkgName = entry.getKey();
 			Map<String, String> attrs = entry.getValue();
 			
@@ -509,17 +514,22 @@ public class Project extends Processor {
 				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
 
 			if (found != null) {
-				// Skip if this bundle was already resolved by a previous stage (i.e. bsn-based resolution).
-				if (!resolvedBundles.contains(found)) {
+				if (resolvedBundles.contains(found)) {
+					// Don't add his bundle because it was already included using -buildpath
+				} else {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
 						Container existing = pkgResolvedBundles.get(cc.file);
 						if (existing != null)
-							addToPackageList(existing, pkgName);
+							addToPackageList(existing, attrs.get("packages"));
 						else {
-							addToPackageList(cc, pkgName);
+							addToPackageList(cc, attrs.get("packages"));
 							pkgResolvedBundles.put(cc.file, cc);
 						}
+						
+						String importUses = cc.getAttributes().get("import-uses");
+						if (importUses != null)
+							queue.addAll(0, parseHeader(importUses).entrySet());
 					}
 				}
 			} else {
@@ -534,26 +544,34 @@ public class Project extends Processor {
 			resolvedBundles.add(container);
 		}
 	}
-
-	static void addToPackageList(Container container, String packageName) {
-		String packageListStr = container.attributes.get("packages");
-		if (packageListStr == null)
-			packageListStr = "";
-		
-		boolean empty = true;
-		StringTokenizer tokenizer = new StringTokenizer(packageListStr, ",");
-		while (tokenizer.hasMoreTokens()) {
-			empty = false;
-			String token = tokenizer.nextToken();
-			if (packageName.equals(token))
-				return;
+	
+	static void mergeNames(String names, Set<String> set) {
+		StringTokenizer tokenizer = new StringTokenizer(names, ",");
+		while (tokenizer.hasMoreTokens())
+			set.add(tokenizer.nextToken().trim());
+	}
+	
+	static String flatten(Set<String> names) {
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
+		for (String name : names) {
+			if (!first) builder.append(',');
+			builder.append(name);
+			first = false;
 		}
+		return builder.toString();
+	}
+
+	static void addToPackageList(Container container, String newPackageNames) {
+		Set<String> merged = new HashSet<String>();
 		
-		if (empty)
-			packageListStr = packageName;
-		else
-			packageListStr += "," + packageName;
-		container.putAttribute("packages", packageListStr);
+		String packageListStr = container.attributes.get("packages");
+		if (packageListStr != null)
+			mergeNames(packageListStr, merged);
+		if (newPackageNames != null)
+			mergeNames(newPackageNames, merged);
+		
+		container.putAttribute("packages", flatten(merged));
 	}
 
 	/**

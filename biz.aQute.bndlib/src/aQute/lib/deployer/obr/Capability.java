@@ -41,6 +41,15 @@ public class Capability {
 	public List<Property> getProperties() {
 		return properties;
 	}
+	
+	public Property findProperty(String propertyName) {
+		assert propertyName != null;
+		for (Property prop : properties) {
+			if (propertyName.equals(prop.getName()))
+				return prop;
+		}
+		return null;
+	}
 
 	@Override
 	public String toString() {

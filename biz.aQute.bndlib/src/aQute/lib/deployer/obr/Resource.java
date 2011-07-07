@@ -115,6 +115,25 @@ public class Resource {
 		return capabilities;
 	}
 	
+	public Capability findPackageCapability(String pkgName) {
+		for (Capability capability : capabilities) {
+			if (CapabilityType.PACKAGE.getTypeName().equals(capability.getName())) {
+				List<Property> props = capability.getProperties();
+				for (Property prop : props) {
+					if (Property.PACKAGE.equals(prop.getName())) {
+						if (pkgName.equals(prop.getValue()))
+							return capability;
+						else
+							break;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+
+	
 	public List<Require> getRequires() {
 		return requires;
 	}
@@ -127,7 +146,6 @@ public class Resource {
 		return null;
 	}
 	
-
 	
 	@Override
 	public String toString() {
