@@ -39,8 +39,7 @@ public class Central {
         try {
             Project model = javaProjectToModel.get(project);
              if (model == null) {
-                File projectDir = project.getProject().getLocation()
-                        .makeAbsolute().toFile();
+                File projectDir = project.getProject().getLocation().makeAbsolute().toFile();
                 try {
                     model = Workspace.getProject(projectDir);
                 } catch (IllegalArgumentException e) {

@@ -406,9 +406,12 @@ public class LocalRepositoryTasks {
     public static void indexRepositories(IProgressMonitor monitor) throws Exception {
         IProject cnf = getCnfProject();
         IFile repoFile = cnf.getFile("repository.xml");
+        URI uri = repoFile.getLocationURI();
+        if (uri == null)
+            return;
 
         LocalRepositoryIndexer indexer = new LocalRepositoryIndexer();
-        indexer.setOutputFile(new File(repoFile.getLocationURI()));
+        indexer.setOutputFile(new File(uri));
 
         SubMonitor progress = SubMonitor.convert(monitor, 3);
         indexer.initialise(progress.newChild(2, SubMonitor.SUPPRESS_NONE));
