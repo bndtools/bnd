@@ -14,6 +14,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.libg.version.Version;
 import bndtools.Central;
+import bndtools.Plugin;
 
 public class LocalRepositoryIndexer extends AbstractIndexer {
 
@@ -56,8 +57,9 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
     private void processRepoVersions(RepositoryPlugin bndRepo, String bsn, List<Version> versions, RepositoryImpl bindex, List<Resource> resources, SubMonitor monitor) {
         SubMonitor progress = SubMonitor.convert(monitor, versions.size());
         for (Version version : versions) {
+            File bundleFile = null;
             try {
-                File bundleFile = bndRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
+                bundleFile = bndRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
                 BundleInfo info = new BundleInfo(bindex, bundleFile);
                 ResourceImpl resource = info.build();
 
@@ -68,8 +70,8 @@ public class LocalRepositoryIndexer extends AbstractIndexer {
 
                 resources.add(resource);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Plugin.logError(String.format("Error processing repository member file %s (BSN: %s, Version: %s)",
+                        bundleFile != null ? bundleFile.getAbsolutePath() : "<unknown>", bsn, version), e);
             } finally {
                 progress.worked(1);
             }

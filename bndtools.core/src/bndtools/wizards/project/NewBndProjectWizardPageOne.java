@@ -86,7 +86,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		result.addAll(Arrays.asList(entries));
 
 		// Add the Bnd classpath container entry
-		IPath bndContainerPath = BndContainerInitializer.ID;
+		IPath bndContainerPath = BndContainerInitializer.PATH_ID;
 		IClasspathEntry bndContainerEntry = JavaCore.newContainerEntry(bndContainerPath, false);
 		result.add(bndContainerEntry);
 

@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -19,6 +21,7 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -44,7 +47,10 @@ import bndtools.Plugin;
 public class BndContainerInitializer extends ClasspathContainerInitializer
         implements ModelListener {
 
-    public final static Path ID      = new Path("aQute.bnd.classpath.container");
+    public static final Path PATH_ID = new Path("aQute.bnd.classpath.container");
+    public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
+
+    static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
 
     final Central central = Plugin.getDefault().getCentral();
 
@@ -54,8 +60,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
     @Override
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
-        Project model = central.getModel(project);
-        requestClasspathContainerUpdate(containerPath, project, new BndContainer(project, calculateEntries(model)));
+        requestClasspathContainerUpdate(containerPath, project, null);
     }
 
     @Override
@@ -64,8 +69,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     }
 
     @Override
+    // The suggested classpath container is ignored here; always recalculated from the project.
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
-        JavaCore.setClasspathContainer(containerPath, new IJavaProject[] { project }, new IClasspathContainer[] { containerSuggestion }, null);
+        updateProjectClasspath(project);
     }
 
     public void modelChanged(Project model) throws Exception {
@@ -73,7 +79,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         if (model == null || project == null) {
             System.out.println("Help! No IJavaProject for " + model);
         } else {
-            requestClasspathContainerUpdate(ID, project, new BndContainer(project, calculateEntries(model)));
+            requestClasspathContainerUpdate(PATH_ID, project, null);
         }
     }
 
@@ -81,79 +87,118 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         System.out.println("Workspace changed");
     }
 
-    public static IClasspathEntry[] calculateEntries(Project project) {
-        if(project == null)
-            return new IClasspathEntry[0];
+    static void setClasspathEntries(IJavaProject javaProject, Project model, IClasspathEntry[] entries) throws JavaModelException {
+        JavaCore.setClasspathContainer(BndContainerInitializer.PATH_ID, new IJavaProject[] { javaProject }, new IClasspathContainer[] { new BndContainer(javaProject, entries, null) }, null);
+    }
 
-        Collection<Container> buildpath;
-        try {
-            buildpath = project.getBuildpath();
-        } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project build path.", e));
-            buildpath = Collections.emptyList();
+    public static void updateProjectClasspath(IJavaProject javaProject) throws CoreException {
+        // Remove classpath problem markers
+        javaProject.getProject().deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+
+        Project model = Plugin.getDefault().getCentral().getModel(javaProject);
+        if (model == null) {
+            setClasspathEntries(javaProject, model, EMPTY_ENTRIES);
+            addClasspathProblemMarker(javaProject.getProject(), "Bnd workspace is not configured.");
+        } else {
+            model.clear();
+            model.refresh();
+            model.setChanged();
+
+            Collection<Container> buildPath = getProjectBuildPath(model);
+            Collection<Container> bootClasspath = getProjectBootClasspath(model);
+
+            List<Container> containers = new ArrayList<Container>(buildPath.size() + bootClasspath.size());
+            containers.addAll(buildPath);
+
+            // The first file is always the project directory,
+            // Eclipse already includes that for us.
+            if (containers.size() > 0) {
+                containers.remove(0);
+            }
+            containers.addAll(bootClasspath);
+
+            ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
+            for (Container c : containers) {
+                IClasspathEntry cpe;
+                IPath sourceAttachment = null;
+
+                if (c.getError() == null) {
+                    File file = c.getFile();
+                    assert file.isAbsolute();
+
+                    IPath p = fileToPath(model, file);
+                    if (c.getType() == Container.TYPE.PROJECT) {
+                        File sourceDir = c.getProject().getSrc();
+                        if (sourceDir.isDirectory())
+                            sourceAttachment = Central.toPath(c.getProject(), sourceDir);
+    //                } else {
+    //                    File sourceBundle = c.getSourceBundle();
+    //                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
+    //                        sourceAttachment = fileToPath(project, sourceBundle);
+    //                    }
+                    }
+
+                    IAccessRule[] accessRules = calculateAccessRules(c);
+                    cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                    result.add(cpe);
+                } else {
+                    addClasspathProblemMarker(javaProject.getProject(), c.getError());
+                }
+            }
+            for (String error : model.getErrors()) {
+                addClasspathProblemMarker(javaProject.getProject(), error);
+            }
+            model.clear();
+
+            setClasspathEntries(javaProject, model, result.toArray(new IClasspathEntry[result.size()]));
         }
+    }
+
+    static IAccessRule[] calculateAccessRules(Container c) {
+        IAccessRule[] accessRules;
+        String packageList = c.getAttributes().get("packages");
+        if (packageList != null) {
+            List<IAccessRule> tmp = new LinkedList<IAccessRule>();
+            StringTokenizer tokenizer = new StringTokenizer(packageList, ",");
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                String pathStr = token.replace('.', '/') + "/*";
+                tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+            }
+            tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+            accessRules = tmp.toArray(new IAccessRule[tmp.size()]);
+        } else {
+            accessRules = null;
+        }
+        return accessRules;
+    }
+
+    static void addClasspathProblemMarker(IProject project, String message) throws CoreException {
+        IMarker marker = project.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
+        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+        marker.setAttribute(IMarker.MESSAGE, message);
+    }
+
+    static Collection<Container> getProjectBootClasspath(Project model) {
         Collection<Container> bootclasspath;
         try {
-            bootclasspath = project.getBootclasspath();
+            bootclasspath = model.getBootclasspath();
         } catch (Exception e) {
             Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project boot classpath.", e));
             bootclasspath = Collections.emptyList();
         }
+        return bootclasspath;
+    }
 
-        List<Container> entries = new ArrayList<Container>(buildpath.size() + bootclasspath.size());
-        entries.addAll(buildpath);
-
-        // The first file is always the project directory,
-        // Eclipse already includes that for us.
-        if (entries.size() > 0) {
-            entries.remove(0);
+    static Collection<Container> getProjectBuildPath(Project model) {
+        Collection<Container> buildpath;
+        try {
+            buildpath = model.getBuildpath();
+        } catch (Exception e) {
+            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project build path.", e));
+            buildpath = Collections.emptyList();
         }
-
-        entries.addAll(bootclasspath);
-
-        ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(entries.size());
-        for (Container c : entries) {
-            IClasspathEntry cpe;
-            IPath sourceAttachment = null;
-
-            if (c.getError() == null) {
-                File file = c.getFile();
-                assert file.isAbsolute();
-
-                IPath p = fileToPath(project, file);
-                if (c.getType() == Container.TYPE.PROJECT) {
-                    File sourceDir = c.getProject().getSrc();
-                    if (sourceDir.isDirectory())
-                        sourceAttachment = Central.toPath(c.getProject(), sourceDir);
-
-//                } else {
-//                    File sourceBundle = c.getSourceBundle();
-//                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
-//                        sourceAttachment = fileToPath(project, sourceBundle);
-//                    }
-                }
-
-                IAccessRule[] accessRules;
-                String packageList = c.getAttributes().get("packages");
-                if (packageList != null) {
-                    List<IAccessRule> tmp = new LinkedList<IAccessRule>();
-                    StringTokenizer tokenizer = new StringTokenizer(packageList, ",");
-                    while (tokenizer.hasMoreTokens()) {
-                        String token = tokenizer.nextToken();
-                        String pathStr = token.replace('.', '/') + "/*";
-                        tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
-                    }
-                    tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-                    accessRules = tmp.toArray(new IAccessRule[tmp.size()]);
-                } else {
-                    accessRules = null;
-                }
-
-                cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
-                result.add(cpe);
-            }
-        }
-        return result.toArray(new IClasspathEntry[result.size()]);
+        return buildpath;
     }
 
     protected static IPath fileToPath(Project project, File file) {

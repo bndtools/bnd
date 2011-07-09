@@ -252,7 +252,7 @@ public class BndContainerPage extends WizardPage implements
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#getSelection()
      */
     public IClasspathEntry getSelection() {
-        IPath containerPath = BndContainerInitializer.ID;
+        IPath containerPath = BndContainerInitializer.PATH_ID;
         IClasspathEntry cpe = JavaCore.newContainerEntry(containerPath);
         return cpe;
     }

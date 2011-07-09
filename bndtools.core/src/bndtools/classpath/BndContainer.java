@@ -10,10 +10,12 @@ public class BndContainer implements IClasspathContainer {
 
 	final IJavaProject javaProject;
 	final IClasspathEntry[] entries;
+    private final String description;
 
-	public BndContainer(IJavaProject javaProject, IClasspathEntry[] entries) {
+	public BndContainer(IJavaProject javaProject, IClasspathEntry[] entries, String description) {
 		this.javaProject = javaProject;
 		this.entries = entries;
+        this.description = description;
 	}
 
 	public IClasspathEntry[] getClasspathEntries() {
@@ -21,7 +23,7 @@ public class BndContainer implements IClasspathContainer {
 	}
 
 	public String getDescription() {
-		return Messages.BndContainer_ContainerName;
+		return description != null ? description : Messages.BndContainer_ContainerName;
 	}
 
 	public int getKind() {
@@ -29,6 +31,6 @@ public class BndContainer implements IClasspathContainer {
 	}
 
 	public IPath getPath() {
-		return BndContainerInitializer.ID;
+		return BndContainerInitializer.PATH_ID;
 	}
 }

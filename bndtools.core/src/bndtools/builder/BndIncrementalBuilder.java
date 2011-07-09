@@ -41,7 +41,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jdt.core.IClasspathContainer;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -50,51 +50,98 @@ import aQute.bnd.build.Project;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
 import bndtools.RepositoryIndexerJob;
-import bndtools.classpath.BndContainer;
 import bndtools.classpath.BndContainerInitializer;
+import bndtools.utils.DeltaAccumulator;
 import bndtools.utils.FileUtils;
-import bndtools.utils.ResourceDeltaAccumulator;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 	public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
 	public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
-	public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
 
 	private static final String BND_SUFFIX = ".bnd";
 
-	private static final long NEVER = -1;
+	private static final long BUILT_NEVER = -1;
+    private static final int RETRIES = 3;
 
 	private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
 	private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
 
-	@Override protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor)
-			throws CoreException {
+    @Override
+    protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
+        IProject[] depends = new IProject[] { project.getWorkspace().getRoot().getProject(Project.BNDCNF) };
 
-		ensureBndBndExists(project);
+        ensureBndBndExists(project);
+        if (hasBlockingErrors(project)) {
+            try {
+                clearBuildMarkers(project);
+            } catch (Exception e) {
+                Plugin.logError("Unable to clear build markers", e);
+            }
+            return depends;
+        }
 
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
-			rebuildBndProject(project, monitor);
+			rebuildBndProject(project, monitor, 0);
 		} else {
 			IResourceDelta delta = getDelta(project);
-			if(delta == null)
-				rebuildBndProject(project, monitor);
-			else
+			if(delta == null) {
+				rebuildBndProject(project, monitor, 0);
+			} else {
 				incrementalRebuild(delta, project, monitor);
+			}
 		}
 		setLastBuildTime(project, System.currentTimeMillis());
-		if (Project.BNDCNF.equalsIgnoreCase(project.getName()) || "bnd".equalsIgnoreCase(project.getName()))
-		    RepositoryIndexerJob.runIfNeeded();
-		return new IProject[]{ project.getWorkspace().getRoot().getProject(Project.BNDCNF)};
+		RepositoryIndexerJob.runIfNeeded();
+
+        return depends;
 	}
+
+    static void clearBuildMarkers(IProject project) throws CoreException {
+        IFile bndFile = project.getFile(Project.BNDFILE);
+
+        if (bndFile.exists()) {
+            bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+        }
+    }
+
+    static void addBuildMarker(IProject project, String error) throws CoreException {
+        IFile bndFile = project.getFile(Project.BNDFILE);
+
+        IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
+        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+        marker.setAttribute(IMarker.MESSAGE, error);
+        marker.setAttribute(IMarker.LINE_NUMBER, 1);
+    }
+
+    static boolean containsError(IMarker[] markers) {
+        if (markers != null)
+            for (IMarker marker : markers) {
+                int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+                if (severity == IMarker.SEVERITY_ERROR)
+                    return true;
+            }
+        return false;
+    }
+
+    static boolean hasBlockingErrors(IProject project) {
+        try {
+            return containsError(project.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0))
+                    || containsError(project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE));
+        } catch (CoreException e) {
+            Plugin.logError("Error looking for Java problem markers", e);
+            return false;
+        }
+    }
+
 	private void setLastBuildTime(IProject project, long time) {
 		projectLastBuildTimes.put(project.getName(), time);
 	}
 	private long getLastBuildTime(IProject project) {
 		Long time = projectLastBuildTimes.get(project.getName());
-		return time != null ? time.longValue() : NEVER;
+		return time != null ? time.longValue() : BUILT_NEVER;
 	}
 	Collection<IPath> enumerateBndFiles(IProject project) throws CoreException {
 		final Collection<IPath> paths = new LinkedList<IPath>();
@@ -134,6 +181,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error cleaning project outputs.", e));
 		}
 	}
+
 	void incrementalRebuild(IResourceDelta delta, IProject project, IProgressMonitor monitor) {
 		SubMonitor progress = SubMonitor.convert(monitor);
 		Project model = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
@@ -153,7 +201,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                     return !FileUtils.isAncestor(targetDir, pathname) && !FileUtils.isAncestor(output, pathname);
                 }
 			};
-			ResourceDeltaAccumulator visitor = new ResourceDeltaAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
+			DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
 			delta.accept(visitor);
 
 			progress.setWorkRemaining(affectedFiles.size() + 10);
@@ -165,7 +213,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 			// Check if any affected file is a bnd file
 			for (File file : affectedFiles) {
-				if(file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
+                if (file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
 					rebuild = true;
 					int deltaKind = visitor.queryDeltaKind(file);
 					if((deltaKind & IResourceDelta.REMOVED) > 0) {
@@ -220,16 +268,17 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 
 			if(rebuild)
-				rebuildBndProject(project, monitor);
+				rebuildBndProject(project, monitor, 0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		model.refresh();
 	}
-	void rebuildBndProject(IProject project, IProgressMonitor monitor) throws CoreException {
-		SubMonitor progress = SubMonitor.convert(monitor, 2);
-		IJavaProject javaProject = JavaCore.create(project);
+
+    void rebuildBndProject(IProject project, IProgressMonitor monitor, int count) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 3);
+        IJavaProject javaProject = JavaCore.create(project);
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
         if (model == null) {
@@ -242,16 +291,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		model.refresh();
 		model.setChanged();
 
-		// Get or create the build model for this bnd file
-		IFile bndFile = project.getFile(Project.BNDFILE);
-
-		// Clear markers
-		if (bndFile.exists()) {
-			bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
-		}
-
-		// Update classpath
-		JavaCore.setClasspathContainer(BndContainerInitializer.ID, new IJavaProject[] { javaProject } , new IClasspathContainer[] { new BndContainer(javaProject, BndContainerInitializer.calculateEntries(model)) }, null);
+		clearBuildMarkers(project);
 
 		// Build
 		try {
@@ -266,7 +306,16 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				deliverableJars.add(deliverable.getFile());
 			}
 
-			model.build();
+            model.buildLocal(false);
+
+            int retryCount = 0;
+            while (retryCount++ < RETRIES && !model.getErrors().isEmpty()) {
+                model.refresh();
+                model.setChanged();
+
+                model.buildLocal(false);
+            }
+
 			progress.worked(1);
 
 			File targetDir = model.getTarget();
@@ -299,14 +348,20 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));
 		}
 
-		// Report errors
-		List<String> errors = new ArrayList<String>(model.getErrors());
-		for (String errorMessage : errors) {
-			IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
-			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-			marker.setAttribute(IMarker.MESSAGE, errorMessage);
-			marker.setAttribute(IMarker.LINE_NUMBER, 1);
-			model.clear();
-		}
+        List<String> errors = new ArrayList<String>(model.getErrors());
+        /*
+        if (!errors.isEmpty() && count < RETRIES) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            rebuildBndProject(project, progress.newChild(1, SubMonitor.SUPPRESS_NONE), count + 1);
+        } else {
+        */
+            for (String error : errors) {
+                addBuildMarker(project, error);
+            }
+            model.clear();
+        // }
 	}
 }
