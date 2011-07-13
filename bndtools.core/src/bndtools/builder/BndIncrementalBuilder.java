@@ -107,12 +107,12 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    static void addBuildMarker(IProject project, String error) throws CoreException {
+    static void addBuildMarker(IProject project, String message, int severity) throws CoreException {
         IFile bndFile = project.getFile(Project.BNDFILE);
 
         IMarker marker = bndFile.createMarker(MARKER_BND_PROBLEM);
-        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-        marker.setAttribute(IMarker.MESSAGE, error);
+        marker.setAttribute(IMarker.SEVERITY, severity);
+        marker.setAttribute(IMarker.MESSAGE, message);
         marker.setAttribute(IMarker.LINE_NUMBER, 1);
     }
 
@@ -288,23 +288,23 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             return;
         }
 
-		model.refresh();
-		model.setChanged();
+        model.refresh();
+        model.setChanged();
 
-		clearBuildMarkers(project);
+        clearBuildMarkers(project);
 
-		// Build
-		try {
-		    final Set<File> deliverableJars = new HashSet<File>();
-			bndsToDeliverables.clear();
+        // Build
+        try {
+            final Set<File> deliverableJars = new HashSet<File>();
+            bndsToDeliverables.clear();
             Collection<? extends Builder> builders = model.getSubBuilders();
-			for (Builder builder : builders) {
-				File subBndFile = builder.getPropertiesFile();
-				String bsn = builder.getBsn();
-				Container deliverable = model.getDeliverable(bsn, null);
-				bndsToDeliverables.put(subBndFile, deliverable);
-				deliverableJars.add(deliverable.getFile());
-			}
+            for (Builder builder : builders) {
+                File subBndFile = builder.getPropertiesFile();
+                String bsn = builder.getBsn();
+                Container deliverable = model.getDeliverable(bsn, null);
+                bndsToDeliverables.put(subBndFile, deliverable);
+                deliverableJars.add(deliverable.getFile());
+            }
 
             model.buildLocal(false);
 
@@ -318,17 +318,18 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 			progress.worked(1);
 
-			File targetDir = model.getTarget();
-			IContainer target = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
-			target.refreshLocal(IResource.DEPTH_INFINITE, null);
+            File targetDir = model.getTarget();
+            IContainer target = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
+            target.refreshLocal(IResource.DEPTH_INFINITE, null);
 
-			// Clear any JARs in the target directory that have not just been built by Bnd
-			final File[] targetJars = model.getTarget().listFiles(new FileFilter() {
+            // Clear any JARs in the target directory that have not just been
+            // built by Bnd
+            final File[] targetJars = model.getTarget().listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     return pathname.getName().endsWith(".jar");
                 }
             });
-			WorkspaceJob deleteJob = new WorkspaceJob("delete") {
+            WorkspaceJob deleteJob = new WorkspaceJob("delete") {
                 @Override
                 public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
                     SubMonitor progress = SubMonitor.convert(monitor);
@@ -342,26 +343,20 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                     }
                     return Status.OK_STATUS;
                 }
-			};
-			deleteJob.schedule();
-		} catch (Exception e) {
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));
-		}
+            };
+            deleteJob.schedule();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error building project.", e));
+        }
 
-        List<String> errors = new ArrayList<String>(model.getErrors());
-        /*
-        if (!errors.isEmpty() && count < RETRIES) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+        synchronized (model) {
+            for (String error : model.getErrors()) {
+                addBuildMarker(project, error, IMarker.SEVERITY_ERROR);
             }
-            rebuildBndProject(project, progress.newChild(1, SubMonitor.SUPPRESS_NONE), count + 1);
-        } else {
-        */
-            for (String error : errors) {
-                addBuildMarker(project, error);
+            for (String warning : model.getWarnings()) {
+                addBuildMarker(project, warning, IMarker.SEVERITY_WARNING);
             }
             model.clear();
-        // }
+        }
 	}
 }
