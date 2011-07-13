@@ -35,6 +35,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example.tests" }));
         model.setRunBundles(Arrays.asList(new VersionedClause[] { createBundleRef("org.mockito.mockito-all", null) }));
         model.setSystemPackages(Arrays.asList(new String[] { "sun.reflect" }));
+        model.setRunVMArgs("-ea");
     }
 
     VersionedClause createBundleRef(String bsn, String version) {

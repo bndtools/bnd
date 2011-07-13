@@ -85,6 +85,7 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
 		aQute.lib.osgi.Constants.SUB,
 		BndConstants.RUNFRAMEWORK,
+		aQute.lib.osgi.Constants.RUNVM,
 		BndConstants.RUNVMARGS,
 		BndConstants.TESTSUITES,
 		aQute.lib.osgi.Constants.TESTCASES
@@ -167,6 +168,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.RUNFRAMEWORK, stringConverter);
         converters.put(aQute.lib.osgi.Constants.SUB, listConverter);
         converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
+        converters.put(aQute.lib.osgi.Constants.RUNVM, stringConverter);
         converters.put(BndConstants.RUNVMARGS, stringConverter);
         converters.put(BndConstants.TESTSUITES, listConverter);
         converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
@@ -187,6 +189,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.RUNFRAMEWORK, newlineEscapeFormatter);
         formatters.put(aQute.lib.osgi.Constants.SUB, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
+        formatters.put(aQute.lib.osgi.Constants.RUNVM, newlineEscapeFormatter);
         formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
         formatters.put(BndConstants.TESTSUITES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
@@ -502,7 +505,7 @@ public class BndEditModel implements IPersistableBndModel {
      * @see bndtools.editor.model.IBndModel#getRunVMArgs()
      */
     public String getRunVMArgs() {
-        return doGetObject(BndConstants.RUNVMARGS, stringConverter);
+        return doGetObject(aQute.lib.osgi.Constants.RUNVM, stringConverter);
     }
 
     /* (non-Javadoc)
@@ -510,7 +513,7 @@ public class BndEditModel implements IPersistableBndModel {
      */
     public void setRunVMArgs(String args) {
         String old = getRunVMArgs();
-        doSetObject(BndConstants.RUNVMARGS, old, args, newlineEscapeFormatter);
+        doSetObject(aQute.lib.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
     }
 
     public List<String> getTestSuites() {
