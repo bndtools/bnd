@@ -68,7 +68,11 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
         setTitle("Sub-bundles not enabled");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginTop = 20;
+        layout.marginWidth = 10;
+        layout.verticalSpacing = 10;
+        container.setLayout(layout);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         btnEnableSubbundles = new Button(container, SWT.CHECK);
