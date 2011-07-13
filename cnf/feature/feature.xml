@@ -104,7 +104,8 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <url>
-      <update label="Bndtools" url="http://bndtools-updates.s3.amazonaws.com/"/>
+      <!-- <update label="Bndtools Release Site" url="http://bndtools-updates.s3.amazonaws.com/"/> -->
+      <update label="Bndtools ALPHA Site" url="http://bndtools-alpha-updates.s3.amazonaws.com/"/>
    </url>
    
    <plugin
