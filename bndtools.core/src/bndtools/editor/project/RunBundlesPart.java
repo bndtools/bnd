@@ -40,7 +40,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	protected void fillToolBar(ToolBar toolbar) {
 	    createAddItemTool(toolbar);
 	    createWizardItemtool(toolbar);
-	    createRemoveItemTool(toolbar);
+	    this.removeItemTool = createRemoveItemTool(toolbar);
 	}
 	protected ToolItem createWizardItemtool(ToolBar toolbar) {
 	    if (wizardImg == null)

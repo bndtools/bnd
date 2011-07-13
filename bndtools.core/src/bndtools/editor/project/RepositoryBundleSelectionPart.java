@@ -71,7 +71,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
 	private BndEditModel model;
 	private List<VersionedClause> bundles;
-    private ToolItem removeItemTool;
+    protected ToolItem removeItemTool;
 
 	protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
