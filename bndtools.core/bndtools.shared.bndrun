@@ -129,7 +129,7 @@ crossplatform.bundles:\
 	org.eclipse.ui.views.log,\
 	org.eclipse.jdt.junit.runtime,\
 	org.eclipse.jdt.junit,\
-	org.junit,\
+	org.junit;version='[3.8,4)',\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
