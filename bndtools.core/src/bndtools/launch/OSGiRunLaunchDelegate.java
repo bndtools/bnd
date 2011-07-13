@@ -123,6 +123,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     update.compareAndSet(false, targetPathChanged);
 
                     if(update.get()) {
+                        project.refresh();
                         bndLauncher.update();
                     }
                 } catch (Exception e) {
