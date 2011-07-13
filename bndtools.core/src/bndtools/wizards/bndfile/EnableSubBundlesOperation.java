@@ -39,6 +39,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
     static {
         BUNDLE_SPECIFIC_HEADERS = new HashSet<String>(Arrays.asList(Constants.BUNDLE_SPECIFIC_HEADERS));
         BUNDLE_SPECIFIC_HEADERS.add(Constants.SERVICE_COMPONENT);
+        BUNDLE_SPECIFIC_HEADERS.add(Constants.BUNDLE_VERSION);
     }
 
     private static final Set<String> PROJECT_ONLY_HEADERS = new HashSet<String>(Arrays.asList(new String[] {
