@@ -95,7 +95,7 @@ public class Plugin extends AbstractUIPlugin {
                                 return false;
                             } else {
                                 IProject project = (IProject) resource;
-                                return project.exists() && project.hasNature(BndProjectNature.NATURE_ID);
+                                return project.exists() && project.isOpen() && project.hasNature(BndProjectNature.NATURE_ID);
                             }
                         }
 
