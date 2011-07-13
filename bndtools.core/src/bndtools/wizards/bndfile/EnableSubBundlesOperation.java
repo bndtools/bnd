@@ -25,6 +25,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
+import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.IPersistableBndModel;
@@ -33,8 +34,12 @@ import bndtools.utils.FileUtils;
 
 public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
-    private static final Set<String> BUNDLE_SPECIFIC_HEADERS =
-        new HashSet<String>(Arrays.asList(aQute.lib.osgi.Constants.BUNDLE_SPECIFIC_HEADERS));
+    private static final Set<String> BUNDLE_SPECIFIC_HEADERS;
+
+    static {
+        BUNDLE_SPECIFIC_HEADERS = new HashSet<String>(Arrays.asList(Constants.BUNDLE_SPECIFIC_HEADERS));
+        BUNDLE_SPECIFIC_HEADERS.add(Constants.SERVICE_COMPONENT);
+    }
 
     private static final Set<String> PROJECT_ONLY_HEADERS = new HashSet<String>(Arrays.asList(new String[] {
             "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm",
