@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.LocalSelectionTransfer;
@@ -305,12 +308,16 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
     private void doAdd() {
         Project project = getProject();
-        RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, getBundles());
-        if (wizard != null) {
-            WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-            if (dialog.open() == Window.OK) {
-                setBundles(wizard.getSelectedBundles());
+        try {
+            RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, getBundles());
+            if (wizard != null) {
+                WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+                if (dialog.open() == Window.OK) {
+                    setBundles(wizard.getSelectedBundles());
+                }
             }
+        } catch (Exception e) {
+            ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
         }
     }
 
@@ -357,7 +364,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project sourceProject, List<VersionedClause> bundles) {
+	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project sourceProject, List<VersionedClause> bundles) throws Exception {
 	    return null;
 	}
 

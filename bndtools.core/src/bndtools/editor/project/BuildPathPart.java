@@ -39,7 +39,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	}
 
     @Override
-    protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) {
+    protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false);
 
         wizard.setSelectionPageTitle("Project Build Path");

@@ -44,8 +44,9 @@ public class RepoBundleSelectionWizard extends Wizard {
      *
      * @param bundles
      *            A mutable collection of bundles.
+     * @throws Exception
      */
-    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver) {
+    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver) throws Exception {
         this.useResolver = useResolver;
 
         selectionPage = new RepoBundleSelectionWizardPage(project);
@@ -58,21 +59,12 @@ public class RepoBundleSelectionWizard extends Wizard {
         WorkspaceIndexer workspaceIndex = new WorkspaceIndexer(WORKSPACE_CATEGORY);
         final List<IRepositoryIndexProvider> indexList = Arrays.asList(new IRepositoryIndexProvider[] { localRepoIndex, workspaceIndex });
 
-        requirementsPage = new DependentResourcesWizardPage(repoAdmin, indexList);
-        try {
-            Container systemBundle = project.getBundle("org.apache.felix.framework", null, Strategy.HIGHEST, null);
-            requirementsPage.setSystemBundle(systemBundle.getFile());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Container systemBundle = project.getBundle("org.apache.felix.framework", null, Strategy.HIGHEST, null);
+        requirementsPage = new DependentResourcesWizardPage(repoAdmin, systemBundle.getFile(), indexList);
 
         if (project.getRunBuilds()) {
-            try {
-                File[] builds = project.build();
-                selectionPage.setImplicitBundles(builds);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            File[] builds = project.build();
+            selectionPage.setImplicitBundles(builds);
         }
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);

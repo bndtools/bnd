@@ -2,6 +2,9 @@ package bndtools.editor.project;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -74,7 +77,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 		return model.getRunBundles();
 	}
 	@Override
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) {
+	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
 	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false);
         setSelectionWizardTitleAndMessage(wizard);
@@ -87,12 +90,16 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     }
     private void doAddWizard() {
         Project project = getProject();
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true);
-        setSelectionWizardTitleAndMessage(wizard);
+        try {
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true);
+            setSelectionWizardTitleAndMessage(wizard);
 
-        WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-        if (dialog.open() == Window.OK) {
-            setBundles(wizard.getSelectedBundles());
+            WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+            if (dialog.open() == Window.OK) {
+                setBundles(wizard.getSelectedBundles());
+            }
+        } catch (Exception e) {
+            ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
         }
     }
 	@Override

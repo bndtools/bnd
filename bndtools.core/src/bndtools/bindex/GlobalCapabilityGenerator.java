@@ -13,7 +13,9 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
 import org.apache.felix.bundlerepository.Capability;
+import org.apache.felix.bundlerepository.Property;
 import org.apache.felix.bundlerepository.impl.CapabilityImpl;
+import org.bndtools.core.utils.parse.ParserUtil;
 import org.osgi.framework.Constants;
 
 import aQute.libg.header.OSGiHeader;
@@ -23,6 +25,8 @@ public class GlobalCapabilityGenerator {
 
     private static final String CAPABILITY_BUNDLE = "bundle";
     private static final String PROPERTY_SYMBOLICNAME = "symbolicname";
+    private static final String PROPERTY_MANIFESTVERSION = "manifestversion";
+    private static final String PROPERTY_PRESENTATION_NAME = "presentationname";
 
     private static final String CAPABILITY_EE = "ee";
     private static final String PROPERTY_EE = "ee";
@@ -47,7 +51,7 @@ public class GlobalCapabilityGenerator {
 
         JarFile jarFile = new JarFile(frameworkJarFile);
         try {
-            addExportedPackageCapabilities(jarFile.getManifest().getMainAttributes(), result);
+        	addSystemBundleCapabilities(jarFile, result);
         } finally {
             jarFile.close();
         }
@@ -55,7 +59,29 @@ public class GlobalCapabilityGenerator {
         return result;
     }
 
-    /**
+    void addSystemBundleCapabilities(JarFile jarFile, List<Capability> capabilities) throws IOException {
+    	Attributes attribs = jarFile.getManifest().getMainAttributes();
+
+    	// Add the bundle capability for the system bundle under its normal name,
+    	// e.g. "org.eclipse.osgi"
+		Capability bsnCap = createBundleCapability(attribs);
+		capabilities.add(bsnCap);
+
+		// Add the bundle capability for the system bundle under the standard
+		// alias "system.bundle" (from the spec).
+		CapabilityImpl systemBundleCap = new CapabilityImpl(CAPABILITY_BUNDLE);
+		for (Property prop : bsnCap.getProperties()) {
+			if (!PROPERTY_SYMBOLICNAME.equals(prop.getName()))
+				systemBundleCap.addProperty(prop);
+		}
+		systemBundleCap.addProperty(PROPERTY_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+		capabilities.add(systemBundleCap);
+
+		// Add the exports of the system bundle
+    	addExportedPackageCapabilities(attribs, capabilities);
+	}
+
+	/**
      * Generates a capability for the system bundle's symbolic name/version;
      * used by those unfortunate bundles that require a specific system bundle
      * (e.g. {@code Require-Bundle: org.eclipse.osgi}).
@@ -67,19 +93,29 @@ public class GlobalCapabilityGenerator {
      *             If the MANIFEST.MF does not have a BSN.
      */
     Capability createBundleCapability(Attributes attribs) throws IllegalArgumentException {
-        String bsn = (String) attribs.get(Constants.BUNDLE_SYMBOLICNAME);
+        String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
         if (bsn == null)
             throw new IllegalArgumentException("System bundle file does not have a Bundle-SymbolicName header.");
+
+        // Strip trailing stuff from the BSN like ";singleton"
         int semicolonIndex = bsn.indexOf(';');
         if (semicolonIndex >= 0)
             bsn = bsn.substring(0, semicolonIndex);
-        String version = (String) attribs.get(Constants.BUNDLE_VERSION);
+
+        String version = attribs.getValue(Constants.BUNDLE_VERSION);
         if (version == null)
             version = DEFAULT_VERSION;
+
+        String manifestVersion = attribs.getValue(Constants.BUNDLE_MANIFESTVERSION);
+        String presentationName = attribs.getValue(Constants.BUNDLE_NAME);
 
         CapabilityImpl capability = new CapabilityImpl(CAPABILITY_BUNDLE);
         capability.addProperty(PROPERTY_SYMBOLICNAME, bsn);
         capability.addProperty(PROPERTY_VERSION, TYPE_VERSION, version);
+        if (manifestVersion != null)
+        	capability.addProperty(PROPERTY_MANIFESTVERSION, manifestVersion);
+        if (presentationName != null)
+        	capability.addProperty(PROPERTY_PRESENTATION_NAME, presentationName);
         return capability;
     }
 
@@ -99,11 +135,12 @@ public class GlobalCapabilityGenerator {
 
         Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(exportPkgsStr);
         for (Entry<String, Map<String, String>> entry : exports.entrySet()) {
-            capabilities.add(createPackageCapability(entry.getKey(), entry.getValue().get(Constants.VERSION_ATTRIBUTE)));
+            String pkgName = ParserUtil.stripTrailingTildes(entry.getKey());
+			capabilities.add(createPackageCapability(pkgName, entry.getValue().get(Constants.VERSION_ATTRIBUTE)));
         }
     }
 
-    void addEECapabilities(EE ee, List<Capability> capabilities) throws IOException {
+	void addEECapabilities(EE ee, List<Capability> capabilities) throws IOException {
         // EE Capabilities
         for (EE compatible : ee.getCompatible()) {
             capabilities.add(createEECapability(compatible));

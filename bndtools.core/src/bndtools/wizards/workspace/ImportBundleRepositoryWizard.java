@@ -31,8 +31,8 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
     private final RepositoryAdmin repoAdmin;
 
     private final OBRSelectionPage repoPage;
-    private final RemoteRepositoryBundleSelectionPage bundlePage;
-    private final DependentResourcesWizardPage dependenciesPage;
+    private RemoteRepositoryBundleSelectionPage bundlePage;
+    private DependentResourcesWizardPage dependenciesPage;
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
@@ -45,18 +45,22 @@ public class ImportBundleRepositoryWizard extends Wizard implements IImportWizar
 
         bundlePage = new RemoteRepositoryBundleSelectionPage(repoAdmin);
         repoPage = new OBRSelectionPage(repoAdmin, bundlePage);
-
-        dependenciesPage = new DependentResourcesWizardPage(repoAdmin, Arrays.asList(new IRepositoryIndexProvider[] { new LocalRepositoryIndexProvider() }));
-
-        bundlePage.addPropertyChangeListener(RemoteRepositoryBundleSelectionPage.PROP_SELECTION, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                dependenciesPage.setSelectedResources(bundlePage.getSelectedResources());
-            }
-        });
-
         addPage(repoPage);
-        addPage(bundlePage);
-        addPage(dependenciesPage);
+
+        try {
+            dependenciesPage = new DependentResourcesWizardPage(repoAdmin, null, Arrays.asList(new IRepositoryIndexProvider[] { new LocalRepositoryIndexProvider() }));
+
+            bundlePage.addPropertyChangeListener(RemoteRepositoryBundleSelectionPage.PROP_SELECTION, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    dependenciesPage.setSelectedResources(bundlePage.getSelectedResources());
+                }
+            });
+
+            addPage(bundlePage);
+            addPage(dependenciesPage);
+        } catch (Exception e) {
+            ErrorDialog.openError(workbench.getActiveWorkbenchWindow().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
+        }
     }
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
