@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 import org.osgi.impl.bundle.obr.resource.RequirementImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.Tag;
+import org.osgi.service.obr.Requirement;
 import org.osgi.service.obr.Resource;
 
 public abstract class AbstractIndexer implements IRepositoryIndexProvider {
@@ -138,6 +140,16 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
             modeRequirement.setFilter("(mode=build)");
             resource.addRequirement(modeRequirement);
         }
+
+        @SuppressWarnings("unchecked")
+        Collection<Requirement> reqs = resource.getRequirementList();
+        for (Iterator<Requirement> iter = reqs.iterator(); iter.hasNext(); ) {
+            Requirement req = iter.next();
+            if ("service".equals(req.getName())) {
+                ((RequirementImpl) req).setOptional(true);
+            }
+        }
     }
+
 
 }

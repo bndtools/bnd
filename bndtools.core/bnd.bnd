@@ -78,10 +78,10 @@ eclipse.deps: \
 	org.eclipse.core.expressions
 -buildpath: biz.aQute.bndlib;version=1.44,\
 	org.apache.felix.bundlerepository,\
-	bindex,\
 	patricia_trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
 	woodstox-core-asl,\
-	javax.xml.stream
+	javax.xml.stream,\
+	org.osgi.impl.bundle.bindex

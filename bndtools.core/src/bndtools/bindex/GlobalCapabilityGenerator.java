@@ -17,6 +17,8 @@ import org.apache.felix.bundlerepository.Property;
 import org.apache.felix.bundlerepository.impl.CapabilityImpl;
 import org.bndtools.core.utils.parse.ParserUtil;
 import org.osgi.framework.Constants;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.startlevel.StartLevel;
 
 import aQute.libg.header.OSGiHeader;
 import bndtools.api.EE;
@@ -36,6 +38,9 @@ public class GlobalCapabilityGenerator {
     private static final String PROPERTY_VERSION = "version";
     private static final String TYPE_VERSION = "version";
 
+    private static final String CAPABILITY_SERVICE = "service";
+    private static final String PROPERTY_SERVICE = "service";
+
     private static final String DEFAULT_VERSION = "0.0.0";
 
     private final File frameworkJarFile;
@@ -51,7 +56,7 @@ public class GlobalCapabilityGenerator {
 
         JarFile jarFile = new JarFile(frameworkJarFile);
         try {
-        	addSystemBundleCapabilities(jarFile, result);
+            addSystemBundleCapabilities(jarFile, result);
         } finally {
             jarFile.close();
         }
@@ -60,28 +65,33 @@ public class GlobalCapabilityGenerator {
     }
 
     void addSystemBundleCapabilities(JarFile jarFile, List<Capability> capabilities) throws IOException {
-    	Attributes attribs = jarFile.getManifest().getMainAttributes();
+        Attributes attribs = jarFile.getManifest().getMainAttributes();
 
-    	// Add the bundle capability for the system bundle under its normal name,
-    	// e.g. "org.eclipse.osgi"
-		Capability bsnCap = createBundleCapability(attribs);
-		capabilities.add(bsnCap);
+        // Add the bundle capability for the system bundle under its normal
+        // name,
+        // e.g. "org.eclipse.osgi"
+        Capability bsnCap = createBundleCapability(attribs);
+        capabilities.add(bsnCap);
 
-		// Add the bundle capability for the system bundle under the standard
-		// alias "system.bundle" (from the spec).
-		CapabilityImpl systemBundleCap = new CapabilityImpl(CAPABILITY_BUNDLE);
-		for (Property prop : bsnCap.getProperties()) {
-			if (!PROPERTY_SYMBOLICNAME.equals(prop.getName()))
-				systemBundleCap.addProperty(prop);
-		}
-		systemBundleCap.addProperty(PROPERTY_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-		capabilities.add(systemBundleCap);
+        // Add the bundle capability for the system bundle under the standard
+        // alias "system.bundle" (from the spec).
+        CapabilityImpl systemBundleCap = new CapabilityImpl(CAPABILITY_BUNDLE);
+        for (Property prop : bsnCap.getProperties()) {
+            if (!PROPERTY_SYMBOLICNAME.equals(prop.getName()))
+                systemBundleCap.addProperty(prop);
+        }
+        systemBundleCap.addProperty(PROPERTY_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+        capabilities.add(systemBundleCap);
 
-		// Add the exports of the system bundle
-    	addExportedPackageCapabilities(attribs, capabilities);
-	}
+        // Add the exports of the system bundle
+        addExportedPackageCapabilities(attribs, capabilities);
 
-	/**
+        // Add service capabilities for PackageAdmin and StartLevel
+        capabilities.add(createServiceCapability(PackageAdmin.class));
+        capabilities.add(createServiceCapability(StartLevel.class));
+    }
+
+    /**
      * Generates a capability for the system bundle's symbolic name/version;
      * used by those unfortunate bundles that require a specific system bundle
      * (e.g. {@code Require-Bundle: org.eclipse.osgi}).
@@ -113,9 +123,9 @@ public class GlobalCapabilityGenerator {
         capability.addProperty(PROPERTY_SYMBOLICNAME, bsn);
         capability.addProperty(PROPERTY_VERSION, TYPE_VERSION, version);
         if (manifestVersion != null)
-        	capability.addProperty(PROPERTY_MANIFESTVERSION, manifestVersion);
+            capability.addProperty(PROPERTY_MANIFESTVERSION, manifestVersion);
         if (presentationName != null)
-        	capability.addProperty(PROPERTY_PRESENTATION_NAME, presentationName);
+            capability.addProperty(PROPERTY_PRESENTATION_NAME, presentationName);
         return capability;
     }
 
@@ -136,11 +146,11 @@ public class GlobalCapabilityGenerator {
         Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(exportPkgsStr);
         for (Entry<String, Map<String, String>> entry : exports.entrySet()) {
             String pkgName = ParserUtil.stripTrailingTildes(entry.getKey());
-			capabilities.add(createPackageCapability(pkgName, entry.getValue().get(Constants.VERSION_ATTRIBUTE)));
+            capabilities.add(createPackageCapability(pkgName, entry.getValue().get(Constants.VERSION_ATTRIBUTE)));
         }
     }
 
-	void addEECapabilities(EE ee, List<Capability> capabilities) throws IOException {
+    void addEECapabilities(EE ee, List<Capability> capabilities) throws IOException {
         // EE Capabilities
         for (EE compatible : ee.getCompatible()) {
             capabilities.add(createEECapability(compatible));
@@ -177,5 +187,13 @@ public class GlobalCapabilityGenerator {
         capability.addProperty(PROPERTY_EE, ee.getEEName());
         return capability;
     }
+
+    Capability createServiceCapability(Class<?> svcClass) {
+        CapabilityImpl cap = new CapabilityImpl(CAPABILITY_SERVICE);
+        cap.addProperty(PROPERTY_SERVICE, svcClass.getName());
+        return cap;
+    }
+
+
 
 }
