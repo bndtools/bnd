@@ -146,7 +146,19 @@ public class Resource {
 		return null;
 	}
 	
-	
+	public Require findPackageRequire(String usesPkgName) {
+		String matchString = String.format("(package=%s)", usesPkgName);
+		
+		for (Require require : requires) {
+			if (CapabilityType.PACKAGE.getTypeName().equals(require.getName())) {
+				String filter = require.getFilter();
+				if (filter.indexOf(matchString) > -1)
+					return require;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

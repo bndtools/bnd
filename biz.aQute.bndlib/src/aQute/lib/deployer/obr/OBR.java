@@ -10,11 +10,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
@@ -41,7 +44,10 @@ import aQute.libg.version.VersionRange;
 
 public class OBR implements Plugin, RepositoryPlugin {
 	
+	@Deprecated
 	public static final String LOCATION = "location";
+	public static final String LOCATIONS = "locations";
+	
 	public static final String CACHE = "cache";
 	
 	static final String FILE_SCHEME = "file";
@@ -55,7 +61,11 @@ public class OBR implements Plugin, RepositoryPlugin {
 	File cacheDir;
 
 	public void setProperties(Map<String, String> map) {
-		String locationsStr = map.get(LOCATION);
+		String locationsStr = map.get(LOCATIONS);
+		
+		// backwards compatibility
+		if (locationsStr == null) locationsStr = map.get(LOCATION);
+		
 		try {
 			if (locationsStr == null)
 				throw new IllegalArgumentException("Location must be set on an OBR plugin");
@@ -217,13 +227,28 @@ public class OBR implements Plugin, RepositoryPlugin {
 		SortedMap<Version, Resource> versionMap = bsnMap.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
-		List<Resource> resources = narrowVersions(versionMap, rangeStr);
+		List<Resource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
 		List<File> files = mapResourcesToFiles(resources);
 		
 		return (File[]) files.toArray(new File[files.size()]);
 	}
+	
+	List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version, Resource> versionMap, Filter filter) {
+		List<Resource> result = new ArrayList<Resource>(versionMap.size());
+		
+		Dictionary<String, String> dict = new Hashtable<String, String>();
+		dict.put("package", pkgName);
+		
+		for (Version version : versionMap.keySet()) {
+			dict.put("version", version.toString());
+			if (filter.match(dict))
+				result.add(versionMap.get(version));
+		}
+		
+		return result;
+	}
 
-	List<Resource> narrowVersions(SortedMap<Version, Resource> versionMap, String rangeStr) {
+	List<Resource> narrowVersionsByVersionRange(SortedMap<Version, Resource> versionMap, String rangeStr) {
 		List<Resource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
@@ -413,11 +438,25 @@ public class OBR implements Plugin, RepositoryPlugin {
 		if (versionMap == null)
 			return null;
 		
-		List<Resource> resources = narrowVersions(versionMap, rangeStr);
+		// Was a filter expression supplied?
+		Filter filter = null;
+		String filterStr = props.get("filter");
+		if (filterStr != null) {
+			filter = FrameworkUtil.createFilter(filterStr);
+		}
+		
+		// Narrow the resources by version range string or filter.
+		List<Resource> resources;
+		if (filter != null)
+			resources = narrowVersionsByFilter(pkgName, versionMap, filter);
+		else
+			resources = narrowVersionsByVersionRange(versionMap, rangeStr);
+		
+		// Remove resources that are invalid for the current resolution mode
 		if (mode != null)
 			filterResourcesByResolverMode(resources, mode);
 		
-		
+		// Select the most suitable one
 		Resource selected;
 		if (resources == null || resources.isEmpty())
 			selected = null;
@@ -435,8 +474,10 @@ public class OBR implements Plugin, RepositoryPlugin {
 	}
 
 	void expandPackageUses(String pkgName, Resource resource, Map<String, String> props) {
-		StringBuilder internalUses = new StringBuilder();
-		internalUses.append(pkgName);
+		List<String> internalUses = new LinkedList<String>();
+		Map<String, Require> externalUses = new HashMap<String, Require>();
+		
+		internalUses.add(pkgName);
 		
 		Capability capability = resource.findPackageCapability(pkgName);
 		Property usesProp = capability.findProperty(Property.USES);
@@ -446,10 +487,47 @@ public class OBR implements Plugin, RepositoryPlugin {
 				String usesPkgName = tokenizer.nextToken();
 				Capability usesPkgCap = resource.findPackageCapability(usesPkgName);
 				if (usesPkgCap != null)
-					internalUses.append(',').append(usesPkgName);
+					internalUses.add(usesPkgName);
+				else {
+					Require require = resource.findPackageRequire(usesPkgName);
+					if (require != null)
+						externalUses.put(usesPkgName, require);
+				}
 			}
 		}
-		props.put("packages", internalUses.toString());
+		props.put("packages", listToString(internalUses));
+		props.put("import-uses", formatPackageRequires(externalUses));
+	}
+	
+	String listToString(List<?> list) {
+		StringBuilder builder = new StringBuilder();
+		
+		int count = 0;
+		for (Object item : list) {
+			if (count++ > 0) builder.append(',');
+			builder.append(item);
+		}
+		
+		return builder.toString();
+	}
+
+	String formatPackageRequires(Map<String, Require> externalUses) {
+		StringBuilder builder = new StringBuilder();
+		
+		int count = 0;
+		for (Entry<String, Require> entry : externalUses.entrySet()) {
+			String pkgName = entry.getKey();
+			String filter = entry.getValue().getFilter();
+
+			if (count++ > 0)
+				builder.append(',');
+			builder.append(pkgName);
+			builder.append(";filter='");
+			builder.append(filter);
+			builder.append('\'');
+		}
+		
+		return builder.toString();
 	}
 
 	File findExactMatch(String identity, String version, Map<String, SortedMap<Version, Resource>> resourceMap) throws Exception {
