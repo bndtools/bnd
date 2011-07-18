@@ -51,9 +51,8 @@ public class OBRTest extends TestCase {
 		props.put("cache", this.obr.getCacheDir().getAbsolutePath());
 		obr2.setProperties(props);
 		
-		assertNotNull(obr2.getLocations());
-		assertEquals(1, obr2.getLocations().length);
-		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr2.getLocations()[0].toString());
+		assertEquals(1, obr2.getOBRIndexes().size());
+		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr2.getOBRIndexes().get(0).toString());
 		
 		assertEquals(this.obr.getCacheDir(), obr2.getCacheDir());
 	}

@@ -19,7 +19,11 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.libg.version,\
 	aQute.libg.sed,\
 	aQute.libg.header,\
-	aQute.libg.qtokens
+	aQute.libg.qtokens,\
+	org.osgi.service.bindex
+#Workaround, bnd should be adding this automatically:
+Import-Package: org.osgi.service.bindex,*
+
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
 Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
@@ -27,6 +31,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.0,\
 	aQute.libg;version=project,\
-	osgi.core;version=4.1
+	osgi.core;version=4.1,\
+	org.osgi.impl.bundle.bindex
 
 Bundle-Version: 1.44.0

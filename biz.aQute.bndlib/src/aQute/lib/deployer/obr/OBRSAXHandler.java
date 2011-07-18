@@ -27,15 +27,15 @@ public class OBRSAXHandler extends DefaultHandler {
 	private static final String ATTR_PROPERTY_VALUE = "v";
 
 	private final String baseUrl;
-	private final IResourceListener[] resourceListeners;
+	private final IResourceListener resourceListener;
 	
 	private Resource.Builder resourceBuilder = null;
 	private Capability.Builder capabilityBuilder = null;
 	private Require require = null;
 
-	public OBRSAXHandler(String baseUrl, IResourceListener[] listeners) {
+	public OBRSAXHandler(String baseUrl, IResourceListener listener) {
 		this.baseUrl = baseUrl;
-		this.resourceListeners = listeners;
+		this.resourceListener = listener;
 	}
 	
 
@@ -67,11 +67,8 @@ public class OBRSAXHandler extends DefaultHandler {
 			resourceBuilder.addCapability(capabilityBuilder);
 			capabilityBuilder = null;
 		} else if (TAG_RESOURCE.equals(qName)) {
-			boolean cont = true;
-			for (IResourceListener listener : resourceListeners) {
-				cont &= listener.processResource(resourceBuilder.build());
-			}
-			if (!cont) throw new StopParseException();
+			if (!resourceListener.processResource(resourceBuilder.build()))
+				throw new StopParseException();
 			resourceBuilder = null;
 		} else if (TAG_REQUIRE.equals(qName)) {
 			resourceBuilder.addRequire(require);

@@ -171,9 +171,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.trace("NOT Updating " + fName + " (repo is newer)");
 		}
 
-		file = new File(dir, bsn + "-latest.jar");
-		if (file.exists() && file.lastModified() < jar.lastModified()) {
-			jar.write(file);
+		File latest = new File(dir, bsn + "-latest.jar");
+		if (latest.exists() && latest.lastModified() < jar.lastModified()) {
+			jar.write(latest);
+			file = latest;
 		}
 		
 		return file;
@@ -213,11 +214,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (root == null) {
 			if (reporter != null) reporter.error("FileRepo root directory is not set.");
 		} else {
-			String list[] = root.list();
+			File[] list = root.listFiles();
 			if (list != null) {
-				for (String f : list) {
-					if (pattern == null || pattern.matches(f))
-						result.add(f);
+				for (File f : list) {
+					if (!f.isDirectory()) continue; // ignore non-directories
+					String fileName = f.getName();
+					if (fileName.charAt(0) == '.') continue; // ignore hidden files
+					if (pattern == null || pattern.matches(fileName))
+						result.add(fileName);
 				}
 			} else 
 				if ( reporter != null)
