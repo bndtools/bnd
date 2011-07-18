@@ -57,6 +57,7 @@ help.bundles: \
 crossplatform.bundles:\
 	biz.aQute.bndlib,\
 	bndtools.runtime.eclipse.applaunch,\
+	org.osgi.impl.bundle.bindex;version=2.2.0,\
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml,\
