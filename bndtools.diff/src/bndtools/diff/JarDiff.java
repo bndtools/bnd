@@ -342,8 +342,14 @@ public class JarDiff {
 			}
 		} else if (previousClass == null) {
 			clazz.setChangeCode(ClassInfo.CHANGE_CODE_NEW);
+			if (severity == PKG_SEVERITY_NONE) {
+				severity = PKG_SEVERITY_MINOR;
+			}
 		} else if (clazz == null) {
 			previousClass.setChangeCode(ClassInfo.CHANGE_CODE_REMOVED);
+			if (severity == PKG_SEVERITY_NONE) {
+				severity = PKG_SEVERITY_MAJOR;
+			}
 		}
 
 		return severity;
