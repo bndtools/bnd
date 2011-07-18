@@ -226,8 +226,11 @@ public class ReleaseHelper {
 
 		File file = context.getRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);
 		Jar releasedJar = null;
-		if (file != null) {
-			ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
+		if (file != null && file.exists()) {
+			IResource resource = ReleaseUtils.toResource(file);
+			if (resource != null) {
+				resource.refreshLocal(IResource.DEPTH_ZERO, null);
+			}
 			releasedJar = new Jar(file);
 		}
 		if (releasedJar == null) {
