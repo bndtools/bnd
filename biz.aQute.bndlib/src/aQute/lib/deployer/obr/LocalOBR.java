@@ -92,6 +92,7 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 			Collection<URL> remotes = super.getOBRIndexes();
 			indexUrls = new ArrayList<URL>(remotes.size() + 1);
 			indexUrls.add(localIndex.toURI().toURL());
+			indexUrls.addAll(remotes);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Error initialising local index URL", e);
 		}

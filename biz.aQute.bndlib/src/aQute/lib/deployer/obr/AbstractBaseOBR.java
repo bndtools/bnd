@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -32,6 +34,7 @@ import org.xml.sax.SAXException;
 
 import aQute.bnd.build.ResolverMode;
 import aQute.bnd.service.OBRIndexProvider;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.filter.Filter;
@@ -54,6 +57,8 @@ import aQute.libg.version.VersionRange;
 public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIndexProvider {
 	
 	public static final String PROP_NAME = "name";
+	public static final String PROP_RESOLUTION_MODE = "mode";
+	public static final String PROP_RESOLUTION_MODE_ANY = "any";
 	
 	public static final String REPOSITORY_FILE_NAME = "repository.xml";
 	
@@ -61,6 +66,7 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 	
 	protected Reporter reporter;
 	protected String name = this.getClass().getName();
+	protected Set<OBRResolutionMode> supportedModes = EnumSet.allOf(OBRResolutionMode.class);
 
 	private boolean initialised = false;
 	private final Map<String, SortedMap<Version, Resource>> pkgResourceMap = new HashMap<String, SortedMap<Version, Resource>>();
@@ -123,6 +129,23 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 	public void setProperties(Map<String, String> map) {
 		if (map.containsKey(PROP_NAME))
 			name = map.get(PROP_NAME);
+		
+		if (map.containsKey(PROP_RESOLUTION_MODE)) {
+			supportedModes = EnumSet.noneOf(OBRResolutionMode.class);
+			StringTokenizer tokenizer = new StringTokenizer(map.get(PROP_RESOLUTION_MODE), ",");
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken().trim();
+				if (PROP_RESOLUTION_MODE_ANY.equalsIgnoreCase(token))
+					supportedModes = EnumSet.allOf(OBRResolutionMode.class);
+				else {
+					try {
+						supportedModes.add(OBRResolutionMode.valueOf(token));
+					} catch (Exception e) {
+						if (reporter != null) reporter.error("Unknown OBR resolution mode: " + token);
+					}
+				}
+			}
+		}
 	}
 
 	public File[] get(String bsn, String rangeStr) throws Exception {
@@ -545,6 +568,8 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 		}
 	}
 
-
+	public Set<OBRResolutionMode> getSupportedModes() {
+		return supportedModes;
+	}
 
 }
