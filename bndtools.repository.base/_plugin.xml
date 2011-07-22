@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension point="bndtools.core.repositoryContributor">
-      <repository name="Base" class="bndtools.api.repository.impl.EmbeddedRepository:repo" implicit="true">
-         <description>
-            The Base repository is built into Bndtools and contains a small number of
-            useful bundles.
-         </description>
-      </repository>
+
+   <extension point="bndtools.core.initialRepository">
+      <repository name="Bndtools Default Build-only Repository" path="buildrepo"/>
+      <repository name="Bndtools Default Main Repository" path="repo"/>
    </extension>
-   
+
    <extension point="bndtools.core.projectTemplates">
       <template name="Component Development (Declarative Services)"
          priority="100"
          class="bndtools.templates.ComponentTemplate"
          docHtml="html/componentTemplate.html"/>
    </extension>
-   
    <extension point="bndtools.core.projectTemplates">
       <template name="Integration Testing"
          priority="200"

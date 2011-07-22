@@ -19,7 +19,6 @@ import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
-import bndtools.wizards.workspace.CnfSetupUserConfirmation.Operation;
 
 public class CnfSetupWizard extends Wizard {
 
@@ -43,29 +42,28 @@ public class CnfSetupWizard extends Wizard {
      * @return Whether any dialog or wizard was shown. The false return may be
      *         used to decide whether to give the user alternative feedback.
      */
-	public static boolean showIfNeeded(boolean overridePreference) {
-		final Operation operation = determineNecessaryOperation(overridePreference);
-		if (operation == null)
-			return false;
+    public static boolean showIfNeeded(boolean overridePreference) {
+        final boolean shouldInstall = determineNecessaryOperation(overridePreference);
+        if (!shouldInstall)
+            return false;
 
-		SWTConcurrencyUtil.execForDisplay(PlatformUI.getWorkbench().getDisplay(), true, new Runnable() {
-			public void run() {
-				final CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation(operation));
-				// Modified wizard dialog -- change "Finish" to "OK"
-				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard) {
-					@Override
-					protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
-						if (id == IDialogConstants.FINISH_ID)
-							label = IDialogConstants.OK_LABEL;
-						return super.createButton(parent, id, label, defaultButton);
-					}
-				};
-				dialog.open();
-			}
-
-		});
-		return true;
-	}
+        SWTConcurrencyUtil.execForDisplay(PlatformUI.getWorkbench().getDisplay(), true, new Runnable() {
+            public void run() {
+                final CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation());
+                // Modified wizard dialog -- change "Finish" to "OK"
+                WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard) {
+                    @Override
+                    protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
+                        if (id == IDialogConstants.FINISH_ID)
+                            label = IDialogConstants.OK_LABEL;
+                        return super.createButton(parent, id, label, defaultButton);
+                    }
+                };
+                dialog.open();
+            }
+        });
+        return true;
+    }
 
 	private static boolean isDisabled() {
 		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
@@ -77,14 +75,12 @@ public class CnfSetupWizard extends Wizard {
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, disabled);
 	}
 
-	private static Operation determineNecessaryOperation(boolean overridePreference) {
+	private static boolean determineNecessaryOperation(boolean overridePreference) {
 		if (!overridePreference && isDisabled())
-			return null;
+			return false;
 		if (!LocalRepositoryTasks.isBndWorkspaceConfigured())
-			return Operation.CREATE;
-		if (!LocalRepositoryTasks.isRepositoryUpToDate())
-			return Operation.UPDATE;
-		return null;
+			return true;
+		return false;
 	}
 
 	@Override

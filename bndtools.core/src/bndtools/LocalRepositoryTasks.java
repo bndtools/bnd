@@ -10,23 +10,20 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -41,22 +38,19 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
 import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
 import org.osgi.framework.Bundle;
-import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import aQute.libg.version.Version;
 import bndtools.api.repository.RemoteRepository;
-import bndtools.bindex.LocalRepositoryIndexer;
+import bndtools.types.Pair;
 import bndtools.utils.BundleUtils;
+import bndtools.utils.CollectionUtils;
 import bndtools.utils.ProgressReportingInputStream;
 
 public class LocalRepositoryTasks {
-    private static final String PATH_REPO_FOLDER = "repo";
     private static final String PREF_INSTALLED_REPOS = "installedRepos";
     private static final String PREF_PREFIX_INSTALLED_REPO = "installedRepoVersion-";
 
@@ -87,24 +81,19 @@ public class LocalRepositoryTasks {
 
         IProject cnfProject = getCnfProject();
         if(cnfProject == null || !cnfProject.exists()) {
-            progress.setWorkRemaining(4);
+            progress.setWorkRemaining(3);
             JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1));
             configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1));
 
             copyResourceToFile("template_build.bnd", cnfProject.getFile(Workspace.BUILDFILE), progress.newChild(1));
             copyResourceToFile("template_cnf_build.xml", cnfProject.getFile("build.xml"), progress.newChild(1));
         } else if(!cnfProject.isOpen()) {
-            progress.setWorkRemaining(2);
+            progress.setWorkRemaining(1);
             cnfProject.open(progress.newChild(1));
         }
-
-        IFolder repoFolder = getInitialLocalRepositoryFolder(cnfProject);
-        if(!repoFolder.exists())
-            repoFolder.create(true, true, progress.newChild(1));
-        else
-            progress.worked(1);
     }
 
+    /*
     public static RepositoryPlugin getLocalRepository() throws CoreException {
         List<RepositoryPlugin> repos;
         try {
@@ -123,13 +112,37 @@ public class LocalRepositoryTasks {
         }
         throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No writeable repositories configured in the workspace.", null));
     }
+    */
 
     private static class ImplicitRepositoryWrapper {
         private RemoteRepository repository;
         private String contributorBSN;
         private Version contributorVersion;
+        private String path;
     }
 
+    static List<Pair<Bundle, String>> getInitialRepositories(MultiStatus status) {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+        IConfigurationElement[] elements = registry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_INITIAL_REPO);
+
+        List<Pair<Bundle, String>> result;
+        if (elements == null || elements.length == 0)
+            result = Collections.emptyList();
+        else {
+            result = new ArrayList<Pair<Bundle,String>>();
+            for (IConfigurationElement element : elements) {
+                String bsn = element.getContributor().getName();
+                Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
+                if (bundle != null) {
+                    String path = element.getAttribute("path");
+                    result.add(Pair.newInstance(bundle, path));
+                }
+            }
+        }
+        return result;
+    }
+
+    /*
     static List<ImplicitRepositoryWrapper> getImplicitRepositories(MultiStatus status) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] elements = extensionRegistry.getConfigurationElementsFor(Plugin.PLUGIN_ID, Plugin.EXTPOINT_REPO_CONTRIB);
@@ -146,6 +159,7 @@ public class LocalRepositoryTasks {
 
                     String className = element.getAttribute("class");
                     wrapper.contributorBSN = element.getContributor().getName();
+                    wrapper.path = element.getAttribute("path");
                     try {
                         wrapper.repository = (RemoteRepository) element.createExecutableExtension("class");
                         Bundle contributorBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), wrapper.contributorBSN, null);
@@ -175,7 +189,58 @@ public class LocalRepositoryTasks {
         }
         return result;
     }
+    */
 
+    public static void installInitialRepositories(MultiStatus status, IProgressMonitor monitor) {
+        IProject cnf = getCnfProject();
+        SubMonitor progress = SubMonitor.convert(monitor);
+
+        List<Pair<Bundle,String>> repositories = getInitialRepositories(status);
+        for (Pair<Bundle, String> repository : repositories) {
+            Bundle bundle = repository.getFirst();
+            String pathStr = repository.getSecond();
+            if (!pathStr.endsWith("/"))
+                pathStr += "/";
+            IPath path = new Path(pathStr);
+            try {
+                recurseInstallEntries(bundle, path, cnf, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+            } catch (CoreException e) {
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error installing initial repository from bundle %s, path %s.", repository.getFirst().getSymbolicName(), pathStr), e));
+            } catch (IOException e) {
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error installing initial repository from bundle %s, path %s.", repository.getFirst().getSymbolicName(), pathStr), e));
+            }
+        }
+    }
+
+    static void recurseInstallEntries(Bundle bundle, IPath path, IContainer root, IProgressMonitor monitor) throws IOException, CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor);
+
+        if (path.hasTrailingSeparator()) {
+            @SuppressWarnings("unchecked")
+            Enumeration<String> childEnum = bundle.getEntryPaths(path.toString());
+            List<String> children = CollectionUtils.asList(childEnum);
+            progress.setWorkRemaining(1 + children.size());
+
+            IFolder newFolder = root.getFolder(path);
+            if (!newFolder.exists())
+                newFolder.create(false, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+
+            for (String childPath : children)
+                recurseInstallEntries(bundle, new Path(childPath), root, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+
+        } else {
+            progress.setWorkRemaining(1);
+            InputStream input = bundle.getEntry(path.toString()).openStream();
+            try {
+                IFile newFile = root.getFile(path);
+                newFile.create(input, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+            } finally {
+                input.close();
+            }
+        }
+    }
+
+    /*
     public static IStatus installImplicitRepositoryContents(boolean skipContent, MultiStatus status, IProgressMonitor monitor, RepositoryPlugin repository) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
 
@@ -209,6 +274,7 @@ public class LocalRepositoryTasks {
         }
         return status;
     }
+    */
 
     /**
      * Install a bundle from the supplied URL into the local bundle repository.
@@ -305,10 +371,6 @@ public class LocalRepositoryTasks {
         }
     }
 
-    static IFolder getInitialLocalRepositoryFolder(IProject cnfProject) {
-        return cnfProject.getFolder(PATH_REPO_FOLDER);
-    }
-
     static void initialiseAndInstallRepository(RemoteRepository remoteRepo, RepositoryPlugin localRepo, MultiStatus status, IProgressMonitor monitor) {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
         try {
@@ -345,6 +407,7 @@ public class LocalRepositoryTasks {
         }
     }
 
+    /*
     public static boolean isRepositoryUpToDate() {
         Map<String, Version> installedVersions = loadInstalledRepositoryVersions();
 
@@ -359,7 +422,9 @@ public class LocalRepositoryTasks {
 
         return true;
     }
+    */
 
+    /*
     public static Map<String, Version> loadInstalledRepositoryVersions() {
         Preferences node = getProjectPreferencesNode();
 
@@ -382,7 +447,9 @@ public class LocalRepositoryTasks {
 
         return result;
     }
+    */
 
+    /*
     static void saveInstalledRepositoryVersion(Map<String, Version> map) throws BackingStoreException {
         Preferences node = getProjectPreferencesNode();
 
@@ -402,21 +469,7 @@ public class LocalRepositoryTasks {
         ProjectScope cnfProjectPrefs = new ProjectScope(cnfProject);
         return cnfProjectPrefs.getNode(Plugin.PLUGIN_ID);
     }
-
-    public static void indexRepositories(IProgressMonitor monitor) throws Exception {
-        IProject cnf = getCnfProject();
-        IFile repoFile = cnf.getFile("repository.xml");
-        URI uri = repoFile.getLocationURI();
-        if (uri == null)
-            return;
-
-        LocalRepositoryIndexer indexer = new LocalRepositoryIndexer();
-        indexer.setOutputFile(new File(uri));
-
-        SubMonitor progress = SubMonitor.convert(monitor, 3);
-        indexer.initialise(progress.newChild(2, SubMonitor.SUPPRESS_NONE));
-        repoFile.refreshLocal(IResource.DEPTH_ZERO, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-    }
+    */
 
 }
 

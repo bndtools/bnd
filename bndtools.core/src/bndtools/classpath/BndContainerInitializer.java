@@ -92,13 +92,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     }
 
     public static void updateProjectClasspath(IJavaProject javaProject) throws CoreException {
+        IProject project = javaProject.getProject();
+        if (!project.exists() || !project.isOpen())
+            return;
+
         // Remove classpath problem markers
-        javaProject.getProject().deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+        project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
         if (model == null) {
             setClasspathEntries(javaProject, model, EMPTY_ENTRIES);
-            addClasspathProblemMarker(javaProject.getProject(), "Bnd workspace is not configured.");
+            addClasspathProblemMarker(project, "Bnd workspace is not configured.");
         } else {
             model.clear();
             model.refresh();
@@ -142,11 +146,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
                     result.add(cpe);
                 } else {
-                    addClasspathProblemMarker(javaProject.getProject(), c.getError());
+                    addClasspathProblemMarker(project, c.getError());
                 }
             }
             for (String error : model.getErrors()) {
-                addClasspathProblemMarker(javaProject.getProject(), error);
+                addClasspathProblemMarker(project, error);
             }
             model.clear();
 

@@ -2,14 +2,11 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.21
+Bundle-Version: 0.0.22
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	repo=repo,\
-	repo/biz.aQute.bnd/=${repo;biz.aQute.bnd},\
-	repo/biz.aQute.bnd.annotation/=${repo;biz.aQute.bnd.annotation},\
-	repo/biz.aQute.bndlib/=${repo;biz.aQute.bndlib},\
-	repo/bndtools.runtime.eclipse.applaunch/=${repo;bndtools.runtime.eclipse.applaunch},\
+	buildrepo=buildrepo,\
 	html=html
 
 Private-Package: bndtools.templates
@@ -17,3 +14,5 @@ Import-Package: \
 	bndtools.api.repository,\
 	bndtools.api.repository.impl,\
 	*
+
+-removeheaders: Private-Package

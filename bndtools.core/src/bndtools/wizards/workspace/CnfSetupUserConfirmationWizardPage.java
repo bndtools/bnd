@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Text;
 
 import bndtools.Plugin;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
-import bndtools.wizards.workspace.CnfSetupUserConfirmation.Operation;
 
 public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 
@@ -36,17 +35,10 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 		final Button btnNever = new Button(parent, SWT.RADIO);
 
 		// LABELS
-		if (confirmation.getOperation() == Operation.CREATE) {
-			setTitle(Messages.CnfSetupCreateTitle);
-			text.setText(Messages.CnfSetupCreateExplanation);
-			btnSetup.setText(Messages.CnfSetupCreate);
-			btnSkip.setText(Messages.CnfSetupCreateSkip);
-		} else if (confirmation.getOperation() == Operation.UPDATE) {
-			setTitle(Messages.CnfSetupUpdateTitle);
-			text.setText(Messages.CnfSetupUpdateExplanation);
-			btnSetup.setText(Messages.CnfSetupUpdate);
-			btnSkip.setText(Messages.CnfSetupUpdateSkip);
-		}
+		setTitle(Messages.CnfSetupCreateTitle);
+		text.setText(Messages.CnfSetupCreateExplanation);
+		btnSetup.setText(Messages.CnfSetupCreate);
+		btnSkip.setText(Messages.CnfSetupCreateSkip);
 		btnNever.setText(Messages.CnfSetupNever);
 
 		// INIT CONTROLS
@@ -56,7 +48,8 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 
 		// EVENTS
 		SelectionListener listener = new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				if (btnSetup.getSelection())
 					confirmation.setDecision(Decision.SETUP);
 				else if (btnSkip.getSelection())

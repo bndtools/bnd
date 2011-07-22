@@ -55,7 +55,7 @@ public class RepoBundleSelectionWizard extends Wizard {
         repoAdmin = new RepositoryAdminImpl(new DummyBundleContext(), new Logger(context));
 
         // Setup repository indexers / index providers
-        LocalRepositoryIndexProvider localRepoIndex = new LocalRepositoryIndexProvider();
+        PluginIndexProvider localRepoIndex = new PluginIndexProvider();
         WorkspaceIndexer workspaceIndex = new WorkspaceIndexer(WORKSPACE_CATEGORY);
         final List<IRepositoryIndexProvider> indexList = Arrays.asList(new IRepositoryIndexProvider[] { localRepoIndex, workspaceIndex });
 
@@ -70,7 +70,7 @@ public class RepoBundleSelectionWizard extends Wizard {
         addPage(selectionPage);
 
         if (useResolver) {
-            requirementsPage.addRepositoryIndexProvider(new LocalRepositoryIndexProvider());
+            requirementsPage.addRepositoryIndexProvider(localRepoIndex);
             requirementsPage.addRepositoryIndexProvider(workspaceIndex);
 
             requirementsPage.setSelectedResourcesRequestor(new RepositoryResourceRequestor(repoAdmin, indexList, bundles, project));

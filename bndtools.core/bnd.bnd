@@ -21,9 +21,9 @@ Import-Package: \
 felix.obr.packages: \
 	org.apache.felix.bundlerepository*,\
 	org.apache.felix.utils.*,\
-	org.kxml2.io,\
-	org.xmlpull.v1
-	
+	org.kxml2.io;-split-package:=first,\
+	org.xmlpull.v1;-split-package:=first
+
 Private-Package: bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
@@ -76,6 +76,7 @@ eclipse.deps: \
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.core.filebuffers,\
 	org.eclipse.core.expressions
+
 -buildpath: biz.aQute.bndlib;version=1.44,\
 	org.apache.felix.bundlerepository,\
 	patricia_trie,\
@@ -84,4 +85,4 @@ eclipse.deps: \
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml.stream,\
-	org.osgi.impl.bundle.bindex
+	org.osgi.impl.bundle.bindex;version=latest

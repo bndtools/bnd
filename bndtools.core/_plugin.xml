@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
    <!-- Extension Points -->
-   <extension-point id="repositoryContributor" name="Repository Contributor" schema="schema/repositoryContributor.exsd"/>
-   <extension-point id="obr" name="OSGi Bundle Repository" schema="schema/obr.exsd"/>
+   
+   <extension-point id="initialRepository" name="Initial Repository" schema="schema/initialRepository.exsd"/>
    <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
    <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
    <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>

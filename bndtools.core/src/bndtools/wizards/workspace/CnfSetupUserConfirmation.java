@@ -2,27 +2,18 @@ package bndtools.wizards.workspace;
 
 class CnfSetupUserConfirmation {
 
-	enum Operation { CREATE, UPDATE }
+    enum Decision {
+        SETUP, SKIP, NEVER
+    }
 
-	enum Decision { SETUP, SKIP, NEVER }
+    private Decision decision = Decision.SETUP;
 
-	private final Operation operation;
-	private Decision decision = Decision.SETUP;
+    public Decision getDecision() {
+        return decision;
+    }
 
-	public CnfSetupUserConfirmation(Operation operation) {
-		this.operation = operation;
-	}
-
-	public Operation getOperation() {
-		return operation;
-	}
-
-	public Decision getDecision() {
-		return decision;
-	}
-
-	public void setDecision(Decision decision) {
-		this.decision = decision;
-	}
+    public void setDecision(Decision decision) {
+        this.decision = decision;
+    }
 
 }

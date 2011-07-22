@@ -15,6 +15,7 @@ target-dir:   generated
 target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
 repo:         ${build}/repo
+buildrepo:    ${build}/buildrepo
 p:            ${basename;${project}}
 project.name: ${p}
 
@@ -28,7 +29,6 @@ javac.debug:  on
 # Bnd Options
 -sources:       true
 -sourcepath:    ${project}/src 
--plugin:        aQute.lib.deployer.FileRepo;location=${repo},\
-                aQute.lib.deployer.obr.OBR;location=file:${build}/repository.xml;cache=${workspace}/.obrcache
-
+-plugin:        aQute.lib.deployer.obr.LocalOBR;name=LocalRepository;local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
+                aQute.lib.deployer.obr.OBR;name=BuildRepository;locations='file:${buildrepo}/repository.xml';mode=build
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"

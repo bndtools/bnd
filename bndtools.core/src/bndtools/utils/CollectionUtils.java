@@ -13,12 +13,13 @@ package bndtools.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 public class CollectionUtils {
     /**
@@ -130,6 +131,14 @@ public class CollectionUtils {
 		@SuppressWarnings("unchecked") List<T> list = (List<T>) Arrays.asList(array);
 		return list;
 	}
+
+    public static <T> List<T> asList(Enumeration<T> enumeration) {
+        List<T> result = new ArrayList<T>();
+        while (enumeration.hasMoreElements())
+            result.add(enumeration.nextElement());
+        return result;
+    }
+
 	public static <T> List<T> newArrayList(Object[] array) {
 		List<T> result = new ArrayList<T>(array.length);
 		for (Object obj : array) {

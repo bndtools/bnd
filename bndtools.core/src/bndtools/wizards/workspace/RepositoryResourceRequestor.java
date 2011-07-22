@@ -1,6 +1,7 @@
 package bndtools.wizards.workspace;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,17 +36,18 @@ public class RepositoryResourceRequestor implements Requestor<Collection<? exten
     }
 
     void processIndex(IRepositoryIndexProvider indexProvider, Map<String, Resource> urisToResources, IProgressMonitor monitor) throws Exception {
-        try {
-            indexProvider.initialise(monitor);
-            Repository repo = repoAdmin.addRepository(indexProvider.getUrl().toExternalForm());
-
-            Resource[] resources = repo.getResources();
-            for (Resource resource : resources) {
-                if (!urisToResources.containsKey(resource.getURI()))
-                    urisToResources.put(resource.getURI(), resource);
+        indexProvider.initialise(monitor);
+        for (URL repoUrl : indexProvider.getUrls()) {
+            try {
+                Repository repo = repoAdmin.addRepository(repoUrl.toExternalForm());
+                Resource[] resources = repo.getResources();
+                for (Resource resource : resources) {
+                    if (!urisToResources.containsKey(resource.getURI()))
+                        urisToResources.put(resource.getURI(), resource);
+                }
+            } finally {
+                repoAdmin.removeRepository(repoUrl.toExternalForm());
             }
-        } finally {
-            repoAdmin.removeRepository(indexProvider.getUrl().toExternalForm());
         }
     }
 

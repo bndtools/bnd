@@ -28,8 +28,6 @@ public class Activator extends AbstractUIPlugin {
     static volatile Activator       instance;
     BundleContext                   context;
     RepositoryListenerPluginTracker repoListenerTracker;
-    IndexerTracker                  indexerTracker;
-
 
     /**
      * The constructor
@@ -53,9 +51,6 @@ public class Activator extends AbstractUIPlugin {
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d", "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
 
-        indexerTracker = new IndexerTracker(context);
-        indexerTracker.open();
-
         repoListenerTracker = new RepositoryListenerPluginTracker(context);
         repoListenerTracker.open();
     }
@@ -68,7 +63,6 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void stop(BundleContext context) throws Exception {
         repoListenerTracker.close();
-        indexerTracker.close();
         instance = null;
         super.stop(context);
     }

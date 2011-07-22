@@ -165,8 +165,7 @@ public class Central {
         }
         workspace.addBasicPlugin(new FilesystemUpdateListener());
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
-        workspace.addBasicPlugin(new RepositoryRebuilderPlugin());
-        workspace.addBasicPlugin(Activator.instance.indexerTracker);
+        workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
 
         Activator.instance.context.registerService(Workspace.class.getName(), workspace, null);
 

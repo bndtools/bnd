@@ -45,8 +45,6 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
 
     protected abstract void generateResources(RepositoryImpl bindex, List<Resource> result, IProgressMonitor monitor) throws Exception;
 
-    public abstract String getCategory();
-
     public void initialise(IProgressMonitor monitor) throws Exception {
         int workRemaining = 9;
         SubMonitor progress = SubMonitor.convert(monitor, getTaskLabel(), workRemaining);

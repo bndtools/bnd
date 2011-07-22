@@ -2,6 +2,7 @@ package bndtools.wizards.workspace;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,7 +53,9 @@ public class ResolveOperation implements IRunnableWithProgress {
             // Add indexes
             for (IRepositoryIndexProvider provider : indexProviders) {
                 provider.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                repoAdmin.addRepository(provider.getUrl().toExternalForm());
+                for (URL repoUrl : provider.getUrls()) {
+                    repoAdmin.addRepository(repoUrl.toExternalForm());
+                }
                 --work;
             }
 
@@ -110,7 +113,9 @@ public class ResolveOperation implements IRunnableWithProgress {
             e.printStackTrace();
         } finally {
             for (IRepositoryIndexProvider provider : indexProviders) {
-                repoAdmin.removeRepository(provider.getUrl().toExternalForm());
+                for (URL url : provider.getUrls()) {
+                    repoAdmin.removeRepository(url.toExternalForm());
+                }
             }
         }
     }

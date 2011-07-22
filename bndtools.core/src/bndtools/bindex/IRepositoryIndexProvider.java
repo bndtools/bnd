@@ -8,8 +8,6 @@ public interface IRepositoryIndexProvider {
 
     void initialise(IProgressMonitor monitor) throws Exception;
 
-    URL getUrl();
-
-    String getCategory();
+    URL[] getUrls();
 
 }

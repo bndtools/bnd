@@ -16,6 +16,7 @@ import java.io.FileFilter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -49,23 +50,26 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
-import bndtools.RepositoryIndexerJob;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.utils.DeltaAccumulator;
 import bndtools.utils.FileUtils;
 
 public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
-	public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
-	public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
+    public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
+    public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
 
-	private static final String BND_SUFFIX = ".bnd";
+    private static final String BND_SUFFIX = ".bnd";
 
-	private static final long BUILT_NEVER = -1;
+    private static enum BlockingBuildErrors {
+        buildpath, javac
+    };
+
+    private static final long BUILT_NEVER = -1;
     private static final int RETRIES = 3;
 
-	private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
-	private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
+    private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
+    private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
@@ -74,9 +78,12 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         IProject[] depends = new IProject[] { project.getWorkspace().getRoot().getProject(Project.BNDCNF) };
 
         ensureBndBndExists(project);
-        if (hasBlockingErrors(project)) {
+        EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
+        if (!blockers.isEmpty()) {
             try {
                 clearBuildMarkers(project);
+                if (blockers.contains(BlockingBuildErrors.javac))
+                    addBuildMarker(project, String.format("Will not build OSGi bundle(s) for project \"%s\" until Java compilation problems are resolved.", project.getName()), IMarker.SEVERITY_ERROR);
             } catch (Exception e) {
                 Plugin.logError("Unable to clear build markers", e);
             }
@@ -94,7 +101,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 			}
 		}
 		setLastBuildTime(project, System.currentTimeMillis());
-		RepositoryIndexerJob.runIfNeeded();
 
         return depends;
 	}
@@ -126,13 +132,19 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         return false;
     }
 
-    static boolean hasBlockingErrors(IProject project) {
+
+    static EnumSet<BlockingBuildErrors> getBlockingErrors(IProject project) {
+
         try {
-            return containsError(project.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0))
-                    || containsError(project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE));
+            EnumSet<BlockingBuildErrors> result = EnumSet.noneOf(BlockingBuildErrors.class);
+            if (containsError(project.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0)))
+                result.add(BlockingBuildErrors.buildpath);
+            if (containsError(project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
+                result.add(BlockingBuildErrors.javac);
+            return result;
         } catch (CoreException e) {
-            Plugin.logError("Error looking for Java problem markers", e);
-            return false;
+            Plugin.logError("Error looking for project problem markers", e);
+            return EnumSet.noneOf(BlockingBuildErrors.class);
         }
     }
 

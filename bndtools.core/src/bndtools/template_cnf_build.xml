@@ -96,6 +96,7 @@
 	<target name="clean" depends="init">
 		<bnd command="clean" exceptions="true" basedir="${project}" />
 		<delete dir="bin"/>
+		<delete dir="bin_test"/>
 		<delete dir="${target}"/>
 		
 		<delete dir="${workspacedir}/cnf/tmp"/>

@@ -10,11 +10,6 @@ public class Messages extends NLS {
     public static String CnfSetupCreateExplanation;
 	public static String CnfSetupCreateSkip;
 
-	public static String CnfSetupUpdate;
-	public static String CnfSetupUpdateTitle;
-	public static String CnfSetupUpdateExplanation;
-	public static String CnfSetupUpdateSkip;
-
 	public static String CnfSetupNever;
 
     public static String CnfSetupNeverWarning;

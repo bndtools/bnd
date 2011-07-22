@@ -112,7 +112,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
          id="biz.aQute.bndlib"
          download-size="0"
          install-size="0"
-         version="1.44.0"
+         version="1.44.1"
          unpack="false"/>
 
    <plugin
@@ -155,7 +155,13 @@ This Agreement is governed by the laws of the State of New York and the intellec
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>       
+         unpack="false"/>
+   
+   <plugin
+         id="org.osgi.impl.bundle.bindex"
+         download-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="com.springsource.org.objectweb.asm"

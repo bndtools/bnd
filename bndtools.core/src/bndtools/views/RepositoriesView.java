@@ -15,7 +15,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -46,7 +45,6 @@ import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
-import bndtools.wizards.workspace.ImportBundleRepositoryWizard;
 
 public class RepositoriesView extends FilteredViewPart implements RepositoryListenerPlugin {
 
@@ -54,7 +52,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
 
     private Action collapseAllAction;
     private Action refreshAction;
-    private Action importRepoAction;
     private Action addBundlesAction;
 
     private ServiceRegistration registration;
@@ -222,20 +219,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         refreshAction.setToolTipText("Refresh Repositories Tree");
         refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png"));
 
-        importRepoAction = new Action() {
-            @Override
-            public void run() {
-                ImportBundleRepositoryWizard wizard = new ImportBundleRepositoryWizard();
-                WizardDialog dialog = new WizardDialog(getViewSite().getShell(), wizard);
-                if(dialog.open() == Window.OK) {
-                    viewer.refresh();
-                }
-            };
-        };
-        importRepoAction.setText("Import");
-        importRepoAction.setToolTipText("Import External Repositories");
-        importRepoAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/import_wiz.gif"));
-
         addBundlesAction = new Action() {
             @Override
             public void run() {
@@ -263,8 +246,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
     protected void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
-        toolBar.add(new Separator());
-        toolBar.add(importRepoAction);
         toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
 

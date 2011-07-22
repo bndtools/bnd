@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.bindex.BundleIndexer;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
@@ -42,14 +43,13 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
-import bndtools.builder.BndProjectNature;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
 	public static final String PLUGIN_ID = "bndtools.core";
 	public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
-	public static final String EXTPOINT_REPO_CONTRIB = "repositoryContributor";
+    public static final String EXTPOINT_INITIAL_REPO = "initialRepository";
 
 	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
 
@@ -69,6 +69,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
+    private volatile IndexerTracker indexerTracker;
 
     private volatile Central central;
 
@@ -95,7 +96,7 @@ public class Plugin extends AbstractUIPlugin {
                                 return false;
                             } else {
                                 IProject project = (IProject) resource;
-                                return project.exists() && project.isOpen() && project.hasNature(BndProjectNature.NATURE_ID);
+                                return project.exists() && project.isOpen();
                             }
                         }
 
@@ -124,6 +125,9 @@ public class Plugin extends AbstractUIPlugin {
 
 		bndActivator = new Activator();
 		bndActivator.start(context);
+
+		indexerTracker = new IndexerTracker(context);
+		indexerTracker.open();
 
 		central = new Central();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(refreshWorkspaceListener);
@@ -166,6 +170,7 @@ public class Plugin extends AbstractUIPlugin {
 
 		bndActivator.stop(context);
 		central.close();
+		indexerTracker.close();
 		this.bundleContext = null;
 		plugin = null;
 		super.stop(context);
@@ -296,5 +301,9 @@ public class Plugin extends AbstractUIPlugin {
 	public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
 		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
 	}
+
+    public BundleIndexer getBundleIndexer() {
+        return indexerTracker;
+    }
 
 }

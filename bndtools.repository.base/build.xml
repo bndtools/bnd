@@ -2,15 +2,34 @@
 <project name="bndtools.repository.base" default="build"> 
 	<import file="../cnf/build.xml"/>
 	
+	<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+		<classpath>
+			<fileset dir="../org.osgi.impl.bundle.bindex/generated" includes="*.jar"/>
+		</classpath>
+	</taskdef>
+	
 	<target name="updateBndFromRepo">
 		<delete dir="repo/biz.aQute.junit"/>
 		<delete dir="repo/biz.aQute.launcher"/>
 		
 		<copy todir="repo">
 			<fileset dir="../cnf/repo">
-				<include name="biz.aQute.junit/**"/>
-				<include name="biz.aQute.launcher/**"/>
+				<include name="biz.aQute.*/**"/>
+				<include name="bndtools.runtime.eclipse.applaunch/**"/>
 			</fileset>
 		</copy>
 	</target>
+	
+	<target name="updateIndexes" depends="updateBndFromRepo">
+		<echo>Indexing buildrepo...</echo>
+		<bindex root="${basedir}/buildrepo" repositoryfile="${basedir}/buildrepo/repository.xml" quiet="yes">
+			<fileset dir="${basedir}/buildrepo" includes="**/*.jar"/>
+		</bindex>
+
+		<echo>Indexing repo...</echo>
+		<bindex root="${basedir}/repo" repositoryfile="${basedir}/repo/repository.xml" quiet="yes">
+			<fileset dir="${basedir}/repo" includes="**/*.jar"/>
+		</bindex>
+	</target>
+	
 </project>

@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
-import aQute.bnd.service.RepositoryPlugin;
 import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
 
@@ -24,19 +23,17 @@ class CnfSetupTask extends WorkspaceModifyOperation {
         this.skipRepoContent = skipRepoContent;
     }
 
-	@Override
-    protected void execute(IProgressMonitor monitor) throws CoreException, InvocationTargetException,
-			InterruptedException {
-		final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0,
-				"Problems occurred while configuring the Bnd workspace.", null);
-		SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository...", 4);
+    @Override
+    protected void execute(IProgressMonitor monitor) throws CoreException, InvocationTargetException, InterruptedException {
+        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems occurred while configuring the Bnd workspace.", null);
+        SubMonitor progress = SubMonitor.convert(monitor, "Copying files to repository...", 4);
 
-		LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1, 0));
-		RepositoryPlugin localRepo = LocalRepositoryTasks.getLocalRepository();
-		LocalRepositoryTasks.installImplicitRepositoryContents(skipRepoContent, status, progress.newChild(2, 0), localRepo);
-		LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1, 0));
-		if (!status.isOK())
-			throw new CoreException(status);
-	}
+        LocalRepositoryTasks.configureBndWorkspace(progress.newChild(1, 0));
+        if (!skipRepoContent)
+            LocalRepositoryTasks.installInitialRepositories(status, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
+        LocalRepositoryTasks.refreshWorkspaceForRepository(progress.newChild(1, 0));
+        if (!status.isOK())
+            throw new CoreException(status);
+    }
 
 }
