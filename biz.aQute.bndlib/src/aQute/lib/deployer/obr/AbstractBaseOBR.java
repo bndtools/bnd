@@ -106,23 +106,21 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 				}
 			};
 			Collection<URL> indexes = getOBRIndexes();
+			boolean success = false;
 			for (URL indexLocation : indexes) {
 				try {
 					InputStream stream = indexLocation.openStream();
 					readIndex(indexLocation.toString(), stream, listener);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ParserConfigurationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SAXException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					success = true; // At least one could be read
+				} catch (Exception e) {
+					reporter.error("Unable to read index at URL '%s'.", indexLocation);
 				}
 			}
 			
-			initialised = true;
+			if (success)
+				initialised = true;
+			else
+				throw new IllegalStateException(String.format("Unable to initialise any index URLs for repository '%s'.", getName()));
 		}
 	}
 
