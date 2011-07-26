@@ -1,10 +1,8 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -36,7 +34,8 @@ import aQute.bnd.build.ResolverMode;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.Plugin;
-import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RemoteRepositoryPlugin;
+import aQute.bnd.service.ResourceHandle;
 import aQute.lib.filter.Filter;
 import aQute.lib.osgi.Jar;
 import aQute.libg.generics.Create;
@@ -54,15 +53,13 @@ import aQute.libg.version.VersionRange;
  * @author Neil Bartlett
  *
  */
-public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIndexProvider {
+public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin, OBRIndexProvider {
 	
 	public static final String PROP_NAME = "name";
 	public static final String PROP_RESOLUTION_MODE = "mode";
 	public static final String PROP_RESOLUTION_MODE_ANY = "any";
 	
 	public static final String REPOSITORY_FILE_NAME = "repository.xml";
-	
-	static final String FILE_SCHEME = "file";
 	
 	protected Reporter reporter;
 	protected String name = this.getClass().getName();
@@ -72,7 +69,7 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 	private final Map<String, SortedMap<Version, Resource>> pkgResourceMap = new HashMap<String, SortedMap<Version, Resource>>();
 	private final Map<String, SortedMap<Version, Resource>> bsnMap = new HashMap<String, SortedMap<Version, Resource>>();
 	
-	protected abstract File getOrCreateCacheFile(URI uri) throws IOException;
+	protected abstract File getCacheDirectory();
 
 	protected void addResourceToIndex(Resource resource) {
 		addBundleSymbolicNameToIndex(resource);
@@ -145,8 +142,22 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 			}
 		}
 	}
+	
+	public File[] get(String bsn, String range) throws Exception {
+		ResourceHandle[] handles = getHandles(bsn, range);
+		
+		return requestAll(handles);
+	}
+	
+	protected static File[] requestAll(ResourceHandle[] handles) throws IOException {
+		File[] result = new File[handles.length];
+		for (int i = 0; i < handles.length; i++) {
+			result[i] = handles[i].request();
+		}
+		return result;
+	}
 
-	public File[] get(String bsn, String rangeStr) throws Exception {
+	protected ResourceHandle[] getHandles(String bsn, String rangeStr) throws Exception {
 		init();
 		
 		// If the range is set to "project", we cannot resolve it.
@@ -158,9 +169,9 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
 		List<Resource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
-		List<File> files = mapResourcesToFiles(resources);
+		List<ResourceHandle> handles = mapResourcesToHandles(resources);
 		
-		return (File[]) files.toArray(new File[files.size()]);
+		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
 	}
 	
 	public void setReporter(Reporter reporter) {
@@ -168,7 +179,12 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 	}
 	
 	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
-		File result;
+		ResourceHandle handle = getHandle(bsn, range, strategy, properties);
+		return handle != null ? handle.request() : null;
+	}
+	
+	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
+		ResourceHandle result;
 		if (bsn != null)
 			result = resolveBundle(bsn, range, strategy);
 		else {
@@ -352,65 +368,44 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 		}
 	}
 	
-	List<File> mapResourcesToFiles(Collection<Resource> resources) throws Exception {
-		List<File> result = new ArrayList<File>(resources.size());
+	List<ResourceHandle> mapResourcesToHandles(Collection<Resource> resources) throws Exception {
+		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
 		
 		for (Resource resource : resources) {
-			result.add(mapResourceToFile(resource));
+			result.add(mapResourceToHandle(resource));
 		}
 		
 		return result;
 	}
 	
-	File mapResourceToFile(Resource resource) throws Exception {
-		return mapUriToFile(resource.getBaseUrl(), resource.getUrl());
+	ResourceHandle mapResourceToHandle(Resource resource) throws Exception {
+		return new URIResourceHandle(new URI(resource.getUrl()), new URI(resource.getBaseUrl()), getCacheDirectory());
 	}
 
-	File mapUriToFile(String baseUrlStr, String urlStr) throws Exception {
-		File result;
-		
-		URI baseUri = new URI(baseUrlStr);
-		URI uri = new URI(urlStr);
-		if (FILE_SCHEME.equals(uri.getScheme())) {
-			String path = uri.getSchemeSpecificPart();
-			if (path.length() > 0 && path.charAt(0) != '/')
-				uri = new URI(null, null, path, null);
-		}
-		uri = baseUri.resolve(uri);
-		
-		if (FILE_SCHEME.equals(uri.getScheme())) {
-			result = new File(uri.getPath());
-		} else {
-			result = getOrCreateCacheFile(uri);
-		}
-		
-		return result;
-	}
-	
-	File resolveBundle(String bsn, String rangeStr, Strategy strategy) throws Exception {
+	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy) throws Exception {
 		if (rangeStr == null) rangeStr = "0.0.0";
 		
 		if (strategy == Strategy.EXACT) {
 			return findExactMatch(bsn, rangeStr, bsnMap);
 		}
 		
-		File[] files = get(bsn, rangeStr);
-		File selected;
-		if (files == null || files.length == 0)
+		ResourceHandle[] handles = getHandles(bsn, rangeStr);
+		ResourceHandle selected;
+		if (handles == null || handles.length == 0)
 			selected = null;
 		else {
 			switch(strategy) {
 			case LOWEST:
-				selected = files[0];
+				selected = handles[0];
 				break;
 			default:
-				selected = files[files.length - 1];
+				selected = handles[handles.length - 1];
 			}
 		}
 		return selected;
 	}
 
-	File resolvePackage(String pkgName, String rangeStr, Strategy strategy, ResolverMode mode, Map<String, String> props) throws Exception {
+	ResourceHandle resolvePackage(String pkgName, String rangeStr, Strategy strategy, ResolverMode mode, Map<String, String> props) throws Exception {
 		init();
 		if (rangeStr == null) rangeStr = "0.0.0";
 		
@@ -450,7 +445,7 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 			}
 			expandPackageUses(pkgName, selected, props);
 		}
-		return selected != null ? mapResourceToFile(selected) : null;
+		return selected != null ? mapResourceToHandle(selected) : null;
 	}
 
 	void expandPackageUses(String pkgName, Resource resource, Map<String, String> props) {
@@ -510,7 +505,7 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 		return builder.toString();
 	}
 
-	File findExactMatch(String identity, String version, Map<String, SortedMap<Version, Resource>> resourceMap) throws Exception {
+	ResourceHandle findExactMatch(String identity, String version, Map<String, SortedMap<Version, Resource>> resourceMap) throws Exception {
 		Resource resource;
 		VersionRange range = new VersionRange(version);
 		if (range.isRange()) return null;
@@ -518,7 +513,7 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 		SortedMap<Version, Resource> versions = resourceMap.get(identity);
 		resource = versions.get(range.getLow());
 		
-		return mapResourceToFile(resource);
+		return mapResourceToHandle(resource);
 	}
 	
 	/**
@@ -536,34 +531,6 @@ public abstract class AbstractBaseOBR implements Plugin, RepositoryPlugin, OBRIn
 			urls.add(new URL(urlStr));
 		}
 		return urls;
-	}
-
-	/**
-	 * Utility function for downloading remote resources to a local file.
-	 * 
-	 * @param uri
-	 *            The remote resource as a {@link URI}.
-	 * @param file
-	 *            The target file.
-	 * @throws IOException
-	 */
-	protected static void downloadToFile(URI uri, File file) throws IOException {
-		InputStream in = null;
-		OutputStream out = null;
-		try {
-			in = uri.toURL().openStream();
-			out = new FileOutputStream(file);
-			
-			byte[] buf = new byte[1024];
-			for(;;) {
-				int bytes = in.read(buf, 0, 1024);
-				if (bytes < 0) break;
-				out.write(buf, 0, bytes);
-			}
-		} finally {
-			try { if (in != null) in.close(); } catch (IOException e) {};
-			try { if (out != null) in.close(); } catch (IOException e) {};
-		}
 	}
 
 	public Set<OBRResolutionMode> getSupportedModes() {

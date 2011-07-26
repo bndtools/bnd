@@ -3,7 +3,6 @@ package aQute.lib.deployer.obr;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,28 +80,14 @@ public class OBR extends AbstractBaseOBR {
 	}
 	
 	@Override
-	protected File getOrCreateCacheFile(URI uri) throws IOException {
-		File result;
-		
-		ensureCacheDirExists();
-		result = mapPath(uri.getPath());
-		if (result.exists()) {
-			if (!result.isFile())
-				throw new IOException(String.format("Cannot create cache file '%s': a directory or other node with that name exists.", result.getAbsolutePath()));
-		} else {
-			downloadToFile(uri, result);
-		}
-		return result;
+	public File getCacheDirectory() {
+		return cacheDir;
 	}
 	
-	private File mapPath(String path) {
-		if (path.length() > 0 && path.charAt(0) == '/')
-			path = path.substring(1);
-		path = path.replace('/', '_');
-		return new File(cacheDir, path);
+	public void setCacheDirectory(File cacheDir) {
+		this.cacheDir = cacheDir;
 	}
-
-
+	
 	@Override
 	public String getName() {
 		if (name != null && name != this.getClass().getName())
@@ -122,11 +107,4 @@ public class OBR extends AbstractBaseOBR {
 		this.locations = Arrays.asList(urls);
 	}
 
-	public File getCacheDir() {
-		return cacheDir;
-	}
-	
-	public void setCacheDir(File cacheDir) {
-		this.cacheDir = cacheDir;
-	}
 }

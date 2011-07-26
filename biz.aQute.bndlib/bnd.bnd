@@ -35,4 +35,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.core;version=4.1,\
 	org.osgi.impl.bundle.bindex
 
-Bundle-Version: 1.44.1
+Bundle-Version: 1.44.2
