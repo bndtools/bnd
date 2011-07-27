@@ -584,5 +584,9 @@
       <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
       <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
    </extension>
-   
+
+   <extension point="org.eclipse.ui.intro.configExtension">
+      <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
+   </extension>
+
  </plugin>

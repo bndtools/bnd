@@ -101,7 +101,9 @@ public class Plugin extends AbstractUIPlugin {
                         }
 
                         if (Project.BNDFILE.equals(resource.getName())) {
-                            affectedBnds.add(resource);
+                            int flags = delta.getFlags();
+                            if ((flags & IResourceDelta.CONTENT) > 0)
+                                affectedBnds.add(resource);
                         }
 
                         return false;
