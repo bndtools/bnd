@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="bndtools.repository.base" default="build"> 
+<project name="bndtools.repository.base" default="build">
+	
 	<import file="../cnf/build.xml"/>
 	
-	<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
-		<classpath>
-			<fileset dir="../org.osgi.impl.bundle.bindex/generated" includes="*.jar"/>
-		</classpath>
-	</taskdef>
+	<!-- Override 'build' target to execute 'updateIndexes' first -->
+	<target name="build" depends="updateIndexes,master.build"/>
 	
 	<target name="updateBndFromRepo">
+		<delete dir="repo/biz.aQute.bnd"/>
+		<delete dir="repo/biz.aQute.bnd.annotation"/>
+		<delete dir="repo/biz.aQute.bndlib"/>
 		<delete dir="repo/biz.aQute.junit"/>
 		<delete dir="repo/biz.aQute.launcher"/>
 		
@@ -20,7 +21,13 @@
 		</copy>
 	</target>
 	
-	<target name="updateIndexes" depends="updateBndFromRepo">
+	<target name="updateIndexes" depends="init,updateBndFromRepo">
+		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+			<classpath>
+				<fileset dir="${workspacedir}/org.osgi.impl.bundle.bindex/generated" includes="*.jar"/>
+			</classpath>
+		</taskdef>
+	
 		<echo>Indexing buildrepo...</echo>
 		<bindex root="${basedir}/buildrepo" repositoryfile="${basedir}/buildrepo/repository.xml" quiet="yes">
 			<fileset dir="${basedir}/buildrepo" includes="**/*.jar"/>

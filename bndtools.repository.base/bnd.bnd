@@ -1,3 +1,5 @@
+-dependson: org.osgi.impl.bundle.bindex
+
 -buildpath: bndtools.core;version=snapshot,\
 	osgi.core
 

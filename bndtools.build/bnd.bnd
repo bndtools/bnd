@@ -1,0 +1,21 @@
+-dependson:\
+	bndtools.core,\
+	bndtools.jareditor,\
+	bndtools.repository.base,\
+	bndtools.diff,\
+	bndtools.release
+
+Include-Resource:\
+	${repo;biz.aQute.bndlib;latest},\
+	${repo;bndtools.core;latest},\
+	${repo;bndtools.jareditor;latest},\
+	${repo;bndtools.repository.base;latest},\
+	${repo;bndtools.diff;latest},\
+	${repo;bndtools.release;latest},\
+	${repo;org.osgi.impl.bundle.bindex;latest},\
+	${repo;com.springsource.org.objectweb.asm;latest},\
+	${repo;com.springsource.org.objectweb.asm.tree;latest},\
+	${repo;javax.xml;latest},\
+	${repo;javax.xml.stream;latest},\
+	${repo;stax2-api;latest},\
+	${repo;woodstox-core-asl;latest}
