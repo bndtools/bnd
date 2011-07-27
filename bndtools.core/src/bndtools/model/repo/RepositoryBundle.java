@@ -10,7 +10,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
+import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.ResourceHandle.Location;
 import bndtools.Plugin;
 
 public class RepositoryBundle implements IAdaptable {
@@ -53,17 +57,22 @@ public class RepositoryBundle implements IAdaptable {
     }
 
     private File getFile() {
-        File[] files = null;
         try {
-            files = repo.get(bsn, "latest");
+            File file;
+            if (repo instanceof RemoteRepositoryPlugin) {
+                ResourceHandle handle = ((RemoteRepositoryPlugin) repo).getHandle(bsn, "latest", Strategy.HIGHEST, null);
+                if (handle.getLocation() == Location.local || handle.getLocation() == Location.remote_cached)
+                    file = handle.request();
+                else
+                    file = null;
+            } else {
+                file = repo.get(bsn, "latest", Strategy.HIGHEST, null);
+            }
+            return file;
         } catch (Exception e) {
             Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
+            return null;
         }
-        if(files != null && files.length > 0) {
-            return files[files.length - 1];
-        }
-
-        return null;
     }
 }
 

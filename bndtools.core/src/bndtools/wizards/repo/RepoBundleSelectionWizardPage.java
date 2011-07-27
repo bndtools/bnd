@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Tree;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -59,6 +60,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final Project sourceProject;
+    private final OBRResolutionMode[] resolutionModes;
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
     private File[] implicitBundles;
 
@@ -109,9 +111,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-    protected RepoBundleSelectionWizardPage(Project sourceProject) {
+    protected RepoBundleSelectionWizardPage(Project sourceProject, OBRResolutionMode[] modes) {
 		super("bundleSelectionPage");
         this.sourceProject = sourceProject;
+        this.resolutionModes = modes;
 	}
 
 	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
@@ -133,7 +136,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	    final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 	    availableViewer = new TreeViewer(availableTree);
 	    availableViewer.setLabelProvider(new RepositoryTreeLabelProvider());
-	    availableViewer.setContentProvider(new RepositoryTreeContentProvider());
+	    availableViewer.setContentProvider(new RepositoryTreeContentProvider(resolutionModes));
 	    availableViewer.setAutoExpandLevel(2);
 
 	    availableViewer.setFilters(new ViewerFilter[] { sourceProjectFilter, alreadySelectedFilter });

@@ -203,7 +203,7 @@ public class LocalRepositoryTasks {
                 pathStr += "/";
             IPath path = new Path(pathStr);
             try {
-                recurseInstallEntries(bundle, path, cnf, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                recurseInstallEntries(bundle, path, cnf, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             } catch (CoreException e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error installing initial repository from bundle %s, path %s.", repository.getFirst().getSymbolicName(), pathStr), e));
             } catch (IOException e) {
@@ -212,7 +212,7 @@ public class LocalRepositoryTasks {
         }
     }
 
-    static void recurseInstallEntries(Bundle bundle, IPath path, IContainer root, IProgressMonitor monitor) throws IOException, CoreException {
+    static void recurseInstallEntries(Bundle bundle, IPath path, IContainer root, boolean overwrite, IProgressMonitor monitor) throws IOException, CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         if (path.hasTrailingSeparator()) {
@@ -226,14 +226,17 @@ public class LocalRepositoryTasks {
                 newFolder.create(false, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
             for (String childPath : children)
-                recurseInstallEntries(bundle, new Path(childPath), root, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                recurseInstallEntries(bundle, new Path(childPath), root, overwrite, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         } else {
             progress.setWorkRemaining(1);
             InputStream input = bundle.getEntry(path.toString()).openStream();
             try {
                 IFile newFile = root.getFile(path);
-                newFile.create(input, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                if (newFile.exists() && overwrite)
+                    newFile.setContents(input, false, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                else
+                    newFile.create(input, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             } finally {
                 input.close();
             }

@@ -19,6 +19,7 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import bndtools.Plugin;
 import bndtools.bindex.IRepositoryIndexProvider;
@@ -46,16 +47,16 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      * @throws Exception
      */
-    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver) throws Exception {
+    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver, OBRResolutionMode[] resolutionModes) throws Exception {
         this.useResolver = useResolver;
 
-        selectionPage = new RepoBundleSelectionWizardPage(project);
+        selectionPage = new RepoBundleSelectionWizardPage(project, resolutionModes);
 
         BundleContext context = Plugin.getDefault().getBundleContext();
         repoAdmin = new RepositoryAdminImpl(new DummyBundleContext(), new Logger(context));
 
         // Setup repository indexers / index providers
-        PluginIndexProvider localRepoIndex = new PluginIndexProvider();
+        PluginIndexProvider localRepoIndex = new PluginIndexProvider(resolutionModes);
         WorkspaceIndexer workspaceIndex = new WorkspaceIndexer(WORKSPACE_CATEGORY);
         final List<IRepositoryIndexProvider> indexList = Arrays.asList(new IRepositoryIndexProvider[] { localRepoIndex, workspaceIndex });
 
@@ -83,6 +84,7 @@ public class RepoBundleSelectionWizard extends Wizard {
                 }
             });
         }
+        setNeedsProgressMonitor(true);
     }
 
 	File getSystemBundleFile(Project project) {

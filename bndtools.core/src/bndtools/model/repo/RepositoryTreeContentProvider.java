@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,6 +15,8 @@ import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.OBRIndexProvider;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.libg.version.Version;
@@ -22,6 +25,20 @@ import bndtools.Plugin;
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private static final String CACHE_REPOSITORY = "cache";
+
+    private final OBRResolutionMode[] modes;
+
+    public RepositoryTreeContentProvider() {
+        this.modes = OBRResolutionMode.values();
+    }
+
+    public RepositoryTreeContentProvider(OBRResolutionMode mode) {
+        this.modes = new OBRResolutionMode[] { mode };
+    }
+
+    public RepositoryTreeContentProvider(OBRResolutionMode[] modes) {
+        this.modes = modes;
+    }
 
     private final Comparator<Object> repositoryComparator = new Comparator<Object>() {
         public int compare(Object o1, Object o2) {
@@ -55,7 +72,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         addRepositoryPlugins(result, workspace);
         addProjects(result, workspace);
 
-        Collections.sort(result, repositoryComparator);
+//        Collections.sort(result, repositoryComparator);
 
         return result.toArray(new Object[result.size()]);
     }
@@ -104,9 +121,23 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             Plugin.logError(error, null);
         }
         for (RepositoryPlugin repoPlugin : repoPlugins) {
-            if (!CACHE_REPOSITORY.equals(repoPlugin.getName()))
-                result.add(repoPlugin);
+            if (CACHE_REPOSITORY.equals(repoPlugin.getName()))
+                continue;
+            if (repoPlugin instanceof OBRIndexProvider) {
+                OBRIndexProvider indexProvider = (OBRIndexProvider) repoPlugin;
+                if (!supportsMode(indexProvider))
+                    continue;
+            }
+            result.add(repoPlugin);
         }
+    }
+
+    boolean supportsMode(OBRIndexProvider provider) {
+        Set<OBRResolutionMode> supportedModes = provider.getSupportedModes();
+        for (OBRResolutionMode mode : modes) {
+            if (supportedModes.contains(mode)) return true;
+        }
+        return false;
     }
 
     void addProjects(List<Object> result, Workspace workspace) {

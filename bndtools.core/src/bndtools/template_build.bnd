@@ -29,6 +29,6 @@ javac.debug:  on
 # Bnd Options
 -sources:       true
 -sourcepath:    ${project}/src 
--plugin:        aQute.lib.deployer.obr.LocalOBR;name=LocalRepository;local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
-                aQute.lib.deployer.obr.OBR;name=BuildRepository;locations='file:${buildrepo}/repository.xml';mode=build
+-plugin:        aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
+                aQute.lib.deployer.obr.OBR;name='Build Repository';locations='file:${buildrepo}/repository.xml';mode=build
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"

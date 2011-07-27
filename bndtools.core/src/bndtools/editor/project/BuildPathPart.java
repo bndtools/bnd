@@ -8,6 +8,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
@@ -40,7 +41,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 
     @Override
     protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false);
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, new OBRResolutionMode[] { OBRResolutionMode.build, OBRResolutionMode.runtime });
 
         wizard.setSelectionPageTitle("Project Build Path");
         wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");

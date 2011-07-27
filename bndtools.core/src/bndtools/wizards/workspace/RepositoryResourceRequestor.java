@@ -17,6 +17,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import bndtools.Plugin;
 import bndtools.bindex.IRepositoryIndexProvider;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.Requestor;
@@ -45,6 +46,8 @@ public class RepositoryResourceRequestor implements Requestor<Collection<? exten
                     if (!urisToResources.containsKey(resource.getURI()))
                         urisToResources.put(resource.getURI(), resource);
                 }
+            } catch (Exception e) {
+                Plugin.logError("Error adding index URL to resolver.", e);
             } finally {
                 repoAdmin.removeRepository(repoUrl.toExternalForm());
             }

@@ -3,23 +3,36 @@ package bndtools.wizards.repo;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import aQute.bnd.service.OBRIndexProvider;
+import aQute.bnd.service.OBRResolutionMode;
 import bndtools.Central;
 import bndtools.bindex.IRepositoryIndexProvider;
 
 public class PluginIndexProvider implements IRepositoryIndexProvider {
 
     private final List<URL> indexes = new ArrayList<URL>();
+    private final OBRResolutionMode[] resolutionModes;
+
+    public PluginIndexProvider(OBRResolutionMode[] resolutionModes) {
+        this.resolutionModes = resolutionModes;
+    }
 
     public void initialise(IProgressMonitor monitor) throws Exception {
         indexes.clear();
 
         List<OBRIndexProvider> plugins = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
         for (OBRIndexProvider provider : plugins) {
-            indexes.addAll(provider.getOBRIndexes());
+            Set<OBRResolutionMode> supportedModes = provider.getSupportedModes();
+            for (OBRResolutionMode mode : resolutionModes) {
+                if (supportedModes.contains(mode)) {
+                    indexes.addAll(provider.getOBRIndexes());
+                    break;
+                }
+            }
         }
     }
 

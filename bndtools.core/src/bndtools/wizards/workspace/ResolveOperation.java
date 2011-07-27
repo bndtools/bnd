@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.bindex.GlobalCapabilityGenerator;
 import bndtools.bindex.IRepositoryIndexProvider;
@@ -54,7 +55,11 @@ public class ResolveOperation implements IRunnableWithProgress {
             for (IRepositoryIndexProvider provider : indexProviders) {
                 provider.initialise(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                 for (URL repoUrl : provider.getUrls()) {
-                    repoAdmin.addRepository(repoUrl.toExternalForm());
+                    try {
+                        repoAdmin.addRepository(repoUrl.toExternalForm());
+                    } catch (Exception e) {
+                        Plugin.logError("Error adding repository to resolver: " + repoUrl.toString(), e);
+                    }
                 }
                 --work;
             }

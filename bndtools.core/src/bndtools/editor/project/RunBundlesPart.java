@@ -20,6 +20,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
@@ -79,7 +80,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
-	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false);
+	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, new OBRResolutionMode[] { OBRResolutionMode.runtime });
         setSelectionWizardTitleAndMessage(wizard);
 
 	    return wizard;
@@ -91,7 +92,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private void doAddWizard() {
         Project project = getProject();
         try {
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true);
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true, new OBRResolutionMode[] { OBRResolutionMode.runtime });
             setSelectionWizardTitleAndMessage(wizard);
 
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
