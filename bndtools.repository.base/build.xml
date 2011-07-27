@@ -29,12 +29,14 @@
 		</taskdef>
 	
 		<echo>Indexing buildrepo...</echo>
-		<bindex root="${basedir}/buildrepo" repositoryfile="${basedir}/buildrepo/repository.xml" quiet="yes">
+		<mkdir dir="${target}/buildrepo"/>
+		<bindex root="${basedir}/buildrepo" repositoryfile="${target}/buildrepo/repository.xml" quiet="yes">
 			<fileset dir="${basedir}/buildrepo" includes="**/*.jar"/>
 		</bindex>
 
 		<echo>Indexing repo...</echo>
-		<bindex root="${basedir}/repo" repositoryfile="${basedir}/repo/repository.xml" quiet="yes">
+		<mkdir dir="${target}/repo"/>
+		<bindex root="${basedir}/repo" repositoryfile="${target}/repo/repository.xml" quiet="yes">
 			<fileset dir="${basedir}/repo" includes="**/*.jar"/>
 		</bindex>
 	</target>

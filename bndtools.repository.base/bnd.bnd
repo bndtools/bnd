@@ -6,9 +6,12 @@
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Version: 0.0.22
 
-Include-Resource: plugin.xml=_plugin.xml,\
-	repo=repo,\
-	buildrepo=buildrepo,\
+Include-Resource:\
+	plugin.xml=_plugin.xml,\
+	repo/=repo,\
+	repo/=${target}/repo/repository.xml,\
+	buildrepo/=buildrepo,\
+	buildrepo/=${target}/buildrepo/repository.xml,\
 	html=html
 
 Private-Package: bndtools.templates
