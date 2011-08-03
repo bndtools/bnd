@@ -17,7 +17,7 @@
 	<target name="init" unless="initialized">
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/biz.aQute.bndlib/bin:${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
@@ -74,8 +74,6 @@
 		<bnd command="build" trace="true" exceptions="true" basedir="${project}" />
 	</target>
 
-
-
 	<target name="junit" depends="build">
 		<junit printsummary="true">			
 			<classpath path="${project.buildpath}" />
@@ -86,6 +84,13 @@
 			    </fileset>
 			</batchtest>
 		</junit>
+	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritall="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true"/>
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
 	</target>
 
 	<!--
