@@ -1536,9 +1536,15 @@ public class Analyzer extends Processor {
 			Map<String, Set<String>> uses, Set<String> hide) throws Exception {
 
 		next: for (String path : jar.getResources().keySet()) {
-			if (path.startsWith(prefix) && !hide.contains(path)) {
-				hide.add(path);
+			if (path.startsWith(prefix)) {
 				String relativePath = path.substring(prefix.length());
+
+				// TODO this check (and the whole hide) is likely redundant
+				// it only protects against repeated checks for non-class
+				// bundle resources, but should not affect results otherwise.
+				if (!hide.add(relativePath)) {
+					continue;
+				}
 
 				// Check if we'd already had this one.
 				// Notice that we're flattening the space because
@@ -1602,6 +1608,7 @@ public class Analyzer extends Processor {
 					String calculatedPath = clazz.getClassName() + ".class";
 					if (!calculatedPath.equals(relativePath)) {
 						if (!isNoBundle()) {
+							// TODO this results in false-positive with embedded classpath directories
 							error("Class in different directory than declared. Path from class name is "
 									+ calculatedPath
 									+ " but the path in the jar is "
