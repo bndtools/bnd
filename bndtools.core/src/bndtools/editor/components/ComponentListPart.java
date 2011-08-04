@@ -174,9 +174,9 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		int i = 0;
 		while(true) {
 		    if (i == 0)
-		        name = "new"; //$NON-NLS-1$
+		        name = ""; //$NON-NLS-1$
 		    else
-		        name = String.format("new%d", i); //$NON-NLS-1$
+		        name = String.format("%d", i); //$NON-NLS-1$
 			if(!componentMap.containsKey(name)) {
 				component = new ServiceComponent(name, new HashMap<String, String>());
 				componentMap.put(name, component);

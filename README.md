@@ -10,6 +10,10 @@ Install using the Eclipse installer, using the following update site URL:
 
 	http://bndtools-updates.s3.amazonaws.com/
 
+If you are feeling brave, install the latest alpha version from the following update site URL instead:
+
+	http://bndtools-alpha-updates.s3.amazonaws.com/
+
 License
 -------
 

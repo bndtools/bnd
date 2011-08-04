@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="bndtools" default="build">
+<project name="bndtools" default="p2">
 	
 	<import file="../cnf/build.xml"/>
 	
+	<!-- Build the Eclipse "features" directory -->
 	<target name="features.dir" depends="init" description="Generate the Eclipse Feature JAR">
 		<mkdir dir="${target}/features"/>
 		<copy todir="${target}/features">
@@ -15,6 +16,7 @@
 		</zip>
 	</target>
 	
+	<!-- Build the Eclipse "plugins" directory -->
 	<target name="plugins.dir" depends="init" description="Expand the required bundles">
 		<mkdir dir="${target}/plugins"/>
 		<unjar dest="${target}/plugins" src="${target}/${project.name}.jar">
@@ -24,6 +26,7 @@
 		</unjar>
 	</target>
 	
+	<!-- Generate the p2 repository and index -->
 	<target name="p2" depends="build,features.dir,plugins.dir" description="Generate the p2 repository">
 		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true">
 			<!-- <arg line="-consoleLog"/> -->
@@ -46,6 +49,7 @@
 		</zip>
 	</target>
 	
+	<!-- Called internally by the Eclipse embedded ANT application -->
 	<target name="__internal_p2" depends="init">
 		<p2.publish.featuresAndBundles
 				source="${workspacedir}"
@@ -55,24 +59,6 @@
 				compress="true">
 			<features dir="${target}/features" includes="*.jar"/>
 			<bundles dir="${target}/plugins" includes="*.jar"/>
-			<!--
-				<include name="bndtools.core/generated/*.jar"/>
-				<include name="bndtools.jareditor/generated/*.jar"/>
-				<include name="bndtools.repository.base/generated/*.jar"/>
-				<include name="bndtools.diff/generated/*.jar"/>
-				<include name="bndtools.release/generated/*.jar"/>
-				<include name="bndtools.diff/generated/*.jar"/>
-				<include name="bndtools.release/generated/*.jar"/>
-				<include name="org.osgi.impl.bundle.bindex/generated/*.jar"/>
-				
-				<include name="cnf/repo/biz.aQute.bndlib/biz.aQute.bndlib-1.44.1.jar"/>
-				<include name="cnf/repo/com.springsource.org.objectweb.asm/com.springsource.org.objectweb.asm-3.1.0.jar"/>
-				<include name="cnf/repo/com.springsource.org.objectweb.asm.tree/com.springsource.org.objectweb.asm.tree-3.1.0.jar"/>
-				<include name="cnf/repo/javax.xml/javax.xml-1.3.4.jar"/>
-				<include name="cnf/repo/javax.xml.stream/javax.xml.stream-1.0.1.jar"/>
-				<include name="cnf/repo/stax2-api/stax2-api-3.1.1.jar"/>
-				<include name="cnf/repo/woodstox-core-asl/woodstox-core-asl-4.1.1.jar"/>
-			</bundles>-->
 		</p2.publish.featuresAndBundles>
 	</target>
 
