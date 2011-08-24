@@ -236,4 +236,5 @@ public interface Constants {
 	String					DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git";
 
 	Charset					DEFAULT_CHARSET								= Charset.forName("UTF8");
+	String					VERSION_FILTER	= "version";
 }
