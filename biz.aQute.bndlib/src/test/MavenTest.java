@@ -3,12 +3,14 @@ package test;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
-import aQute.bnd.maven.support.Pom.Dependency;
+import aQute.bnd.maven.support.Pom.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
@@ -18,8 +20,25 @@ import aQute.libg.version.*;
 public class MavenTest extends TestCase {
 	Processor	processor	= new Processor();
 	final static File cwd = new File("").getAbsoluteFile();
-	
-	
+	static ExecutorService executor = Executors.newCachedThreadPool();
+	Maven maven = new Maven(executor);
+
+	/**
+	 * A test against maven 2
+	 * @throws Exception 
+	 * @throws URISyntaxException 
+	 */
+	public void testRemote() throws URISyntaxException, Exception {
+		URI repo = new URI("http://repo1.maven.org/maven2");
+		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects"	, "3.0.5.RELEASE");
+		entry.remove();
+		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
+		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
+		for ( Pom dep : dependencies ) {
+			System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+		}
+		
+	}
 	
 	/**
 	 * Test reading a pom for the buildpath

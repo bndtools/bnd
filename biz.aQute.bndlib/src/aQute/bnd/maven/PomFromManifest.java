@@ -15,8 +15,10 @@ public class PomFromManifest extends WriteResource {
 	private List<String>	developers	= new ArrayList<String>();
 	final static Pattern	NAME_URL	= Pattern.compile("(.*)(http://.*)");
 	String					xbsn;
+	String					xversion;
 	String					xgroupId;
 	String					xartifactId;
+	private String			projectURL;
 
 	public String getBsn() {
 		if (xbsn == null)
@@ -31,11 +33,14 @@ public class PomFromManifest extends WriteResource {
 			xbsn = xbsn + "." + xbsn;
 		}
 
-		xgroupId = xbsn.substring(0, n);
-		xartifactId = xbsn.substring(n + 1);
-		n = xartifactId.indexOf(';');
-		if (n > 0)
-			xartifactId = xartifactId.substring(0, n).trim();
+		if (xgroupId == null)
+			xgroupId = xbsn.substring(0, n);
+		if (xartifactId == null) {
+			xartifactId = xbsn.substring(n + 1);
+			n = xartifactId.indexOf(';');
+			if (n > 0)
+				xartifactId = xartifactId.substring(0, n).trim();
+		}
 
 		return xbsn;
 	}
@@ -51,8 +56,11 @@ public class PomFromManifest extends WriteResource {
 	}
 
 	public Version getVersion() {
+		if (xversion != null)
+			return new Version(xversion);
 		String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-		return new Version(version);
+		Version v = new Version(version);
+		return new Version(v.getMajor(), v.getMinor(), v.getMicro());
 	}
 
 	public PomFromManifest(Manifest manifest) {
@@ -91,14 +99,18 @@ public class PomFromManifest extends WriteResource {
 		if (name != null) {
 			new Tag(project, "name").addContent(name);
 		}
-		if (docUrl != null) {
+
+		if (projectURL != null)
+			new Tag(project, "url").addContent(projectURL);
+		else if (docUrl != null) {
 			new Tag(project, "url").addContent(docUrl);
-		}
+		} else
+			new Tag(project, "url").addContent("http://no-url");
 
 		String scmheader = manifest.getMainAttributes().getValue("Bundle-SCM");
-		if ( scmheader != null)
+		if (scmheader != null)
 			scm.add(scmheader);
-		
+
 		Tag scmtag = new Tag(project, "scm");
 		if (scm != null && !scm.isEmpty()) {
 			for (String cm : this.scm) {
@@ -106,12 +118,16 @@ public class PomFromManifest extends WriteResource {
 				new Tag(scmtag, "connection").addContent(cm);
 				new Tag(scmtag, "developerConnection").addContent(cm);
 			}
+		} else {
+			new Tag(scmtag, "url").addContent("private");
+			new Tag(scmtag, "connection").addContent("private");
+			new Tag(scmtag, "developerConnection").addContent("private");
 		}
 
 		if (bundleVendor != null) {
 			Matcher m = NAME_URL.matcher(bundleVendor);
 			String namePart = bundleVendor;
-			String urlPart = null;
+			String urlPart = this.projectURL;
 			if (m.matches()) {
 				namePart = m.group(1);
 				urlPart = m.group(2);
@@ -205,7 +221,27 @@ public class PomFromManifest extends WriteResource {
 		this.scm.add(scm);
 	}
 
+	public void setURL(String url) {
+		this.projectURL = url;
+	}
+
+	public void setBsn(String bsn) {
+		this.xbsn = bsn;
+	}
+
 	public void addDeveloper(String email) {
 		this.developers.add(email);
+	}
+
+	public void setVersion(String version) {
+		this.xversion = version;
+	}
+
+	public void setArtifact(String artifact) {
+		this.xartifactId = artifact;
+	}
+
+	public void setGroup(String group) {
+		this.xgroupId = group;
 	}
 }

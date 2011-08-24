@@ -58,7 +58,7 @@ public class PomParser extends Processor {
 
 		// Check if there is a parent pom
 		String relativePath = xpath.evaluate("project/parent/relativePath", doc);
-		if (relativePath != null && !relativePath.isEmpty()) {
+		if (relativePath != null && relativePath.length()!=0) {
 			File parentPom = IO.getFile(pom.getParentFile(), relativePath);
 			if (parentPom.isFile()) {
 				Properties parentProps = getProperties(parentPom);
@@ -98,7 +98,7 @@ public class PomParser extends Processor {
 			sb.append(xpath.evaluate("groupId", child));
 			sb.append(".");
 			sb.append(xpath.evaluate("artifactId", child));
-			if (version != null && !version.trim().isEmpty()) {
+			if (version != null && version.trim().length()!=0) {
 				sb.append(";version=");
 				sb.append( Analyzer.cleanupVersion(version));
 			}
@@ -132,7 +132,7 @@ public class PomParser extends Processor {
 				Node child = children.item(i);
 				if (child instanceof Text) {
 					String value = child.getNodeValue().trim();
-					if (!value.isEmpty()) {
+					if (value.length()!=0) {
 						p.put(name, value);
 					}
 				} else {

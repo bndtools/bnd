@@ -36,14 +36,15 @@ public class ProjectPom extends Pom {
 			String parentArtifactId = xp.evaluate("artifactId", parent).trim();
 			String parentVersion = xp.evaluate("version", parent).trim();
 			String parentPath = xp.evaluate("relativePath", parent).trim();
-			if (parentPath != null && !parentPath.isEmpty()) {
+			if (parentPath != null && parentPath.length()!=0) {
 				parentFile = IO.getFile(getPomFile().getParentFile(), parentPath);
 			}
 			if (parentFile.isFile()) {
 				ProjectPom parentPom = new ProjectPom(maven, parentFile);
 				parentPom.parse();
 				dependencies.addAll(parentPom.dependencies);
-				for ( String key : parentPom.properties.stringPropertyNames()) {
+				for ( Enumeration<?> e = parentPom.properties.propertyNames(); e.hasMoreElements(); ) {
+					String key = (String) e.nextElement();
 					if ( ! properties.contains(key))
 						properties.put(key, parentPom.properties.get(key));
 				}
@@ -64,9 +65,9 @@ public class ProjectPom extends Pom {
 			Node node = propNodes.item(i);
 			String key = node.getNodeName();
 			String value = node.getTextContent();
-			if ( key == null || key.isEmpty())
+			if ( key == null || key.length()==0)
 				throw new IllegalArgumentException("Pom has an empty or null key");
-			if ( value == null || value.isEmpty())
+			if ( value == null || value.length()==0)
 				throw new IllegalArgumentException("Pom has an empty or null value for property " + key);
 			properties.setProperty(key, value.trim());
 		}
@@ -101,11 +102,11 @@ public class ProjectPom extends Pom {
 	 * @throws Exception
 	 */
 	private void setNames(Pom pom) throws Exception {
-		if (artifactId == null || artifactId.isEmpty())
+		if (artifactId == null || artifactId.length()==0)
 			artifactId = pom.getArtifactId();
-		if (groupId == null || groupId.isEmpty())
+		if (groupId == null || groupId.length()==0)
 			groupId = pom.getGroupId();
-		if (version == null || version.isEmpty())
+		if (version == null || version.length()==0)
 			version = pom.getVersion();
 		if ( description == null )
 			description = pom.getDescription();
