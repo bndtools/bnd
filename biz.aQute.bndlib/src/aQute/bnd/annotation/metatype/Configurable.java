@@ -164,9 +164,9 @@ public class Configurable<T> {
 						resultType = ArrayList.class;
 					else if (resultType == Set.class || resultType == SortedSet.class)
 						resultType = TreeSet.class;
-					else if (resultType == Queue.class || resultType == Deque.class)
+					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
 						resultType = LinkedList.class;
-					else if (resultType == Queue.class || resultType == Deque.class)
+					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
 						resultType = LinkedList.class;
 					else
 						throw new IllegalArgumentException(
