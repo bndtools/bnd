@@ -29,10 +29,11 @@ import java.util.regex.*;
 import aQute.bnd.annotation.*;
 import aQute.bnd.service.*;
 import aQute.lib.collections.*;
+import aQute.lib.filter.*;
 import aQute.lib.osgi.Clazz.QUERY;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 import aQute.libg.tarjan.*;
-import aQute.libg.version.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
@@ -308,9 +309,8 @@ public class Analyzer extends Processor {
 			main.putValue(TOOL, "Bnd-" + getBndVersion());
 			main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
 		}
-		
+
 		String exportHeader = printClauses(exports, true);
-		
 
 		if (exportHeader.length() > 0)
 			main.putValue(EXPORT_PACKAGE, exportHeader);
@@ -702,7 +702,6 @@ public class Analyzer extends Processor {
 
 			updateModified(getBndLastModified(), "bnd last modified");
 			verifyManifestHeadersCase(getProperties());
-
 
 		}
 	}
@@ -1927,7 +1926,7 @@ public class Analyzer extends Processor {
 
 	public Collection<Clazz> getClasses(String... args) throws Exception {
 
-		Set<Clazz> matched = new HashSet<Clazz>(classspace.values());
+		Set<Clazz> matched = new TreeSet<Clazz>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
 			if (args.length < i + 1)
 				throw new IllegalArgumentException(
@@ -2101,27 +2100,30 @@ public class Analyzer extends Processor {
 		}
 		return grouped;
 	}
-	
-	
+
 	/**
 	 * Ensure that we are running on the correct bnd.
 	 */
 	void doRequireBnd() {
-		String require = getProperty(REQUIRE_BND);
-		if (require != null)
+		Map<String,String> require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
+		if (require == null || require.isEmpty())
+			return;
+
+		
+		Hashtable<String, String> map = new Hashtable<String, String>();
+		map.put(Constants.VERSION_FILTER, getBndVersion());
+
+		for ( String filter : require.keySet() ) {
 			try {
-				VersionRange range = new VersionRange(require);
-				String bndVersion = getBndVersion();
-				if (bndVersion != null) {
-					Version v = new Version(bndVersion);
-					if (!range.includes(v))
-						error("%s requires version %s but this bnd is actually version %s", this,
-								range, bndVersion);
-				}
-			} catch (Exception e) {
-				error("Do not understand format of %s, it is %s, gave error: %s", REQUIRE_BND,
-						require, e);
-			}
+				Filter f = new Filter(filter);
+				if (f.match(map))
+					continue;
+				error( "%s fails %s", REQUIRE_BND, require.get(filter));
+			} catch (Exception t) {
+				error("%s with value %s throws exception", t, REQUIRE_BND, require);
+			}			
+		}
+		error("%s fails", REQUIRE_BND);
 	}
 
 }
