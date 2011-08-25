@@ -12,7 +12,7 @@
         <repository>
             <id>testPom</id>
             <name>testPom</name>
-            <url>..</url>
+            <url>../maven1/m2</url>
         </repository>
     </repositories>
     

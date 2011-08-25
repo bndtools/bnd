@@ -12,7 +12,7 @@
 
     <name>Artifact</name>
     <description>
-        Description ${user.dir}
+        Description ${pom.artifactId}
     </description>
     <version>1.0.0</version>
     <dependencies>
