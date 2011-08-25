@@ -8,7 +8,6 @@ import java.util.concurrent.*;
 
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
 import aQute.libg.filelock.*;
 
 /**
@@ -150,7 +149,7 @@ public class MavenEntry implements Closeable {
 			System.out.println("Downloaded "  + url);
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("debug: " + e);
 			return false;
 		}
 	}

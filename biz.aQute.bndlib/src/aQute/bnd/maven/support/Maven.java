@@ -20,7 +20,10 @@ public class Maven {
 	File							repository	= new File(m2, "repository");
 
 	public Maven(Executor executor) {
-		this.executor = executor;
+		if ( executor == null)
+			this.executor = Executors.newCachedThreadPool();
+		else
+			this.executor = executor;
 	}
 	
 	//http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml

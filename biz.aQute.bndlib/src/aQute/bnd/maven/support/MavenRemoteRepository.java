@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
@@ -49,14 +50,14 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 
 		CachedPom pom = getMaven().getPom(groupId, artifactId, version, repositories);
 
-		String value = properties == null ? null : properties.get("action");
+		String value = properties == null ? null : properties.get("scope");
 		if (value == null)
 			return pom.getArtifact();
 
-		Pom.Action action = null;
+		Pom.Scope action = null;
 
 		try {
-			action = Pom.Action.valueOf(value);
+			action = Pom.Scope.valueOf(value);
 			return pom.getLibrary(action, repositories);
 		} catch (Exception e) {
 			return pom.getArtifact();
@@ -105,7 +106,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 				try {
 					URI uri = new URI(repo);
 					if ( !uri.isAbsolute())
-						uri = new File(new File("").getAbsoluteFile(), repo).toURI();
+						uri = IO.getFile( new File(""),repo).toURI();
 					repositories[n++] = uri;
 				} catch (Exception e) {
 					if (reporter != null)

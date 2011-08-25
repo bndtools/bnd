@@ -569,10 +569,11 @@ public class MavenCommand extends Processor {
 		}
 		
 		URI[] urls2 = urls.toArray(new URI[urls.size()]);
+		PrintWriter pw = new PrintWriter(out);
 		
 		while ( i < args.length) {
 			String ref = args[i++];
-			System.out.println("Ref " + ref);
+			pw.println("Ref " + ref);
 			
 			Matcher matcher = GROUP_ARTIFACT_VERSION.matcher(ref);
 			if (matcher.matches()) {
@@ -589,12 +590,12 @@ public class MavenCommand extends Processor {
 					System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 					a.addClasspath(dep.getArtifact());
 				}
-				System.out.println(a.getClasspath());
-				Jar dot = a.build();
+				pw.println(a.getClasspath());
+				a.build();
 
 				TreeSet<String> sorted = new TreeSet<String>( a.getImports().keySet());
 				for ( String p :sorted) {
-					System.out.printf("%-40s\n",p);
+					pw.printf("%-40s\n",p);
 				}
 //				for ( Map.Entry<String, Set<String>> entry : a.getUses().entrySet()) {
 //					String from = entry.getKey();

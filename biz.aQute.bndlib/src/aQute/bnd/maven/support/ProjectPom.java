@@ -23,7 +23,6 @@ public class ProjectPom extends Pom {
 	}
 
 	@Override protected void parse(Document doc, XPath xp) throws Exception {
-		super.parse(doc, xp);
 
 		packaging = xp.evaluate("project/packaging", doc);
 		url = xp.evaluate("project/url", doc);
@@ -83,6 +82,7 @@ public class ProjectPom extends Pom {
 			repositories.add(uri);
 		}
 
+		super.parse(doc, xp);
 	}
 
 //	private void print(Node node, String indent) {
@@ -131,7 +131,7 @@ public class ProjectPom extends Pom {
 		}
 	}
 
-	public Set<Pom> getDependencies(Action action) throws Exception {
+	public Set<Pom> getDependencies(Scope action) throws Exception {
 		return getDependencies(action, repositories.toArray(new URI[0]));
 	}
 
@@ -139,6 +139,10 @@ public class ProjectPom extends Pom {
 	final static Pattern	MACRO	= Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
 
 	protected String replace(String in) {
+		System.out.println("Replce: " + in);
+		if ( in == null) {
+			System.out.println("null??");
+		}
 		Matcher matcher = MACRO.matcher(in);
 		int last = 0;
 		StringBuilder sb = new StringBuilder();

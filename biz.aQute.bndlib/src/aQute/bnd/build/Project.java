@@ -655,7 +655,7 @@ public class Project extends Processor {
 			ProjectPom pom = getWorkspace().getMaven().createProjectModel(pomFile);
 			if (action == null)
 				action = "compile";
-			Pom.Action act = Pom.Action.valueOf(action);
+			Pom.Scope act = Pom.Scope.valueOf(action);
 			Set<Pom> dependencies = pom.getDependencies(act);
 			for (Pom sub : dependencies) {
 				File artifact = sub.getArtifact();

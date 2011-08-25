@@ -17,10 +17,6 @@ public abstract class Pom {
 		dbf.setNamespaceAware(false);
 	}
 	
-	public enum Action {
-		compile, run, test;
-	}
-
 	public enum Scope {
 		compile, runtime, system, import_, provided, test, ;
 		
@@ -44,7 +40,7 @@ public abstract class Pom {
 	List<Dependency>	dependencies	= new ArrayList<Dependency>();
 	Exception			exception;
 	File				pomFile;
-	String				description;
+	String				description="";
 	String				name;
 
 	public String getDescription() {
@@ -129,11 +125,16 @@ public abstract class Pom {
 
 	protected void parse(Document doc, XPath xp) throws XPathExpressionException, Exception {
 
-		this.artifactId = xp.evaluate("project/artifactId", doc).trim();
-		this.groupId = xp.evaluate("project/groupId", doc).trim();
-		this.version = xp.evaluate("project/version", doc).trim();
-		this.description = xp.evaluate("project/description", doc).trim();
-		this.name = xp.evaluate("project/name", doc).trim();
+		this.artifactId = replace(xp.evaluate("project/artifactId", doc).trim(), this.artifactId);
+		this.groupId = replace(xp.evaluate("project/groupId", doc).trim(), this.groupId);
+		this.version = replace(xp.evaluate("project/version", doc).trim(), this.version);
+		
+		String nextDescription = xp.evaluate("project/description", doc).trim();
+		if ( this.description.length() != 0 && nextDescription.length() != 0)
+			this.description += "\n";
+		this.description += replace(nextDescription);
+		
+		this.name = replace(xp.evaluate("project/name", doc).trim(), this.name);
 
 		NodeList list = (NodeList) xp.evaluate("project/dependencies/dependency", doc,
 				XPathConstants.NODESET);
@@ -167,6 +168,13 @@ public abstract class Pom {
 
 	}
 
+	private String replace(String key, String dflt) {
+		if ( key == null || key.length() == 0)
+			return dflt;
+		
+		return replace(key);
+	}
+
 	public String getArtifactId() throws Exception {
 		return replace(artifactId);
 	}
@@ -176,6 +184,8 @@ public abstract class Pom {
 	}
 
 	public String getVersion() throws Exception {
+		if ( version == null)
+			return "<not set>";
 		return replace(version);
 	}
 
@@ -199,7 +209,7 @@ public abstract class Pom {
 		}
 	}
 
-	public Set<Pom> getDependencies(Action action, URI... urls) throws Exception {
+	public Set<Pom> getDependencies(Scope scope, URI... urls) throws Exception {
 		Set<Pom> result = new LinkedHashSet<Pom>();
 
 		List<Rover> queue = new ArrayList<Rover>();
@@ -265,6 +275,7 @@ public abstract class Pom {
 	}
 
 	protected String replace(String in) {
+		System.out.println("replace: " + in);
 		if (in == null)
 			return "null";
 
@@ -291,7 +302,7 @@ public abstract class Pom {
 		return groupId + "+" + artifactId + "-" + version;
 	}
 
-	public File getLibrary(Action action, URI... repositories) throws Exception {
+	public File getLibrary(Scope action, URI... repositories) throws Exception {
 		MavenEntry entry = maven.getEntry(this);
 		File file = new File(entry.dir, action + ".lib");
 
