@@ -1926,7 +1926,7 @@ public class Analyzer extends Processor {
 
 	public Collection<Clazz> getClasses(String... args) throws Exception {
 
-		Set<Clazz> matched = new TreeSet<Clazz>(classspace.values());
+		Set<Clazz> matched = new HashSet<Clazz>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
 			if (args.length < i + 1)
 				throw new IllegalArgumentException(
@@ -2123,7 +2123,6 @@ public class Analyzer extends Processor {
 				error("%s with value %s throws exception", t, REQUIRE_BND, require);
 			}			
 		}
-		error("%s fails", REQUIRE_BND);
 	}
 
 }
