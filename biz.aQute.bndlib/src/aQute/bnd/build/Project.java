@@ -18,11 +18,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,7 +32,6 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.help.Syntax;
 import aQute.bnd.maven.support.Pom;
-import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.maven.support.ProjectPom;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
@@ -372,7 +373,7 @@ public class Project extends Processor {
 
 	private List<Container> parseBuildpath() throws Exception {
 		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
-		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles);
+		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles, ResolverMode.build);
 		return bundles;
 	}
 
@@ -481,72 +482,130 @@ public class Project extends Processor {
 		return result;
 	}
 	
-	public void appendPackages(Strategy strategyx, String spec, Collection<? super Container> result) throws Exception {
-		Map<String, Map<String, String>> packages = parseHeader(spec);
+	/**
+	 * Calculates the containers required to fulfil the {@code -buildpackages}
+	 * instruction, and appends them to the existing list of containers.
+	 * 
+	 * @param strategyx
+	 *            The package-version disambiguation strategy.
+	 * @param spec
+	 *            The value of the @{code -buildpackages} instruction.
+	 * @throws Exception
+	 */
+	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles, ResolverMode mode) throws Exception {
+		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
 		
-		for (Entry<String, Map<String, String>> entry : packages.entrySet()) {
+		List<Entry<String, Map<String, String>>> queue = new LinkedList<Map.Entry<String,Map<String,String>>>();
+		queue.addAll(parseHeader(spec).entrySet());
+		
+		while (!queue.isEmpty()) {
+			Entry<String, Map<String, String>> entry = queue.remove(0);
+			
 			String pkgName = entry.getKey();
 			Map<String, String> attrs = entry.getValue();
 			
 			Container found = null;
 			
 			String versionRange = attrs.get(Constants.VERSION_ATTRIBUTE);
-			if ("latest".equals(versionRange) || "snapshot".equals(versionRange)) {
-				found = getPackage(pkgName, versionRange, strategyx, attrs);
-			}
-			if (found == null) {
-				found = getPackage(pkgName, versionRange, strategyx, attrs);
-			}
-			
+			if ("latest".equals(versionRange) || "snapshot".equals(versionRange))
+				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
+
+			if (found == null)
+				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
+
 			if (found != null) {
-				List<Container> libs = found.getMembers();
-				for (Container cc : libs) {
-					if (result.contains(cc))
-						warning("Multiple bundles with the same final URL: " + cc);
-					result.add(cc);
+				if (resolvedBundles.contains(found)) {
+					// Don't add his bundle because it was already included using -buildpath
+				} else {
+					List<Container> libs = found.getMembers();
+					for (Container cc : libs) {
+						Container existing = pkgResolvedBundles.get(cc.file);
+						if (existing != null)
+							addToPackageList(existing, attrs.get("packages"));
+						else {
+							addToPackageList(cc, attrs.get("packages"));
+							pkgResolvedBundles.put(cc.file, cc);
+						}
+						
+						String importUses = cc.getAttributes().get("import-uses");
+						if (importUses != null)
+							queue.addAll(0, parseHeader(importUses).entrySet());
+					}
 				}
 			} else {
-				// Oops, not a bundle in sight :-(
-				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR,
-						null, "package " + pkgName + ";version=" + versionRange + " not found", attrs);
-				result.add(x);
+				// Unable to resolve
+				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR, null, "package " + pkgName + ";version=" + versionRange + " not found", attrs);
+				resolvedBundles.add(x);
 				warning("Can not find URL for package " + pkgName);
 			}
 		}
+		
+		for (Container container : pkgResolvedBundles.values()) {
+			resolvedBundles.add(container);
+		}
+	}
+	
+	static void mergeNames(String names, Set<String> set) {
+		StringTokenizer tokenizer = new StringTokenizer(names, ",");
+		while (tokenizer.hasMoreTokens())
+			set.add(tokenizer.nextToken().trim());
+	}
+	
+	static String flatten(Set<String> names) {
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
+		for (String name : names) {
+			if (!first) builder.append(',');
+			builder.append(name);
+			first = false;
+		}
+		return builder.toString();
 	}
 
-	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs) throws Exception {
+	static void addToPackageList(Container container, String newPackageNames) {
+		Set<String> merged = new HashSet<String>();
+		
+		String packageListStr = container.attributes.get("packages");
+		if (packageListStr != null)
+			mergeNames(packageListStr, merged);
+		if (newPackageNames != null)
+			mergeNames(newPackageNames, merged);
+		
+		container.putAttribute("packages", flatten(merged));
+	}
+
+	/**
+	 * Find a container to fulfil a package requirement
+	 * 
+	 * @param packageName
+	 *            The package required
+	 * @param range
+	 *            The package version range required
+	 * @param strategyx
+	 *            The package-version disambiguation strategy
+	 * @param attrs
+	 *            Other attributes specified by the search.
+	 * @return
+	 * @throws Exception
+	 */
+	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs, ResolverMode mode) throws Exception {
 		if ("snapshot".equals(range))
 			return new Container(this, "", range, Container.TYPE.ERROR, null, "snapshot not supported for package lookups", null);
 		
+		if (attrs == null)
+			attrs = new HashMap<String, String>(2);
+		attrs.put("package", packageName);
+		attrs.put("mode", mode.name());
+		
+		Strategy useStrategy = findStrategy(attrs, strategyx, range);
+		
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		
-		Strategy useStrategy = strategyx;
-		if (attrs != null) {
-			String overrideStrategy = attrs.get("strategy");
-			if (overrideStrategy != null) {
-				if ("highest".equalsIgnoreCase(overrideStrategy))
-					useStrategy = Strategy.HIGHEST;
-				else if ("lowest".equalsIgnoreCase(overrideStrategy))
-					useStrategy = Strategy.LOWEST;
-				else if ("exact".equalsIgnoreCase(overrideStrategy))
-					useStrategy = Strategy.EXACT;
-			}
-		}
-		if ("latest".equals(range))
-			useStrategy = Strategy.HIGHEST;
-		
-		Map<String, String> props = new HashMap<String, String>();
-		props.putAll(attrs);
-		props.put("package", packageName);
-		
 		for (RepositoryPlugin plugin : plugins) {
 			try {
-				File result = plugin.get(null, range, useStrategy, props);
+				File result = plugin.get(null, range, useStrategy, attrs);
 				if (result != null) {
 					if (result.getName().endsWith("lib"))
-						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null,
-								attrs);
+						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null, attrs);
 					else
 						return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
 				}
@@ -556,6 +615,22 @@ public class Project extends Processor {
 		}
 		
 		return new Container(this, "X", range, Container.TYPE.ERROR, null, "package " + packageName + ";version=" + range + " Not found in " + plugins, null);
+	}
+
+	private Strategy findStrategy(Map<String, String> attrs, Strategy defaultStrategy, String versionRange) {
+		Strategy useStrategy = defaultStrategy;
+		String overrideStrategy = attrs.get("strategy");
+		if (overrideStrategy != null) {
+			if ("highest".equalsIgnoreCase(overrideStrategy))
+				useStrategy = Strategy.HIGHEST;
+			else if ("lowest".equalsIgnoreCase(overrideStrategy))
+				useStrategy = Strategy.LOWEST;
+			else if ("exact".equalsIgnoreCase(overrideStrategy))
+				useStrategy = Strategy.EXACT;
+		}
+		if ("latest".equals(versionRange))
+			useStrategy = Strategy.HIGHEST;
+		return useStrategy;
 	}
 
 	/**
@@ -571,27 +646,21 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             anything goes wrong
 	 */
-	public void doMavenPom(Strategy strategyx, List<Container> result, String scopes)
+	public void doMavenPom(Strategy strategyx, List<Container> result, String action)
 			throws Exception {
 		File pomFile = getFile("pom.xml");
 		if (!pomFile.isFile())
 			error("Specified to use pom.xml but the project directory does not contain a pom.xml file");
 		else {
 			ProjectPom pom = getWorkspace().getMaven().createProjectModel(pomFile);
-			if (scopes == null) {
-				if (strategyx == Strategy.LOWEST)
-					scopes = "compile";
-				else
-					scopes = "runtime";
-			}
-			for (String scope : Processor.split(scopes)) {
-				Scope sc = Scope.valueOf(scope);
-				Set<Pom> dependencies = pom.getDependencies(sc);
-				for (Pom sub : dependencies) {
-					File artifact = sub.getArtifact();
-					Container container = new Container(artifact);
-					result.add(container);
-				}
+			if (action == null)
+				action = "compile";
+			Pom.Action act = Pom.Action.valueOf(action);
+			Set<Pom> dependencies = pom.getDependencies(act);
+			for (Pom sub : dependencies) {
+				File artifact = sub.getArtifact();
+				Container container = new Container(artifact);
+				result.add(container);
 			}
 		}
 	}
@@ -1501,6 +1570,7 @@ public class Project extends Processor {
 			error("Can not execute script because there are no scripters registered: %s", script);
 			return;
 		}
+		@SuppressWarnings("rawtypes")
 		Map x = (Map) getProperties();
 		scripters.get(0).eval((Map<String, Object>) x, new StringReader(script));
 	}

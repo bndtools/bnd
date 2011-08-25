@@ -74,8 +74,6 @@
 		<bnd command="build" trace="true" exceptions="true" basedir="${project}" />
 	</target>
 
-
-
 	<target name="junit" depends="build">
 		<junit printsummary="true">			
 			<classpath path="${project.buildpath}" />
@@ -86,6 +84,13 @@
 			    </fileset>
 			</batchtest>
 		</junit>
+	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritall="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true"/>
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
 	</target>
 
 	<!--

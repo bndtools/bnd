@@ -31,7 +31,7 @@ public class OBRParseTest extends TestCase {
 		SAXParser parser = parserFactory.newSAXParser();
 
 		parser.parse(OBRParseTest.class.getResourceAsStream("testobr.xml"),
-				new OBRSAXHandler("file:sample/testobr.xml", new IResourceListener[] { listener }));
+				new OBRSAXHandler("file:sample/testobr.xml", listener));
 
 		assertEquals(2, resources.size());
 		
@@ -62,7 +62,7 @@ public class OBRParseTest extends TestCase {
 		
 		boolean parseStopped = false;
 		try {
-			parser.parse(OBRParseTest.class.getResourceAsStream("unparseable.xml"), new OBRSAXHandler("", new IResourceListener[] { listener }));
+			parser.parse(OBRParseTest.class.getResourceAsStream("unparseable.xml"), new OBRSAXHandler("", listener));
 			fail("Parser not stopped");
 		} catch (StopParseException e) {
 			// Expected

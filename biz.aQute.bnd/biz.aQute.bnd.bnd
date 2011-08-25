@@ -3,10 +3,10 @@
 
 Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
 
-Private-Package: 				aQute.bnd.*, aQute.lib.osgi
-Conditional-Package: 			aQute.lib.*, aQute.libg.*
-Export-Package: 				aQute.bnd.service.*
-Import-Package: 				!org.eclipse.*,org.apache.tools.ant; resolution:=optional, *
+Private-Package: 				aQute.bnd.*, aQute.lib.*
+Conditional-Package: 			aQute.libg.*
+Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
+Import-Package: 				!org.eclipse.*,org.apache.tools.ant;resolution:=optional,org.osgi.service.bindex,*
 Bundle-ClassPath:				.
 Main-Class: 					aQute.bnd.main.bnd
 Bundle-Version:					${^Bundle-Version}

@@ -16,20 +16,26 @@ public class OBRSAXHandler extends DefaultHandler {
 	private static final String TAG_CAPABILITY = "capability";
 	private static final String ATTR_CAPABILITY_NAME = "name";
 	
+	private static final String TAG_REQUIRE = "require";
+	private static final String ATTR_REQUIRE_NAME = "name";
+	private static final String ATTR_REQUIRE_FILTER = "filter";
+	private static final String ATTR_REQUIRE_OPTIONAL = "optional";
+	
 	private static final String TAG_PROPERTY = "p";
 	private static final String ATTR_PROPERTY_NAME = "n";
 	private static final String ATTR_PROPERTY_TYPE = "t";
 	private static final String ATTR_PROPERTY_VALUE = "v";
 
 	private final String baseUrl;
-	private final IResourceListener[] resourceListeners;
+	private final IResourceListener resourceListener;
 	
 	private Resource.Builder resourceBuilder = null;
 	private Capability.Builder capabilityBuilder = null;
+	private Require require = null;
 
-	public OBRSAXHandler(String baseUrl, IResourceListener[] listeners) {
+	public OBRSAXHandler(String baseUrl, IResourceListener listener) {
 		this.baseUrl = baseUrl;
-		this.resourceListeners = listeners;
+		this.resourceListener = listener;
 	}
 	
 
@@ -46,6 +52,8 @@ public class OBRSAXHandler extends DefaultHandler {
 		} else if (TAG_CAPABILITY.equals(qName)) {
 			capabilityBuilder = new Capability.Builder()
 				.setName(atts.getValue(ATTR_CAPABILITY_NAME));
+		} else if (TAG_REQUIRE.equals(qName)) {
+			require = new Require(atts.getValue(ATTR_REQUIRE_NAME), atts.getValue(ATTR_REQUIRE_FILTER), "true".equalsIgnoreCase(atts.getValue(ATTR_REQUIRE_OPTIONAL)));
 		} else if (TAG_PROPERTY.equals(qName)) {
 			Property p = new Property(atts.getValue(ATTR_PROPERTY_NAME), atts.getValue(ATTR_PROPERTY_TYPE), atts.getValue(ATTR_PROPERTY_VALUE));
 			if (capabilityBuilder != null)
@@ -59,12 +67,12 @@ public class OBRSAXHandler extends DefaultHandler {
 			resourceBuilder.addCapability(capabilityBuilder);
 			capabilityBuilder = null;
 		} else if (TAG_RESOURCE.equals(qName)) {
-			boolean cont = true;
-			for (IResourceListener listener : resourceListeners) {
-				cont &= listener.processResource(resourceBuilder.build());
-			}
-			if (!cont) throw new StopParseException();
+			if (!resourceListener.processResource(resourceBuilder.build()))
+				throw new StopParseException();
 			resourceBuilder = null;
+		} else if (TAG_REQUIRE.equals(qName)) {
+			resourceBuilder.addRequire(require);
+			require = null;
 		}
 	}
 

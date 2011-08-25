@@ -25,7 +25,7 @@ public class OBRTest extends TestCase {
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
 		
-		obr.setCacheDir(new File(tmpFile.getAbsolutePath() + ".dir"));
+		obr.setCacheDirectory(new File(tmpFile.getAbsolutePath() + ".dir"));
 		
 		httpd = new NanoHTTPD(new File("test/http"), 18080);
 	}
@@ -34,13 +34,13 @@ public class OBRTest extends TestCase {
 	protected void tearDown() throws Exception {
 		httpd.stop();
 		
-		File[] cachedFiles = obr.getCacheDir().listFiles();
+		File[] cachedFiles = obr.getCacheDirectory().listFiles();
 		if (cachedFiles != null) {
 			for (File file : cachedFiles) {
 				file.delete();
 			}
 		}
-		obr.getCacheDir().delete();
+		obr.getCacheDirectory().delete();
 	}
 	
 	public void testSetProperties() {
@@ -48,14 +48,13 @@ public class OBRTest extends TestCase {
 		
 		Map<String,String> props = new HashMap<String, String>();
 		props.put("location", OBRTest.class.getResource("fullobr.xml").toString());
-		props.put("cache", this.obr.getCacheDir().getAbsolutePath());
+		props.put("cache", this.obr.getCacheDirectory().getAbsolutePath());
 		obr2.setProperties(props);
 		
-		assertNotNull(obr2.getLocations());
-		assertEquals(1, obr2.getLocations().length);
-		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr2.getLocations()[0].toString());
+		assertEquals(1, obr2.getOBRIndexes().size());
+		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr2.getOBRIndexes().get(0).toString());
 		
-		assertEquals(this.obr.getCacheDir(), obr2.getCacheDir());
+		assertEquals(this.obr.getCacheDirectory(), obr2.getCacheDirectory());
 	}
 	
 	public void testInvalidProperties() {

@@ -17,15 +17,18 @@ public class Resource {
 	private final String url;
 	private final String version;
 	private final List<Capability> capabilities;
+	private final List<Require> requires;
 
-	private Resource(String id, String presentationName, String symbolicName, String baseUrl, String url, String version, List<Capability> capabilities) {
+	private Resource(String id, String presentationName, String symbolicName, String baseUrl, String url, String version, List<Capability> capabilities, List<Require> requires) {
 		this.id = id;
 		this.presentationName = presentationName;
 		this.symbolicName = symbolicName;
 		this.baseUrl = baseUrl;
 		this.url = url;
 		this.version = version;
+		
 		this.capabilities = capabilities;
+		this.requires = requires;
 	}
 	
 	public static class Builder {
@@ -36,6 +39,7 @@ public class Resource {
 		private String url;
 		private String version;
 		private final List<Capability> capabilities = new LinkedList<Capability>();
+		private final List<Require> requires = new LinkedList<Require>();
 		
 		public Builder setId(String id) {
 			this.id = id;
@@ -69,13 +73,17 @@ public class Resource {
 			this.capabilities.add(capabilityBuilder.build());
 			return this;
 		}
+		public Builder addRequire(Require require) {
+			this.requires.add(require);
+			return this;
+		}
 		
 		public Resource build() {
 			if (id == null) throw new IllegalStateException("'id' field is not initialised");
 			if (symbolicName == null) throw new IllegalStateException("'symbolicName' field is not initialised");
 			if (url == null) throw new IllegalStateException("'url' field is not initialised");
 			
-			return new Resource(id, presentationName, symbolicName, baseUrl, url, version, Collections.unmodifiableList(capabilities));
+			return new Resource(id, presentationName, symbolicName, baseUrl, url, version, Collections.unmodifiableList(capabilities), Collections.unmodifiableList(requires));
 		}
 	}
 
@@ -105,6 +113,50 @@ public class Resource {
 
 	public List<Capability> getCapabilities() {
 		return capabilities;
+	}
+	
+	public Capability findPackageCapability(String pkgName) {
+		for (Capability capability : capabilities) {
+			if (CapabilityType.PACKAGE.getTypeName().equals(capability.getName())) {
+				List<Property> props = capability.getProperties();
+				for (Property prop : props) {
+					if (Property.PACKAGE.equals(prop.getName())) {
+						if (pkgName.equals(prop.getValue()))
+							return capability;
+						else
+							break;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+
+	
+	public List<Require> getRequires() {
+		return requires;
+	}
+	
+	public Require findRequire(String name) {
+		for (Require require : requires) {
+			if (name.equals(require.getName()))
+				return require;
+		}
+		return null;
+	}
+	
+	public Require findPackageRequire(String usesPkgName) {
+		String matchString = String.format("(package=%s)", usesPkgName);
+		
+		for (Require require : requires) {
+			if (CapabilityType.PACKAGE.getTypeName().equals(require.getName())) {
+				String filter = require.getFilter();
+				if (filter.indexOf(matchString) > -1)
+					return require;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -184,5 +236,5 @@ public class Resource {
 			return false;
 		return true;
 	}
-	
+
 }

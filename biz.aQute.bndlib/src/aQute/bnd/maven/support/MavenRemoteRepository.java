@@ -49,15 +49,15 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 
 		CachedPom pom = getMaven().getPom(groupId, artifactId, version, repositories);
 
-		String value = properties == null ? null : properties.get("scope");
+		String value = properties == null ? null : properties.get("action");
 		if (value == null)
 			return pom.getArtifact();
 
-		Pom.Scope scope = null;
+		Pom.Action action = null;
 
 		try {
-			scope = Pom.Scope.valueOf(value);
-			return pom.getLibrary(scope, repositories);
+			action = Pom.Action.valueOf(value);
+			return pom.getLibrary(action, repositories);
 		} catch (Exception e) {
 			return pom.getArtifact();
 		}
