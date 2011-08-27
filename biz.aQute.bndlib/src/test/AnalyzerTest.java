@@ -3,6 +3,7 @@ package test;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.Pattern;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
@@ -36,8 +37,7 @@ public class AnalyzerTest extends TestCase {
     	assertEquals(0, b.getWarnings().size());
     	
 	}
-	
-	
+
     public void testComponentImportReference() throws Exception {
     	Builder b = new Builder();
     	b.addClasspath( new File("jar/osgi.jar"));
@@ -457,6 +457,29 @@ public class AnalyzerTest extends TestCase {
                 warnings.get(1));
         assertTrue(h.getImports().containsKey("com.foo"));
     }
+
+    /**
+     * Make sure packages from embedded directories referenced from 
+     * Bundle-Classpath are considered during import/export calculation.
+     */
+	public void testExportContentsDirectory() throws Exception {
+		Builder b = new Builder();
+		File base = new File("tmp/emptydir").getCanonicalFile();
+		File embedded = new File("bin").getCanonicalFile();
+		assertTrue(embedded.isDirectory()); // sanity check
+		base.mkdirs();
+		b.setBase(base);
+		b.setProperty("Bundle-ClassPath", ".,jars/some.jar");
+		b.setProperty("-exportcontents", "aQute.*");
+		b.setProperty("-includeresource", "jars/some.jar="+embedded.getAbsolutePath());
+		b.addClasspath(new Jar("jars/some.jar", embedded, Pattern.compile("test")));
+		b.build();
+		assertTrue(b.getExports().toString(), b.getExports().containsKey("aQute.lib.osgi"));
+
+		// expected bunch of "Class in different directory than declared..." errors
+		//assertEquals(b.getErrors().toString(), 0, b.getErrors().size());
+		//assertEquals(b.getWarnings().toString(), 0, b.getWarnings().size());
+	}
 
     void assertNotPresent(Map<String, ?> map, String string) {
         StringTokenizer st = new StringTokenizer(string, ", ");
