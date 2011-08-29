@@ -92,6 +92,19 @@
 		</subant>
 		<bnd command="release" exceptions="true" basedir="${project}"/>
 	</target>
+	
+	<target name="release.bindex" depends="release">
+		<echo message="bindex classpath: ${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+			<classpath>
+				<fileset dir="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex" includes="org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+			</classpath>
+		</taskdef>
+		
+		<bindex root="${workspacedir}/cnf/releaserepo" repositoryfile="${workspacedir}/cnf/releaserepo/repository.xml" quiet="yes">
+			<fileset dir="${workspacedir}/cnf/releaserepo" includes="**/*.jar"/>
+		</bindex>
+	</target>
 
 	<!--
 	     CLEAN
@@ -133,6 +146,7 @@
 		<echo>release.target:         ${release.target}</echo>
 		<echo>licensed repo:          ${licensed-repo}</echo>
 		<echo>repo:                   ${repo}</echo>
+		<echo>releaserepo:            ${releaserepo}</echo>
 		<echo>use.bnd:                ${use.bnd}</echo>
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>

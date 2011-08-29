@@ -17,6 +17,7 @@ bin                     = bin
 target					= ${project}/${target-dir}
 build					= ${workspace}/cnf
 repo					= ${build}/repo
+releaserepo				= ${build}/releaserepo
 target-dir				= tmp
 p                       = ${basename;${project}}
 project.name            = ${p}
@@ -38,7 +39,7 @@ javac.target 			= 1.5
 
 -plugin	            	= \
 	aQute.lib.deployer.FileRepo;location=${repo},\
-	aQute.lib.deployer.obr.LocalOBR;local=${build}/releaserepo;name=Release
+	aQute.lib.deployer.FileRepo;location=${releaserepo};name=Release
 
 -releaserepo: Release
   						  

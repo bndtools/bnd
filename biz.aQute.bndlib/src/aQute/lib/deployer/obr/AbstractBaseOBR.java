@@ -110,6 +110,7 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 					readIndex(indexLocation.toString(), stream, listener);
 					success = true; // At least one could be read
 				} catch (Exception e) {
+					e.printStackTrace();
 					reporter.error("Unable to read index at URL '%s'.", indexLocation);
 				}
 			}
