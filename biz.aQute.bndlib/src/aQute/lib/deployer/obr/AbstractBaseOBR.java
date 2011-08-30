@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -226,8 +227,13 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 	public List<Version> versions(String bsn) throws Exception {
 		init();
 		SortedMap<Version, Resource> versionMap = bsnMap.get(bsn);
-		List<Version> list = new ArrayList<Version>(versionMap.size());
-		list.addAll(versionMap.keySet());
+		List<Version> list;
+		if (versionMap != null) {
+			list = new ArrayList<Version>(versionMap.size());
+			list.addAll(versionMap.keySet());
+		} else {
+			list = Collections.emptyList();
+		}
 		return list;
 	}
 

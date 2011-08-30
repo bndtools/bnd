@@ -9,6 +9,9 @@ import java.util.jar.*;
 
 import javax.naming.*;
 
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.FrameworkUtil;
+
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
@@ -212,6 +215,8 @@ public class Workspace extends Processor {
 					InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO);
 					if (in != null)
 						unzip(in, root);
+					else
+						System.out.println("!!!! WTF Couldn't find embedded-repo.jar in bundle ");
 				}
 			} finally {
 				lock.unlock();
