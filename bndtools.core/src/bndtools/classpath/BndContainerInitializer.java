@@ -10,8 +10,10 @@ import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
@@ -96,13 +98,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         if (!project.exists() || !project.isOpen())
             return;
 
-        // Remove classpath problem markers
-        project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
-
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
+        List<String> errors = new LinkedList<String>();
         if (model == null) {
             setClasspathEntries(javaProject, model, EMPTY_ENTRIES);
-            addClasspathProblemMarker(project, "Bnd workspace is not configured.");
+            errors.add("Bnd workspace is not configured.");
         } else {
             model.clear();
             model.refresh();
@@ -146,12 +146,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
                     result.add(cpe);
                 } else {
-                    addClasspathProblemMarker(project, c.getError());
+                    errors.add(c.getError());
                 }
             }
-            for (String error : model.getErrors()) {
-                addClasspathProblemMarker(project, error);
-            }
+            errors.addAll(model.getErrors());
+            replaceClasspathProblemMarkers(project, errors);
             model.clear();
 
             setClasspathEntries(javaProject, model, result.toArray(new IClasspathEntry[result.size()]));
@@ -177,10 +176,21 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         return accessRules;
     }
 
-    static void addClasspathProblemMarker(IProject project, String message) throws CoreException {
-        IMarker marker = project.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
-        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-        marker.setAttribute(IMarker.MESSAGE, message);
+    static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors) {
+        try {
+            project.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException {
+                    project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 1);
+                    for (String error : errors) {
+                        IMarker marker = project.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
+                        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                        marker.setAttribute(IMarker.MESSAGE, error);
+                    }
+                }
+            }, null);
+        } catch (CoreException e) {
+            Plugin.logError("Error replacing project classpath problem markers.", e);
+        }
     }
 
     static Collection<Container> getProjectBootClasspath(Project model) {

@@ -1,8 +1,6 @@
 package bndtools.wizards.workspace;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -24,7 +22,7 @@ public class CnfSetupStartupParticipant implements Runnable {
         new WorkspaceJob("Clear cnf/cache") {
             @Override
             public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                SubMonitor progress = SubMonitor.convert(monitor, 4);
+                SubMonitor progress = SubMonitor.convert(monitor, 3);
 
                 IProject cnfProject = ws.getRoot().getProject(Project.BNDCNF);
                 cnfProject.refreshLocal(0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -35,9 +33,6 @@ public class CnfSetupStartupParticipant implements Runnable {
                 else
                     progress.setWorkRemaining(2);
 
-                IFolder folder = cnfProject.getFolder("cache");
-                folder.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                folder.delete(false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                 return Status.OK_STATUS;
             }
         }.schedule();
