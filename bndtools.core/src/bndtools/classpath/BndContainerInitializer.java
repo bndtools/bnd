@@ -14,9 +14,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -25,6 +23,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -100,6 +99,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
         List<String> errors = new LinkedList<String>();
+
         if (model == null) {
             setClasspathEntries(javaProject, model, EMPTY_ENTRIES);
             errors.add("Bnd workspace is not configured.");
@@ -108,18 +108,30 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             model.refresh();
             model.setChanged();
 
-            Collection<Container> buildPath = getProjectBuildPath(model);
-            Collection<Container> bootClasspath = getProjectBootClasspath(model);
+            Collection<Container> buildPath;
+            Collection<Container> bootClasspath;
+            List<Container> containers;
 
-            List<Container> containers = new ArrayList<Container>(buildPath.size() + bootClasspath.size());
-            containers.addAll(buildPath);
+            try {
+                buildPath = model.getBuildpath();
+                bootClasspath = model.getBootclasspath();
 
-            // The first file is always the project directory,
-            // Eclipse already includes that for us.
-            if (containers.size() > 0) {
-                containers.remove(0);
+                containers = new ArrayList<Container>(buildPath.size() + bootClasspath.size());
+                containers.addAll(buildPath);
+
+                // The first file is always the project directory,
+                // Eclipse already includes that for us.
+                if (containers.size() > 0) {
+                    containers.remove(0);
+                }
+                containers.addAll(bootClasspath);
+            } catch (CircularDependencyException e) {
+                errors.add("Circular dependency: " + e.getMessage());
+                containers = Collections.emptyList();
+            } catch (Exception e) {
+                errors.add("Unexpected error during classpath calculation: " + e);
+                containers = Collections.emptyList();
             }
-            containers.addAll(bootClasspath);
 
             ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
             for (Container c : containers) {
@@ -191,28 +203,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         } catch (CoreException e) {
             Plugin.logError("Error replacing project classpath problem markers.", e);
         }
-    }
-
-    static Collection<Container> getProjectBootClasspath(Project model) {
-        Collection<Container> bootclasspath;
-        try {
-            bootclasspath = model.getBootclasspath();
-        } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project boot classpath.", e));
-            bootclasspath = Collections.emptyList();
-        }
-        return bootclasspath;
-    }
-
-    static Collection<Container> getProjectBuildPath(Project model) {
-        Collection<Container> buildpath;
-        try {
-            buildpath = model.getBuildpath();
-        } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project build path.", e));
-            buildpath = Collections.emptyList();
-        }
-        return buildpath;
     }
 
     protected static IPath fileToPath(Project project, File file) {
