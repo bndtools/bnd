@@ -372,23 +372,23 @@ public class Project extends Processor {
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
-		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH));
+		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH), Constants.BUILDPATH);
 		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles, ResolverMode.build);
 		return bundles;
 	}
 
 	private List<Container> parseRunpath() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNPATH));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNPATH), Constants.RUNPATH);
 	}
 
 	private List<Container> parseRunbundles() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
-
+	
 	private List<Container> parseTestpath() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH));
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
 	}
-
+	
 	/**
 	 * Analyze the header and return a list of files that should be on the
 	 * build, test or some other path. The list is assumed to be a list of bsns
@@ -403,7 +403,7 @@ public class Project extends Processor {
 	 *            The header
 	 * @return
 	 */
-	public List<Container> getBundles(Strategy strategyx, String spec) throws Exception {
+	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
 		List<Container> result = new ArrayList<Container>();
 		Map<String, Map<String, String>> bundles = parseHeader(spec);
 
@@ -475,8 +475,13 @@ public class Project extends Processor {
 					warning("Can not find URL for bsn " + bsn);
 				}
 			}
+		} catch (CircularDependencyException e) {
+			String message = e.getMessage();
+			if (source != null)
+				message = String.format("%s (from property: %s)", message, source);
+			error("Circular dependency detected from project %s: %s", e, getName(), message);
 		} catch (Exception e) {
-			error("While tring to get the bundles from " + spec, e);
+			error("Unexpected error while trying to get the bundles from " + spec, e);
 			e.printStackTrace();
 		}
 		return result;
@@ -1739,7 +1744,7 @@ public class Project extends Processor {
 		// one
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
-		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler));
+		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
 
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();

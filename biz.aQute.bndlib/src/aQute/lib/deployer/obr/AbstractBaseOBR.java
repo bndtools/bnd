@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +36,7 @@ import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.ResourceHandle.Location;
 import aQute.lib.filter.Filter;
 import aQute.lib.osgi.Jar;
 import aQute.libg.generics.Create;
@@ -379,14 +379,22 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
 		
 		for (Resource resource : resources) {
-			result.add(mapResourceToHandle(resource));
+			ResourceHandle handle = mapResourceToHandle(resource);
+			if (handle != null)
+				result.add(handle);
 		}
 		
 		return result;
 	}
 	
 	ResourceHandle mapResourceToHandle(Resource resource) throws Exception {
-		return new URIResourceHandle(new URI(resource.getUrl()), new URI(resource.getBaseUrl()), getCacheDirectory());
+		ResourceHandle result = null;
+		
+		URLResourceHandle handle = new URLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory());
+		if (handle.getLocation() == Location.local || getCacheDirectory() != null)
+			result = handle;
+		
+		return result;
 	}
 
 	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy) throws Exception {
@@ -515,7 +523,8 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 	ResourceHandle findExactMatch(String identity, String version, Map<String, SortedMap<Version, Resource>> resourceMap) throws Exception {
 		Resource resource;
 		VersionRange range = new VersionRange(version);
-		if (range.isRange()) return null;
+		if (range.isRange())
+			return null;
 		
 		SortedMap<Version, Resource> versions = resourceMap.get(identity);
 		resource = versions.get(range.getLow());

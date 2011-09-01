@@ -165,7 +165,7 @@ public class Container {
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
-						List<Container> list = project.getBundles(Strategy.HIGHEST, line);
+						List<Container> list = project.getBundles(Strategy.HIGHEST, line, null);
 						result.addAll(list);
 					}
 				}

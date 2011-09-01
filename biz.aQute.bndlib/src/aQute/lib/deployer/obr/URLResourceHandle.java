@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import aQute.bnd.service.ResourceHandle;
 
@@ -14,6 +16,8 @@ public class URLResourceHandle implements ResourceHandle {
 	static final String FILE_SCHEME = "file:";
 	static final String HTTP_SCHEME = "http:";
 	
+	final File cacheDir;
+	
 	// The resolved, absolute URL of the resource
 	final URL url;
 	
@@ -21,9 +25,10 @@ public class URLResourceHandle implements ResourceHandle {
 	final File localFile;
 	
 	// The cached file copy of the resource, if it is remote and has been downloaded.
-	File cachedFile = null;
+	final File cachedFile;
 
-	public URLResourceHandle(String url, String baseUrl, File cacheDir) throws IOException {
+	public URLResourceHandle(String url, String baseUrl, final File cacheDir) throws IOException {
+		this.cacheDir = cacheDir;
 		if (url.startsWith(FILE_SCHEME)) {
 			// File URL may be relative or absolute
 			File file = new File(url.substring(FILE_SCHEME.length()));
@@ -32,24 +37,47 @@ public class URLResourceHandle implements ResourceHandle {
 			} else {
 				if (!baseUrl.startsWith(FILE_SCHEME))
 					throw new IllegalArgumentException("Relative file URLs cannot be resolved if the base URL is a non-file URL.");
-				File baseFile = new File(url.substring(FILE_SCHEME.length()));
-				if (baseFile.isDirectory()) {
-					this.localFile = new File(baseFile, file.toString());
-				} else {
-					this.localFile = new File(baseFile.getParentFile(), file.toString());
-				}
+				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), file.toString());
 			}
 			this.url = localFile.toURI().toURL();
+			this.cachedFile = null;
 		} else if (url.startsWith(HTTP_SCHEME)) {
 			// HTTP URLs must be absolute
 			this.url = new URL(url);
 			this.localFile = null;
+			this.cachedFile = mapRemoteURL(this.url);
 		} else {
 			// A path with no scheme means resolve relative to the base URL
-			URL base = new URL(baseUrl);
-			this.url = new URL(base, url);
-			this.localFile = null;
+			if (baseUrl.startsWith(FILE_SCHEME)) {
+				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), url);
+				this.url = localFile.toURI().toURL();
+				this.cachedFile = null;
+			} else {
+				URL base = new URL(baseUrl);
+				this.url = new URL(base, url);
+				this.localFile = null;
+				this.cachedFile = mapRemoteURL(this.url);
+			}
 		}
+	}
+	
+	File resolveFile(String baseFileName, String fileName) {
+		File resolved;
+		
+		File baseFile = new File(baseFileName);
+		if (baseFile.isDirectory())
+			resolved = new File(baseFile, fileName);
+		else if (baseFile.isFile())
+			resolved = new File(baseFile.getParentFile(), fileName);
+		else
+			throw new IllegalArgumentException("Cannot resolve relative to non-existant base file path: " + baseFileName);
+		
+		return resolved;
+	}
+
+	private File mapRemoteURL(URL url) throws UnsupportedEncodingException {
+		String encoded = URLEncoder.encode(url.toString(), "UTF-8");
+		return new File(cacheDir, encoded);
 	}
 
 	public String getName() {
@@ -72,9 +100,10 @@ public class URLResourceHandle implements ResourceHandle {
 	public File request() throws IOException {
 		if (localFile != null)
 			return localFile;
+		if (cachedFile == null)
+			throw new IllegalStateException("Invalid URLResourceHandle: both local file and cache file are uninitialised.");
 		
 		if (!cachedFile.exists()) {
-			File cacheDir = cachedFile.getParentFile();
 			if (!cacheDir.mkdirs())
 				throw new IOException(String.format("Failed to create cache directory '%s'.", cacheDir.getAbsolutePath()));
 			downloadToFile(url, cachedFile);
