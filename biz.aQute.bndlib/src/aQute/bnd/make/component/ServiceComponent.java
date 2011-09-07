@@ -211,14 +211,21 @@ public class ServiceComponent implements AnalyzerPlugin {
 		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {
 			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
 					);
-			if (!not.isEmpty()) {
-				for (Clazz c : not) {
-					if (c.getFormat().hasAnnotations())
-						break;
-				}
-				error("Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
-						name);
+			
+			if (not.isEmpty())
+				if ( "*".equals(name))
+					return not;
+				else
+					error("Specified %s but could not find any class matching this pattern", name);
+
+			for (Clazz c : not) {
+				if (c.getFormat().hasAnnotations())
+					return not;
 			}
+			
+			warning("Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
+					name);
+			
 			return not;
 		}
 
@@ -260,13 +267,14 @@ public class ServiceComponent implements AnalyzerPlugin {
 			// Check if such a class exists
 			analyzer.referTo(impl);
 
-			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false) ||
-			designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
-			
-			// If we had a designate, we want a default configuration policy of require.
-			if ( designate && info.get(COMPONENT_CONFIGURATION_POLICY)==null)
+			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false)
+					|| designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
+
+			// If we had a designate, we want a default configuration policy of
+			// require.
+			if (designate && info.get(COMPONENT_CONFIGURATION_POLICY) == null)
 				info.put(COMPONENT_CONFIGURATION_POLICY, "require");
-			
+
 			// We have a definition, so make an XML resources
 			Resource resource = createComponentResource(name, impl, info);
 			analyzer.getJar().putResource("OSGI-INF/" + name + ".xml", resource);
