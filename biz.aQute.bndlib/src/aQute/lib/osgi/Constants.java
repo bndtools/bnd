@@ -233,7 +233,7 @@ public interface Constants {
 	String					DEFAULT_LAUNCHER_BSN						= "biz.aQute.launcher";
 	String					DEFAULT_TESTER_BSN							= "biz.aQute.junit";
 
-	String					DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git";
+	String					DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store";
 
 	Charset					DEFAULT_CHARSET								= Charset.forName("UTF8");
 	String					VERSION_FILTER	= "version";

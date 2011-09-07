@@ -65,6 +65,23 @@ public class BuilderTest extends TestCase {
 		assertTrue(names.contains("rox.bnd"));
 		assertTrue(names.contains("WithAnnotations.jclass"));
 	}
+	/**
+	 * Check if do not copy works on files
+	 */
+
+	public void testDoNotCopyDS() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "jar/");
+		b.build();
+		System.out.println(Processor.join(b.getErrors(), "\n"));
+		System.out.println(Processor.join(b.getWarnings(), "\n"));
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+
+		Set<String> names = b.getJar().getResources().keySet();
+		assertFalse(names.contains(".DS_Store"));
+	}
 
 	/**
 	 * No error is generated when a file is not found.
