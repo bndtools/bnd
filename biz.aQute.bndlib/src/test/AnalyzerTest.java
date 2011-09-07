@@ -20,6 +20,41 @@ class T3 extends T2 {
 public class AnalyzerTest extends TestCase {
 
 	/**
+	 * Uses constraints must be filtered by imports or exports.
+	 * 
+	 * @throws Exception
+	 */
+	
+	public void testUsesFiltering() throws Exception {
+    	Builder b = new Builder();
+    	b.addClasspath( new File("jar/osgi.jar"));
+    	b.setProperty("Export-Package", "org.osgi.service.event");
+    	Jar jar = b.build();
+    	
+    	String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+    	System.out.println(exports);
+    	assertTrue( exports.contains("uses:=\"org.osgi.framework\""));
+    	
+    	System.out.println( b.getErrors());
+    	System.out.println( b.getWarnings());
+    	assertEquals(0, b.getErrors().size());
+    	assertEquals(0, b.getWarnings().size());
+
+    	b = new Builder();
+    	b.addClasspath( new File("jar/osgi.jar"));
+    	b.setProperty("Import-Package", "");
+    	b.setProperty("Export-Package", "org.osgi.service.event");
+    	jar = b.build();
+    	exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+    	assertFalse( exports.contains("uses:=\"org.osgi.framework\""));
+    	System.out.println( b.getErrors());
+    	System.out.println( b.getWarnings());
+    	assertEquals(1, b.getErrors().size());
+    	assertEquals(0, b.getWarnings().size());
+	
+	}
+	
+	/**
 	 * Test if require works
 	 * @throws Exception
 	 */

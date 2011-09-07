@@ -1217,7 +1217,7 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Add the uses clauses
+	 * Add the uses clauses. This method iterates over the exports and cal
 	 * 
 	 * @param exports
 	 * @param uses
@@ -1232,50 +1232,68 @@ public class Analyzer extends Processor {
 			String packageName = i.next();
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
-				Map<String, String> clause = exports.get(packageName);
-				String override = clause.get(USES_DIRECTIVE);
-				if (override == null)
-					override = USES_USES;
-
-				Set<String> usedPackages = uses.get(packageName);
-				if (usedPackages != null) {
-					// Only do a uses on exported or imported packages
-					// and uses should also not contain our own package
-					// name
-					Set<String> sharedPackages = new HashSet<String>();
-					sharedPackages.addAll(imports.keySet());
-					sharedPackages.addAll(exports.keySet());
-					usedPackages.retainAll(sharedPackages);
-					usedPackages.remove(packageName);
-
-					StringBuffer sb = new StringBuffer();
-					String del = "";
-					for (Iterator<String> u = usedPackages.iterator(); u.hasNext();) {
-						String usedPackage = u.next();
-						if (!usedPackage.startsWith("java.")) {
-							sb.append(del);
-							sb.append(usedPackage);
-							del = ",";
-						}
-					}
-					if (override.indexOf('$') >= 0) {
-						setProperty(CURRENT_USES, sb.toString());
-						override = getReplacer().process(override);
-						unsetProperty(CURRENT_USES);
-					} else
-						// This is for backward compatibility 0.0.287
-						// can be deprecated over time
-						override = override.replaceAll(USES_USES, sb.toString()).trim();
-					if (override.endsWith(","))
-						override = override.substring(0, override.length() - 1);
-					if (override.startsWith(","))
-						override = override.substring(1);
-					if (override.length() > 0) {
-						clause.put(USES_DIRECTIVE, override);
-					}
-				}
+				doUses(packageName, exports, uses, imports);
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
+			}
+
+		}
+	}
+
+	/**
+	 * @param packageName
+	 * @param exports
+	 * @param uses
+	 * @param imports
+	 */
+	protected void doUses(String packageName, Map<String, Map<String, String>> exports,
+			Map<String, Set<String>> uses, Map<String, Map<String, String>> imports) {
+		Map<String, String> clause = exports.get(packageName);
+		
+		// Check if someone already set the uses: directive
+		String override = clause.get(USES_DIRECTIVE);
+		if (override == null)
+			override = USES_USES;
+
+		// Get the used packages
+		Set<String> usedPackages = uses.get(packageName);
+		
+		if (usedPackages != null) {
+			
+			// Only do a uses on exported or imported packages
+			// and uses should also not contain our own package
+			// name
+			Set<String> sharedPackages = new HashSet<String>();
+			sharedPackages.addAll(imports.keySet());
+			sharedPackages.addAll(exports.keySet());
+			usedPackages.retainAll(sharedPackages);
+			usedPackages.remove(packageName);
+
+			StringBuffer sb = new StringBuffer();
+			String del = "";
+			for (Iterator<String> u = usedPackages.iterator(); u.hasNext();) {
+				String usedPackage = u.next();
+				if (!usedPackage.startsWith("java.")) {
+					sb.append(del);
+					sb.append(usedPackage);
+					del = ",";
+				}
+			}
+			if (override.indexOf('$') >= 0) {
+				setProperty(CURRENT_USES, sb.toString());
+				override = getReplacer().process(override);
+				unsetProperty(CURRENT_USES);
+			} else
+				// This is for backward compatibility 0.0.287
+				// can be deprecated over time
+				override = override.replaceAll(USES_USES, sb.toString()).trim();
+			
+			if (override.endsWith(","))
+				override = override.substring(0, override.length() - 1);
+			if (override.startsWith(","))
+				override = override.substring(1);
+			if (override.length() > 0) {
+				clause.put(USES_DIRECTIVE, override);
 			}
 		}
 	}
@@ -2105,23 +2123,22 @@ public class Analyzer extends Processor {
 	 * Ensure that we are running on the correct bnd.
 	 */
 	void doRequireBnd() {
-		Map<String,String> require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
+		Map<String, String> require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
 		if (require == null || require.isEmpty())
 			return;
 
-		
 		Hashtable<String, String> map = new Hashtable<String, String>();
 		map.put(Constants.VERSION_FILTER, getBndVersion());
 
-		for ( String filter : require.keySet() ) {
+		for (String filter : require.keySet()) {
 			try {
 				Filter f = new Filter(filter);
 				if (f.match(map))
 					continue;
-				error( "%s fails %s", REQUIRE_BND, require.get(filter));
+				error("%s fails %s", REQUIRE_BND, require.get(filter));
 			} catch (Exception t) {
 				error("%s with value %s throws exception", t, REQUIRE_BND, require);
-			}			
+			}
 		}
 	}
 
