@@ -64,6 +64,38 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
+	 * Can we order the references? References are ordered by their name as Java does not
+	 * define the order of the methods.
+	 * 
+	 * @throws Exception 
+	 */
+	
+	@Component static class TestReferenceOrdering {
+		
+		@Reference(service=LogService.class)
+		void setA(ServiceReference ref) {}
+		@Reference
+		void setC(LogService log) {}
+		@Reference(service=LogService.class)
+		void setB(Map<String,Object> map) {}
+	}
+	
+	public void testReferenceOrdering () throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File( "bin"));
+		b.setProperty("Service-Component", "*TestReferenceOrdering");
+		b.setProperty("Private-Package", "test");
+		Jar jar = b.build();
+		Document doc = doc(b, "test.ComponentTest$TestReferenceOrdering");
+		NodeList nodes = (NodeList) xpath.evaluate("//reference", doc, XPathConstants.NODESET);
+		assertEquals("a", nodes.item(0).getAttributes().getNamedItem("name").getTextContent());
+		assertEquals("b", nodes.item(1).getAttributes().getNamedItem("name").getTextContent());
+		assertEquals("c", nodes.item(2).getAttributes().getNamedItem("name").getTextContent());
+	}
+
+	
+	
+	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
 	 * @throws Exception 
 	 */
@@ -635,10 +667,10 @@ public class ComponentTest extends TestCase {
 
 		Document doc = doc(b, "xcomp");
 		print(doc, "");
-		assertAttribute(doc, "bind", "component/reference/@bind");
-		assertAttribute(doc, "dynamic", "component/reference/@policy");
-		assertAttribute(doc, "0..n", "component/reference/@cardinality");
-		assertAttribute(doc, "bind2", "component/reference[2]/@bind");
+		assertAttribute(doc, "bind2", "component/reference[1]/@bind");
+		assertAttribute(doc, "dynamic", "component/reference[1]/@policy");
+		assertAttribute(doc, "0..n", "component/reference[1]/@cardinality");
+		assertAttribute(doc, "bind", "component/reference[2]/@bind");
 		assertAttribute(doc, "dynamic", "component/reference[2]/@policy");
 		assertAttribute(doc, "0..n", "component/reference[2]/@cardinality");
 	}

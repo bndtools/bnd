@@ -36,7 +36,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	Set<String>					optional				= new HashSet<String>();
 	Set<String>					dynamic					= new HashSet<String>();
 
-	Map<String, String>			map						= new HashMap<String, String>();
+	Map<String, String>			map						= new TreeMap<String, String>();
 	Set<String>					descriptors				= new HashSet<String>();
 	List<String>				properties				= new ArrayList<String>();
 	String						version					= null;
