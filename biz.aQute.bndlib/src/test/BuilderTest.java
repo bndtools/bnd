@@ -446,7 +446,7 @@ public class BuilderTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "WEB-INF/classes=@jar/asm.jar");
-		b.setProperty("Bundle-ClassPath", "WEB-INF/classes,.");
+		b.setProperty("Bundle-ClassPath", "WEB-INF/classes");
 		b.build();
 		diagnose(b);
 	}

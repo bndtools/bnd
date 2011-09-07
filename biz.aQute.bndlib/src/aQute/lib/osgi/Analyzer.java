@@ -1249,7 +1249,7 @@ public class Analyzer extends Processor {
 	protected void doUses(String packageName, Map<String, Map<String, String>> exports,
 			Map<String, Set<String>> uses, Map<String, Map<String, String>> imports) {
 		Map<String, String> clause = exports.get(packageName);
-		
+
 		// Check if someone already set the uses: directive
 		String override = clause.get(USES_DIRECTIVE);
 		if (override == null)
@@ -1257,9 +1257,9 @@ public class Analyzer extends Processor {
 
 		// Get the used packages
 		Set<String> usedPackages = uses.get(packageName);
-		
+
 		if (usedPackages != null) {
-			
+
 			// Only do a uses on exported or imported packages
 			// and uses should also not contain our own package
 			// name
@@ -1287,7 +1287,7 @@ public class Analyzer extends Processor {
 				// This is for backward compatibility 0.0.287
 				// can be deprecated over time
 				override = override.replaceAll(USES_USES, sb.toString()).trim();
-			
+
 			if (override.endsWith(","))
 				override = override.substring(0, override.length() - 1);
 			if (override.startsWith(","))
@@ -1492,15 +1492,23 @@ public class Analyzer extends Processor {
 			Map<String, Set<String>> uses) throws Exception {
 		Map<String, Clazz> classSpace = new HashMap<String, Clazz>();
 		Set<String> hide = Create.set();
-
+		boolean containsDirectory = false;
+		
+		for (String path : bundleClasspath.keySet()) {
+			if ( dot.getDirectories().containsKey(path)) {
+				containsDirectory = true;
+				break;
+			}
+		}
+		
 		if (bundleClasspath.isEmpty()) {
-			analyzeJar(dot, "", classSpace, contained, referred, uses, hide);
+			analyzeJar(dot, "", classSpace, contained, referred, uses, hide, true);
 		} else {
 			for (String path : bundleClasspath.keySet()) {
 				Map<String, String> info = bundleClasspath.get(path);
 
 				if (path.equals(".")) {
-					analyzeJar(dot, "", classSpace, contained, referred, uses, hide);
+					analyzeJar(dot, "", classSpace, contained, referred, uses, hide, !containsDirectory);
 					continue;
 				}
 				//
@@ -1516,14 +1524,23 @@ public class Analyzer extends Processor {
 						Jar jar = new Jar(path);
 						addClose(jar);
 						EmbeddedResource.build(jar, resource);
-						analyzeJar(jar, "", classSpace, contained, referred, uses, hide);
+						analyzeJar(jar, "", classSpace, contained, referred, uses, hide, true);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: " + path + " " + e);
 					}
 				} else {
 					if (dot.getDirectories().containsKey(path)) {
+						// if directories are used, we should not have dot as we
+						// would have the classes in these directories on the
+						// class
+						// path twice.
+						if (bundleClasspath.containsKey("."))
+							warning("Bundle-ClassPath uses a directory '%s' as well as '.', this implies the directory is seen \n"
+									+ "twice by the class loader. bnd assumes that the classes are only "
+									+ "loaded from '%s'. It is better to unroll the directory to create a flat bundle.",
+									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", classSpace, contained,
-								referred, uses, hide);
+								referred, uses, hide,true);
 					} else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory " + path);
@@ -1551,12 +1568,19 @@ public class Analyzer extends Processor {
 	 */
 	private void analyzeJar(Jar jar, String prefix, Map<String, Clazz> classSpace,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
-			Map<String, Set<String>> uses, Set<String> hide) throws Exception {
+			Map<String, Set<String>> uses, Set<String> hide, boolean reportWrongPath) throws Exception {
 
 		next: for (String path : jar.getResources().keySet()) {
-			if (path.startsWith(prefix) && !hide.contains(path)) {
+			if (path.startsWith(prefix) /* && !hide.contains(path) */) {
 				hide.add(path);
 				String relativePath = path.substring(prefix.length());
+
+				// // TODO this check (and the whole hide) is likely redundant
+				// // it only protects against repeated checks for non-class
+				// // bundle resources, but should not affect results otherwise.
+				// if (!hide.add(relativePath)) {
+				// continue;
+				// }
 
 				// Check if we'd already had this one.
 				// Notice that we're flattening the space because
@@ -1619,11 +1643,11 @@ public class Analyzer extends Processor {
 
 					String calculatedPath = clazz.getClassName() + ".class";
 					if (!calculatedPath.equals(relativePath)) {
-						if (!isNoBundle()) {
+						if (!isNoBundle() && reportWrongPath) {
 							error("Class in different directory than declared. Path from class name is "
 									+ calculatedPath
 									+ " but the path in the jar is "
-									+ relativePath + " from " + jar);
+									+ relativePath + " from '" + jar + "'");
 						}
 					}
 
