@@ -13,7 +13,10 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.qtokens.*;
 
 /**
+ * This file is the bnd main task for ant. 
+ * 
  * Example usage
+ * 
  * <pre>
  * <project name="test path with bnd" default="run-test" basedir=".">
  *    <property file="run-demo.properties"/>
@@ -156,13 +159,6 @@ public class BndTask extends BaseTask {
 				File file = (File) f.next();
 				Builder builder = new Builder();
 
-				// Get the ant properties as a base.
-				if (inherit) {
-					Properties p = new Properties();
-					p.putAll((Map<?, ?>) getProject().getProperties());
-					builder.setProperties(p);
-				}
-
 				builder.setPedantic(isPedantic());
 				if (file.exists()) {
 					// Do nice property calculations
@@ -171,11 +167,14 @@ public class BndTask extends BaseTask {
 				}
 
 				// get them and merge them with the project
-				// properties
-				Properties projectProperties = new Properties();
-				projectProperties.putAll((Map<?, ?>) getProject().getProperties());
-				projectProperties.putAll(builder.getProperties());
-				builder.setProperties(projectProperties);
+				// properties, if the inherit flag is specified
+				if (inherit) {
+					Properties projectProperties = new Properties();
+					projectProperties.putAll((Map<?, ?>) getProject().getProperties());
+					projectProperties.putAll(builder.getProperties());
+					builder.setProperties(projectProperties);
+				}
+				
 				builder.setClasspath(toFiles(classpath, "classpath"));
 				builder.setSourcepath(toFiles(sourcepath, "sourcepath"));
 				Jar jars[] = builder.builds();
