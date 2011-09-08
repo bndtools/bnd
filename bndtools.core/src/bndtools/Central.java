@@ -14,7 +14,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -146,23 +146,27 @@ public class Central {
         }
     }
 
-    public static Workspace getWorkspace() throws Exception {
+    public synchronized static Workspace getWorkspace() throws Exception {
         if (workspace != null)
             return workspace;
 
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-        File wsdir = wsroot.getLocation().toFile();
+        IWorkspace eclipseWorkspace = ResourcesPlugin.getWorkspace();
+        IProject cnfProject = eclipseWorkspace.getRoot().getProject("bnd");
 
-        try {
-            workspace = Workspace.getWorkspace(wsdir);
-        } catch (IllegalArgumentException e) {
-            return null;
+        if (!cnfProject.exists())
+            cnfProject = eclipseWorkspace.getRoot().getProject("cnf");
 
-            // // Ensure the workspace is configured
-            // initialiseWorkspace();
-            // // Retry
-            // workspace = Workspace.getWorkspace(wsdir);
+        if (cnfProject.exists()) {
+            if (!cnfProject.isOpen())
+                cnfProject.open(null);
+            File cnfDir = cnfProject.getLocation().toFile();
+            workspace = Workspace.getWorkspace(cnfDir.getParentFile());
+        } else {
+            // Have to assume that the eclipse workspace == the bnd workspace, and cnf hasn't been imported yet.
+            File workspaceDir = eclipseWorkspace.getRoot().getLocation().toFile();
+            workspace = Workspace.getWorkspace(workspaceDir);
         }
+
         workspace.addBasicPlugin(new FilesystemUpdateListener());
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
