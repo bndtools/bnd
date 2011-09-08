@@ -65,6 +65,8 @@ public class BndPerspective implements IPerspectiveFactory {
 
         // new actions - Java project creation wizard
         layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);
+        layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBNDRUN);
+        layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWRAPPROJECT);
         layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBND);
         layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewPackageCreationWizard"); //$NON-NLS-1$
         layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewClassCreationWizard"); //$NON-NLS-1$
@@ -74,5 +76,8 @@ public class BndPerspective implements IPerspectiveFactory {
         layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.folder");//$NON-NLS-1$
         layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.file");//$NON-NLS-1$
         layout.addNewWizardShortcut("org.eclipse.ui.editors.wizards.UntitledTextFileWizard");//$NON-NLS-1$
+
+        layout.addPerspectiveShortcut("org.eclipse.debug.ui.DebugPerspective");
+        layout.addPerspectiveShortcut("org.eclipse.jdt.ui.JavaPerspective");
     }
 }

@@ -132,15 +132,24 @@
             toolbarPath="Normal/OSGi"
             icon="icons/brick_new.png"
             tooltip="New Bundle Descriptor"
-            class="bndtools.wizards.bndfile.NewBndFileActionDelegate">
-         </action>
+            class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
+         />
+         <action
+            id="bndtools.actions.newRunDescriptor"
+            label="New OSGi Run Descriptor"
+            toolbarPath="Normal/OSGi"
+            icon="icons/brick_run.png"
+            tooltip="New OSGi Run Descriptor"
+            class="bndtools.wizards.bndfile.BndRunFileWizard"
+         />
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
             toolbarPath="Normal/OSGi"
             icon="icons/browser.gif"
             tooltip="Open Web Browser"
-            class="org.bndtools.core.actions.OpenBrowserActionDelegate"/>
+            class="org.bndtools.core.actions.OpenBrowserActionDelegate"
+         />
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -257,22 +266,20 @@
             type="org.eclipse.core.resources.problemmarker">
       </super>
    </extension>
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.eclipse.jdt.ui.JavaPerspective">
-         <newWizardShortcut
-               id="bndtools.newProjWiz">
-         </newWizardShortcut>
-         <newWizardShortcut
-               id="bndtools.newWrapProjWiz">
-         </newWizardShortcut>
-         <newWizardShortcut
-               id="bndtools.newBndFile">
-         </newWizardShortcut>
-         <viewShortcut
-               id="bndtools.impExpView">
-         </viewShortcut>
+   <extension point="org.eclipse.ui.perspectiveExtensions">
+      <!-- Add lots of lovely OSGi stuff to the Java perspective -->
+      <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <newWizardShortcut id="bndtools.newProjWiz"/>
+         <newWizardShortcut id="bndtools.newWrapProjWiz"/>
+         <newWizardShortcut id="bndtools.newBndFile"/>
+         <viewShortcut id="bndtools.impExpView"/>
+         <perspectiveShortcut id="bndtools.perspective"/>
+      </perspectiveExtension>
+      
+      <!-- Add a way back to the OSGi perspective from the Debug perspective -->
+      <perspectiveExtension targetID="org.eclipse.debug.ui.DebugPerspective">
+         <viewShortcut id="bndtools.impExpView"/>
+         <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
    </extension>
    <extension
