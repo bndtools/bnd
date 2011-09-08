@@ -30,7 +30,7 @@ Include-Resource: 				LICENSE
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 -buildpath: com.springsource.junit,\
-	osgi.cmpn;version=4.0,\
+	osgi.cmpn;version=4.3,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.1, \
 	ee.j2se; version=1.5, \
