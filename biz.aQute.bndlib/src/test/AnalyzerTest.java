@@ -22,6 +22,31 @@ class T3 extends T2 {
 
 public class AnalyzerTest extends TestCase {
 
+	
+	/**
+	 * Fastest way to create a manifest
+	 * @throws Exception 
+	 */
+	
+	public void testGenerateManifest() throws Exception {
+		Analyzer analyzer = new Analyzer();
+		Jar bin = new Jar( new File("jar/osgi.jar"));
+		bin.setManifest(new Manifest());
+		analyzer.setJar( bin );
+		analyzer.addClasspath( new File("jar/spring.jar"));
+		analyzer.setProperty("Bundle-SymbolicName","org.osgi.core");
+		analyzer.setProperty("Export-Package","org.osgi.framework,org.osgi.service.event");
+		analyzer.setProperty("Bundle-Version","1.0");
+		analyzer.setProperty("Import-Package","*");
+		Manifest manifest = analyzer.calcManifest();
+		manifest.write(System.out);
+		String export = manifest.getMainAttributes().getValue("Export-Package");
+		assertEquals("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"",export);
+		assertEquals("1.0",manifest.getMainAttributes().getValue("Bundle-Version"));
+		assertEquals(analyzer.getErrors().toString(), 0, analyzer.getErrors().size());
+		assertEquals(analyzer.getWarnings().toString(), 0, analyzer.getWarnings().size());
+	}
+	
 	/**
 	 * 
 	 * Make sure packages from embedded directories referenced from
