@@ -3,6 +3,7 @@ package bndtools.editor.project;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -40,7 +41,10 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                     iconUrl = contributorBundle.getEntry(iconPath);
             }
 
-            for (RepositoryPlugin repo : workspace.getRepositories()) {
+            List<RepositoryPlugin> repositories = (workspace != null)
+                    ? workspace.getRepositories()
+                    : Collections.<RepositoryPlugin>emptyList();
+            for (RepositoryPlugin repo : repositories) {
                 try {
                     List<Version> versions = repo.versions(bsn);
                     if (versions != null) for (Version version : versions) {

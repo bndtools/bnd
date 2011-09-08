@@ -302,7 +302,9 @@ public class BndEditModel implements IPersistableBndModel {
 	}
 
     public Object genericGet(String propertyName) {
-        return doGetObject(propertyName, converters.get(propertyName));
+        Converter<? extends Object, String> converter = converters.get(propertyName);
+        if (converter == null) converter = new NoopConverter<String>();
+        return doGetObject(propertyName, converter);
     }
 
     public void genericSet(String propertyName, Object value) {
@@ -310,8 +312,7 @@ public class BndEditModel implements IPersistableBndModel {
         @SuppressWarnings("unchecked")
         Converter<String, Object> formatter = (Converter<String, Object>) formatters.get(propertyName);
         if (formatter == null)
-            throw new IllegalArgumentException("No formatter for property: " + propertyName);
-
+            formatter = new DefaultFormatter();
         doSetObject(propertyName, oldValue, value, formatter);
     }
 

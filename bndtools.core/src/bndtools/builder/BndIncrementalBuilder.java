@@ -275,7 +275,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 				Container container = bndsToDeliverables.get(bndFile);
 				if(container != null) {
 					IResource resource = FileUtils.toWorkspaceResource(container.getFile());
-					resource.delete(false, null);
+					if (resource != null) resource.delete(false, null);
 				}
 			}
 
