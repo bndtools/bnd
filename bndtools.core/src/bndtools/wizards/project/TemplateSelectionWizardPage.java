@@ -5,7 +5,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
@@ -25,11 +24,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.browser.StatusTextEvent;
-import org.eclipse.swt.browser.StatusTextListener;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -41,6 +35,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 
@@ -57,15 +54,12 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
     private Table table;
     private TableViewer viewer;
+    private ScrolledFormText txtDescription;
 
     private IConfigurationElement[] elements;
 
     private IProjectTemplate selectedTemplate = null;
     private boolean shown = false;
-    private Browser browser;
-
-    private boolean programmaticBrowserChange = false;
-    private Label lblBrowserStatus;
 
     /**
      * Create the wizard.
@@ -98,13 +92,15 @@ public class TemplateSelectionWizardPage extends WizardPage {
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setText("Description:");
 
-        browser = new Browser(container, SWT.BORDER);
-        GridData gd_browser = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-        gd_browser.heightHint = 150;
-        browser.setLayoutData(gd_browser);
+        txtDescription = new ScrolledFormText(container, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL, true);
+        txtDescription.setBackground(table.getBackground());
+        txtDescription.getFormText().setBackground(table.getBackground());
+        txtDescription.getFormText().setForeground(table.getForeground());
 
-        lblBrowserStatus = new Label(container, SWT.NONE);
-        lblBrowserStatus.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_table.heightHint = 200;
+        txtDescription.setLayoutData(gd_txtDescription);
+
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setLabelProvider(new TemplateLabelProvider(parent.getDisplay()));
 
@@ -115,22 +111,19 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 updateUI();
             }
         });
-        browser.addLocationListener(new LocationListener() {
-            public void changing(LocationEvent event) {
-                if (!programmaticBrowserChange) {
-                    event.doit = false;
-                    IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-                    try {
-                        IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
-                        externalBrowser.openURL(new URL(event.location));
-                    } catch (PartInitException e) {
-                        Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening external browser.", e));
-                    } catch (MalformedURLException e) {
-                        // Ignore
-                    }
+
+        txtDescription.getFormText().addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent event) {
+                IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
+                try {
+                    IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
+                    externalBrowser.openURL(new URL((String) event.getHref()));
+                } catch (PartInitException e) {
+                    Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening external browser.", e));
+                } catch (MalformedURLException e) {
+                    // Ignore
                 }
-            }
-            public void changed(LocationEvent event) {
             }
         });
 
@@ -166,7 +159,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
         return selectedTemplate;
     }
 
-    void setSelectionFromConfigElement(IConfigurationElement element) {
+    private void setSelectionFromConfigElement(IConfigurationElement element) {
         String error = null;
         try {
             showTemplateDescription(element);
@@ -182,7 +175,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
     private void showTemplateDescription(IConfigurationElement element) {
         String browserText = "";
         if (element != null) {
-            browserText = "No description available.";
+            browserText = "<form>No description available.</form>";
             String htmlAttr = element.getAttribute("docHtml");
             if (htmlAttr != null) {
                 String bsn = element.getContributor().getName();
@@ -198,14 +191,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 }
             }
         }
-
-        try {
-            programmaticBrowserChange = true;
-            browser.setText(browserText);
-        } finally {
-            programmaticBrowserChange = false;
-        }
-
+        txtDescription.setText(browserText);
     }
 
     @Override
@@ -214,20 +200,6 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
         if (visible) {
             shown  = true;
-
-            StatusTextListener statusTextListener = new StatusTextListener() {
-                public void changed(StatusTextEvent event) {
-                    if (!programmaticBrowserChange) {
-                        String message;
-                        if (event.text == null || event.text.length() == 0 || "about:blank".equalsIgnoreCase(event.text))
-                            message = "";
-                        else
-                            message = MessageFormat.format("Open page \"{0}\" in an external browser.", event.text);
-                        lblBrowserStatus.setText(message);
-                    }
-                }
-            };
-            browser.addStatusTextListener(statusTextListener);
         }
     }
 
@@ -273,7 +245,5 @@ public class TemplateSelectionWizardPage extends WizardPage {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propSupport.removePropertyChangeListener(propertyName, listener);
     }
-
-
 
 }
