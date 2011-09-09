@@ -4,15 +4,16 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.0.22
+Bundle-Version: 0.0.25
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
-	repo/=repo,\
+	repo/=repos/repo,\
 	repo/=${target}/repo/repository.xml,\
-	buildrepo/=buildrepo,\
+	buildrepo/=repos/buildrepo,\
 	buildrepo/=${target}/buildrepo/repository.xml,\
-	html=html
+	release/=repos/release,\
+	html/=html
 
 Private-Package: bndtools.templates
 Import-Package: \

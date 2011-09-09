@@ -73,6 +73,13 @@
 		<mkdir dir="${target}"/>
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true" />
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
+	</target>
 
 	<target name="junit" depends="build">
 		<junit printsummary="true">			

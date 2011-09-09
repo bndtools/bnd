@@ -5,6 +5,7 @@
    <extension point="bndtools.core.initialRepository">
       <repository name="Bndtools Default Build-only Repository" path="buildrepo"/>
       <repository name="Bndtools Default Main Repository" path="repo"/>
+      <repository name="Release Repository" path="release"/>
    </extension>
 
    <extension point="bndtools.core.projectTemplates">

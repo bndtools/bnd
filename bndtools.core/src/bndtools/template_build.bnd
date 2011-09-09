@@ -16,6 +16,7 @@ target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
 repo:         ${build}/repo
 buildrepo:    ${build}/buildrepo
+releaserepo:  ${build}/release
 p:            ${basename;${project}}
 project.name: ${p}
 
@@ -30,4 +31,7 @@ javac.debug:  on
 -sources:       true
 -sourcepath:    ${project}/src 
 -plugin:        aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
-                aQute.lib.deployer.obr.OBR;name='Build Repository';locations='file:${buildrepo}/repository.xml';mode=build
+                aQute.lib.deployer.obr.OBR;name='Build Repository';locations='file:${buildrepo}/repository.xml';mode=build,\
+                aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo};locations='',\
+                org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
+-releaserepo:   Release
