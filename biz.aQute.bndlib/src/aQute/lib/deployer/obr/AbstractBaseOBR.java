@@ -104,22 +104,17 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 				}
 			};
 			Collection<URL> indexes = getOBRIndexes();
-			boolean success = false;
 			for (URL indexLocation : indexes) {
 				try {
 					InputStream stream = indexLocation.openStream();
 					readIndex(indexLocation.toString(), stream, listener);
-					success = true; // At least one could be read
 				} catch (Exception e) {
 					e.printStackTrace();
 					reporter.error("Unable to read index at URL '%s'.", indexLocation);
 				}
 			}
 			
-			if (success)
-				initialised = true;
-			else
-				throw new IllegalStateException(String.format("Unable to initialise any index URLs for repository '%s'.", getName()));
+			initialised = true;
 		}
 	}
 

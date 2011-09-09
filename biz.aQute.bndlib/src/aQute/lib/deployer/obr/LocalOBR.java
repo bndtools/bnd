@@ -145,16 +145,31 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 		BundleIndexer indexer = registry.getPlugin(BundleIndexer.class);
 		if (indexer == null)
 			throw new IllegalStateException("Cannot index repository: no Bundle Indexer service or plugin found.");
-		ByteArrayOutputStream tempOutput = new ByteArrayOutputStream();
-		indexer.index(Collections.singleton(newFile), tempOutput, null);
+		ByteArrayOutputStream newIndexBuffer = new ByteArrayOutputStream();
+		indexer.index(Collections.singleton(newFile), newIndexBuffer, null);
 		
 		// Merge into main index
 		File tempIndex = File.createTempFile("repository", ".xml");
-		UniqueResourceFilter resourceFilter = new UniqueResourceFilter();
-		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(new FileOutputStream(tempIndex)), resourceFilter, new MergeContentFilter(2));
+		FileOutputStream tempIndexOutput = new FileOutputStream(tempIndex);
+		MergeContentFilter merger = new MergeContentFilter();
+		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(tempIndexOutput), new UniqueResourceFilter(), merger);
 		
-		reader.parse(new InputSource(new ByteArrayInputStream(tempOutput.toByteArray())));
-		reader.parse(new InputSource(new FileInputStream(localIndex)));
+		try {
+			// Parse the newly generated index
+			reader.parse(new InputSource(new ByteArrayInputStream(newIndexBuffer.toByteArray())));
+			
+			// Parse the existing index (which may be empty/missing)
+			try {
+				reader.parse(new InputSource(new FileInputStream(localIndex)));
+			} catch (Exception e) {
+				reporter.warning("Existing local index is invalid or missing, overwriting (%s).", localIndex.getAbsolutePath());
+			}
+			
+			merger.closeRootAndDocument();
+		} finally {
+			tempIndexOutput.flush();
+			tempIndexOutput.close();
+		}
 		IO.copy(tempIndex, localIndex);
 		
 		// Re-read the index

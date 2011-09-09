@@ -36,11 +36,12 @@ public class TestSAXFilters extends TestCase {
 	public void testMerge() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		
-		MergeContentFilter merger = new MergeContentFilter(2);
+		MergeContentFilter merger = new MergeContentFilter();
 		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(output), merger);
 		
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE1.getBytes())));
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE2.getBytes())));
+		merger.closeRootAndDocument();
 		
 		assertEquals(MERGED1_2, output.toString());
 		assertEquals(2, merger.getRootElements().size());
@@ -49,7 +50,7 @@ public class TestSAXFilters extends TestCase {
 	public void testMergeInconsistentRoots() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		
-		MergeContentFilter merger = new MergeContentFilter(2);
+		MergeContentFilter merger = new MergeContentFilter();
 		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(output), merger);
 		
 		try {
@@ -60,30 +61,15 @@ public class TestSAXFilters extends TestCase {
 		}
 	}
 	
-	public void testMergeTooManyDocs() throws Exception {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		
-		MergeContentFilter merger = new MergeContentFilter(3);
-		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(output), merger);
-		
-		try {
-			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE1.getBytes())));
-			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE2.getBytes())));
-			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE1.getBytes())));
-			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE2.getBytes())));
-			fail ("Should throw exception for root many docs");
-		} catch (SAXException e) {
-		}
-	}
-	
 	public void testDontRepeatProcessingInstruction() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		
-		MergeContentFilter merger = new MergeContentFilter(2);
+		MergeContentFilter merger = new MergeContentFilter();
 		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(output), merger);
 		
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE5.getBytes())));
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE5.getBytes())));
+		merger.closeRootAndDocument();
 
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>\n<root><a/><a/></root>", output.toString());
 	}
