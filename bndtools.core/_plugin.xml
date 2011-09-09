@@ -127,28 +127,28 @@
          visible="false">
 
          <action
-            id="bndtools.actions.newBundle"
-            label="New Bundle Descriptor"
-            toolbarPath="Normal/OSGi"
-            icon="icons/brick_new.png"
-            tooltip="New Bundle Descriptor"
-            class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
-         />
-         <action
-            id="bndtools.actions.newRunDescriptor"
-            label="New OSGi Run Descriptor"
-            toolbarPath="Normal/OSGi"
-            icon="icons/brick_run.png"
-            tooltip="New OSGi Run Descriptor"
-            class="bndtools.wizards.bndfile.BndRunFileWizard"
-         />
-         <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
             toolbarPath="Normal/OSGi"
             icon="icons/browser.gif"
             tooltip="Open Web Browser"
             class="org.bndtools.core.actions.OpenBrowserActionDelegate"
+         />
+         <action
+            id="bndtools.actions.newRunDescriptor"
+            label="New OSGi Run Descriptor"
+            toolbarPath="Normal/OSGi"
+            icon="icons/brick_run_new.gif"
+            tooltip="New OSGi Run Descriptor"
+            class="bndtools.wizards.bndfile.BndRunFileWizard"
+         />
+         <action
+            id="bndtools.actions.newBundle"
+            label="New Bundle Descriptor"
+            toolbarPath="Normal/OSGi"
+            icon="icons/brick_new.png"
+            tooltip="New Bundle Descriptor"
+            class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />
       </actionSet>
    </extension>
