@@ -66,7 +66,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
-            Project project = getBndProject(configuration);
+            Project project = LaunchUtils.getBndProject(configuration);
             synchronized (project) {
                 bndTester = project.getProjectTester();
             }

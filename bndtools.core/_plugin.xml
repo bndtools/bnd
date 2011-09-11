@@ -329,23 +329,6 @@
    
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-      <!--
-      <launchConfigurationTabGroup
-            class="aQute.bnd.junit.OSGiJUnitTabGroup"
-            description="Help!"
-            id="aQute.bnd.junit.OSGiJUnitTabGroup"
-            type="bndtools.launch.junit">
-         <launchMode
-               description="%jUnitTabGroup.description.debug"
-               mode="debug"
-               perspective="org.eclipse.debug.ui.DebugPerspective">
-         </launchMode>
-         <launchMode
-               description="%jUnitTabGroup.description.run"
-               mode="run">
-         </launchMode>
-      </launchConfigurationTabGroup>
-      -->
       <launchConfigurationTabGroup
             class="bndtools.launch.ui.LaunchTabGroup"
             id="aQute.bnd.launch.tabgroup"
@@ -358,25 +341,52 @@
       </launchConfigurationTabGroup>
    </extension>
    
-   	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
-	    <launchConfigurationType
-           delegate="bndtools.launch.OSGiRunLaunchDelegate"
-           id="bndtools.launch"
-           modes="run, debug"
-           name="OSGi Framework"
-           sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
-           sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
-	    </launchConfigurationType>	
+   <!-- DEFINE LAUNCH CONFIGURATION TYPES -->
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
-            id="bndtools.launch.junit"
-            modes="run, debug"
-            name="OSGi Framework JUnit Tests"
-            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
-            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
-      </launchConfigurationType>
+        delegate="bndtools.launch.OSGiRunLaunchDelegate"
+        id="bndtools.launch"
+        modes="run, debug"
+        name="OSGi Framework"
+        sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+        sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      />
+      <launchConfigurationType
+         delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
+         id="bndtools.launch.junit"
+         modes="run, debug"
+         name="OSGi Framework JUnit Tests"
+         sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+         sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      />
+   </extension>
+
+   <!-- DEFINE THE "Bnd Dependencies" SOURCE CONTAINER TYPE -->
+   <extension point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+         id="org.bndtools.core.launch.sourceContainerTypes.bndDependencies"
+         name="Bnd Dependencies"
+         description=""
+         class="bndtools.launch.BndDependencySourceContainerType"
+      />
+   </extension>
+   <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+      <sourceContainerPresentation
+         id="org.bndtools.core.launch.sourceContainerTypes.bndDependencies.presentation"
+         containerTypeID="org.bndtools.core.launch.sourceContainerTypes.bndDependencies"
+         icon="icons/bricks.png"
+      />
    </extension>
    
+   <!-- DEFINE THE SOURCE LOOKUP DIRECTOR -->
+   <extension point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+         id="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+         name="OSGi Source Lookup Director"
+         class="bndtools.launch.BndDependencySourceLookupDirector"
+      />
+   </extension>
+
    <extension point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester id="org.bndtools.core.launchPropertyTester"
          namespace="org.bndtools.core"
@@ -494,21 +504,6 @@
       </shortcut>
    </extension>
    
-   <!-- IMPORT WIZARD -->
-    <extension
-          point="org.eclipse.ui.importWizards">
-       <category
-             id="bndtools.importWizardsCategory"
-             name="Bnd OSGi Tools">
-       </category>
-       <wizard
-             category="bndtools.importWizardsCategory"
-             class="bndtools.wizards.workspace.ImportBundleRepositoryWizard"
-             icon="icons/brick_add.png"
-             id="bndtools.importRepositoryWizard"
-             name="Import Bundles from Repository">
-       </wizard>
-    </extension>
     <extension
           point="org.eclipse.ui.preferencePages">
        <page

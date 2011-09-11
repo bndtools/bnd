@@ -36,7 +36,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
-            Project project = getBndProject(configuration);
+            Project project = LaunchUtils.getBndProject(configuration);
             synchronized (project) {
                 bndLauncher = project.getProjectLauncher();
             }
@@ -72,7 +72,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
      * @throws CoreException
      */
     private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
-        final IResource targetResource = getTargetResource(launch.getLaunchConfiguration());
+        final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
         final IPath bndbndPath = Central.toPath(project, project.getPropertiesFile());
 
         final IPath targetPath;
