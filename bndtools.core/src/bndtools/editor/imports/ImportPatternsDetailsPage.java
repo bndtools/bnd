@@ -17,11 +17,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.osgi.framework.Constants;
 
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
-import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
 import bndtools.utils.ModificationLock;
 
@@ -45,43 +43,43 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPatt
 		toolkit.createLabel(mainComposite, ""); // Spacer
 		btnOptional = toolkit.createButton(mainComposite, "Optional", SWT.CHECK);
 
-		btnOptional.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(!modifyLock.isUnderModification()) {
-					String resolution = btnOptional.getSelection() ? Constants.RESOLUTION_OPTIONAL : null;
-					for (HeaderClause clause : selectedClauses) {
-						clause.getAttribs().put(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE, resolution);
-					}
-					PkgPatternsListPart<ImportPattern> listPart = getListPart();
-					if(listPart != null) {
-					    listPart.updateLabels(selectedClauses);
-					    listPart.validate();
-					}
-					markDirty();
-				}
-			}
-		});
+        btnOptional.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    boolean optional = btnOptional.getSelection();
+                    for (ImportPattern pattern : selectedClauses) {
+                        pattern.setOptional(optional);
+                    }
+                    PkgPatternsListPart<ImportPattern> listPart = getListPart();
+                    if (listPart != null) {
+                        listPart.updateLabels(selectedClauses);
+                        listPart.validate();
+                    }
+                    markDirty();
+                }
+            }
+        });
 	}
 	@Override
 	public void refresh() {
 		super.refresh();
 		modifyLock.modifyOperation(new Runnable() {
 			public void run() {
-				if(selectedClauses.length == 0) {
+				if(selectedClauses.isEmpty()) {
 					btnOptional.setEnabled(false);
 					btnOptional.setGrayed(false);
-				} else if(selectedClauses.length == 1) {
+				} else if(selectedClauses.size() == 1) {
 					btnOptional.setEnabled(true);
 					btnOptional.setGrayed(false);
-					btnOptional.setSelection(isOptional(selectedClauses[0]));
+					btnOptional.setSelection(selectedClauses.get(0).isOptional());
 				} else {
 					btnOptional.setEnabled(true);
 
 					boolean differs = false;
-					boolean first = isOptional(selectedClauses[0]);
-					for(int i = 1; i < selectedClauses.length; i++) {
-						if(first != isOptional(selectedClauses[i])) {
+					boolean first = selectedClauses.get(0).isOptional();
+					for (ImportPattern pattern : selectedClauses) {
+						if(first != pattern.isOptional()) {
 							differs = true;
 							break;
 						}
@@ -95,9 +93,5 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPatt
 				}
 			}
 		});
-	}
-	private static boolean isOptional(HeaderClause clause) {
-		String resolution = clause.getAttribs().get(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
-		return Constants.RESOLUTION_OPTIONAL.equals(resolution);
 	}
 }

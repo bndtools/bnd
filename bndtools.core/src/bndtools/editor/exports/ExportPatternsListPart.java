@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.editor.contents;
+package bndtools.editor.exports;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,6 +53,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
+import bndtools.editor.contents.PackageInfoDialog;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
@@ -65,7 +66,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 	private static final String PACKAGEINFO = "packageinfo";
 
     public ExportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Patterns");
+		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Patterns", new ExportedPackageLabelProvider());
 	}
 
 	@Override

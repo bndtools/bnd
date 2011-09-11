@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -63,6 +64,7 @@ import bndtools.utils.PackageDropAdapter;
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {
 
 	private final String propertyName;
+	private final IBaseLabelProvider labelProvider;
 	protected ArrayList<C> clauses = new ArrayList<C>();
 
 	private IManagedForm managedForm;
@@ -76,10 +78,11 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     protected final String title;
 
-	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName, String title) {
+	public PkgPatternsListPart(Composite parent, FormToolkit toolkit, int style, String propertyName, String title, IBaseLabelProvider labelProvider) {
 		super(parent, toolkit, style);
 		this.propertyName = propertyName;
         this.title = title;
+        this.labelProvider = labelProvider;
 
 		Section section = getSection();
 		section.setText(title);
@@ -110,7 +113,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		viewer = new TableViewer(table);
 		viewer.setUseHashlookup(false);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new PkgPatternsLabelProvider());
+		viewer.setLabelProvider(labelProvider);
 
 		toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
@@ -382,9 +385,15 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		else
 			markStale();
 	}
-	public void updateLabels(Object[] elements) {
-		viewer.update(elements, null);
-	}
+
+    public void updateLabels(Collection<?> elements) {
+        updateLabels(elements.toArray());
+    }
+
+    public void updateLabels(Object[] elements) {
+        viewer.update(elements, null);
+    }
+
 	public ISelectionProvider getSelectionProvider() {
 	    return viewer;
 	}

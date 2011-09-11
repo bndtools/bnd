@@ -34,9 +34,10 @@ import org.eclipse.ui.forms.widgets.Section;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
-import bndtools.editor.contents.ExportPatternsListPart;
 import bndtools.editor.contents.GeneralInfoPart;
 import bndtools.editor.contents.PrivatePackagesPart;
+import bndtools.editor.exports.ExportPackagesDetailsPage;
+import bndtools.editor.exports.ExportPatternsListPart;
 import bndtools.editor.imports.ImportPatternsDetailsPage;
 import bndtools.editor.imports.ImportPatternsListPart;
 import bndtools.editor.model.BndEditModel;
@@ -138,7 +139,7 @@ public class BundleContentPage extends FormPage {
         SaneDetailsPart detailsPart = new SaneDetailsPart();
         mform.addPart(detailsPart);
 
-        exportDetailsPage = new PkgPatternsDetailsPage<ExportedPackage>("Export Pattern Details");
+        exportDetailsPage = new ExportPackagesDetailsPage();
         detailsPart.registerPage(ExportedPackage.class, exportDetailsPage);
 
         importDetailsPage = new ImportPatternsDetailsPage();

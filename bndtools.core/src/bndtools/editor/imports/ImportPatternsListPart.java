@@ -58,7 +58,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 		}
 	};
 	public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports");
+		super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports", new ImportPatternLabelProvider());
 	}
 	@Override
 	protected void doAddClauses(Collection<? extends ImportPattern> clauses, int index, boolean select) {

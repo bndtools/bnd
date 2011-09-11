@@ -13,6 +13,9 @@ package bndtools.editor.pkgpatterns;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
@@ -51,9 +54,9 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 
 	private PkgPatternsListPart<C> listPart;
 	private final ModificationLock modifyLock = new ModificationLock();
+	protected List<C> selectedClauses = Collections.emptyList();
 
 	private BndEditModel model;
-	protected HeaderClause[] selectedClauses = new HeaderClause[0];
 
 	private Composite mainComposite;
 	private Text txtName;
@@ -120,8 +123,8 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		txtName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				if(!modifyLock.isUnderModification()) {
-					if(selectedClauses.length == 1) {
-						selectedClauses[0].setName(txtName.getText());
+					if(selectedClauses.size() == 1) {
+						selectedClauses.get(0).setName(txtName.getText());
 						if(listPart != null) {
 						    listPart.updateLabels(selectedClauses);
 						    listPart.validate();
@@ -171,16 +174,17 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		return mainComposite;
 	}
 
-	public void selectionChanged(IFormPart part, ISelection selection) {
-		Object[] tmp = ((IStructuredSelection) selection).toArray();
-		selectedClauses = new HeaderClause[tmp.length];
-		System.arraycopy(tmp, 0, selectedClauses, 0, selectedClauses.length);
-		refresh();
+    public void selectionChanged(IFormPart part, ISelection selection) {
+        @SuppressWarnings("unchecked")
+        List<C> tmp = ((IStructuredSelection) selection).toList();
+        selectedClauses = new ArrayList<C>(tmp);
 
-		if(txtName.isEnabled()) {
-			txtName.setFocus();
-			txtName.setSelection(selectedClauses[0].getName().length());
-		}
+        refresh();
+
+        if (txtName.isEnabled()) {
+            txtName.setFocus();
+            txtName.setSelection(selectedClauses.get(0).getName().length());
+        }
 	}
 
 	@Override
@@ -200,25 +204,25 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		super.refresh();
 		modifyLock.modifyOperation(new Runnable() {
 			public void run() {
-				if(selectedClauses.length == 0) {
+				if(selectedClauses.isEmpty()) {
 					txtName.setEnabled(false);
 					txtVersion.setEnabled(false);
 					txtVersion.setMessage("Empty Selection");
-				} else if(selectedClauses.length == 1) {
+				} else if(selectedClauses.size() == 1) {
 					txtName.setEnabled(true);
-					txtName.setText(selectedClauses[0].getName());
+					txtName.setText(selectedClauses.get(0).getName());
 
-					String version = selectedClauses[0].getAttribs().get(Constants.VERSION_ATTRIBUTE);
+					String version = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
 					txtVersion.setEnabled(true);
 					txtVersion.setMessage("");
 					txtVersion.setText(version != null ? version : "");
 				} else {
 					txtName.setEnabled(false);
 
-					String firstVersion = selectedClauses[0].getAttribs().get(Constants.VERSION_ATTRIBUTE);
+					String firstVersion = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
 					boolean versionsDiffer = false;
-					for(int i = 1; i < selectedClauses.length; i++) {
-						String anotherVersion = selectedClauses[i].getAttribs().get(Constants.VERSION_ATTRIBUTE);
+					for (C selectedClause : selectedClauses) {
+						String anotherVersion = selectedClause.getAttribs().get(Constants.VERSION_ATTRIBUTE);
 						if(firstVersion != null && !firstVersion.equals(anotherVersion)) {
 							versionsDiffer = true;
 							break;
@@ -245,7 +249,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		Object container = getManagedForm().getContainer();
+//		Object container = getManagedForm().getContainer();
 	}
 
 	public void setListPart(PkgPatternsListPart<C> listPart) {

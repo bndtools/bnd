@@ -15,25 +15,37 @@ import java.util.Map;
 import org.osgi.framework.Constants;
 
 public class ExportedPackage extends HeaderClause {
-	public ExportedPackage(String packageName, Map<String, String> attribs) {
-		super(packageName, attribs);
-	}
 
-	@Override
-	protected boolean newlinesBetweenAttributes() {
-		return false;
-	}
+    public ExportedPackage(String packageName, Map<String, String> attribs) {
+        super(packageName, attribs);
+    }
 
-	public void setVersionString(String version) {
-		attribs.put(Constants.VERSION_ATTRIBUTE, version);
-	}
+    @Override
+    protected boolean newlinesBetweenAttributes() {
+        return false;
+    }
 
-	public String getVersionString() {
-		return attribs.get(Constants.VERSION_ATTRIBUTE);
-	}
+    public void setVersionString(String version) {
+        attribs.put(Constants.VERSION_ATTRIBUTE, version);
+    }
 
-	@Override
-	public ExportedPackage clone() {
-		return new ExportedPackage(this.name, this.attribs);
-	}
+    public String getVersionString() {
+        return attribs.get(Constants.VERSION_ATTRIBUTE);
+    }
+
+    public boolean isProvided() {
+        return Boolean.valueOf(attribs.get(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE));
+    }
+
+    public void setProvided(boolean provided) {
+        if (provided)
+            attribs.put(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE, Boolean.toString(true));
+        else
+            attribs.remove(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE);
+    }
+
+    @Override
+    public ExportedPackage clone() {
+        return new ExportedPackage(this.name, this.attribs);
+    }
 }
