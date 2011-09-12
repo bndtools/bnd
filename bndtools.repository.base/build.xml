@@ -7,13 +7,13 @@
 	<target name="build" depends="updateIndexes,master.build"/>
 	
 	<target name="updateBndFromRepo">
-		<delete dir="repo/biz.aQute.bnd"/>
-		<delete dir="repo/biz.aQute.bnd.annotation"/>
-		<delete dir="repo/biz.aQute.bndlib"/>
-		<delete dir="repo/biz.aQute.junit"/>
-		<delete dir="repo/biz.aQute.launcher"/>
+		<delete dir="repos/repo/biz.aQute.bnd"/>
+		<delete dir="repos/repo/biz.aQute.bnd.annotation"/>
+		<delete dir="repos/repo/biz.aQute.bndlib"/>
+		<delete dir="repos/repo/biz.aQute.junit"/>
+		<delete dir="repos/repo/biz.aQute.launcher"/>
 		
-		<copy todir="repo">
+		<copy todir="repos/repo">
 			<fileset dir="../cnf/repo">
 				<include name="biz.aQute.*/**"/>
 				<include name="bndtools.runtime.eclipse.applaunch/**"/>
@@ -30,14 +30,14 @@
 	
 		<echo>Indexing buildrepo...</echo>
 		<mkdir dir="${target}/buildrepo"/>
-		<bindex root="${basedir}/buildrepo" repositoryfile="${target}/buildrepo/repository.xml" quiet="yes">
-			<fileset dir="${basedir}/buildrepo" includes="**/*.jar"/>
+		<bindex root="${basedir}/repos/buildrepo" repositoryfile="${target}/buildrepo/repository.xml" quiet="yes">
+			<fileset dir="${basedir}/repos/buildrepo" includes="**/*.jar"/>
 		</bindex>
 
 		<echo>Indexing repo...</echo>
 		<mkdir dir="${target}/repo"/>
-		<bindex root="${basedir}/repo" repositoryfile="${target}/repo/repository.xml" quiet="yes">
-			<fileset dir="${basedir}/repo" includes="**/*.jar"/>
+		<bindex root="${basedir}/repos/repo" repositoryfile="${target}/repo/repository.xml" quiet="yes">
+			<fileset dir="${basedir}/repos/repo" includes="**/*.jar"/>
 		</bindex>
 	</target>
 	
