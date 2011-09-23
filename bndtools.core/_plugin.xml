@@ -140,7 +140,7 @@
             toolbarPath="Normal/OSGi"
             icon="icons/brick_run_new.gif"
             tooltip="New OSGi Run Descriptor"
-            class="bndtools.wizards.bndfile.BndRunFileWizard"
+            class="bndtools.wizards.bndfile.NewRunDescriptorActionDelegate"
          />
          <action
             id="bndtools.actions.newBundle"
