@@ -44,6 +44,7 @@ public class PackageListWizardPage extends WizardPage {
 
     private boolean loaded = false;
     private boolean programmaticChange = false;
+    private boolean uiChange = false;
 
     private Collection<IPath> paths;
 
@@ -179,8 +180,14 @@ public class PackageListWizardPage extends WizardPage {
         txtProjectName.setText(projectName != null ? projectName : "");
         txtProjectName.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                if (!programmaticChange)
-                    setProjectName(txtProjectName.getText());
+                if (!programmaticChange) {
+                    try {
+                        uiChange = true;
+                        setProjectName(txtProjectName.getText());
+                    } finally {
+                        uiChange = false;
+                    }
+                }
             }
         });
     }
@@ -287,7 +294,7 @@ public class PackageListWizardPage extends WizardPage {
 
             this.projectName = name;
             if (txtProjectName != null && !txtProjectName.isDisposed()) {
-                txtProjectName.setText(projectName);
+                if (!uiChange) txtProjectName.setText(projectName);
                 updateUI();
             }
             propSupport.firePropertyChange("projectName", oldName, name);
