@@ -32,6 +32,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -43,11 +44,12 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Container;
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import bndtools.Plugin;
 import bndtools.classpath.BndContainerInitializer;
@@ -75,34 +77,62 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
-        IProject[] depends = new IProject[] { project.getWorkspace().getRoot().getProject(Project.BNDCNF) };
+        System.out.println("#> build invoked on project " + project.getName());
+
+        Set<IProject> depends = new HashSet<IProject>();
+        IProject cnf = project.getWorkspace().getRoot().getProject(Project.BNDCNF);
+        if (cnf != null)
+            depends.add(cnf);
+
+        File projectDir = project.getLocation().toFile();
+        Project model;
+        try {
+            model = Workspace.getProject(projectDir);
+            if (model == null) {
+                // Don't try to build... no bnd workspace configured
+                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.", project.getName()), null));
+                return depends.toArray(new IProject[depends.size()]);
+            }
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to get Bnd model from Project directory: " + projectDir, e));
+        }
+
+        model.refresh();
+        model.setChanged();
+        addDepends(model, depends);
 
         ensureBndBndExists(project);
+        clearBuildMarkers(project);
+
         EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
         if (!blockers.isEmpty()) {
             try {
-                clearBuildMarkers(project);
                 if (blockers.contains(BlockingBuildErrors.javac))
                     addBuildMarker(project, String.format("Will not build OSGi bundle(s) for project \"%s\" until Java compilation problems are resolved.", project.getName()), IMarker.SEVERITY_ERROR);
             } catch (Exception e) {
                 Plugin.logError("Unable to clear build markers", e);
             }
-            return depends;
+            System.out.println("#> Not rebuilding " + project.getName() + " due to " + blockers.size() + " blocking compile error(s).");
+            return depends.toArray(new IProject[depends.size()]);
         }
 
+
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
-			rebuildBndProject(project, monitor, 0);
+		    System.out.println("#> Full rebuild of " + project.getName());
+			rebuildBndProject(project, model, depends, monitor, 0);
 		} else {
 			IResourceDelta delta = getDelta(project);
 			if(delta == null) {
-				rebuildBndProject(project, monitor, 0);
+	            System.out.println("#> Full rebuild of " + project.getName());
+				rebuildBndProject(project, model, depends, monitor, 0);
 			} else {
-				incrementalRebuild(delta, project, monitor);
+	            System.out.println("#> Incremental rebuild of " + project.getName());
+				incrementalRebuild(delta, project, model, depends, monitor);
 			}
 		}
 		setLastBuildTime(project, System.currentTimeMillis());
 
-        return depends;
+        return depends.toArray(new IProject[depends.size()]);
 	}
 
     static void clearBuildMarkers(IProject project) throws CoreException {
@@ -134,7 +164,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
 
     static EnumSet<BlockingBuildErrors> getBlockingErrors(IProject project) {
-
         try {
             EnumSet<BlockingBuildErrors> result = EnumSet.noneOf(BlockingBuildErrors.class);
             if (containsError(project.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0)))
@@ -194,116 +223,150 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	void incrementalRebuild(IResourceDelta delta, IProject project, IProgressMonitor monitor) {
-		SubMonitor progress = SubMonitor.convert(monitor);
-		Project model = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
-        if (model == null) {
-            // Don't try to build... no bnd workspace configured
-            Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.",
-                    project.getName()), null));
-            return;
+    void incrementalRebuild(IResourceDelta delta, IProject project, Project model, Collection<IProject> depends, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor);
+
+        // Find files affected by the delta
+        List<File> affectedFiles = new ArrayList<File>();
+        final File targetDir;
+        try {
+            targetDir = model.getTarget();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting target directory for project: " + model.getName(), e));
         }
+        FileFilter generatedFilter = new FileFilter() {
+            public boolean accept(File pathname) {
+                return !FileUtils.isAncestor(targetDir, pathname);
+            }
+        };
+        DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
+        delta.accept(visitor);
 
-		try {
-            List<File> affectedFiles = new ArrayList<File>();
-            final File targetDir = model.getTarget();
-            final File output = model.getOutput();
-            FileFilter generatedFilter = new FileFilter() {
-                public boolean accept(File pathname) {
-                    return !FileUtils.isAncestor(targetDir, pathname) && !FileUtils.isAncestor(output, pathname);
+        progress.setWorkRemaining(affectedFiles.size() + 10);
+
+        boolean rebuild = false;
+        List<File> deletedBnds = new LinkedList<File>();
+
+        File srcDir = model.getSrc();
+
+        // Check if any affected file is a bnd file
+        for (File file : affectedFiles) {
+            if (file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
+                rebuild = true;
+                int deltaKind = visitor.queryDeltaKind(file);
+                if ((deltaKind & IResourceDelta.REMOVED) > 0) {
+                    deletedBnds.add(file);
                 }
-			};
-			DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
-			delta.accept(visitor);
-
-			progress.setWorkRemaining(affectedFiles.size() + 10);
-
-			boolean rebuild = false;
-			List<File> deletedBnds = new LinkedList<File>();
-
-			File srcDir = model.getSrc();
-
-			// Check if any affected file is a bnd file
-			for (File file : affectedFiles) {
-                if (file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
-					rebuild = true;
-					int deltaKind = visitor.queryDeltaKind(file);
-					if((deltaKind & IResourceDelta.REMOVED) > 0) {
-						deletedBnds.add(file);
-					}
-					break;
-				}
-				// Check if source file was changed instead of class file
-				if (FileUtils.isAncestor(srcDir, file)) {
-				    rebuild = true;
-				    break;
-				}
-			}
-			if(!rebuild && !affectedFiles.isEmpty()) {
-				// Check if any of the affected files are members of bundles built by a sub builder
-                Collection<? extends Builder> builders = model.getSubBuilders();
-				for (Builder builder : builders) {
-					File buildPropsFile = builder.getPropertiesFile();
-					if(affectedFiles.contains(buildPropsFile)) {
-						rebuild = true;
-						break;
-					} else if(builder.isInScope(affectedFiles)) {
-						rebuild = true;
+                break;
+            }
+            // Check if source file was changed instead of class file
+            if (FileUtils.isAncestor(srcDir, file)) {
+                rebuild = true;
+                break;
+            }
+        }
+        if (!rebuild && !affectedFiles.isEmpty()) {
+            // Check if any of the affected files are members of bundles built by a sub builder
+            Collection<? extends Builder> builders;
+            try {
+                builders = model.getSubBuilders();
+            } catch (Exception e) {
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting builders for project: " + project.getName(), e));
+            }
+            for (Builder builder : builders) {
+                File buildPropsFile = builder.getPropertiesFile();
+                if (affectedFiles.contains(buildPropsFile)) {
+                    rebuild = true;
+                    break;
+                } else {
+                    boolean inScope;
+                    try {
+                        inScope = builder.isInScope(affectedFiles);
+                    } catch (Exception e) {
+                        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error checking whether resource is in scope for builder: " + builder.getBsn(), e));
+                    }
+                    if (inScope) {
+                        rebuild = true;
 
                         // Delete the bundle if any contained resource was
                         // deleted... to force rebuild
                         for (File file : affectedFiles) {
                             if ((IResourceDelta.REMOVED & visitor.queryDeltaKind(file)) > 0) {
                                 String bsn = builder.getBsn();
-                                File f = new File(model.getTarget(), bsn + ".jar");
+                                File f = new File(targetDir, bsn + ".jar");
                                 try {
-                                    if (f.isFile()) f.delete();
+                                    if (f.isFile())
+                                        f.delete();
                                 } catch (Exception e) {
                                     Plugin.logError("Error deleting file: " + f.getAbsolutePath(), e);
                                 }
                             }
                         }
-
-						break;
-					}
-					progress.worked(1);
-				}
-			}
-
-			// Delete corresponding bundles for deleted Bnds
-			for (File bndFile : deletedBnds) {
-				Container container = bndsToDeliverables.get(bndFile);
-				if(container != null) {
-					IResource resource = FileUtils.toWorkspaceResource(container.getFile());
-					if (resource != null) resource.delete(false, null);
-				}
-			}
-
-			if(rebuild)
-				rebuildBndProject(project, monitor, 0);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		model.refresh();
-	}
-
-    void rebuildBndProject(IProject project, IProgressMonitor monitor, int count) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, 3);
-        IJavaProject javaProject = JavaCore.create(project);
-
-        Project model = Plugin.getDefault().getCentral().getModel(javaProject);
-        if (model == null) {
-            // Don't try to build... no bnd workspace configured
-            Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
-                    MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.", project.getName()), null));
-            return;
+                        break;
+                    }
+                }
+                progress.worked(1);
+            }
         }
 
-        model.refresh();
-        model.setChanged();
+        // Delete corresponding bundles for deleted Bnds
+        for (File bndFile : deletedBnds) {
+            Container container = bndsToDeliverables.get(bndFile);
+            if (container != null) {
+                IResource resource = FileUtils.toWorkspaceResource(container.getFile());
+                if (resource != null)
+                    resource.delete(false, null);
+            }
+        }
 
-        clearBuildMarkers(project);
+        if (rebuild)
+            rebuildBndProject(project, model, depends, monitor, 0);
+        model.refresh();
+    }
+
+    void addDepends(Project project, Collection<IProject> depends) throws CoreException {
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+
+        // -buildpath
+        Collection<Container> buildpath;
+        try {
+            buildpath = project.getBuildpath();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to get build path for project: " + project.getName(), e));
+        }
+        for (Container container : buildpath) {
+            if (container.getType() == TYPE.PROJECT) {
+                String targetProjName = container.getProject().getName();
+                if (targetProjName != null && !targetProjName.equals(project.getName())) {
+                    IProject targetProj = wsroot.getProject(targetProjName);
+                    if (targetProj == null)
+                        Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No project in workspace for Bnd build path dependency: " + targetProjName, null));
+                    else
+                        depends.add(targetProj);
+                }
+            }
+        }
+
+        // -dependson
+        Collection<Project> dependson;
+        try {
+            dependson = project.getDependson();
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to get depends-on list for project: " + project.getName(), e));
+        }
+        for (Project dep : dependson) {
+            IProject targetProj = wsroot.getProject(dep.getName());
+            if (targetProj == null)
+                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No project in workspace for Bnd '-dependson' dependency: " + dep.getName(), null));
+            else
+                depends.add(targetProj);
+        }
+
+        System.out.println("#> Dependency set for project " + project.getName() + ": " + depends);
+    }
+
+    void rebuildBndProject(IProject project, Project model, Collection<IProject> depends, IProgressMonitor monitor, int count) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 3);
 
         // Build
         try {
@@ -332,7 +395,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
             File targetDir = model.getTarget();
             IContainer target = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(new Path(targetDir.getAbsolutePath()));
-            target.refreshLocal(IResource.DEPTH_INFINITE, null);
+            if (target != null)
+                target.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // Clear any JARs in the target directory that have not just been
             // built by Bnd
