@@ -155,9 +155,9 @@
    <extension point="org.eclipse.ui.perspectives">
       <perspective
          id="bndtools.perspective"
-         name="OSGi"
+         name="Bndtools"
          class="bndtools.perspective.BndPerspective"
-         icon="icons/bricks.png">
+         icon="icons/bndtools-logo-16x16.png">
       </perspective>
    </extension>
    <extension
