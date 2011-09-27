@@ -77,7 +77,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
-        System.out.println("#> build invoked on project " + project.getName());
 
         Set<IProject> depends = new HashSet<IProject>();
         IProject cnf = project.getWorkspace().getRoot().getProject(Project.BNDCNF);
@@ -112,21 +111,17 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             } catch (Exception e) {
                 Plugin.logError("Unable to clear build markers", e);
             }
-            System.out.println("#> Not rebuilding " + project.getName() + " due to " + blockers.size() + " blocking compile error(s).");
             return depends.toArray(new IProject[depends.size()]);
         }
 
 
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
-		    System.out.println("#> Full rebuild of " + project.getName());
 			rebuildBndProject(project, model, depends, monitor, 0);
 		} else {
 			IResourceDelta delta = getDelta(project);
 			if(delta == null) {
-	            System.out.println("#> Full rebuild of " + project.getName());
 				rebuildBndProject(project, model, depends, monitor, 0);
 			} else {
-	            System.out.println("#> Incremental rebuild of " + project.getName());
 				incrementalRebuild(delta, project, model, depends, monitor);
 			}
 		}
@@ -362,7 +357,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                 depends.add(targetProj);
         }
 
-        System.out.println("#> Dependency set for project " + project.getName() + ": " + depends);
     }
 
     void rebuildBndProject(IProject project, Project model, Collection<IProject> depends, IProgressMonitor monitor, int count) throws CoreException {
