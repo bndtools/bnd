@@ -31,7 +31,7 @@ public class Manifest extends Hashtable {
 	int					section;
 	String				location;
 	Native				_native[];
-	Vector				duplicates	= new Vector();
+	Vector<String>		duplicates	= new Vector<String>();
 	final static String	wordparts	= "~!@#$%^&*_/?><.-+";
 	ManifestEntry		bsn;
 	VersionRange			version;
@@ -368,11 +368,11 @@ public class Manifest extends Hashtable {
 		this.bsn = bsn;
 	}
 
-	public Vector getDuplicates() {
+	public Vector<String> getDuplicates() {
 		return duplicates;
 	}
 
-	public void setDuplicates(Vector duplicates) {
+	public void setDuplicates(Vector<String> duplicates) {
 		this.duplicates = duplicates;
 	}
 
