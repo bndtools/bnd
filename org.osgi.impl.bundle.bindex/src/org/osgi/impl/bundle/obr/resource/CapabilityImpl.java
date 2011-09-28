@@ -27,7 +27,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 public class CapabilityImpl implements Capability {
 	String				name;
-	Map	properties	= new TreeMap();
+	Map<String, List<Object>>	properties	= new TreeMap<String, List<Object>>();
 
 	public CapabilityImpl(String name) {
 		this.name = name;
@@ -57,9 +57,9 @@ public class CapabilityImpl implements Capability {
 
 
 	public void addProperty(String key, Object value) {
-		List values = (List) properties.get(key);
+		List<Object> values = properties.get(key);
 		if (values == null) {
-			values = new ArrayList();
+			values = new ArrayList<Object>();
 			properties.put(key, values);
 		}
 		values.add(value);
@@ -72,12 +72,12 @@ public class CapabilityImpl implements Capability {
 	public static Tag toXML(Capability capability) {
 		Tag tag = new Tag("capability");
 		tag.addAttribute("name", capability.getName());
-		Map properties = capability.getProperties();
-		for ( Iterator k= properties.keySet().iterator(); k.hasNext(); ) {
-			String key = (String) k.next();
-			List values = (List) properties.get(key);
-			for ( Iterator v = values.iterator(); v.hasNext(); ) {
-				Object value = v.next();
+		@SuppressWarnings("unchecked")
+		Map<String, List<Object>> properties = capability.getProperties();
+		for (Map.Entry<String, List<Object>> prop : properties.entrySet()) {
+			String key = prop.getKey();
+			List<Object> values = prop.getValue();
+			for (Object value : values) {
 				Tag p = new Tag("p");
 				tag.addContent(p);
 				p.addAttribute("n", key);
@@ -124,7 +124,7 @@ public class CapabilityImpl implements Capability {
 	}
 
 
-	public Map getProperties() {
+	public Map<String, List<Object>> getProperties() {
 		return properties;
 	}
 
