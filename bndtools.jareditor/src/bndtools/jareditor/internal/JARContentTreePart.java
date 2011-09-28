@@ -160,8 +160,8 @@ public class JARContentTreePart extends AbstractFormPart {
 					File ioFile = new File(file.getLocationURI());
 					JarFile jarFile = new JarFile(ioFile);
 
-					int i=0;
-					for(Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements(); i++) {
+					Enumeration<JarEntry> entries = jarFile.entries();
+					while (entries.hasMoreElements()) {
 						ZipTreeNode.addEntry(entryMap, entries.nextElement());
 					}
 					jarFile.close();
