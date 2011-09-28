@@ -585,6 +585,7 @@
       <framework name="Apache Felix" bsn="org.apache.felix.framework" icon="icons/felix.gif"/>
       <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
       <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
+      <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
    </extension>
 
    <extension point="org.eclipse.ui.intro.configExtension">

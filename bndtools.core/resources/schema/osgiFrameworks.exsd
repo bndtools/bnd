@@ -76,6 +76,8 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="updateable" type="boolean">
+         </attribute>
       </complexType>
    </element>
 

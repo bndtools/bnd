@@ -35,7 +35,8 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
             "org.apache.felix.framework",
             "org.knopflerfish.framework",
             "ee.minimum",
-            "org.osgi.ee.minimum"
+            "org.osgi.ee.minimum",
+            "de.kalpatec.pojosr.framework"
     }));
 
     private URL url = null;
