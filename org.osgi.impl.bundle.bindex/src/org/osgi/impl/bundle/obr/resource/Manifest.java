@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Manifest extends Hashtable {
 	static final long	serialVersionUID	= 1L;
-	List				imports;
+	List<ManifestEntry>	imports;
 	List				exports;
 	ManifestEntry		name;
 	String				activator;
@@ -192,9 +192,9 @@ public class Manifest extends Hashtable {
 		return parameter;
 	}
 
-	public List getEntries(String line) throws IOException {
-		List v = new Vector();
-		Set aliases = new HashSet();
+	public List<ManifestEntry> getEntries(String line) throws IOException {
+		List<ManifestEntry> v = new Vector<ManifestEntry>();
+		Set<String> aliases = new HashSet<String>();
 
 		StreamTokenizer st = getStreamTokenizer(line);
 		do {
@@ -215,8 +215,8 @@ public class Manifest extends Hashtable {
 				}
 			}
 			v.add(p);
-			for (Iterator a = aliases.iterator(); a.hasNext();) {
-				v.add(p.getAlias((String) a.next()));
+			for (String s : aliases) {
+				v.add(p.getAlias(s));
 			}
 		} while (st.ttype == ',');
 		return v;
@@ -262,7 +262,7 @@ public class Manifest extends Hashtable {
 		return result;
 	}
 
-	public List getImports() {
+	public List<ManifestEntry> getImports() {
 		return imports;
 	}
 
