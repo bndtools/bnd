@@ -170,7 +170,8 @@ public class ResourceImpl implements Resource {
 							.getPresentationName());
 		meta.addAttribute(VERSION, resource.getVersion().toString());
 		meta.addAttribute("id", resource.getId());
-		Map map = new TreeMap(resource.getProperties());
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map = new TreeMap<String, Object>(resource.getProperties());
 		for (int i = 0; i < Resource.KEYS.length; i++) {
 			String key = KEYS[i];
 			if (!(key.equals(URL) || key.equals(SYMBOLIC_NAME) || key
