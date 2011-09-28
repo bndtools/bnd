@@ -22,7 +22,7 @@ import java.util.regex.*;
 
 import org.osgi.framework.*;
 
-public class VersionRange implements Comparable {
+public class VersionRange implements Comparable<VersionRange> {
 	Version high;
 	Version low;
 	char start = '[';
@@ -74,19 +74,15 @@ public class VersionRange implements Comparable {
 		return sb.toString();
 	}
 
-	public boolean equals(Object other) {
-		if (other instanceof VersionRange) {
-			return compareTo(other)==0;
-		}
-		return false;
+	public boolean equals(VersionRange other) {
+		return compareTo(other)==0;
 	}
 
 	public int hashCode() {
 		return low.hashCode() * high.hashCode();
 	}
 
-	public int compareTo(Object other) {
-		VersionRange range = (VersionRange) other;
+	public int compareTo(VersionRange range) {
 		VersionRange a = this, b = range;
 		if (range.isRange()) {
 			a = range;
