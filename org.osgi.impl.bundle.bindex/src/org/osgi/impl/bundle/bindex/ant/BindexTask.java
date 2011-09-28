@@ -61,10 +61,10 @@ public class BindexTask extends Task {
 	String			urlTemplate					= null;					// optional
 	File			rootFile					= new File("")
 														.getAbsoluteFile(); // optional
-	List			/* <FileSet> */filesets	= new LinkedList();		// mandatory
+	List<FileSet>	filesets	= new LinkedList<FileSet>();		// mandatory
 	RepositoryImpl	repository;
 	String			root;
-	Set				resources					= new HashSet();
+	Set<ResourceImpl>	resources					= new HashSet<ResourceImpl>();
 
 	public void setLicenseURL(String license) {
 		this.license = license;
@@ -127,9 +127,7 @@ public class BindexTask extends Task {
 				throw new BuildException(e + " for repo");
 			}
 
-			Iterator it = filesets.iterator();
-			while (it.hasNext()) {
-				FileSet fs = (FileSet) it.next();
+			for (FileSet fs : filesets) {
 				DirectoryScanner ds = fs.getDirectoryScanner(getProject());
 				File basedir = ds.getBasedir();
 				String[] files = ds.getIncludedFiles();
@@ -144,11 +142,11 @@ public class BindexTask extends Task {
 
 			// Execution section
 
-			List sorted = new ArrayList(resources);
-			Collections.sort(sorted, new Comparator() {
-				public int compare(Object r1, Object r2) {
-					String s1 = getName((ResourceImpl) r1);
-					String s2 = getName((ResourceImpl) r2);
+			List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
+			Collections.sort(sorted, new Comparator<ResourceImpl>() {
+				public int compare(ResourceImpl r1, ResourceImpl r2) {
+					String s1 = getName(r1);
+					String s2 = getName(r2);
 					return s1.compareTo(s2);
 				}
 			});
@@ -205,7 +203,7 @@ public class BindexTask extends Task {
 		}
 	}
 
-	void recurse(Set resources, File path) throws Exception {
+	void recurse(Set<ResourceImpl> resources, File path) throws Exception {
 		if (path.isDirectory()) {
 			String list[] = path.list();
 			for (int i = 0; i < list.length; i++) {
@@ -254,13 +252,12 @@ public class BindexTask extends Task {
 	 * @param collected The output zip file
 	 * @throws IOException
 	 */
-	Tag doIndex(Collection resources) throws IOException {
+	Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
 		Tag repository = new Tag("repository");
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", name);
 
-		for (Iterator i = resources.iterator(); i.hasNext();) {
-			ResourceImpl resource = (ResourceImpl) i.next();
+		for (ResourceImpl resource : resources) {
 			repository.addContent(resource.toXML());
 		}
 		return repository;
