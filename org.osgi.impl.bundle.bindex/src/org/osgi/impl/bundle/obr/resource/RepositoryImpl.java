@@ -37,7 +37,7 @@ public class RepositoryImpl implements Repository {
 	transient Set<Resource>	resources		= new HashSet<Resource>();
 	URL						url;
 	String					date;
-	Set						visited			= new HashSet();
+	Set<URL>				visited			= new HashSet<URL>();
 	final static Resource[]	EMPTY_RESOURCE	= new Resource[0];
 	String					name			= "Untitled";
 	long					lastModified;
