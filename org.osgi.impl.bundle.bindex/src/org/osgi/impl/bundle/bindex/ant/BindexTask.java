@@ -115,13 +115,13 @@ public class BindexTask extends Task {
 			// <jar file>*");
 
 			try {
-				root = rootFile.toURL().toString();
+				root = rootFile.toURI().toURL().toString();
 			}
 			catch (Exception e) {
 				throw new BuildException(e + " for rootFile");
 			}
 			try {
-				repository = new RepositoryImpl(rootFile.toURL());
+				repository = new RepositoryImpl(rootFile.toURI().toURL());
 			}
 			catch (Exception e) {
 				throw new BuildException(e + " for repo");
@@ -222,7 +222,7 @@ public class BindexTask extends Task {
 					doTemplate(path, resource);
 				}
 				else
-					resource.setURL(path.toURL());
+					resource.setURL(path.toURI().toURL());
 
 				resources.add(resource);
 			}
@@ -231,7 +231,7 @@ public class BindexTask extends Task {
 
 	void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
-		String dir = path.getParentFile().getAbsoluteFile().toURL().toString();
+		String dir = path.getParentFile().getAbsoluteFile().toURI().toURL().toString();
 		if (dir.endsWith("/"))
 			dir = dir.substring(0, dir.length() - 1);
 
