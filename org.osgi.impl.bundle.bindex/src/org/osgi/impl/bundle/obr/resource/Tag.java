@@ -31,7 +31,7 @@ public class Tag {
 	Tag						parent;
 	String					name;
 	Map						attributes	= new TreeMap();
-	Vector					content		= new Vector();
+	Vector<Object>			content		= new Vector<Object>();
 
 	static SimpleDateFormat	format		= new SimpleDateFormat(
 												"yyyyMMddHHmmss.SSS");
@@ -147,7 +147,7 @@ public class Tag {
 	/**
 	 * Return the contents.
 	 */
-	public Vector getContents() {
+	public Vector<Object> getContents() {
 		return content;
 	}
 
@@ -165,10 +165,9 @@ public class Tag {
 	 * Return only the tags of the first level of descendants that match the
 	 * name.
 	 */
-	public Vector getContents(String tag) {
-		Vector out = new Vector();
-		for (Enumeration e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+	public Vector<Object> getContents(String tag) {
+		Vector<Object> out = new Vector<Object>();
+		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
 				out.addElement(o);
 		}
@@ -188,8 +187,7 @@ public class Tag {
 	 * convenient method to get the contents in a StringBuffer.
 	 */
 	public void getContentsAsString(StringBuffer sb) {
-		for (Enumeration e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+		for (Object o : content) {
 			if (o instanceof Tag)
 				((Tag) o).getContentsAsString(sb);
 			else
@@ -224,8 +222,7 @@ public class Tag {
 			pw.print('/');
 		else {
 			pw.print('>');
-			for (Enumeration e = content.elements(); e.hasMoreElements();) {
-				Object content = e.nextElement();
+			for (Object content : this.content) {
 				if (content instanceof String) {
 					formatted(pw, indent + 2, 60, escape((String) content));
 				}
@@ -323,20 +320,19 @@ public class Tag {
 	}
 
 	public Tag[] select(String path, Tag mapping) {
-		Vector v = new Vector();
+		Vector<Object> v = new Vector<Object>();
 		select(path, v, mapping);
 		Tag[] result = new Tag[v.size()];
 		v.copyInto(result);
 		return result;
 	}
 
-	void select(String path, Vector results, Tag mapping) {
+	void select(String path, Vector<Object> results, Tag mapping) {
 		if (path.startsWith("//")) {
 			int i = path.indexOf('/', 2);
 			String name = path.substring(2, i < 0 ? path.length() : i);
 
-			for (Enumeration e = content.elements(); e.hasMoreElements();) {
-				Object o = e.nextElement();
+			for (Object o : content) {
 				if (o instanceof Tag) {
 					Tag child = (Tag) o;
 					if (match(name, child, mapping))
@@ -361,8 +357,7 @@ public class Tag {
 			remainder = path.substring(i + 1);
 		}
 
-		for (Enumeration e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+		for (Object o : content) {
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
 				if (child.getName().equals(elementName)
@@ -434,8 +429,7 @@ public class Tag {
 
 	public String getStringContent() {
 		StringBuffer sb = new StringBuffer();
-		for (Enumeration e = content.elements(); e.hasMoreElements();) {
-			Object c = e.nextElement();
+		for (Object c : content) {
 			if (!(c instanceof Tag))
 				sb.append(c);
 		}
