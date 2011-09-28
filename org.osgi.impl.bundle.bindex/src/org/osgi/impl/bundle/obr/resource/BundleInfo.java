@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.zip.*;
 
+import org.osgi.service.obr.Capability;
+import org.osgi.service.obr.Requirement;
 import org.osgi.service.obr.Resource;
 
 /**
@@ -200,9 +202,8 @@ public class BundleInfo {
 	void doImportExportServices(ResourceImpl resource) throws IOException {
 		String importServices = manifest.getValue("import-service");
 		if (importServices != null) {
-			List entries = manifest.getEntries(importServices);
-			for (Iterator i = entries.iterator(); i.hasNext();) {
-				ManifestEntry entry = (ManifestEntry) i.next();
+			List<ManifestEntry> entries = manifest.getEntries(importServices);
+			for (ManifestEntry entry : entries) {
 				RequirementImpl ri = new RequirementImpl("service");
 				ri.setFilter(createServiceFilter(entry));
 				ri.setComment("Import Service " + entry.getName());
@@ -216,9 +217,8 @@ public class BundleInfo {
 
 		String exportServices = manifest.getValue("export-service");
 		if (exportServices != null) {
-			List entries = manifest.getEntries(exportServices);
-			for (Iterator i = entries.iterator(); i.hasNext();) {
-				ManifestEntry entry = (ManifestEntry) i.next();
+			List<ManifestEntry> entries = manifest.getEntries(exportServices);
+			for (ManifestEntry entry : entries) {
 				CapabilityImpl cap = createServiceCapability(entry);
 				resource.addCapability(cap);
 			}
@@ -261,15 +261,14 @@ public class BundleInfo {
 	}
 
 	void doRequires(ResourceImpl resource) {
-		List entries = manifest.getRequire();
+		List<ManifestEntry> entries = manifest.getRequire();
 		if (entries == null)
 			return;
 
-		for (Iterator i = entries.iterator(); i.hasNext();) {
-			ManifestEntry entry = (ManifestEntry) i.next();
+		for (ManifestEntry entry : entries) {
 			RequirementImpl r = new RequirementImpl("bundle");
 
-			Map attrs = entry.getAttributes();
+			Map<String, String> attrs = entry.getAttributes();
 			String version = "0";
 			if (attrs != null) {
 				if (attrs.containsKey("bundle-version"))
@@ -320,13 +319,12 @@ public class BundleInfo {
 	}
 
 	void doImports(ResourceImpl resource) {
-		List requirements = new ArrayList();
-		List packages = manifest.getImports();
+		List<Requirement> requirements = new ArrayList<Requirement>();
+		List<ManifestEntry> packages = manifest.getImports();
 		if (packages == null)
 			return;
 
-		for (Iterator i = packages.iterator(); i.hasNext();) {
-			ManifestEntry pack = (ManifestEntry) i.next();
+		for (ManifestEntry pack : packages) {
 			RequirementImpl requirement = new RequirementImpl("package");
 
 			createImportFilter(requirement, "package", pack);
@@ -335,8 +333,8 @@ public class BundleInfo {
 			requirement.setOptional("optional".equals(resolution));
 			requirements.add(requirement);
 		}
-		for (Iterator i = requirements.iterator(); i.hasNext();)
-			resource.addRequirement((RequirementImpl) i.next());
+		for (Requirement r : requirements)
+			resource.addRequirement(r);
 	}
 
 	String createServiceFilter(ManifestEntry pack) {
@@ -355,8 +353,8 @@ public class BundleInfo {
 		filter.append(pack.getName());
 		filter.append(")");
 		appendVersion(filter, pack.getVersion());
-		Map attributes = pack.getAttributes();
-		Set attrs = doImportPackageAttributes(req, filter, attributes);
+		Map<String, String> attributes = pack.getAttributes();
+		Set<String> attrs = doImportPackageAttributes(req, filter, attributes);
 		
 		// The next code is using the subset operator 
 		// to check mandatory attributes, it seems to be
@@ -366,9 +364,9 @@ public class BundleInfo {
 		if (attrs.size() > 0) {
 			String del = "";
 			filter.append("(mandatory:<*");
-			for (Iterator i = attrs.iterator(); i.hasNext();) {
+			for (String s : attrs) {
 				filter.append(del);
-				filter.append(i.next());
+				filter.append(s);
 				del = ", ";
 			}
 			filter.append(")");
@@ -413,14 +411,14 @@ public class BundleInfo {
 		}
 	}
 
-	Set doImportPackageAttributes(RequirementImpl req, StringBuffer filter,
-			Map attributes) {
-		HashSet set = new HashSet();
+	Set<String> doImportPackageAttributes(RequirementImpl req, StringBuffer filter,
+			Map<String, String> attributes) {
+		HashSet<String> set = new HashSet<String>();
 
 		if (attributes != null)
-			for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
-				String attribute = (String) i.next();
-				String value = (String) attributes.get(attribute);
+			for (Map.Entry<String, String> entry : attributes.entrySet()) {
+				String attribute = entry.getKey();
+				String value = entry.getValue();
 				if (attribute.equalsIgnoreCase("specification-version")
 						|| attribute.equalsIgnoreCase("version"))
 					continue;
@@ -464,17 +462,16 @@ public class BundleInfo {
 	}
 
 	void doExports(ResourceImpl resource) {
-		List capabilities = new ArrayList();
-		List packages = manifest.getExports();
+		List<Capability> capabilities = new ArrayList<Capability>();
+		List<ManifestEntry> packages = manifest.getExports();
 		if (packages != null) {
-			for (Iterator i = packages.iterator(); i.hasNext();) {
-				ManifestEntry pack = (ManifestEntry) i.next();
-				CapabilityImpl capability = createCapability("package", pack);
+			for (ManifestEntry pack : packages) {
+				Capability capability = createCapability("package", pack);
 				capabilities.add(capability);
 			}
 		}
-		for (Iterator i = capabilities.iterator(); i.hasNext();)
-			resource.addCapability((CapabilityImpl) i.next());
+		for (Capability c : capabilities)
+			resource.addCapability(c);
 	}
 
 	CapabilityImpl createServiceCapability(ManifestEntry pack) {
@@ -487,23 +484,23 @@ public class BundleInfo {
 		CapabilityImpl capability = new CapabilityImpl(name);
 		capability.addProperty(name, pack.getName());
 		capability.addProperty("version", pack.getVersion());
-		Map attributes = pack.getAttributes();
+		Map<String, String> attributes = pack.getAttributes();
 		if (attributes != null)
-			for (Iterator at = attributes.keySet().iterator(); at.hasNext();) {
-				String key = (String) at.next();
+			for (Map.Entry<String, String> entry : attributes.entrySet()) {
+				String key = entry.getKey();
 				if (key.equalsIgnoreCase("specification-version")
 						|| key.equalsIgnoreCase("version"))
 					continue;
 				else {
-					Object value = attributes.get(key);
+					Object value = entry.getValue();
 					capability.addProperty(key, value);
 				}
 			}
-		Map directives = pack.getDirectives();
+		Map<String, String> directives = pack.getDirectives();
 		if (directives != null)
-			for (Iterator at = directives.keySet().iterator(); at.hasNext();) {
-				String key = (String) at.next();
-				Object value = directives.get(key);
+			for (Map.Entry<String, String> entry : directives.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
 				capability.addProperty(key, value);
 			}
 		return capability;
