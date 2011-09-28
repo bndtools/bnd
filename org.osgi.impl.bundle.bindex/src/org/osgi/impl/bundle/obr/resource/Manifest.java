@@ -223,11 +223,11 @@ public class Manifest extends Hashtable {
 	}
 
 	Native[] getNative(String line) throws IOException {
-		Vector v = new Vector();
+		Vector<Native> v = new Vector<Native>();
 		StreamTokenizer st = getStreamTokenizer(line);
 		do {
 			Native spec = new Native();
-			Vector names = new Vector();
+			Vector<String> names = new Vector<String>();
 			do {
 				Parameter parameter = getParameter(st);
 				if (parameter.value == null)
