@@ -21,7 +21,7 @@ package org.osgi.impl.bundle.obr.resource;
 
 import java.util.*;
 
-public class StringSet extends HashSet {
+public class StringSet extends HashSet<String> {
 	static final long	serialVersionUID	= 1L;
 
 	public StringSet(String set) {
