@@ -215,7 +215,7 @@ public class FilterImpl {
 				return false;
 			}
 			try {
-				Class numClass = obj.getClass();
+				Class<? extends Object> numClass = obj.getClass();
 				if (numClass == String.class) {
 					return compareString((String) obj, op, s);
 				}
@@ -261,14 +261,12 @@ public class FilterImpl {
 					if (op == SUBSET || op == SUPERSET) {
 						StringSet set = new StringSet(s);
 						if (op == SUBSET)
-							return set.containsAll((Collection) obj);
+							return set.containsAll((Collection<?>) obj);
 						else
-							return ((Collection) obj).containsAll(set);
+							return ((Collection<?>) obj).containsAll(set);
 					}
 
-					for (Iterator i = ((Collection) obj).iterator(); i
-							.hasNext();) {
-						Object element = i.next();
+					for (Object element : ((Collection<?>)obj)) {
 						if (compare(element, op, s))
 							return true;
 					}
@@ -291,7 +289,7 @@ public class FilterImpl {
 												.next().equals(obj));
 						}
 						else {
-							Constructor constructor = numClass
+							Constructor<? extends Object> constructor = numClass
 									.getConstructor(new Class[] {String.class});
 							Object instance = constructor
 									.newInstance(new Object[] {s});
@@ -326,9 +324,9 @@ public class FilterImpl {
 	}
 
 	class DictQuery extends Query {
-		private Map	dict;
+		private Map<String, Object>	dict;
 
-		DictQuery(Map dict) {
+		DictQuery(Map<String, Object> dict) {
 			this.dict = dict;
 		}
 
@@ -344,7 +342,7 @@ public class FilterImpl {
 			throw new IllegalArgumentException("Null query");
 	}
 
-	public boolean match(Map dict) {
+	public boolean match(Map<String, Object> dict) {
 		try {
 			return new DictQuery(dict).match();
 		}
