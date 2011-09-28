@@ -84,8 +84,8 @@ public class BundleInfo {
 		try {
 
 			// Calculate the location URL of the JAR
-			URL location = new URL("jar:" + bundleJar.toURL().toString() + "!/");
-			resource.setURL(bundleJar.toURL());
+			URL location = new URL("jar:" + bundleJar.toURI().toURL().toString() + "!/");
+			resource.setURL(bundleJar.toURI().toURL());
 			resource.setFile(bundleJar);
 
 			doReferences(resource, location);
