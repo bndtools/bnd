@@ -24,7 +24,7 @@ import java.util.*;
 public class Manifest extends Hashtable {
 	static final long	serialVersionUID	= 1L;
 	List<ManifestEntry>	imports;
-	List				exports;
+	List<ManifestEntry>	exports;
 	ManifestEntry		name;
 	String				activator;
 	String				classpath[]	= new String[] {"."};
@@ -266,7 +266,7 @@ public class Manifest extends Hashtable {
 		return imports;
 	}
 
-	public List getExports() {
+	public List<ManifestEntry> getExports() {
 		return exports;
 	}
 
