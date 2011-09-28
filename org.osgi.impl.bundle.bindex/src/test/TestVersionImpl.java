@@ -21,7 +21,6 @@ package test;
 
 import junit.framework.*;
 
-import org.omg.PortableInterceptor.*;
 import org.osgi.impl.bundle.obr.resource.*;
 
 public class TestVersionImpl extends TestCase {
