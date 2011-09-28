@@ -23,8 +23,8 @@ import java.util.*;
 public class ManifestEntry implements Comparable<ManifestEntry> {
 	String		name;
 	VersionRange	version;
-	Map			attributes;
-	public Map	directives;
+	Map<String, String>			attributes;
+	public Map<String, String>	directives;
 	public Set	uses;
 
 	public ManifestEntry(String name) {
@@ -68,11 +68,11 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 		return getName().replace('.', '/');
 	}
 
-	public Map getDirectives() {
+	public Map<String, String> getDirectives() {
 		return directives;
 	}
 
-	public Map getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -83,7 +83,7 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 		switch (parameter.type) {
 			case Parameter.ATTRIBUTE :
 				if (attributes == null)
-					attributes = new HashMap();
+					attributes = new HashMap<String, String>();
 				attributes.put(parameter.key, parameter.value);
 				if (parameter.key.equalsIgnoreCase("version")
 						|| parameter.key
@@ -93,7 +93,7 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 
 			case Parameter.DIRECTIVE :
 				if (directives == null)
-					directives = new HashMap();
+					directives = new HashMap<String, String>();
 				directives.put(parameter.key, parameter.value);
 				break;
 		}
