@@ -35,7 +35,7 @@ public class ResourceImpl implements Resource {
 	long			size			= -1;
 	String			id;
 	static int		ID				= 1;
-	Map				map				= new HashMap();
+	Map<String, Object>	map				= new HashMap<String, Object>();
 	RepositoryImpl	repository;
 	String			presentationName;
 	File			file;
@@ -116,7 +116,7 @@ public class ResourceImpl implements Resource {
 
 	public void setLicense(URL license) {
 		if (license != null)
-			map.put(LICENSE_URL, license);
+			map.put(LICENSE_URL, license.toString());
 	}
 
 	public String getDescription() {
@@ -319,7 +319,7 @@ public class ResourceImpl implements Resource {
 		return (String[]) categories.toArray(new String[categories.size()]);
 	}
 
-	public Map getProperties() {
+	public Map<String, Object> getProperties() {
 		return Collections.unmodifiableMap(map);
 	}
 
