@@ -20,7 +20,7 @@ package org.osgi.impl.bundle.obr.resource;
 import java.util.*;
 
 
-public class ManifestEntry implements Comparable {
+public class ManifestEntry implements Comparable<ManifestEntry> {
 	String		name;
 	VersionRange	version;
 	Map			attributes;
@@ -57,8 +57,7 @@ public class ManifestEntry implements Comparable {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		ManifestEntry p = (ManifestEntry) o;
+	public int compareTo(ManifestEntry p) {
 		return name.compareTo(p.name);
 	}
 
