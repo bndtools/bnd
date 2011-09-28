@@ -27,7 +27,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 public class ResourceImpl implements Resource {
 	List<Capability> capabilities	= new ArrayList<Capability>();
-	List			requirements	= new ArrayList();
+	List<Requirement> requirements	= new ArrayList<Requirement>();
 	URL				url;
 	String			symbolicName;
 	VersionRange		version;
@@ -109,7 +109,7 @@ public class ResourceImpl implements Resource {
 			capabilities.add(capability);
 	}
 
-	public void addRequirement(RequirementImpl requirement) {
+	public void addRequirement(Requirement requirement) {
 		if (requirement != null)
 			requirements.add(requirement);
 	}
@@ -292,7 +292,7 @@ public class ResourceImpl implements Resource {
 		map.put(SIZE, new Long(size));
 	}
 
-	public Collection getRequirementList() {
+	public Collection<Requirement> getRequirementList() {
 		return requirements;
 	}
 
@@ -355,10 +355,9 @@ public class ResourceImpl implements Resource {
 		file = zipFile;
 	}
 
-	public Set getExtendList() {
-		Set set = new HashSet();
-		for (Iterator i = requirements.iterator(); i.hasNext();) {
-			RequirementImpl	impl = (RequirementImpl) i.next();
+	public Set<Requirement> getExtendList() {
+		Set<Requirement> set = new HashSet<Requirement>();
+		for (Requirement impl : requirements) {
 			if ( impl.isExtend())
 				set.add(impl);
 		}
