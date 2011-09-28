@@ -25,7 +25,6 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 	VersionRange	version;
 	Map<String, String>			attributes;
 	public Map<String, String>	directives;
-	public Set	uses;
 
 	public ManifestEntry(String name) {
 		this.name = name;
