@@ -101,6 +101,7 @@ public class RequirementImpl implements Requirement {
 		if (_filter == null)
 			_filter = new FilterImpl(filter);
 
+		@SuppressWarnings("unchecked")
 		boolean result = _filter.match(capability.getProperties());
 		return result;
 	}
