@@ -21,7 +21,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class Manifest extends Hashtable {
+public class Manifest extends Hashtable<Object, Object> {
 	static final long	serialVersionUID	= 1L;
 	List<ManifestEntry>	imports;
 	List<ManifestEntry>	exports;
