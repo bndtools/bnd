@@ -31,7 +31,7 @@ public class ResourceImpl implements Resource {
 	URL				url;
 	String			symbolicName;
 	VersionRange		version;
-	List			categories		= new ArrayList();
+	List<String>	categories		= new ArrayList<String>();
 	long			size			= -1;
 	String			id;
 	static int		ID				= 1;
