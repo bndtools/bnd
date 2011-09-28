@@ -36,7 +36,7 @@ public class Manifest extends Hashtable {
 	ManifestEntry		bsn;
 	VersionRange			version;
 	ManifestEntry		host;
-	List				require;
+	List<ManifestEntry>	require;
 
 	public Manifest(InputStream in) throws IOException {
 		parse(new InputStreamReader(in, "UTF8"));
@@ -384,7 +384,7 @@ public class Manifest extends Hashtable {
 		this.host = host;
 	}
 
-	public List getRequire() {
+	public List<ManifestEntry> getRequire() {
 		return require;
 	}
 
