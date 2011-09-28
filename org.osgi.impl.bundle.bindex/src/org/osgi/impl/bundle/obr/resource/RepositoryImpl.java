@@ -34,7 +34,7 @@ import org.xmlpull.v1.*;
  * @version $Revision: 44 $
  */
 public class RepositoryImpl implements Repository {
-	transient Set			resources		= new HashSet();
+	transient Set<Resource>	resources		= new HashSet<Resource>();
 	URL						url;
 	String					date;
 	Set						visited			= new HashSet();
@@ -97,7 +97,7 @@ public class RepositoryImpl implements Repository {
 
 				while (parser.nextTag() == XmlPullParser.START_TAG) {
 					if (parser.getName().equals("resource")) {
-						ResourceImpl resource = new ResourceImpl(this, parser);
+						Resource resource = new ResourceImpl(this, parser);
 						resources.add(resource);
 					}
 					else if (parser.getName().equals("referral"))
@@ -339,7 +339,7 @@ public class RepositoryImpl implements Repository {
 	/**
 	 * @return
 	 */
-	public Collection getResourceList() {
+	public Collection<Resource> getResourceList() {
 		return resources;
 	}
 
@@ -352,8 +352,7 @@ public class RepositoryImpl implements Repository {
 	}
 
 	public Resource getResource(String id) {
-		for (Iterator i = getResourceList().iterator(); i.hasNext();) {
-			ResourceImpl resource = (ResourceImpl) i.next();
+		for (Resource resource : getResourceList()) {
 			if (resource.getId().equals(id))
 				return resource;
 		}
