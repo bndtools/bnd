@@ -30,7 +30,7 @@ import java.util.*;
 public class Tag {
 	Tag						parent;
 	String					name;
-	Map						attributes	= new TreeMap();
+	Map<String, String>		attributes	= new TreeMap<String, String>();
 	Vector<Object>			content		= new Vector<Object>();
 
 	static SimpleDateFormat	format		= new SimpleDateFormat(
@@ -46,7 +46,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Map attributes) {
+	public Tag(String name, Map<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -126,7 +126,7 @@ public class Tag {
 	 * Return the attribute value.
 	 */
 	public String getAttribute(String key) {
-		return (String) attributes.get(key);
+		return attributes.get(key);
 	}
 
 	/**
@@ -140,7 +140,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Map getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -204,9 +204,9 @@ public class Tag {
 		pw.print('<');
 		pw.print(name);
 
-		for (Iterator e = attributes.keySet().iterator(); e.hasNext();) {
-			String key = (String) e.next();
-			String value = escape((String) attributes.get(key));
+		for (Map.Entry<String, String> e : attributes.entrySet()) {
+			String key = e.getKey();
+			String value = escape(e.getValue());
 			pw.print(' ');
 			pw.print(key);
 			pw.print("=");
@@ -472,9 +472,8 @@ public class Tag {
 	}
 
 
-	public static void convert( Collection c, String type, Tag parent ) {
-		for ( Iterator i=c.iterator(); i.hasNext(); ) {
-			Map	map = (Map) i.next();
+	public static void convert( Collection<Map<String, String>> c, String type, Tag parent ) {
+		for (Map<String, String> map : c) {
 			parent.addContent( new Tag(type, map) );
 		}
 	}
