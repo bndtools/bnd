@@ -26,7 +26,7 @@ import org.osgi.service.obr.*;
 import org.xmlpull.v1.XmlPullParser;
 
 public class ResourceImpl implements Resource {
-	List			capabilities	= new ArrayList();
+	List<Capability> capabilities	= new ArrayList<Capability>();
 	List			requirements	= new ArrayList();
 	URL				url;
 	String			symbolicName;
@@ -104,7 +104,7 @@ public class ResourceImpl implements Resource {
 		categories.add(category);
 	}
 
-	public void addCapability(CapabilityImpl capability) {
+	public void addCapability(Capability capability) {
 		if (capability != null)
 			capabilities.add(capability);
 	}
@@ -272,8 +272,7 @@ public class ResourceImpl implements Resource {
 	}
 
 	public boolean satisfies(RequirementImpl requirement) {
-		for (Iterator i = capabilities.iterator(); i.hasNext();) {
-			CapabilityImpl capability = (CapabilityImpl) i.next();
+		for (Capability capability : capabilities) {
 			if (requirement.isSatisfied(capability))
 				return true;
 		}
@@ -297,7 +296,7 @@ public class ResourceImpl implements Resource {
 		return requirements;
 	}
 
-	public Collection getCapabilityList() {
+	public Collection<Capability> getCapabilityList() {
 		return capabilities;
 	}
 
