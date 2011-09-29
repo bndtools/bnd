@@ -37,7 +37,7 @@ public class MethodProposalLabelProvider extends StyledCellLabelProvider impleme
 		String typeName = type.getElementName();
 		
 		StyledString styledString = new StyledString(methodName);
-		styledString.append(": " + type.getElementName(), StyledString.QUALIFIER_STYLER);
+		styledString.append(": " + typeName, StyledString.QUALIFIER_STYLER);
 		
 		return styledString;
 	}
