@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 
 public class CompositeResourceDeltaVisitor implements IResourceDeltaVisitor {
 	
-	private static final List<IResourceDeltaVisitor> delegates = new LinkedList<IResourceDeltaVisitor>();
+	private final List<IResourceDeltaVisitor> delegates = new LinkedList<IResourceDeltaVisitor>();
 	
 	public void addDelegate(IResourceDeltaVisitor delegate) {
 		this.delegates.add(delegate);
