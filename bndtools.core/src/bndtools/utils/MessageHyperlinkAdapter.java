@@ -11,8 +11,6 @@
 package bndtools.utils;
 
 import org.eclipse.jface.dialogs.PopupDialog;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
