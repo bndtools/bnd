@@ -123,7 +123,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			// Ignore
 		}
 		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
-		FieldDecoration infoDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION);
 
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);

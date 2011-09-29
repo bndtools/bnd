@@ -43,7 +43,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
-import aQute.libg.version.Version;
 import bndtools.api.repository.RemoteRepository;
 import bndtools.types.Pair;
 import bndtools.utils.BundleUtils;
@@ -51,9 +50,6 @@ import bndtools.utils.CollectionUtils;
 import bndtools.utils.ProgressReportingInputStream;
 
 public class LocalRepositoryTasks {
-    private static final String PREF_INSTALLED_REPOS = "installedRepos";
-    private static final String PREF_PREFIX_INSTALLED_REPO = "installedRepoVersion-";
-
     /**
      * Returns whether the workspace is configured for bnd (i.e. the cnf project exists).
      * @return
@@ -113,13 +109,6 @@ public class LocalRepositoryTasks {
         throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No writeable repositories configured in the workspace.", null));
     }
     */
-
-    private static class ImplicitRepositoryWrapper {
-        private RemoteRepository repository;
-        private String contributorBSN;
-        private Version contributorVersion;
-        private String path;
-    }
 
     static List<Pair<Bundle, String>> getInitialRepositories(MultiStatus status) {
         IExtensionRegistry registry = Platform.getExtensionRegistry();

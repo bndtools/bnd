@@ -25,8 +25,6 @@ public class LightweightDocumentBuilder {
     }
 
     LightweightDocument build(XMLStreamReader2 reader) throws XMLStreamException {
-        LightweightDocument doc;
-
         Deque<TagLocation> tagStack = new LinkedList<TagLocation>();
 
         List<LightweightElement> currentChildList = new LinkedList<LightweightElement>();

@@ -165,9 +165,6 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 		public String getName() {
 			return name;
 		}
-		public String getFullPath() {
-			return fullPath;
-		}
 	}
 
 	private static class ClassOrResourceLabelProvider extends LabelProvider {

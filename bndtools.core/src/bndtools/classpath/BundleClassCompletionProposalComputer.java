@@ -22,7 +22,6 @@ public class BundleClassCompletionProposalComputer implements IJavaCompletionPro
 		if(!(context instanceof JavaContentAssistInvocationContext)) {
 		    return Collections.emptyList();
 		}
-		JavaContentAssistInvocationContext javaContext = (JavaContentAssistInvocationContext) context;
 
 		try {
 			int offset = context.getInvocationOffset();

@@ -211,14 +211,6 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         }
     }
 
-    private void addDefaultBundleVersion() {
-		BndEditModel model = (BndEditModel) getManagedForm().getInput();
-		String bundleVersion = model.getBundleVersionString();
-		if(bundleVersion == null) {
-			model.setBundleVersion(Plugin.DEFAULT_VERSION.toString());
-		}
-	}
-
 	@Override
 	protected ExportedPackage newHeaderClause(String text) {
 		return new ExportedPackage(text, new HashMap<String, String>());

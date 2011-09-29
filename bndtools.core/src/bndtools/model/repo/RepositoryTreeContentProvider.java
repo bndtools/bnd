@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -39,31 +38,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     public RepositoryTreeContentProvider(OBRResolutionMode[] modes) {
         this.modes = modes;
     }
-
-    private final Comparator<Object> repositoryComparator = new Comparator<Object>() {
-        public int compare(Object o1, Object o2) {
-            int result;
-            if (o1 instanceof RepositoryPlugin) {
-                if (o2 instanceof Project)
-                    result = -1;
-                else if (o2 instanceof RepositoryPlugin)
-                    result = ((RepositoryPlugin) o1).getName().compareTo(((RepositoryPlugin) o2).getName());
-                else
-                    result = 0;
-            } else if (o1 instanceof Project) {
-                if (o2 instanceof RepositoryPlugin)
-                    result = 1;
-                else if (o2 instanceof Project)
-                    result = ((Project) o1).getName().compareTo(((Project) o2).getName());
-                else
-                    result = 0;
-            } else {
-                result = 0;
-            }
-
-            return result;
-        }
-    };
 
     public Object[] getElements(Object inputElement) {
         List<Object> result = new ArrayList<Object>();

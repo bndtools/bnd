@@ -32,7 +32,6 @@ import bndtools.utils.BundleUtils;
 
 public class EmbeddedRepository implements RemoteRepository, IExecutableExtension {
 
-    private static final String FILE_URL_PREFIX = "file:";
     private String name;
     private String bsn;
     private String path;

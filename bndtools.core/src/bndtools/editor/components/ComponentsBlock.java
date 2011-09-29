@@ -25,7 +25,6 @@ import bndtools.editor.model.ServiceComponent;
 public class ComponentsBlock extends MasterDetailsBlock {
 
 	private ComponentListPart compListPart;
-	private ComponentDetailsPage compDetailsPage;
 
 	@Override
 	protected void createMasterPart(IManagedForm managedForm, Composite parent) {

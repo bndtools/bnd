@@ -37,7 +37,6 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
     private Combo frameworkCombo;
     private ComboViewer frameworkViewer;
-    private ComboViewer eeViewer;
 
     public RunFrameworkPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);

@@ -75,21 +75,6 @@ public class RepositoryModel {
         }
     }
 
-    private synchronized void removeBundleFile(File file) {
-        Set<String> nameSet = reverseLookup.remove(file);
-        if(nameSet != null) {
-            for (String name : nameSet) {
-                Map<File, BundleInfo> map = nameLookup.get(name);
-                if(map != null) {
-                    map.remove(file);
-                    if(map.isEmpty()) {
-                        nameLookup.remove(name);
-                    }
-                }
-            }
-        }
-    }
-
     /**
      *
      * @param repo
