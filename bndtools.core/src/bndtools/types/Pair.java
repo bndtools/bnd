@@ -48,7 +48,8 @@ public class Pair<A,B> implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Pair other = (Pair) obj;
+        @SuppressWarnings("unchecked")
+        Pair<A, B> other = (Pair<A, B>) obj;
         if (first == null) {
             if (other.first != null)
                 return false;

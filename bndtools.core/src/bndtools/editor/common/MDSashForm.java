@@ -17,7 +17,7 @@ import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.IManagedForm;
 
 public class MDSashForm extends SashForm {
-	ArrayList sashes = new ArrayList();
+	ArrayList<Sash> sashes = new ArrayList<Sash>();
 	Listener listener = new Listener () {
 		public void handleEvent(Event e) {
 			switch (e.type) {
@@ -74,7 +74,7 @@ public class MDSashForm extends SashForm {
 		}
 	}
 	private void purgeSashes() {
-		for (Iterator iter=sashes.iterator(); iter.hasNext();) {
+		for (Iterator<Sash> iter=sashes.iterator(); iter.hasNext();) {
 			Sash sash = (Sash)iter.next();
 			if (sash.isDisposed())
 				iter.remove();
