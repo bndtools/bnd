@@ -140,7 +140,6 @@ public abstract class AbstractIndexer implements IRepositoryIndexProvider {
             resource.addRequirement(modeRequirement);
         }
 
-        @SuppressWarnings("unchecked")
         Collection<Requirement> reqs = resource.getRequirementList();
         for (Iterator<Requirement> iter = reqs.iterator(); iter.hasNext(); ) {
             Requirement req = iter.next();

@@ -350,7 +350,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		viewerProperties.editElement("name", 0);
 	}
 	void doRemoveProperty() {
-		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerProperties.getSelection()).iterator();
+		Iterator iter = ((IStructuredSelection) viewerProperties.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
 			properties.remove(item);

@@ -9,6 +9,7 @@ public class URLInputValidator implements IInputValidator {
 
     public String isValid(String newText) {
         try {
+            @SuppressWarnings("unused")
             URL url = new URL(newText);
             return null;
         } catch (MalformedURLException e) {
