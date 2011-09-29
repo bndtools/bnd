@@ -107,7 +107,8 @@ public class VersionPolicyPart extends SectionPart implements
 		
 		// Listeners
 		btnCustomize.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent ev) {
+			@Override
+            public void widgetSelected(SelectionEvent ev) {
 				if(btnCustomize.getSelection()) {
 					VersionPolicy policy = createDefaultVersionPolicy();
 					updatePolicyButtons(policy);
@@ -136,7 +137,8 @@ public class VersionPolicyPart extends SectionPart implements
 		btnToMinor.addSelectionListener(markDirtyListener);
 		btnToMajor.addSelectionListener(markDirtyListener);
 		linkUnparseable.addHyperlinkListener(new HyperlinkAdapter() {
-			public void linkActivated(HyperlinkEvent e) {
+			@Override
+            public void linkActivated(HyperlinkEvent e) {
 				btnCustomize.setSelection(true);
 				VersionPolicy policy = createDefaultVersionPolicy();
 				updatePolicyButtons(policy);

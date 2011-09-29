@@ -34,6 +34,7 @@ public class UIConstants {
 			fBackgroundColorName = backgroundColorName;
 		}
 
+		@Override
 		public void applyStyles(TextStyle textStyle) {
 			ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
 			Font font = JFaceResources.getFontRegistry().getItalic(fontName);

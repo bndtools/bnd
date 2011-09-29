@@ -39,7 +39,8 @@ public class MethodProposalProvider extends CachingContentProposalProvider {
 		this.searchContext = searchContext;
 	}
 
-	public List<IContentProposal> doGenerateProposals(String contents, int position) {
+	@Override
+    public List<IContentProposal> doGenerateProposals(String contents, int position) {
 		final String prefix = contents.substring(0, position);
 		final List<IContentProposal> result = new ArrayList<IContentProposal>();
 		

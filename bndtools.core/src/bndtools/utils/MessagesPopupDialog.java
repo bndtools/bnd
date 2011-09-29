@@ -123,6 +123,7 @@ public class MessagesPopupDialog extends PopupDialog {
 					fixLink.setText(fix.getText());
 					fixLink.setHref(fix);
 					fixLink.addHyperlinkListener(new HyperlinkAdapter() {
+					    @Override
 						public void linkActivated(HyperlinkEvent e) {
 							fix.run();
 							close();

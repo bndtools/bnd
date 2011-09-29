@@ -143,7 +143,8 @@ class CellEditorKeyListener extends KeyAdapter
 		fEditorColumn = editorColumn;
 	}
 	
-	public void keyPressed(KeyEvent e) {
+	@Override
+    public void keyPressed(KeyEvent e) {
 		if (e.stateMask == SWT.MOD1 || e.stateMask == SWT.MOD2)
 		{
 			if (e.keyCode == SWT.ARROW_UP || e.keyCode == SWT.ARROW_DOWN) {
@@ -262,7 +263,8 @@ class TableKeyListener extends KeyAdapter
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.KeyEvent)
 	 */
-	public void keyPressed(KeyEvent e) {
+	@Override
+    public void keyPressed(KeyEvent e) {
 		if (e.keyCode == SWT.F2 && e.stateMask == SWT.NONE) {
 			fKeyBoardSupporter.editColumnOrNextPossible(0);
 			e.doit= false;

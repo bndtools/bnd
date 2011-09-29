@@ -44,7 +44,8 @@ public class JavaSearchScopePackageLister implements IPackageLister {
 	public String[] getPackages(boolean includeNonSource, IPackageFilter filter) throws PackageListException {
 		final List<IJavaElement> packageList = new LinkedList<IJavaElement>();
 		final SearchRequestor requestor = new SearchRequestor() {
-			public void acceptSearchMatch(SearchMatch match)
+			@Override
+            public void acceptSearchMatch(SearchMatch match)
 					throws CoreException {
 				IJavaElement enclosingElement = (IJavaElement) match
 						.getElement();
