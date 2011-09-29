@@ -64,7 +64,7 @@ public class MethodProposalProvider extends CachingContentProposalProvider {
 							IMethod[] methods = clazz.getMethods();
 							for (IMethod method : methods) {
 								if(method.getElementName().toLowerCase().startsWith(prefix)) {
-									String[] parameterTypes = method.getParameterTypes();
+									// String[] parameterTypes = method.getParameterTypes();
 									// TODO check parameter type
 									result.add(new MethodContentProposal(method));
 								}
