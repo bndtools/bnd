@@ -18,12 +18,9 @@ target-dir:   generated
 p:            ${basename;${project}}
 project.name: ${p}
 
-# Eclipse
+# Eclipse Repo
 eclipse-version:  3.5.2
-#eclipse-repo:     ${build}/eclipse-${eclipse-version}
-eclipse-version:  3.7.1
-eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
-
+eclipse-repo:     ${build}/eclipse-${eclipse-version}
 
 # Java Compiler Options
 java:         java
