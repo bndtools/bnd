@@ -1,0 +1,2 @@
+Fragment-Host: biz.aQute.bndlib
+Include-Resource: embedded-repo.jar

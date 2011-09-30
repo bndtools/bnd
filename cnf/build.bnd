@@ -38,6 +38,8 @@ javac.debug:  on
 -plugin:        aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
                 bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 -versionpolicy: "[${version;==;${@}},${version;+;${@}})"
+-make:          (*).(jar);type=bnd;recipe="bnd/$1.bnd"
+
 
 # Runtime Options and Variables
 junit:    junit.osgi;version=3.8;export="junit.framework;version=3.8"
