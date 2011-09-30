@@ -293,7 +293,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             } else {
                 close(false);
             }
-        } else if ((delta.getKind() & (IResourceDelta.CONTENT | IResourceDelta.CHANGED)) > 0) {
+        } else if ( (delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.CONTENT) > 0) {
             if (!saving.get()) {
                 final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
                 final IDocument document = docProvider.getDocument(getEditorInput());
