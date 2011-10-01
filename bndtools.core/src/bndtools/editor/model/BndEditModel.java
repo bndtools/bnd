@@ -42,6 +42,7 @@ import bndtools.editor.model.conversions.Converter;
 import bndtools.editor.model.conversions.DefaultBooleanFormatter;
 import bndtools.editor.model.conversions.DefaultFormatter;
 import bndtools.editor.model.conversions.HeaderClauseFormatter;
+import bndtools.editor.model.conversions.HeaderClauseListConverter;
 import bndtools.editor.model.conversions.MapFormatter;
 import bndtools.editor.model.conversions.NewlineEscapedStringFormatter;
 import bndtools.editor.model.conversions.NoopConverter;
@@ -53,6 +54,7 @@ import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
 import bndtools.model.clauses.VersionedClause;
+import bndtools.types.Pair;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -88,7 +90,8 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.RUNVM,
 		BndConstants.RUNVMARGS,
 		BndConstants.TESTSUITES,
-		aQute.lib.osgi.Constants.TESTCASES
+		aQute.lib.osgi.Constants.TESTCASES,
+		aQute.lib.osgi.Constants.PLUGIN
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -105,9 +108,9 @@ public class BndEditModel implements IPersistableBndModel {
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 
 	// CONVERTERS
-    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Entry<String,Map<String,String>>>() {
-        public VersionedClause convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-            return new VersionedClause(input.getKey(), input.getValue());
+    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String,Map<String,String>>>() {
+        public VersionedClause convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
     private Converter<List<VersionedClause>, String> runBundlesConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
@@ -122,21 +125,21 @@ public class BndEditModel implements IPersistableBndModel {
             return VersionPolicy.parse(string);
         }
     };
-    @SuppressWarnings("unchecked")
-    Converter<List<String>, String> listConverter = new SimpleListConverter(new NoopConverter<String>());
-    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Entry<String,Map<String,String>>>() {
-        public ExportedPackage convert(Entry<String, Map<String, String>> input) {
-            return new ExportedPackage(input.getKey(), input.getValue());
+    Converter<List<String>, String> listConverter = new SimpleListConverter<String>(new NoopConverter<String>());
+    Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
+    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String,Map<String,String>>>() {
+        public ExportedPackage convert(Pair<String, Map<String, String>> input) {
+            return new ExportedPackage(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Entry<String,Map<String,String>>>() {
-        public ServiceComponent convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-            return new ServiceComponent(input.getKey(), input.getValue());
+    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Pair<String,Map<String,String>>>() {
+        public ServiceComponent convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new ServiceComponent(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Entry<String,Map<String,String>>>() {
-        public ImportPattern convert(Entry<String, Map<String, String>> input) throws IllegalArgumentException {
-            return new ImportPattern(input.getKey(), input.getValue());
+    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Pair<String,Map<String,String>>>() {
+        public ImportPattern convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });
     Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
@@ -172,6 +175,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.RUNVMARGS, stringConverter);
         converters.put(BndConstants.TESTSUITES, listConverter);
         converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
+        converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
@@ -193,6 +197,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
         formatters.put(BndConstants.TESTSUITES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -534,6 +539,15 @@ public class BndEditModel implements IPersistableBndModel {
         List<String> old = getTestSuites();
         doSetObject(aQute.lib.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
         doSetObject(BndConstants.TESTSUITES, null, null, stringListFormatter);
+    }
+
+    public List<HeaderClause> getPlugins() {
+        return doGetObject(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
+    }
+
+    public void setPlugins(List<HeaderClause> plugins) {
+        List<HeaderClause> old = getPlugins();
+        doSetObject(aQute.lib.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

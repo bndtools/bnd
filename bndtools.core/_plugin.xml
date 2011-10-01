@@ -53,6 +53,14 @@
             id="bndtools.bndRunEditor"
             name="Bnd Run File Editor">
       </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            filenames="build.bnd"
+            icon="icons/bndtools-logo-16x16.png"
+            id="bndtools.bndWorkspaceConfigEditor"
+            name="Bnd Workspace Config Editor"
+      />
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">

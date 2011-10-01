@@ -20,11 +20,13 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;
 import bndtools.launch.LaunchConstants;
 import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlineProvider implements ITreeContentProvider, PropertyChangeListener {
@@ -32,6 +34,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
     static final String PRIVATE_PKGS = "__private_pkgs";
     static final String EXPORTS = "__exports";
     static final String IMPORT_PATTERNS = "__import_patterns";
+    static final String PLUGINS = "__plugins";
 
 	BndEditModel model;
 	private final TreeViewer viewer;
@@ -45,6 +48,8 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
 		} else if(model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
 		    result = new String[] { BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
+		} else if (Workspace.BUILDFILE.equals(model.getBndResource().getName())) {
+		    result = new String[] { PLUGINS, BndEditor.SOURCE_PAGE };
 		} else {
 			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
 		}
@@ -88,6 +93,14 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
                 List<ImportPattern> imports = model.getImportPatterns();
                 if (imports != null)
                     result = imports.toArray(new Object[imports.size()]);
+            } else if (PLUGINS.equals(parentElement)) {
+                List<HeaderClause> plugins = model.getPlugins();
+                if (plugins != null) {
+                    List<PluginClause> wrapped = new ArrayList<PluginClause>(plugins.size());
+                    for (HeaderClause header : plugins)
+                        wrapped.add(new PluginClause(header));
+                    result = wrapped.toArray(new PluginClause[wrapped.size()]);
+                }
             }
         }
         return result;
@@ -115,6 +128,10 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
                 List<ImportPattern> imports = model.getImportPatterns();
                 return imports != null && !imports.isEmpty();
             }
+            if (PLUGINS.equals(element)) {
+                List<HeaderClause> plugins = model.getPlugins();
+                return plugins != null && !plugins.isEmpty();
+            }
         }
         return false;
     }
@@ -131,6 +148,9 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 		} else if(Constants.IMPORT_PACKAGE.equals(evt.getPropertyName())) {
 			viewer.refresh(IMPORT_PATTERNS);
 			viewer.expandToLevel(IMPORT_PATTERNS, 1);
+        } else if (Constants.PLUGIN.equals(evt.getPropertyName())) {
+            viewer.refresh(PLUGINS);
+            viewer.expandToLevel(PLUGINS, 1);
 		}
 	}
 }
@@ -140,5 +160,13 @@ class PrivatePkg {
 
     PrivatePkg(String pkg) {
         this.pkg = pkg;
+    }
+}
+
+class PluginClause {
+    final HeaderClause header;
+
+    PluginClause(HeaderClause header) {
+        this.header = header;
     }
 }

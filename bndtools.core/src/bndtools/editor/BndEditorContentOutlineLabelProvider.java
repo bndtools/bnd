@@ -26,6 +26,7 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 	final Image pageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/page_white_text.png").createImage();
 	final Image packageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
 	final Image brickImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
+	final Image pluginImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png").createImage();
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -47,6 +48,8 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 				cell.setText("Import Patterns");
 			} else if(BndEditor.SOURCE_PAGE.equals(element)) {
 				cell.setText("Source");
+            } else if (BndEditorContentOutlineProvider.PLUGINS.equals(element)) {
+                cell.setText("Plugins");
 			}
 			cell.setImage(pageImg);
 		} else if(element instanceof ServiceComponent) {
@@ -61,6 +64,10 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 			cell.setImage(packageImg);
 		} else if(element instanceof PrivatePkg) {
 		    cell.setText(((PrivatePkg) element).pkg);
+		    cell.setImage(packageImg);
+		} else if (element instanceof PluginClause) {
+		    cell.setText(((PluginClause) element).header.getName());
+		    cell.setImage(pluginImg);
 		}
 	}
 
@@ -70,5 +77,6 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 		pageImg.dispose();
 		packageImg.dispose();
 		brickImg.dispose();
+		pluginImg.dispose();
 	}
 }

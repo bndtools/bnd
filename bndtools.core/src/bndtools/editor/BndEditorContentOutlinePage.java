@@ -22,6 +22,7 @@ import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
+import bndtools.editor.pages.WorkspacePage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
 
@@ -48,8 +49,18 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
 				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 				Object element = selection.getFirstElement();
 
-				if(element instanceof String) {
-					editor.setActivePage((String) element);
+                if (element instanceof String) {
+                    if (BndEditorContentOutlineProvider.EXPORTS.equals(element)) {
+                        editor.setActivePage(BndEditor.CONTENT_PAGE);
+                    } else if (BndEditorContentOutlineProvider.IMPORT_PATTERNS.equals(element)) {
+                        editor.setActivePage(BndEditor.CONTENT_PAGE);
+                    } else if (BndEditorContentOutlineProvider.PRIVATE_PKGS.equals(element)) {
+                        editor.setActivePage(BndEditor.CONTENT_PAGE);
+                    } else if (BndEditorContentOutlineProvider.PLUGINS.equals(element)) {
+                        editor.setActivePage(BndEditor.WORKSPACE_PAGE);
+                    } else {
+                        editor.setActivePage((String) element);
+                    }
 				} else if(element instanceof ServiceComponent) {
 					ComponentsPage componentsPage = (ComponentsPage) editor.setActivePage(BndEditor.COMPONENTS_PAGE);
 					if(componentsPage != null) {
@@ -70,6 +81,10 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
 					if(contentsPage != null) {
 						contentsPage.setSelectedImport((ImportPattern) element);
 					}
+				} else if (element instanceof PluginClause) {
+				    WorkspacePage workspacePage = (WorkspacePage) editor.setActivePage(BndEditor.WORKSPACE_PAGE);
+				    if (workspacePage != null)
+				        workspacePage.setSelectedPlugin(((PluginClause) element).header);
 				}
 			}
 		});

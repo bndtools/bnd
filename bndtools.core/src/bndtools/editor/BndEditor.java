@@ -31,6 +31,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -41,6 +42,7 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
@@ -49,6 +51,7 @@ import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
+import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
 import bndtools.utils.SWTConcurrencyUtil;
 
@@ -61,6 +64,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	static final String TEST_SUITES_PAGE = "__test_suites_page";
 	static final String POLICIES_PAGE = "__policies_page";
 	static final String SOURCE_PAGE = "__source_page";
+	static final String WORKSPACE_PAGE = "__workspace_page";
 
 	private final BndEditModel model = new BndEditModel();
 	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
@@ -140,21 +144,39 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 		super.handlePropertyChange(propertyId);
 	}
 
-	@Override
-	protected void addPages() {
-		try {
-		    String inputName = getEditorInput().getName();
-		    if(inputName.endsWith(LaunchConstants.EXT_BNDRUN)) {
-		        addPagesBndRun();
-		    } else {
-		        addPagesBnd(inputName);
-		    }
-	        int sourcePageIndex = addPage(sourcePage, getEditorInput());
-	        setPageText(sourcePageIndex, "Source");
-		} catch (PartInitException e) {
-		    Plugin.logError("Error adding page(s) to the editor.", e);
-		}
-	}
+    @Override
+    protected void addPages() {
+        try {
+            String fileName;
+            String projectName;
+
+            IEditorInput input = getEditorInput();
+            if (input instanceof IFileEditorInput) {
+                IFile file = ((IFileEditorInput) input).getFile();
+                fileName = file.getName();
+                projectName = file.getProject().getName();
+            } else {
+                fileName = input.getName();
+                projectName = null;
+            }
+
+            if (Workspace.BUILDFILE.equals(fileName) && (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName))) {
+                addPagesBuildBnd();
+            } else if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
+                addPagesBndRun();
+            } else {
+                addPagesBnd(fileName);
+            }
+            int sourcePageIndex = addPage(sourcePage, getEditorInput());
+            setPageText(sourcePageIndex, "Source");
+        } catch (PartInitException e) {
+            Plugin.logError("Error adding page(s) to the editor.", e);
+        }
+    }
+
+    private void addPagesBuildBnd() throws PartInitException {
+        addPage(new WorkspacePage(this, model, WORKSPACE_PAGE, "Workspace"));
+    }
 
     private void addPagesBnd(String inputName) throws PartInitException {
         boolean isProjectFile = Project.BNDFILE.equals(inputName);
