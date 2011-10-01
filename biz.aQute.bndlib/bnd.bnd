@@ -36,4 +36,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	ee.j2se; version=1.5, \
 	org.osgi.impl.bundle.bindex
 
-Bundle-Version: 1.44.16
+Bundle-Version: 1.44.18

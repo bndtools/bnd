@@ -109,7 +109,12 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 		FileOutputStream out = null;
 		try {
 			out = new FileOutputStream(localIndex);
-			indexer.index(allFiles, out, null);
+			if (!allFiles.isEmpty()) {
+				indexer.index(allFiles, out, null);
+			} else {
+				ByteArrayInputStream emptyRepo = new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>\n<repository lastmodified='0'/>".getBytes());
+				IO.copy(emptyRepo, out);
+			}
 		} finally {
 			out.close();
 		}
