@@ -21,4 +21,8 @@ public class PluginEditWizard extends Wizard {
         return true;
     }
 
+    public boolean isChanged() {
+        return propertiesPage.isChanged();
+    }
+
 }

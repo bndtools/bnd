@@ -204,7 +204,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
             PluginEditWizard wizard = new PluginEditWizard(configElem, copyOfProperties);
             WizardDialog dialog = new WizardDialog(getManagedForm().getForm().getShell(), wizard);
 
-            if (dialog.open() == Window.OK) {
+            if (dialog.open() == Window.OK && wizard.isChanged()) {
                 header.getAttribs().clear();
                 header.getAttribs().putAll(copyOfProperties);
 

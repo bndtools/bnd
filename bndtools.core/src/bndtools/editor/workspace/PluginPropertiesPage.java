@@ -28,6 +28,7 @@ public class PluginPropertiesPage extends WizardPage {
 
     private IConfigurationElement configElement;
     private Map<String, String> properties = new HashMap<String, String>();
+    private boolean changed = false;
 
     private Composite mainComposite;
     private Label titleLabel;
@@ -65,6 +66,7 @@ public class PluginPropertiesPage extends WizardPage {
                     properties.remove(Constants.PATH_DIRECTIVE);
                 else
                     properties.put(Constants.PATH_DIRECTIVE, path);
+                changed = true;
             }
         });
 
@@ -137,6 +139,7 @@ public class PluginPropertiesPage extends WizardPage {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             properties.put(name, button.getSelection() ? "true" : "false");
+                            changed = true;
                         }
                     });
                 } else {
@@ -152,6 +155,7 @@ public class PluginPropertiesPage extends WizardPage {
                                 properties.remove(name);
                             else
                                 properties.put(name, value);
+                            changed = true;
                         }
                     });
                 }
@@ -188,6 +192,10 @@ public class PluginPropertiesPage extends WizardPage {
 
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public boolean isChanged() {
+        return changed;
     }
 
 }
