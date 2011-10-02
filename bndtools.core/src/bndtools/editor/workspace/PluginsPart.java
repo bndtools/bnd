@@ -3,9 +3,13 @@ package bndtools.editor.workspace;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -40,6 +44,8 @@ import bndtools.model.clauses.HeaderClause;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
+    private final Map<String, IConfigurationElement> configElements = new HashMap<String, IConfigurationElement>();
+
     private List<HeaderClause> data;
 
     private Table table;
@@ -53,6 +59,13 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
     public PluginsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
+
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
+        for (IConfigurationElement configElem : configElems) {
+            String className = configElem.getAttribute("class");
+            configElements.put(className, configElem);
+        }
+
         createSection(getSection(), toolkit);
     }
 
@@ -62,11 +75,11 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
         createToolBar(section);
 
-        table = toolkit.createTable(section, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+        table = toolkit.createTable(section, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
 
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setLabelProvider(new PluginClauseLabelProvider());
+        viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -183,7 +196,22 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     }
 
     void doEdit() {
+        HeaderClause header = (HeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+        if (header != null) {
+            Map<String, String> copyOfProperties = new HashMap<String, String>(header.getAttribs());
 
+            IConfigurationElement configElem = configElements.get(header.getName());
+            PluginEditWizard wizard = new PluginEditWizard(configElem, copyOfProperties);
+            WizardDialog dialog = new WizardDialog(getManagedForm().getForm().getShell(), wizard);
+
+            if (dialog.open() == Window.OK) {
+                header.getAttribs().clear();
+                header.getAttribs().putAll(copyOfProperties);
+
+                viewer.update(header, null);
+                markDirty();
+            }
+        }
     }
 
     void doRemove() {

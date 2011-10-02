@@ -143,7 +143,7 @@ public class PluginPropertiesPage extends WizardPage {
                     final Text text = new Text(fieldContainer, SWT.BORDER);
                     text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                    if (defaultStr != null) text.setText(value);
+                    if (value != null) text.setText(value);
 
                     text.addModifyListener(new ModifyListener() {
                         public void modifyText(ModifyEvent e) {
@@ -181,6 +181,9 @@ public class PluginPropertiesPage extends WizardPage {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
+        if (Display.getCurrent() != null && fieldContainer != null && !fieldContainer.isDisposed()) {
+            resetPropertyFields();
+        }
     }
 
     public Map<String, String> getProperties() {

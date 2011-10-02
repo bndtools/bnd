@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -19,28 +18,19 @@ import bndtools.model.clauses.HeaderClause;
 
 public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
-    private final Map<String, ImageDescriptor> imageDescriptors = new HashMap<String, ImageDescriptor>();
+    private final Map<String, IConfigurationElement> configElements;
     private final Map<String, Image> images = new HashMap<String, Image>();
 
-    public PluginClauseLabelProvider() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
-        for (IConfigurationElement element : elements) {
-            String className = element.getAttribute("class");
-            String iconPath = element.getAttribute("icon");
-
-            if (iconPath != null) {
-                ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
-                if (descriptor != null)
-                    imageDescriptors.put(className, descriptor);
-            }
-        }
+    public PluginClauseLabelProvider(Map<String, IConfigurationElement> configElements) {
+        this.configElements = configElements;
     }
 
     @Override
     public void update(ViewerCell cell) {
         HeaderClause header = (HeaderClause) cell.getElement();
 
-        StyledString label = new StyledString(header.getName());
+        String className = header.getName();
+        StyledString label = new StyledString(className);
 
         Map<String, String> attribs = header.getAttribs();
         if (!attribs.isEmpty())
@@ -58,12 +48,18 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
         cell.setText(label.toString());
         cell.setStyleRanges(label.getStyleRanges());
 
-        Image image = images.get(header.getName());
+        Image image = images.get(className);
         if (image == null) {
-            ImageDescriptor descriptor = imageDescriptors.get(header.getName());
-            if (descriptor != null) {
-                image = descriptor.createImage();
-                images.put(header.getName(), image);
+            IConfigurationElement configElem = configElements.get(className);
+            if (configElem != null) {
+                String iconPath = configElem.getAttribute("icon");
+                if (iconPath != null) {
+                    ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(configElem.getContributor().getName(), iconPath);
+                    if (descriptor != null) {
+                        image = descriptor.createImage();
+                        images.put(className, image);
+                    }
+                }
             }
         }
         if (image == null) {
