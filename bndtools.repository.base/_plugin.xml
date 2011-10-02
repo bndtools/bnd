@@ -20,4 +20,13 @@
          class="bndtools.templates.IntegrationTestingTemplate"
          docHtml="html/integrationTestTemplate.html"/>
    </extension>
+   
+   <extension point="bndtools.core.bndPlugins">
+      <plugin
+         class="org.osgi.impl.bundle.bindex.BundleIndexerImpl"
+         icon="icons/cog.png"
+         name="Bundle Indexer (OBR)"
+         path="${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"
+         />
+   </extension>
 </plugin>

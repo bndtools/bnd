@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="bndtools.core" xmlns="http://www.w3.org/2001/XMLSchema">
+
+   <annotation>
+      <appinfo>
+         <meta.schema plugin="bndtools.core" id="bndPlugins" name="Bnd Plug-ins" />
+      </appinfo>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+
+         <sequence>
+            <element ref="plugin" minOccurs="1" maxOccurs="unbounded" />
+         </sequence>
+
+         <attribute name="point" type="string" use="required" />
+
+         <attribute name="id" type="string" />
+
+         <attribute name="name" type="string">
+            <annotation>
+               <appinfo>
+                  <meta.attribute translatable="true" />
+               </appinfo>
+            </annotation>
+         </attribute>
+
+      </complexType>
+   </element>
+
+   <element name="plugin">
+      <complexType>
+
+         <sequence>
+            <element ref="property" minOccurs="0" maxOccurs="unbounded" />
+         </sequence>
+
+         <attribute name="class" type="string" use="required" />
+
+         <attribute name="name" type="string">
+            <appinfo>
+               <meta.attribute translatable="true" />
+            </appinfo>
+         </attribute>
+
+         <attribute name="icon" type="string">
+            <annotation>
+               <appinfo>
+                  <meta.attribute kind="resource" />
+               </appinfo>
+            </annotation>
+         </attribute>
+         
+         <attribute name="path" type="string"/>
+
+      </complexType>
+   </element>
+
+   <element name="property">
+      <complexType>
+         <attribute name="name" type="string" use="required" />
+         <attribute name="type">
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="string"/>
+                  <enumeration value="boolean"/>
+               </restriction>
+            </simpleType>
+         </attribute>
+         <attribute name="description" type="string">
+            <appinfo>
+               <meta.attribute translatable="true" />
+            </appinfo>
+         </attribute>
+         <attribute name="default" type="string"/>
+      </complexType>
+   </element>
+
+</schema>

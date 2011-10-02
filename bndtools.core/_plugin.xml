@@ -6,6 +6,7 @@
    <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
    <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
    <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
+   <extension-point id="bndPlugins" name="Bnd Plug-ins" schema="schema/bndPlugins.exsd"/>
    
    <!-- Popup Menus -->
    <!--
@@ -594,6 +595,58 @@
       <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
       <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
       <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
+   </extension>
+   
+   <extension point="bndtools.core.bndPlugins">
+      <plugin
+         class="aQute.lib.deployer.FileRepo"
+         icon="icons/bundlefolder.png"
+         name="File Repository">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="location" type="string" description="Local directory path"/>
+         <property name="readonly" type="boolean" default="false"/>
+      </plugin>
+      
+      <plugin
+         class="aQute.lib.deployer.obr.OBR"
+         icon="icons/bundlefolder.png"
+         name="OBR Repository (read-only)">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
+         <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
+      </plugin>
+      
+      <plugin
+         class="aQute.lib.deployer.obr.LocalOBR"
+         icon="icons/bundlefolder.png"
+         name="OBR Repository with Local Storage">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="local" type="string" description="Local directory path"/>
+         <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
+         <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
+         <property name="readonly" type="boolean" default="false"/>
+      </plugin>
+      
+      <plugin
+         class="aQute.bnd.maven.MavenRepository"
+         icon="icons/bundlefolder.png"
+         name="Maven Local Repository">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="root" type="string" description="Full path to repository (default USER_HOME/.m2/repository)"/>
+      </plugin>
+      
+      <plugin
+         class="aQute.lib.spring.SpringXMLType"
+         icon="icons/magnifier.png"
+         name="Spring Component Analyzer"/>
+      
+      <plugin
+         class="aQute.lib.spring.JPAComponent"
+         icon="icons/magnifier.png"
+         name="JPA Component Analyzer"/>
+      
    </extension>
 
    <extension point="org.eclipse.ui.intro.configExtension">

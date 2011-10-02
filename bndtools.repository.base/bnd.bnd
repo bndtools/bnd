@@ -13,7 +13,8 @@ Include-Resource:\
 	buildrepo/=repos/buildrepo,\
 	buildrepo/=${target}/buildrepo/repository.xml,\
 	release/=repos/release,\
-	html/=html
+	html/=html,\
+	icons/=icons
 
 Private-Package: bndtools.templates
 Import-Package: \
