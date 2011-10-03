@@ -1,10 +1,12 @@
 -dependson:\
+	bndtools.bndplugins,\
 	bndtools.core,\
 	bndtools.jareditor,\
 	bndtools.repository.base,\
 	bndtools.diff,\
 	bndtools.release,\
-	org.bndtools.embeddedrepo
+	org.bndtools.embeddedrepo,\
+	org.osgi.impl.bundle.bindex
 
 Include-Resource:\
 	${repo;biz.aQute.bndlib;latest},\
