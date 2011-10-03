@@ -62,16 +62,16 @@ public class ReleaseHelper {
 				updatePackageInfoFile(context.getProject(), pi);
 			}
 
-			updateBundleVersion(context, current);
+			updateBundleVersion(context, current, builder);
    		}
 	}
 
-	private static void updateBundleVersion(ReleaseContext context, JarDiff current) throws IOException, CoreException {
+	private static void updateBundleVersion(ReleaseContext context, JarDiff current, Builder builder) throws IOException, CoreException {
 
 		String bundleVersion = current.getSuggestedVersion();
 		if (bundleVersion != null) {
 
-			File file = context.getProject().getPropertiesFile();
+			File file = builder.getPropertiesFile();
 
 			final IFile resource = (IFile) ReleaseUtils.toResource(file);
 
