@@ -1,3 +1,5 @@
+-dependson: bndtools.bndplugins
+
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
 
