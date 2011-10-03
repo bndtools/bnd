@@ -71,7 +71,7 @@ public class ReleaseJob  extends Job {
 				sb.append(" :\n");
 
 				for (Jar jar : context.getReleasedJars()) {
-					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
+					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n");
 				}
 				
 				sb.append("\n\n");

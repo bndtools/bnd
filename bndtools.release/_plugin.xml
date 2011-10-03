@@ -6,7 +6,7 @@
       <objectContribution
             adaptable="false"
             id="bndtools.releaseBundleContribution"
-            nameFilter="bnd.bnd"
+            nameFilter="*.bnd"
             objectClass="org.eclipse.core.resources.IFile">
          <action
                class="bndtools.release.ReleaseAction"

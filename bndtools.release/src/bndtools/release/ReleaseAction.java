@@ -11,8 +11,11 @@
 package bndtools.release;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IAction;
@@ -29,42 +32,68 @@ import aQute.bnd.service.RepositoryPlugin;
 
 public class ReleaseAction implements IObjectActionDelegate {
 
-	private IFile[] locations;
 	private IWorkbenchPart targetPart;
 
+	private Map<Project, List<File>> bndFiles;
+	
 	public void run(IAction action) {
 
-		if (locations != null) {
+		if (bndFiles != null) {
 			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
 				return;
 			}
 			
-			for (int i = 0; i < locations.length; i++) {
-				File mf = locations[i].getLocation().toFile();
-				if (mf.getName().equals(Project.BNDFILE)) {
-					try {
-						Project project = Workspace.getProject(mf
-								.getParentFile());
-						Workspace ws = Workspace.getWorkspace(mf
-								.getParentFile().getParentFile());
-						List<RepositoryPlugin> repos = ws
-								.getPlugins(RepositoryPlugin.class);
-
-						ReleaseDialogJob job = new ReleaseDialogJob(project, repos);
-						job.schedule();
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
+			for (Map.Entry<Project, List<File>> me : bndFiles.entrySet()) {
+				
+				Project project;
+				List<RepositoryPlugin> repos;
+				try {
+					project = me.getKey();
+					repos = project.getWorkspace().getPlugins(RepositoryPlugin.class);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
+				ReleaseDialogJob job;
+				if (isBndBndSelected(me.getValue())) {
+					job = new ReleaseDialogJob(project, repos, null);
+				} else {
+					job = new ReleaseDialogJob(project, repos, me.getValue());
+				}
+				job.schedule();
 			}
 		}
+	}
+
+	private boolean isBndBndSelected(List<File> files) {
+		for (File file : files) {
+			if (Project.BNDFILE.equals(file.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
-		locations = getLocations(selection);
+		IFile[] locations = getLocations(selection);
+		bndFiles = new LinkedHashMap<Project, List<File>>();
+		for (IFile iFile : locations) {
+			File file = iFile.getLocation().toFile();
+			Project project;
+			try {
+				project = Workspace.getProject(file.getParentFile());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			List<File> projectFiles = bndFiles.get(project);
+			if (projectFiles == null) {
+				projectFiles = new ArrayList<File>();
+				bndFiles.put(project, projectFiles);
+			}
+			projectFiles.add(file);
+		}
 	}
 
 	@SuppressWarnings("unchecked")

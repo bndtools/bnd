@@ -72,7 +72,9 @@ public class ReleaseHelper {
 		if (bundleVersion != null) {
 
 			File file = builder.getPropertiesFile();
-
+			if (file == null) {
+				file = context.getProject().getPropertiesFile();
+			}
 			final IFile resource = (IFile) ReleaseUtils.toResource(file);
 
 			IDocument document = FileUtils.readFully(resource);

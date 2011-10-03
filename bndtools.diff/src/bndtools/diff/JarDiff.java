@@ -547,7 +547,7 @@ public class JarDiff {
 		return ret;
 	}
 
-	public static List<JarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos) {
+	public static List<JarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
 
 		List<JarDiff> diffs = new ArrayList<JarDiff>();
 
@@ -556,6 +556,12 @@ public class JarDiff {
 			List<Builder> builders = project.getBuilder(null).getSubBuilders();
 			for (Builder b : builders) {
 
+				if (subBundles != null) {
+					if (!subBundles.contains(b.getPropertiesFile())) {
+						continue;
+					}
+				}
+				
 				Jar jar = b.build();
 
 				//List<String> errors = b.getErrors();
@@ -600,7 +606,7 @@ public class JarDiff {
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
-						return null;
+						continue;
 					}
 				}
 

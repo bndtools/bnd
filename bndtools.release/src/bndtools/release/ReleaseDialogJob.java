@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -34,12 +35,14 @@ public class ReleaseDialogJob extends Job {
 	private final Shell shell;
 	private final Project project;
 	private final List<RepositoryPlugin> repos;
+	private final List<File> subBundles;
 	
-	public ReleaseDialogJob(Project project, List<RepositoryPlugin> repos) {
+	public ReleaseDialogJob(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
 		super(Messages.releaseJob);
 		this.project = project;
 		this.repos = repos;
 		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+		this.subBundles = subBundles;
 		setUser(true);
 	}
 
@@ -57,7 +60,7 @@ public class ReleaseDialogJob extends Job {
 			monitor.setTaskName(Messages.releasing);
 			monitor.worked(33);
 			monitor.subTask(Messages.checkingExported);
-			final List<JarDiff> diffs = JarDiff.createJarDiffs(project, repos);
+			final List<JarDiff> diffs = JarDiff.createJarDiffs(project, repos, subBundles);
 			if (diffs == null || diffs.size() == 0) {
 				return Status.OK_STATUS;
 			}

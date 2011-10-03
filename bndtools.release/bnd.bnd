@@ -1,6 +1,5 @@
 baseversion: 0.0.1
 version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
-bndlibver: 1.43.0
 
 Test: true
 Bundle-SymbolicName: bndtools.release;singleton:=true
@@ -17,11 +16,12 @@ Private-Package: bndtools.release,\
 	bndtools.release.nl
 Conditional-Package: aQute.lib.io
 
-Include-Resource: /=resources
+Include-Resource: 	plugin.xml=_plugin.xml,\
+					/=resources
 
 -buildpath: bndtools.diff;version=project, \
 	bndtools.core;version=project, \
-	biz.aQute.bndlib;version=${bndlibver}, \
+	biz.aQute.bndlib;version=latest, \
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.jface,\
