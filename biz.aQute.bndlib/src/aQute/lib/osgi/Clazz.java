@@ -1514,6 +1514,10 @@ public class Clazz {
 		return dotted.replace('.', '/') + ".class";
 	}
 
+	public static String fqnToBinary(String dotted) {
+		return "L" + dotted.replace('.', '/') + ";";
+	}
+
 	public static String pathToFqn(String path) {
 		return path.replace('/', '.').substring(0, path.length() - 6);
 	}

@@ -1,329 +1,209 @@
 package aQute.bnd.make.component;
 
-import static aQute.bnd.make.component.ServiceComponent.*;
-
-import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.bnd.annotation.component.*;
+import org.osgi.service.component.annotations.*;
+
 import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
+import aQute.libg.version.*;
 
 public class OSGiComponentAnnotationReader extends ClassDataCollector {
-	
-	static class ComponentDef {
-		String name;
-		String implementation;
-		Set<String> interfaces = new TreeSet<String>();
-		String activate;
-		String deactivate;
-		List<ReferenceDef> references = new ArrayList<ReferenceDef>();
-	}
-	
-	static class ReferenceDef {
-		String bind;
-		String unbind;
-		boolean multiple;
-		boolean optional;
-		boolean dynamic;
-		
-	}
-	
-	
-	String						EMPTY[]					= new String[0];
-	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
-	static Pattern				BINDDESCRIPTOR			= Pattern
-																.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
-	static Pattern				BINDMETHOD				= Pattern.compile("(set|bind|add)(.)(.*)");
+	final static String[]			EMPTY					= new String[0];
+	final static Pattern			PROPERTY_PATTERN		= Pattern
+																	.compile("([^=]+(:(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 
-	static Pattern				ACTIVATEDESCRIPTOR		= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
-	static Pattern				OLDACTIVATEDESCRIPTOR	= Pattern
-																.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
-	static Pattern				OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
-	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
-																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+	private static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
+	static Pattern					BINDDESCRIPTOR			= Pattern
+																	.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
+	static Pattern					BINDMETHOD				= Pattern
+																	.compile("(set|bind|add)?(.*)");
 
-	Reporter					reporter				= new Processor();
-	String						method;
-	String						methodDescriptor;
-	int							methodAccess;
-	String						className;
-	Clazz						clazz;
-	String						interfaces[];
-	Set<String>					multiple				= new HashSet<String>();
-	Set<String>					optional				= new HashSet<String>();
-	Set<String>					dynamic					= new HashSet<String>();
+	static Pattern					ACTIVATEDESCRIPTOR		= Pattern
+																	.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+	static Pattern					REFERENCEBINDDESCRIPTOR	= Pattern
+																	.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
-	Map<String, String>			map						= new TreeMap<String, String>();
-	Set<String>					descriptors				= new HashSet<String>();
-	List<String>				properties				= new ArrayList<String>();
-	String						version					= null;
+	ComponentDef					component				= new ComponentDef();
 
-	// TODO make patterns for descriptors
+	Clazz							clazz;
+	String							interfaces[];
+	String							methodDescriptor;
+	String							method;
+	String							className;
+	int								methodAccess;
+	Analyzer						analyzer;
+	Set<String>						methods					= new HashSet<String>();
 
-	OSGiComponentAnnotationReader(Clazz clazz) {
+	OSGiComponentAnnotationReader(Analyzer analyzer, Clazz clazz) {
+		this.analyzer = analyzer;
 		this.clazz = clazz;
+		component.version = V1_1;
 	}
 
-	public void setReporter(Reporter reporter) {
-		this.reporter = reporter;
-	}
-
-	public Reporter getReporter() {
-		return this.reporter;
-	}
-
-	public static Map<String, String> getDefinition(Clazz c) throws Exception {
-		return getDefinition(c, new Processor());
-	}
-
-	public static Map<String, String> getDefinition(Clazz c, Reporter reporter) throws Exception {
-		OSGiComponentAnnotationReader r = new OSGiComponentAnnotationReader(c);
-		r.setReporter(reporter);
+	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer) throws Exception {
+		OSGiComponentAnnotationReader r = new OSGiComponentAnnotationReader(analyzer, c);
 		c.parseClassFileWithCollector(r);
-		r.finish();
-		return r.map;
+		return r.component;
 	}
 
 	public void annotation(Annotation annotation) {
+		try {
+			java.lang.annotation.Annotation a = annotation.getAnnotation();
 
-		if (annotation.getName().equals(Component.RNAME)) {
-			set(COMPONENT_NAME, annotation.get(Component.NAME), "<>");
-			set(COMPONENT_FACTORY, annotation.get(Component.FACTORY), false);
-			setBoolean(COMPONENT_ENABLED, annotation.get(Component.ENABLED), true);
-			setBoolean(COMPONENT_IMMEDIATE, annotation.get(Component.IMMEDIATE), false);
-			setBoolean(COMPONENT_SERVICEFACTORY, annotation.get(Component.SERVICEFACTORY), false);
+			if (a instanceof Component)
+				doComponent((Component) a, annotation);
+			else if (a instanceof Activate)
+				doActivate();
+			else if (a instanceof Deactivate)
+				doDeactivate();
+			else if (a instanceof Modified)
+				component.modified = method;
+			else if (a instanceof Reference)
+				doReference((Reference) a, annotation);
 
-			if (annotation.get(Component.DESIGNATE) != null) {
-				String configs = annotation.get(Component.DESIGNATE);
-				if (configs != null) {
-					set(COMPONENT_DESIGNATE, Clazz.objectDescriptorToFQN(configs), "");
-				}
-			}
-
-			if (annotation.get(Component.DESIGNATE_FACTORY) != null) {
-				String configs = annotation.get(Component.DESIGNATE_FACTORY);
-				if (configs != null) {
-					set(COMPONENT_DESIGNATEFACTORY, Clazz.objectDescriptorToFQN(configs), "");
-				}
-			}
-
-			setVersion((String) annotation.get(Component.VERSION));
-
-			String configurationPolicy = annotation.get(Component.CONFIGURATION_POLICY);
-			if (configurationPolicy != null)
-				set(COMPONENT_CONFIGURATION_POLICY, configurationPolicy.toLowerCase(), "");
-
-			doProperties(annotation);
-
-			Object[] provides = (Object[]) annotation.get(Component.PROVIDE);
-			String[] p;
-			if (provides == null) {
-				// Use the found interfaces, but convert from internal to
-				// fqn.
-				if (interfaces != null) {
-					List<String> result = new ArrayList<String>();
-					for (int i = 0; i < interfaces.length; i++) {
-						if (!interfaces[i].equals("scala/ScalaObject") )
-							result.add(Clazz.internalToFqn(interfaces[i]));
-					}
-					p = result.toArray(EMPTY);
-				} else
-					p = EMPTY;
-			} else {
-				// We have explicit interfaces set
-				p = new String[provides.length];
-				for (int i = 0; i < provides.length; i++) {
-					p[i] = descriptorToFQN(provides[i].toString());
-				}
-			}
-			if (p.length > 0) {
-				set(COMPONENT_PROVIDE, Processor.join(Arrays.asList(p)), "<>");
-			}
-
-		} else if (annotation.getName().equals(Activate.RNAME)) {
-			if (!checkMethod())
-				setVersion(V1_1);
-
-			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
-				reporter.error(
-						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, methodDescriptor);
-
-			if (method.equals("activate")
-					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
-				// this is the default!
-			} else {
-				setVersion(V1_1);
-				set(COMPONENT_ACTIVATE, method, "<>");
-			}
-
-		} else if (annotation.getName().equals(Deactivate.RNAME)) {
-			if (!checkMethod())
-				setVersion(V1_1);
-
-			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
-				reporter.error(
-						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, methodDescriptor);
-			if (method.equals("deactivate")
-					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
-				// This is the default!
-			} else {
-				setVersion(V1_1);
-				set(COMPONENT_DEACTIVATE, method, "<>");
-			}
-		} else if (annotation.getName().equals(Modified.RNAME)) {
-			set(COMPONENT_MODIFIED, method, "<>");
-			setVersion(V1_1);
-		} else if (annotation.getName().equals(Reference.RNAME)) {
-
-			String name = (String) annotation.get(Reference.NAME);
-			String bind = method;
-			String unbind = null;
-
-			if (name == null) {
-				Matcher m = BINDMETHOD.matcher(method);
-				if (m.matches()) {
-					name = m.group(2).toLowerCase() + m.group(3);
-				} else {
-					name = method.toLowerCase();
-				}
-			}
-			String simpleName = name;
-
-			unbind = annotation.get(Reference.UNBIND);
-
-			if (bind != null) {
-				name = name + "/" + bind;
-				if (unbind != null)
-					name = name + "/" + unbind;
-			}
-			String service = annotation.get(Reference.SERVICE);
-
-			if (service != null) {
-				service = Clazz.objectDescriptorToFQN(service);
-			} else {
-				// We have to find the type of the current method to
-				// link it to the referenced service.
-				Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
-				if (m.matches()) {
-					service = Clazz.internalToFqn(m.group(1));
-				} else
-					throw new IllegalArgumentException(
-							"Cannot detect the type of a Component Reference from the descriptor: "
-									+ methodDescriptor);
-			}
-
-			// Check if we have a target, this must be a filter
-			String target = annotation.get(Reference.TARGET);
-			if (target != null) {
-				Verifier.verifyFilter(target, 0);
-				service = service + target;
-			}
-
-			Integer c = annotation.get(Reference.TYPE);
-			if (c != null && !c.equals(0) && !c.equals((int) '1')) {
-				service = service + (char) c.intValue();
-			}
-
-			if (map.containsKey(name))
-				reporter.error(
-						"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
-						name, map.get(name), service, "");
-			map.put(name, service);
-
-			if (isTrue(annotation.get(Reference.MULTIPLE)))
-				multiple.add(simpleName);
-			if (isTrue(annotation.get(Reference.OPTIONAL)))
-				optional.add(simpleName);
-			if (isTrue(annotation.get(Reference.DYNAMIC)))
-				dynamic.add(simpleName);
-
-			if (!checkMethod())
-				setVersion(V1_1);
-			else if (REFERENCEBINDDESCRIPTOR.matcher(methodDescriptor).matches()
-					|| !OLDBINDDESCRIPTOR.matcher(methodDescriptor).matches())
-				setVersion(V1_1);
+		} catch (Exception e) {
+			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
-	}
-
-	private void setVersion(String v) {
-		if (v == null)
-			return;
-
-		if (version == null)
-			version = v;
-		else if (v.compareTo(version) > 0) // we're safe to 9.9.9
-			version = v;
-	}
-
-	private boolean checkMethod() {
-		return Modifier.isPublic(methodAccess) || Modifier.isProtected(methodAccess);
-	}
-
-	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
-
-	private void doProperties(Annotation annotation) {
-		Object[] properties = annotation.get(Component.PROPERTIES);
-
-		if (properties != null) {
-			for (Object o : properties) {
-				String p = (String) o;
-				if (PROPERTY_PATTERN.matcher(p).matches())
-					this.properties.add(p);
-				else
-					throw new IllegalArgumentException("Malformed property '" + p + "' on: "
-							+ annotation.get(Component.NAME));
-			}
-		}
-	}
-
-	private boolean isTrue(Object object) {
-		if (object == null)
-			return false;
-		return (Boolean) object;
-	}
-
-	private void setBoolean(String string, Object object, boolean b) {
-		if (object == null)
-			object = b;
-
-		Boolean bb = (Boolean) object;
-		if (bb == b)
-			return;
-
-		map.put(string, bb.toString());
-	}
-
-	private void set(String string, Object object, Object deflt) {
-		if (object == null || object.equals(deflt))
-			return;
-
-		map.put(string, object.toString());
 	}
 
 	/**
-	 * Skip L and ; and replace / for . in an object descriptor.
 	 * 
-	 * A string like Lcom/acme/Foo; becomes com.acme.Foo
+	 */
+	protected void doDeactivate() {
+		if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+			analyzer.error(
+					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+					clazz, methodDescriptor);
+		else {
+			component.deactivate = method;
+		}
+	}
+
+	/**
+	 * @param annotation
+	 * @throws Exception
+	 */
+	protected void doReference(Reference reference, Annotation raw) throws Exception {
+		ReferenceDef def = new ReferenceDef();
+		def.name = reference.name();
+
+		if (def.name == null) {
+			Matcher m = BINDMETHOD.matcher(method);
+			if (m.matches()) {
+				def.name = m.group(2);
+			} else {
+				def.name = method;
+			}
+		}
+
+		def.unbind = reference.unbind();
+		def.bind = method;
+
+		def.interfce = raw.get("service");
+		if (def.interfce != null) {
+			def.interfce = Clazz.objectDescriptorToFQN(def.interfce);
+		} else {
+			// We have to find the type of the current method to
+			// link it to the referenced service.
+			Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
+			if (m.matches()) {
+				def.interfce = Clazz.internalToFqn(m.group(1));
+			} else
+				throw new IllegalArgumentException(
+						"Cannot detect the type of a Component Reference from the descriptor: "
+								+ methodDescriptor);
+		}
+
+		// Check if we have a target, this must be a filter
+		def.target = reference.target();
+		if (def.target != null) {
+			Verifier.verifyFilter(def.target, 0);
+		}
+
+		if (component.references.containsKey(def.name))
+			analyzer.error(
+					"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
+					def.name, component.references.get(def.name), def.interfce, "");
+		else
+			component.references.put(def.name, def);
+
+		def.cardinality = reference.cardinality();
+		def.policy = reference.policy();
+	}
+
+	/**
 	 * 
-	 * @param string
-	 * @return
+	 */
+	protected void doActivate() {
+		if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+			analyzer.error(
+					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+					clazz, methodDescriptor);
+		else {
+			component.activate = method;
+		}
+	}
+
+	/**
+	 * @param annotation
+	 * @throws Exception
+	 */
+	protected void doComponent(Component comp, Annotation annotation) throws Exception {
+		component.name = comp.name();
+		component.factory = comp.factory();
+		component.configurationPolicy = comp.configurationPolicy();
+		component.enabled = comp.enabled();
+		component.factory = comp.factory();
+		component.immediate = comp.immediate();
+		component.servicefactory = comp.servicefactory();
+
+		doProperties(comp.property());
+
+		component.service = annotation.get("service");
+		if (component.service == null) {
+			// Use the found interfaces, but convert from internal to
+			// fqn.
+			if (interfaces != null) {
+				List<String> result = new ArrayList<String>();
+				for (int i = 0; i < interfaces.length; i++) {
+					if (!interfaces[i].equals("scala/ScalaObject"))
+						result.add(Clazz.internalToFqn(interfaces[i]));
+				}
+				component.service = result.toArray(EMPTY);
+			}
+		} else {
+			// We have explicit interfaces set
+			for (int i = 0; i < component.service.length; i++) {
+				component.service[i] = Clazz.objectDescriptorToFQN(component.service[i]);
+			}
+		}
+
+	}
+
+	/**
+	 * Parse the properties
 	 */
 
-	private String descriptorToFQN(String string) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i < string.length() - 1; i++) {
-			char c = string.charAt(i);
-			if (c == '/')
-				c = '.';
-			sb.append(c);
+	private void doProperties(String[] properties) {
+		if (properties != null) {
+			for (String p : properties) {
+				Matcher m = PROPERTY_PATTERN.matcher(p);
+
+				if (m.matches()) {
+					String key = m.group(1);
+					String value = m.group(4);
+					component.property.add(key, value);
+				} else
+					throw new IllegalArgumentException("Malformed property '" + p
+							+ "' on component: " + className);
+			}
 		}
-		return sb.toString();
 	}
+
+	/**
+	 * Are called during class parsing
+	 */
 
 	@Override public void classBegin(int access, String name) {
 		className = name;
@@ -337,27 +217,6 @@ public class OSGiComponentAnnotationReader extends ClassDataCollector {
 		this.method = name;
 		this.methodDescriptor = descriptor;
 		this.methodAccess = access;
-		descriptors.add(method);
+		methods.add(name);
 	}
-
-	void set(String name, Collection<String> l) {
-		if (l.size() == 0)
-			return;
-
-		set(name, Processor.join(l), "<>");
-	}
-
-	public void finish() {
-		set(COMPONENT_MULTIPLE, multiple);
-		set(COMPONENT_DYNAMIC, dynamic);
-		set(COMPONENT_OPTIONAL, optional);
-		set(COMPONENT_IMPLEMENTATION, clazz.getFQN(), "<>");
-		set(COMPONENT_PROPERTIES, properties);
-		if (version != null) {
-			set(COMPONENT_VERSION, version, "<>");
-			reporter.trace("Component %s is v1.1", map);
-		}
-		set(COMPONENT_DESCRIPTORS, descriptors);
-	}
-
 }
