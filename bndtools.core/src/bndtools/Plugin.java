@@ -43,6 +43,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
+import bndtools.builder.BndProjectNature;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
@@ -75,12 +76,14 @@ public class Plugin extends AbstractUIPlugin {
 
     private final IResourceChangeListener refreshWorkspaceListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
+            int type = event.getType();
             IResourceDelta delta = event.getDelta();
             if (delta == null)
                 return;
 
             final boolean[] cnf = new boolean[] { false };
-            final List<IResource> affectedBnds = new LinkedList<IResource>();
+            final List<IResource> changedBnds = new LinkedList<IResource>();
+            final List<IProject> newBndProjects = new LinkedList<IProject>();
 
             try {
                 delta.accept(new IResourceDeltaVisitor() {
@@ -96,14 +99,26 @@ public class Plugin extends AbstractUIPlugin {
                                 return false;
                             } else {
                                 IProject project = (IProject) resource;
-                                return project.exists() && project.isOpen();
+                                if (!project.exists() || !project.isOpen())
+                                    return false;
+
+                                if (project.hasNature(BndProjectNature.NATURE_ID)) {
+                                    if ((IResourceDelta.ADDED & delta.getKind()) > 0) {
+                                        boolean openFlag = (IResourceDelta.OPEN & delta.getFlags()) > 0;
+                                        newBndProjects.add(project);
+                                        new RequiredObrCheckingJob(project).schedule();
+                                    }
+                                    return true;
+                                }
+                                return false;
                             }
                         }
 
                         if (Project.BNDFILE.equals(resource.getName())) {
-                            int flags = delta.getFlags();
-                            if ((flags & IResourceDelta.CONTENT) > 0)
-                                affectedBnds.add(resource);
+                            if ((IResourceDelta.CHANGED | delta.getKind()) > 0) {
+                                if ((delta.getFlags() & IResourceDelta.CONTENT) > 0)
+                                    changedBnds.add(resource);
+                            }
                         }
 
                         return false;
@@ -113,8 +128,8 @@ public class Plugin extends AbstractUIPlugin {
                 Plugin.logError("Error processing resource delta", e);
                 return;
             }
-            if (cnf[0] || !affectedBnds.isEmpty())
-                new UpdateClasspathJob(cnf[0], affectedBnds).schedule();
+            if (cnf[0] || !changedBnds.isEmpty())
+                new UpdateClasspathJob(cnf[0], changedBnds).schedule();
         }
     };
 

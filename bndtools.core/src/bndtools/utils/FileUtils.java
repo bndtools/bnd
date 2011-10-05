@@ -5,11 +5,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -127,5 +129,17 @@ public class FileUtils {
 	    }
 
 	    return path.toFile();
+	}
+
+	public static void dumpResourceDelta(IResourceDelta delta, PrintStream out) {
+	    dumpResourceDelta(delta, out, "");
+	}
+
+	private static void dumpResourceDelta(IResourceDelta delta, PrintStream out, String indent) {
+	    out.println(String.format("%s%s: kind=%h, flags=%h", indent, delta.getFullPath(), delta.getKind(), delta.getFlags()));
+	    IResourceDelta[] children = delta.getAffectedChildren();
+	    for (IResourceDelta child : children) {
+            dumpResourceDelta(child, out, indent + "   ");
+        }
 	}
 }

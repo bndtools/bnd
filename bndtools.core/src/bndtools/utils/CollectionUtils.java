@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -147,5 +148,17 @@ public class CollectionUtils {
 			result.add(item);
 		}
 		return result;
+	}
+
+	public static String toStringList(Collection<?> collection) {
+	    StringBuilder builder = new StringBuilder();
+
+	    for (Iterator<?> iter = collection.iterator(); iter.hasNext(); ) {
+            builder.append(iter.next());
+            if (iter.hasNext())
+                builder.append(",");
+        }
+
+	    return builder.toString();
 	}
 }

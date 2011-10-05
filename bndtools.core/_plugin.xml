@@ -624,7 +624,6 @@
          <property name="name" type="string" description="Name of the repository"/>
          <property name="local" type="string" description="Local directory path"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
-         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
          <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
          <property name="readonly" type="boolean" default="false"/>
       </plugin>
