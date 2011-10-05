@@ -34,6 +34,8 @@ import aQute.bnd.build.ResolverMode;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
@@ -54,7 +56,7 @@ import aQute.libg.version.VersionRange;
  * @author Neil Bartlett
  *
  */
-public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin, OBRIndexProvider {
+public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, OBRIndexProvider {
 	
 	public static final String PROP_NAME = "name";
 	public static final String PROP_RESOLUTION_MODE = "mode";
@@ -62,6 +64,7 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 	
 	public static final String REPOSITORY_FILE_NAME = "repository.xml";
 	
+	protected Registry registry;
 	protected Reporter reporter;
 	protected String name = this.getClass().getName();
 	protected Set<OBRResolutionMode> supportedModes = EnumSet.allOf(OBRResolutionMode.class);
@@ -116,6 +119,10 @@ public abstract class AbstractBaseOBR implements Plugin, RemoteRepositoryPlugin,
 			
 			initialised = true;
 		}
+	}
+	
+	public void setRegistry(Registry registry) {
+		this.registry = registry;
 	}
 
 	public void setProperties(Map<String, String> map) {

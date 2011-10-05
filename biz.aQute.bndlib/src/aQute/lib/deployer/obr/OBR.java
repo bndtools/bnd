@@ -1,13 +1,14 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import aQute.lib.deployer.FileRepo;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
@@ -42,7 +43,7 @@ public class OBR extends AbstractBaseOBR {
 
 	protected List<URL> locations;
 	protected File cacheDir;
-	
+
 	public void setProperties(Map<String, String> map) {
 		super.setProperties(map);
 		
@@ -60,27 +61,35 @@ public class OBR extends AbstractBaseOBR {
 		}
 		
 		String cacheDirStr = map.get(PROP_CACHE);
-		cacheDir = cacheDirStr != null ? new File(cacheDirStr) : null;
+		if (cacheDirStr != null)
+			cacheDir = new File(cacheDirStr);
 	}
 	
+	private FileRepo lookupCachedFileRepo() {
+		if (registry != null) {
+			List<FileRepo> repos = registry.getPlugins(FileRepo.class);
+			for (FileRepo repo : repos) {
+				if ("cache".equals(repo.getName()))
+					return repo;
+			}
+		}
+		return null;
+	}
+
 	public List<URL> getOBRIndexes() {
 		return locations;
 	}
-	
-	void ensureCacheDirExists() throws IOException {
-		assert cacheDir != null;
-		
-		if (cacheDir.exists()) {
-			if (!cacheDir.isDirectory())
-				throw new IOException(String.format("Cannot create cache directory '%s' because a file or special node with that name exists.", cacheDir.getAbsolutePath()));
-		} else {
-			if (!cacheDir.mkdirs())
-				throw new IOException(String.format("Failed to create cache directory '%s'.", cacheDir.getAbsolutePath()));
-		}
-	}
-	
+
 	@Override
-	public File getCacheDirectory() {
+	public synchronized File getCacheDirectory() {
+		if (cacheDir == null) {
+			FileRepo cacheRepo = lookupCachedFileRepo();
+			if (cacheRepo != null) {
+				File temp = new File(cacheRepo.getRoot(), ".obr");
+				if (temp.mkdirs())
+					cacheDir = temp;
+			}
+		}
 		return cacheDir;
 	}
 	
