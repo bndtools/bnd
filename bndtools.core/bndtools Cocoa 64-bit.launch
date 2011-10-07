@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="bndtools.launch">
-<booleanAttribute key="clean" value="false"/>
+<booleanAttribute key="clean" value="true"/>
 <booleanAttribute key="dynamicBundles" value="false"/>
 <stringAttribute key="launchTarget" value="bndtools.core/bndtools.cocoa.macosx.x86_64.bndrun"/>
 <stringAttribute key="logOutput" value="console"/>

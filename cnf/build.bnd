@@ -21,6 +21,8 @@ project.name: ${p}
 # Eclipse Repo
 eclipse-version:  3.5.2
 eclipse-repo:     ${build}/eclipse-${eclipse-version}
+#eclipse-version:  3.7.1
+#eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
 
 # Java Compiler Options
 java:         java
