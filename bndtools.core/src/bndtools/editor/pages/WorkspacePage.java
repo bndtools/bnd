@@ -1,10 +1,6 @@
 package bndtools.editor.pages;
 
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -12,8 +8,9 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
-import bndtools.editor.common.MDSashForm;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.model.clauses.HeaderClause;
@@ -41,30 +38,20 @@ public class WorkspacePage extends FormPage {
 
         // Create controls
         Composite body = form.getBody();
-        MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
-        sashForm.setSashWidth(6);
-        tk.adapt(sashForm, false, false);
-
-        Composite panel1 = tk.createComposite(sashForm);
-        Composite panel2 = tk.createComposite(sashForm);
-
-        pluginsPart = new PluginsPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        pluginsPart = new PluginsPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(pluginsPart);
 
         // Layout
-        body.setLayout(new FillLayout());
-
-        GridLayout layout;
-        GridData gd;
-
-        gd = new GridData(SWT.FILL, SWT.TOP, false, true);
-        panel1.setLayoutData(gd);
-
-        layout = new GridLayout(1, false);
-        panel1.setLayout(layout);
-
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        pluginsPart.getSection().setLayoutData(gd);
+        TableWrapLayout twl = new TableWrapLayout();
+        body.setLayout(twl);
+        TableWrapData twd = new TableWrapData();
+        twd.align = TableWrapData.FILL;
+        twd.valign = TableWrapData.FILL;
+        twd.grabVertical = true;
+        twd.grabHorizontal = true;
+        twd.maxWidth = 200;
+        twd.heightHint = 300;
+        pluginsPart.getSection().setLayoutData(twd);
     }
 
     public void setSelectedPlugin(HeaderClause header) {

@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-	The is main OSGi build file. It is included from projects
-	as is.
-	
-	It is described in http://www2.osgi.org/members/Build/HomePage 
--->
 <project name="master" default="none">
 
 	<!-- 
@@ -16,7 +10,7 @@
 
 	<target name="init" unless="initialized">
 		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmm"/>
+			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
 		</tstamp>
 		
 		<dirname property="projectdir" file="${ant.file}" />
@@ -24,7 +18,6 @@
 		<taskdef resource="aQute/bnd/ant/taskdef.properties">
 			<classpath>
 				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-1.45.0.jar"/>
-				<!--<path location="${workspacedir}/cnf/buildlib/bndtools.bndplugins.repos.jar"/>-->
 			</classpath>
 		</taskdef>
 
@@ -78,8 +71,14 @@
 	-->
 	<target name="build" depends="compile">
 		<mkdir dir="${target}"/>
-		<echo message="Building project ${project}."/>
 		<bnd command="build" exceptions="true" basedir="${project}" />
+	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true" />
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
 	</target>
 
 	<target name="junit" depends="build">
@@ -106,6 +105,9 @@
 		<delete dir="bin"/>
 		<delete dir="bin_test"/>
 		<delete dir="${target}"/>
+		
+		<delete dir="${workspacedir}/cnf/tmp"/>
+		<delete dir="${workspacedir}/cnf/p2target"/>
 	</target>
 
 	<!--

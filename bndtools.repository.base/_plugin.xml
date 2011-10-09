@@ -2,23 +2,33 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension point="bndtools.core.initialRepository">
-      <repository name="Bndtools Default Build-only Repository" path="buildrepo"/>
-      <repository name="Bndtools Default Main Repository" path="repo"/>
-      <repository name="Release Repository" path="release"/>
+   <extension point="bndtools.core.cnfTemplates">
+      <template
+         name="Standard Configuration"
+         doc="templateDocs/standardConfig.xml"
+         paths="templates/cnfs/shared,templates/cnfs/standard"
+         priority="10"
+      />
+      <template
+         name="Lightweight Configuration"
+         doc="templateDocs/lightweightConfig.xml"
+         paths="templates/cnfs/shared,templates/cnfs/lightweight"
+         priority="5"
+      />
    </extension>
 
    <extension point="bndtools.core.projectTemplates">
       <template name="Component Development (Declarative Services)"
          priority="100"
          class="bndtools.templates.ComponentTemplate"
-         docHtml="html/componentTemplate.html"/>
+         doc="templateDocs/componentTemplate.xml"/>
    </extension>
+   
    <extension point="bndtools.core.projectTemplates">
       <template name="Integration Testing"
          priority="200"
          class="bndtools.templates.IntegrationTestingTemplate"
-         docHtml="html/integrationTestTemplate.html"/>
+         doc="templateDocs/integrationTestTemplate.xml"/>
    </extension>
    
    <extension point="bndtools.core.bndPlugins">

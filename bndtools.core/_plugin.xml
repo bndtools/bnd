@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+
    <!-- Extension Points -->
-   
-   <extension-point id="initialRepository" name="Initial Repository" schema="schema/initialRepository.exsd"/>
-   <extension-point id="projectTemplates" name="Project Templates" schema="schema/projectTemplates.exsd"/>
-   <extension-point id="bndtoolsStartupParticipant" name="Bndtools Start-up Participant" schema="schema/bndtoolsStartupParticipant.exsd"/>
-   <extension-point id="osgiFrameworks" name="OSGi Frameworks" schema="schema/osgiFrameworks.exsd"/>
-   <extension-point id="bndPlugins" name="Bnd Plug-ins" schema="schema/bndPlugins.exsd"/>
+   <extension-point id="cnfTemplates"
+      name="Workspace Configuration Templates"
+      schema="schema/cnfTemplates.exsd"
+   />
+   <extension-point id="projectTemplates"
+      name="Project Templates"
+      schema="schema/projectTemplates.exsd"
+   />
+   <extension-point id="bndtoolsStartupParticipant"
+      name="Bndtools Start-up Participant"
+      schema="schema/bndtoolsStartupParticipant.exsd"
+   />
+   <extension-point id="osgiFrameworks"
+      name="OSGi Frameworks"
+      schema="schema/osgiFrameworks.exsd"
+   />
+   <extension-point id="bndPlugins"
+      name="Bnd Plug-ins"
+      schema="schema/bndPlugins.exsd"
+   />
    
    <!-- Popup Menus -->
    <!--
@@ -569,7 +584,7 @@
       <template name="Empty Project"
          priority="-2147483648"
          class="bndtools.api.EmptyTemplate"
-         docHtml="html/emptyTemplate.html"/>
+         doc="html/emptyTemplate.html"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
