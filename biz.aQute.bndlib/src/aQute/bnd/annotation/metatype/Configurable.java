@@ -88,6 +88,9 @@ public class Configurable<T> {
 				return o;
 
 			if (resultType == boolean.class || resultType == Boolean.class) {
+				if ( actualType == boolean.class || actualType == Boolean.class)
+					return o;
+				
 				if (Number.class.isAssignableFrom(actualType)) {
 					double b = ((Number) o).doubleValue();
 					if (b == 0)
