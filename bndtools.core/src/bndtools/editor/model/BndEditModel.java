@@ -83,6 +83,7 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
 		aQute.lib.osgi.Constants.CLASSPATH,
 		aQute.lib.osgi.Constants.BUILDPATH,
+		aQute.lib.osgi.Constants.BUILDPACKAGES,
 		aQute.lib.osgi.Constants.RUNBUNDLES,
 		aQute.lib.osgi.Constants.RUNPROPERTIES,
 		aQute.lib.osgi.Constants.SUB,
@@ -109,6 +110,11 @@ public class BndEditModel implements IPersistableBndModel {
 
 	// CONVERTERS
     private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String,Map<String,String>>>() {
+        public VersionedClause convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+            return new VersionedClause(input.getFirst(), input.getSecond());
+        }
+    });
+    private Converter<List<VersionedClause>, String> buildPackagesConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String,Map<String,String>>>() {
         public VersionedClause convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
@@ -142,6 +148,7 @@ public class BndEditModel implements IPersistableBndModel {
             return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });
+    
     Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
 
     // FORMATTERS
@@ -156,6 +163,7 @@ public class BndEditModel implements IPersistableBndModel {
     public BndEditModel() {
 	    // register converters
         converters.put(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
+        converters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
         converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
         converters.put(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
         converters.put(Constants.BUNDLE_VERSION, stringConverter);
@@ -178,6 +186,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
+        formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
         formatters.put(Constants.BUNDLE_SYMBOLICNAME, newlineEscapeFormatter);
         formatters.put(Constants.BUNDLE_VERSION, newlineEscapeFormatter);
@@ -455,6 +464,16 @@ public class BndEditModel implements IPersistableBndModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
+	
+    public List<VersionedClause> getBuildPackages() {
+        return doGetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
+    }
+    
+    public void setBuildPackages(List<? extends VersionedClause> paths) {
+        List<VersionedClause> oldValue = getBuildPackages();
+        doSetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
+    }
+    
 	public List<VersionedClause> getRunBundles() {
 		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
 	}

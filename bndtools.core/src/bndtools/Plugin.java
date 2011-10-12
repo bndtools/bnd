@@ -61,6 +61,8 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
 	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
+	
+	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
 	private static volatile Plugin plugin;
 
