@@ -176,8 +176,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     }
 
                     if (c.getType() == Container.TYPE.PROJECT) {
-                        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
-
+                        IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
                         List<IAccessRule> rules = projectAccessRules.get(c.getProject());
                         IAccessRule[] accessRules = null;
                         if (rules != null) {
