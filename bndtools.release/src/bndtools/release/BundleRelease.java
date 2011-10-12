@@ -24,8 +24,10 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -521,6 +523,15 @@ public class BundleRelease {
 					(Composite) viewer.getControl(),
 					new String[] {},
 					SWT.READ_ONLY);
+			
+			Control control = editor.getControl();
+			((CCombo) control).addSelectionListener(new SelectionListener() {
+				public void widgetSelected(SelectionEvent e) {
+					editor.deactivate();
+				}
+				
+				public void widgetDefaultSelected(SelectionEvent e) {}
+			});
 		}
 
 		protected boolean canEdit(Object element) {
