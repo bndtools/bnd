@@ -1,16 +1,24 @@
 package bndtools.classpath;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes.Name;
+import java.util.jar.Manifest;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,14 +30,18 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.libg.header.OSGiHeader;
 import bndtools.Central;
 import bndtools.ModelListener;
 import bndtools.Plugin;
+import bndtools.utils.JarUtils;
 
 /**
  * A bnd container reads the bnd.bnd file in the project directory and use the
@@ -134,6 +146,15 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             }
 
             ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
+            LinkedHashMap<Project, List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project, List<IAccessRule>>();
+            for (Container c : containers) {
+                if (c.getError() == null) {
+                    File file = c.getFile();
+                    assert file.isAbsolute();
+                    calculateAccessRules(projectAccessRules, c);
+                }
+            }
+ 
             for (Container c : containers) {
                 IClasspathEntry cpe;
                 IPath sourceAttachment = null;
@@ -154,13 +175,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     //                    }
                     }
 
-                    IAccessRule[] accessRules = calculateAccessRules(c);
-                    cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                    if (c.getType() == Container.TYPE.PROJECT) {
+                        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
+                        List<IAccessRule> rules = projectAccessRules.get(c.getProject());
+                        IAccessRule[] accessRules = null;
+                        if (rules != null) {
+                            rules.add(0, JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                            accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                        }
+                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
+                    } else {
+                        IAccessRule[] accessRules = calculateAccessRules(projectAccessRules, c);
+                        cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                    }
                     result.add(cpe);
                 } else {
                     errors.add(c.getError());
                 }
             }
+            
+            
             errors.addAll(model.getErrors());
             replaceClasspathProblemMarkers(project, errors);
             model.clear();
@@ -169,8 +203,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         }
     }
 
-    static IAccessRule[] calculateAccessRules(Container c) {
-        IAccessRule[] accessRules;
+    static IAccessRule[] calculateAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
             List<IAccessRule> tmp = new LinkedList<IAccessRule>();
@@ -180,14 +213,40 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 String pathStr = token.replace('.', '/') + "/*";
                 tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-            accessRules = tmp.toArray(new IAccessRule[tmp.size()]);
-        } else {
-            accessRules = null;
+            if (c.getType() == TYPE.PROJECT) {
+                addAccessRules(projectAccessRules, c.getProject(), tmp);
+                return null;
+            } else {
+                return tmp.toArray(new IAccessRule[tmp.size()]);
+            }
+        } else if (c.getType() == TYPE.PROJECT) {
+            Manifest mf = null;
+            try {
+                mf = JarUtils.loadJarManifest(new FileInputStream(c.getFile()));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            Map<String, Map<String, String>> exportedPackages = OSGiHeader.parseHeader(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
+            List<IAccessRule> tmp = new LinkedList<IAccessRule>();
+            for (String exportedPackage : exportedPackages.keySet()) {
+                String pathStr = exportedPackage.replace('.', '/') + "/*";
+                tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+            }
+            addAccessRules(projectAccessRules, c.getProject(), tmp);
         }
-        return accessRules;
+        return null;
     }
 
+    static void addAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Project project, List<IAccessRule> accessRules) {
+        List<IAccessRule> currentAccessRules = projectAccessRules.get(project);
+        if (currentAccessRules == null) {
+            projectAccessRules.put(project, accessRules);
+        } else {
+            currentAccessRules.addAll(accessRules);
+        }
+    }
+    
     static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors) {
         try {
             project.getWorkspace().run(new IWorkspaceRunnable() {

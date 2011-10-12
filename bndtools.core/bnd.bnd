@@ -33,7 +33,7 @@ Private-Package: bndtools,\
 	org.osgi.impl.bundle.obr.resource,\
 	org.osgi.service.obr,\
 	${felix.obr.packages},\
-
+	aQute.lib.io
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
 	bndtools.editor.model,\
