@@ -1,4 +1,4 @@
-package aQute.bnd.make.component;
+package aQute.bnd.component;
 
 import java.util.*;
 
@@ -11,7 +11,6 @@ import aQute.libg.version.*;
 
 class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
-
 	Version							version			= new Version("1.1.0");
 	String							name;
 	String							factory;
@@ -41,29 +40,33 @@ class ComponentDef {
 		else
 			analyzer.referTo(implementation);
 
-		if (name == null)
-			name = implementation;
+		name = implementation;
 
 		if (service != null && service.length > 0) {
 			for (String interfaceName : service)
 				analyzer.referTo(interfaceName);
-		} else if (servicefactory)
+		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 	}
 
 	Tag getTag() {
-		Tag component = new Tag("component");
+		Tag component = new Tag("scr:component");
 		component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/" + version);
-
 		component.addAttribute("name", name);
-		if (factory != null)
-			component.addAttribute("factory", factory);
 
 		if (servicefactory != null)
-			component.addAttribute("factory", servicefactory);
+			component.addAttribute("servicefactory", servicefactory);
 
 		if (configurationPolicy != null)
-			component.addAttribute("configuration-policy", configurationPolicy);
+			component.addAttribute("configuration-policy", configurationPolicy.toString()
+					.toLowerCase());
+		if (enabled != null)
+			component.addAttribute("enabled", enabled);
+		if (immediate != null)
+			component.addAttribute("immediate", immediate);
+
+		if (factory != null)
+			component.addAttribute("factory", factory);
 
 		if (activate != null)
 			component.addAttribute("activate", activate);
@@ -74,15 +77,12 @@ class ComponentDef {
 		if (modified != null)
 			component.addAttribute("modified", modified);
 
-		if (enabled != null)
-			component.addAttribute("enabled", enabled);
-
-		if (properties != null)
-			component.addAttribute("properties", properties);
+		Tag impl = new Tag(component, "implementation");
+		impl.addAttribute("class", implementation);
 
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
-			if (servicefactory)
+			if (servicefactory != null && servicefactory)
 				s.addAttribute("servicefactory", true);
 
 			for (String ss : service) {
@@ -99,11 +99,22 @@ class ComponentDef {
 
 		for (Map.Entry<String, Set<String>> kvs : property.entrySet()) {
 			Tag property = new Tag(component, "property");
-			property.addAttribute("name", kvs.getKey());
+			String name = kvs.getKey();
+			String type = null;
+			int n = name.indexOf(':');
+			if (n > 0) {
+				type = name.substring(n + 1);
+				name = name.substring(0, n);
+			}
+
+			property.addAttribute("name", name);
+			if (type != null) {
+				property.addAttribute("type", type);
+			}
 			StringBuffer sb = new StringBuffer();
-			
+
 			String del = "";
-			for ( String v : kvs.getValue()) {
+			for (String v : kvs.getValue()) {
 				sb.append(del);
 				sb.append(v);
 				del = "\n";
@@ -111,6 +122,10 @@ class ComponentDef {
 			property.addContent(sb.toString());
 		}
 
+		for (String entry : properties) {
+			Tag properties = new Tag(component, "properties");
+			properties.addAttribute("entry", entry);
+		}
 		return component;
 	}
 
