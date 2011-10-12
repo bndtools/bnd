@@ -154,7 +154,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     calculateAccessRules(projectAccessRules, c);
                 }
             }
- 
+
             for (Container c : containers) {
                 IClasspathEntry cpe;
                 IPath sourceAttachment = null;
@@ -177,10 +177,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
                     if (c.getType() == Container.TYPE.PROJECT) {
                         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
+
                         List<IAccessRule> rules = projectAccessRules.get(c.getProject());
                         IAccessRule[] accessRules = null;
                         if (rules != null) {
-                            rules.add(0, JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                            rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
                             accessRules = rules.toArray(new IAccessRule[rules.size()]);
                         }
                         cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
@@ -193,8 +194,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     errors.add(c.getError());
                 }
             }
-            
-            
+
+
             errors.addAll(model.getErrors());
             replaceClasspathProblemMarkers(project, errors);
             model.clear();
@@ -217,6 +218,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 addAccessRules(projectAccessRules, c.getProject(), tmp);
                 return null;
             } else {
+                tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
                 return tmp.toArray(new IAccessRule[tmp.size()]);
             }
         } else if (c.getType() == TYPE.PROJECT) {
@@ -246,7 +248,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             currentAccessRules.addAll(accessRules);
         }
     }
-    
+
     static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors) {
         try {
             project.getWorkspace().run(new IWorkspaceRunnable() {
