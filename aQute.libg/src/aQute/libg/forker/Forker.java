@@ -42,7 +42,7 @@ public class Forker<T> {
 
 			try {
 				synchronized (this) {
-					// Check if we go canceled
+					// Check if we got canceled
 					if (canceled.get())
 						return;
 
