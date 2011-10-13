@@ -5,6 +5,10 @@ package aQute.lib.deployer.obr;
  * @author Neil Bartlett
  */
 public class Property {
+	
+	static final String PACKAGE = "package";
+	static final String USES = "uses";
+	static final String VERSION = "version";
 
 	private final String name;
 	private final String type;

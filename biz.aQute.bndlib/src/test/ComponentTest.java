@@ -19,6 +19,7 @@ import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Constants;
 
@@ -62,6 +63,30 @@ public class ComponentTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Test to see if we ignore scala.ScalaObject as interface
+	 * @throws Exception 
+	 */
+	public void testScalaObject () throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File( "jar/com.test.scala.jar"));
+		b.setProperty("Service-Component", "*");
+		b.setProperty("Export-Package", "com.test.scala.*");
+		Jar jar = b.build();
+		Manifest m = jar.getManifest();
+		System.out.println(Processor.join(b.getErrors()));
+		System.out.println(Processor.join(b.getWarnings()));
+		System.out.println(m.getMainAttributes().getValue("Service-Component"));
+		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml").openInputStream(), System.out);
+		Document doc = doc(b, "com.test.scala.Service");
+		assertEquals("com.test.scala.Service", xpath.evaluate("component/implementation/@class", doc));
+		assertEquals("", xpath.evaluate("component/service/provide/@interface", doc));
+		
+	}
+	
+	
+	
+	
 	/**
 	 * Test config with metatype
 	 */

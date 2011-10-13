@@ -3,7 +3,6 @@ package aQute.lib.osgi;
 import static aQute.lib.io.IO.*;
 
 import java.io.*;
-import java.nio.charset.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
@@ -222,8 +221,8 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
 			if (!done.contains(entry.getKey()))
-				writeResource(jout, directories, (String) entry.getKey(), (Resource) entry
-						.getValue());
+				writeResource(jout, directories, (String) entry.getKey(),
+						(Resource) entry.getValue());
 		}
 		jout.finish();
 	}
@@ -286,8 +285,7 @@ public class Jar implements Closeable {
 	 * <p>
 	 * As a bonus, we can now sort the manifest!
 	 */
-	static Charset	UTF8		= Charset.forName("UTF-8");
-	static byte[]	CONTINUE	= "\r\n ".getBytes(UTF8);
+	static byte[]	CONTINUE	=  new byte[] {'\r','\n', ' '};
 
 	/**
 	 * Main function to output a manifest properly in UTF-8.
@@ -300,7 +298,7 @@ public class Jar implements Closeable {
 	 *             when something fails
 	 */
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
-		writeEntry(out, "Manifest-Version", "1");
+		writeEntry(out, "Manifest-Version", "1.0");
 		attributes(manifest.getMainAttributes(), out);
 
 		TreeSet<String> keys = new TreeSet<String>();
@@ -338,7 +336,7 @@ public class Jar implements Closeable {
 	 *             when something fails
 	 */
 	private static int write(OutputStream out, int i, String s) throws IOException {
-		byte[] bytes = s.getBytes(UTF8);
+		byte[] bytes = s.getBytes("UTF8");
 		return write(out, i, bytes);
 	}
 
@@ -587,6 +585,12 @@ public class Jar implements Closeable {
 		if (algorithms == null)
 			algorithms = new String[] { "SHA", "MD5" };
 
+		Manifest m = getManifest();
+		if ( m == null) {
+			m= new Manifest();
+			setManifest(m);
+		}
+		
 		MessageDigest digests[] = new MessageDigest[algorithms.length];
 		int n = 0;
 		for (String algorithm : algorithms)
@@ -595,8 +599,13 @@ public class Jar implements Closeable {
 		byte buffer[] = new byte[30000];
 
 		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
+			
+			// Skip the manifest
+			if (entry.getKey().equals("META-INF/MANIFEST.MF"))
+				continue;
+
 			Resource r = entry.getValue();
-			Attributes attributes = getManifest().getAttributes(entry.getKey());
+			Attributes attributes = m.getAttributes(entry.getKey());
 			if (attributes == null) {
 				attributes = new Attributes();
 				getManifest().getEntries().put(entry.getKey(), attributes);
@@ -666,6 +675,16 @@ public class Jar implements Closeable {
 			f.getParentFile().mkdirs();
 			copy(entry.getValue().openInputStream(), f);
 		}
+	}
+
+	/**
+	 * Make sure we have a manifest
+	 * @throws Exception
+	 */
+	public void ensureManifest() throws Exception {
+		if ( getManifest() != null)
+			return;
+		manifest = new Manifest();
 	}
 
 }

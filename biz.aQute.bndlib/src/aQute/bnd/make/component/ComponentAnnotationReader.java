@@ -11,7 +11,8 @@ import aQute.lib.osgi.*;
 import aQute.libg.reporter.*;
 
 public class ComponentAnnotationReader extends ClassDataCollector {
-	private static final String	V1_1					= "1.1.0"; // "1.1.0"
+	String						EMPTY[]					= new String[0];
+	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
 	static Pattern				BINDDESCRIPTOR			= Pattern
 																.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
 	static Pattern				BINDMETHOD				= Pattern.compile("(set|bind|add)(.)(.*)");
@@ -75,27 +76,26 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			setBoolean(COMPONENT_IMMEDIATE, annotation.get(Component.IMMEDIATE), false);
 			setBoolean(COMPONENT_SERVICEFACTORY, annotation.get(Component.SERVICEFACTORY), false);
 
-			if( annotation.get(Component.DESIGNATE)!= null) {
+			if (annotation.get(Component.DESIGNATE) != null) {
 				String configs = annotation.get(Component.DESIGNATE);
-				if ( configs != null ) {
-					set(COMPONENT_DESIGNATE, Clazz.objectDescriptorToFQN(configs),"");
+				if (configs != null) {
+					set(COMPONENT_DESIGNATE, Clazz.objectDescriptorToFQN(configs), "");
 				}
 			}
-				
-			if( annotation.get(Component.DESIGNATE_FACTORY)!= null) {
+
+			if (annotation.get(Component.DESIGNATE_FACTORY) != null) {
 				String configs = annotation.get(Component.DESIGNATE_FACTORY);
-				if ( configs != null ) {
-					set(COMPONENT_DESIGNATEFACTORY, Clazz.objectDescriptorToFQN(configs),"");
+				if (configs != null) {
+					set(COMPONENT_DESIGNATEFACTORY, Clazz.objectDescriptorToFQN(configs), "");
 				}
 			}
-				
-				
-			setVersion((String)annotation.get(Component.VERSION));
-			
+
+			setVersion((String) annotation.get(Component.VERSION));
+
 			String configurationPolicy = annotation.get(Component.CONFIGURATION_POLICY);
 			if (configurationPolicy != null)
 				set(COMPONENT_CONFIGURATION_POLICY, configurationPolicy.toLowerCase(), "");
-			
+
 			doProperties(annotation);
 
 			Object[] provides = (Object[]) annotation.get(Component.PROVIDE);
@@ -104,11 +104,14 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				// Use the found interfaces, but convert from internal to
 				// fqn.
 				if (interfaces != null) {
-					p = new String[interfaces.length];
-					for (int i = 0; i < interfaces.length; i++)
-						p[i] = Clazz.internalToFqn(interfaces[i]);
+					List<String> result = new ArrayList<String>();
+					for (int i = 0; i < interfaces.length; i++) {
+						if (!interfaces[i].equals("scala/ScalaObject") )
+							result.add(Clazz.internalToFqn(interfaces[i]));
+					}
+					p = result.toArray(EMPTY);
 				} else
-					p = new String[0];
+					p = EMPTY;
 			} else {
 				// We have explicit interfaces set
 				p = new String[provides.length];
@@ -125,10 +128,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				setVersion(V1_1);
 
 			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
-				reporter
-						.error(
-								"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-								className, methodDescriptor);
+				reporter.error(
+						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+						className, methodDescriptor);
 
 			if (method.equals("activate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
@@ -137,18 +139,15 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				setVersion(V1_1);
 				set(COMPONENT_ACTIVATE, method, "<>");
 			}
-			
-			
 
 		} else if (annotation.getName().equals(Deactivate.RNAME)) {
 			if (!checkMethod())
 				setVersion(V1_1);
-			
+
 			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
-				reporter
-						.error(
-								"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-								className, methodDescriptor);
+				reporter.error(
+						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+						className, methodDescriptor);
 			if (method.equals("deactivate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
 				// This is the default!
@@ -160,7 +159,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
 		} else if (annotation.getName().equals(Reference.RNAME)) {
-			
+
 			String name = (String) annotation.get(Reference.NAME);
 			String bind = method;
 			String unbind = null;
@@ -211,10 +210,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			}
 
 			if (map.containsKey(name))
-				reporter
-						.error(
-								"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
-								name, map.get(name), service, "");
+				reporter.error(
+						"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
+						name, map.get(name), service, "");
 			map.put(name, service);
 
 			if (isTrue(annotation.get(Reference.MULTIPLE)))
@@ -233,19 +231,17 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	private void setVersion(String v) {
-		if (v == null )
+		if (v == null)
 			return;
-		
+
 		if (version == null)
 			version = v;
-		else
-			if ( v.compareTo(version)> 0) // we're safe to 9.9.9
-				version = v;
+		else if (v.compareTo(version) > 0) // we're safe to 9.9.9
+			version = v;
 	}
 
 	private boolean checkMethod() {
-		 return Modifier.isPublic(methodAccess)
-		 || Modifier.isProtected(methodAccess);
+		return Modifier.isPublic(methodAccess) || Modifier.isProtected(methodAccess);
 	}
 
 	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
@@ -337,7 +333,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		set(COMPONENT_OPTIONAL, optional);
 		set(COMPONENT_IMPLEMENTATION, clazz.getFQN(), "<>");
 		set(COMPONENT_PROPERTIES, properties);
-		if (version!=null) {
+		if (version != null) {
 			set(COMPONENT_VERSION, version, "<>");
 			reporter.trace("Component %s is v1.1", map);
 		}

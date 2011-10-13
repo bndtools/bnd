@@ -176,7 +176,9 @@ public class bnd extends Processor {
 		if ("wrap".equals(args[i])) {
 			doWrap(args, ++i);
 		} else if ("maven".equals(args[i])) {
-			MavenCommand maven = new MavenCommand();
+			MavenCommand maven = new MavenCommand(this);
+			maven.setTrace(isTrace());
+			maven.setPedantic(isPedantic());
 			maven.run(args, ++i);
 			getInfo(maven);
 		} else if ("global".equals(args[i])) {
@@ -1823,7 +1825,7 @@ public class bnd extends Processor {
 
 			for (; i < args.length; i++) {
 				if (args[i].startsWith("-reportdir")) {
-					reportDir = getFile(args[i]).getAbsoluteFile();
+					reportDir = getFile(args[++i]).getAbsoluteFile();
 					if (!reportDir.isDirectory())
 						error("reportdir must be a directory " + reportDir);
 				} else if (args[i].startsWith("-title")) {
@@ -2336,4 +2338,26 @@ public class bnd extends Processor {
 		out.append(";version=" + v + "\n"); // '[" + v + "," + v + "]'\n");
 	}
 
+	/**
+	 * @return
+	 * @throws IOException
+	 * @throws MalformedURLException
+	 */
+	protected Jar getJarFromFileOrURL(String spec) throws IOException, MalformedURLException {
+		Jar jar;
+		File jarFile = getFile(spec);
+		if (jarFile.exists()) {
+			jar = new Jar(jarFile);
+		} else {
+			URL url = new URL(spec);
+			InputStream in = url.openStream();
+			try {
+				jar = new Jar(url.getFile(), in);
+			} finally {
+				in.close();
+			}
+		}
+		addClose(jar);
+		return jar;
+	}
 }

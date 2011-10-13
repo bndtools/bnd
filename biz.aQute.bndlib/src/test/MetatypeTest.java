@@ -217,7 +217,7 @@ public class MetatypeTest extends TestCase {
 		List<String> list();
 		Set<String> set();
 		Queue<String> queue();
-		Deque<String> deque();
+//		Deque<String> deque();
 		Stack<String> stack();
 		ArrayList<String> arrayList();
 		LinkedList<String> linkedList();
@@ -238,8 +238,8 @@ public class MetatypeTest extends TestCase {
 		assertEqualList( source, trt.set());
 		assertTrue( trt.queue() instanceof Queue);
 		assertEqualList(source, trt.queue());
-		assertTrue( trt.deque() instanceof Deque);
-		assertEqualList( source, trt.deque());
+//		assertTrue( trt.deque() instanceof Deque);
+//		assertEqualList( source, trt.deque());
 		assertTrue( trt.stack() instanceof Stack);
 		assertEqualList(source, trt.stack());
 		assertTrue( trt.arrayList() instanceof ArrayList);

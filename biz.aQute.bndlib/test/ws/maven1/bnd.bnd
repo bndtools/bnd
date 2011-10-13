@@ -1,0 +1,4 @@
+-plugin: aQute.bnd.maven.support.MavenRemoteRepository;repositories=${project}/m2
+
+-buildpath: \
+	com.springsource.org.apache.commons.beanutils;version=1.6.1;groupId=org.apache.commons;scope=compile

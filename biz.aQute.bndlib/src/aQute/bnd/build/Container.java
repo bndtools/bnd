@@ -18,7 +18,7 @@ public class Container {
 	final String				version;
 	final String				error;
 	final Project				project;
-	final Map<String, String>	attributes;
+	volatile Map<String, String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
 
@@ -133,6 +133,12 @@ public class Container {
 	public Map<String, String> getAttributes() {
 		return attributes;
 	}
+	
+	public void putAttribute(String name, String value) {
+		if (attributes == Collections.<String,String>emptyMap())
+			attributes = new HashMap<String, String>(1);
+		attributes.put(name, value);
+	}
 
 	/**
 	 * Return the this if this is anything else but a library. If it is a
@@ -159,7 +165,7 @@ public class Container {
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
-						List<Container> list = project.getBundles(Strategy.HIGHEST, line);
+						List<Container> list = project.getBundles(Strategy.HIGHEST, line, null);
 						result.addAll(list);
 					}
 				}

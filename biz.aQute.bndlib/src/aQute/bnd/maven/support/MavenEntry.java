@@ -2,37 +2,68 @@ package aQute.bnd.maven.support;
 
 import java.io.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
 import aQute.libg.filelock.*;
 
 /**
- * An entry in the maven cache in the .m2/repository directory. It provides
- * methods to get the pom and the artifact.
+ * An entry (a group/artifact) in the maven cache in the .m2/repository
+ * directory. It provides methods to get the pom and the artifact.
  * 
  */
 public class MavenEntry implements Closeable {
 	final Maven					maven;
+	final File					root;
 	final File					dir;
 	final String				path;
 	final DirectoryLock			lock;
-	Future<File>				artifact;
 	final Map<URI, CachedPom>	poms	= new HashMap<URI, CachedPom>();
+	final File					pomFile;
+	final File					artifactFile;
+	final String				pomPath;
+	final File					propertiesFile;
+	Properties					properties;
+	private boolean				propertiesChanged;
+	FutureTask<File>			artifact;
+	private String				artifactPath;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param maven
+	 * @param path
+	 */
 	MavenEntry(Maven maven, String path) {
+		this.root = maven.repository;
 		this.maven = maven;
 		this.path = path;
+		this.pomPath = path + ".pom";
+		this.artifactPath = path + ".jar";
 		this.dir = IO.getFile(maven.repository, path).getParentFile();
 		this.dir.mkdirs();
+		this.pomFile = new File(maven.repository, pomPath);
+		this.artifactFile = new File(maven.repository, artifactPath);
+		this.propertiesFile = new File(dir, "bnd.properties");
 		this.lock = new DirectoryLock(dir, 5 * 60000); // 5 mins
 	}
 
+	/**
+	 * This is the method to get the POM for a cached entry.
+	 * 
+	 * @param urls
+	 *            The allowed URLs
+	 * @return a CachedPom for this maven entry
+	 * 
+	 * @throws Exception
+	 *             If something goes haywire
+	 */
 	public CachedPom getPom(URI[] urls) throws Exception {
 
+		// First check if we have the pom cached in memory
 		synchronized (this) {
 			// Try to find it in the in-memory cache
 			for (URI url : urls) {
@@ -42,195 +73,266 @@ public class MavenEntry implements Closeable {
 			}
 		}
 
+		// Ok, we need to see if it exists on disk
+
 		// lock.lock();
 		try {
-			try {
-				return getPom0(urls);
-			} catch (Exception e) {
-				// If things fail, we delete the directory and
-				// try one more time.
-				remove0();
-				return getPom0(urls);
+
+			if (isValid()) {
+				// Check if one of our repos had the correct file.
+				for (URI url : urls) {
+					String valid = getProperty(url.toASCIIString());
+					if (valid != null)
+						return createPom(url);
+				}
+
+				// we have the info, but have to verify that it
+				// exists in one of our repos but we do not have
+				// to download it as our cache is already ok.
+				for (URI url : urls) {
+					if (verify(url, pomPath)) {
+						return createPom(url);
+					}
+				}
+
+				// It does not exist in out repo
+				// so we have to fail even though we do have
+				// the file.
+
+			} else {
+				dir.mkdirs();
+				// We really do not have the file
+				// so we have to find out who has it.
+				for (final URI url : urls) {
+
+					if (download(url, pomPath)) {
+						if (verify(url, pomPath)) {
+							artifact = new FutureTask<File>(new Callable<File>() {
+
+								public File call() throws Exception {
+									if (download(url, artifactPath)) {
+										verify(url, artifactPath);
+									}
+									return artifactFile;
+								}
+
+							});
+							maven.executor.execute(artifact);
+							return createPom(url);
+						}
+					}
+				}
 			}
+			return null;
 		} finally {
+			saveProperties();
 			// lock.release();
 		}
 	}
 
 	/**
-	 * @throws InterruptedException
+	 * Download a resource from the given repo.
 	 * 
+	 * @param url
+	 *            The base url for the repo
+	 * @param path
+	 *            The path part
+	 * @return
+	 * @throws MalformedURLException
 	 */
-	public void remove() throws InterruptedException {
-		lock.lock();
+	private boolean download(URI repo, String path) throws MalformedURLException {
 		try {
-			remove0();
-		} finally {
-			lock.release();
+			URL url = toURL(repo, path);
+			System.out.println("Downloading "  + repo + " path " + path + " url " + url);
+			File file = new File(root, path);
+			IO.copy(url.openStream(), file);
+			System.out.println("Downloaded "  + url);
+			return true;
+		} catch (Exception e) {
+			System.err.println("debug: " + e);
+			return false;
 		}
 	}
 
 	/**
+	 * Converts a repo + path to a URL..
 	 * 
+	 * @param base
+	 *            The base repo
+	 * @param path
+	 *            The path in the directory + url
+	 * @return a URL that points to the file in the repo
+	 * 
+	 * @throws MalformedURLException
 	 */
-	private void remove0() {
-		System.out.println("Removing " + dir);
-		poms.clear();
-		for (File sub : dir.listFiles()) {
-			if (!sub.getName().equals(DirectoryLock.LOCKNAME))
-				sub.delete();
-		}
-		poms.clear();
-		artifact = null;
+	URL toURL(URI base, String path) throws MalformedURLException {
+		StringBuilder r = new StringBuilder();
+		r.append(base.toString());
+		if (r.charAt(r.length() - 1) != '/')
+			r.append('/');
+		r.append(path);
+		return new URL(r.toString());
 	}
 
-	private synchronized CachedPom getPom0(URI... urls) throws Exception {
-		String pomPath = this.path + ".pom";
-		File pomFile = new File(maven.repository, pomPath);
-		if (!pomFile.isFile()) {
+	/**
+	 * Check if this is a valid cache directory, might probably need some more
+	 * stuff.
+	 * 
+	 * @return true if valid
+	 */
+	private boolean isValid() {
+		return pomFile.isFile() && pomFile.length() > 100 && artifactFile.isFile()
+				&& artifactFile.length() > 100;
+	}
 
-			// Try to download it.
-			for (final URI url : urls) {
-				if (download(url, pomPath, pomFile, true)) {
-					final String artifactPath = this.path + ".jar";
-					final File artifact = new File(maven.repository, artifactPath);
-					FutureTask<File> runnable = new FutureTask<File>(new Runnable() {
-						public void run() {
-							try {
-								if (!download(url, artifactPath, artifact, true))
-									throw new IllegalStateException("Could not properly download "
-											+ artifact);
-								System.out.println("download " + artifact);
-							} catch (Exception e) {
-								throw new RuntimeException(e);
-							}
-						}
-					}, artifact);
-//					maven.schedule(runnable);
-					this.artifact = runnable;
-					runnable.run();
-					return createPom(url);
-				}
-			}
-		} else {
-			for (URI url : urls) {
-				if (check(url, false)) {
-					return createPom(url);
-				}
-			}
-			for (URI url : urls) {
-				if (check(url, true)) {
-					return createPom(url);
+	/**
+	 * We maintain a set of bnd properties in the cache directory.
+	 * 
+	 * @param key
+	 *            The key for the property
+	 * @param value
+	 *            The value for the property
+	 */
+	private void setProperty(String key, String value) {
+		Properties properties = getProperties();
+		properties.setProperty(key, value);
+		propertiesChanged = true;
+	}
+
+	/**
+	 * Answer the properties, loading if needed.
+	 */
+	protected Properties getProperties() {
+		if (properties == null) {
+			properties = new Properties();
+			File props = new File(dir, "bnd.properties");
+			if (props.exists()) {
+				try {
+					FileInputStream in = new FileInputStream(props);
+					properties.load(in);
+				} catch (Exception e) {
+					// we ignore for now, will handle it on safe
 				}
 			}
 		}
-		throw new FileNotFoundException("Cannot find pom for " + pomPath + " in "
-				+ Arrays.toString(urls));
+		return properties;
 	}
 
+	/**
+	 * Answer a property.
+	 * 
+	 * @param key
+	 *            The key
+	 * @return The value
+	 */
+	private String getProperty(String key) {
+		Properties properties = getProperties();
+		return properties.getProperty(key);
+	}
+
+	private void saveProperties() throws IOException {
+		if (propertiesChanged) {
+			FileOutputStream fout = new FileOutputStream(propertiesFile);
+			try {
+				properties.store(fout, "");
+			} finally {
+				properties = null;
+				propertiesChanged = false;
+				fout.close();
+			}
+		}
+	}
+
+	/**
+	 * Help function to create the POM and record its source.
+	 * 
+	 * @param url
+	 *            the repo from which it was constructed
+	 * @return the new pom
+	 * @throws Exception
+	 */
 	private CachedPom createPom(URI url) throws Exception {
-		File pomFile = IO.getFile(maven.repository, path + ".pom");
-		CachedPom pom = new CachedPom(this, pomFile, url);
+		CachedPom pom = new CachedPom(this, url);
 		pom.parse();
 		poms.put(url, pom);
+		setProperty(url.toASCIIString(), "true");
 		return pom;
 	}
 
 	/**
-	 * Check if the current download matches the download.
-	 * @param url
-	 * @param download
+	 * Verify that the repo has a checksum file for the given path and that this
+	 * checksum matchs.
+	 * 
+	 * @param repo
+	 *            The repo
+	 * @param path
+	 *            The file id
+	 * @return true if there is a digest and it matches one of the algorithms
+	 * @throws Exception
+	 */
+	boolean verify(URI repo, String path) throws Exception {
+		for (String algorithm : Maven.ALGORITHMS) {
+			if (verify(repo, path, algorithm))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Verify the path against its digest for the given algorithm.
+	 * 
+	 * @param repo
+	 * @param path
+	 * @param algorithm
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean check(URI url, boolean download) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		String extform = url.normalize().toString();
-		for (int i = 0; i < extform.length(); i++) {
-			char c = extform.charAt(i);
-			if (Character.isLetterOrDigit(c) || c == '.' || c == '_' || c == '-')
-				sb.append(c);
-			else
-				sb.append('_');
-		}
-		sb.append(".pom.sha1");
-		String key = sb.toString();
+	private boolean verify(URI repo, String path, String algorithm) throws Exception {
+		String digestPath = path + "." + algorithm;
+		File actualFile = new File(root, path);
 
-		File keyFile = new File(dir, key);
-		if (keyFile.isFile())
-			return true;
+		if (download(repo, digestPath)) {
+			File digestFile = new File(root, digestPath);
+			final MessageDigest md = MessageDigest.getInstance(algorithm);
+			IO.copy(actualFile, new OutputStream() {
+				@Override public void write(int c) throws IOException {
+					md.update((byte) c);
+				}
 
-		if (download) {
-			if (download(url, path + ".pom.sha1", keyFile, false)) {
-				// TODO Verify the checksum?
+				@Override public void write(byte[] buffer, int offset, int length) {
+					md.update(buffer, offset, length);
+				}
+			});
+			byte[] digest = md.digest();
+			String source = IO.collect(digestFile).toUpperCase();
+			String hex = Hex.toHexString(digest).toUpperCase();
+			if (source.startsWith(hex)) {
+				System.out.println("Verified ok " + actualFile + " digest " + algorithm);
 				return true;
 			}
 		}
-		keyFile.delete();
-		return false;
-	}
-
-	public void close() throws IOException {
-	}
-
-	private boolean download(URI base, String path, File dest, boolean verify) throws Exception {
-		try {
-			StringBuilder r = new StringBuilder();
-			r.append(base.toString());
-			if (r.charAt(r.length() - 1) != '/')
-				r.append('/');
-			r.append(path);
-			URL url = new URL(r.toString());
-
-			System.out.println("Downloading " + url);
-			IO.copy(url.openStream(), dest);
-			if (verify) {
-				File algFile = new File(dest.getAbsolutePath() + ".sha1");
-				IO.copy(new URL(url.toExternalForm() + ".sha1").openStream(), algFile);
-				if (!verify(dest, SHA1.getDigester())) {
-					System.out.println("Not verified!");
-					throw new IllegalStateException("could not verify");
-				}
-			}
-			return true;
-		} catch (Exception e) {
-			System.out.println("Download failed due to " + e);
-		}
-		dest.delete();
-		return false;
-	}
-
-	private boolean verify(File file, Digester<?> digester) throws Exception {
-		File newFile = new File(file.getAbsolutePath() + "."
-				+ digester.getAlgorithm().toLowerCase());
-		if (!newFile.isFile()) {
-			return false;
-		}
-
-		IO.copy(file, digester);
-		digester.flush();
-		byte[] digest = digester.getMessageDigest().digest();
-		String s = IO.collect(newFile).toUpperCase();
-		String hex = Hex.toHexString(digest).toUpperCase();
-		if (s.startsWith(hex)) {
-			System.out.println("Verified ok " + file);
-			return true;
-		}
-
-		System.out.printf("Failed to verify %s checksum for %s\n", digester.getAlgorithm(), file);
+		System.out.println("Failed to verify " + actualFile + " for digest " + algorithm);
 		return false;
 	}
 
 	public File getArtifact() throws Exception {
-		if (artifact != null) {
-			File f = artifact.get();
-			if ( ! f.isFile())
-				System.out.println("ouch " + f);
-		}
-		
-		return IO.getFile(maven.repository, path + ".jar");
+		if (artifact == null )
+			return artifactFile;
+		return artifact.get();
 	}
-	
-	
+
+	public File getPomFile() {
+		return pomFile;
+	}
+
+	public void close() throws IOException {
+
+	}
+
+	public void remove() {
+		if (dir.getParentFile() != null) {
+			IO.delete(dir);
+		}
+	}
 
 }

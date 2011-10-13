@@ -23,7 +23,6 @@ public class ProjectPom extends Pom {
 	}
 
 	@Override protected void parse(Document doc, XPath xp) throws Exception {
-		super.parse(doc, xp);
 
 		packaging = xp.evaluate("project/packaging", doc);
 		url = xp.evaluate("project/url", doc);
@@ -36,14 +35,15 @@ public class ProjectPom extends Pom {
 			String parentArtifactId = xp.evaluate("artifactId", parent).trim();
 			String parentVersion = xp.evaluate("version", parent).trim();
 			String parentPath = xp.evaluate("relativePath", parent).trim();
-			if (parentPath != null && !parentPath.isEmpty()) {
+			if (parentPath != null && parentPath.length()!=0) {
 				parentFile = IO.getFile(getPomFile().getParentFile(), parentPath);
 			}
 			if (parentFile.isFile()) {
 				ProjectPom parentPom = new ProjectPom(maven, parentFile);
 				parentPom.parse();
 				dependencies.addAll(parentPom.dependencies);
-				for ( String key : parentPom.properties.stringPropertyNames()) {
+				for ( Enumeration<?> e = parentPom.properties.propertyNames(); e.hasMoreElements(); ) {
+					String key = (String) e.nextElement();
 					if ( ! properties.contains(key))
 						properties.put(key, parentPom.properties.get(key));
 				}
@@ -64,9 +64,9 @@ public class ProjectPom extends Pom {
 			Node node = propNodes.item(i);
 			String key = node.getNodeName();
 			String value = node.getTextContent();
-			if ( key == null || key.isEmpty())
+			if ( key == null || key.length()==0)
 				throw new IllegalArgumentException("Pom has an empty or null key");
-			if ( value == null || value.isEmpty())
+			if ( value == null || value.length()==0)
 				throw new IllegalArgumentException("Pom has an empty or null value for property " + key);
 			properties.setProperty(key, value.trim());
 		}
@@ -82,6 +82,7 @@ public class ProjectPom extends Pom {
 			repositories.add(uri);
 		}
 
+		super.parse(doc, xp);
 	}
 
 //	private void print(Node node, String indent) {
@@ -101,11 +102,11 @@ public class ProjectPom extends Pom {
 	 * @throws Exception
 	 */
 	private void setNames(Pom pom) throws Exception {
-		if (artifactId == null || artifactId.isEmpty())
+		if (artifactId == null || artifactId.length()==0)
 			artifactId = pom.getArtifactId();
-		if (groupId == null || groupId.isEmpty())
+		if (groupId == null || groupId.length()==0)
 			groupId = pom.getGroupId();
-		if (version == null || version.isEmpty())
+		if (version == null || version.length()==0)
 			version = pom.getVersion();
 		if ( description == null )
 			description = pom.getDescription();
@@ -130,14 +131,18 @@ public class ProjectPom extends Pom {
 		}
 	}
 
-	public Set<Pom> getDependencies(Scope scope) throws Exception {
-		return getDependencies(scope, repositories.toArray(new URI[0]));
+	public Set<Pom> getDependencies(Scope action) throws Exception {
+		return getDependencies(action, repositories.toArray(new URI[0]));
 	}
 
 	// Match any macros
 	final static Pattern	MACRO	= Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
 
 	protected String replace(String in) {
+		System.out.println("Replce: " + in);
+		if ( in == null) {
+			System.out.println("null??");
+		}
 		Matcher matcher = MACRO.matcher(in);
 		int last = 0;
 		StringBuilder sb = new StringBuilder();

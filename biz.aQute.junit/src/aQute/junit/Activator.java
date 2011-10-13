@@ -2,6 +2,7 @@ package aQute.junit;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -72,9 +73,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		if ( testerDir == null)
 			testerDir ="testdir";
 		
+		
 		final File reportDir = new File(testerDir);
 		final List<Bundle> queue = new Vector<Bundle>();
-
+		trace( "using %s, needed creation %s", reportDir, reportDir.mkdirs());
+		
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
 			public void bundleChanged(BundleEvent event) {
@@ -364,4 +367,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	public void error(String msg, Object... objects) {
 		message("! ", msg, objects);
 	}
+
+	static void main() throws URISyntaxException {
+		URI uri = new URI("/abc/def");
+	}
+
 }

@@ -5,6 +5,7 @@ public enum CapabilityType {
 	PACKAGE("package"),
 	EE("ee"),
 	BUNDLE("bundle"),
+	MODE("mode"),
 	OTHER(null);
 	
 	private String typeName;

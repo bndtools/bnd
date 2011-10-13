@@ -70,8 +70,11 @@ public abstract class ProjectLauncher {
 		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
 		
-		for (File file : project.toFile(run))
-			runbundles.add(file.getAbsolutePath());
+		for (Container container : run) {
+			File file = container.getFile();
+			if (file != null && file.isFile())
+				runbundles.add(file.getAbsolutePath());
+		}
 
 		if (project.getRunBuilds()) {
 			File[] builds = project.build();
@@ -89,7 +92,7 @@ public abstract class ProjectLauncher {
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
 		// For backward compatibility with bndtools launcher
-		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty("-runfw"));
+		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty("-runfw"), "-runfw");
 		runpath.addAll(fws);
 
 		for (Container c : runpath) {
@@ -309,7 +312,7 @@ public abstract class ProjectLauncher {
 	 *            The default spec for default jars
 	 */
 	public void addDefault(String defaultSpec) throws Exception {
-		Collection<Container> deflts = project.getBundles(Strategy.HIGHEST, defaultSpec);
+		Collection<Container> deflts = project.getBundles(Strategy.HIGHEST, defaultSpec, null);
 		for (Container c : deflts)
 			addClasspath(c);
 	}

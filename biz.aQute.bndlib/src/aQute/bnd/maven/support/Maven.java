@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.*;
 
 /*
  http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
@@ -19,11 +20,17 @@ public class Maven {
 	File							repository	= new File(m2, "repository");
 
 	public Maven(Executor executor) {
-		this.executor = executor;
+		if ( executor == null)
+			this.executor = Executors.newCachedThreadPool();
+		else
+			this.executor = executor;
 	}
-
+	
+	//http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
+	
+	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
 	public CachedPom getPom(String groupId, String artifactId, String version, URI... extra)
-			throws Exception {
+			throws Exception {		
 		MavenEntry entry = getEntry(groupId, artifactId, version);
 		return entry.getPom(extra);
 	}

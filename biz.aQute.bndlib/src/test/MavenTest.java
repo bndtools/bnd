@@ -3,12 +3,14 @@ package test;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
-import aQute.bnd.maven.support.Pom.Dependency;
+import aQute.bnd.maven.support.Pom.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
@@ -18,8 +20,25 @@ import aQute.libg.version.*;
 public class MavenTest extends TestCase {
 	Processor	processor	= new Processor();
 	final static File cwd = new File("").getAbsoluteFile();
-	
-	
+	static ExecutorService executor = Executors.newCachedThreadPool();
+	Maven maven = new Maven(executor);
+
+	/**
+	 * A test against maven 2
+	 * @throws Exception 
+	 * @throws URISyntaxException 
+	 */
+	public void testRemote() throws URISyntaxException, Exception {
+		URI repo = new URI("http://repo1.maven.org/maven2");
+		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects"	, "3.0.5.RELEASE");
+		entry.remove();
+		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
+		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
+		for ( Pom dep : dependencies ) {
+			System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+		}
+		
+	}
 	
 	/**
 	 * Test reading a pom for the buildpath
@@ -27,11 +46,8 @@ public class MavenTest extends TestCase {
 	 */
 	
 	public void testPom() throws Exception{
-		Workspace ws =  Workspace.getWorkspace( cwd.getParentFile());
-		assertNotNull(ws);
-
-		File mavenBnd = IO.getFile(cwd, "maven/testPom/bnd.bnd");
-		Project project = new Project(ws, mavenBnd.getParentFile(), mavenBnd);
+		
+		Project project = getProject("maven2");
 		
 		Collection<Container> containers = project.getBuildpath();
 		List<String> files = new ArrayList<String>();
@@ -54,11 +70,7 @@ public class MavenTest extends TestCase {
 	 */
 	
 	public void testProjectBundles() throws Exception {
-		Workspace ws =  Workspace.getWorkspace( cwd.getParentFile());
-		assertNotNull(ws);
-
-		File mavenBnd = IO.getFile(cwd, "maven/maven.bnd");
-		Project project = new Project(ws, mavenBnd.getParentFile(), mavenBnd);
+		Project project = getProject("maven1");
 		
 		Collection<Container> containers = project.getBuildpath();
 		List<String> files = new ArrayList<String>();
@@ -68,6 +80,21 @@ public class MavenTest extends TestCase {
 		assertTrue(files.remove("bin"));
 		System.out.println(files);
 		assertTrue( files.contains("com.springsource.org.apache.commons.beanutils-1.6.1.jar"));
+	}
+
+	/**
+	 * @return
+	 * @throws Exception
+	 */
+	protected Project getProject(String name) throws Exception {
+		File wsf = IO.getFile(cwd, "test/ws");
+		Workspace ws =  Workspace.getWorkspace( wsf );
+	
+		assertNotNull(ws);
+
+		Project project = ws.getProject(name);
+		assertNotNull(project);
+		return project;
 	}
 	
 	
@@ -83,7 +110,7 @@ public class MavenTest extends TestCase {
 		
 		Processor processor = new Processor(ws);
 		processor.setProperty(Constants.PLUGIN, 
-				"aQute.bnd.maven.support.MavenRemoteRepository;repositories=maven");
+				"aQute.bnd.maven.support.MavenRemoteRepository;repositories=test/ws/maven1/m2");
 
 		MavenRemoteRepository mr = processor.getPlugin(MavenRemoteRepository.class);
 		assertNotNull(mr);
@@ -128,12 +155,12 @@ public class MavenTest extends TestCase {
 	
 	public void testProjectPom() throws Exception {
 		Maven maven = new Maven(null);
-		ProjectPom pom = maven.createProjectModel( IO.getFile( cwd, "maven/testpom.xml"));
+		ProjectPom pom = maven.createProjectModel( IO.getFile( cwd, "test/ws/maven1/testpom.xml"));
 		assertEquals( "artifact", pom.getArtifactId());
 		assertEquals( "group-parent", pom.getGroupId());
 		assertEquals( "1.0.0", pom.getVersion());
 		assertEquals( "Artifact", pom.getName());
-		assertEquals( "Parent Description\nDescription ${user.dir}", pom.getDescription());
+		assertEquals( "Parent Description\n\nDescription artifact", pom.getDescription());
 		
 		List<Dependency> dependencies = pom.getDependencies();
 		boolean dep1=false; // dep1
@@ -199,7 +226,7 @@ public class MavenTest extends TestCase {
 				"com.springsource.org.apache.commons.logging", "1.0.4");
 		me.remove();
 
-		mr.setRepositories(new URI[] { IO.getFile(new File("").getAbsoluteFile(), "maven").toURI() });
+		mr.setRepositories(new URI[] { IO.getFile(new File("").getAbsoluteFile(), "test/ws/maven1/m2").toURI() });
 
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("scope", "compile");
@@ -248,7 +275,7 @@ public class MavenTest extends TestCase {
 
 	public void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
-		Properties p = parser.getProperties(new File("maven/pom.xml"));
+		Properties p = parser.getProperties(new File("test/ws/maven1/pom.xml"));
 		p.store(System.out, "testing");
 		assertEquals("Apache Felix Metatype Service", p.get("pom.name"));
 		assertEquals("org.apache.felix", p.get("pom.groupId")); // is from

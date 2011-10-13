@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>group-parent</groupId>
+    <artifactId>artifact-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Parent</name>
+    <version>0.0.0</version>
+	<description>Parent Description</description>
+
+    <!-- definitions for testing -->
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>2.4</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    
+   <properties>
+    	<a>a from parent</a>
+    	<b>b from parent</b>
+    	<c>${a}${a}</c>
+    </properties>
+    
+</project>
