@@ -100,24 +100,25 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         List<String> requiredPageIds = new LinkedList<String>();
 
         // Need to know the file and project names.
-        String fileName;
+        String path;
         String projectName;
+
         IEditorInput input = getEditorInput();
         if (input instanceof IFileEditorInput) {
             IFile file = ((IFileEditorInput) input).getFile();
-            fileName = file.getName();
+            path = file.getProjectRelativePath().toString();
             projectName = file.getProject().getName();
         } else {
-            fileName = input.getName();
+            path = input.getName();
             projectName = null;
         }
 
-        if (Workspace.BUILDFILE.equals(fileName) && (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName))) {
+        if (isWorkspaceConfig(path, projectName)) {
             requiredPageIds.addAll(getPagesBuildBnd());
-        } else if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
+        } else if (path.endsWith(LaunchConstants.EXT_BNDRUN)) {
             requiredPageIds.addAll(getPagesBndRun());
         } else {
-            requiredPageIds.addAll(getPagesBnd(fileName));
+            requiredPageIds.addAll(getPagesBnd(path));
         }
 
         IFormPage activePage = getActivePageInstance();
@@ -157,6 +158,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         if (currentPageId != null) {
             setActivePage(currentPageId);
         }
+    }
+
+    private boolean isWorkspaceConfig(String path, String projectName) {
+        boolean result = false;
+        if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+            if (Workspace.BUILDFILE.equals(path)) {
+                result = true;
+            } else if (path.startsWith("ext/") && path.endsWith(".bnd")) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
@@ -224,10 +237,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         return Collections.singletonList(WORKSPACE_PAGE);
     }
 
-    private List<String> getPagesBnd(String inputName) {
+    private List<String> getPagesBnd(String fileName) {
         List<String> pages = new ArrayList<String>(5);
 
-        boolean isProjectFile = Project.BNDFILE.equals(inputName);
+        boolean isProjectFile = Project.BNDFILE.equals(fileName);
         List<String> subBndFiles = model.getSubBndFiles();
         boolean isSubBundles = subBndFiles != null && !subBndFiles.isEmpty();
 
