@@ -33,11 +33,24 @@ javac.debug:  on
 
 # Bnd Options
 -sources:       true
--sourcepath:    ${project}/src 
--plugin:        aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
-                bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
--versionpolicy: "[${version;==;${@}},${version;+;${@}})"
--make:          (*).(jar);type=bnd;recipe="bnd/$1.bnd"
+-sourcepath:    ${project}/src
+
+ 
+-plugin:\
+	aQute.lib.deployer.obr.OBR;locations='file:/Users/njbartlett/.obr/jars/repository.xml';name=BndRepoBuild,\
+	aQute.lib.deployer.obr.OBR;locations='file:/Users/njbartlett/.obr/bundles/repository.xml';name=Bnd,\
+	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+
+# Remote
+#	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name=BndRepo,\
+
+# Local files
+#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/jars,\
+#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/bundles,\
+
+#aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
+
+-make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 
 # Runtime Options and Variables

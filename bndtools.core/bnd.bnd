@@ -81,11 +81,11 @@ eclipse.deps: \
 
 -buildpath: biz.aQute.bndlib;version=1.44,\
 	org.apache.felix.bundlerepository,\
-	patricia_trie,\
+	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml.stream,\
 	org.osgi.impl.bundle.bindex;version=project,\
-	org.osgi.service.obr
+	libs/org.osgi.service.obr-1.0.2.jar;version=file
