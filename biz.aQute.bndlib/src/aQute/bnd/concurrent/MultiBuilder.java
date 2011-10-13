@@ -1,6 +1,7 @@
 package aQute.bnd.concurrent;
 
 import java.io.*;
+import java.util.*;
 
 import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
@@ -15,7 +16,8 @@ import aQute.libg.forker.*;
 public class MultiBuilder {
 	Workspace		workspace;
 	Forker<Project>	forker;
-	boolean			building	= false;
+	boolean			building		= false;
+	final Set<File>	filesChanged	= Collections.synchronizedSet(new HashSet<File>());
 
 	/**
 	 * Constructor
@@ -75,8 +77,8 @@ public class MultiBuilder {
 	 * @throws InterruptedException
 	 */
 	public synchronized void syncBuild() throws InterruptedException {
-		while (building) {
-			wait();
+		if (building) {
+			forker.join();
 		}
 	}
 
@@ -100,7 +102,6 @@ public class MultiBuilder {
 					build();
 					synchronized (MultiBuilder.this) {
 						building = false;
-						notifyAll();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -115,21 +116,26 @@ public class MultiBuilder {
 	 * @throws Exception
 	 */
 	private void build() throws Exception {
+		// handle multiple requests
+		Thread.sleep(100);
+		workspace.bracket(true);
+		try {
+			for (final Project p : workspace.getAllProjects()) {
+				forker.doWhen(p.getDependson(), p, new Runnable() {
 
-		for (final Project p : workspace.getAllProjects()) {
-			forker.doWhen(p.getDependson(), p, new Runnable() {
-
-				public void run() {
-					try {
-						p.build();
-					} catch (Exception e) {
-						e.printStackTrace();
+					public void run() {
+						try {
+							p.build();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
-				}
-
-			});
+				});
+			}
+			forker.join();
+		} finally {
+			workspace.bracket(false);
 		}
-
 	}
 
 }

@@ -31,7 +31,8 @@ public class Workspace extends Processor {
 	final CachedFileRepo						cachedRepo;
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
-	
+	private boolean	postpone;
+
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project)
@@ -184,6 +185,20 @@ public class Workspace extends Processor {
 			}
 	}
 
+	public void bracket(boolean begin) {
+		List<BndListener> listeners = getPlugins(BndListener.class);
+		for (BndListener l : listeners)
+			try {
+				if ( begin )
+					l.begin();
+				else
+					l.end();
+			} catch (Exception e) {
+				// who cares?
+			}
+	}
+
+
 	private void copy(InputStream in, OutputStream out) throws Exception {
 		byte data[] = new byte[10000];
 		int size = in.read(data);
@@ -262,7 +277,6 @@ public class Workspace extends Processor {
 		return maven;
 	}
 
-	
 	@Override
 	protected void setTypeSpecificPlugins( Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
