@@ -72,7 +72,7 @@ public abstract class ProjectLauncher {
 		
 		for (Container container : run) {
 			File file = container.getFile();
-			if (file != null && file.isFile())
+			if (file != null && (file.isFile() || file.isDirectory()))
 				runbundles.add(file.getAbsolutePath());
 		}
 
