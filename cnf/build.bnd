@@ -35,20 +35,28 @@ javac.debug:  on
 -sources:       true
 -sourcepath:    ${project}/src
 
- 
+# Local OBR
+#-plugin:\
+#	aQute.lib.deployer.obr.OBR;locations='file:${user.home}/.obr/jars/repository.xml';name=BndRepoBuild,\
+#	aQute.lib.deployer.obr.OBR;locations='file:${user.home}/.obr/bundles/repository.xml';name=Bnd,\
+#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+
+# Remote OBR
 -plugin:\
-	aQute.lib.deployer.obr.OBR;locations='file:/Users/njbartlett/.obr/jars/repository.xml';name=BndRepoBuild,\
-	aQute.lib.deployer.obr.OBR;locations='file:/Users/njbartlett/.obr/bundles/repository.xml';name=Bnd,\
+	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/jars/repository.xml';name='Bnd Build Repository',\
+	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name='Bnd Repository',\
 	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
-# Remote
-#	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name=BndRepo,\
-
-# Local files
-#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/jars,\
+# Local FileRepo
+#-plugin:\
 #	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/bundles,\
+#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/jars,\
+#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
-#aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
+# Original embedded repo
+#-plugin:\
+#	aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
+#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
 -make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
