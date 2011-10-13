@@ -1,6 +1,7 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -392,7 +393,12 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	ResourceHandle mapResourceToHandle(Resource resource) throws Exception {
 		ResourceHandle result = null;
 		
-		URLResourceHandle handle = new URLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory());
+		URLResourceHandle handle ;
+		try {
+			handle = new URLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory());
+		} catch (FileNotFoundException e) {
+			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
+		}
 		if (handle.getLocation() == Location.local || getCacheDirectory() != null)
 			result = handle;
 		

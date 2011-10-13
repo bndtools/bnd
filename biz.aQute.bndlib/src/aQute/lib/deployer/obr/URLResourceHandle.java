@@ -1,6 +1,7 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,8 @@ public class URLResourceHandle implements ResourceHandle {
 				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), file.toString());
 			}
 			this.url = localFile.toURI().toURL();
+			if (!localFile.isFile() && !localFile.isDirectory())
+				throw new FileNotFoundException("File URL " + this.url + " points at a non-existing file.");
 			this.cachedFile = null;
 		} else if (url.startsWith(HTTP_SCHEME)) {
 			// HTTP URLs must be absolute
