@@ -7,17 +7,22 @@
 	<target name="build" depends="updateIndexes,master.build"/>
 	
 	<target name="updateBndFromRepo">
-		<delete dir="repos/repo/biz.aQute.bnd"/>
-		<delete dir="repos/repo/biz.aQute.bnd.annotation"/>
-		<delete dir="repos/repo/biz.aQute.bndlib"/>
-		<delete dir="repos/repo/biz.aQute.junit"/>
-		<delete dir="repos/repo/biz.aQute.launcher"/>
+		<delete dir="templates/cnfs/standard/repo/biz.aQute.bnd"/>
+		<delete dir="templates/cnfs/standard/repo/biz.aQute.bnd.annotation"/>
+		<delete dir="templates/cnfs/standard/repo/biz.aQute.bndlib"/>
+		<delete dir="templates/cnfs/standard/repo/biz.aQute.junit"/>
+		<delete dir="templates/cnfs/standard/repo/biz.aQute.launcher"/>
 		
-		<copy todir="repos/repo">
+		<copy todir="templates/cnfs/standard/repo">
 			<fileset dir="../cnf/repo">
 				<include name="biz.aQute.*/**"/>
 				<include name="bndtools.runtime.eclipse.applaunch/**"/>
 			</fileset>
+		</copy>
+		
+		<delete dir="templates/cnfs/lightweight/repo/biz.aQute.bnd"/>
+		<copy todir="templates/cnfs/lightweight/repo">
+			<fileset dir="../cnf/repo" includes="biz.aQute.bnd/**"/>
 		</copy>
 	</target>
 	
@@ -27,17 +32,21 @@
 				<fileset dir="${workspacedir}/org.osgi.impl.bundle.bindex/generated" includes="*.jar"/>
 			</classpath>
 		</taskdef>
+		
+		<antcall target="__generateIndex">
+			<param name="repopath" value="templates/cnfs/standard/buildrepo/"/>
+		</antcall>
+		<antcall target="__generateIndex">
+			<param name="repopath" value="templates/cnfs/standard/repo/"/>
+		</antcall>
+	</target>
 	
-		<echo>Indexing buildrepo...</echo>
-		<mkdir dir="${target}/buildrepo"/>
-		<bindex root="${basedir}/repos/buildrepo" repositoryfile="${target}/buildrepo/repository.xml" quiet="yes">
-			<fileset dir="${basedir}/repos/buildrepo" includes="**/*.jar"/>
-		</bindex>
-
-		<echo>Indexing repo...</echo>
-		<mkdir dir="${target}/repo"/>
-		<bindex root="${basedir}/repos/repo" repositoryfile="${target}/repo/repository.xml" quiet="yes">
-			<fileset dir="${basedir}/repos/repo" includes="**/*.jar"/>
+	<target name="__generateIndex">
+		<fail unless="repopath"/>
+		<echo message="Indexing ${basedir}/${repopath} into ${target}/${repopath}/repository.xml"/>
+		<mkdir dir="${target}/${repopath}"/>
+		<bindex root="${basedir}/${repopath}" repositoryfile="${target}/${repopath}/repository.xml" quiet="yes">
+			<fileset dir="${basedir}/${repopath}" includes="**/*.jar"/>
 		</bindex>
 	</target>
 	

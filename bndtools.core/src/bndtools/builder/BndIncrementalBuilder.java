@@ -77,32 +77,36 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
+        clearBuildMarkers(project);
 
+        // Create the initial set of dependent projects, which always includes the cnf.
         Set<IProject> depends = new HashSet<IProject>();
         IProject cnf = project.getWorkspace().getRoot().getProject(Project.BNDCNF);
         if (cnf != null)
             depends.add(cnf);
 
+        // Get the Bnd model
         File projectDir = project.getLocation().toFile();
         Project model;
         try {
             model = Workspace.getProject(projectDir);
-            if (model == null) {
-                // Don't try to build... no bnd workspace configured
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unable to run Bnd on project {0}: Bnd workspace not configured.", project.getName()), null));
-                return depends.toArray(new IProject[depends.size()]);
-            }
         } catch (Exception e) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to get Bnd model from Project directory: " + projectDir, e));
+            model = null;
+        }
+        if (model == null) {
+            // Don't try to build... no bnd workspace configured
+            String message = MessageFormat.format("Unable to run bnd on project {0}: bnd workspace not configured.", project.getName());
+            addBuildMarker(project, message, IMarker.SEVERITY_ERROR);
+            return depends.toArray(new IProject[depends.size()]);
         }
 
+        // Load the model and add dependencies from -buildpath and -dependson to the return array
+        ensureBndBndExists(project);
         model.refresh();
         model.setChanged();
         addDepends(model, depends);
 
-        ensureBndBndExists(project);
-        clearBuildMarkers(project);
-
+        // Abort the bnd build if "blocking" errors (e.g. Java compilation) exist on the project
         EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
         if (!blockers.isEmpty()) {
             try {

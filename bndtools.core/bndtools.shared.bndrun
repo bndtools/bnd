@@ -34,6 +34,7 @@ help.bundles: \
 	org.eclipse.help.appserver,\
 	org.apache.lucene,\
 	org.apache.lucene.analysis,\
+	org.apache.lucene.core,\
 	org.eclipse.platform.doc.user,\
 	org.eclipse.ant.core,\
 	org.apache.jasper,\
@@ -50,6 +51,7 @@ help.bundles: \
 	org.mortbay.jetty.util,\
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
+	org.eclipse.core.externaltools,\
 	org.eclipse.ui.externaltools,\
 	org.eclipse.ui.intro,\
 	org.eclipse.ui.intro.universal,\
@@ -132,6 +134,7 @@ crossplatform.bundles:\
 	org.eclipse.ui.views.log,\
 	org.eclipse.jdt.junit.runtime,\
 	org.eclipse.jdt.junit,\
+	org.eclipse.jdt.junit.core,\
 	org.junit;version='[3.8,4)',\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\

@@ -76,10 +76,10 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="docHtml" type="string">
+         <attribute name="doc" type="string">
             <annotation>
                <documentation>
-                  Optional reference to an HTML document describing this template.
+                  Optional reference to a document describing this template.
                </documentation>
                <appinfo>
                   <meta.attribute kind="resource"/>

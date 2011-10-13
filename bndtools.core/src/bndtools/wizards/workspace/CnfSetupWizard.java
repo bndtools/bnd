@@ -1,5 +1,7 @@
 package bndtools.wizards.workspace;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IStatus;
@@ -8,6 +10,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Button;
@@ -15,20 +18,46 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-import bndtools.LocalRepositoryTasks;
 import bndtools.Plugin;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
 
 public class CnfSetupWizard extends Wizard {
 
-	private CnfSetupUserConfirmation confirmation;
+    private CnfSetupUserConfirmation confirmation;
 
-	public CnfSetupWizard(CnfSetupUserConfirmation confirmation) {
-		this.setNeedsProgressMonitor(true);
-		this.addPage(new CnfSetupUserConfirmationWizardPage(confirmation));
-		this.confirmation = confirmation;
-	}
+    private final CnfTemplateSelectionWizardPage templatePage = new CnfTemplateSelectionWizardPage("templateSelection");
+    private final CnfSetupUserConfirmationWizardPage confirmPage;
+
+    public CnfSetupWizard(CnfSetupUserConfirmation confirmation) {
+        this.setNeedsProgressMonitor(true);
+        this.confirmation = confirmation;
+        this.confirmPage = new CnfSetupUserConfirmationWizardPage(confirmation);
+
+        addPage(confirmPage);
+        addPage(templatePage);
+
+        confirmation.addPropertyChangeListener("decision", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                getContainer().updateButtons();
+            }
+        });
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        IWizardPage next = null;
+
+        if (confirmPage == page)
+            next = confirmation.getDecision() == Decision.SETUP ? templatePage : null;
+
+        return next;
+    }
+
+    @Override
+    public boolean canFinish() {
+        return confirmation.getDecision() != Decision.SETUP || super.canFinish();
+    }
 
     /**
      * Show the wizard if it needs to be shown (i.e. the cnf project does not
@@ -78,46 +107,37 @@ public class CnfSetupWizard extends Wizard {
 	private static boolean determineNecessaryOperation(boolean overridePreference) {
 		if (!overridePreference && isDisabled())
 			return false;
-		if (!LocalRepositoryTasks.isBndWorkspaceConfigured())
+		if (!CnfSetupTask.isBndWorkspaceConfigured())
 			return true;
 		return false;
 	}
 
-	@Override
-	public boolean performFinish() {
-		if (confirmation.getDecision() == Decision.NEVER) {
-			if (confirmNever()) {
-				setDisabled(true);
-				return true;
-			} else {
-				return false;
-			}
-		}
+    @Override
+    public boolean performFinish() {
+        if (confirmation.getDecision() == Decision.NEVER) {
+            if (confirmNever()) {
+                setDisabled(true);
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-		if (confirmation.getDecision() == Decision.SKIP) {
-		    /*
-			try {
-				getContainer().run(false, false, new CnfSetupTask(true));
-				return true;
-			} catch (InvocationTargetException e) {
-				ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.", e.getCause()));
-			} catch (InterruptedException e) {
-				// ignore
-			}
-			*/
-		    return true;
-		}
+        if (confirmation.getDecision() == Decision.SKIP) {
+            return true;
+        }
 
-		try {
-			getContainer().run(false, false, new CnfSetupTask(false));
-			return true;
-		} catch (InvocationTargetException e) {
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.", e.getCause()));
-		} catch (InterruptedException e) {
-			// ignore
-		}
-		return false;
-	}
+        try {
+            getContainer().run(false, false, new CnfSetupTask(templatePage.getSelectedElement()));
+            return true;
+        } catch (InvocationTargetException e) {
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.",
+                    e.getCause()));
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        return false;
+    }
 
 	private boolean confirmNever() {
 		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();

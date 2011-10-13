@@ -13,7 +13,7 @@ public class PriorityConfigurationElementCompator implements Comparator<IConfigu
     }
 
     public int compare(IConfigurationElement o1, IConfigurationElement o2) {
-        int result = getPriority(o1) - getPriority(o2);
+        int result = getPriority(o2) - getPriority(o1);
         if (invert)
             result *= -1;
 

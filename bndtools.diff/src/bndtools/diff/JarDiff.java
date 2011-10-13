@@ -837,7 +837,10 @@ public class JarDiff {
 	}
 	
 	public static String getAttribute(Manifest manifest, String attributeName) {
-		return (String) manifest.getMainAttributes().get(new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
+		if (manifest != null && attributeName != null) {
+			return (String) manifest.getMainAttributes().get(new Attributes.Name(attributeName));
+		}
+		return null;
 	}
 	
 	public static String removeVersionQualifier(String version) {
