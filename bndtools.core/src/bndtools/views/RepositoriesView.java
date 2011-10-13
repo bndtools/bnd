@@ -3,11 +3,15 @@ package bndtools.views;
 import java.io.File;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.LocalSelectionTransfer;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -26,6 +30,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
@@ -129,7 +136,10 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         };
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
+
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance(), ResourceTransfer.getInstance() }, dropAdapter);
+        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, new SelectionDragAdapter(viewer));
+
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 boolean writableRepoSelected = false;
@@ -142,8 +152,27 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                 addBundlesAction.setEnabled(writableRepoSelected);
             }
         });
-        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, new SelectionDragAdapter(viewer));
+        
+        viewer.addDoubleClickListener(new IDoubleClickListener() {            
+            public void doubleClick(DoubleClickEvent event) {
+                if (!event.getSelection().isEmpty()) {
+                    IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                    if (selection.getFirstElement() instanceof IAdaptable) {
+                        IFile file = (IFile) ((IAdaptable) selection.getFirstElement()).getAdapter(IFile.class);
 
+                        if (file != null) {
+                            IWorkbenchPage page = getSite().getPage();
+                            try {
+                                IDE.openEditor(page, file);
+                            } catch (PartInitException e) {
+                                Plugin.logError("Error opening editor for " + file, e);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
         // LOAD
         try {
             viewer.setInput(Central.getWorkspace());
