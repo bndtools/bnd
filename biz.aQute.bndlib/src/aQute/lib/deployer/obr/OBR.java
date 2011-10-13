@@ -86,7 +86,8 @@ public class OBR extends AbstractBaseOBR {
 			FileRepo cacheRepo = lookupCachedFileRepo();
 			if (cacheRepo != null) {
 				File temp = new File(cacheRepo.getRoot(), ".obr");
-				if (temp.mkdirs())
+				temp.mkdirs();
+				if (temp.exists())
 					cacheDir = temp;
 			}
 		}

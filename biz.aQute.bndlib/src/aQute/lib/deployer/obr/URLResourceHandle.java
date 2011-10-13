@@ -104,8 +104,7 @@ public class URLResourceHandle implements ResourceHandle {
 			throw new IllegalStateException("Invalid URLResourceHandle: both local file and cache file are uninitialised.");
 		
 		if (!cachedFile.exists()) {
-			if (!cacheDir.mkdirs())
-				throw new IOException(String.format("Failed to create cache directory '%s'.", cacheDir.getAbsolutePath()));
+			cacheDir.mkdirs();
 			downloadToFile(url, cachedFile);
 		}
 		
