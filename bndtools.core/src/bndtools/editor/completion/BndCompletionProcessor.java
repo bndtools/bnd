@@ -11,12 +11,13 @@ import org.eclipse.jface.text.contentassist.*;
 
 public class BndCompletionProcessor implements IContentAssistProcessor {
 
+    private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
+    
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
             int offset) {
         try {
             String pre = viewer.getDocument().get(0, offset);
-            Pattern pattern = Pattern.compile("^(?:.*\\s)*(.*)$");
-            Matcher matcher = pattern.matcher(pre);
+            Matcher matcher = PREFIX_PATTERN.matcher(pre);
             if (matcher.matches()) {
                 String prefix = matcher.group(1);
                 return proposals(prefix, offset);
