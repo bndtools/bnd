@@ -20,7 +20,15 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
             Matcher matcher = PREFIX_PATTERN.matcher(pre);
             if (matcher.matches()) {
                 String prefix = matcher.group(1);
-                return proposals(prefix, offset);
+                ICompletionProposal[] found = proposals(prefix, offset);
+                if (found.length == 1) {
+                    found[0].apply(viewer.getDocument());
+                    viewer.setSelectedRange(offset + (found[0].getDisplayString().length() - prefix.length() + 2), 0);
+                    return new ICompletionProposal[0];
+                }
+                else {
+                    return found;
+                }
             }
             else {
                 return proposals(null, offset);
@@ -32,7 +40,6 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
 
     private ICompletionProposal[] proposals(String prefix, int offset) {
         ArrayList<ICompletionProposal> results = new ArrayList<ICompletionProposal>(Syntax.HELP.size());
-        int i = 0;
         for (Syntax s : Syntax.HELP.values()) {
             if (prefix == null || s.getHeader().startsWith(prefix)) {
                 IContextInformation info = new ContextInformation(s.getHeader(), s.getHeader());
