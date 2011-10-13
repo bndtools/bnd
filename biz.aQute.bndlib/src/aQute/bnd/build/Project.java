@@ -1157,26 +1157,45 @@ public class Project extends Processor {
 			return null;
 		}
 
-		// Check if we have a local modification not yet build
-		boolean outofdate = false;
 
-		// Check for each dependency if it is locally modified or
-		// its build time > our build time.
-		for (Project dependency : getDependson()) {
-			if (dependency != this) {
-				if (outofdate || dependency.getBuildTime() <= dependency.lastModified()) {
-					dependency.buildLocal(false);
-					outofdate = true;
-				}
-			}
-		}
-
-		if (files == null || outofdate || getBuildTime() <= lastModified()) {
+		if (isStale()) {
 			trace("Building " + this);
 			files = buildLocal(underTest);
 		}
 
 		return files;
+	}
+	
+	/**
+	 * Return the files
+	 */
+	
+	public File[] getFiles() {
+		return files;
+	}
+	/**
+	 * Check if this project needs building
+	 */
+	public boolean isStale() throws Exception {
+		if ( files == null)
+			return true;
+		
+		long localTime = getBuildTime();
+		if ( lastModified()>localTime)
+			return true;
+		
+		for (Project dependency : getDependson()) {
+			if (dependency.isStale())
+				return true;
+	
+			if ( dependency.getBuildTime() > localTime)
+				return true;
+			
+			if ( dependency.lastModified() > localTime)
+				return true;
+			
+		}
+		return false;
 	}
 
 	/**
