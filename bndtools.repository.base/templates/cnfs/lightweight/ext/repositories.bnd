@@ -1,5 +1,5 @@
 repo:           ${build}/repo
-releaserepo:    ${build}/release
+releaserepo:    ${build}/releaserepo
 
 -plugin:        aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
                 aQute.lib.deployer.obr.OBR;name='Build Repository';mode=build;locations='http://buildrepo.bndtools.org.s3.amazonaws.com/repository.xml',\
