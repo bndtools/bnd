@@ -1,5 +1,11 @@
 package bndtools.editor.completion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 
@@ -7,14 +13,38 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
             int offset) {
-        ICompletionProposal[] result= new ICompletionProposal[Syntax.HELP.size()];
-            int i=0;
-        for ( Syntax s : Syntax.HELP.values()) {
-            IContextInformation info= new ContextInformation(
-                    s.getHeader(), s.getHeader());
-            result[i++]= new CompletionProposal(s.getHeader()+": ", offset-1, 1, s.getHeader().length()+2, null, s.getHeader(), info, s.getLead()); //$NON-NLS-1$
+        try {
+            String pre = viewer.getDocument().get(0, offset);
+            Pattern pattern = Pattern.compile("^(?:.*\\s)*(.*)$");
+            Matcher matcher = pattern.matcher(pre);
+            if (matcher.matches()) {
+                String prefix = matcher.group(1);
+                return proposals(prefix, offset);
+            }
+            else {
+                return proposals(null, offset);
+            }
+        } catch (BadLocationException e) {
+            return proposals(null, offset);
         }
-        return result;
+    }
+
+    private ICompletionProposal[] proposals(String prefix, int offset) {
+        ArrayList<ICompletionProposal> results = new ArrayList<ICompletionProposal>(Syntax.HELP.size());
+        int i = 0;
+        for (Syntax s : Syntax.HELP.values()) {
+            if (prefix == null || s.getHeader().startsWith(prefix)) {
+                IContextInformation info = new ContextInformation(s.getHeader(), s.getHeader());
+                String text = prefix == null ? s.getHeader() : s.getHeader().substring(prefix.length());
+                results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s.getHeader(), info, s.getLead())); //$NON-NLS-1$                
+            }
+        }
+        Collections.sort(results, new Comparator<ICompletionProposal>() {
+            public int compare(ICompletionProposal p1, ICompletionProposal p2) {
+                return p1.getDisplayString().compareTo(p2.getDisplayString());
+            }            
+        });
+        return results.toArray(new ICompletionProposal[results.size()]);
     }
 
     public IContextInformation[] computeContextInformation(ITextViewer viewer,
