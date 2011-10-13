@@ -74,7 +74,8 @@ public class ReleaseUtils {
 
 	public static String getBundleSymbolicName(Jar jar) {
 		try {
-			return jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			String bsn = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME); 
+			return stripInstructions(bsn);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -215,5 +216,16 @@ public class ReleaseUtils {
 			res.add(resource);
 		}
 		return res.toArray(new IResource[res.size()]);
+	}
+	
+	public static String stripInstructions(String header) {
+		if (header == null) {
+			return null;
+		}
+		int idx = header.indexOf(';');
+		if (idx > -1) {
+			return header.substring(0, idx);
+		}
+		return header;
 	}
 }
