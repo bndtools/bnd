@@ -9,9 +9,6 @@ import java.util.jar.*;
 
 import javax.naming.*;
 
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.FrameworkUtil;
-
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
@@ -97,16 +94,9 @@ public class Workspace extends Processor {
 		if (!buildFile.isFile())
 			warning("No Build File in " + dir);
 
-		File extDir = new File(this.buildDir, "ext");
-		File[] extensions = extDir.listFiles();
-		if (extensions != null) {
-			for (File extension : extensions) {
-				if (extension.getName().endsWith(".bnd"))
-					doIncludeFile(extension, true, getProperties());
-			}
-		}
-
 		setProperties(buildFile, dir);
+		propertiesChanged();
+		
 		cachedRepo = new CachedFileRepo();
 	}
 
@@ -142,6 +132,24 @@ public class Workspace extends Processor {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void propertiesChanged() {
+		super.propertiesChanged();
+		File extDir = new File(this.buildDir, "ext");
+		File[] extensions = extDir.listFiles();
+		if (extensions != null) {
+			for (File extension : extensions) {
+				if (extension.getName().endsWith(".bnd")) {
+					try {
+						doIncludeFile(extension, true, getProperties());
+					} catch (Exception e) {
+						error("PropertiesChanged: " + e.getMessage());
+					}
+				}
+			}
+		}
 	}
 
 	public String _workspace(String args[]) {
