@@ -110,7 +110,10 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 		try {
 			out = new FileOutputStream(localIndex);
 			if (!allFiles.isEmpty()) {
-				indexer.index(allFiles, out, null);
+				Map<String, String> config = new HashMap<String, String>();
+				config.put(BundleIndexer.REPOSITORY_NAME, this.getName());
+				config.put(BundleIndexer.ROOT_URL, localIndex.toURI().toURL().toString());
+				indexer.index(allFiles, out, config);
 			} else {
 				ByteArrayInputStream emptyRepo = new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>\n<repository lastmodified='0'/>".getBytes());
 				IO.copy(emptyRepo, out);
