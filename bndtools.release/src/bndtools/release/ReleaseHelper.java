@@ -10,8 +10,10 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -257,6 +259,7 @@ public class ReleaseHelper {
 			return;
 		}
 
+		
 		FileOutputStream fos = new FileOutputStream(file);
 		PrintWriter pw = new PrintWriter(fos);
 		pw.println("version " + packageInfo.getSuggestedVersion());
@@ -269,6 +272,32 @@ public class ReleaseHelper {
 		ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
 	}
 
+	private static boolean equalsPackageInfoFileVersion(File packageInfoFile, String version) throws IOException {
+		// Check existing version
+		if (packageInfoFile.exists()) {
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(packageInfoFile));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					line = line.trim();
+					if (line.startsWith("version ")) {
+						String fileVersion = line.substring(8);
+						if (fileVersion.equals(version)) {
+							return true;
+						}
+						return false;
+					}
+				}
+			} finally {
+				if (reader != null) {
+					IO.close(reader);
+				}
+			}
+		}
+		return false;
+	}
+	
 	private static File getSourceFile(Project project, String path) {
 		String src = project.getProperty("src", "src");
 		return project.getFile(src + "/" + path);

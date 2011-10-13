@@ -10,10 +10,14 @@
  *******************************************************************************/
 package bndtools.editor;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IFile;
@@ -43,7 +47,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
@@ -57,59 +60,140 @@ import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
+    static final String WORKSPACE_PAGE = "__workspace_page";
     static final String CONTENT_PAGE = "__content_page";
 	static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
 	static final String COMPONENTS_PAGE = "__components_page";
 	static final String TEST_SUITES_PAGE = "__test_suites_page";
-	static final String POLICIES_PAGE = "__policies_page";
 	static final String SOURCE_PAGE = "__source_page";
-	static final String WORKSPACE_PAGE = "__workspace_page";
+
+	private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
 
 	private final BndEditModel model = new BndEditModel();
 	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
+    public BndEditor() {
+        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.FACTORY);
+        pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
+        pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
+        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
+        pageFactories.put(COMPONENTS_PAGE, ComponentsPage.FACTORY);
+        pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
+    }
+
+    /*
 	private final PropertyChangeListener modelListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             if (Constants.SUB.equals(evt.getPropertyName())) {
-                @SuppressWarnings("unchecked")
-                List<String> newSubBundles = (List<String>) evt.getNewValue();
-                if (newSubBundles != null && !newSubBundles.isEmpty()) {
-                    removePage(CONTENT_PAGE);
-                    removePage(COMPONENTS_PAGE);
-                    removePage(TEST_SUITES_PAGE);
-                } else {
-                    BndEditor editor = BndEditor.this;
-
-                    ensurePageExists(CONTENT_PAGE, new BundleContentPage(editor, model, CONTENT_PAGE, "Content"), 0);
-                    ensurePageExists(COMPONENTS_PAGE, new ComponentsPage(editor, model, COMPONENTS_PAGE, "Components"), 3);
-                    ensurePageExists(TEST_SUITES_PAGE, new TestSuitesPage(editor, model, TEST_SUITES_PAGE, "Tests"), 4);
+                try {
+                    updatePages();
+                } catch (PartInitException e) {
+                    Plugin.logError("Error updating pages in the editor.", e);
                 }
             }
         }
     };
+    */
+
+    void updatePages() {
+        List<String> requiredPageIds = new LinkedList<String>();
+
+        // Need to know the file and project names.
+        String path;
+        String projectName;
+
+        IEditorInput input = getEditorInput();
+        if (input instanceof IFileEditorInput) {
+            IFile file = ((IFileEditorInput) input).getFile();
+            path = file.getProjectRelativePath().toString();
+            projectName = file.getProject().getName();
+        } else {
+            path = input.getName();
+            projectName = null;
+        }
+
+        if (isWorkspaceConfig(path, projectName)) {
+            requiredPageIds.addAll(getPagesBuildBnd());
+        } else if (path.endsWith(LaunchConstants.EXT_BNDRUN)) {
+            requiredPageIds.addAll(getPagesBndRun());
+        } else {
+            requiredPageIds.addAll(getPagesBnd(path));
+        }
+
+        IFormPage activePage = getActivePageInstance();
+        String currentPageId = activePage != null ? activePage.getId() : null;
+
+        // Remove all pages except source
+        while (getPageCount() > 1) removePage(0);
+
+        // Add required pages;
+        for (ListIterator<String> iter = requiredPageIds.listIterator(requiredPageIds.size()); iter.hasPrevious(); ) {
+            String pageId = iter.previous();
+            IPageFactory pf = pageFactories.get(pageId);
+            if (pf == null)
+                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No page factory available for page ID: " + pageId, null));
+            else {
+                try {
+                    IFormPage page = pf.createPage(this, model, pageId);
+                    addPage(0, page);
+                } catch (IllegalArgumentException e) {
+                    Plugin.logError("Error creating page for ID: " + pageId, e);
+                } catch (PartInitException e) {
+                    Plugin.logError("Error adding page(s) to the editor.", e);
+                }
+            }
+        }
+        // Always add the source page if it doesn't exist
+        try {
+            if (findPage(SOURCE_PAGE) == null) {
+                int sourcePageIndex = addPage(sourcePage, getEditorInput());
+                setPageText(sourcePageIndex, "Source");
+            }
+        } catch (PartInitException e) {
+            Plugin.logError("Error adding page(s) to the editor.", e);
+        }
+
+        // Restore the current selected page
+        if (currentPageId != null) {
+            setActivePage(currentPageId);
+        }
+    }
+
+    private boolean isWorkspaceConfig(String path, String projectName) {
+        boolean result = false;
+        if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+            if (Workspace.BUILDFILE.equals(path)) {
+                result = true;
+            } else if (path.startsWith("ext/") && path.endsWith(".bnd")) {
+                result = true;
+            }
+        }
+        return result;
+    }
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
 
-	@Override
-	public void doSave(IProgressMonitor monitor) {
-		if(sourcePage.isActive() && sourcePage.isDirty()) {
-			sourcePage.commit(true);
-		} else {
-			commitPages(true);
-			sourcePage.refresh();
-		}
-	    try {
-	        boolean saveLocked = this.saving.compareAndSet(false, true);
-	        if (!saveLocked) {
-	            Plugin.logError("Tried to save while already saving", null);
-	            return;
-	        }
-	        sourcePage.doSave(monitor);
-		} finally {
-		    this.saving.set(false);
-		}
-	}
+    @Override
+    public void doSave(IProgressMonitor monitor) {
+        if (sourcePage.isActive() && sourcePage.isDirty()) {
+            sourcePage.commit(true);
+        } else {
+            commitPages(true);
+            sourcePage.refresh();
+        }
+        try {
+            boolean saveLocked = this.saving.compareAndSet(false, true);
+            if (!saveLocked) {
+                Plugin.logError("Tried to save while already saving", null);
+                return;
+            }
+            sourcePage.doSave(monitor);
+            updatePages();
+        } finally {
+            this.saving.set(false);
+        }
+    }
 
     protected void ensurePageExists(String pageId, IFormPage page, int index) {
         IFormPage existingPage = findPage(pageId);
@@ -146,69 +230,38 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
     @Override
     protected void addPages() {
-        try {
-            String fileName;
-            String projectName;
-
-            IEditorInput input = getEditorInput();
-            if (input instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) input).getFile();
-                fileName = file.getName();
-                projectName = file.getProject().getName();
-            } else {
-                fileName = input.getName();
-                projectName = null;
-            }
-
-            if (Workspace.BUILDFILE.equals(fileName) && (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName))) {
-                addPagesBuildBnd();
-            } else if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
-                addPagesBndRun();
-            } else {
-                addPagesBnd(fileName);
-            }
-            int sourcePageIndex = addPage(sourcePage, getEditorInput());
-            setPageText(sourcePageIndex, "Source");
-        } catch (PartInitException e) {
-            Plugin.logError("Error adding page(s) to the editor.", e);
-        }
+        updatePages();
     }
 
-    private void addPagesBuildBnd() throws PartInitException {
-        addPage(new WorkspacePage(this, model, WORKSPACE_PAGE, "Workspace"));
+    private List<String> getPagesBuildBnd() {
+        return Collections.singletonList(WORKSPACE_PAGE);
     }
 
-    private void addPagesBnd(String inputName) throws PartInitException {
-        boolean isProjectFile = Project.BNDFILE.equals(inputName);
+    private List<String> getPagesBnd(String fileName) {
+        List<String> pages = new ArrayList<String>(5);
 
+        boolean isProjectFile = Project.BNDFILE.equals(fileName);
         List<String> subBndFiles = model.getSubBndFiles();
         boolean isSubBundles = subBndFiles != null && !subBndFiles.isEmpty();
 
-        if (!isSubBundles) {
-            BundleContentPage contentPage = new BundleContentPage(this, model, CONTENT_PAGE, "Bundle Content");
-            addPage(contentPage);
-        }
+        if (!isSubBundles)
+            pages.add(CONTENT_PAGE);
 
         if (isProjectFile) {
-            ProjectBuildPage buildPage = new ProjectBuildPage(this, model, BUILD_PAGE, "Build");
-            addPage(buildPage);
-
-            ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
-            addPage(runPage);
+            pages.add(BUILD_PAGE);
+            pages.add(PROJECT_RUN_PAGE);
         }
 
         if (!isSubBundles) {
-            ComponentsPage componentsPage = new ComponentsPage(this, model, COMPONENTS_PAGE, "Components");
-            addPage(componentsPage);
-
-            TestSuitesPage testSuitesPage = new TestSuitesPage(this, model, TEST_SUITES_PAGE, "Tests");
-            addPage(testSuitesPage);
+            pages.add(COMPONENTS_PAGE);
+            pages.add(TEST_SUITES_PAGE);
         }
+
+        return pages;
     }
 
-    private void addPagesBndRun() throws PartInitException {
-        ProjectRunPage runPage = new ProjectRunPage(this, model, PROJECT_RUN_PAGE, "Run");
-        addPage(runPage);
+    private List<String> getPagesBndRun() {
+        return Collections.singletonList(PROJECT_RUN_PAGE);
     }
 
     @Override
@@ -229,7 +282,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 			model.loadFrom(document);
 			model.setProjectFile(Project.BNDFILE.equals(input.getName()));
 			model.setBndResource(resource);
-			model.addPropertyChangeListener(modelListener);
+//			model.addPropertyChangeListener(modelListener);
 		} catch (IOException e) {
 			throw new PartInitException("Error reading editor input.", e);
 		}
@@ -270,8 +323,8 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
 	@Override
 	public void dispose() {
-	    if (model != null)
-	        model.removePropertyChangeListener(modelListener);
+//	    if (model != null)
+//	        model.removePropertyChangeListener(modelListener);
 
 		IResource resource = ResourceUtil.getResource(getEditorInput());
 
@@ -323,6 +376,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
                     public void run() {
                         try {
                             model.loadFrom(document);
+                            updatePages();
                         } catch (IOException e) {
                             Plugin.logError("Failed to reload document", e);
                         }

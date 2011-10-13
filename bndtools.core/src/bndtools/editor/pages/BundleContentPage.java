@@ -26,11 +26,13 @@ import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import bndtools.editor.IPageFactory;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
@@ -60,6 +62,11 @@ public class BundleContentPage extends FormPage {
 
     private ImportPatternsDetailsPage importDetailsPage;
 
+    public static final IPageFactory FACTORY = new IPageFactory() {
+        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new BundleContentPage(editor, model, id, "Contents");
+        }
+    };
 
     public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
