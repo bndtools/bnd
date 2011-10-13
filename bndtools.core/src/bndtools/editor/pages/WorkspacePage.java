@@ -5,12 +5,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
+import bndtools.editor.IPageFactory;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.model.clauses.HeaderClause;
@@ -21,7 +23,13 @@ public class WorkspacePage extends FormPage {
     private final BndEditModel model;
     private PluginsPart pluginsPart;
 
-    public WorkspacePage(FormEditor editor, BndEditModel model, String id, String title) {
+    public static IPageFactory FACTORY = new IPageFactory() {
+        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new WorkspacePage(editor, model, id, "Workspace");
+        }
+    };
+
+    private WorkspacePage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

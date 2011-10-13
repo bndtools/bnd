@@ -87,4 +87,4 @@ eclipse.deps: \
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml.stream,\
-	org.osgi.impl.bundle.bindex;version=latest
+	org.osgi.impl.bundle.bindex;version=project,org.osgi.service.obr

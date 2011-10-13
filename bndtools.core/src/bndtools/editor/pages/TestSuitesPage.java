@@ -9,12 +9,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.editor.IPageFactory;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.TestSuitesPart;
@@ -25,6 +27,12 @@ public class TestSuitesPage extends FormPage {
 
     private final BndEditModel model;
     private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
+
+    public static final IPageFactory FACTORY = new IPageFactory() {
+        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new TestSuitesPage(editor, model, id, "Tests");
+        }
+    };
 
     public TestSuitesPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);

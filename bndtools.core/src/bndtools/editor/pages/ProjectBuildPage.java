@@ -9,10 +9,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import bndtools.editor.IPageFactory;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.project.BuildPathPart;
@@ -22,6 +24,12 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class ProjectBuildPage extends FormPage {
 
 	private final BndEditModel model;
+
+    public static final IPageFactory FACTORY = new IPageFactory() {
+        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new ProjectBuildPage(editor, model, id, "Build");
+        }
+    };
 
 	public ProjectBuildPage(FormEditor editor, BndEditModel model, String id, String title) {
 		super(editor, id, title);
