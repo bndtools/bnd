@@ -18,14 +18,11 @@ target-dir:   generated
 p:            ${basename;${project}}
 project.name: ${p}
 
-bnd-repo-local: ${user.home}/.bundles
-
-
 # Eclipse Repo
-#eclipse-version:  3.5.2
-#eclipse-repo:     ${build}/eclipse-${eclipse-version}
-eclipse-version:  3.7.1
-eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
+eclipse-version:  3.5.2
+eclipse-repo:     ${build}/eclipse-${eclipse-version}
+#eclipse-version:  3.7.1
+#eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
 
 # Java Compiler Options
 java:         java
@@ -37,12 +34,9 @@ javac.debug:  on
 # Bnd Options
 -sources:       true
 -sourcepath:    ${project}/src 
--plugin: aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
-	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version},\
-	org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar,\
-	aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bnd/repo/master/repository.xml;name='Bnd Repo';readonly=false
-#	aQute.lib.deployer.obr.LocalOBR;name='Bnd Local';local=${bnd-repo-local}
-
+-plugin:        aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
+                bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+-versionpolicy: "[${version;==;${@}},${version;+;${@}})"
 -make:          (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 
