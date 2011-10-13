@@ -29,6 +29,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import bndtools.Plugin;
+import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
 
@@ -50,6 +51,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	public BndSourceEditorPage(String id, BndEditor formEditor) {
 		this.id = id;
 		this.formEditor = formEditor;
+		setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
 	}
 
 	@Override
