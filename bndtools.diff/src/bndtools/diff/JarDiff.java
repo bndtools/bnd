@@ -884,6 +884,9 @@ public class JarDiff {
 	}
 	
 	public String getSelectedVersion() {
+		if (selectedVersion == null) {
+			return getSuggestedVersion();
+		}
 		return selectedVersion;
 	}
 	

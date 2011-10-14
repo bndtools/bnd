@@ -614,9 +614,6 @@ public class BundleRelease {
 			String selectedVersion;
 			if (cell.getElement() instanceof JarDiff) {
 				selectedVersion = ((JarDiff) cell.getElement()).getSelectedVersion();
-				if (selectedVersion == null) {
-					selectedVersion = ((JarDiff) cell.getElement()).getSuggestedVersion();
-				}
 			} else {
 				PackageInfo pi = (PackageInfo) cell.getElement();
 				selectedVersion = pi.getSuggestedVersion();
