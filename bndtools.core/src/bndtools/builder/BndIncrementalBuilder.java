@@ -51,6 +51,7 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.utils.DeltaAccumulator;
@@ -72,6 +73,22 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
     private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
     private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
+
+    private static class GeneratedFileFilter implements FileFilter {
+
+        private final File targetDir;
+        private final boolean not;
+
+        public GeneratedFileFilter(File targetDir, boolean not) {
+            this.targetDir = targetDir;
+            this.not = not;
+        }
+        public boolean accept(File pathname) {
+            boolean result = FileUtils.isAncestor(targetDir, pathname);
+            if (not) result = !result;
+            return result;
+        }
+    }
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
@@ -107,6 +124,36 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         model.setChanged();
         addDepends(model, depends);
 
+        // Update this project's classpath container if a depended project has changed
+        for (IProject dependsOn : depends) {
+            IResourceDelta delta = getDelta(dependsOn);
+            if(delta != null) {
+                try {
+                    final Project dependsOnBnd = Workspace.getProject(dependsOn.getLocation().toFile());
+                    if (dependsOnBnd == null)
+                        continue;
+
+                    final File targetDir = dependsOnBnd.getTarget();
+                    FileFilter buildFilesFilter = new FileFilter() {
+                        public boolean accept(File pathname) {
+                            File expected = new File(targetDir, Constants.BUILDFILES);
+                            return pathname.equals(expected);
+                        }
+                    };
+                    List<File> affectedFiles = new ArrayList<File>();
+                    DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, buildFilesFilter);
+                    delta.accept(visitor);
+                    if (affectedFiles.size() > 0) {
+                        BndContainerInitializer.updateProjectClasspath(JavaCore.create(project));
+                        super.forgetLastBuiltState();
+                        return depends.toArray(new IProject[depends.size()]);
+                    }
+                } catch (Exception e) {
+                    Plugin.logError("Unable to update classpath from change in imported project.", e);
+                }
+            }
+        }
+
         // Abort the bnd build if "blocking" errors (e.g. Java compilation) exist on the project
         EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
         if (!blockers.isEmpty()) {
@@ -122,25 +169,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                 Plugin.logError("Unable to clear build markers", e);
             }
             return depends.toArray(new IProject[depends.size()]);
-        }
-
-        for (IProject dependsOn : depends) {
-            IResourceDelta delta = getDelta(dependsOn);
-            if(delta != null) {
-                FileFilter generatedFilter = new FileFilter() {
-                    public boolean accept(File pathname) {
-                        return pathname.getName().endsWith(".bnd");
-                    }
-                };
-                List<File> affectedFiles = new ArrayList<File>();
-                DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
-                delta.accept(visitor);
-                if (affectedFiles.size() > 0) {
-                    BndContainerInitializer.updateProjectClasspath(JavaCore.create(project));
-                    super.forgetLastBuiltState();
-                    return depends.toArray(new IProject[depends.size()]);
-                }
-            }
         }
 
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
@@ -161,10 +189,10 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     static int resolveBuildType(IProject project, int kind) throws CoreException {
         if (kind == FULL_BUILD)
             return kind;
-        
+
         EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
-        
-        if (blockers.contains(BlockingBuildErrors.buildpath)) 
+
+        if (blockers.contains(BlockingBuildErrors.buildpath))
             return FULL_BUILD;
 
         IFile bndFile = project.getFile(Project.BNDFILE);
@@ -176,7 +204,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         }
         return kind;
     }
-    
+
     static void clearBuildMarkers(IProject project) throws CoreException {
         IFile bndFile = project.getFile(Project.BNDFILE);
 
@@ -277,12 +305,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting target directory for project: " + model.getName(), e));
         }
-        FileFilter generatedFilter = new FileFilter() {
-            public boolean accept(File pathname) {
-                return !FileUtils.isAncestor(targetDir, pathname);
-            }
-        };
-        DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
+        FileFilter notGeneratedFilter = new GeneratedFileFilter(targetDir, true);
+        DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, notGeneratedFilter);
         delta.accept(visitor);
 
         progress.setWorkRemaining(affectedFiles.size() + 10);
