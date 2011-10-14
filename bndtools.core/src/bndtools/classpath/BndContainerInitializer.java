@@ -14,15 +14,18 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -74,7 +77,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     @Override
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
         // Silently fail as described in javadoc
-        updateProjectClasspath(project, false);
+        updateProjectClasspath(project, true);
      }
 
     @Override
@@ -105,17 +108,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         JavaCore.setClasspathContainer(BndContainerInitializer.PATH_ID, new IJavaProject[] { javaProject }, new IClasspathContainer[] { new BndContainer(javaProject, entries, null) }, null);
     }
 
-    public static void updateProjectClasspath(IJavaProject javaProject) throws CoreException {
-        updateProjectClasspath(javaProject, true);
+    public static boolean updateProjectClasspath(IJavaProject javaProject) throws CoreException {
+        return updateProjectClasspath(javaProject, false);
     }
-    public static void updateProjectClasspath(IJavaProject javaProject, boolean updateMarkers) throws CoreException {
+    public static boolean updateProjectClasspath(IJavaProject javaProject, boolean submitMarkerJob) throws CoreException {
         IProject project = javaProject.getProject();
         if (!project.exists() || !project.isOpen())
-            return;
+            return false;
 
-        // Remove classpath problem markers
-        if (updateMarkers) {
-            project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+        if (!submitMarkerJob) {
+            project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
         }
 
         Project model = Plugin.getDefault().getCentral().getModel(javaProject);
@@ -123,9 +125,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
 
         if (model == null) {
             setClasspathEntries(javaProject, model, EMPTY_ENTRIES);
-            if (updateMarkers) {
-                errors.add("Bnd workspace is not configured.");
-            }
+            errors.add("Bnd workspace is not configured.");
         } else {
             model.clear();
             model.refresh();
@@ -160,8 +160,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             LinkedHashMap<Project, List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project, List<IAccessRule>>();
             for (Container c : containers) {
                 if (c.getError() == null) {
-                    File file = c.getFile();
-                    assert file.isAbsolute();
                     calculateAccessRules(projectAccessRules, c);
                 }
             }
@@ -173,18 +171,27 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 if (c.getError() == null) {
                     File file = c.getFile();
                     assert file.isAbsolute();
+                    
+                    if (!file.exists()) {
+                        switch (c.getType()) {
+                        case REPO :
+                            errors.add("Repository file " + c.getFile() + " does not exist");
+                            break;
+                        case LIBRARY :
+                            errors.add("Library file " + c.getFile() + " does not exist");
+                            break;
+                        case PROJECT :
+                            errors.add("Project bundle " + c.getFile() + " does not exist");
+                            break;
+                        case EXTERNAL :
+                            errors.add("External file " + c.getFile() + " does not exist");
+                            break;
+                        default:
+                            break;
+                    }
+                    }
 
                     IPath p = fileToPath(model, file);
-                    if (c.getType() == Container.TYPE.PROJECT) {
-                        File sourceDir = c.getProject().getSrc();
-                        if (sourceDir.isDirectory())
-                            sourceAttachment = Central.toPath(c.getProject(), sourceDir);
-    //                } else {
-    //                    File sourceBundle = c.getSourceBundle();
-    //                    if (sourceBundle != null && sourceBundle.isAbsolute()) {
-    //                        sourceAttachment = fileToPath(project, sourceBundle);
-    //                    }
-                    }
 
                     if (c.getType() == Container.TYPE.PROJECT) {
                         IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
@@ -205,15 +212,35 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 }
             }
 
-
             errors.addAll(model.getErrors());
-            if (updateMarkers) {
-                replaceClasspathProblemMarkers(project, errors);
-            }
+            replaceClasspathProblemMarkers(project, errors, submitMarkerJob);
             model.clear();
 
             setClasspathEntries(javaProject, model, result.toArray(new IClasspathEntry[result.size()]));
+            
+            if (errors.size() > 0) {
+                return false;
+            }
         }
+        return true;
+    }
+
+    private static boolean validateContainers(List<String> errors, Collection<Container> containers) {
+        for (Container container : containers) {
+            switch (container.getType()) {
+            case ERROR :
+                errors.add(container.getError());
+                continue;
+            case REPO :
+                if (!container.getFile().exists()) {
+                    errors.add("Repository file " + container.getFile());
+                }
+                continue;
+                default:
+            }
+        }
+        
+        return false;
     }
 
     static IAccessRule[] calculateAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
@@ -261,22 +288,46 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         }
     }
 
-    static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors) {
-        try {
-            project.getWorkspace().run(new IWorkspaceRunnable() {
-                public void run(IProgressMonitor monitor) throws CoreException {
-                    for (String error : errors) {
-                        IMarker marker = project.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
-                        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                        marker.setAttribute(IMarker.MESSAGE, error);
+    static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors, boolean submitMarkerJob) throws CoreException{
+
+        final IFile bndFile = project.getFile(Project.BNDFILE);
+        if (bndFile == null) {
+            return;
+        }
+        
+        if (submitMarkerJob) {
+        
+            Job markerJob = new Job("Bndtools: Resolving markers") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    try {
+                        replaceMarkersJob(bndFile, project, errors);
+                    } catch (CoreException e) {
+                        return e.getStatus();
                     }
+    
+                    return Status.OK_STATUS;
                 }
-            }, null);
-        } catch (CoreException e) {
-            Plugin.logError("Error replacing project classpath problem markers.", e);
+            };
+    
+            markerJob.setRule(bndFile);
+            markerJob.setPriority(Job.BUILD);
+            markerJob.schedule();
+
+        } else {
+            replaceMarkersJob(bndFile, project, errors);
         }
     }
 
+    private static void replaceMarkersJob(IFile bndFile, IProject project, Collection<String> errors) throws CoreException {
+        bndFile.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+        for (String error : errors) {
+            IMarker marker = bndFile.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.MESSAGE, error);
+        }
+    }
+    
     protected static IPath fileToPath(Project project, File file) {
         IPath path = Central.toPath(project, file);
         if (path == null)

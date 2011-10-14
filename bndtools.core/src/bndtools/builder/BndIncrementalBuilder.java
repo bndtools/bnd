@@ -77,6 +77,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
+        kind = resolveBuildType(project, kind);
         clearBuildMarkers(project);
 
         // Create the initial set of dependent projects, which always includes the cnf.
@@ -110,8 +111,13 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
         if (!blockers.isEmpty()) {
             try {
-                if (blockers.contains(BlockingBuildErrors.javac))
+                if (blockers.contains(BlockingBuildErrors.buildpath)) {
+                    if (BndContainerInitializer.updateProjectClasspath(JavaCore.create(project))) {
+                        super.forgetLastBuiltState();
+                    }
+                } else if (blockers.contains(BlockingBuildErrors.javac)) {
                     addBuildMarker(project, String.format("Will not build OSGi bundle(s) for project \"%s\" until Java compilation problems are resolved.", project.getName()), IMarker.SEVERITY_ERROR);
+                }
             } catch (Exception e) {
                 Plugin.logError("Unable to clear build markers", e);
             }
@@ -134,6 +140,25 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         return depends.toArray(new IProject[depends.size()]);
 	}
 
+    static int resolveBuildType(IProject project, int kind) throws CoreException {
+        if (kind == FULL_BUILD)
+            return kind;
+        
+        EnumSet<BlockingBuildErrors> blockers = getBlockingErrors(project);
+        
+        if (blockers.contains(BlockingBuildErrors.buildpath)) 
+            return FULL_BUILD;
+
+        IFile bndFile = project.getFile(Project.BNDFILE);
+        if (bndFile.exists()) {
+            IMarker[] buildMarkers = bndFile.findMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+            if (containsError(buildMarkers)) {
+                return FULL_BUILD;
+            }
+        }
+        return kind;
+    }
+    
     static void clearBuildMarkers(IProject project) throws CoreException {
         IFile bndFile = project.getFile(Project.BNDFILE);
 
@@ -165,7 +190,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     static EnumSet<BlockingBuildErrors> getBlockingErrors(IProject project) {
         try {
             EnumSet<BlockingBuildErrors> result = EnumSet.noneOf(BlockingBuildErrors.class);
-            if (containsError(project.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0)))
+            IFile bndFile = project.getFile(Project.BNDFILE);
+            if (containsError(bndFile.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0)))
                 result.add(BlockingBuildErrors.buildpath);
             if (containsError(project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
                 result.add(BlockingBuildErrors.javac);
@@ -246,8 +272,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         boolean rebuild = false;
         List<File> deletedBnds = new LinkedList<File>();
 
-        File srcDir = model.getSrc();
-
         // Check if any affected file is a bnd file
         for (File file : affectedFiles) {
             if (file.getName().toLowerCase().endsWith(BND_SUFFIX)) {
@@ -256,11 +280,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                 if ((deltaKind & IResourceDelta.REMOVED) > 0) {
                     deletedBnds.add(file);
                 }
-                break;
-            }
-            // Check if source file was changed instead of class file
-            if (FileUtils.isAncestor(srcDir, file)) {
-                rebuild = true;
                 break;
             }
         }
