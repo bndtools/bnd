@@ -2,6 +2,7 @@ package aQute.bnd.concurrent;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
@@ -14,10 +15,10 @@ import aQute.libg.forker.*;
  * 
  */
 public class MultiBuilder {
-	Workspace		workspace;
-	Forker<Project>	forker;
-	boolean			building		= false;
-	final Set<File>	filesChanged	= Collections.synchronizedSet(new HashSet<File>());
+	Workspace						workspace;
+	volatile FutureTask<Throwable>	future;
+	final Set<File>					filesChanged	= Collections
+															.synchronizedSet(new HashSet<File>());
 
 	/**
 	 * Constructor
@@ -41,9 +42,8 @@ public class MultiBuilder {
 	 */
 	public File[] build(Project p) throws Exception {
 		if (p.isStale()) {
-			startBuild();
+			schedule(true);
 		}
-		syncBuild();
 		return p.build();
 	}
 
@@ -56,30 +56,7 @@ public class MultiBuilder {
 	 */
 	public void changed(Project p) throws Exception {
 		p.setChanged();
-		cancel();
-		startBuild();
-	}
-
-	/**
-	 * Cancel the current build or do nothing if no build is active.
-	 * 
-	 * @throws InterruptedException
-	 */
-	public synchronized void cancel() throws InterruptedException {
-		if (building) {
-			forker.cancel();
-		}
-	}
-
-	/**
-	 * Synchronize with a current build or return immediately.
-	 * 
-	 * @throws InterruptedException
-	 */
-	public synchronized void syncBuild() throws InterruptedException {
-		if (building) {
-			forker.join();
-		}
+		schedule(false);
 	}
 
 	/**
@@ -87,54 +64,51 @@ public class MultiBuilder {
 	 * 
 	 * @throws Exception
 	 */
-	public void startBuild() throws Exception {
+	public void schedule(boolean sync) throws Exception {
 		synchronized (this) {
-			if (building)
-				return;
-
-			forker = new Forker<Project>(Processor.getExecutor());
-			building = true;
-		}
-
-		Processor.getExecutor().execute(new Runnable() {
-			public void run() {
-				try {
-					build();
-					synchronized (MultiBuilder.this) {
-						building = false;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			if (future != null) {
+				future.cancel(true);
+				future.get();
+				future = null;
 			}
-		});
-	}
 
-	/**
-	 * Do the whole build using a forker.
-	 * 
-	 * @throws Exception
-	 */
-	private void build() throws Exception {
-		// handle multiple requests
-		Thread.sleep(100);
-		workspace.bracket(true);
-		try {
-			for (final Project p : workspace.getAllProjects()) {
-				forker.doWhen(p.getDependson(), p, new Runnable() {
+			future = new FutureTask<Throwable>(new Callable<Throwable>() {
 
-					public void run() {
+				public Throwable call() {
+					Forker<Project> forker = new Forker<Project>(Processor.getExecutor());
+
+					try {
+						Thread.sleep(100);
+						workspace.bracket(true);
 						try {
-							p.build();
-						} catch (Exception e) {
-							e.printStackTrace();
+							for (final Project p : workspace.getAllProjects()) {
+								forker.doWhen(p.getDependson(), p, new Runnable() {
+
+									public void run() {
+										try {
+											p.build();
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+									}
+								});
+							}
+							forker.start(0);
+						} catch (InterruptedException e) {
+							forker.cancel(10000);
+						} finally {
+							workspace.bracket(false);
 						}
+					} catch (Exception e) {
+						return e;
 					}
-				});
-			}
-			forker.join();
-		} finally {
-			workspace.bracket(false);
+					return null;
+				}
+
+			});
+			Processor.getExecutor().execute(future);
+			if ( sync )
+				future.get();
 		}
 	}
 

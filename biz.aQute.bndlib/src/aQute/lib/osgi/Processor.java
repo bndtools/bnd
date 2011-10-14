@@ -113,7 +113,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	public void warning(String string, Object... args) {
 		Processor p = current();
-		String s = String.format(string, args);
+		String s = formatArrays(string, args);
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 	}
@@ -123,7 +123,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		if (p.isFailOk())
 			p.warning(string, args);
 		else {
-			String s = String.format(string, args);
+			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 		}
@@ -136,7 +136,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			p.warning(string + ": " + t, args);
 		else {
 			p.errors.add("Exception: " + t.getMessage());
-			String s = String.format(string, args);
+			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 		}
@@ -846,7 +846,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<String, Map<String, String>> exports,boolean checkMultipleVersions) {
+	public static String printClauses(Map<String, Map<String, String>> exports,
+			boolean checkMultipleVersions) {
 		StringBuffer sb = new StringBuffer();
 		String del = "";
 		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
@@ -861,20 +862,20 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			String outname = removeDuplicateMarker(name);
 			sb.append(del);
 			sb.append(outname);
-			printClause(clause,  sb);
+			printClause(clause, sb);
 			del = ",";
 		}
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, 
-			StringBuffer sb) {
+	public static void printClause(Map<String, String> map, StringBuffer sb) {
 
 		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
 			String key = j.next();
 
 			// Skip directives we do not recognize
-			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
+			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
+					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
 				continue;
 
 			String value = ((String) map.get(key)).trim();
@@ -1240,11 +1241,47 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			if (n > 0) {
 				map.put(attr.substring(0, n), macro.process(attr.substring(n + 1)));
 			} else
-				throw new IllegalArgumentException(String.format(
+				throw new IllegalArgumentException(formatArrays(
 						"Invalid attribute on package-info.java in %s , %s. Must be <key>=<name> ",
 						clazz, attr));
 		}
 		return map;
+	}
+
+	/**
+	 * This method is the same as String.format but it makes sure that any
+	 * arrays are transformed to strings.
+	 * 
+	 * @param string
+	 * @param parms
+	 * @return
+	 */
+	public static String formatArrays(String string, Object... parms) {
+		Object[] parms2 = parms;
+		Object[] output = new Object[parms.length];
+		for (int i = 0; i < parms.length; i++) {
+			output[i] = makePrintable(parms[i]);
+		}
+		return String.format(string, parms2);
+	}
+
+	/**
+	 * Check if the object is an array and turn it into a string if it is,
+	 * otherwise unchanged.
+	 * 
+	 * @param object the object to make printable
+	 * @return a string if it was an array or the original object
+	 */
+	public static Object makePrintable(Object object) {
+		if (object.getClass().isArray()) {
+			Object[] array = (Object[]) object;
+			Object[] output = new Object[array.length];
+			for (int i = 0; i < array.length; i++) {
+				output[i] = makePrintable(array[i]);
+			}
+			return Arrays.toString(output);
+		}
+		return object;
 	}
 
 	public static String append(String... strings) {
@@ -1353,9 +1390,9 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	}
 
 	/**
-	 * These plugins are added to the total list of plugins. The separation
-	 * is necessary because the list of plugins is refreshed now and then
-	 * so we need to be able to add them at any moment in time.
+	 * These plugins are added to the total list of plugins. The separation is
+	 * necessary because the list of plugins is refreshed now and then so we
+	 * need to be able to add them at any moment in time.
 	 * 
 	 * @param plugin
 	 */

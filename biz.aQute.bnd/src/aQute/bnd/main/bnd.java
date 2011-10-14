@@ -17,6 +17,7 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.concurrent.*;
 import aQute.bnd.libsync.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
@@ -148,8 +149,8 @@ public class bnd extends Processor {
 		for (String msg : getWarnings()) {
 			System.err.println(n++ + " : " + msg);
 		}
-		
-		if ( getErrors().size() != 0) {
+
+		if (getErrors().size() != 0) {
 			System.err.flush();
 			System.out.flush();
 			Thread.sleep(1000);
@@ -197,8 +198,6 @@ public class bnd extends Processor {
 			doRelease(args, ++i);
 		} else if ("debug".equals(args[i])) {
 			debug(args, ++i);
-		} else if ("libsync".equals(args[i])) {
-			doLibsync(args, ++i);
 		} else if ("bump".equals(args[i])) {
 			bump(args, ++i);
 		} else if ("deliverables".equals(args[i])) {
@@ -225,6 +224,8 @@ public class bnd extends Processor {
 			doHelp(args, ++i);
 		} else if ("macro".equals(args[i])) {
 			doMacro(args, ++i);
+		} else if ("multibuild".equals(args[i])) {
+			doMulti(args, ++i);
 		} else if ("merge".equals(args[i])) {
 			doMerge(args, ++i);
 		} else {
@@ -234,6 +235,27 @@ public class bnd extends Processor {
 
 		trace("command %s executed", cmd);
 		return true;
+	}
+
+	private void doMulti(String[] args, int i) throws Exception {
+		Project p = getProject();
+		Workspace workspace;
+
+		if (p != null)
+			workspace = p.getWorkspace();
+		else
+			workspace = Workspace.getWorkspace(getBase());
+
+		trace("Starting multibuild");
+		MultiBuilder multiBuilder = new MultiBuilder(workspace);
+		multiBuilder.startBuild();
+		
+		trace("Syncing multibuild");
+		multiBuilder.syncBuild();
+		trace("Synced");
+		if ( p != null) {
+			trace("Build %s", (Object) p.build());
+		}
 	}
 
 	boolean doFiles(String args[], int i) throws Exception {
@@ -1854,7 +1876,7 @@ public class bnd extends Processor {
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
-			error("FAILURE IN RUNTESTS",e);
+			error("FAILURE IN RUNTESTS", e);
 			errors++;
 		}
 		if (errors > 0)
@@ -1879,7 +1901,7 @@ public class bnd extends Processor {
 			pw.close();
 			out.close();
 		}
-		if ( errors != 0)
+		if (errors != 0)
 			error("Errors found %s", errors);
 	}
 
@@ -1906,7 +1928,8 @@ public class bnd extends Processor {
 		getInfo(project, project.toString() + ": ");
 
 		if (!isOk())
-			throw new IllegalStateException("Errors found while creating the bnd test project " + testFile.getAbsolutePath());
+			throw new IllegalStateException("Errors found while creating the bnd test project "
+					+ testFile.getAbsolutePath());
 
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
@@ -2109,42 +2132,6 @@ public class bnd extends Processor {
 			pw.close();
 		}
 
-	}
-
-	void doLibsync(String args[], int i) throws Exception {
-		List<File> files = new ArrayList<File>();
-
-		while (i < args.length) {
-			String v = args[i++];
-			if (v.startsWith("-")) {
-				error("Invalid option for libsync: %s, use: libsync [-url <url>] <file|dir>...", v);
-			} else {
-				File f = getFile(v);
-				if (!f.exists()) {
-					error("Non existent file: %s", f);
-				} else
-					traverse(files, f);
-			}
-		}
-		LibSync libsync;
-		libsync = new LibSync(this);
-
-		for (File file : files) {
-			Jar jar = new Jar(file);
-			try {
-				System.out.printf("%40s-%-10s",
-						jar.getManifest().getMainAttributes().getValue(BUNDLE_SYMBOLICNAME), jar
-								.getManifest().getMainAttributes().getValue(BUNDLE_VERSION));
-				libsync.submit(jar);
-				getInfo(libsync);
-				System.out.printf("     ok\n");
-			} catch (Exception e) {
-				System.out.printf("     failed %s\n", e.getMessage());
-				error("Submit to libsync failed for %s: %s", file, e);
-			} finally {
-				jar.close();
-			}
-		}
 	}
 
 	private void traverse(List<File> files, File f) {
@@ -2360,4 +2347,5 @@ public class bnd extends Processor {
 		addClose(jar);
 		return jar;
 	}
+
 }

@@ -17,11 +17,10 @@ import java.util.concurrent.atomic.*;
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Set<T>		done		= new HashSet<T>();
-	final List<Job>		waiting		= new ArrayList<Job>();
-	final Semaphore		semaphore	= new Semaphore(0);
-	final AtomicInteger	outstanding	= new AtomicInteger();
+	final Map<T, Job>	waiting		= new HashMap<T, Job>();
+	final Set<Job>		executing	= new HashSet<Job>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
+	private int			count;
 
 	/**
 	 * Helper class to model a Job
@@ -48,15 +47,18 @@ public class Forker<T> {
 
 					t = Thread.currentThread();
 				}
+				System.out.println("Running " + target);
 				runnable.run();
+				System.out.println("Done running " + target);
 			} catch (Exception e) {
 				exception = e;
+				e.printStackTrace();
 			} finally {
 				synchronized (this) {
 					t = null;
 				}
 				Thread.interrupted(); // clear the interrupt flag
-				done(target);
+				done(this);
 			}
 		}
 
@@ -94,43 +96,67 @@ public class Forker<T> {
 	 * Schedule a job for execution when the dependencies are done of target are
 	 * done.
 	 * 
-	 * @param dependencies the dependencies that must have run
-	 * @param target the target, is removed from all the dependencies when it ran
-	 * @param runnable the runnable to run
+	 * @param dependencies
+	 *            the dependencies that must have run
+	 * @param target
+	 *            the target, is removed from all the dependencies when it ran
+	 * @param runnable
+	 *            the runnable to run
 	 */
 	public synchronized void doWhen(Collection<? extends T> dependencies, T target,
 			Runnable runnable) {
-		System.out.println("doWhen " + dependencies);
-		outstanding.incrementAndGet();
+		if (waiting.containsKey(target))
+			throw new IllegalArgumentException("You can only add a target once to the forker");
+
+		System.out.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
 		job.dependencies = new HashSet<T>(dependencies);
-		job.dependencies.removeAll(done);
 		job.target = target;
-
 		job.runnable = runnable;
-		if (job.dependencies.isEmpty()) {
-			executor.execute(job);
-		} else {
-			waiting.add(job);
-		}
+		waiting.put(target, job);
 	}
 
-	/**
-	 * Called when the target has ran by the Job.
-	 * 
-	 * @param done
-	 */
-	private void done(T done) {
+	public void start(long ms) throws InterruptedException {
+		check();
+		count = waiting.size();
+		System.out.println("Count " + count);
+		schedule();
+		if (ms >= 0)
+			sync(ms);
+	}
+
+	private void check() {
+		Set<T> dependencies = new HashSet<T>();
+		for (Job job : waiting.values())
+			dependencies.addAll(job.dependencies);
+		dependencies.removeAll(waiting.keySet());
+		if (dependencies.size() > 0)
+			throw new IllegalArgumentException(
+					"There are dependencies in the jobs that are not present in the targets: "
+							+ dependencies);
+
+	}
+
+	public synchronized void sync(long ms) throws InterruptedException {
+		System.out.println("Waiting for sync");
+		while (count > 0) {
+			System.out.println("Waiting for sync " + count);
+			wait(ms);
+		}
+		System.out.println("Exiting sync " + count);
+	}
+
+	private void schedule() {
+		if (canceled.get())
+			return;
+
 		List<Runnable> torun = new ArrayList<Runnable>();
 		synchronized (this) {
-			System.out.println("done " + done);
-			semaphore.release();
-
-			for (Iterator<Job> e = waiting.iterator(); e.hasNext();) {
+			for (Iterator<Job> e = waiting.values().iterator(); e.hasNext();) {
 				Job job = e.next();
-				if (job.dependencies.remove(done) && job.dependencies.isEmpty()) {
-					System.out.println("scheduling " + job.target);
+				if (job.dependencies.isEmpty()) {
 					torun.add(job);
+					executing.add(job);
 					e.remove();
 				}
 			}
@@ -140,30 +166,27 @@ public class Forker<T> {
 	}
 
 	/**
-	 * Wait until all jobs have run.
+	 * Called when the target has ran by the Job.
 	 * 
-	 * @throws InterruptedException
+	 * @param done
 	 */
-	public void join() throws InterruptedException {
-		System.out.println("join " + outstanding + " " + semaphore);
-		check();
-		semaphore.acquire(outstanding.getAndSet(0));
-	}
+	private void done(Job done) {
+		synchronized (this) {
+			System.out.println("count = " + count);
+			executing.remove(done);
+			count--;
+			if (count == 0) {
+				System.out.println("finished");
+				notifyAll();
+				return;
+			}
 
-	/**
-	 * Check that we have no jobs that can never be satisfied. I.e. if 
-	 * the dependencies contain a target that is not listed.
-	 */
-	private void check() {
-		// TODO
-	}
-
-	/**
-	 * Return the number of outstanding jobs
-	 * @return outstanding jobs
-	 */
-	public int getOutstanding() {
-		return semaphore.availablePermits();
+			for (Job job : waiting.values()) {
+				boolean x = job.dependencies.remove(done.target);
+				//System.out.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
+			}
+		}
+		schedule();
 	}
 
 	/**
@@ -171,14 +194,20 @@ public class Forker<T> {
 	 * 
 	 * @throws InterruptedException
 	 */
-	public void cancel() throws InterruptedException {
-		System.out.println("canceled " + outstanding + " " + semaphore);
+	public void cancel(long ms) throws InterruptedException {
+		System.out.println("canceled " + count);
 
 		if (!canceled.getAndSet(true)) {
-			for (Job job : waiting) {
-				job.cancel();
+			synchronized (this) {
+				for (Job job : executing) {
+					job.cancel();
+				}
 			}
 		}
-		join();
+		sync(ms);
+	}
+
+	public int getCount() {
+		return count;
 	}
 }

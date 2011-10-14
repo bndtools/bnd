@@ -17,7 +17,7 @@ bin                     = bin
 target					= ${project}/${target-dir}
 build					= ${workspace}/cnf
 repo					= ${build}/repo
-releaserepo				= ${build}/releaserepo
+releaserepo				= ${workspace}/../repo/bundles
 target-dir				= tmp
 p                       = ${basename;${project}}
 project.name            = ${p}
@@ -39,7 +39,11 @@ javac.target 			= 1.5
 
 -plugin	            	= \
 	aQute.lib.deployer.FileRepo;location=${repo},\
-	aQute.lib.deployer.FileRepo;location=${releaserepo};name=Release
+	aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo}, \
+	org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
+	
+	
+#	aQute.lib.deployer.FileRepo;location=${releaserepo};name=Release
 
 -releaserepo: Release
   						  

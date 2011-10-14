@@ -247,7 +247,7 @@ public class Project extends Processor {
 						target.mkdirs();
 						getWorkspace().changedFile(target);
 					}
-					
+
 					// Where the launched OSGi framework stores stuff
 					String runStorageStr = getProperty(Constants.RUNSTORAGE);
 					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
@@ -372,8 +372,10 @@ public class Project extends Processor {
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
-		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH), Constants.BUILDPATH);
-		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles, ResolverMode.build);
+		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH),
+				Constants.BUILDPATH);
+		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles,
+				ResolverMode.build);
 		return bundles;
 	}
 
@@ -384,11 +386,11 @@ public class Project extends Processor {
 	private List<Container> parseRunbundles() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
-	
+
 	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
 	}
-	
+
 	/**
 	 * Analyze the header and return a list of files that should be on the
 	 * build, test or some other path. The list is assumed to be a list of bsns
@@ -403,7 +405,8 @@ public class Project extends Processor {
 	 *            The header
 	 * @return
 	 */
-	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
+	public List<Container> getBundles(Strategy strategyx, String spec, String source)
+			throws Exception {
 		List<Container> result = new ArrayList<Container>();
 		Map<String, Map<String, String>> bundles = parseHeader(spec);
 
@@ -435,7 +438,7 @@ public class Project extends Processor {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
-							found = new Container(project, bsn, "project", Container.TYPE.PROJECT,
+							found = new Container(project, bsn, versionRange, Container.TYPE.PROJECT,
 									f, null, attrs);
 						} else {
 							error("Reference to project that does not exist in workspace\n"
@@ -486,7 +489,7 @@ public class Project extends Processor {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Calculates the containers required to fulfil the {@code -buildpackages}
 	 * instruction, and appends them to the existing list of containers.
@@ -497,20 +500,21 @@ public class Project extends Processor {
 	 *            The value of the @{code -buildpackages} instruction.
 	 * @throws Exception
 	 */
-	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles, ResolverMode mode) throws Exception {
+	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles,
+			ResolverMode mode) throws Exception {
 		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
-		
-		List<Entry<String, Map<String, String>>> queue = new LinkedList<Map.Entry<String,Map<String,String>>>();
+
+		List<Entry<String, Map<String, String>>> queue = new LinkedList<Map.Entry<String, Map<String, String>>>();
 		queue.addAll(parseHeader(spec).entrySet());
-		
+
 		while (!queue.isEmpty()) {
 			Entry<String, Map<String, String>> entry = queue.remove(0);
-			
+
 			String pkgName = entry.getKey();
 			Map<String, String> attrs = entry.getValue();
-			
+
 			Container found = null;
-			
+
 			String versionRange = attrs.get(Constants.VERSION_ATTRIBUTE);
 			if ("latest".equals(versionRange) || "snapshot".equals(versionRange))
 				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
@@ -520,7 +524,8 @@ public class Project extends Processor {
 
 			if (found != null) {
 				if (resolvedBundles.contains(found)) {
-					// Don't add his bundle because it was already included using -buildpath
+					// Don't add his bundle because it was already included
+					// using -buildpath
 				} else {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
@@ -531,7 +536,7 @@ public class Project extends Processor {
 							addToPackageList(cc, attrs.get("packages"));
 							pkgResolvedBundles.put(cc.file, cc);
 						}
-						
+
 						String importUses = cc.getAttributes().get("import-uses");
 						if (importUses != null)
 							queue.addAll(0, parseHeader(importUses).entrySet());
@@ -539,28 +544,30 @@ public class Project extends Processor {
 				}
 			} else {
 				// Unable to resolve
-				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR, null, "package " + pkgName + ";version=" + versionRange + " not found", attrs);
+				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR, null,
+						"package " + pkgName + ";version=" + versionRange + " not found", attrs);
 				resolvedBundles.add(x);
 				warning("Can not find URL for package " + pkgName);
 			}
 		}
-		
+
 		for (Container container : pkgResolvedBundles.values()) {
 			resolvedBundles.add(container);
 		}
 	}
-	
+
 	static void mergeNames(String names, Set<String> set) {
 		StringTokenizer tokenizer = new StringTokenizer(names, ",");
 		while (tokenizer.hasMoreTokens())
 			set.add(tokenizer.nextToken().trim());
 	}
-	
+
 	static String flatten(Set<String> names) {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (String name : names) {
-			if (!first) builder.append(',');
+			if (!first)
+				builder.append(',');
 			builder.append(name);
 			first = false;
 		}
@@ -569,13 +576,13 @@ public class Project extends Processor {
 
 	static void addToPackageList(Container container, String newPackageNames) {
 		Set<String> merged = new HashSet<String>();
-		
+
 		String packageListStr = container.attributes.get("packages");
 		if (packageListStr != null)
 			mergeNames(packageListStr, merged);
 		if (newPackageNames != null)
 			mergeNames(newPackageNames, merged);
-		
+
 		container.putAttribute("packages", flatten(merged));
 	}
 
@@ -593,36 +600,42 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String, String> attrs, ResolverMode mode) throws Exception {
+	public Container getPackage(String packageName, String range, Strategy strategyx,
+			Map<String, String> attrs, ResolverMode mode) throws Exception {
 		if ("snapshot".equals(range))
-			return new Container(this, "", range, Container.TYPE.ERROR, null, "snapshot not supported for package lookups", null);
-		
+			return new Container(this, "", range, Container.TYPE.ERROR, null,
+					"snapshot not supported for package lookups", null);
+
 		if (attrs == null)
 			attrs = new HashMap<String, String>(2);
 		attrs.put("package", packageName);
 		attrs.put("mode", mode.name());
-		
+
 		Strategy useStrategy = findStrategy(attrs, strategyx, range);
-		
+
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin plugin : plugins) {
 			try {
 				File result = plugin.get(null, range, useStrategy, attrs);
 				if (result != null) {
 					if (result.getName().endsWith("lib"))
-						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null, attrs);
+						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY,
+								result, null, attrs);
 					else
-						return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
+						return new Container(this, result.getName(), range, Container.TYPE.REPO,
+								result, null, attrs);
 				}
 			} catch (Exception e) {
 				// Ignore... lots of repos will fail here
 			}
 		}
-		
-		return new Container(this, "X", range, Container.TYPE.ERROR, null, "package " + packageName + ";version=" + range + " Not found in " + plugins, null);
+
+		return new Container(this, "X", range, Container.TYPE.ERROR, null, "package " + packageName
+				+ ";version=" + range + " Not found in " + plugins, null);
 	}
 
-	private Strategy findStrategy(Map<String, String> attrs, Strategy defaultStrategy, String versionRange) {
+	private Strategy findStrategy(Map<String, String> attrs, Strategy defaultStrategy,
+			String versionRange) {
 		Strategy useStrategy = defaultStrategy;
 		String overrideStrategy = attrs.get("strategy");
 		if (overrideStrategy != null) {
@@ -707,17 +720,18 @@ public class Project extends Processor {
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
 	}
-	
+
 	public File getRunStorage() throws Exception {
 		prepare();
 		return runstorage;
 	}
-	
+
 	public boolean getRunBuilds() {
 		boolean result;
 		String runBuildsStr = getProperty(Constants.RUNBUILDS);
 		if (runBuildsStr == null)
-			result = !getPropertiesFile().getName().toLowerCase().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
+			result = !getPropertiesFile().getName().toLowerCase()
+					.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
 		else
 			result = Boolean.parseBoolean(runBuildsStr);
 		return result;
@@ -836,6 +850,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File release(String name, Jar jar) throws Exception {
+		trace("release %s", name);
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
@@ -853,13 +868,19 @@ public class Project extends Processor {
 
 		if (rp != null) {
 			try {
-				return rp.put(jar);
+				File file = rp.put(jar);
+				trace("Released %s to file %s in repository %s", jar.getName(), file, rp);
 			} catch (Exception e) {
 				error("Deploying " + jar.getName() + " on " + rp.getName(), e);
 			} finally {
 				jar.close();
 			}
-		}
+		} else
+			if ( name == null)
+				error("There is no writable repository (no repo name specified)");
+			else
+				error("Cannot find a writeable repository with the name %s from the repositiories %s", name, plugins);
+				
 		return null;
 
 	}
@@ -879,15 +900,21 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
+		trace("release");
 		File[] jars = build(test);
 		// If build fails jars will be null
 		if (jars == null) {
+			trace("no jars being build");
 			return;
 		}
+		trace("build ", Arrays.toString(jars));
 		for (File jar : jars) {
 			Jar j = new Jar(jar);
-			release(name, j);
-			j.close();
+			try {
+				release(name, j);
+			} finally {
+				j.close();
+			}
 		}
 
 	}
@@ -1157,7 +1184,6 @@ public class Project extends Processor {
 			return null;
 		}
 
-
 		if (isStale()) {
 			trace("Building " + this);
 			files = buildLocal(underTest);
@@ -1165,35 +1191,36 @@ public class Project extends Processor {
 
 		return files;
 	}
-	
+
 	/**
 	 * Return the files
 	 */
-	
+
 	public File[] getFiles() {
 		return files;
 	}
+
 	/**
 	 * Check if this project needs building
 	 */
 	public boolean isStale() throws Exception {
-		if ( files == null)
+		if (files == null)
 			return true;
-		
+
 		long localTime = getBuildTime();
-		if ( lastModified()>localTime)
+		if (lastModified() > localTime)
 			return true;
-		
+
 		for (Project dependency : getDependson()) {
 			if (dependency.isStale())
 				return true;
-	
-			if ( dependency.getBuildTime() > localTime)
+
+			if (dependency.getBuildTime() > localTime)
 				return true;
-			
-			if ( dependency.lastModified() > localTime)
+
+			if (dependency.lastModified() > localTime)
 				return true;
-			
+
 		}
 		return false;
 	}
@@ -1311,7 +1338,7 @@ public class Project extends Processor {
 		}
 	}
 
-	private File getOutputFile(String bsn) throws Exception {
+	public File getOutputFile(String bsn) throws Exception {
 		return new File(getTarget(), bsn + ".jar");
 	}
 
@@ -1413,6 +1440,7 @@ public class Project extends Processor {
 		File target = getTarget();
 		if (target.isDirectory() && target.getParentFile() != null) {
 			IO.delete(target);
+			target.mkdirs();
 		}
 		if (getOutput().isDirectory())
 			IO.delete(getOutput());
@@ -1432,7 +1460,7 @@ public class Project extends Processor {
 	public void test() throws Exception {
 		clear();
 		ProjectTester tester = getProjectTester();
-		tester.setContinuous(isTrue( getProperty(Constants.TESTCONTINUOUS)));
+		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();
 
 		if (!isOk()) {
@@ -1594,8 +1622,7 @@ public class Project extends Processor {
 			error("Can not execute script because there are no scripters registered: %s", script);
 			return;
 		}
-		@SuppressWarnings("rawtypes")
-		Map x = (Map) getProperties();
+		@SuppressWarnings("rawtypes") Map x = (Map) getProperties();
 		scripters.get(0).eval((Map<String, Object>) x, new StringReader(script));
 	}
 

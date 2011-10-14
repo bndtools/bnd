@@ -4,6 +4,8 @@
 Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
 
 Private-Package: 				aQute.bnd.*, aQute.lib.*
+
+#, org.osgi.service.component.annotations
 Conditional-Package: 			aQute.libg.*
 Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
 Import-Package: 				!org.eclipse.*,org.apache.tools.ant;resolution:=optional,org.osgi.service.bindex,*

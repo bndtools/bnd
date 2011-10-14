@@ -387,11 +387,11 @@ public class Builder extends Analyzer {
 				for (Jar jar : classpath) {
 					Resource resource = jar.getResource(path);
 					if (resource != null) {
-						dot.putResource("OSGI-OPT/src", resource);
+						dot.putResource("OSGI-OPT/src/"+path, resource);
 					} else {
 						resource = jar.getResource("OSGI-OPT/src/" + path);
 						if (resource != null) {
-							dot.putResource("OSGI-OPT/src", resource);
+							dot.putResource("OSGI-OPT/src/"+path, resource);
 						}
 					}
 				}
@@ -1209,7 +1209,7 @@ public class Builder extends Analyzer {
 		list.add(makeBnd);
 		list.add(makeCopy);
 		list.add(serviceComponent);
-		list.add(dsAnnotations);
+		//list.add(dsAnnotations);
 		list.add(metatypePlugin);
 		super.setTypeSpecificPlugins(list);
 	}

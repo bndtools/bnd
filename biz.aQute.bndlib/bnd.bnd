@@ -10,7 +10,7 @@ Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
 Bundle-Name: 					bnd - Bundle Tool
 Bundle-Description:				A Swiss Army Knife for OSGi
 Bundle-SymbolicName: 	        biz.aQute.bndlib
-Private-Package: 				aQute.bnd.*, aQute.lib.*
+Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
 Export-Package: aQute.bnd.annotation.*,\
 	aQute.lib.osgi,\
 	aQute.bnd.build,\
@@ -36,4 +36,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	ee.j2se; version=1.5, \
 	org.osgi.impl.bundle.bindex
 
-Bundle-Version: 1.44.20
+Bundle-Version: 1.47.0
