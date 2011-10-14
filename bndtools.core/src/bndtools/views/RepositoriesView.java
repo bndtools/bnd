@@ -7,7 +7,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -29,7 +31,9 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
@@ -152,8 +156,8 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                 addBundlesAction.setEnabled(writableRepoSelected);
             }
         });
-        
-        viewer.addDoubleClickListener(new IDoubleClickListener() {            
+
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event) {
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -172,7 +176,9 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                 }
             }
         });
-        
+
+        createContextMenu();
+
         // LOAD
         try {
             viewer.setInput(Central.getWorkspace());
@@ -269,6 +275,14 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         addBundlesAction.setText("Add");
         addBundlesAction.setToolTipText("Add Bundles to Repository");
         addBundlesAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick_add.png"));
+    }
+
+    void createContextMenu() {
+        MenuManager mgr = new MenuManager();
+        Menu menu = mgr.createContextMenu(viewer.getControl());
+        viewer.getControl().setMenu(menu);
+        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        getSite().registerContextMenu(mgr, viewer);
     }
 
     @Override
