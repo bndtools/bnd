@@ -3,6 +3,8 @@ package aQute.bnd.service;
 import java.io.*;
 import java.util.concurrent.atomic.*;
 
+import aQute.libg.reporter.*;
+
 public class BndListener {
 	final AtomicInteger inside = new AtomicInteger();
 	
@@ -13,5 +15,9 @@ public class BndListener {
     
     public boolean isInside() {
     	return inside.get()!=0;
+    }
+    
+    public void signal(Reporter reporter) {
+    	
     }
 }

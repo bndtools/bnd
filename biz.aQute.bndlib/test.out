@@ -1,0 +1,45 @@
+<?xml version='1.0'?>
+
+<metatype:MetaData xmlns:metatype='http://www.osgi.org/xmlns/metatype/v1.1.0'>
+  <OCD name='Metatype test naming' id='test.MetatypeTest$Naming' localization='test.MetatypeTest$Naming'>
+    <AD name='Secret' id='secret' cardinality='0' required='true' type='String'/>
+    <AD name='Secret *' id='.secret' cardinality='0' required='true' type='String'/>
+    <AD name='Secret' id='_secret' cardinality='0' required='true' type='String'/>
+    <AD name='New' id='new' cardinality='0' required='true' type='String'/>
+    <AD name='New' id='$new' cardinality='0' required='true' type='String'/>
+    <AD name='A b c' id='a.b.c' cardinality='0' required='true' type='String'/>
+    <AD name='A b c' id='a_b_c' cardinality='0' required='true' type='String'/>
+    <AD name='A b *' id='.a_b' cardinality='0' required='true' type='String'/>
+    <AD name='A b' id='$$$$a_b' cardinality='0' required='true' type='String'/>
+    <AD name='A b' id='$$$$a.b' cardinality='0' required='true' type='String'/>
+    <AD name='A' id='a' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a$' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a$' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a$$' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a$.$' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a$_$' cardinality='0' required='true' type='String'/>
+    <AD name='A ' id='a..' cardinality='0' required='true' type='String'/>
+    <AD name='Xsecret' id='secret' cardinality='0' required='true' type='String'/>
+    <AD name='X secret' id='.secret' cardinality='0' required='true' type='String'/>
+    <AD name='X secret' id='_secret' cardinality='0' required='true' type='String'/>
+    <AD name='Xnew' id='new' cardinality='0' required='true' type='String'/>
+    <AD name='X new' id='$new' cardinality='0' required='true' type='String'/>
+    <AD name='Xa b c' id='a.b.c' cardinality='0' required='true' type='String'/>
+    <AD name='Xa b c' id='a_b_c' cardinality='0' required='true' type='String'/>
+    <AD name='X a b' id='.a_b' cardinality='0' required='true' type='String'/>
+    <AD name='X a b' id='$$$$a_b' cardinality='0' required='true' type='String'/>
+    <AD name='X a b' id='$$$$a.b' cardinality='0' required='true' type='String'/>
+    <AD name='Xa' id='a' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a$' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a$' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a$$' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a$.$' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a$_$' cardinality='0' required='true' type='String'/>
+    <AD name='Xa ' id='a..' cardinality='0' required='true' type='String'/>
+    <AD name='Noid' id='noid' cardinality='0' required='true' type='String'/>
+    <AD name='Nullid' id='&lt;&lt;NULL&gt;&gt;' cardinality='0' required='true' type='String'/>
+  </OCD>
+  <Designate pid='test.MetatypeTest$Naming'>
+    <Object ocdref='test.MetatypeTest$Naming'/>
+  </Designate>
+</metatype:MetaData>

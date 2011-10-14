@@ -15,6 +15,7 @@ import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.libg.reporter.*;
 
 public class Workspace extends Processor {
 	public static final String					BUILDFILE	= "build.bnd";
@@ -143,7 +144,7 @@ public class Workspace extends Processor {
 			for (File extension : extensions) {
 				if (extension.getName().endsWith(".bnd")) {
 					try {
-						doIncludeFile(extension, true, getProperties());
+						doIncludeFile(extension, false, getProperties());
 					} catch (Exception e) {
 						error("PropertiesChanged: " + e.getMessage());
 					}
@@ -206,6 +207,20 @@ public class Workspace extends Processor {
 			}
 	}
 
+	public void signal(Reporter reporter) {
+		List<BndListener> listeners = getPlugins(BndListener.class);
+		for (BndListener l : listeners)
+			try {
+				l.signal(this);
+			} catch (Exception e) {
+				// who cares?
+			}
+			
+	}
+	@Override
+	public void signal() {
+		signal(this);
+	}
 
 	private void copy(InputStream in, OutputStream out) throws Exception {
 		byte data[] = new byte[10000];
@@ -291,4 +306,5 @@ public class Workspace extends Processor {
 		list.add(maven);
 		list.add(cachedRepo);
 	}
+	
 }

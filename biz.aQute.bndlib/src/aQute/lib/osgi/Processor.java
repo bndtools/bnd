@@ -116,6 +116,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		String s = formatArrays(string, args);
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
+		p.signal();
 	}
 
 	public void error(String string, Object... args) {
@@ -127,6 +128,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 		}
+		p.signal();
 	}
 
 	public void error(String string, Throwable t, Object... args) {
@@ -142,8 +144,13 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		}
 		if (p.exceptions)
 			t.printStackTrace();
+		
+		p.signal();
 	}
 
+	public void signal() {
+	}
+	
 	public List<String> getWarnings() {
 		return warnings;
 	}
@@ -1273,6 +1280,9 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @return a string if it was an array or the original object
 	 */
 	public static Object makePrintable(Object object) {
+		if ( object == null)
+			return object;
+		
 		if (object.getClass().isArray()) {
 			Object[] array = (Object[]) object;
 			Object[] output = new Object[array.length];

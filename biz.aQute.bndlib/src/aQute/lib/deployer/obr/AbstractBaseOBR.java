@@ -86,7 +86,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	}
 
 	/**
-	 * Initialise the indexes prior to main initialisation of internal
+	 * Initialize the indexes prior to main initialisation of internal
 	 * data structures. This implementation does nothing, but subclasses
 	 * may override if they need to perform such initialisation.
 	 * @throws Exception 

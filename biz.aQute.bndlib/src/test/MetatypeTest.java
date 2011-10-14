@@ -193,8 +193,7 @@ public class MetatypeTest extends TestCase {
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.MetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.out);
-
-		Document d = db.parse(r.openInputStream());
+		Document d = db.parse(r.openInputStream(),"UTF-8");
 		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
 				.getNamespaceURI());
 		

@@ -1,4 +1,4 @@
-package test;
+package aQute.bnd.test;
 
 import java.io.*;
 import java.util.*;

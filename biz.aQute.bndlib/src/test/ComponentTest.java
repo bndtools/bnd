@@ -353,8 +353,8 @@ public class ComponentTest extends TestCase {
 		Jar jar = b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors().size());
+		assertEquals(1, b.getWarnings().size());
 
 		Manifest manifest = jar.getManifest();
 		String component = manifest.getMainAttributes().getValue("Service-Component");

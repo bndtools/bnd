@@ -1030,7 +1030,12 @@ public class Clazz {
 				bb.getInt();
 				int low = bb.getInt();
 				int high = bb.getInt();
-				bb.position(bb.position() + (high - low + 1) * 4);
+				try {
+					bb.position(bb.position() + (high - low + 1) * 4);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				lastReference = -1;
 				break;
 

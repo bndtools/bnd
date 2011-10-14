@@ -75,34 +75,35 @@
 	</target>
 
 	<target name="junit" depends="build">
-		<junit printsummary="true">			
+		<junit printsummary="true" failureproperty='stop' errorproperty='stop'>
 			<classpath path="${project.buildpath}" />
-			<formatter type="xml"/>
-			<batchtest todir="tmp" >
-			    <fileset dir="${src}">
-			      <include name="test/**.java"/>
-			    </fileset>
+			<formatter type="xml" />
+			<batchtest todir="tmp">
+				<fileset dir="${src}">
+					<include name="test/**.java" />
+				</fileset>
 			</batchtest>
 		</junit>
+		<fail if="stop" />
 	</target>
-	
+
 	<target name="release" depends="build">
 		<subant target="release" inheritall="false" buildpath="${project.dependson}">
-			<property name="donotrecurse" value="true"/>
+			<property name="donotrecurse" value="true" />
 		</subant>
-		<bnd command="release" exceptions="true" basedir="${project}"/>
+		<bnd command="release" exceptions="true" basedir="${project}" />
 	</target>
-	
+
 	<target name="release.bindex" depends="release">
-		<echo message="bindex classpath: ${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+		<echo message="bindex classpath: ${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar" />
 		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
 			<classpath>
-				<fileset dir="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex" includes="org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+				<fileset dir="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex" includes="org.osgi.impl.bundle.bindex-2.2.0.jar" />
 			</classpath>
 		</taskdef>
-		
+
 		<bindex root="${workspacedir}/cnf/releaserepo" repositoryfile="${workspacedir}/cnf/releaserepo/repository.xml" quiet="yes">
-			<fileset dir="${workspacedir}/cnf/releaserepo" includes="**/*.jar"/>
+			<fileset dir="${workspacedir}/cnf/releaserepo" includes="**/*.jar" />
 		</bindex>
 	</target>
 
@@ -114,7 +115,7 @@
 	</target>
 
 	<target name="clean" depends="init">
-		<delete dir="${project.output}"/>
+		<delete dir="${project.output}" />
 		<bnd command="clean" exceptions="true" basedir="${project}" />
 	</target>
 

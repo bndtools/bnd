@@ -3,6 +3,8 @@ package test;
 import java.io.*;
 import java.lang.reflect.*;
 
+import test.signatures.*;
+
 import junit.framework.*;
 import aQute.bnd.compatibility.*;
 
@@ -15,7 +17,7 @@ public class TestSignatures extends TestCase {
 	}
 	
 	public void testClass() throws Exception {
-		assertEquals( "<C:Ljava/lang/Object;>Ltest/X<Ljava/lang/String;>;Ltest/Y<Ljava/lang/Integer;>;", s.getSignature(Z.class));
+		assertEquals( "<C:Ljava/lang/Object;>Ltest/signatures/X<Ljava/lang/String;>;Ltest/signatures/Y<Ljava/lang/Integer;>;", s.getSignature(Z.class));
 		assertEquals( "<D:Ljava/lang/Object;>Ljava/lang/Object;", s.getSignature(Z.V.class));
 	}
 	
@@ -32,13 +34,13 @@ public class TestSignatures extends TestCase {
 	
 	public void testFields() throws Exception {
 		// Z<Long>.V<Integer>
-		assertEquals( "Ltest/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;", s.getSignature(Z.class.getField("referenceToNestedClass")));
+		assertEquals( "Ltest/signatures/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;", s.getSignature(Z.class.getField("referenceToNestedClass")));
 		
 		// 
-		assertEquals( "Ltest/Z<TC;>.V<TC;>;", s.getSignature(Z.class.getField("vc")));
-		assertEquals( "<C:Ljava/lang/Object;>Ltest/X<Ljava/lang/String;>;Ltest/Y<Ljava/lang/Integer;>;", s.getSignature(Z.class));
+		assertEquals( "Ltest/signatures/Z<TC;>.V<TC;>;", s.getSignature(Z.class.getField("vc")));
+		assertEquals( "<C:Ljava/lang/Object;>Ltest/signatures/X<Ljava/lang/String;>;Ltest/signatures/Y<Ljava/lang/Integer;>;", s.getSignature(Z.class));
 		assertEquals( "<D:Ljava/lang/Object;>Ljava/lang/Object;", s.getSignature(Z.V.class));
-		assertEquals( "Ltest/X<Ltest/Y<TC;>;>;", s.getSignature( Z.class.getField("field")));
+		assertEquals( "Ltest/signatures/X<Ltest/signatures/Y<TC;>;>;", s.getSignature( Z.class.getField("field")));
 	}
 	
 	
@@ -48,12 +50,12 @@ public class TestSignatures extends TestCase {
 		assertEquals( "Ljava/util/Collection<-Ljava/lang/Cloneable;>;", s.getSignature( Z.class.getField("wildcard_003")));
 		assertEquals( "Ljava/util/Collection<+TC;>;", s.getSignature( Z.class.getField("wildcard_004")));
 		assertEquals( "Ljava/util/Collection<-TC;>;", s.getSignature( Z.class.getField("wildcard_005")));
-		assertEquals( "Ljava/util/Collection<+Ltest/Z<TC;>.V<Ljava/lang/Integer;>;>;", s.getSignature( Z.class.getField("wildcard_006")));
-		assertEquals( "Ljava/util/Collection<-Ltest/Z<TC;>.V<Ljava/lang/Integer;>;>;", s.getSignature( Z.class.getField("wildcard_007")));
+		assertEquals( "Ljava/util/Collection<+Ltest/signatures/Z<TC;>.V<Ljava/lang/Integer;>;>;", s.getSignature( Z.class.getField("wildcard_006")));
+		assertEquals( "Ljava/util/Collection<-Ltest/signatures/Z<TC;>.V<Ljava/lang/Integer;>;>;", s.getSignature( Z.class.getField("wildcard_007")));
 	}
 	
 	public void testNormalize() {
-		assertEquals( "Ltest/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;", s.normalize("Ltest/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;"));
+		assertEquals( "Ltest/signatures/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;", s.normalize("Ltest/signatures/Z<Ljava/lang/Long;>.V<Ljava/lang/Integer;>;"));
 		assertEquals( s.normalize("<A:Ljava/lang/Object;>(TA;)V"), s.normalize("<E:Ljava/lang/Object;>(TE;)V"));		
 		assertEquals( s.normalize("<A:Ljava/lang/Object;>(TA;TB;)V"), s.normalize("<E:Ljava/lang/Object;>(TE;TC;)V"));
 		

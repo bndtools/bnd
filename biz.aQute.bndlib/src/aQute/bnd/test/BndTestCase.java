@@ -1,13 +1,13 @@
-package test;
+package aQute.bnd.test;
 
 import java.util.*;
 
 import junit.framework.*;
 import aQute.libg.reporter.*;
 
-public class BndTestCase extends TestCase {
+public abstract class BndTestCase extends TestCase {
 
-	void assertOk(Reporter reporter) {
+	protected void assertOk(Reporter reporter) {
 		try {
 			assertEquals(0, reporter.getErrors().size());
 			assertEquals(0, reporter.getWarnings().size());

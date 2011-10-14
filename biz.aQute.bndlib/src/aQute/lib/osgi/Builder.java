@@ -375,11 +375,14 @@ public class Builder extends Analyzer {
 						for (int j = 0; j < fixed.length; j++) {
 							File ff = getFile(bdir, fixed[j]);
 							if (ff.isFile()) {
-								dot.putResource("OSGI-OPT/src/" + pack + fixed[j],
+								String name = "OSGI-OPT/src/" + pack + fixed[j];
+								dot.putResource(name,
 										new FileResource(ff));
 							}
 						}
 					}
+					if ( path.trim().length() == 0)
+						System.out.println("Duh?");
 					dot.putResource("OSGI-OPT/src/" + path, new FileResource(f));
 				}
 			}

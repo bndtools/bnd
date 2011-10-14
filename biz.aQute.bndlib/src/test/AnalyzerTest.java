@@ -3,7 +3,6 @@ package test;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
-import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;

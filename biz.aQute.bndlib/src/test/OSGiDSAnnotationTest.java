@@ -5,6 +5,7 @@ import java.io.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
 
+import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 
 public class OSGiDSAnnotationTest extends BndTestCase {
@@ -83,7 +84,7 @@ public class OSGiDSAnnotationTest extends BndTestCase {
 
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Service-Component", "test.OSGiDSAnnotationTest*");
+		b.setProperty("-dsannotations", "test.OSGiDSAnnotationTest*");
 		b.setProperty("Private-Package", "test");
 		b.addClasspath(new File("bin"));
 

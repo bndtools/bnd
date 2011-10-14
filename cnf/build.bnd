@@ -42,9 +42,6 @@ javac.target 			= 1.5
 	aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo}, \
 	org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
 	
-	
-#	aQute.lib.deployer.FileRepo;location=${releaserepo};name=Release
-
 -releaserepo: Release
   						  
 -make                   =  \

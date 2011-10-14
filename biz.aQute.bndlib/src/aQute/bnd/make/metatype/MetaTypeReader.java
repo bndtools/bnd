@@ -267,7 +267,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out));
+		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 		pw.println("<?xml version='1.0'?>");
 		metadata.print(0, pw);
 		pw.flush();
