@@ -72,7 +72,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 120;
+        gd_table.heightHint = 100;
         table.setLayoutData(gd_table);
 
         viewer = new TableViewer(table);
@@ -86,7 +86,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         txtDescription.getFormText().setForeground(table.getForeground());
 
         GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_txtDescription.heightHint = 120;
+        gd_txtDescription.heightHint = 100;
         txtDescription.setLayoutData(gd_txtDescription);
 
         viewer.setContentProvider(new ArrayContentProvider());

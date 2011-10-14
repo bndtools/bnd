@@ -695,6 +695,13 @@
       </plugin>
       
       <plugin
+         class="aQute.bnd.maven.support.MavenRemoteRepository"
+         icon="icons/bundlefolder.png"
+         name="Maven Remote Repository">
+         <property name="repositories" type="string" description="List of remote repository URLs"/>
+      </plugin>
+      
+      <plugin
          class="aQute.lib.spring.SpringXMLType"
          icon="icons/magnifier.png"
          name="Spring Component Analyzer"/>
