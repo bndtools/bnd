@@ -124,6 +124,24 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             return depends.toArray(new IProject[depends.size()]);
         }
 
+        for (IProject dependsOn : depends) {
+            IResourceDelta delta = getDelta(dependsOn);
+            if(delta != null) {
+                FileFilter generatedFilter = new FileFilter() {
+                    public boolean accept(File pathname) {
+                        return pathname.getName().endsWith(".bnd");
+                    }
+                };
+                List<File> affectedFiles = new ArrayList<File>();
+                DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED, affectedFiles, generatedFilter);
+                delta.accept(visitor);
+                if (affectedFiles.size() > 0) {
+                    BndContainerInitializer.updateProjectClasspath(JavaCore.create(project));
+                    super.forgetLastBuiltState();
+                    return depends.toArray(new IProject[depends.size()]);
+                }
+            }
+        }
 
 		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
 			rebuildBndProject(project, model, depends, monitor, 0);

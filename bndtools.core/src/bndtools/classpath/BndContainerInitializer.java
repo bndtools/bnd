@@ -225,24 +225,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         return true;
     }
 
-    private static boolean validateContainers(List<String> errors, Collection<Container> containers) {
-        for (Container container : containers) {
-            switch (container.getType()) {
-            case ERROR :
-                errors.add(container.getError());
-                continue;
-            case REPO :
-                if (!container.getFile().exists()) {
-                    errors.add("Repository file " + container.getFile());
-                }
-                continue;
-                default:
-            }
-        }
-        
-        return false;
-    }
-
     static IAccessRule[] calculateAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
