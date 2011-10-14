@@ -26,18 +26,21 @@ public class PackageInfo implements Comparable<PackageInfo> {
 	private String versionRange;
 	private String suggestedVersionRange;
 	private final String packageName;
-	private String version;
+	private String currentVersion;
 	private int severity;
-	private String suggestedVersion;
+//	private String suggestedVersion;
 	private int changeCode = CHANGE_CODE_NONE;
 	private Set<ClassInfo> classes = new TreeSet<ClassInfo>();
 	private JarDiff jarDiff;
 	private boolean imported;
 	private boolean exported;
+	private String selectedVersion;
+	private TreeSet<String> suggestedVersions;
 	
 	public PackageInfo(JarDiff jarDiff, String packageName) {
 		this.jarDiff = jarDiff;
 		this.packageName = packageName;
+		suggestedVersions = new TreeSet<String>();
 	}
 
 	public String getPackageName() {
@@ -97,12 +100,12 @@ public class PackageInfo implements Comparable<PackageInfo> {
 		return true;
 	}
 
-	public String getVersion() {
-		return version;
+	public String getCurrentVersion() {
+		return currentVersion;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
+	public void setCurrentVersion(String version) {
+		this.currentVersion = version;
 	}
 
 	public int compareTo(PackageInfo o) {
@@ -117,12 +120,15 @@ public class PackageInfo implements Comparable<PackageInfo> {
 		this.severity = severity;
 	}
 
-	public String getSuggestedVersion() {
-		return suggestedVersion;
+	public String getSelectedVersion() {
+		if (selectedVersion != null) {
+			return selectedVersion;
+		}
+		return getSuggestedVersion();
 	}
 
-	public void setSuggestedVersion(String suggestedVersion) {
-		this.suggestedVersion = suggestedVersion;
+	public void setSelectedVersion(String selectedVersion) {
+		this.selectedVersion = selectedVersion;
 	}
 
 	public int getChangeCode() {
@@ -169,7 +175,22 @@ public class PackageInfo implements Comparable<PackageInfo> {
 		this.suggestedVersionRange = suggestedVersionRange;
 	}
 	
+	public void addSuggestedVersion(String version) {
+		suggestedVersions.add(version);
+	}
+	
+	public TreeSet<String> getSuggestedVersions() {
+		return suggestedVersions;
+	}
+	
+	public String getSuggestedVersion() {
+		if (suggestedVersions.size() > 0) {
+			return suggestedVersions.last();
+		}
+		return null;
+	}
+	
 	public String toString() {
-		return packageName + "[" + version + "]";
+		return packageName + "[" + currentVersion + "]";
 	}
 }

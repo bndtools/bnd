@@ -365,7 +365,7 @@ public class BundleRelease {
 					return ((JarDiff) element).getCurrentVersion();
 				}
 				if (element instanceof PackageInfo) {
-					return ((PackageInfo) element).getVersion();
+					return ((PackageInfo) element).getCurrentVersion();
 				}
 				if (element instanceof ClassInfo) {
 					return "";
@@ -572,18 +572,20 @@ public class BundleRelease {
 			} else {
 				PackageInfo pi = (PackageInfo) element;
 	
-				if (pi.getVersion() != null) {
-					versions.add(pi.getVersion());
+				if (pi.getCurrentVersion() != null) {
+					versions.add(pi.getCurrentVersion());
 				}
-				if (pi.getSuggestedVersion() != null) {
-					versions.add(pi.getSuggestedVersion());
+				for (String suggestedVersion : pi.getSuggestedVersions()) {
+					versions.add(suggestedVersion);
 				}
 				if (pi.getJarDiff().getCurrentVersion() != null) {
 					versions.add(pi.getJarDiff().getCurrentVersion());
 				}
 				if (pi.getJarDiff().getSuggestedVersion() != null) {
 					versions.add(pi.getJarDiff().getSuggestedVersion());
-//					suggestedVersion = pi.getJarDiff().getSuggestedVersion();
+				}
+				for (String suggestedVersion : pi.getJarDiff().getSuggestedVersions()) {
+					versions.add(suggestedVersion);
 				}
 			}
 			
@@ -616,7 +618,7 @@ public class BundleRelease {
 				selectedVersion = ((JarDiff) cell.getElement()).getSelectedVersion();
 			} else {
 				PackageInfo pi = (PackageInfo) cell.getElement();
-				selectedVersion = pi.getSuggestedVersion();
+				selectedVersion = pi.getSelectedVersion();
 			}
 
 			String[] items = ((ComboBoxCellEditor)cellEditor).getItems();
@@ -645,7 +647,7 @@ public class BundleRelease {
 				return;
 			}
 			PackageInfo modelElement = (PackageInfo) cell.getElement();
-			modelElement.setSuggestedVersion(selectedVersion);
+			modelElement.setSelectedVersion(selectedVersion);
 		}
 	}
 	

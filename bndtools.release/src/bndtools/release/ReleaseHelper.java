@@ -38,10 +38,10 @@ import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
 import bndtools.editor.model.BndEditModel;
 import bndtools.release.api.IReleaseParticipant;
+import bndtools.release.api.ReleaseUtils;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
-import bndtools.release.api.ReleaseUtils;
 
 public class ReleaseHelper {
 
@@ -55,7 +55,7 @@ public class ReleaseHelper {
 				continue;
 			}
 			for (PackageInfo pi : current.getModifiedExportedPackages()) {
-				if (pi.getVersion() != null && !pi.getVersion().equals(pi.getSuggestedVersion())) {
+				if (pi.getCurrentVersion() != null && !pi.getCurrentVersion().equals(pi.getSuggestedVersion())) {
 					updatePackageInfoFile(context.getProject(), pi);
 				}
 			}
