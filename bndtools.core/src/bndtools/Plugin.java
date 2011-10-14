@@ -147,6 +147,7 @@ public class Plugin extends AbstractUIPlugin {
 		indexerTracker = new IndexerTracker(context);
 		indexerTracker.open();
 
+		Central.getWorkspace();
 		central = new Central();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(refreshWorkspaceListener);
 
