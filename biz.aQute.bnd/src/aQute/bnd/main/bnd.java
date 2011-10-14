@@ -238,24 +238,24 @@ public class bnd extends Processor {
 	}
 
 	private void doMulti(String[] args, int i) throws Exception {
-		Project p = getProject();
-		Workspace workspace;
-
-		if (p != null)
-			workspace = p.getWorkspace();
-		else
-			workspace = Workspace.getWorkspace(getBase());
-
-		trace("Starting multibuild");
-		MultiBuilder multiBuilder = new MultiBuilder(workspace);
-		multiBuilder.startBuild();
-		
-		trace("Syncing multibuild");
-		multiBuilder.syncBuild();
-		trace("Synced");
-		if ( p != null) {
-			trace("Build %s", (Object) p.build());
-		}
+//		Project p = getProject();
+//		Workspace workspace;
+//
+//		if (p != null)
+//			workspace = p.getWorkspace();
+//		else
+//			workspace = Workspace.getWorkspace(getBase());
+//
+//		trace("Starting multibuild");
+//		MultiBuilder multiBuilder = new MultiBuilder(workspace);
+//		multiBuilder.startBuild();
+//		
+//		trace("Syncing multibuild");
+//		multiBuilder.syncBuild();
+//		trace("Synced");
+//		if ( p != null) {
+//			trace("Build %s", (Object) p.build());
+//		}
 	}
 
 	boolean doFiles(String args[], int i) throws Exception {
