@@ -159,8 +159,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
             LinkedHashMap<Project, List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project, List<IAccessRule>>();
             for (Container c : containers) {
-                if (c.getError() == null) {
-                    calculateAccessRules(projectAccessRules, c);
+                if (c.getType() == TYPE.PROJECT && c.getError() == null) {
+                    calculateWorkspaceBundleAccessRules(projectAccessRules, c);
                 }
             }
 
@@ -171,7 +171,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 if (c.getError() == null) {
                     File file = c.getFile();
                     assert file.isAbsolute();
-                    
+
                     if (!file.exists()) {
                         switch (c.getType()) {
                         case REPO :
@@ -203,7 +203,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                         }
                         cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
                     } else {
-                        IAccessRule[] accessRules = calculateAccessRules(projectAccessRules, c);
+                        IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
                         cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
                     }
                     result.add(cpe);
@@ -217,7 +217,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             model.clear();
 
             setClasspathEntries(javaProject, model, result.toArray(new IClasspathEntry[result.size()]));
-            
+
             if (errors.size() > 0) {
                 return false;
             }
@@ -225,7 +225,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         return true;
     }
 
-    static IAccessRule[] calculateAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
+    // TODO: this is a workaround for bug #89 in bnd
+    static boolean isProjectContainer(Container container) {
+        return container.getType() == TYPE.PROJECT && !container.getFile().isFile();
+    }
+
+    static IAccessRule[] calculateRepoBundleAccessRules(Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
             List<IAccessRule> tmp = new LinkedList<IAccessRule>();
@@ -235,20 +240,33 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                 String pathStr = token.replace('.', '/') + "/*";
                 tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            if (c.getType() == TYPE.PROJECT) {
-                addAccessRules(projectAccessRules, c.getProject(), tmp);
-                return null;
-            } else {
-                tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-                return tmp.toArray(new IAccessRule[tmp.size()]);
+            tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+            return tmp.toArray(new IAccessRule[tmp.size()]);
+        }
+        return null;
+    }
+
+    static void calculateWorkspaceBundleAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
+        String packageList = c.getAttributes().get("packages");
+        if (packageList != null) {
+            List<IAccessRule> tmp = new LinkedList<IAccessRule>();
+            StringTokenizer tokenizer = new StringTokenizer(packageList, ",");
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                String pathStr = token.replace('.', '/') + "/*";
+                tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
+            addAccessRules(projectAccessRules, c.getProject(), tmp);
+        } else if (isProjectContainer(c)) {
+            // No access rules please.
+            addAccessRules(projectAccessRules, c.getProject(), null);
         } else if (c.getType() == TYPE.PROJECT) {
             Manifest mf = null;
             try {
                 mf = JarUtils.loadJarManifest(new FileInputStream(c.getFile()));
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                Plugin.logError("Unable to generate access rules from bundle " + c.getFile(), e);
+                return;
             }
             Map<String, Map<String, String>> exportedPackages = OSGiHeader.parseHeader(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
             List<IAccessRule> tmp = new LinkedList<IAccessRule>();
@@ -258,15 +276,20 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             }
             addAccessRules(projectAccessRules, c.getProject(), tmp);
         }
-        return null;
     }
 
     static void addAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Project project, List<IAccessRule> accessRules) {
-        List<IAccessRule> currentAccessRules = projectAccessRules.get(project);
-        if (currentAccessRules == null) {
-            projectAccessRules.put(project, accessRules);
+        if (projectAccessRules.containsKey(project)) {
+            List<IAccessRule> currentAccessRules = projectAccessRules.get(project);
+
+            if (currentAccessRules != null) {
+                if (accessRules == null)
+                    projectAccessRules.put(project, null);
+                else
+                    currentAccessRules.addAll(accessRules);
+            }
         } else {
-            currentAccessRules.addAll(accessRules);
+            projectAccessRules.put(project, accessRules);
         }
     }
 
@@ -276,9 +299,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         if (bndFile == null) {
             return;
         }
-        
+
         if (submitMarkerJob) {
-        
+
             Job markerJob = new Job("Bndtools: Resolving markers") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
@@ -287,11 +310,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     } catch (CoreException e) {
                         return e.getStatus();
                     }
-    
+
                     return Status.OK_STATUS;
                 }
             };
-    
+
             markerJob.setRule(bndFile);
             markerJob.setPriority(Job.BUILD);
             markerJob.schedule();
@@ -309,7 +332,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             marker.setAttribute(IMarker.MESSAGE, error);
         }
     }
-    
+
     protected static IPath fileToPath(Project project, File file) {
         IPath path = Central.toPath(project, file);
         if (path == null)
