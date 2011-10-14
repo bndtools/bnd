@@ -171,8 +171,6 @@ public class Central {
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
 
-        Activator.instance.context.registerService(Workspace.class.getName(), workspace, null);
-
         return workspace;
     }
 

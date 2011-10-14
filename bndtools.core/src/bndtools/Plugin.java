@@ -41,6 +41,7 @@ import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 import bndtools.builder.BndProjectNature;
@@ -60,7 +61,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
 	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
-	
+
 	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
 	private static volatile Plugin plugin;
@@ -147,7 +148,8 @@ public class Plugin extends AbstractUIPlugin {
 		indexerTracker = new IndexerTracker(context);
 		indexerTracker.open();
 
-		Central.getWorkspace();
+		registerWorkspaceServiceFactory(context);
+
 		central = new Central();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(refreshWorkspaceListener);
 
@@ -155,6 +157,13 @@ public class Plugin extends AbstractUIPlugin {
 
 		runStartupParticipants();
 	}
+
+    private void registerWorkspaceServiceFactory(BundleContext context) {
+        Properties props = new Properties();
+        props.put("name", "bndtools");
+
+        context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
+    }
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
 	    workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
