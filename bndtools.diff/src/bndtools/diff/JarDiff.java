@@ -53,18 +53,16 @@ public class JarDiff {
 	protected Map<String, PackageInfo> packages = new TreeMap<String, PackageInfo>();
 
 	protected String bundleSymbolicName;
-
-	protected String suggestedVersion;
-
-	public void setSuggestedVersion(String suggestedVersion) {
-		this.suggestedVersion = suggestedVersion;
-	}
+	
+	private TreeSet<String> suggestedVersions;
+	private String selectedVersion;
+	private String currentVersion;
 
 	private final Jar projectJar;
 	private final Jar previousJar;
-	private String version;
 
 	public JarDiff(Jar projectJar, Jar previousJar) {
+		suggestedVersions = new TreeSet<String>();
 		this.projectJar = projectJar;
 		this.previousJar = previousJar;
 	}
@@ -76,7 +74,7 @@ public class JarDiff {
 		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader(getAttribute(projectManifest, Constants.IMPORT_PACKAGE), null);
 
 		bundleSymbolicName = stripInstructions(getAttribute(projectManifest, Constants.BUNDLE_SYMBOLICNAME));
-		version = removeVersionQualifier(getAttribute(projectManifest, Constants.BUNDLE_VERSION)); // This is the version from the .bnd file
+		currentVersion = removeVersionQualifier(getAttribute(projectManifest, Constants.BUNDLE_VERSION)); // This is the version from the .bnd file
 
 		Map<String, Map<String, String>> previousPackages;
 		Map<String, Map<String, String>> previousImportedPackages;
@@ -87,8 +85,8 @@ public class JarDiff {
 			previousImportedPackages = OSGiHeader.parseHeader(getAttribute(previousManifest, Constants.IMPORT_PACKAGE), null);
 
 			// If no version in projectJar use previous version
-			if (version == null) {
-				version = removeVersionQualifier(getAttribute(previousManifest, Constants.BUNDLE_VERSION));
+			if (currentVersion == null) {
+				currentVersion = removeVersionQualifier(getAttribute(previousManifest, Constants.BUNDLE_VERSION));
 			}
 		} else {
 			previousPackages = Collections.emptyMap();
@@ -233,7 +231,7 @@ public class JarDiff {
 					// No change, but version missing on package
 					pi.setSeverity(PKG_SEVERITY_VERSION_MISSING);
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_VERSION_MISSING);
-					pi.setSuggestedVersion(getVersion());
+					pi.setSuggestedVersion(getCurrentVersion());
 				}
 			}
 
@@ -668,10 +666,10 @@ public class JarDiff {
 				mask = null;
 			}
 			if (mask != null) {
-				String suggestedVersion = "[" + _version(new String[] { "", mask, version}) + "]";
+				String suggestedVersion = "[" + _version(new String[] { "", mask, currentVersion}) + "]";
 				pi.setSuggestedVersion(suggestedVersion);
 			} else {
-				pi.setSuggestedVersion(version);
+				pi.setSuggestedVersion(currentVersion);
 			}
 		}
 
@@ -687,11 +685,14 @@ public class JarDiff {
 			mask = "==+";
 		}
 
-		String bundleVersion = version == null ? "0.0.0" : version;
+		String bundleVersion = currentVersion == null ? "0.0.0" : currentVersion;
 		String unqualifiedVersion = removeVersionQualifier(bundleVersion);
 
 		String suggestedVersion = _version(new String[] { "", mask, unqualifiedVersion});
-		this.suggestedVersion = suggestedVersion;
+		suggestedVersions.add(suggestedVersion);
+		if (suggestVersionOne(suggestedVersion)) {
+			suggestedVersions.add("1.0.0");
+		}
 
 		for (PackageInfo pi : getExportedPackages()) {
 			if (pi.getChangeCode() != PackageInfo.CHANGE_CODE_NEW) {
@@ -707,6 +708,14 @@ public class JarDiff {
 				}
 			}
 		}
+	}
+	
+	private boolean suggestVersionOne(String version) {
+		aQute.libg.version.Version aQuteVersion = new aQute.libg.version.Version(version);
+		if (aQuteVersion.compareTo(new aQute.libg.version.Version("1.0.0")) < 0) {
+			return true;
+		}
+		return false;
 	}
 
 	// From aQute.libg.version.Macro _version. Without dependencies on project and properties
@@ -770,7 +779,6 @@ public class JarDiff {
 		}
 		String version = packageInfo.getProperty(VERSION);
 		return version;
-
 	}
 
 
@@ -797,7 +805,8 @@ public class JarDiff {
 		out.println();
 		out.println("Bundle " + diff.getSymbolicName() + ":");
 		out.println("============================================");
-		out.println("Version: " + diff.getVersion() + (diff.getSuggestedVersion() != null ? " -> Suggested Version: " + diff.getSuggestedVersion() : ""));
+		//FIXME:
+		//		out.println("Version: " + diff.getVersion() + (diff.getSuggestedVersion() != null ? " -> Suggested Version: " + diff.getSuggestedVersion() : ""));
 		out.println();
 		out.println("Modified Packages:");
 		out.println("==================");
@@ -862,12 +871,24 @@ public class JarDiff {
 		return sb.toString();
 	}
 
-	public String getVersion() {
-		return version;
+	public String getCurrentVersion() {
+		return currentVersion;
 	}
 
 	public String getSuggestedVersion() {
-		return suggestedVersion;
+		return suggestedVersions.last();
 	}
 
+	public TreeSet<String> getSuggestedVersions() {
+		return suggestedVersions;
+	}
+	
+	public String getSelectedVersion() {
+		return selectedVersion;
+	}
+	
+	public void setSelectedVersion(String selectedVersion) {
+		this.selectedVersion = selectedVersion;
+	}
+	
 }

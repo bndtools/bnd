@@ -70,7 +70,7 @@ public class ReleaseHelper {
 
 	private static void updateBundleVersion(ReleaseContext context, JarDiff current, Builder builder) throws IOException, CoreException {
 
-		String bundleVersion = current.getSuggestedVersion();
+		String bundleVersion = current.getSelectedVersion();
 		if (bundleVersion != null) {
 
 			File file = builder.getPropertiesFile();
