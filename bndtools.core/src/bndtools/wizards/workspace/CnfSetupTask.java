@@ -30,6 +30,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Project;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.utils.BundleUtils;
 
@@ -76,6 +77,12 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
                 copyBundleEntries(bundle, path, new Path(path), cnfProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             }
+            try {
+                Central.getWorkspace().refresh();
+            } catch (Exception e) {
+                Plugin.logError("Unable to refresh Bnd workspace", e);
+            }
+
         } else if(!cnfProject.isOpen()) {
             progress.setWorkRemaining(1);
             cnfProject.open(progress.newChild(1));
