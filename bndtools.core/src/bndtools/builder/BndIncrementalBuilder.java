@@ -171,7 +171,36 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             return depends.toArray(new IProject[depends.size()]);
         }
 
-		if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
+        // If the target .jar was deleted, a FULL_BUILD is required 
+        try {
+            IResourceDelta delta = getDelta(project);
+            if (delta != null) {
+                final File[] buildFiles = getBuildFiles(model);
+                if (buildFiles != null && buildFiles.length > 0) {
+                    FileFilter buildFilesFilter = new FileFilter() {
+                        public boolean accept(File pathname) {
+                            for (File buildFile : buildFiles) {
+                                if (pathname.equals(buildFile)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    };
+                    List<File> affectedFiles = new ArrayList<File>();
+                    DeltaAccumulator<File> visitor = DeltaAccumulator.fileAccumulator(IResourceDelta.REMOVED  | IResourceDelta.CHANGED, affectedFiles, buildFilesFilter);
+                    delta.accept(visitor);
+                    if (affectedFiles.size() > 0) {
+                        kind = FULL_BUILD;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Plugin.logError("Unable to get build files from project", e);
+        }
+        
+        
+        if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
 			rebuildBndProject(project, model, depends, monitor, 0);
 		} else {
 			IResourceDelta delta = getDelta(project);
@@ -246,6 +275,17 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             Plugin.logError("Error looking for project problem markers", e);
             return EnumSet.noneOf(BlockingBuildErrors.class);
         }
+    }
+
+    static File[] getBuildFiles(Project project) throws Exception {
+        Collection<? extends Builder> builders = project.getSubBuilders();
+        File[] buildFiles = new File[builders.size()];
+        int idx = 0;
+        for (Builder builder : builders) {
+            //TODO: Use project.getOutputPath(builder.getBsn()) when method set to public.
+            buildFiles[idx] = new File(project.getTarget(), builder.getBsn() + ".jar");
+        }
+        return buildFiles;
     }
 
 	private void setLastBuildTime(IProject project, long time) {
