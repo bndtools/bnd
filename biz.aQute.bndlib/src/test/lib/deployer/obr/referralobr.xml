@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
+
+<repository lastmodified='20110525120125.066' name='Untitled'>
+  <referral url="file:sample/testobr.xml" depth="2"/>
+</repository>

@@ -101,12 +101,31 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			
 			initialiseIndexes();
 			
-			IResourceListener listener = new IResourceListener() {
+			IRepositoryListener listener = new IRepositoryListener() {
 				public boolean processResource(Resource resource) {
 					addResourceToIndex(resource);
 					return true;
 				}
+
+				public boolean processReferral(String fromUrl, Referral referral, int maxDepth, int currentDepth) {
+					try {
+						URL indexLocation = new URL(referral.getUrl());
+						try {
+							InputStream stream = indexLocation.openStream();
+							return readIndex(indexLocation.toString(), stream, this);
+						} catch (Exception e) {
+							e.printStackTrace();
+							reporter.error("Unable to read referral index at URL '%s'. Parent index '%s'.", indexLocation, fromUrl);
+						}
+						
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+						reporter.error("Invalid referral URL '%s'. Parent index '%s'", referral.getUrl(), fromUrl);
+					}
+					return false;
+				}
 			};
+			
 			Collection<URL> indexes = getOBRIndexes();
 			for (URL indexLocation : indexes) {
 				try {
@@ -297,7 +316,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	 * @return Whether to continue parsing other indexes
 	 * @throws IOException 
 	 */
-	boolean readIndex(String baseUrl, InputStream stream, IResourceListener listener) throws ParserConfigurationException, SAXException, IOException {
+	boolean readIndex(String baseUrl, InputStream stream, IRepositoryListener listener) throws ParserConfigurationException, SAXException, IOException {
 		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 		SAXParser parser = parserFactory.newSAXParser();
 		try {
