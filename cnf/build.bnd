@@ -13,7 +13,7 @@ src:          src
 bin:          bin
 target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
-repo:         ${build}/repo
+repo:         ${user.home}/.obr
 target-dir:   generated
 p:            ${basename;${project}}
 project.name: ${p}
@@ -36,22 +36,22 @@ javac.debug:  on
 -sourcepath:    ${project}/src
 
 # Local OBR
-#-plugin:\
-#	aQute.lib.deployer.obr.OBR;locations='file:${user.home}/.obr/jars/repository.xml';name=BndRepoBuild,\
-#	aQute.lib.deployer.obr.OBR;locations='file:${user.home}/.obr/bundles/repository.xml';name=Bnd,\
-#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+-plugin:\
+	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=BndRepoBuild,\
+	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd,\
+	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
 # Remote OBR
--plugin:\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/jars/repository.xml';name='Bnd Build Repository',\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name='Bnd Repository',\
-	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+#-plugin:\
+#	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/jars/repository.xml';name='Bnd Build Repository',\
+#	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name='Bnd Repository',\
+#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
 # Local FileRepo
 #-plugin:\
-#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/bundles,\
-#	aQute.lib.deployer.FileRepo;location=${user.home}/.obr/jars,\
-#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${repo}/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+#	aQute.lib.deployer.FileRepo;location=${repo}/bundles;name=Bundles,\
+#	aQute.lib.deployer.FileRepo;location=${repo}/jars;name=Jars,\
+#	bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
 
 # Original embedded repo
 #-plugin:\

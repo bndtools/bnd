@@ -68,10 +68,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         buildpath, javac
     };
 
-    private static final long BUILT_NEVER = -1;
     private static final int RETRIES = 3;
 
-    private final Map<String, Long> projectLastBuildTimes = new HashMap<String, Long>();
     private final Map<File, Container> bndsToDeliverables = new HashMap<File, Container>();
 
     private static class GeneratedFileFilter implements FileFilter {
@@ -94,6 +92,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
+        IResourceDelta myDelta = getDelta(project);
+
         kind = resolveBuildType(project, kind);
         clearBuildMarkers(project);
 
@@ -126,7 +126,12 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
 
         // Update this project's classpath container if a depended project has changed
         for (IProject dependsOn : depends) {
-            IResourceDelta delta = getDelta(dependsOn);
+            IResourceDelta delta = null;
+            try {
+                delta = getDelta(dependsOn);
+            } catch (Exception e) {
+                Plugin.logError("Error getting delta for project: " + dependsOn, e);
+            }
             if(delta != null) {
                 try {
                     final Project dependsOnBnd = Workspace.getProject(dependsOn.getLocation().toFile());
@@ -159,9 +164,9 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         if (!blockers.isEmpty()) {
             try {
                 if (blockers.contains(BlockingBuildErrors.buildpath)) {
-                    if (BndContainerInitializer.updateProjectClasspath(JavaCore.create(project))) {
-                        super.forgetLastBuiltState();
-                    }
+//                    if (BndContainerInitializer.updateProjectClasspath(JavaCore.create(project))) {
+//                        super.forgetLastBuiltState();
+//                    }
                 } else if (blockers.contains(BlockingBuildErrors.javac)) {
                     addBuildMarker(project, String.format("Will not build OSGi bundle(s) for project \"%s\" until Java compilation problems are resolved.", project.getName()), IMarker.SEVERITY_ERROR);
                 }
@@ -171,7 +176,7 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
             return depends.toArray(new IProject[depends.size()]);
         }
 
-        // If the target .jar was deleted, a FULL_BUILD is required 
+        // If the target .jar was deleted, a FULL_BUILD is required
         try {
             IResourceDelta delta = getDelta(project);
             if (delta != null) {
@@ -198,19 +203,23 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             Plugin.logError("Unable to get build files from project", e);
         }
-        
-        
-        if (getLastBuildTime(project) == -1 || kind == FULL_BUILD) {
-			rebuildBndProject(project, model, depends, monitor, 0);
-		} else {
-			IResourceDelta delta = getDelta(project);
-			if(delta == null) {
-				rebuildBndProject(project, model, depends, monitor, 0);
-			} else {
-				incrementalRebuild(delta, project, model, depends, monitor);
-			}
-		}
-		setLastBuildTime(project, System.currentTimeMillis());
+
+
+        try {
+            if (model.getBuildTime() == 0 || kind == FULL_BUILD) {
+                // getBuildTime()==0 means there is no output jar
+                rebuildBndProject(project, model, depends, monitor, 0);
+            } else {
+                IResourceDelta delta = getDelta(project);
+                if(delta == null) {
+                    rebuildBndProject(project, model, depends, monitor, 0);
+                } else {
+                    incrementalRebuild(delta, project, model, depends, monitor);
+                }
+            }
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error", e));
+        }
 
         return depends.toArray(new IProject[depends.size()]);
 	}
@@ -288,13 +297,6 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         return buildFiles;
     }
 
-	private void setLastBuildTime(IProject project, long time) {
-		projectLastBuildTimes.put(project.getName(), time);
-	}
-	private long getLastBuildTime(IProject project) {
-		Long time = projectLastBuildTimes.get(project.getName());
-		return time != null ? time.longValue() : BUILT_NEVER;
-	}
 	Collection<IPath> enumerateBndFiles(IProject project) throws CoreException {
 		final Collection<IPath> paths = new LinkedList<IPath>();
 		project.accept(new IResourceProxyVisitor() {
@@ -439,8 +441,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
                 String targetProjName = container.getProject().getName();
                 if (targetProjName != null && !targetProjName.equals(project.getName())) {
                     IProject targetProj = wsroot.getProject(targetProjName);
-                    if (targetProj == null)
-                        Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No project in workspace for Bnd build path dependency: " + targetProjName, null));
+                    if (targetProj == null || !targetProj.exists() || !targetProj.isOpen())
+                        Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Could not find open workspace project for bnd build path dependency: " + targetProjName, null));
                     else
                         depends.add(targetProj);
                 }
@@ -456,8 +458,8 @@ public class BndIncrementalBuilder extends IncrementalProjectBuilder {
         }
         for (Project dep : dependson) {
             IProject targetProj = wsroot.getProject(dep.getName());
-            if (targetProj == null)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No project in workspace for Bnd '-dependson' dependency: " + dep.getName(), null));
+            if (targetProj == null || !targetProj.exists() || !targetProj.isOpen())
+                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No open project in workspace for Bnd '-dependson' dependency: " + dep.getName(), null));
             else
                 depends.add(targetProj);
         }

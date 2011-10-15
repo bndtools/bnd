@@ -291,7 +291,7 @@
             callOnEmptyDelta="true"
             hasNature="true">
          <run
-               class="bndtools.builder.BndIncrementalBuilder">
+               class="bndtools.builder.NewBuilder">
          </run>
       </builder>
    </extension>

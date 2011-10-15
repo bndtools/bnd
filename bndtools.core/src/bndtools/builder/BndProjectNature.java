@@ -34,7 +34,7 @@ public class BndProjectNature implements IProjectNature {
 		ICommand[] commands = desc.getBuildSpec();
 
 		for (ICommand command : commands) {
-			if(command.getBuilderName().equals(BndIncrementalBuilder.BUILDER_ID))
+			if(command.getBuilderName().equals(NewBuilder.BUILDER_ID))
 				return;
 		}
 
@@ -42,7 +42,7 @@ public class BndProjectNature implements IProjectNature {
 		System.arraycopy(commands, 0, nu, 0, commands.length);
 
 		ICommand command = desc.newCommand();
-		command.setBuilderName(BndIncrementalBuilder.BUILDER_ID);
+		command.setBuilderName(NewBuilder.BUILDER_ID);
 		nu[commands.length] = command;
 		desc.setBuildSpec(nu);
 
@@ -65,7 +65,7 @@ public class BndProjectNature implements IProjectNature {
 		List<ICommand> nu = new ArrayList<ICommand>();
 
 		for (ICommand command : commands) {
-			if(!command.getBuilderName().equals(BndIncrementalBuilder.BUILDER_ID)) {
+			if(!command.getBuilderName().equals(NewBuilder.BUILDER_ID)) {
 				nu.add(command);
 			}
 		}
