@@ -12,7 +12,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
-import bndtools.editor.IPageFactory;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;

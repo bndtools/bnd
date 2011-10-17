@@ -646,11 +646,12 @@
                label="Eclipse Orbit R20100519200754"
                resource="obr/orbit-R20100519200754.xml"/>
     </extension>
-    <extension
-         point="bndtoolsStartupParticipant">
-         <startupParticipant
-               class="bndtools.wizards.workspace.CnfSetupStartupParticipant"/>
-    </extension>
+
+   <extension point="bndtoolsStartupParticipant">
+      <startupParticipant class="bndtools.wizards.workspace.CnfSetupStartupParticipant" />
+      <startipParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+   </extension>
+
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
          priority="-2147483648"

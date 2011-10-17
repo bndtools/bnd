@@ -51,6 +51,7 @@ import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
+import bndtools.editor.pages.IPageFactory;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;

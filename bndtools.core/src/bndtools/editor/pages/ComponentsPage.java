@@ -21,7 +21,6 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.IPageFactory;
 import bndtools.editor.components.ComponentsBlock;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.ServiceComponent;

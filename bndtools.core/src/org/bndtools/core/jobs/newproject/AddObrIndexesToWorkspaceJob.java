@@ -1,4 +1,4 @@
-package bndtools;
+package org.bndtools.core.jobs.newproject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.build.Workspace;
+import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.CollectionUtils;

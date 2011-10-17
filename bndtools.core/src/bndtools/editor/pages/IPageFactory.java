@@ -1,4 +1,4 @@
-package bndtools.editor;
+package bndtools.editor.pages;
 
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;

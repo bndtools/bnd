@@ -1,4 +1,4 @@
-package bndtools;
+package org.bndtools.core.jobs.newproject;
 
 import java.util.List;
 

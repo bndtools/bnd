@@ -1,4 +1,4 @@
-package bndtools;
+package org.bndtools.core.jobs.newproject;
 
 import java.net.URL;
 import java.util.Collection;
@@ -18,6 +18,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+
+import bndtools.BndConstants;
+import bndtools.Central;
+import bndtools.Plugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.OBRIndexProvider;
