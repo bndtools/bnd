@@ -178,26 +178,34 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                         addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
                     }
                 });
-				IMessageManager msgs = getManagedForm().getMessageManager();
-				String unknownError = null;
+                IMessageManager msgs = getManagedForm().getMessageManager();
+                String activatorError = null;
+                int activatorErrorLevel = IMessageProvider.ERROR;
 
-				String activatorClassName = txtActivator.getText();
-				if(activatorClassName != null && activatorClassName.length() > 0) {
-					try {
-						IType activatorType = getJavaProject().findType(activatorClassName);
-						if(activatorType == null) {
-							unknownError = "The activator class name is not known in this project.";
-						}
-					} catch (JavaModelException e) {
-						Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
-					}
-				}
+                String activatorClassName = txtActivator.getText();
+                if (activatorClassName != null && activatorClassName.length() > 0) {
+                    try {
+                        IJavaProject javaProject = getJavaProject();
+                        if (javaProject == null) {
+                            activatorError = "Cannot validate activator class name, the bnd file is not in a Java project.";
+                            activatorErrorLevel = IMessageProvider.WARNING;
+                        } else {
+                            IType activatorType = javaProject != null ? getJavaProject().findType(activatorClassName) : null;
+                            if (activatorType == null) {
+                                activatorError = "The activator class name is not known in this project.";
+                                activatorErrorLevel = IMessageProvider.ERROR;
+                            }
+                        }
+                    } catch (JavaModelException e) {
+                        Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error looking up activator class name: " + activatorClassName, e));
+                    }
+                }
 
-				if(unknownError != null) {
-					msgs.addMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, unknownError, null, IMessageProvider.ERROR, txtActivator);
-				} else {
-					msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
-				}
+                if (activatorError != null) {
+                    msgs.addMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, activatorError, null, activatorErrorLevel, txtActivator);
+                } else {
+                    msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
+                }
 
 				checkActivatorIncluded();
 			}
@@ -405,7 +413,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 	IJavaProject getJavaProject() {
 		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 		IFile file = ResourceUtil.getFile(formPage.getEditorInput());
-		return JavaCore.create(file.getProject());
+		return file != null ? JavaCore.create(file.getProject()) : null;
 	}
 
     private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
@@ -413,6 +421,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         protected List<IContentProposal> doGenerateProposals(String contents, int position) {
             final String prefix = contents.substring(0, position);
             final IJavaProject javaProject = getJavaProject();
+            if (javaProject == null)
+                return Collections.emptyList();
+
             try {
                 final List<IContentProposal> result = new ArrayList<IContentProposal>();
 
