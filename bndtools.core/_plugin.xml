@@ -190,10 +190,11 @@
          </command>
       </menuContribution>
       
-      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=file">
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=project">
          <menu
             id="bndtools"
-            label="bnd">
+            label="Bndtools"
+            mnemonic="B">
             <visibleWhen>
                <with variable="activeWorkbenchWindow.activePerspective">
                   <equals value="bndtools.perspective"/>

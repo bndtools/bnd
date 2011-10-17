@@ -100,14 +100,15 @@ public class WorkspaceMainPart extends SectionPart {
             } else {
                 IContainer cnfDir = buildFile.getParent();
                 IFolder extDir = cnfDir.getFolder(new Path("ext"));
-
-                IResource[] extFiles = extDir.members();
-                for (IResource extFile : extFiles) {
-                    if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
-                        ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);
-                        link.setText("Open " + extFile.getName());
-                        link.setImage(extFileImg);
-                        link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
+                if (extDir.exists()) {
+                    IResource[] extFiles = extDir.members();
+                    for (IResource extFile : extFiles) {
+                        if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
+                            ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);
+                            link.setText("Open " + extFile.getName());
+                            link.setImage(extFileImg);
+                            link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
+                        }
                     }
                 }
             }

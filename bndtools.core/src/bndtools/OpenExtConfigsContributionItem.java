@@ -33,8 +33,10 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 
             IContainer cnfDir = buildFile.getParent();
             IFolder extDir = cnfDir.getFolder(new Path("ext"));
-            IResource[] extFiles = extDir.members();
+            if (extDir == null || !extDir.exists())
+                return EMPTY;
 
+            IResource[] extFiles = extDir.members();
             List<IContributionItem> result = new ArrayList<IContributionItem>(extFiles.length);
 
             for (final IResource extFile : extFiles) {
