@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -41,6 +42,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -66,16 +68,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
     static final String WORKSPACE_PAGE = "__workspace_page";
     static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
     static final String CONTENT_PAGE = "__content_page";
-	static final String BUILD_PAGE = "__build_page";
+    static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
-	static final String COMPONENTS_PAGE = "__components_page";
-	static final String TEST_SUITES_PAGE = "__test_suites_page";
-	static final String SOURCE_PAGE = "__source_page";
+    static final String COMPONENTS_PAGE = "__components_page";
+    static final String TEST_SUITES_PAGE = "__test_suites_page";
+    static final String SOURCE_PAGE = "__source_page";
 
-	private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
+    private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
 
-	private final BndEditModel model = new BndEditModel();
-	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+    private final BndEditModel model = new BndEditModel();
+    private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+
+    private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
     public BndEditor() {
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
@@ -108,6 +112,7 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             requiredPageIds.add(WORKSPACE_PAGE);
         } else if (isExtWorkspaceConfig(path, projectName)) {
             requiredPageIds.add(WORKSPACE_EXT_PAGE);
+            setTitleImage(buildFileImg);
         } else if (path.endsWith(LaunchConstants.EXT_BNDRUN)) {
             requiredPageIds.addAll(getPagesBndRun());
         } else {
@@ -312,19 +317,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         setPartName(name);
     }
 
-	@Override
-	public void dispose() {
-//	    if (model != null)
-//	        model.removePropertyChangeListener(modelListener);
+    @Override
+    public void dispose() {
+        IResource resource = ResourceUtil.getResource(getEditorInput());
 
-		IResource resource = ResourceUtil.getResource(getEditorInput());
+        super.dispose();
 
-		super.dispose();
+        if (resource != null) {
+            resource.getWorkspace().removeResourceChangeListener(this);
+        }
 
-		if(resource != null) {
-			resource.getWorkspace().removeResourceChangeListener(this);
-		}
-	}
+        buildFileImg.dispose();
+    }
 
 	public BndEditModel getBndModel() {
 		return this.model;
