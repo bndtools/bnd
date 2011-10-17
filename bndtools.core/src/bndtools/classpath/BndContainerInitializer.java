@@ -14,18 +14,17 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -60,8 +59,7 @@ import bndtools.utils.JarUtils;
  * Because this plugin uses the Bnd Builder in different places, the Bnd Model
  * is centralized and available from the Activator.
  */
-public class BndContainerInitializer extends ClasspathContainerInitializer
-        implements ModelListener {
+public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
 
     public static final Path PATH_ID = new Path("aQute.bnd.classpath.container");
     public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
@@ -75,10 +73,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     }
 
     @Override
-    public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
-        // Silently fail as described in javadoc?
-        calculateAndUpdateClasspathEntries(project, true);
+    public void initialize(IPath containerPath, final IJavaProject project) throws CoreException {
+        final ArrayList<String> errors = new ArrayList<String>();
+        calculateAndUpdateClasspathEntries(project, errors);
 
+        WorkspaceJob replaceMarkersJob = new WorkspaceJob("Update bnd classpath markers") {
+            @Override
+            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                replaceClasspathProblemMarkers(project.getProject(), errors);
+                return Status.OK_STATUS;
+            }
+        };
+        replaceMarkersJob.setRule(project.getProject());
+        replaceMarkersJob.schedule();
      }
 
     @Override
@@ -89,15 +96,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
     @Override
     // The suggested classpath container is ignored here; always recalculated from the project.
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
-        calculateAndUpdateClasspathEntries(project, false);
+        ArrayList<String> errors = new ArrayList<String>();
+        calculateAndUpdateClasspathEntries(project, errors);
+        replaceClasspathProblemMarkers(project.getProject(), errors);
     }
 
-    private void calculateAndUpdateClasspathEntries(IJavaProject project, boolean submitMarkerJob) throws CoreException {
+    private void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
         try {
             Project model = Workspace.getProject(project.getProject().getLocation().toFile());
             IClasspathEntry[] entries = null;
             if (model != null) {
-                List<IClasspathEntry> classpath = calculateProjectClasspath(model, project, submitMarkerJob);
+                List<IClasspathEntry> classpath = calculateProjectClasspath(model, project, errors);
                 if (classpath != null)
                     entries = classpath.toArray(new IClasspathEntry[classpath.size()]);
             }
@@ -125,30 +134,18 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         JavaCore.setClasspathContainer(BndContainerInitializer.PATH_ID, new IJavaProject[] { javaProject }, new IClasspathContainer[] { new BndContainer(javaProject, entries, null) }, null);
     }
 
-    public static List<IClasspathEntry> calculateProjectClasspath(Project model, IJavaProject javaProject) throws CoreException {
-        return calculateProjectClasspath(model, javaProject, false);
-    }
-
-    public static List<IClasspathEntry> calculateProjectClasspath(Project model, IJavaProject javaProject, boolean submitMarkerJob) throws CoreException {
+    public static List<IClasspathEntry> calculateProjectClasspath(Project model, IJavaProject javaProject, Collection<? super String> errors) throws CoreException {
         IProject project = javaProject.getProject();
         if (!project.exists() || !project.isOpen())
             return null;
 
-        if (!submitMarkerJob) {
-            project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
-        }
-
-        List<String> errors = new LinkedList<String>();
-
         if (model == null) {
             setClasspathEntries(javaProject, EMPTY_ENTRIES);
-            errors.add("Bnd workspace is not configured.");
+            errors.add("bnd workspace is not configured.");
             return null;
         }
 
         model.clear();
-        model.refresh();
-        model.setChanged();
 
         Collection<Container> buildPath;
         Collection<Container> bootClasspath;
@@ -232,8 +229,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         }
 
         errors.addAll(model.getErrors());
-        replaceClasspathProblemMarkers(project, errors, submitMarkerJob);
-        model.clear();
 
         return result;
     }
@@ -306,6 +301,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         }
     }
 
+    /*
     static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors, boolean submitMarkerJob) throws CoreException{
 
         final IFile bndFile = project.getFile(Project.BNDFILE);
@@ -314,7 +310,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
         }
 
         if (submitMarkerJob) {
-
             Job markerJob = new Job("Bndtools: Resolving markers") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
@@ -323,10 +318,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
                     } catch (CoreException e) {
                         return e.getStatus();
                     }
-
                     return Status.OK_STATUS;
                 }
             };
+            markerJob.setRule(project);
 
             markerJob.setRule(bndFile);
             markerJob.setPriority(Job.BUILD);
@@ -336,11 +331,23 @@ public class BndContainerInitializer extends ClasspathContainerInitializer
             replaceMarkersJob(bndFile, project, errors);
         }
     }
+    */
 
-    private static void replaceMarkersJob(IFile bndFile, IProject project, Collection<String> errors) throws CoreException {
-        bndFile.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+    public static void replaceClasspathProblemMarkers(IProject project, Collection<? extends String> errors) throws CoreException {
+        assert project != null;
+
+        if (!project.exists() || !project.isOpen()) {
+            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null));
+            return;
+        }
+
+        IResource resource = project.getFile(Project.BNDFILE);
+        if (resource == null || !resource.exists())
+            resource = project;
+
+        project.deleteMarkers(MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
         for (String error : errors) {
-            IMarker marker = bndFile.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
+            IMarker marker = resource.createMarker(MARKER_BND_CLASSPATH_PROBLEM);
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, error);
         }
