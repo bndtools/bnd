@@ -113,6 +113,7 @@
 	-->
 	<target name="echo" depends="init">
 		<echo>verbose:                ${verbose}</echo>
+		<echo>build:                  ${build}</echo>
 		<echo>project.name:           ${project.name}</echo>
 		<echo>project.output:         ${project.output}</echo>
 		<echo>project.sourcepath:     ${project.sourcepath}</echo>

@@ -149,33 +149,60 @@
          name="Remove Resource"
          description="Remove selected resource from the repository"
       />
+      <command
+         id="bndtools.workspace.openMainConfig"
+         name="Open main bnd config"
+         description=""
+      />
    </extension>
    <extension point="org.eclipse.ui.commandImages">
       <image
          commandId="bndtools.core.removeRepoResource"
          icon="icons/cross.png"
       />
+      <image
+         commandId="bndtools.workspace.openMainConfig"
+         icon="icons/bndtools-logo-16x16.png"
+      />
    </extension>
    <extension point="org.eclipse.ui.handlers">
       <handler
          commandId="bndtools.core.removeRepoResource"
-         class="bndtools.views.RemoveRepoResourceHandler"
-      >
+         class="bndtools.views.RemoveRepoResourceHandler">
          <enabledWhen>
             <with variable="selection">
-               <count value="1" />
+               <count value="+" />
                <iterate operator="and">
                   <adapt type="bndtools.model.repo.RepositoryBundle" />
                </iterate>
             </with>
          </enabledWhen>
        </handler>
+       <handler
+         commandId="bndtools.workspace.openMainConfig"
+         class="bndtools.OpenMainConfigHandler"
+       />
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
          <command commandId="bndtools.core.removeRepoResource">
             <visibleWhen checkEnabled="true"/>
          </command>
+      </menuContribution>
+      
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=file">
+         <menu
+            id="bndtools"
+            label="bnd">
+            <visibleWhen>
+               <with variable="activeWorkbenchWindow.activePerspective">
+                  <equals value="bndtools.perspective"/>
+               </with>
+            </visibleWhen>
+            <command commandId="bndtools.workspace.openMainConfig"/>
+            <dynamic id="bndtools.workspace.openExtConfigs"
+               class="bndtools.OpenExtConfigsContributionItem"/>
+         </menu>
       </menuContribution>
    </extension>
    <extension
@@ -184,7 +211,7 @@
          id="bndtools.actions"
          label="OSGi"
          visible="false">
-
+         
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
@@ -209,6 +236,15 @@
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />
+         <!--
+         <action
+            id="bndtools.actions.workspace.openMainConfig"
+            label="Open main bnd config"
+            menubarPath="bndtools/config"
+            icon="icons/bndtools-logo-16x16.png"
+            class="bndtools."
+         />
+         -->
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">

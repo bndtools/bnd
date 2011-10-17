@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.internal.resources.ResourceException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -144,6 +145,18 @@ public class Central {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public static IFile getWorkspaceBuildFile() throws Exception {
+        File file = Central.getWorkspace().getPropertiesFile();
+        IFile[] matches = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());
+
+        if (matches == null || matches.length != 1) {
+            Plugin.logError("Cannot find workspace location for bnd configuration file " + file, null);
+            return null;
+        }
+
+        return matches[0];
     }
 
     public synchronized static Workspace getWorkspace() throws Exception {

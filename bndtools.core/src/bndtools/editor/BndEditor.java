@@ -60,7 +60,10 @@ import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
+    public static final String WORKSPACE_EDITOR  = "bndtools.bndWorkspaceConfigEditor";
+
     static final String WORKSPACE_PAGE = "__workspace_page";
+    static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
     static final String CONTENT_PAGE = "__content_page";
 	static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
@@ -74,27 +77,14 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
     public BndEditor() {
-        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.FACTORY);
+        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
+        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
         pageFactories.put(COMPONENTS_PAGE, ComponentsPage.FACTORY);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
     }
-
-    /*
-	private final PropertyChangeListener modelListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Constants.SUB.equals(evt.getPropertyName())) {
-                try {
-                    updatePages();
-                } catch (PartInitException e) {
-                    Plugin.logError("Error updating pages in the editor.", e);
-                }
-            }
-        }
-    };
-    */
 
     void updatePages() {
         List<String> requiredPageIds = new LinkedList<String>();
@@ -113,8 +103,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             projectName = null;
         }
 
-        if (isWorkspaceConfig(path, projectName)) {
-            requiredPageIds.addAll(getPagesBuildBnd());
+        if (isMainWorkspaceConfig(path, projectName)) {
+            requiredPageIds.add(WORKSPACE_PAGE);
+        } else if (isExtWorkspaceConfig(path, projectName)) {
+            requiredPageIds.add(WORKSPACE_EXT_PAGE);
         } else if (path.endsWith(LaunchConstants.EXT_BNDRUN)) {
             requiredPageIds.addAll(getPagesBndRun());
         } else {
@@ -160,16 +152,18 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         }
     }
 
-    private boolean isWorkspaceConfig(String path, String projectName) {
-        boolean result = false;
+    private boolean isMainWorkspaceConfig(String path, String projectName) {
         if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
-            if (Workspace.BUILDFILE.equals(path)) {
-                result = true;
-            } else if (path.startsWith("ext/") && path.endsWith(".bnd")) {
-                result = true;
-            }
+            return Workspace.BUILDFILE.equals(path);
         }
-        return result;
+        return false;
+    }
+
+    private boolean isExtWorkspaceConfig(String path, String projectName) {
+        if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+            return path.startsWith("ext/") && path.endsWith(".bnd");
+        }
+        return false;
     }
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
@@ -231,10 +225,6 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
     @Override
     protected void addPages() {
         updatePages();
-    }
-
-    private List<String> getPagesBuildBnd() {
-        return Collections.singletonList(WORKSPACE_PAGE);
     }
 
     private List<String> getPagesBnd(String fileName) {
