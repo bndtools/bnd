@@ -344,7 +344,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         super.refresh();
         lock.modifyOperation(new Runnable() {
             public void run() {
-                String defaultBSN = null;
+                String defaultBSN = "";
                 IResource bndResource = model.getBndResource();
                 if(bndResource != null && bndResource.getType() == IResource.FILE) {
                     String baseName = bndResource.getProject().getName();
