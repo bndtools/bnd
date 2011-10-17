@@ -183,6 +183,7 @@
          class="bndtools.OpenMainConfigHandler"
        />
    </extension>
+   
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
          <command commandId="bndtools.core.removeRepoResource">
@@ -200,12 +201,22 @@
                   <equals value="bndtools.perspective"/>
                </with>
             </visibleWhen>
-            <command commandId="bndtools.workspace.openMainConfig"/>
+            <command commandId="bndtools.workspace.openMainConfig" mnemonic="M"/>
             <dynamic id="bndtools.workspace.openExtConfigs"
                class="bndtools.OpenExtConfigsContributionItem"/>
          </menu>
       </menuContribution>
    </extension>
+   
+   <extension point="org.eclipse.ui.bindings">
+      <key
+            commandId="bndtools.workspace.openMainConfig"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M"> <!-- M2 is Ctrl on Win, Cmd on Mac. M1 is Shift -->
+      </key>
+   </extension>
+   
    <extension
       point="org.eclipse.ui.actionSets">
       <actionSet
