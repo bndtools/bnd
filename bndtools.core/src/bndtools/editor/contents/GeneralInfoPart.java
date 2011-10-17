@@ -190,7 +190,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             activatorError = "Cannot validate activator class name, the bnd file is not in a Java project.";
                             activatorErrorLevel = IMessageProvider.WARNING;
                         } else {
-                            IType activatorType = javaProject != null ? getJavaProject().findType(activatorClassName) : null;
+                            IType activatorType = javaProject != null ? javaProject.findType(activatorClassName) : null;
                             if (activatorType == null) {
                                 activatorError = "The activator class name is not known in this project.";
                                 activatorErrorLevel = IMessageProvider.ERROR;
@@ -211,22 +211,28 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 			}
 		});
 		linkActivator.addHyperlinkListener(new HyperlinkAdapter() {
-			@Override
-			public void linkActivated(HyperlinkEvent ev) {
-				String activatorClassName = txtActivator.getText();
-				if(activatorClassName != null && activatorClassName.length() > 0) {
-					try {
-						IType activatorType = getJavaProject().findType(activatorClassName);
-						if(activatorType != null) {
-							JavaUI.openInEditor(activatorType, true, true);
-						}
-					} catch (PartInitException e) {
-						ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
-					} catch (JavaModelException e) {
-						ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
-					}
-				}
-			}
+            @Override
+            public void linkActivated(HyperlinkEvent ev) {
+                String activatorClassName = txtActivator.getText();
+                if (activatorClassName != null && activatorClassName.length() > 0) {
+                    try {
+                        IJavaProject javaProject = getJavaProject();
+                        if (javaProject == null)
+                            return;
+
+                        IType activatorType = javaProject.findType(activatorClassName);
+                        if (activatorType != null) {
+                            JavaUI.openInEditor(activatorType, true, true);
+                        }
+                    } catch (PartInitException e) {
+                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+                                MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
+                    } catch (JavaModelException e) {
+                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+                                MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
+                    }
+                }
+            }
 		});
 		if(activatorProposalAdapter != null) {
 			activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
