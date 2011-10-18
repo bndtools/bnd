@@ -2,7 +2,6 @@ package bndtools.builder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,11 +25,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IClasspathContainer;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModelMarker;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -69,8 +64,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
             // CASE 1: CNF changed
             if (isCnfChanged()) {
                 log(LOG_BASIC, "cnf project changed");
-                model.setChanged();
-                if (resetClasspaths()) {
+                model.propertiesChanged();
+                if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                 } else {
                     log(LOG_FULL, "classpaths did not need to change");
@@ -88,8 +83,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 log(LOG_BASIC, "local bnd files changed");
             }
             if (localChange) {
-                model.refresh();
-                if (resetClasspaths()) {
+                model.propertiesChanged();
+                if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                     return calculateDependsOn();
                 } else {
@@ -104,8 +99,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
             Project changedDependency = getDependencyTargetChange();
             if (changedDependency != null) {
                 log(LOG_BASIC, "target files in dependency project %s changed", changedDependency.getName());
-                model.setChanged();
-                if (resetClasspaths()) {
+                model.propertiesChanged();
+                if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                     return calculateDependsOn();
                 } else {
@@ -352,25 +347,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         List<String> errors = new ArrayList<String>(model.getErrors());
         List<String> warnings = new ArrayList<String>(model.getWarnings());
         createBuildMarkers(errors, warnings);
-    }
-
-    private boolean resetClasspaths() throws CoreException {
-        IProject project = getProject();
-        IJavaProject javaProject = JavaCore.create(project);
-
-        IClasspathContainer container = JavaCore.getClasspathContainer(BndContainerInitializer.PATH_ID, javaProject);
-        List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
-
-        List<IClasspathEntry> newClasspath = BndContainerInitializer.calculateProjectClasspath(model, javaProject, classpathErrors);
-        BndContainerInitializer.replaceClasspathProblemMarkers(project, classpathErrors);
-
-        if (!newClasspath.equals(currentClasspath)) {
-            log(LOG_BASIC, "new classpath is different from old, setting on project");
-            BndContainerInitializer.setClasspathEntries(javaProject, newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
-            return true;
-        }
-        log(LOG_FULL, "no change to classpath required");
-        return false;
     }
 
     private IProject[] calculateDependsOn() throws Exception {

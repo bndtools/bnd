@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -100,6 +101,27 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         calculateAndUpdateClasspathEntries(project, errors);
         replaceClasspathProblemMarkers(project.getProject(), errors);
     }
+
+    public static boolean resetClasspaths(Project model, IProject project, Collection<String> errors) throws CoreException {
+        IJavaProject javaProject = JavaCore.create(project);
+        return resetClasspaths(model, javaProject, errors);
+    }
+
+    public static boolean resetClasspaths(Project model, IJavaProject javaProject, Collection<String> errors) throws CoreException {
+        IClasspathContainer container = JavaCore.getClasspathContainer(BndContainerInitializer.PATH_ID, javaProject);
+        List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
+
+        List<IClasspathEntry> newClasspath = BndContainerInitializer.calculateProjectClasspath(model, javaProject, errors);
+        replaceClasspathProblemMarkers(javaProject.getProject(), errors);
+
+        if (!newClasspath.equals(currentClasspath)) {
+            BndContainerInitializer.setClasspathEntries(javaProject, newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
+            return true;
+        }
+        return false;
+    }
+
+
 
     private void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
         try {
@@ -333,7 +355,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
     */
 
-    public static void replaceClasspathProblemMarkers(IProject project, Collection<? extends String> errors) throws CoreException {
+    public static void replaceClasspathProblemMarkers(IProject project, Collection<String> errors) throws CoreException {
         assert project != null;
 
         if (!project.exists() || !project.isOpen()) {
