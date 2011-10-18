@@ -29,4 +29,6 @@ public interface BndConstants extends Constants {
      */
     @Deprecated
     public static final String TESTSUITES = "Test-Suites";
+
+    public static final String RUNREQUIRE = "-runrequire";
 }

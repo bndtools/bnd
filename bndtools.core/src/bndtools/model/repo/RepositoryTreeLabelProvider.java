@@ -1,6 +1,7 @@
 package bndtools.model.repo;
 
 
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -9,18 +10,17 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.Plugin;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.Plugin;
 
-public class RepositoryTreeLabelProvider extends StyledCellLabelProvider {
-	
+public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
+
 	Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
 	Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
-	
+
 	Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-	
+
 	@Override
 	public void update(ViewerCell cell) {
 		Object element = cell.getElement();
@@ -53,4 +53,34 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider {
 		repoImg.dispose();
 		bundleImg.dispose();
 	}
+    public Image getImage(Object element) {
+        if(element instanceof RepositoryPlugin) {
+            return repoImg;
+        } else if(element instanceof Project) {
+            return projectImg;
+        } else if(element instanceof ProjectBundle) {
+            return bundleImg;
+        } else if(element instanceof RepositoryBundle) {
+            return bundleImg;
+        }
+        return null;
+    }
+
+    public String getText(Object element) {
+        if(element instanceof RepositoryPlugin) {
+            return  ((RepositoryPlugin) element).getName();
+        } else if(element instanceof Project) {
+            Project project = (Project) element;
+            return project.getName();
+        } else if(element instanceof ProjectBundle) {
+            return ((ProjectBundle) element).getBsn();
+        } else if(element instanceof RepositoryBundle) {
+            RepositoryBundle bundle = (RepositoryBundle) element;
+            return bundle.getBsn();
+        } else if(element instanceof RepositoryBundleVersion) {
+            RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
+            return bundleVersion.getVersion().toString();
+        }
+        return null;
+    }
 }

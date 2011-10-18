@@ -1,5 +1,6 @@
 package bndtools.editor.project;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -7,17 +8,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.OBRResolutionMode;
@@ -43,30 +39,12 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected void fillToolBar(ToolBar toolbar) {
 	    createAddItemTool(toolbar);
-	    createWizardItemtool(toolbar);
 	    this.removeItemTool = createRemoveItemTool(toolbar);
 	}
-	protected ToolItem createWizardItemtool(ToolBar toolbar) {
-	    if (wizardImg == null)
-	        wizardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/wand.png").createImage();
-
-        ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
-
-        tool.setImage(wizardImg);
-        tool.setToolTipText("Add Bundle");
-        tool.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doAddWizard();
-            }
-        });
-
-        return tool;
-    }
     @Override
 	protected GridData getTableLayoutData() {
 		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 200;
+		gd.heightHint = 75;
 		return gd;
 	}
 	@Override
@@ -80,7 +58,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
-	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, new OBRResolutionMode[] { OBRResolutionMode.runtime });
+	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, EnumSet.of(OBRResolutionMode.runtime));
         setSelectionWizardTitleAndMessage(wizard);
 
 	    return wizard;
@@ -92,7 +70,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private void doAddWizard() {
         Project project = getProject();
         try {
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true, new OBRResolutionMode[] { OBRResolutionMode.runtime });
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true, EnumSet.of(OBRResolutionMode.runtime));
             setSelectionWizardTitleAndMessage(wizard);
 
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);

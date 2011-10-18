@@ -2,6 +2,7 @@ package bndtools.wizards.repo;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,9 +16,9 @@ import bndtools.bindex.IRepositoryIndexProvider;
 public class PluginIndexProvider implements IRepositoryIndexProvider {
 
     private final List<URL> indexes = new ArrayList<URL>();
-    private final OBRResolutionMode[] resolutionModes;
+    private final EnumSet<OBRResolutionMode> resolutionModes;
 
-    public PluginIndexProvider(OBRResolutionMode[] resolutionModes) {
+    public PluginIndexProvider(EnumSet<OBRResolutionMode> resolutionModes) {
         this.resolutionModes = resolutionModes;
     }
 

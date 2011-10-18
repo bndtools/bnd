@@ -16,6 +16,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
+import bndtools.model.obr.RequirementLabelProvider;
+
 public class UnsatisfiedRequirementsDialog extends TitleAreaDialog {
     private Table tblMandatory;
     private Table tblOptional;

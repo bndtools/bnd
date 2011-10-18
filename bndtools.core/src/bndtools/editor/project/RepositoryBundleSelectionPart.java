@@ -276,7 +276,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             public void keyReleased(KeyEvent e) {
                 if(e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {;
+                } else if(e.character == '+') {
                     doAdd();
                 }
             }

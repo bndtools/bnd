@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.felix.bundlerepository.DataModelHelper;
+import org.apache.felix.bundlerepository.Requirement;
+import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -92,13 +95,15 @@ public class BndEditModel implements IPersistableBndModel {
 		BndConstants.RUNVMARGS,
 		BndConstants.TESTSUITES,
 		aQute.lib.osgi.Constants.TESTCASES,
-		aQute.lib.osgi.Constants.PLUGIN
+		aQute.lib.osgi.Constants.PLUGIN,
+		BndConstants.RUNREQUIRE
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
 	private final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
 	private final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
+	private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
@@ -148,8 +153,21 @@ public class BndEditModel implements IPersistableBndModel {
             return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });
-    
+
     Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
+
+    Converter<List<Requirement>, String> requirementListConverter = new SimpleListConverter<Requirement>(new Converter<Requirement, String>() {
+        public Requirement convert(String input) throws IllegalArgumentException {
+            int index = input.indexOf(":");
+            if (index < 0)
+                throw new IllegalArgumentException("Invalid format for OBR requirement");
+
+            String name = input.substring(0, index);
+            String filter = input.substring(index + 1);
+
+            return obrModelHelper.requirement(name, filter);
+        }
+    });
 
     // FORMATTERS
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
@@ -158,6 +176,11 @@ public class BndEditModel implements IPersistableBndModel {
     Converter<String, Collection<? extends String>> stringListFormatter = new CollectionFormatter<String>();
     Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(new HeaderClauseFormatter());
     Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(new PropertiesEntryFormatter());
+    Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(new Converter<String, Requirement>() {
+        public String convert(Requirement input) throws IllegalArgumentException {
+            return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
+        }
+    });
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
@@ -464,16 +487,16 @@ public class BndEditModel implements IPersistableBndModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
-	
+
     public List<VersionedClause> getBuildPackages() {
         return doGetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
     }
-    
+
     public void setBuildPackages(List<? extends VersionedClause> paths) {
         List<VersionedClause> oldValue = getBuildPackages();
         doSetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
     }
-    
+
 	public List<VersionedClause> getRunBundles() {
 		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
 	}
@@ -567,6 +590,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setPlugins(List<HeaderClause> plugins) {
         List<HeaderClause> old = getPlugins();
         doSetObject(aQute.lib.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
+    }
+
+    public List<Requirement> getRunRequire() {
+        return doGetObject(BndConstants.RUNREQUIRE, requirementListConverter);
+    }
+
+    public void setRunRequire(List<Requirement> requires) {
+        List<Requirement> old = getRunRequire();
+        doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,17 +26,17 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private static final String CACHE_REPOSITORY = "cache";
 
-    private final OBRResolutionMode[] modes;
+    private final EnumSet<OBRResolutionMode> modes;
 
     public RepositoryTreeContentProvider() {
-        this.modes = OBRResolutionMode.values();
+        this.modes = EnumSet.allOf(OBRResolutionMode.class);
     }
 
     public RepositoryTreeContentProvider(OBRResolutionMode mode) {
-        this.modes = new OBRResolutionMode[] { mode };
+        this.modes = EnumSet.of(mode);
     }
 
-    public RepositoryTreeContentProvider(OBRResolutionMode[] modes) {
+    public RepositoryTreeContentProvider(EnumSet<OBRResolutionMode> modes) {
         this.modes = modes;
     }
 

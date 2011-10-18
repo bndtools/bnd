@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -60,7 +61,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final Project sourceProject;
-    private final OBRResolutionMode[] resolutionModes;
+    private final EnumSet<OBRResolutionMode> resolutionModes;
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
     private File[] implicitBundles;
 
@@ -111,7 +112,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-    protected RepoBundleSelectionWizardPage(Project sourceProject, OBRResolutionMode[] modes) {
+    protected RepoBundleSelectionWizardPage(Project sourceProject, EnumSet<OBRResolutionMode> modes) {
 		super("bundleSelectionPage");
         this.sourceProject = sourceProject;
         this.resolutionModes = modes;

@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      * @throws Exception
      */
-    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver, OBRResolutionMode[] resolutionModes) throws Exception {
+    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles, boolean useResolver, EnumSet<OBRResolutionMode> resolutionModes) throws Exception {
         this.useResolver = useResolver;
 
         selectionPage = new RepoBundleSelectionWizardPage(project, resolutionModes);

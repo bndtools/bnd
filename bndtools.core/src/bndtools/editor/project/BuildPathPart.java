@@ -1,5 +1,6 @@
 package bndtools.editor.project;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import org.eclipse.swt.layout.GridData;
@@ -41,7 +42,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 
     @Override
     protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, new OBRResolutionMode[] { OBRResolutionMode.build, OBRResolutionMode.runtime });
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, EnumSet.of(OBRResolutionMode.build, OBRResolutionMode.runtime));
 
         wizard.setSelectionPageTitle("Project Build Path");
         wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");

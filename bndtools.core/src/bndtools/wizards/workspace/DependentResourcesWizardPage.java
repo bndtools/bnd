@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Table;
 
 import bndtools.Plugin;
 import bndtools.bindex.IRepositoryIndexProvider;
+import bndtools.model.obr.UnresolvedReasonLabelProvider;
 import bndtools.utils.Requestor;
 import bndtools.utils.Requestors;
 
