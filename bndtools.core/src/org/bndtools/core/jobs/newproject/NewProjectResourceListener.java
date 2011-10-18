@@ -42,6 +42,7 @@ public class NewProjectResourceListener implements IResourceChangeListener {
 
             for (IProject project : newProjects) {
                 new RequiredObrCheckingJob(project).schedule();
+                new AdjustClasspathsForNewProjectJob(project).schedule();
             }
 
         } catch (CoreException e) {

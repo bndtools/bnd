@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.core.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -68,7 +69,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             // CASE 1: CNF changed
             if (isCnfChanged()) {
                 log(LOG_BASIC, "cnf project changed");
-                model.refresh();
+                model.setChanged();
                 if (resetClasspaths()) {
                     log(LOG_BASIC, "classpaths were changed");
                 } else {
@@ -103,6 +104,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             Project changedDependency = getDependencyTargetChange();
             if (changedDependency != null) {
                 log(LOG_BASIC, "target files in dependency project %s changed", changedDependency.getName());
+                model.setChanged();
                 if (resetClasspaths()) {
                     log(LOG_BASIC, "classpaths were changed");
                     return calculateDependsOn();
@@ -129,7 +131,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     }
 
     boolean isCnfChanged() throws Exception {
-        IProject cnfProject = findCnfProject();
+        IProject cnfProject = WorkspaceUtils.findCnfProject();
         if (cnfProject == null) {
             Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd configuration project (cnf) is not available in the Eclipse workspace.", null));
             return false;
@@ -218,10 +220,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         for (Project dep : dependson) {
             File targetDir = dep.getTarget();
-            if (targetDir != null && !(targetDir.isDirectory())) // Exists but is not a directory? Weird, ignore it.
-                continue;
+            if (targetDir != null && !(targetDir.isDirectory())) // Does not exist... deleted?
+                return dep;
 
-            IProject project = findOpenProject(wsroot, dep);
+            IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
             if (project == null)
                 Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Dependency project '%s' from project '%s' is not in the Eclipse workspace.", dep.getName(), model.getName()), null));
 
@@ -329,11 +331,11 @@ public class NewBuilder extends IncrementalProjectBuilder {
         clearBuildMarkers();
 
         if (hasBlockingErrors()) {
-            addBuildMarker(String.format("Will not build OSGi bundle(s) for project '%s' until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
+            addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
             log(LOG_BASIC, "SKIPPING due to Java problem markers");
             return;
         } else if (!classpathErrors.isEmpty()) {
-            addBuildMarker("Will not build OSGi bundle(s) for project '%s' until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
+            addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
             log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
             return;
         }
@@ -375,11 +377,11 @@ public class NewBuilder extends IncrementalProjectBuilder {
         Collection<Project> dependsOn = model.getDependson();
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
-        result.add(findCnfProject());
+        result.add(WorkspaceUtils.findCnfProject());
 
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         for (Project project : dependsOn) {
-            IProject targetProj = findOpenProject(wsroot, project);
+            IProject targetProj = WorkspaceUtils.findOpenProject(wsroot, project);
             if (targetProj == null)
                 Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No open project in workspace for Bnd '-dependson' dependency: " + project.getName(), null));
             else
@@ -409,21 +411,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     return true;
             }
         return false;
-    }
-
-    private static IProject findOpenProject(IWorkspaceRoot wsroot, Project model) {
-        return findOpenProject(wsroot, model.getName());
-    }
-
-    private static IProject findOpenProject(IWorkspaceRoot wsroot, String name) {
-        IProject project = wsroot.getProject(name);
-        if (project == null || !project.exists() || !project.isOpen())
-            return null;
-        return project;
-    }
-
-    private static IProject findCnfProject() throws Exception {
-        return findOpenProject(ResourcesPlugin.getWorkspace().getRoot(), "cnf");
     }
 
     private static boolean isChangeDelta(IResourceDelta delta) {
