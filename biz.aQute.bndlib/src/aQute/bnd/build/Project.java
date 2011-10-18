@@ -1,57 +1,26 @@
 package aQute.bnd.build;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.jar.Manifest;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
+import java.util.jar.*;
 
-import aQute.bnd.help.Syntax;
-import aQute.bnd.maven.support.Pom;
-import aQute.bnd.maven.support.ProjectPom;
-import aQute.bnd.service.CommandPlugin;
-import aQute.bnd.service.DependencyContributor;
-import aQute.bnd.service.Deploy;
-import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.help.*;
+import aQute.bnd.maven.support.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.bnd.service.Scripter;
-import aQute.bnd.service.action.Action;
-import aQute.bnd.service.action.NamedAction;
-import aQute.lib.io.IO;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Instruction;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.lib.osgi.Resource;
-import aQute.lib.osgi.eclipse.EclipseClasspath;
-import aQute.libg.generics.Create;
-import aQute.libg.header.OSGiHeader;
-import aQute.libg.sed.Sed;
+import aQute.bnd.service.action.*;
+import aQute.lib.io.*;
+import aQute.lib.osgi.*;
+import aQute.lib.osgi.eclipse.*;
+import aQute.libg.generics.*;
+import aQute.libg.header.*;
+import aQute.libg.sed.*;
+import aQute.libg.version.*;
 
 /**
  * This class is NOT threadsafe
@@ -438,8 +407,8 @@ public class Project extends Processor {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
-							found = new Container(project, bsn, versionRange, Container.TYPE.PROJECT,
-									f, null, attrs);
+							found = new Container(project, bsn, versionRange,
+									Container.TYPE.PROJECT, f, null, attrs);
 						} else {
 							error("Reference to project that does not exist in workspace\n"
 									+ "  Project       %s\n" + "  Specification %s", bsn, spec);
@@ -875,12 +844,12 @@ public class Project extends Processor {
 			} finally {
 				jar.close();
 			}
-		} else
-			if ( name == null)
-				error("There is no writable repository (no repo name specified)");
-			else
-				error("Cannot find a writeable repository with the name %s from the repositiories %s", name, plugins);
-				
+		} else if (name == null)
+			error("There is no writable repository (no repo name specified)");
+		else
+			error("Cannot find a writeable repository with the name %s from the repositiories %s",
+					name, plugins);
+
 		return null;
 
 	}
@@ -920,7 +889,9 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Get a bundle from one of the plugin repositories.
+	 * Get a bundle from one of the plugin repositories. If an exact version is
+	 * required we just return the first repository found (in declaration order
+	 * in the build.bnd file).
 	 * 
 	 * @param bsn
 	 *            The bundle symbolic name
@@ -932,23 +903,100 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
-	public Container getBundle(String bsn, String range, Strategy strategyx,
+	public Container getBundle(String bsn, String range, Strategy strategy,
 			Map<String, String> attrs) throws Exception {
+
+		if (range == null)
+			range = "0";
 
 		if ("snapshot".equals(range)) {
 			return getBundleFromProject(bsn, attrs);
 		}
 
+		Strategy useStrategy = strategy;
+
 		if ("latest".equals(range)) {
 			Container c = getBundleFromProject(bsn, attrs);
 			if (c != null)
 				return c;
+
+			useStrategy = Strategy.HIGHEST;
 		}
 
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		;
+		useStrategy = overrideStrategy(attrs, useStrategy);
 
-		Strategy useStrategy = strategyx;
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+
+		if (useStrategy == Strategy.EXACT) {
+
+			// For an exact range we just iterate over the repos
+			// and return the first we find.
+
+			for (RepositoryPlugin plugin : plugins) {
+				File result = plugin.get(bsn, range, Strategy.EXACT, attrs);
+				if (result != null)
+					return toContainer(bsn, range, attrs, result);
+			}
+		} else {
+			VersionRange versionRange = "latest".equals(range) ? new VersionRange("0")
+					: new VersionRange(range);
+
+			// We have a range search. Gather all the versions in all the repos
+			// and make a decision on that choice. If the same version is found
+			// in
+			// multiple repos we take the first
+
+			SortedMap<Version, RepositoryPlugin> versions = new TreeMap<Version, RepositoryPlugin>();
+			for (RepositoryPlugin plugin : plugins) {
+				List<Version> vs = plugin.versions(bsn);
+				if (vs != null) {
+					for (Version v : vs) {
+						if (!versions.containsKey(v) && versionRange.includes(v))
+							versions.put(v, plugin);
+					}
+				}
+			}
+
+			// Verify if we found any, if so, we use the strategy to pick
+			// the first or last
+
+			if (!versions.isEmpty()) {
+				Version provider = null;
+
+				switch (useStrategy) {
+				case HIGHEST:
+					provider = versions.lastKey();
+					break;
+
+				case LOWEST:
+					provider = versions.firstKey();
+					break;
+				}
+				if (provider != null) {
+					RepositoryPlugin repo = versions.get(provider);
+					String version = provider.toString();
+					File result = repo.get(bsn, version, Strategy.EXACT, attrs);
+					return toContainer(bsn, version, attrs, result);
+				} else
+					error("Unexpected, found versions %s but then not provider for startegy %s?",
+							versions, useStrategy);
+			}
+		}
+
+		//
+		// If we get this far we ran into an error somewhere
+
+		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version="
+				+ range + " Not found in " + plugins, null);
+
+	}
+
+	/**
+	 * @param attrs
+	 * @param useStrategy
+	 * @return
+	 */
+	protected Strategy overrideStrategy(Map<String, String> attrs, Strategy useStrategy) {
 		if (attrs != null) {
 			String overrideStrategy = attrs.get("strategy");
 
@@ -961,34 +1009,24 @@ public class Project extends Processor {
 					useStrategy = Strategy.EXACT;
 			}
 		}
+		return useStrategy;
+	}
 
-		// If someone really wants the latest, lets give it to them.
-		// regardless of they asked for a lowest strategy
-		if (range != null && range.equals("latest"))
-			useStrategy = Strategy.HIGHEST;
-
-		// if ( bsn.indexOf('+')>0) {
-		// return getMavenContainer(bsn,range,useStrategy,attrs);
-		// }
-
-		// Maybe we want an exact match this time.
-		// In that case we limit the range to be exactly
-		// the version specified. We ignore it when a range
-		// is used instead of a version
-
-		for (RepositoryPlugin plugin : plugins) {
-			File result = plugin.get(bsn, range, useStrategy, attrs);
-			if (result != null) {
-				if (result.getName().endsWith("lib"))
-					return new Container(this, bsn, range, Container.TYPE.LIBRARY, result, null,
-							attrs);
-				else
-					return new Container(this, bsn, range, Container.TYPE.REPO, result, null, attrs);
-			}
+	/**
+	 * @param bsn
+	 * @param range
+	 * @param attrs
+	 * @param result
+	 * @return
+	 */
+	protected Container toContainer(String bsn, String range, Map<String, String> attrs, File result) {
+		if (result == null) {
+			System.out.println("Huh?");
 		}
-
-		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version="
-				+ range + " Not found in " + plugins, null);
+		if (result.getName().endsWith("lib"))
+			return new Container(this, bsn, range, Container.TYPE.LIBRARY, result, null, attrs);
+		else
+			return new Container(this, bsn, range, Container.TYPE.REPO, result, null, attrs);
 	}
 
 	/**

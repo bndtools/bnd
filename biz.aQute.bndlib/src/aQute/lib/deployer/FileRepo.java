@@ -12,42 +12,41 @@ import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
-	public static String LOCATION = "location";
-	public static String READONLY = "readonly";
-	public static String NAME = "name";
+	public static String	LOCATION	= "location";
+	public static String	READONLY	= "readonly";
+	public static String	NAME		= "name";
 
-	File[] EMPTY_FILES = new File[0];
-	protected File root;
-	Registry registry;
-	boolean canWrite = true;
-	Pattern REPO_FILE = Pattern
-			.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
-	Reporter reporter;
-	boolean dirty;
-	String name;
+	File[]					EMPTY_FILES	= new File[0];
+	protected File			root;
+	Registry				registry;
+	boolean					canWrite	= true;
+	Pattern					REPO_FILE	= Pattern
+												.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Reporter				reporter;
+	boolean					dirty;
+	String					name;
 
-	public FileRepo() {}
-	
+	public FileRepo() {
+	}
+
 	public FileRepo(String name, File location, boolean canWrite) {
 		this.name = name;
 		this.root = location;
 		this.canWrite = canWrite;
 	}
-	
+
 	protected void init() throws Exception {
 		// for extensions
 	}
-	
+
 	public void setProperties(Map<String, String> map) {
 		String location = (String) map.get(LOCATION);
 		if (location == null)
-			throw new IllegalArgumentException(
-					"Location must be set on a FileRepo plugin");
+			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
 		root = new File(location);
 		if (!root.isDirectory())
-			throw new IllegalArgumentException(
-					"Repository is not a valid directory " + root);
+			throw new IllegalArgumentException("Repository is not a valid directory " + root);
 
 		String readonly = (String) map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
@@ -60,10 +59,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Get a list of URLs to bundles that are constrained by the bsn and
 	 * versionRange.
 	 */
-	public File[] get(String bsn, String versionRange)
-			throws Exception {
+	public File[] get(String bsn, String versionRange) throws Exception {
 		init();
-		
+
 		// If the version is set to project, we assume it is not
 		// for us. A project repo will then get it.
 		if (versionRange != null && versionRange.equals("project"))
@@ -105,8 +103,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				else
 					version = new Version(versionString);
 
-				if (range.includes(version)
-						|| versionString.equals(versionRange))
+				if (range.includes(version) || versionString.equals(versionRange))
 					versions.put(version, instances[i]);
 			}
 		}
@@ -130,8 +127,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (manifest == null)
 			throw new IllegalArgumentException("No manifest in JAR: " + jar);
 
-		String bsn = manifest.getMainAttributes().getValue(
-				Analyzer.BUNDLE_SYMBOLICNAME);
+		String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
 
@@ -142,12 +138,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		for (String key : b.keySet()) {
 			bsn = key;
 			if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
-				throw new IllegalArgumentException(
-						"Bundle SymbolicName has wrong format: " + bsn);
+				throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
 		}
 
-		String versionString = manifest.getMainAttributes().getValue(
-				Analyzer.BUNDLE_VERSION);
+		String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
 		Version version;
 		if (versionString == null)
 			version = new Version();
@@ -156,8 +150,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		File dir = new File(root, bsn);
 		dir.mkdirs();
-		String fName = bsn + "-" + version.getMajor() + "."
-				+ version.getMinor() + "." + version.getMicro() + ".jar";
+		String fName = bsn + "-" + version.getMajor() + "." + version.getMinor() + "."
+				+ version.getMicro() + ".jar";
 		File file = new File(dir, fName);
 
 		reporter.trace("Updating " + file.getAbsolutePath());
@@ -166,8 +160,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.progress("Updated " + file.getAbsolutePath());
 			fireBundleAdded(jar, file);
 		} else {
-			reporter.progress("Did not update " + jar
-					+ " because repo has a newer version");
+			reporter.progress("Did not update " + jar + " because repo has a newer version");
 			reporter.trace("NOT Updating " + fName + " (repo is newer)");
 		}
 
@@ -176,14 +169,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			jar.write(latest);
 			file = latest;
 		}
-		
+
 		return file;
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {
 		if (registry == null)
 			return;
-		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		List<RepositoryListenerPlugin> listeners = registry
+				.getPlugins(RepositoryListenerPlugin.class);
 		for (RepositoryListenerPlugin listener : listeners) {
 			try {
 				listener.bundleAdded(this, jar, file);
@@ -212,20 +206,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		List<String> result = new ArrayList<String>();
 		if (root == null) {
-			if (reporter != null) reporter.error("FileRepo root directory is not set.");
+			if (reporter != null)
+				reporter.error("FileRepo root directory is not set.");
 		} else {
 			File[] list = root.listFiles();
 			if (list != null) {
 				for (File f : list) {
-					if (!f.isDirectory()) continue; // ignore non-directories
+					if (!f.isDirectory())
+						continue; // ignore non-directories
 					String fileName = f.getName();
-					if (fileName.charAt(0) == '.') continue; // ignore hidden files
+					if (fileName.charAt(0) == '.')
+						continue; // ignore hidden files
 					if (pattern == null || pattern.matches(fileName))
 						result.add(fileName);
 				}
-			} else 
-				if ( reporter != null)
-					reporter.error("FileRepo root directory (%s) does not exist", root);
+			} else if (reporter != null)
+				reporter.error("FileRepo root directory (%s) does not exist", root);
 		}
 
 		return result;
@@ -242,7 +238,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (m.matches()) {
 					String version = m.group(2);
 					if (version.equals("latest"))
-						version = "99";
+						version = Integer.MAX_VALUE+"";
 					list.add(new Version(version));
 				}
 			}
@@ -252,8 +248,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public String toString() {
-		return String
-				.format("%-40s r/w=%s", root.getAbsolutePath(), canWrite());
+		return String.format("%-40s r/w=%s", root.getAbsolutePath(), canWrite());
 	}
 
 	public File getRoot() {
@@ -274,26 +269,35 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 		return name;
 	}
-	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
-		if ( version == null)
+
+	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties)
+			throws Exception {
+		if (version == null)
 			version = "0.0.0";
-		
-		if ( strategy == Strategy.EXACT) {				
+
+		if (strategy == Strategy.EXACT) {
 			VersionRange vr = new VersionRange(version);
-			if ( vr.isRange())
+			if (vr.isRange())
 				return null;
+
+			if ( vr.getHigh().getMajor() == Integer.MAX_VALUE)
+				version = "latest";
 			
-			File file = IO.getFile(root, bsn + "/" + version +"/" + bsn + "-" + version + ".jar");
-			if ( file.isFile())
+			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
+			if (file.isFile())
 				return file;
-			else
-				return null;
+			else {
+				file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
+				if (file.isFile())
+					return file;
+			}
+			return null;
 
 		}
 		File[] files = get(bsn, version);
-		if ( files == null || files.length == 0)
+		if (files == null || files.length == 0)
 			return null;
-		
+
 		if (files.length >= 0) {
 			switch (strategy) {
 			case LOWEST:

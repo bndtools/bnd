@@ -9,6 +9,7 @@ import java.util.jar.Manifest;
 import junit.framework.TestCase;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin.*;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
@@ -17,6 +18,18 @@ import aQute.lib.osgi.eclipse.EclipseClasspath;
 import aQute.libg.version.Version;
 
 public class ProjectTest extends TestCase {
+
+	/**
+	 * Check multiple repos
+	 * @throws Exception 
+	 */
+	public void testMultipleRepos() throws Exception {
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+		Project project = ws.getProject("p1");
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
+	}
 
 	/**
 	 * Check if the getSubBuilders properly predicts the output.
@@ -36,7 +49,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(names.contains("p4-sub.a"));
 		assertTrue(names.contains("p4-sub.b"));
 		assertTrue(names.contains("p4-sub.c"));
-		
+
 		File[] files = project.build();
 		System.out.println(Processor.join(project.getErrors(), "\n"));
 		System.out.println(Processor.join(project.getWarnings(), "\n"));
@@ -44,10 +57,10 @@ public class ProjectTest extends TestCase {
 		assertEquals(0, project.getWarnings().size());
 		assertNotNull(files);
 		assertEquals(3, files.length);
-		for ( File file : files ) {
+		for (File file : files) {
 			Jar jar = new Jar(file);
 			Manifest m = jar.getManifest();
-			assertTrue( names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
 		}
 	}
 
@@ -108,8 +121,7 @@ public class ProjectTest extends TestCase {
 		project.updateModified(System.currentTimeMillis(), "Testing");
 		files = project.build();
 		assertEquals(1, files.length);
-		assertTrue("Must have newer files now",
-				files[0].lastModified() > lastTime);
+		assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
 	}
 
 	public void testRepoMacro() throws Exception {
@@ -118,14 +130,11 @@ public class ProjectTest extends TestCase {
 		System.out.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
 		System.out.println(s);
-		assertTrue(s
-				.contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.1.0"));
-		assertTrue(s
-				.contains("org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar"));
-		
+		assertTrue(s.contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0"));
+		assertTrue(s.contains("org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar"));
+
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
-		assertTrue(s
-				.matches("<<[^>]+>>"));
+		assertTrue(s.matches("<<[^>]+>>"));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
 		s.endsWith("org.apache.felix.configadmin-1.1.0.jar");
@@ -157,7 +166,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(size, project.getProperties().size());
 		assertEquals("sometime", newv.getQualifier());
 	}
-	
+
 	public void testRunBuilds() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 
@@ -168,7 +177,7 @@ public class ProjectTest extends TestCase {
 		// Can override the default by specifying -runbuilds: false
 		Project p2 = ws.getProject("p2");
 		assertFalse(p2.getRunBuilds());
-		
+
 		// Running a .bndrun DOES NOT include built bundles by default
 		Project p1a = new Project(ws, new File("test/ws/p1"), new File("test/ws/p1/p1a.bndrun"));
 		assertFalse(p1a.getRunBuilds());

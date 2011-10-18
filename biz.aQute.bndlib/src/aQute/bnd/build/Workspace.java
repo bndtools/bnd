@@ -253,8 +253,10 @@ public class Workspace extends Processor {
 					InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO);
 					if (in != null)
 						unzip(in, root);
-					else
-						System.out.println("!!!! WTF Couldn't find embedded-repo.jar in bundle ");
+					else {
+						System.out.println("!!!! Couldn't find embedded-repo.jar in bundle ");
+						error("Couldn't find embedded-repo.jar in bundle ");
+					}
 				}
 			} finally {
 				lock.unlock();
