@@ -28,6 +28,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		for (Iterator<Clazz> i = list.iterator(); i.hasNext();) {
 			for (Instruction instruction : instructions) {
 				Clazz c = i.next();
+				System.out.println("fqn " + c.getFQN() + " " + instruction);
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						i.remove();
