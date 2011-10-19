@@ -52,6 +52,9 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 		this.id = id;
 		this.formEditor = formEditor;
 		setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
+
+		formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
+
 	}
 
 	@Override
@@ -87,7 +90,6 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	@Override
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
-		this.formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
 
 		Control[] children = parent.getChildren();
 		control = children[children.length - 1];
