@@ -97,19 +97,6 @@ public class PkgRenameParticipant extends RenameParticipant {
                     throw new OperationCanceledException(str);
                 }
 
-                final String oldName = pkgFragment.getElementName();
-                final String newName = getArguments().getNewName();
-                final Pattern pattern = Pattern.compile(
-                /* match start boundary */"(^|" + grammarSeparator + ")" +
-                /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
-                /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
-
-                /* see if there are matches, if not: return */
-                Matcher matcher = pattern.matcher(bndFileText);
-                if (!matcher.find()) {
-                    return false;
-                }
-
                 /*
                  * get the previous change for this file if it exists, or
                  * otherwise create a new change for it
@@ -123,6 +110,19 @@ public class PkgRenameParticipant extends RenameParticipant {
                     fileChanges.put(resource, fileChange);
                 } else {
                     rootEdit = fileChange.getEdit();
+                }
+
+                final String oldName = pkgFragment.getElementName();
+                final String newName = getArguments().getNewName();
+                final Pattern pattern = Pattern.compile(
+                /* match start boundary */"(^|" + grammarSeparator + ")" +
+                /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
+                /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
+
+                /* see if there are matches, if not: return */
+                Matcher matcher = pattern.matcher(bndFileText);
+                if (!matcher.find()) {
+                    return false;
                 }
 
                 /* find all matches to replace and add them to the root edit */
