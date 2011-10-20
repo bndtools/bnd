@@ -81,49 +81,54 @@ public class PkgRenameParticipant extends RenameParticipant {
 
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
             public boolean visit(IResourceProxy proxy) throws CoreException {
-                if ((proxy.getType() == IResource.FOLDER) || (proxy.getType() == IResource.PROJECT))
+                if ((proxy.getType() == IResource.FOLDER) || (proxy.getType() == IResource.PROJECT)) {
                     return true;
-                if ((proxy.getType() == IResource.FILE) && proxy.getName().toLowerCase().endsWith(".bnd")) {
-                    /* we're dealing with a *.bnd file */
-                    IFile resource = (IFile) proxy.requestResource();
-
-                    /* read the file */
-                    String bndFileText = null;
-                    try {
-                        bndFileText = FileUtils.readFully(resource).get();
-                    } catch (Exception e) {
-                        String str = "Could not read file " + proxy.getName();
-                        Plugin.logError(str, e);
-                        throw new OperationCanceledException(str);
-                    }
-
-                    /* see if there are matches, if not: return */
-                    Matcher matcher = pattern.matcher(bndFileText);
-                    if (!matcher.find()) {
-                        return false;
-                    }
-
-                    /*
-                     * get the previous change for this file if it exists, or
-                     * otherwise create a new change for it
-                     */
-                    TextChange fileChange = getTextChange(resource);
-                    TextEdit rootEdit = null;
-                    if (fileChange == null) {
-                        fileChange = new TextFileChange(proxy.getName(), resource);
-                        rootEdit = new MultiTextEdit();
-                        fileChange.setEdit(rootEdit);
-                        fileChanges.put(resource, fileChange);
-                    } else {
-                        rootEdit = fileChange.getEdit();
-                    }
-
-                    /* find all matches to replace and add them to the root edit */
-                    matcher.reset();
-                    while (matcher.find()) {
-                        rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
-                    }
                 }
+
+                if (!((proxy.getType() == IResource.FILE) && proxy.getName().toLowerCase().endsWith(".bnd"))) {
+                    return false;
+                }
+
+                /* we're dealing with a *.bnd file */
+                IFile resource = (IFile) proxy.requestResource();
+
+                /* read the file */
+                String bndFileText = null;
+                try {
+                    bndFileText = FileUtils.readFully(resource).get();
+                } catch (Exception e) {
+                    String str = "Could not read file " + proxy.getName();
+                    Plugin.logError(str, e);
+                    throw new OperationCanceledException(str);
+                }
+
+                /* see if there are matches, if not: return */
+                Matcher matcher = pattern.matcher(bndFileText);
+                if (!matcher.find()) {
+                    return false;
+                }
+
+                /*
+                 * get the previous change for this file if it exists, or
+                 * otherwise create a new change for it
+                 */
+                TextChange fileChange = getTextChange(resource);
+                TextEdit rootEdit = null;
+                if (fileChange == null) {
+                    fileChange = new TextFileChange(proxy.getName(), resource);
+                    rootEdit = new MultiTextEdit();
+                    fileChange.setEdit(rootEdit);
+                    fileChanges.put(resource, fileChange);
+                } else {
+                    rootEdit = fileChange.getEdit();
+                }
+
+                /* find all matches to replace and add them to the root edit */
+                matcher.reset();
+                while (matcher.find()) {
+                    rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                }
+
                 return false;
             }
         };
