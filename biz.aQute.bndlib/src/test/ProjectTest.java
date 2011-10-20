@@ -11,6 +11,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin.*;
 import aQute.lib.deployer.FileRepo;
+import aQute.lib.io.*;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Processor;
@@ -21,14 +22,18 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Check multiple repos
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+				Strategy.EXACT, null));
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+				Strategy.HIGHEST, null));
+		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+				Strategy.LOWEST, null));
 	}
 
 	/**
@@ -101,27 +106,30 @@ public class ProjectTest extends TestCase {
 
 		project.clean();
 		project.getTarget().mkdirs();
+		try {
+			// Now we build it.
+			File[] files = project.build();
+			System.out.println(project.getErrors());
+			System.out.println(project.getWarnings());
+			assertTrue(project.isOk());
+			assertNotNull(files);
+			assertEquals(1, files.length);
 
-		// Now we build it.
-		File[] files = project.build();
-		System.out.println(project.getErrors());
-		System.out.println(project.getWarnings());
-		assertTrue(project.isOk());
-		assertNotNull(files);
-		assertEquals(1, files.length);
+			// Now we should not rebuild it
+			long lastTime = files[0].lastModified();
+			files = project.build();
+			assertEquals(1, files.length);
+			assertTrue(files[0].lastModified() == lastTime);
 
-		// Now we should not rebuild it
-		long lastTime = files[0].lastModified();
-		files = project.build();
-		assertEquals(1, files.length);
-		assertTrue(files[0].lastModified() == lastTime);
+			Thread.sleep(2000);
 
-		Thread.sleep(2000);
-
-		project.updateModified(System.currentTimeMillis(), "Testing");
-		files = project.build();
-		assertEquals(1, files.length);
-		assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
+			project.updateModified(System.currentTimeMillis(), "Testing");
+			files = project.build();
+			assertEquals(1, files.length);
+			assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
+		} finally {
+			project.clean();
+		}
 	}
 
 	public void testRepoMacro() throws Exception {
@@ -154,17 +162,30 @@ public class ProjectTest extends TestCase {
 	}
 
 	public void testBump() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
-		Project project = ws.getProject("p1");
-		int size = project.getProperties().size();
-		Version old = new Version(project.getProperty("Bundle-Version"));
-		project.bump("=+0");
-		Version newv = new Version(project.getProperty("Bundle-Version"));
-		assertEquals(old.getMajor(), newv.getMajor());
-		assertEquals(old.getMinor() + 1, newv.getMinor());
-		assertEquals(0, newv.getMicro());
-		assertEquals(size, project.getProperties().size());
-		assertEquals("sometime", newv.getQualifier());
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.delete(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+
+		try {
+			IO.copy(new File("test/ws"), tmp);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("p1");
+			int size = project.getProperties().size();
+			Version old = new Version(project.getProperty("Bundle-Version"));
+			System.out.println("Old version " + old);
+			project.bump("=+0");
+			Version newv = new Version(project.getProperty("Bundle-Version"));
+			System.out.println("New version " + newv);
+			assertEquals(old.getMajor(), newv.getMajor());
+			assertEquals(old.getMinor() + 1, newv.getMinor());
+			assertEquals(0, newv.getMicro());
+			assertEquals(size, project.getProperties().size());
+			assertEquals("sometime", newv.getQualifier());
+		} finally {
+			IO.delete(tmp);
+		}
 	}
 
 	public void testRunBuilds() throws Exception {

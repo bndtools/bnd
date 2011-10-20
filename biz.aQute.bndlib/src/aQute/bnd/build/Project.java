@@ -1593,7 +1593,7 @@ public class Project extends Processor {
 		sed.replace("(Bundle-Version\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))",
 				"$1${version;" + mask + ";$3}");
 		sed.doIt();
-		refresh();
+		forceRefresh();
 	}
 
 	public void bump() throws IOException {

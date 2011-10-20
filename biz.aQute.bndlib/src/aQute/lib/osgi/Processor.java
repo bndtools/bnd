@@ -144,13 +144,13 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		}
 		if (p.exceptions)
 			t.printStackTrace();
-		
+
 		p.signal();
 	}
 
 	public void signal() {
 	}
-	
+
 	public List<String> getWarnings() {
 		return warnings;
 	}
@@ -589,33 +589,32 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		if (propertiesFile == null)
 			return false;
 
-		updateModified(propertiesFile.lastModified(), "properties file");
-		boolean changed = false;
+		boolean changed = updateModified(propertiesFile.lastModified(), "properties file");
 		if (included != null) {
 			for (File file : included) {
+				if (changed)
+					break;
 
-				if (file.exists() == false || file.lastModified() > modified) {
-					updateModified(file.lastModified(), "include file: " + file);
-					changed = true;
-				}
+				changed |= !file.exists()
+						|| updateModified(file.lastModified(), "include file: " + file);
 			}
 		}
 
-		// System.out.println("Modified " + modified + " file: "
-		// + propertiesFile.lastModified() + " diff "
-		// + (modified - propertiesFile.lastModified()));
-
-		// Date last = new Date(propertiesFile.lastModified());
-		// Date current = new Date(modified);
-		changed |= modified < propertiesFile.lastModified();
 		if (changed) {
-			included = null;
-			properties.clear();
-			setProperties(propertiesFile, base);
-			propertiesChanged();
+			forceRefresh();
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * 
+	 */
+	public void forceRefresh() {
+		included = null;
+		properties.clear();
+		setProperties(propertiesFile, base);
+		propertiesChanged();
 	}
 
 	public void propertiesChanged() {
@@ -928,10 +927,12 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	}
 
-	public void updateModified(long time, String reason) {
+	public boolean updateModified(long time, String reason) {
 		if (time > lastModified) {
 			lastModified = time;
+			return true;
 		}
+		return false;
 	}
 
 	public long lastModified() {
@@ -1276,13 +1277,14 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * Check if the object is an array and turn it into a string if it is,
 	 * otherwise unchanged.
 	 * 
-	 * @param object the object to make printable
+	 * @param object
+	 *            the object to make printable
 	 * @return a string if it was an array or the original object
 	 */
 	public static Object makePrintable(Object object) {
-		if ( object == null)
+		if (object == null)
 			return object;
-		
+
 		if (object.getClass().isArray()) {
 			Object[] array = (Object[]) object;
 			Object[] output = new Object[array.length];
