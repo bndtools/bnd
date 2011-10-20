@@ -135,22 +135,19 @@ public class PkgRenameParticipant extends RenameParticipant {
             }
         };
 
-        Set<IProject> visitedProjects = new HashSet<IProject>();
-
-        IProject containingProject = pkgFragment.getResource().getProject();
-        containingProject.accept(visitor, IContainer.NONE);
-        visitedProjects.add(containingProject);
-
-        for (IProject project : pkgFragment.getResource().getProject().getReferencingProjects()) {
-            project.accept(visitor, IContainer.NONE);
-            visitedProjects.add(project);
+        /* determine which projects have to be visited */
+        Set<IProject> projectsToVisit = new HashSet<IProject>();
+        projectsToVisit.add(pkgFragment.getResource().getProject());
+        for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencingProjects()) {
+            projectsToVisit.add(projectToVisit);
+        }
+        for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencedProjects()) {
+            projectsToVisit.add(projectToVisit);
         }
 
-        for (IProject project : pkgFragment.getResource().getProject().getReferencedProjects()) {
-            if (!visitedProjects.contains(project)) {
-                project.accept(visitor, IContainer.NONE);
-                visitedProjects.add(project);
-            }
+        /* visit the projects */
+        for (IProject projectToVisit : projectsToVisit) {
+            projectToVisit.accept(visitor, IContainer.NONE);
         }
 
         if (fileChanges.isEmpty()) {
