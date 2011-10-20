@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -118,44 +117,64 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         } else {
             requiredPageIds.addAll(getPagesBnd(path));
         }
+        requiredPageIds.add(SOURCE_PAGE);
 
         IFormPage activePage = getActivePageInstance();
         String currentPageId = activePage != null ? activePage.getId() : null;
 
-        // Remove all pages except source
-        while (getPageCount() > 1) removePage(0);
-
-        // Add required pages;
-        for (ListIterator<String> iter = requiredPageIds.listIterator(requiredPageIds.size()); iter.hasPrevious(); ) {
-            String pageId = iter.previous();
-            IPageFactory pf = pageFactories.get(pageId);
-            if (pf == null)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No page factory available for page ID: " + pageId, null));
+        // Remove pages no longer required and remember the rest in a map
+        int i = 0;
+        Map<String, IFormPage> pageCache = new HashMap<String, IFormPage>(requiredPageIds.size());
+        while (i < getPageCount()) {
+            IFormPage current = (IFormPage) pages.get(i);
+            if (!requiredPageIds.contains(current.getId()))
+                removePage(i);
             else {
-                try {
-                    IFormPage page = pf.createPage(this, model, pageId);
-                    addPage(0, page);
-                } catch (IllegalArgumentException e) {
-                    Plugin.logError("Error creating page for ID: " + pageId, e);
-                } catch (PartInitException e) {
-                    Plugin.logError("Error adding page(s) to the editor.", e);
-                }
+                pageCache.put(current.getId(), current);
+                i++;
             }
-        }
-        // Always add the source page if it doesn't exist
-        try {
-            if (findPage(SOURCE_PAGE) == null) {
-                int sourcePageIndex = addPage(sourcePage, getEditorInput());
-                setPageText(sourcePageIndex, "Source");
-            }
-        } catch (PartInitException e) {
-            Plugin.logError("Error adding page(s) to the editor.", e);
         }
 
-        // Restore the current selected page
-        if (currentPageId != null) {
-            setActivePage(currentPageId);
+        // Cache new pages
+        for (String pageId : requiredPageIds) {
+            if (!pageCache.containsKey(pageId)) {
+                IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage : pageFactories.get(pageId).createPage(this, model, pageId);
+                pageCache.put(pageId, page);
+            }
         }
+
+        // Add pages back in
+        int requiredPointer = 0;
+        int existingPointer = 0;
+
+        while (requiredPointer < requiredPageIds.size()) {
+            try {
+                String requiredId = requiredPageIds.get(requiredPointer);
+                if (existingPointer >= getPageCount()) {
+                    if (SOURCE_PAGE.equals(requiredId))
+                        addPage(sourcePage, getEditorInput());
+                    else
+                        addPage(pageCache.get(requiredId));
+                }
+                else {
+                    IFormPage existingPage = (IFormPage) pages.get(existingPointer);
+                    if (!requiredId.equals(existingPage.getId())) {
+                        if (SOURCE_PAGE.equals(requiredId))
+                            addPage(existingPointer, sourcePage, getEditorInput());
+                        else
+                            addPage(existingPointer, pageCache.get(requiredId));
+                    }
+                }
+                existingPointer++;
+            } catch (PartInitException e) {
+                Plugin.logError("Error adding page(s) to the editor.", e);
+            }
+            requiredPointer++;
+        }
+
+        // Set the source page title
+        setPageText(sourcePage.getIndex(), "Source");
+
     }
 
     private boolean isMainWorkspaceConfig(String path, String projectName) {
