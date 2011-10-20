@@ -90,9 +90,11 @@ public class PkgRenameParticipant extends RenameParticipant {
                 }
 
                 /* we're dealing with a *.bnd file */
+
+                /* get the proxied file */
                 IFile resource = (IFile) proxy.requestResource();
 
-                /* read the file */
+                /* read the file as a single string */
                 String bndFileText = null;
                 try {
                     bndFileText = FileUtils.readFully(resource).get();
@@ -151,9 +153,12 @@ public class PkgRenameParticipant extends RenameParticipant {
             }
         }
 
-        if (fileChanges.isEmpty())
+        if (fileChanges.isEmpty()) {
+            /* no changes at all */
             return null;
+        }
 
+        /* build a composite change with all changes */
         CompositeChange cs = new CompositeChange(changeTitle);
         for (TextChange fileChange : fileChanges.values()) {
             cs.add(fileChange);
