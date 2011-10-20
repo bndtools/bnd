@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="export-executable" default="build" basedir=".">
+	<import file="../cnf/build.xml"/>
 
 	<property name="output" value="bin" />
 	<property name="jar_file" value="ecj.jar" />
+
+	<target name="junit">
+	</target>
 
 	<target name="build">
 		<delete file="${basedir}/${jar_file}" failonerror="no" />
