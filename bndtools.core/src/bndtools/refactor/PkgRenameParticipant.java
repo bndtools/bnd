@@ -24,6 +24,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
+import org.eclipse.ltk.core.refactoring.participants.RenameArguments;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -34,10 +35,24 @@ import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant {
     private IPackageFragment pkgFragment;
+    private String changeTitle = null;
 
     @Override
     protected boolean initialize(Object element) {
         this.pkgFragment = (IPackageFragment) element;
+        RenameArguments args = getArguments();
+
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("Bndtools: rename package '");
+        sb.append(pkgFragment.getElementName());
+        sb.append("' ");
+        if (((RenamePackageProcessor) this.getProcessor()).getRenameSubpackages())
+            sb.append("and subpackages ");
+        sb.append("to '");
+        sb.append(args.getNewName());
+        sb.append("'");
+        changeTitle = sb.toString();
+
         return true;
     }
 
@@ -134,19 +149,7 @@ public class PkgRenameParticipant extends RenameParticipant {
         if (fileChanges.isEmpty())
             return null;
 
-        RenamePackageProcessor pr = (RenamePackageProcessor) this.getProcessor();
-        StringBuilder sb = new StringBuilder(256);
-
-        sb.append("Bndtools: rename package '");
-        sb.append(oldName);
-        sb.append("' ");
-        if (pr.getRenameSubpackages())
-            sb.append("and subpackages ");
-        sb.append("to '");
-        sb.append(newName);
-        sb.append("'");
-
-        CompositeChange cs = new CompositeChange(sb.toString());
+        CompositeChange cs = new CompositeChange(changeTitle);
         for (TextChange fileChange : fileChanges.values()) {
             cs.add(fileChange);
         }
