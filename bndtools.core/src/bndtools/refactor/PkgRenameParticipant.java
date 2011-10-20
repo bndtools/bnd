@@ -1,12 +1,15 @@
 package bndtools.refactor;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
@@ -109,7 +112,24 @@ public class PkgRenameParticipant extends RenameParticipant {
                 return false;
             }
         };
-        pkgFragment.getResource().getProject().accept(visitor, IContainer.NONE);
+
+        Set<IProject> visitedProjects = new HashSet<IProject>();
+
+        IProject containingProject = pkgFragment.getResource().getProject();
+        containingProject.accept(visitor, IContainer.NONE);
+        visitedProjects.add(containingProject);
+
+        for (IProject project : pkgFragment.getResource().getProject().getReferencingProjects()) {
+            project.accept(visitor, IContainer.NONE);
+            visitedProjects.add(project);
+        }
+
+        for (IProject project : pkgFragment.getResource().getProject().getReferencedProjects()) {
+            if (!visitedProjects.contains(project)) {
+                project.accept(visitor, IContainer.NONE);
+                visitedProjects.add(project);
+            }
+        }
 
         if (fileChanges.isEmpty())
             return null;
