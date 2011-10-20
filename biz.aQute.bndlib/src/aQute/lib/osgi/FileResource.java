@@ -51,7 +51,8 @@ public class FileResource implements Resource {
 			Pattern doNotCopy) {
 		if (doNotCopy != null && doNotCopy.matcher(directory.getName()).matches())
 			return;
-
+		jar.updateModified(directory.lastModified(), "Dir change");
+		
 		File files[] = directory.listFiles();
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].isDirectory())
