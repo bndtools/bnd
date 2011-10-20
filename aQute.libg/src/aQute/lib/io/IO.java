@@ -38,12 +38,23 @@ public class IO {
 	}
 
 	public static void copy(File a, File b) throws IOException {
-		FileOutputStream out = new FileOutputStream(b);
-		try {
-			copy(new FileInputStream(a), out);
-		} finally {
-			out.close();
-		}
+		if (a.isFile()) {
+			FileOutputStream out = new FileOutputStream(b);
+			try {
+				copy(new FileInputStream(a), out);
+			} finally {
+				out.close();
+			}
+		} else if ( a.isDirectory()) {
+			 b.mkdirs();
+			 if ( !b.isDirectory())
+				 throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
+			 File subs[] = a.listFiles();
+			 for ( File sub : subs ) {
+				 copy(sub, new File(b,sub.getName()));
+			 }
+		} else
+			throw new FileNotFoundException("During copy: " + a.toString());
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
