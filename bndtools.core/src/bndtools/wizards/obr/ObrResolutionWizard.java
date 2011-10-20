@@ -1,7 +1,5 @@
 package bndtools.wizards.obr;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,40 +17,36 @@ import bndtools.model.clauses.VersionedClause;
 
 public class ObrResolutionWizard extends Wizard {
 
-    private final ObrIndexSelectionPage indexSelectionPage = new ObrIndexSelectionPage();
     private final ObrResultsWizardPage resultsPage;
     private final IBndModel model;
 
-    public ObrResolutionWizard(IBndModel model, IFile file) {
+    public ObrResolutionWizard(IBndModel model, IFile file, ObrResolutionResult result) {
         this.model = model;
 
         resultsPage = new ObrResultsWizardPage(model, file);
-        resultsPage.setRepositories(indexSelectionPage.getSelectedRepos());
+        resultsPage.setResult(result);
 
         setWindowTitle("Resolve");
         setNeedsProgressMonitor(true);
 
-        addPage(indexSelectionPage);
         addPage(resultsPage);
-
-        indexSelectionPage.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                resultsPage.setRepositories(indexSelectionPage.getSelectedRepos());
-            }
-        });
     }
 
     @Override
     public boolean performFinish() {
-        List<Resource> resources = resultsPage.getSelectedResources();
-        List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
+        ObrResolutionResult result = resultsPage.getResult();
+        if (result != null) {
+            List<Resource> resources = result.getRequired();
+            List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
 
-        for (Resource resource : resources) {
-            VersionedClause runBundle = resourceToRunBundle(resource);
-            runBundles.add(runBundle);
+            for (Resource resource : resources) {
+                VersionedClause runBundle = resourceToRunBundle(resource);
+                runBundles.add(runBundle);
+            }
+            model.setRunBundles(runBundles);
+            return true;
         }
-        model.setRunBundles(runBundles);
-        return true;
+        return false;
     }
 
     private VersionedClause resourceToRunBundle(Resource resource) {

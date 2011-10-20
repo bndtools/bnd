@@ -21,7 +21,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -40,6 +43,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -67,6 +71,7 @@ import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.wizards.obr.ObrResolutionJob;
 import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
@@ -266,13 +271,48 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         IEditorInput input = page.getEditorInput();
-        IFile file = ResourceUtil.getFile(input);
+        final IFile file = ResourceUtil.getFile(input);
 
-        ObrResolutionWizard wizard = new ObrResolutionWizard(model, file);
-        WizardDialog dialog = new WizardDialog(page.getEditor().getSite().getShell(), wizard);
-        if (Window.OK == dialog.open()) {
-            // TODO
+        final Shell parentShell = page.getEditor().getSite().getShell();
+
+        // Create the wizard and pre-validate
+        final ObrResolutionJob job = new ObrResolutionJob(file, model);
+        IStatus validation = job.validateBeforeRun();
+        if (!validation.isOK()) {
+            ErrorDialog errorDialog = new ErrorDialog(parentShell, "Validation Problem", null, validation, IStatus.ERROR | IStatus.WARNING) {
+                @Override
+                protected void createButtonsForButtonBar(Composite parent) {
+                    // create OK, Cancel and Details buttons
+                    createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
+                    createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+                    createDetailsButton(parent);
+                }
+            };
+            int response = errorDialog.open();
+            if (Window.CANCEL == response || validation.getSeverity() >= IStatus.ERROR)
+                return;
         }
+
+        // Add the operation to perform at the end of the resolution job (i.e., showing the result)
+        final Runnable showResult = new Runnable() {
+            public void run() {
+                IStatus status = job.getResult();
+                if (status.isOK()) {
+                    ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
+                    WizardDialog dialog = new WizardDialog(parentShell, wizard);
+                    dialog.open();
+                }
+            }
+        };
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                parentShell.getDisplay().asyncExec(showResult);
+            }
+        });
+
+        job.setUser(true);
+        job.schedule();
     }
 
     @Override

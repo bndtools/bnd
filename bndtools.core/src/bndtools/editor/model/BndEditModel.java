@@ -190,7 +190,7 @@ public class BndEditModel implements IPersistableBndModel {
     });
     Converter<String, EE> eeFormatter = new Converter<String, EE>() {
         public String convert(EE input) throws IllegalArgumentException {
-            return input.getEEName();
+            return input != null ? input.getEEName() : null;
         }
     };
 
