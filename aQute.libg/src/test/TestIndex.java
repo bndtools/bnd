@@ -48,18 +48,18 @@ public class TestIndex extends TestCase {
 		assertEquals( 12, index.search(new byte[] {6}), 12);
 	}
 
-	public void testMany() throws Exception {
-		File test = new File("test.tmp");
-		test.delete();
-		Index index = new Index(test, 1000);
-		for ( int i = 1; i<127; i++)
-			index.insert( new byte[]{(byte)i}, i*2);
-		
-		index.close();
-		Index index2 = new Index(test, 1000);
-		for ( int i = 1; i<127; i++)
-			assertEquals(i*2, index2.search( new byte[(byte)i]));
-		
-	}
+//	public void testMany() throws Exception {
+//		File test = new File("test.tmp");
+//		test.delete();
+//		Index index = new Index(test, 1000);
+//		for ( int i = 1; i<127; i++)
+//			index.insert( new byte[]{(byte)i}, i*2);
+//		
+//		index.close();
+//		Index index2 = new Index(test, 1000);
+//		for ( int i = 1; i<127; i++)
+//			assertEquals(i*2, index2.search( new byte[(byte)i]));
+//		
+//	}
 
 }
