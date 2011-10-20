@@ -70,13 +70,6 @@ public class PkgRenameParticipant extends RenameParticipant {
 
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-        final String oldName = pkgFragment.getElementName();
-        final String newName = getArguments().getNewName();
-        final Pattern pattern = Pattern.compile(
-        /* match start boundary */"(^|" + grammarSeparator + ")" +
-        /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
-        /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
-
         final Map<IFile, TextChange> fileChanges = new HashMap<IFile, TextChange>();
 
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
@@ -103,6 +96,13 @@ public class PkgRenameParticipant extends RenameParticipant {
                     Plugin.logError(str, e);
                     throw new OperationCanceledException(str);
                 }
+
+                final String oldName = pkgFragment.getElementName();
+                final String newName = getArguments().getNewName();
+                final Pattern pattern = Pattern.compile(
+                /* match start boundary */"(^|" + grammarSeparator + ")" +
+                /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
+                /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
 
                 /* see if there are matches, if not: return */
                 Matcher matcher = pattern.matcher(bndFileText);
