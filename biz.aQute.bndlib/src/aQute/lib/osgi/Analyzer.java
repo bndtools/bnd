@@ -22,15 +22,20 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.jar.Attributes.Name;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.*;
 import aQute.bnd.service.*;
+import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
+import aQute.lib.hex.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.Clazz.QUERY;
+import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.tarjan.*;
@@ -343,6 +348,8 @@ public class Analyzer extends Processor {
 		else
 			main.remove(BUNDLE_CLASSPATH);
 
+		doNamesection(dot, manifest);
+
 		for (Enumeration<?> h = getProperties().propertyNames(); h.hasMoreElements();) {
 			String header = (String) h.nextElement();
 			if (header.trim().length() == 0) {
@@ -422,6 +429,89 @@ public class Analyzer extends Processor {
 
 		dot.setManifest(manifest);
 		return manifest;
+	}
+
+	/**
+	 * Parse the namesection as instructions and then match them against the
+	 * current set of resources
+	 * 
+	 * For example:
+	 * 
+	 * <pre>
+	 * 	-namesection: *;baz=true, abc/def/bar/X.class=3
+	 * </pre>
+	 * 
+	 * The raw value of {@link Constants#NAMESECTION} is used but the values of
+	 * the attributes are replaced where @ is set to the resource name. This
+	 * allows macro to operate on the resource
+	 * 
+	 */
+
+	private void doNamesection(Jar dot, Manifest manifest) {
+
+		Map<String, Map<String, String>> namesection = parseHeader(getProperties().getProperty(
+				NAMESECTION));
+		Set<Entry<Instruction, Map<String, String>>> instructions = Instruction
+				.replaceWithInstruction(namesection).entrySet();
+		Set<Map.Entry<String, Resource>> resources = new HashSet<Map.Entry<String, Resource>>(dot
+				.getResources().entrySet());
+
+		//
+		// For each instruction, iterator over the resources and filter
+		// them. If a resource matches, it must be removed even if the
+		// instruction is negative. If positive, add a name section
+		// to the manifest for the given resource name. Then add all
+		// attributes from the instruction to that name section.
+		//
+		for (Map.Entry<Instruction, Map<String, String>> instr : instructions) {
+			boolean matched = false;
+
+			// For each instruction
+
+			for (Iterator<Map.Entry<String, Resource>> it = resources.iterator(); it.hasNext();) {
+
+				// For each resource
+
+				Map.Entry<String, Resource> next = it.next();
+				if (instr.getKey().matches(next.getKey())) {
+
+					// Instruction matches the resource
+
+					matched = true;
+					if (!instr.getKey().isNegated()) {
+
+						// Positive match, add the attributes
+
+						Attributes attrs = manifest.getAttributes(next.getKey());
+						if (attrs == null) {
+							attrs = new Attributes();
+							manifest.getEntries().put(next.getKey(), attrs);
+						}
+
+						//
+						// Add all the properties from the instruction to the
+						// name section
+						//
+
+						for (Map.Entry<String, String> property : instr.getValue().entrySet()) {
+							setProperty("@", next.getKey());
+							try {
+								String processed = getReplacer().process(property.getValue());
+								attrs.putValue(property.getKey(), processed);
+							} finally {
+								unsetProperty("@");
+							}
+						}
+					}
+					it.remove();
+				}
+			}
+
+			if (!matched)
+				warning("The instruction %s in %s did not match any resources", instr.getKey(),
+						NAMESECTION);
+		}
+
 	}
 
 	/**
@@ -1493,14 +1583,14 @@ public class Analyzer extends Processor {
 		Map<String, Clazz> classSpace = new HashMap<String, Clazz>();
 		Set<String> hide = Create.set();
 		boolean containsDirectory = false;
-		
+
 		for (String path : bundleClasspath.keySet()) {
-			if ( dot.getDirectories().containsKey(path)) {
+			if (dot.getDirectories().containsKey(path)) {
 				containsDirectory = true;
 				break;
 			}
 		}
-		
+
 		if (bundleClasspath.isEmpty()) {
 			analyzeJar(dot, "", classSpace, contained, referred, uses, hide, true);
 		} else {
@@ -1508,7 +1598,8 @@ public class Analyzer extends Processor {
 				Map<String, String> info = bundleClasspath.get(path);
 
 				if (path.equals(".")) {
-					analyzeJar(dot, "", classSpace, contained, referred, uses, hide, !containsDirectory);
+					analyzeJar(dot, "", classSpace, contained, referred, uses, hide,
+							!containsDirectory);
 					continue;
 				}
 				//
@@ -1540,7 +1631,7 @@ public class Analyzer extends Processor {
 									+ "loaded from '%s'. It is better to unroll the directory to create a flat bundle.",
 									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", classSpace, contained,
-								referred, uses, hide,true);
+								referred, uses, hide, true);
 					} else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory " + path);
@@ -1568,7 +1659,8 @@ public class Analyzer extends Processor {
 	 */
 	private void analyzeJar(Jar jar, String prefix, Map<String, Clazz> classSpace,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
-			Map<String, Set<String>> uses, Set<String> hide, boolean reportWrongPath) throws Exception {
+			Map<String, Set<String>> uses, Set<String> hide, boolean reportWrongPath)
+			throws Exception {
 
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix) /* && !hide.contains(path) */) {
@@ -2166,4 +2258,44 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	/**
+	 * md5 macro
+	 */
+
+	static String	_md5Help	= "${md5;path}";
+
+	public String _md5(String args[]) throws Exception {
+		Macro.verifyCommand(args, _md5Help,
+				new Pattern[] { null, null, Pattern.compile("base64|hex") }, 2, 3);
+
+		Digester<MD5> digester = MD5.getDigester();
+		Resource r = dot.getResource(args[1]);
+		if (r == null)
+			throw new FileNotFoundException("From " + digester + ", not found " + args[1]);
+
+		IO.copy(r.openInputStream(), digester);
+		boolean hex = args.length > 2 && args[2].equals("hex");
+		if (hex)
+			return Hex.toHexString(digester.digest().digest());
+		else
+			return Base64.encodeBase64(digester.digest().digest());
+	}
+
+	/**
+	 * SHA1 macro
+	 */
+
+	static String	_sha1Help	= "${sha1;path}";
+
+	public String _sha1(String args[]) throws Exception {
+		Macro.verifyCommand(args, _sha1Help,
+				new Pattern[] { null, null, Pattern.compile("base64|hex") }, 2, 3);
+		Digester<SHA1> digester = SHA1.getDigester();
+		Resource r = dot.getResource(args[1]);
+		if (r == null)
+			throw new FileNotFoundException("From sha1, not found " + args[1]);
+
+		IO.copy(r.openInputStream(), digester);
+		return Base64.encodeBase64(digester.digest().digest());
+	}
 }

@@ -4,11 +4,35 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import junit.framework.*;
+import javax.print.attribute.standard.MediaSize.*;
+
+import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 
-public class BuilderTest extends TestCase {
+public class BuilderTest extends BndTestCase {
+
+	/**
+	 * Test the name section
+	 */
+	
+	public void testNamesection() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.setProperty(Constants.NAMESECTION, "org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.service.event");
+		Jar build = b.build();
+		assertOk(b);
+		build.calcChecksums(new String[]{"MD5","SHA1"});
+		Manifest m = build.getManifest();
+		m.write(System.out);
+		
+		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
+		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("SHA1"));
+		assertEquals( m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5-Digest"),  m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
+		
+	}
+	
 
 	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-

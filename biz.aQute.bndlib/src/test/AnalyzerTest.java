@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import junit.framework.*;
+import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 
 class T0 {
@@ -19,7 +19,7 @@ class T2 extends T1 {
 class T3 extends T2 {
 }
 
-public class AnalyzerTest extends TestCase {
+public class AnalyzerTest extends BndTestCase {
 
 	
 	/**

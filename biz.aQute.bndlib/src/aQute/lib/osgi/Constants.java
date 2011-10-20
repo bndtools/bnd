@@ -80,6 +80,7 @@ public interface Constants {
 	String					METATYPE									= "-metatype";
 	String					MANIFEST									= "-manifest";
 	String					SAVEMANIFEST								= "-savemanifest";
+	String					NAMESECTION									= "-namesection";
 	String					NODEFAULTVERSION							= "-nodefaultversion";
 	String					NOEXTRAHEADERS								= "-noextraheaders";
 	String					NOMANIFEST									= "-nomanifest";
@@ -137,7 +138,7 @@ public interface Constants {
 			SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES,
 			REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST,
 			DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE,
-			TESTCONTINUOUS, SNAPSHOT												};
+			TESTCONTINUOUS, SNAPSHOT									};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -236,5 +237,5 @@ public interface Constants {
 	String					DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store";
 
 	Charset					DEFAULT_CHARSET								= Charset.forName("UTF8");
-	String					VERSION_FILTER	= "version";
+	String					VERSION_FILTER								= "version";
 }
