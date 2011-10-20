@@ -38,13 +38,13 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	private String lastLoaded;
 
 	private int index;
-	private boolean stale = false;
 
-	private final PropertyChangeListener propChangeListener = new PropertyChangeListener() {
-		public void propertyChange(PropertyChangeEvent evt) {
-			stale = true;
-		}
-	};
+    private final PropertyChangeListener propChangeListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            refresh();
+            lastLoaded = getDocument().get();
+        }
+    };
 
 	private Control control;
 
@@ -119,11 +119,7 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	}
 
 	public void setActive(boolean active) {
-		if(active) {
-			if(stale)
-				refresh();
-			lastLoaded = getDocument().get();
-		} else {
+		if(!active) {
 			commit(false);
 		}
 	}
@@ -147,7 +143,6 @@ public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPa
 	void refresh() {
 		IDocument document = getDocument();
 		formEditor.getBndModel().saveChangesTo(document);
-		stale = false;
 	}
 
 	private IDocument getDocument() {
