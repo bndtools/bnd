@@ -329,7 +329,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             if (resource != null)
                 name = resource.getProject().getName();
         } else if(name.endsWith(".bnd")) {
-            name = name.substring(0, name.length() - ".bnd".length());
+            IResource resource = ResourceUtil.getResource(input);
+            if (resource != null)
+                name = resource.getProject().getName() + "." + name.substring(0, name.length() - ".bnd".length());
         } else if(name.endsWith(".bndrun")) {
             name = name.substring(0, name.length() - ".bndrun".length());
         }
