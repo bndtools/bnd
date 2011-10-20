@@ -14,7 +14,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -25,7 +24,6 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.BndConstants;
 import bndtools.Central;
@@ -38,7 +36,6 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
-    private final Image addIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/add.png").createImage();
 
     private BndEditModel model;
     private String selectedFramework = null;
@@ -153,7 +150,6 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
             model.removePropertyChangeListener(BndConstants.RUNEE, this);
             model.removePropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
         }
-        addIcon.dispose();
     }
 
     @Override
