@@ -1,14 +1,12 @@
 package bndtools.refactor;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
@@ -16,22 +14,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Region;
+import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant {
-
     private IPackageFragment pkgFragment;
 
     @Override
@@ -42,7 +40,7 @@ public class PkgRenameParticipant extends RenameParticipant {
 
     @Override
     public String getName() {
-        return "Bnd descriptor participant";
+        return "Bndtools Package Rename Participant";
     }
 
     @Override
@@ -50,64 +48,89 @@ public class PkgRenameParticipant extends RenameParticipant {
         return new RefactoringStatus();
     }
 
+    private static final String grammarSeparator = "[\\s,\"';]";
+
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-        IProject project = pkgFragment.getResource().getProject();
+        final String oldName = pkgFragment.getElementName();
         final String newName = getArguments().getNewName();
+        final Pattern pattern = Pattern.compile(
+        /* match start boundary */"(^|" + grammarSeparator + ")" +
+        /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
+        /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
 
-        final CompositeChange compositeChange = new CompositeChange("Update package references in Bnd files");
+        final Map<IFile, TextChange> fileChanges = new HashMap<IFile, TextChange>();
+
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
             public boolean visit(IResourceProxy proxy) throws CoreException {
-                if (proxy.getType() == IResource.FOLDER || proxy.getType() == IResource.PROJECT)
+                if ((proxy.getType() == IResource.FOLDER) || (proxy.getType() == IResource.PROJECT))
                     return true;
-                if (proxy.getType() == IResource.FILE && proxy.getName().toLowerCase().endsWith(".bnd")) {
+                if ((proxy.getType() == IResource.FILE) && proxy.getName().toLowerCase().endsWith(".bnd")) {
+                    /* we're dealing with a *.bnd file */
+                    IFile resource = (IFile) proxy.requestResource();
+
+                    /* read the file */
+                    String bndFileText = null;
                     try {
-                        IFile bndFile = (IFile) proxy.requestResource();
-                        List<IRegion> matches = findMatches(bndFile);
-                        if (!matches.isEmpty()) {
-                            MultiTextEdit edit = new MultiTextEdit();
-                            for (IRegion match : matches) {
-                                edit.addChild(new ReplaceEdit(match.getOffset(), match.getLength(), newName));
-                            }
-                            TextFileChange change = new TextFileChange("Replace package references", bndFile);
-                            change.setEdit(edit);
-                            compositeChange.add(change);
-                        }
-                    } catch (IOException e) {
-                        Plugin.logError("Error searching for package references in " + proxy.getName(), e);
-                    } catch (CoreException e) {
-                        Plugin.logError("Error searching for package references in " + proxy.getName(), e);
+                        bndFileText = FileUtils.readFully(resource).get();
+                    } catch (Exception e) {
+                        String str = "Could not read file " + proxy.getName();
+                        Plugin.logError(str, e);
+                        throw new OperationCanceledException(str);
+                    }
+
+                    /* see if there are matches, if not: return */
+                    Matcher matcher = pattern.matcher(bndFileText);
+                    if (!matcher.find()) {
+                        return false;
+                    }
+
+                    /*
+                     * get the previous change for this file if it exists, or
+                     * otherwise create a new change for it
+                     */
+                    TextChange fileChange = getTextChange(resource);
+                    TextEdit rootEdit = null;
+                    if (fileChange == null) {
+                        fileChange = new TextFileChange(proxy.getName(), resource);
+                        rootEdit = new MultiTextEdit();
+                        fileChange.setEdit(rootEdit);
+                        fileChanges.put(resource, fileChange);
+                    } else {
+                        rootEdit = fileChange.getEdit();
+                    }
+
+                    /* find all matches to replace and add them to the root edit */
+                    matcher.reset();
+                    while (matcher.find()) {
+                        rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
                     }
                 }
                 return false;
             }
         };
-        project.accept(visitor, IContainer.NONE);
+        pkgFragment.getResource().getProject().accept(visitor, IContainer.NONE);
 
-        if (compositeChange.getChildren().length > 0)
-            return compositeChange;
+        if (fileChanges.isEmpty())
+            return null;
 
-        return null;
-    }
+        RenamePackageProcessor pr = (RenamePackageProcessor) this.getProcessor();
+        StringBuilder sb = new StringBuilder(256);
 
-    private List<IRegion> findMatches(IFile bndFile) throws IOException, CoreException {
-        String pkgName = pkgFragment.getElementName();
-        String regExp = pkgName.replace(".", "\\.");
-        Pattern pattern = Pattern.compile(regExp);
+        sb.append("Bndtools: rename package '");
+        sb.append(oldName);
+        sb.append("' ");
+        if (pr.getRenameSubpackages())
+            sb.append("and subpackages ");
+        sb.append("to '");
+        sb.append(newName);
+        sb.append("'");
 
-        String text = FileUtils.readFully(bndFile).get();
-        Matcher matcher = pattern.matcher(text);
-
-        List<IRegion> matches = new LinkedList<IRegion>();
-        while (matcher.find()) {
-            int start = matcher.start();
-            int end = matcher.end();
-
-            // Skip matches beginning with dot
-            if (text.charAt(start) != '.')
-                matches.add(new Region(start, end - start));
+        CompositeChange cs = new CompositeChange(sb.toString());
+        for (TextChange fileChange : fileChanges.values()) {
+            cs.add(fileChange);
         }
-        return matches;
-    }
 
+        return cs;
+    }
 }
