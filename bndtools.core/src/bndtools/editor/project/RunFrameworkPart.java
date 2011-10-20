@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -86,6 +87,12 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
         eeViewer = new ComboViewer(cmbExecEnv);
         eeViewer.setContentProvider(ArrayContentProvider.getInstance());
+        eeViewer.setLabelProvider(new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return ((EE) element).getEEName();
+            }
+        });
         eeViewer.setInput(EE.values());
 
         // Listeners
@@ -169,7 +176,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
-        model.setRunFramework(selectedFramework);
+        model.setRunFramework(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
         model.setEE(selectedEE);
     }
 
