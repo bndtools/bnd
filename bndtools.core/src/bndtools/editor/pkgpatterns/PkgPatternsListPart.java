@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -58,7 +59,6 @@ import org.osgi.framework.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.HeaderClause;
-import bndtools.utils.CollectionUtils;
 import bndtools.utils.PackageDropAdapter;
 
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {

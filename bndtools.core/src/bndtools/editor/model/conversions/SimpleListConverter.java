@@ -9,7 +9,15 @@ public class SimpleListConverter<R> implements Converter<List<R>, String> {
 
     private Converter<? extends R, ? super String> itemConverter;
 
-    public SimpleListConverter(Converter<? extends R, ? super String> itemConverter) {
+    public static <R> Converter<List<R>, String> create(Converter<R, ? super String> itemConverter) {
+        return new SimpleListConverter<R>(itemConverter);
+    }
+
+    public static Converter<List<String>, String> create() {
+        return new SimpleListConverter<String>(new NoopConverter<String>());
+    }
+
+    private SimpleListConverter(Converter<? extends R, ? super String> itemConverter) {
         this.itemConverter = itemConverter;
     }
 

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -47,7 +48,6 @@ import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.RequiredBundle;
 import bndtools.utils.BundleUtils;
-import bndtools.utils.CollectionUtils;
 import bndtools.utils.FileUtils;
 
 public class AnalyseBundleResolutionJob extends Job {

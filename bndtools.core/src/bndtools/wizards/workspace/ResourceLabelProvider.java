@@ -10,7 +10,7 @@ import org.osgi.framework.Version;
 
 import bndtools.Plugin;
 
-class ResourceLabelProvider extends StyledCellLabelProvider {
+public class ResourceLabelProvider extends StyledCellLabelProvider {
 
     private Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
 

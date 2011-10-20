@@ -30,6 +30,7 @@ import aQute.bnd.service.Refreshable;
 
 public class Central {
     static Workspace workspace = null;
+    static WorkspaceObrProvider workspaceObr = null;
 
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
@@ -159,6 +160,14 @@ public class Central {
         return matches[0];
     }
 
+    public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() {
+        if (workspaceObr != null)
+            return workspaceObr;
+
+        workspaceObr = new WorkspaceObrProvider();
+        return workspaceObr;
+    }
+
     public synchronized static Workspace getWorkspace() throws Exception {
         if (workspace != null)
             return workspace;
@@ -183,6 +192,7 @@ public class Central {
         workspace.addBasicPlugin(new FilesystemUpdateListener());
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
+        workspace.addBasicPlugin(getWorkspaceObrProvider());
 
         return workspace;
     }

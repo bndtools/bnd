@@ -62,7 +62,7 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
             if (bundleImg == null) bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
             return bundleImg;
         } else if ("service".equals(requireType)) {
-            if (serviceImg == null) serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/service.png").createImage();
+            if (serviceImg == null) serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/service-tiny.png").createImage();
             return serviceImg;
         }
         return null;

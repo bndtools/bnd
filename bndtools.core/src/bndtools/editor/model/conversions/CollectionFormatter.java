@@ -3,17 +3,17 @@ package bndtools.editor.model.conversions;
 import java.util.Collection;
 import java.util.Iterator;
 
-import bndtools.editor.model.BndEditModel;
-
 public class CollectionFormatter<T> implements Converter<String, Collection<? extends T>> {
 
+    private final String separator;
     private final Converter<String, ? super T> itemFormatter;
 
-    public CollectionFormatter() {
-        this(new DefaultFormatter());
+    public CollectionFormatter(String separator) {
+        this(separator, new DefaultFormatter());
     }
 
-    public CollectionFormatter(Converter<String, ? super T> itemFormatter) {
+    public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter) {
+        this.separator = separator;
         this.itemFormatter = itemFormatter;
     }
 
@@ -25,7 +25,7 @@ public class CollectionFormatter<T> implements Converter<String, Collection<? ex
                 T item = iter.next();
                 buffer.append(itemFormatter.convert(item));
                 if(iter.hasNext())
-                    buffer.append(BndEditModel.LIST_SEPARATOR);
+                    buffer.append(separator);
             }
             result = buffer.toString();
         }

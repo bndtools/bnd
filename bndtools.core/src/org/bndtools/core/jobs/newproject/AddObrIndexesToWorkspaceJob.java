@@ -24,8 +24,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.conversions.CollectionFormatter;
 import bndtools.model.clauses.HeaderClause;
-import bndtools.utils.CollectionUtils;
 
 public class AddObrIndexesToWorkspaceJob extends WorkspaceJob {
 
@@ -54,7 +54,7 @@ public class AddObrIndexesToWorkspaceJob extends WorkspaceJob {
             List<HeaderClause> newPlugins = plugins == null ? new LinkedList<HeaderClause>() : new ArrayList<HeaderClause>(plugins);
 
             Map<String,String> attribs = new HashMap<String, String>();
-            attribs.put("locations", CollectionUtils.toStringList(urls));
+            attribs.put("locations", new CollectionFormatter<String>(",").convert(urls));
 
             newPlugins.add(new HeaderClause("aQute.lib.deployer.obr.OBR", attribs));
             model.setPlugins(newPlugins);

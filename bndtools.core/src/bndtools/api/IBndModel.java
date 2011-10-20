@@ -3,6 +3,8 @@ package bndtools.api;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.felix.bundlerepository.Requirement;
+
 import bndtools.editor.model.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
@@ -53,5 +55,13 @@ public interface IBndModel {
     void setSystemPackages(List<? extends String> packages);
 
     List<String> getSystemPackages();
+
+    EE getEE();
+
+    void setEE(EE ee);
+
+    List<Requirement> getRunRequire();
+
+    void setRunRequire(List<Requirement> requires);
 
 }

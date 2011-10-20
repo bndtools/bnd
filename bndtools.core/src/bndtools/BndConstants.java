@@ -31,4 +31,5 @@ public interface BndConstants extends Constants {
     public static final String TESTSUITES = "Test-Suites";
 
     public static final String RUNREQUIRE = "-runrequire";
+    public static final String RUNEE = "-runee";
 }

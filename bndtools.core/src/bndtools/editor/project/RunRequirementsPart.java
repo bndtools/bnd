@@ -17,6 +17,7 @@ import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -42,13 +43,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
@@ -64,6 +68,7 @@ import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
@@ -125,6 +130,12 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         });
         RequirementViewerDropAdapter dropper = new RequirementViewerDropAdapter();
         dropper.install(viewer);
+        resolveButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doResolve();
+            }
+        });
 
         // Layout
         GridLayout layout;
@@ -244,6 +255,24 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 viewer.remove(removed.toArray(new Object[removed.size()]));
                 markDirty();
             }
+        }
+    }
+
+    private void doResolve() {
+        // Make sure all the parts of this editor page have committed their dirty state to the model
+        IFormPart[] parts = getManagedForm().getParts();
+        for (IFormPart part : parts) {
+            if (part.isDirty()) part.commit(false);
+        }
+
+        IFormPage page = (IFormPage) getManagedForm().getContainer();
+        IEditorInput input = page.getEditorInput();
+        IFile file = ResourceUtil.getFile(input);
+
+        ObrResolutionWizard wizard = new ObrResolutionWizard(model, file);
+        WizardDialog dialog = new WizardDialog(page.getEditor().getSite().getShell(), wizard);
+        if (Window.OK == dialog.open()) {
+            // TODO
         }
     }
 

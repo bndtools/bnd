@@ -3,13 +3,18 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -20,10 +25,12 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.EE;
 import bndtools.editor.model.BndEditModel;
 import bndtools.utils.ModificationLock;
 
@@ -31,36 +38,39 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
+    private final Image addIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/add.png").createImage();
 
     private BndEditModel model;
     private String selectedFramework = null;
+    private EE selectedEE = null;
 
-    private Combo frameworkCombo;
+    private Combo cmbFramework;
     private ComboViewer frameworkViewer;
+    private Combo cmbExecEnv;
+    private ComboViewer eeViewer;
 
     public RunFrameworkPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         createSection(getSection(), toolkit);
     }
 
-    final void createSection(Section section, FormToolkit toolkit) {
+    final void createSection(Section section, FormToolkit tk) {
         section.setText("Core Runtime");
 
-        Composite composite = toolkit.createComposite(section);
-        composite.setLayout(new GridLayout(2, false));
+        Composite composite = tk.createComposite(section);
+        section.setClient(composite);
 
         Label lblFramework = new Label(composite, SWT.NONE);
-        lblFramework.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        toolkit.adapt(lblFramework, true, true);
+        tk.adapt(lblFramework, true, true);
         lblFramework.setText("OSGi Framework:");
 
-        frameworkCombo = new Combo(composite, SWT.DROP_DOWN);
-        toolkit.adapt(frameworkCombo);
-        toolkit.paintBordersFor(frameworkCombo);
+        cmbFramework = new Combo(composite, SWT.DROP_DOWN);
+        tk.adapt(cmbFramework);
+        tk.paintBordersFor(cmbFramework);
 
-        frameworkCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        cmbFramework.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        frameworkViewer = new ComboViewer(frameworkCombo);
+        frameworkViewer = new ComboViewer(cmbFramework);
         frameworkViewer.setUseHashlookup(true);
         frameworkViewer.setContentProvider(fwkContentProvider);
         try {
@@ -69,13 +79,25 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
             Plugin.logError("Error accessing bnd workspace.", e);
         }
 
-        frameworkCombo.addModifyListener(new ModifyListener() {
+
+        Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
+        cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
+        ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP);
+        eeDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        eeDecor.setDescriptionText("The runtime Java Virtual Machine will be required/assumed " +
+        		"\nto support this Execution Environment");
+
+        eeViewer = new ComboViewer(cmbExecEnv);
+        eeViewer.setContentProvider(ArrayContentProvider.getInstance());
+        eeViewer.setInput(EE.values());
+
+        // Listeners
+        cmbFramework.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
                     public void run() {
                         markDirty();
-                        selectedFramework = frameworkCombo.getText();
-                        validateFramework();
+                        selectedFramework = cmbFramework.getText();
                     }
                 });
             }
@@ -90,42 +112,48 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
                             selectedFramework = null;
                         else
                             selectedFramework = element.toString();
-                        validateFramework();
+                    }
+                });
+            }
+        });
+        eeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(final SelectionChangedEvent event) {
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        markDirty();
+                        selectedEE = (EE) ((IStructuredSelection) event.getSelection()).getFirstElement();
                     }
                 });
             }
         });
 
-        /*
-        Label lblNewLabel = new Label(composite, SWT.NONE);
-        toolkit.adapt(lblNewLabel, true, true);
-        lblNewLabel.setText("Execution Environment:");
+        GridLayout layout = new GridLayout(2, false);
+        layout.horizontalSpacing = 10;
+        composite.setLayout(layout);
+        lblFramework.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        cmbFramework.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        Combo eeCombo = new Combo(composite, SWT.READ_ONLY);
-        toolkit.adapt(eeCombo);
-        toolkit.paintBordersFor(eeCombo);
-
-        eeViewer = new ComboViewer(eeCombo);
-        eeViewer.setContentProvider(ArrayContentProvider.getInstance());
-        eeViewer.setLabelProvider(new EELabelProvider());
-        eeViewer.setInput(EE.values());
-        */
-
-        section.setClient(composite);
+        lblExecEnv.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        cmbExecEnv.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
     }
 
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
         model = (BndEditModel) form.getInput();
+
         model.addPropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
+        model.addPropertyChangeListener(BndConstants.RUNEE, this);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        if(model != null)
+        if(model != null) {
+            model.removePropertyChangeListener(BndConstants.RUNEE, this);
             model.removePropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
+        }
+        addIcon.dispose();
     }
 
     @Override
@@ -133,35 +161,20 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         lock.modifyOperation(new Runnable() {
             public void run() {
                 selectedFramework = model.getRunFramework();
-                frameworkCombo.setText(selectedFramework != null ? selectedFramework : "");
-                validateFramework();
+                if (selectedFramework == null) selectedFramework = "";
+                cmbFramework.setText(selectedFramework);
+
+                selectedEE = model.getEE();
+                eeViewer.setSelection(selectedEE != null ? new StructuredSelection(selectedEE) : StructuredSelection.EMPTY);
             }
         });
-    }
-
-    void validateFramework() {
-        /*
-        IMessageManager messages = getManagedForm().getMessageManager();
-        if(frameworkStr == null || frameworkStr.length() == 0) {
-            messages.addMessage(WARNING_NO_FWK, "No runtime framework specified", null, IMessageProvider.WARNING, frameworkCombo);
-            return;
-        } else {
-            messages.removeMessage(WARNING_NO_FWK, frameworkCombo);
-        }
-        Map<String, Map<String, String>> header = OSGiHeader.parseHeader(frameworkStr);
-        if(header.size() != 1) {
-            messages.addMessage("ERROR_INVALID_FWK", "Invalid format", null, IMessageProvider.ERROR, frameworkCombo);
-            return;
-        } else {
-            messages.removeMessage("ERROR_INVALID_FWK", frameworkCombo);
-        }
-        */
     }
 
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
         model.setRunFramework(selectedFramework);
+        model.setEE(selectedEE);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

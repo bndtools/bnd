@@ -38,6 +38,7 @@ import org.osgi.framework.Constants;
 
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.api.EE;
 import bndtools.api.IPersistableBndModel;
 import bndtools.editor.model.conversions.ClauseListConverter;
 import bndtools.editor.model.conversions.CollectionFormatter;
@@ -96,7 +97,8 @@ public class BndEditModel implements IPersistableBndModel {
 		BndConstants.TESTSUITES,
 		aQute.lib.osgi.Constants.TESTCASES,
 		aQute.lib.osgi.Constants.PLUGIN,
-		BndConstants.RUNREQUIRE
+		BndConstants.RUNREQUIRE,
+		BndConstants.RUNEE
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -136,7 +138,7 @@ public class BndEditModel implements IPersistableBndModel {
             return VersionPolicy.parse(string);
         }
     };
-    Converter<List<String>, String> listConverter = new SimpleListConverter<String>(new NoopConverter<String>());
+    Converter<List<String>, String> listConverter = SimpleListConverter.create();
     Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
     ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String,Map<String,String>>>() {
         public ExportedPackage convert(Pair<String, Map<String, String>> input) {
@@ -156,7 +158,7 @@ public class BndEditModel implements IPersistableBndModel {
 
     Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
 
-    Converter<List<Requirement>, String> requirementListConverter = new SimpleListConverter<Requirement>(new Converter<Requirement, String>() {
+    Converter<List<Requirement>, String> requirementListConverter = SimpleListConverter.create(new Converter<Requirement, String>() {
         public Requirement convert(String input) throws IllegalArgumentException {
             int index = input.indexOf(":");
             if (index < 0)
@@ -168,19 +170,29 @@ public class BndEditModel implements IPersistableBndModel {
             return obrModelHelper.requirement(name, filter);
         }
     });
+    Converter<EE, String> eeConverter = new Converter<EE, String>() {
+        public EE convert(String input) throws IllegalArgumentException {
+            return EE.parse(input);
+        }
+    };
 
     // FORMATTERS
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
     Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
     Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
-    Converter<String, Collection<? extends String>> stringListFormatter = new CollectionFormatter<String>();
-    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(new HeaderClauseFormatter());
-    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(new PropertiesEntryFormatter());
-    Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(new Converter<String, Requirement>() {
+    Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR);
+    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter());
+    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter());
+    Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String, Requirement>() {
         public String convert(Requirement input) throws IllegalArgumentException {
             return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
         }
     });
+    Converter<String, EE> eeFormatter = new Converter<String, EE>() {
+        public String convert(EE input) throws IllegalArgumentException {
+            return input.getEEName();
+        }
+    };
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
@@ -207,6 +219,8 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.TESTSUITES, listConverter);
         converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
         converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
+        converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
+        converters.put(BndConstants.RUNEE, new NoopConverter<String>());
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -230,6 +244,8 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.TESTSUITES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
+        formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
+        formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -599,6 +615,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setRunRequire(List<Requirement> requires) {
         List<Requirement> old = getRunRequire();
         doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
+    }
+
+    public EE getEE() {
+        return doGetObject(BndConstants.RUNEE, eeConverter);
+    }
+
+    public void setEE(EE ee) {
+        EE old = getEE();
+        doSetObject(BndConstants.RUNEE, old, ee, eeFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

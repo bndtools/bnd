@@ -13,7 +13,8 @@ public enum EE {
     J2SE_1_5 ("J2SE-1.5", JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, OSGI_Minumum_1_0, OSGI_Minumum_1_1, OSGI_Minumum_1_2),
 
     JavaSE_1_6 ("JavaSE-1.6", JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, OSGI_Minumum_1_0, OSGI_Minumum_1_1, OSGI_Minumum_1_2),
-    JavaSE_1_7 ("JavaSE-1.7", JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, OSGI_Minumum_1_0, OSGI_Minumum_1_1, OSGI_Minumum_1_2);
+    JavaSE_1_7 ("JavaSE-1.7", JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, OSGI_Minumum_1_0, OSGI_Minumum_1_1, OSGI_Minumum_1_2),
+    JavaSE_1_8 ("JavaSE-1.8", JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, OSGI_Minumum_1_0, OSGI_Minumum_1_1, OSGI_Minumum_1_2);
 
     private final String eeName;
     private final EE[] compatible;
@@ -27,7 +28,18 @@ public enum EE {
         return eeName;
     }
 
+    /**
+     * @return An array of EEs that this EE implicitly offers, through backwards compatibility.
+     */
     public EE[] getCompatible() {
         return compatible != null ? compatible : new EE[0];
+    }
+
+    public static EE parse(String str) {
+        for (EE ee : values()) {
+            if (ee.eeName.equals(str))
+                return ee;
+        }
+        throw new IllegalArgumentException("Unrecognised execution environment name: " + str);
     }
 }
