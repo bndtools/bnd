@@ -24,6 +24,8 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
+import org.eclipse.ltk.core.refactoring.participants.ISharableParticipant;
+import org.eclipse.ltk.core.refactoring.participants.RefactoringArguments;
 import org.eclipse.ltk.core.refactoring.participants.RenameArguments;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -33,14 +35,15 @@ import org.eclipse.text.edits.TextEdit;
 import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 
-public class PkgRenameParticipant extends RenameParticipant {
-    private IPackageFragment pkgFragment;
+public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
+    private Map<IPackageFragment, RenameArguments> pkgFragments = new HashMap<IPackageFragment, RenameArguments>();
     private String changeTitle = null;
 
     @Override
     protected boolean initialize(Object element) {
-        this.pkgFragment = (IPackageFragment) element;
+        IPackageFragment pkgFragment = (IPackageFragment) element;
         RenameArguments args = getArguments();
+        pkgFragments.put(pkgFragment, args);
 
         StringBuilder sb = new StringBuilder(256);
         sb.append("Bndtools: rename package '");
@@ -54,6 +57,10 @@ public class PkgRenameParticipant extends RenameParticipant {
         changeTitle = sb.toString();
 
         return true;
+    }
+
+    public void addElement(Object element, RefactoringArguments arguments) {
+        this.pkgFragments.put((IPackageFragment) element, (RenameArguments) arguments);
     }
 
     @Override
@@ -99,36 +106,49 @@ public class PkgRenameParticipant extends RenameParticipant {
 
                 /*
                  * get the previous change for this file if it exists, or
-                 * otherwise create a new change for it
+                 * otherwise create a new change for it, but do not store it
+                 * yet: wait until we know if there are actually changes in the
+                 * file
                  */
                 TextChange fileChange = getTextChange(resource);
-                TextEdit rootEdit = null;
+                final boolean fileChangeIsNew = (fileChange == null);
                 if (fileChange == null) {
                     fileChange = new TextFileChange(proxy.getName(), resource);
-                    rootEdit = new MultiTextEdit();
-                    fileChange.setEdit(rootEdit);
+                    fileChange.setEdit(new MultiTextEdit());
+                }
+                TextEdit rootEdit = fileChange.getEdit();
+
+                /* loop over all renames to perform */
+                for (Map.Entry<IPackageFragment, RenameArguments> entry : pkgFragments.entrySet()) {
+                    IPackageFragment pkgFragment = entry.getKey();
+                    RenameArguments arguments = entry.getValue();
+
+                    final String oldName = pkgFragment.getElementName();
+                    final String newName = arguments.getNewName();
+                    final Pattern pattern = Pattern.compile(
+                    /* match start boundary */"(^|" + grammarSeparator + ")" +
+                    /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
+                    /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
+
+                    /* see if there are matches, if not: return */
+                    Matcher matcher = pattern.matcher(bndFileText);
+                    if (!matcher.find()) {
+                        continue;
+                    }
+
+                    /* find all matches to replace and add them to the root edit */
+                    matcher.reset();
+                    while (matcher.find()) {
+                        rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                    }
+                }
+
+                /*
+                 * only store the changes when no changes were stored before for
+                 * this file and when there are actually changes.
+                 */
+                if (fileChangeIsNew && rootEdit.hasChildren()) {
                     fileChanges.put(resource, fileChange);
-                } else {
-                    rootEdit = fileChange.getEdit();
-                }
-
-                final String oldName = pkgFragment.getElementName();
-                final String newName = getArguments().getNewName();
-                final Pattern pattern = Pattern.compile(
-                /* match start boundary */"(^|" + grammarSeparator + ")" +
-                /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
-                /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
-
-                /* see if there are matches, if not: return */
-                Matcher matcher = pattern.matcher(bndFileText);
-                if (!matcher.find()) {
-                    return false;
-                }
-
-                /* find all matches to replace and add them to the root edit */
-                matcher.reset();
-                while (matcher.find()) {
-                    rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
                 }
 
                 return false;
@@ -137,12 +157,14 @@ public class PkgRenameParticipant extends RenameParticipant {
 
         /* determine which projects have to be visited */
         Set<IProject> projectsToVisit = new HashSet<IProject>();
-        projectsToVisit.add(pkgFragment.getResource().getProject());
-        for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencingProjects()) {
-            projectsToVisit.add(projectToVisit);
-        }
-        for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencedProjects()) {
-            projectsToVisit.add(projectToVisit);
+        for (IPackageFragment pkgFragment : pkgFragments.keySet()) {
+            projectsToVisit.add(pkgFragment.getResource().getProject());
+            for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencingProjects()) {
+                projectsToVisit.add(projectToVisit);
+            }
+            for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencedProjects()) {
+                projectsToVisit.add(projectToVisit);
+            }
         }
 
         /* visit the projects */
