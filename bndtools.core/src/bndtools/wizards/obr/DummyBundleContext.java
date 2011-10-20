@@ -19,7 +19,7 @@ import org.osgi.framework.ServiceRegistration;
 
 public class DummyBundleContext implements BundleContext {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private final File systemBundleFile;
     private final DummyBundle systemBundle;;

@@ -20,7 +20,7 @@ import org.osgi.framework.ServiceReference;
 
 public class DummyBundle implements Bundle {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private final long id;
     private final BundleContext context;

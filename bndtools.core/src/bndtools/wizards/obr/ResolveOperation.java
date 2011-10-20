@@ -61,16 +61,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     public void run(IProgressMonitor monitor) {
-        // fake some progress...
-        SubMonitor progress = SubMonitor.convert(monitor, "Resolving...", 20);
-        try {
-            for (int i = 0; i < 20; i++) {
-                Thread.sleep(200);
-                progress.worked(1);
-            }
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
-        }
+        SubMonitor progress = SubMonitor.convert(monitor, "Resolving...", 0);
 
         // Get the repositories
         List<OBRIndexProvider> repos;
