@@ -1,13 +1,7 @@
 package bndtools.editor.project;
 
-import java.util.EnumSet;
 import java.util.List;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -16,9 +10,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Constants;
-import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
@@ -55,36 +47,25 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	protected List<VersionedClause> loadFromModel(BndEditModel model) {
 		return model.getRunBundles();
 	}
-	@Override
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
+
+    @Override
+    protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
-	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, EnumSet.of(OBRResolutionMode.runtime));
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles);
         setSelectionWizardTitleAndMessage(wizard);
 
-	    return wizard;
-	}
+        return wizard;
+    }
+
     void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
         wizard.setSelectionPageTitle("Project Run Path");
         wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
     }
-    private void doAddWizard() {
-        Project project = getProject();
-        try {
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true, EnumSet.of(OBRResolutionMode.runtime));
-            setSelectionWizardTitleAndMessage(wizard);
 
-            WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-            if (dialog.open() == Window.OK) {
-                setBundles(wizard.getSelectedBundles());
-            }
-        } catch (Exception e) {
-            ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
-        }
+    @Override
+    public void dispose() {
+        if (wizardImg != null)
+            wizardImg.dispose();
+        super.dispose();
     }
-	@Override
-	public void dispose() {
-	    if (wizardImg != null)
-	        wizardImg.dispose();
-	    super.dispose();
-	}
 }

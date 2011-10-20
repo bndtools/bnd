@@ -57,7 +57,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRResolutionMode;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
@@ -205,7 +204,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         try {
             Project project = getProject();
 
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, new ArrayList<VersionedClause>(), false, EnumSet.of(OBRResolutionMode.build, OBRResolutionMode.runtime));
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, new ArrayList<VersionedClause>());
             wizard.setSelectionPageTitle("Add Bundle Requirement");
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 

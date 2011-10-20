@@ -59,11 +59,22 @@ public class ObrResolutionWizard extends Wizard {
         String bsn = resource.getSymbolicName();
 
         Map<String, String> attribs = new HashMap<String, String>();
-        VersionRange versionRange = createVersionRange(resource.getVersion());
-        attribs.put(Constants.VERSION_ATTRIBUTE, versionRange.toString());
+        String versionRangeStr;
+        if (isWorkspace(resource)) {
+            versionRangeStr = "latest";
+        } else {
+            VersionRange versionRange = createVersionRange(resource.getVersion());
+            versionRangeStr = versionRange.toString();
+        }
+        attribs.put(Constants.VERSION_ATTRIBUTE, versionRangeStr);
 
         return new VersionedClause(bsn, attribs);
 
+    }
+
+    private boolean isWorkspace(Resource resource) {
+        // TODO
+        return false;
     }
 
     private VersionRange createVersionRange(Version version) {
