@@ -374,6 +374,8 @@ public class Project extends Processor {
 	 *            The header
 	 * @return
 	 */
+	
+	
 	public List<Container> getBundles(Strategy strategyx, String spec, String source)
 			throws Exception {
 		List<Container> result = new ArrayList<Container>();
@@ -457,6 +459,15 @@ public class Project extends Processor {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	/**
+	 * Just calls a new method with a default parm.
+	 * @throws Exception 
+	 * 
+	 */
+	Collection<Container> getBundles(Strategy strategy, String spec) throws Exception {
+		return getBundles(strategy, spec, null);
 	}
 
 	/**
@@ -903,6 +914,8 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
+	
+	
 	public Container getBundle(String bsn, String range, Strategy strategy,
 			Map<String, String> attrs) throws Exception {
 
