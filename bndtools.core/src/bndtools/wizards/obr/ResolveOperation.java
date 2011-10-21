@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.DataModelHelper;
@@ -42,6 +43,8 @@ import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.model.clauses.VersionedClause;
+import bndtools.preferences.obr.ObrPreferences;
+import bndtools.types.Pair;
 
 public class ResolveOperation implements IRunnableWithProgress {
 
@@ -125,12 +128,15 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private List<OBRIndexProvider> loadRepos() throws Exception {
-        List<OBRIndexProvider> plugins = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
-        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(plugins.size());
+        Pair<List<OBRIndexProvider>, Set<String>> preferences = ObrPreferences.loadAvailableReposAndExclusions();
+        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(preferences.getFirst().size());
 
-        for (OBRIndexProvider plugin : plugins) {
-            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime))
-                repos.add(plugin);
+        for (OBRIndexProvider plugin : preferences.getFirst()) {
+            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) {
+                String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
+                if (!preferences.getSecond().contains(name))
+                    repos.add(plugin);
+            }
         }
 
         return repos;

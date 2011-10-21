@@ -619,9 +619,9 @@
              name="Bnd OSGi Tools">
        </page>
        <page
-            class="bndtools.preferences.ui.OBRPreferencePage"
+            class="bndtools.preferences.ui.obr.ObrPreferencePage"
             id="bndtools.prefPages.obr"
-            name="OSGi Bundle Repositories"
+            name="OBR Repository Exclusions"
             category="bndtools.prefPages.basic">
        </page>
     </extension>
@@ -641,7 +641,7 @@
     <extension
           point="org.eclipse.core.runtime.preferences">
        <initializer
-             class="bndtools.preferences.OBRPreferences">
+             class="bndtools.preferences.obr.ObrPreferences">
        </initializer>
     </extension>
     <extension

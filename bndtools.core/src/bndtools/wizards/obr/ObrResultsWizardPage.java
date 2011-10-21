@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Requirement;
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -34,21 +36,23 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.model.obr.UnresolvedReasonLabelProvider;
+import bndtools.preferences.obr.ObrPreferences;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
 public class ObrResultsWizardPage extends WizardPage {
@@ -98,9 +102,14 @@ public class ObrResultsWizardPage extends WizardPage {
         Composite container = new Composite(parent, SWT.NULL);
 
         setControl(container);
-        container.setLayout(new FillLayout(SWT.HORIZONTAL));
+        GridLayout gl_container = new GridLayout(1, false);
+        gl_container.marginWidth = 0;
+        gl_container.marginHeight = 0;
+        gl_container.horizontalSpacing = 0;
+        container.setLayout(gl_container);
 
         tabFolder = new TabFolder(container, SWT.NONE);
+        tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
         tbtmResults = new TabItem(tabFolder, SWT.NONE);
         tbtmResults.setText("Results");
@@ -199,7 +208,9 @@ public class ObrResultsWizardPage extends WizardPage {
         lblProcessingErrors.setText("Processing Errors:");
 
         Table tblProcessingErrors = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
-        tblProcessingErrors.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_tblProcessingErrors.heightHint = 80;
+        tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
 
         processingErrorsViewer = new TableViewer(tblProcessingErrors);
         processingErrorsViewer.setContentProvider(new StatusTreeContentProvider());
@@ -217,7 +228,9 @@ public class ObrResultsWizardPage extends WizardPage {
         lblUnresolvedResources.setText("Unresolved Requirements:");
 
         tblUnresolved = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
-        tblUnresolved.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_tblUnresolved.heightHint = 80;
+        tblUnresolved.setLayoutData(gd_tblUnresolved);
 
         unresolvedViewer = new TableViewer(tblUnresolved);
         unresolvedViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -225,6 +238,26 @@ public class ObrResultsWizardPage extends WizardPage {
 
         Button btnErrorsToClipboard = new Button(composite, SWT.NONE);
         btnErrorsToClipboard.setText("Copy to Clipboard");
+
+        Link lnkConfigRepos = new Link(container, SWT.NONE);
+        lnkConfigRepos.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    Set<String> before = ObrPreferences.loadAvailableReposAndExclusions().getSecond();
+                    PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(getShell(), "bndtools.prefPages.obr", new String[] { "bndtools.prefPages.obr" }, null);
+                    dialog.open();
+                    Set<String> after = ObrPreferences.loadAvailableReposAndExclusions().getSecond();
+                    if (!before.equals(after)) {
+                        reresolve();
+                    }
+                } catch (Exception e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }
+        });
+        lnkConfigRepos.setText("<a>Configure OBR repositories</a>");
 
         updateUi();
     }
@@ -251,11 +284,6 @@ public class ObrResultsWizardPage extends WizardPage {
 
             processingErrorsViewer.setInput(status);
             setResult(resolver.getResult());
-
-            boolean resolved = result.isResolved() && status.getSeverity() < IStatus.ERROR;
-            SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
-            SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
-            tabFolder.setSelection(resolved ? tbtmResults : tbtmErrors);
         } catch (InvocationTargetException e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unexpected error", e));
             setResult(null);
@@ -302,6 +330,12 @@ public class ObrResultsWizardPage extends WizardPage {
         requiredViewer.setInput(result != null ? result.getRequired() : null);
         optionalViewer.setInput(result != null ? result.getOptional() : null);
         unresolvedViewer.setInput(result != null ? result.getUnresolved() : null);
+
+        boolean resolved = result != null && result.isResolved() && (status == null || status.getSeverity() < IStatus.ERROR);
+
+        SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
+        SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
+        tabFolder.setSelection(resolved ? tbtmResults : tbtmErrors);
 
         getContainer().updateButtons();
 
