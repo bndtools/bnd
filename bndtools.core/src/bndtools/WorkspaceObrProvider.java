@@ -51,7 +51,8 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
     @GuardedBy("this")
     private boolean initialised = false;
 
-    WorkspaceObrProvider(Workspace workspace) {
+    WorkspaceObrProvider(Workspace workspace) {        
+        if(workspace == null) throw new NullPointerException();        
         this.workspace = workspace;
         IPath stateLocation = Plugin.getDefault().getStateLocation();
 
