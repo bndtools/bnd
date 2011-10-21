@@ -29,7 +29,7 @@ public class Workspace extends Processor {
 	final CachedFileRepo						cachedRepo;
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
-	private boolean	postpone;
+	private boolean								postpone;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -97,7 +97,7 @@ public class Workspace extends Processor {
 
 		setProperties(buildFile, dir);
 		propertiesChanged();
-		
+
 		cachedRepo = new CachedFileRepo();
 	}
 
@@ -135,8 +135,7 @@ public class Workspace extends Processor {
 		return false;
 	}
 
-	@Override
-	public void propertiesChanged() {
+	@Override public void propertiesChanged() {
 		super.propertiesChanged();
 		File extDir = new File(this.buildDir, "ext");
 		File[] extensions = extDir.listFiles();
@@ -198,7 +197,7 @@ public class Workspace extends Processor {
 		List<BndListener> listeners = getPlugins(BndListener.class);
 		for (BndListener l : listeners)
 			try {
-				if ( begin )
+				if (begin)
 					l.begin();
 				else
 					l.end();
@@ -207,18 +206,33 @@ public class Workspace extends Processor {
 			}
 	}
 
+	
+	/**
+	 * Signal a BndListener plugin.
+	 * We ran an infinite bug loop :-( 
+	 */
+	final ThreadLocal<Reporter> signalBusy = new ThreadLocal<Reporter>();
 	public void signal(Reporter reporter) {
-		List<BndListener> listeners = getPlugins(BndListener.class);
-		for (BndListener l : listeners)
-			try {
-				l.signal(this);
-			} catch (Exception e) {
-				// who cares?
-			}
-			
+		if ( signalBusy.get() != null)
+			return;
+		
+		signalBusy.set(reporter);
+		try {
+			List<BndListener> listeners = getPlugins(BndListener.class);
+			for (BndListener l : listeners)
+				try {
+					l.signal(this);
+				} catch (Exception e) {
+					// who cares?
+				}
+		} catch (Exception e) {
+			// Ignore
+		} finally {
+			signalBusy.set(null);
+		}
 	}
-	@Override
-	public void signal() {
+
+	@Override public void signal() {
 		signal(this);
 	}
 
@@ -302,11 +316,10 @@ public class Workspace extends Processor {
 		return maven;
 	}
 
-	@Override
-	protected void setTypeSpecificPlugins( Set<Object> list) {
+	@Override protected void setTypeSpecificPlugins(Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
 		list.add(maven);
 		list.add(cachedRepo);
 	}
-	
+
 }
