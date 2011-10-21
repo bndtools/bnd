@@ -1,0 +1,65 @@
+How to create the bitmap images:
+================================
+
+* Create png from svg
+=====================
+- Open the file 'bndtools-swirl.svg' with Inkspace (I'm using version 0.48.1)
+- Select in the menu: File->Export Bitmap
+- Set the bitmap width to 2048 and the filename to swirl-2048.png
+- Press the export button
+
+
+* Create png image copy with glow
+=================================
+- Open the file 'swirl-2048.png' with GIMP (I'm using version 2.6.11)
+- Select in the menu: Filters->Light and Shadow->Gradient Flare...
+- Select the 'Default' entry on the 'Selector' tab, as shown in the
+  'Gradient Flare - Selector.png' screenshot
+- Use the settings as shown in the 'Gradient Flare - Settings.png' screenshot
+- Select in the menu: File->Save As...
+- Set the filename to 'swirl-glow-2048.png' and press the 'Save' button, use the
+  save settings as shown in the 'Save as PNG.png' screenshot
+
+You now have the large versions (regular and glow) of the bitmaps.
+
+
+* Scale images
+==============
+- Open the file 'swirl-2048.png' with GIMP
+- Select in the menu: Image->Scale Image...
+- Set the width to 512 and press the 'Scale' button
+- Select in the menu: File->Save As...
+- Set the filename to 'swirl-512.png' and press the 'Save' button, use the
+  save settings as shown in the 'Save as PNG.png' screenshot
+- Select in the menu: Edit->Undo Scale Image
+- Repeat (go to second step of the above procedure) for all other sizes
+
+- Repeat the above procedure for the 'swirl-glow-2048.png' file
+
+
+* Create 512x512 images
+=======================
+- Open the file 'swirl-512.png' with GIMP
+- Select in the menu: Image->Canvas Size...
+- Click the chain icon next to the 'Width' and 'Height' fields to unlock
+  the fields, set the 'Height' to 512, click the 'Center' button, and finally
+  click the 'Resize' button
+- Select in the menu: File->Save As...
+- Set the filename to 'swirl-512x512.png' and press the 'Save' button, use the
+  save settings as shown in the 'Save as PNG.png' screenshot
+
+- Repeat the above procedure for the 'swirl-glow-512.png' file
+
+
+* Create Eclipse welcome page icons
+===================================
+- Open the file 'swirl-64.png' with GIMP
+- Select in the menu: File->Save As...
+- Set the filename to 'bndtools.gif' and press the 'Save' button, press the
+  'Export' botton, and finally press the 'Save' button
+
+- Repeat the above procedure for the 'swirl-glow-64.png' file
+
+- Move both these gif images into the bndtools.core/resources/intro/images
+  directory
+
