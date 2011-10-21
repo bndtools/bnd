@@ -164,7 +164,7 @@ public class Central {
         if (workspaceObr != null)
             return workspaceObr;
 
-        workspaceObr = new WorkspaceObrProvider();
+        workspaceObr = new WorkspaceObrProvider(workspace);
         return workspaceObr;
     }
 

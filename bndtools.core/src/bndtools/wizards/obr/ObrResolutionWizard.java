@@ -12,6 +12,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
+import bndtools.WorkspaceObrProvider;
 import bndtools.api.IBndModel;
 import bndtools.model.clauses.VersionedClause;
 
@@ -67,7 +68,11 @@ public class ObrResolutionWizard extends Wizard {
     }
 
     private boolean isWorkspace(Resource resource) {
-        // TODO
+        String[] categories = resource.getCategories();
+        for (String category : categories) {
+            if (WorkspaceObrProvider.CATEGORY_WORKSPACE.equals(category))
+                return true;
+        }
         return false;
     }
 

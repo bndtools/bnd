@@ -2,6 +2,7 @@ package bndtools.builder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,12 +25,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.classpath.BndContainerInitializer;
 
@@ -51,8 +55,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, "Building bundles", 0);
+
         classpathErrors = new LinkedList<String>();
         buildLog = new ArrayList<String>(5);
+
+        // Initialise workspace OBR index (should only happen once)
+        boolean builtAny = false;
+
         try {
             IProject myProject = getProject();
             Project model = Workspace.getProject(myProject.getLocation().toFile());
@@ -64,7 +74,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             // CASE 1: CNF changed
             if (isCnfChanged()) {
                 log(LOG_BASIC, "cnf project changed");
-                model.propertiesChanged();
+                model.refresh();
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                 } else {
@@ -83,7 +93,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 log(LOG_BASIC, "local bnd files changed");
             }
             if (localChange) {
-                model.propertiesChanged();
+                model.refresh();
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                     return calculateDependsOn();
@@ -109,12 +119,15 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
 
             // CASE 4: local file changes
-            rebuildIfLocalChanges();
+            builtAny = rebuildIfLocalChanges();
 
             return calculateDependsOn();
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
+            if (!builtAny)
+                Central.getWorkspaceObrProvider().initialise();
+
             if (!buildLog.isEmpty()) {
                 System.err.println(String.format("==> BUILD LOG for project %s follows (%d entries):", getProject(), buildLog.size()));
                 for (String message : buildLog) {
@@ -246,11 +259,17 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private void rebuildIfLocalChanges() throws Exception {
+    /**
+     * @return Whether any files were built
+     */
+    private boolean rebuildIfLocalChanges() throws Exception {
         log(LOG_FULL, "calculating local changes...");
 
         final Set<File> removedFiles = new HashSet<File>();
         final Set<File> changedFiles = new HashSet<File>();
+
+        IPath basePath = Path.fromOSString(model.getBase().getAbsolutePath());
+        final IPath targetDirPath = Path.fromOSString(model.getTarget().getAbsolutePath()).makeRelativeTo(basePath);
 
         IResourceDelta delta = getDelta(getProject());
         delta.accept(new IResourceDeltaVisitor() {
@@ -259,8 +278,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     return false;
 
                 IResource resource = delta.getResource();
-                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT || resource.getType() == IResource.FOLDER)
+                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
                     return true;
+
+                if (resource.getType() == IResource.FOLDER) {
+                    IPath folderPath = resource.getProjectRelativePath();
+                    // ignore ALL files in target dir
+                    return !folderPath.equals(targetDirPath);
+                }
 
                 if (resource.getType() == IResource.FILE) {
                     File file = resource.getLocation().toFile();
@@ -275,29 +300,19 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         });
 
-        log(LOG_FULL, "%d local files removed: %s", removedFiles.size(), removedFiles);
-
-        // Remove auto-generated 'buildfiles' file
-        File buildFiles = new File(model.getTarget(), Workspace.BUILDFILES);
-        if (changedFiles.remove(buildFiles)) {
-            log(LOG_FULL, "removed 'buildfiles' file from consideration (%s)", buildFiles);
-        }
+        log(LOG_FULL, "%d local files (outside target) removed: %s", removedFiles.size(), removedFiles);
+        log(LOG_FULL, "%d local files (outside target) changed: %s", changedFiles.size(), changedFiles);
 
         boolean force = false;
 
         // Process the sub-builders to determine whether a rebuild, force rebuild, or nothing is required.
         for (Builder builder : model.getSubBuilders()) {
-            // Remove the builder's output JAR from the changed file set. This avoid us doing anything
-            // in response to the delta generated by bnd's own output.
-            File outputFile = new File(model.getTarget(), builder.getBsn() + ".jar"); //TODO: Use project.getOutputPath(builder.getBsn()) when method set to public.
-            if (changedFiles.remove(outputFile)) {
-                log(LOG_FULL, "removed file %s from consideration since it is the output of builder %s", outputFile, builder.getBsn());
-            }
-
-            // However if the builder's output JAR has been removed, this could be because the user
+            // If the builder's output JAR has been removed, this could be because the user
             // deleted it, so we should force build in order to regenerate it.
-            if (removedFiles.contains(outputFile)) {
-                log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", outputFile, builder.getBsn());
+            IPath targetFilePath = targetDirPath.append(builder.getBsn() + ".jar");
+            IResourceDelta targetDelta = delta.findMember(targetFilePath);
+            if (targetDelta != null && targetDelta.getKind() == IResourceDelta.REMOVED) {
+                log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", targetFilePath, builder.getBsn());
                 force = true;
                 break;
             }
@@ -312,41 +327,59 @@ public class NewBuilder extends IncrementalProjectBuilder {
         }
 
         // Do it
+        boolean builtAny = false;
         if (force) {
-            rebuild(true);
+            builtAny = rebuild(true);
         } else if (!changedFiles.isEmpty()) {
-            log(LOG_FULL, "some local files were changed");
-            rebuild(false);
-        } else {
-            log(LOG_FULL, "no local files changed");
+            builtAny = rebuild(false);
         }
+        return builtAny;
     }
 
-    private void rebuild(boolean force) throws Exception {
+    /**
+     * @param force Whether to force bnd to build
+     * @return Whether any files were built
+     */
+    private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
         if (hasBlockingErrors()) {
             addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
             log(LOG_BASIC, "SKIPPING due to Java problem markers");
-            return;
+            return false;
         } else if (!classpathErrors.isEmpty()) {
             addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
             log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
-            return;
+            return false;
         }
 
         log(LOG_BASIC, "REBUILDING, force=%b", force);
 
+        File[] built;
+
         model.clear();
         model.setTrace(true);
         if (force)
-            model.buildLocal(false);
+            built = model.buildLocal(false);
         else
-            model.build();
+            built = model.build();
+
+        log(LOG_BASIC, "REBUILT %d files", built.length);
+        if (logLevel >= LOG_FULL) log(LOG_FULL, "List of rebuilt files: %s", Arrays.toString(built));
+
+        if (built.length > 0) {
+            try {
+                Central.getWorkspaceObrProvider().replaceProjectFiles(model, built);
+            } catch (Exception e) {
+                Plugin.logError("Error rebuilding workspace OBR index", e);
+            }
+        }
 
         List<String> errors = new ArrayList<String>(model.getErrors());
         List<String> warnings = new ArrayList<String>(model.getWarnings());
         createBuildMarkers(errors, warnings);
+
+        return built.length > 0;
     }
 
     private IProject[] calculateDependsOn() throws Exception {
