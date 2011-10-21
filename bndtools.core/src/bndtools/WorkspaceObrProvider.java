@@ -43,20 +43,21 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
     // Generate warnings if the index generation takes longer than this (millisecs)
     private static final long WARNING_THRESHOLD_TIME = 500;
 
-    private final Workspace workspace;
     private final File indexFile;
+    private Workspace workspace;
 
     @GuardedBy("this")
     private final Map<Project, File[]> projectFileMap = new HashMap<Project, File[]>();
     @GuardedBy("this")
     private boolean initialised = false;
 
-    WorkspaceObrProvider(Workspace workspace) {        
-        if(workspace == null) throw new NullPointerException();        
-        this.workspace = workspace;
+    WorkspaceObrProvider() {
         IPath stateLocation = Plugin.getDefault().getStateLocation();
-
         indexFile = new File(stateLocation.toFile(), "workspace-index.xml");
+    }
+
+    void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
     }
 
     public synchronized void initialise() {

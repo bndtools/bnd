@@ -8,8 +8,8 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.WorkspaceObrProvider;
 
 public class ObrIndexProviderLabelProvider extends StyledCellLabelProvider {
 
@@ -22,7 +22,7 @@ public class ObrIndexProviderLabelProvider extends StyledCellLabelProvider {
 
         cell.setText(getName(element));
 
-        if (element == Central.getWorkspaceObrProvider())
+        if (element instanceof WorkspaceObrProvider)
             cell.setImage(projectImg);
         else
             cell.setImage(repositoryImg);
