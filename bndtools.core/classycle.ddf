@@ -1,0 +1,10 @@
+show allResults
+
+{package} = bndtools
+
+[all] = bndtools.* org.bndtools.core.*
+[util] = org.bndtools.core.utils.*
+[non-util] = [all] excluding [util]
+
+check [util] independentOf [non-util]
+check absenceOfPackageCycles > 1 in [all]

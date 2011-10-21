@@ -29,6 +29,13 @@
 		</taskdef>
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+		
+		<available property="dochecking" file="classycle.ddf"/>
+		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
+			<classpath>
+				<pathelement location="${workspacedir}/cnf/buildlib/classycle.jar"/>
+			</classpath>
+		</taskdef>
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
@@ -72,11 +79,18 @@
 		</copy>
 	</target>
 
+	<target name="checks" depends="compile" if="dochecking">
+		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
+		<classcycle failOnUnwantedDependencies="false" definitionFile="${projectdir}/classycle.ddf">
+			<fileset dir="${project.output}" includes="**/*.class"/>
+		</classcycle>
+	</target>
+
 	<!-- 
 		JARS
 		Iterate of the jars to build.
 	-->
-	<target name="build" depends="compile">
+	<target name="build" depends="checks">
 		<mkdir dir="${target}"/>
 		<echo message="Building project ${project}."/>
 		<bnd command="build" exceptions="true" basedir="${project}" />
