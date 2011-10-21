@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.editor.model;
+package bndtools.model.clauses;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import bndtools.Plugin;
-import bndtools.model.clauses.HeaderClause;
 
 public class ServiceComponent extends HeaderClause implements Cloneable {
 

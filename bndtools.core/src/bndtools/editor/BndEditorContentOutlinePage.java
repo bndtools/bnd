@@ -19,12 +19,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.model.ServiceComponent;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
+import bndtools.model.clauses.ServiceComponent;
 
 public class BndEditorContentOutlinePage extends ContentOutlinePage {
 

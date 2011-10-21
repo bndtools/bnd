@@ -73,11 +73,11 @@ import bndtools.UIConstants;
 import bndtools.editor.common.MapContentProvider;
 import bndtools.editor.common.MapEntryCellModifier;
 import bndtools.editor.common.PropertiesTableLabelProvider;
-import bndtools.editor.model.ComponentSvcReference;
-import bndtools.editor.model.ServiceComponent;
 import bndtools.editor.model.ServiceComponentConfigurationPolicy;
 import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.javamodel.IJavaSearchContext;
+import bndtools.model.clauses.ComponentSvcReference;
+import bndtools.model.clauses.ServiceComponent;
 
 public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPage {
 

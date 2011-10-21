@@ -81,7 +81,7 @@
 
 	<target name="checks" depends="compile" if="dochecking">
 		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
-		<classcycle failOnUnwantedDependencies="false" definitionFile="${projectdir}/classycle.ddf">
+		<classcycle failOnUnwantedDependencies="true" definitionFile="${projectdir}/classycle.ddf">
 			<fileset dir="${project.output}" includes="**/*.class"/>
 		</classcycle>
 	</target>

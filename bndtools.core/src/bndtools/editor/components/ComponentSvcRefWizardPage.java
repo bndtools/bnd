@@ -37,8 +37,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.UIConstants;
-import bndtools.editor.model.ComponentSvcReference;
 import bndtools.javamodel.IJavaMethodSearchContext;
+import bndtools.model.clauses.ComponentSvcReference;
 import bndtools.utils.JavaContentProposalLabelProvider;
 
 public class ComponentSvcRefWizardPage extends WizardPage {

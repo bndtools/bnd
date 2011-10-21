@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.apache.felix.bundlerepository.Requirement;
 
-import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
 public interface IBndModel {

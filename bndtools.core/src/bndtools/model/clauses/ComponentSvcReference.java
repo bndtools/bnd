@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.editor.model;
+package bndtools.model.clauses;
 
 public class ComponentSvcReference {
 
