@@ -17,16 +17,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import bndtools.Plugin;
 
 public class ServiceComponent extends HeaderClause implements Cloneable {
 
@@ -36,7 +30,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
     public final static String       COMPONENT_SERVICEFACTORY       = "servicefactory:";
     public final static String       COMPONENT_IMMEDIATE            = "immediate:";
     public final static String       COMPONENT_ENABLED              = "enabled:";
-    
+
     public final static String       COMPONENT_DYNAMIC              = "dynamic:";
     public final static String       COMPONENT_MULTIPLE             = "multiple:";
     public final static String       COMPONENT_PROVIDE              = "provide:";
@@ -50,7 +44,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
     public final static String       COMPONENT_MODIFIED             = "modified:";
     public final static String       COMPONENT_ACTIVATE             = "activate:";
     public final static String       COMPONENT_DEACTIVATE           = "deactivate:";
-    
+
     private final static Pattern REFERENCE_PATTERN = Pattern.compile("([^(]+)(\\(.+\\))?");
 
 	public ServiceComponent(String name, Map<String,String> attribs) {
@@ -73,13 +67,13 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 	public Map<String, String> getPropertiesMap() {
 		Map<String,String> result = new LinkedHashMap<String, String>();
-		
+
 		List<String> list = getListAttrib(COMPONENT_PROPERTIES);
 		if(list != null) {
 			for (String entryStr : list) {
 				String name;
 				String value;
-				
+
 				int index = entryStr.lastIndexOf('=');
 				if(index == -1) {
 					name = entryStr;
@@ -88,11 +82,11 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 					name = entryStr.substring(0, index);
 					value = entryStr.substring(index + 1);
 				}
-				
+
 				result.put(name, value);
 			}
 		}
-		
+
 		return result;
 	}
 	public void setSvcRefs(List<? extends ComponentSvcReference> refs) {
@@ -103,7 +97,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 				iter.remove();
 			}
 		}
-		
+
 		// Add in the references
 		Set<String> dynamic = new HashSet<String>();
 		Set<String> optional = new HashSet<String>();
@@ -117,16 +111,16 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 					expandedRefName += "/" + ref.getUnbind();
 				}
 			}
-			
+
 			// Start building the map value
 			StringBuilder buffer = new StringBuilder();
 			buffer.append(ref.getServiceClass());
-			
+
 			// Add the target filter
 			if(ref.getTargetFilter() != null) {
 				buffer.append('(').append(ref.getTargetFilter()).append(')');
 			}
-			
+
 			// Work out the cardinality suffix (i.e. *, +, ? org ~).
 			// Adding to the dynamic/multiple/optional lists for non-standard cases
 			String cardinalitySuffix;
@@ -162,10 +156,10 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 					}
 				}
 			}
-			
+
 			if(cardinalitySuffix != null)
 				buffer.append(cardinalitySuffix);
-			
+
 			// Write to the map
 			attribs.put(expandedRefName, buffer.toString());
 		}
@@ -175,23 +169,23 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 	public List<ComponentSvcReference> getSvcRefs() {
 		List<ComponentSvcReference> result = new ArrayList<ComponentSvcReference>();
-		
+
 		Set<String> dynamicSet = getStringSet(COMPONENT_DYNAMIC);
 		Set<String> optionalSet = getStringSet(COMPONENT_OPTIONAL);
 		Set<String> multipleSet = getStringSet(COMPONENT_MULTIPLE);
-		
+
 		for (Entry<String, String> entry : attribs.entrySet()) {
 			String referenceName = entry.getKey();
-			
+
 			// Skip directives
 			if(referenceName.endsWith(":"))//$NON-NLS-1$
 				continue;
-			
+
 			ComponentSvcReference svcRef = new ComponentSvcReference();
-			
+
 			String bind = null;
 			String unbind = null;
-			
+
 			if (referenceName.indexOf('/') >= 0) {
 				String parts[] = referenceName.split("/");
 				referenceName = parts[0];
@@ -212,14 +206,13 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 			svcRef.setName(referenceName);
 			svcRef.setBind(bind);
 			svcRef.setUnbind(unbind);
-			
+
 			String interfaceName = entry.getValue();
 			if (interfaceName == null || interfaceName.length() == 0) {
-				logError("Invalid Interface Name for references in Service Component: " + referenceName + "=" + interfaceName, null);
 				continue;
 			}
 			svcRef.setServiceClass(interfaceName);
-			
+
 			// Check the cardinality by looking at the last
 			// character of the value
 			char c = interfaceName.charAt(interfaceName.length() - 1);
@@ -235,7 +228,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 			svcRef.setOptional(optionalSet.contains(referenceName));
 			svcRef.setMultiple(multipleSet.contains(referenceName));
 			svcRef.setDynamic(dynamicSet.contains(referenceName));
-			
+
 			// Parse the target from the interface name
 			// The target is a filter.
 			String target = null;
@@ -245,14 +238,11 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 				target = m.group(2);
 			}
 			svcRef.setTargetFilter(target);
-			
+
 			result.add(svcRef);
 		}
-		
+
 		return result;
-	}
-	private void logError(String message, Throwable t) {
-		Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
 	}
 	@Override
 	public ServiceComponent clone() {
