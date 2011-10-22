@@ -368,6 +368,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             built = model.buildLocal(false);
         else
             built = model.build();
+        if (built == null) built = new File[0];
 
         log(LOG_BASIC, "REBUILT %d files", built.length);
         if (logLevel >= LOG_FULL) log(LOG_FULL, "List of rebuilt files: %s", Arrays.toString(built));
