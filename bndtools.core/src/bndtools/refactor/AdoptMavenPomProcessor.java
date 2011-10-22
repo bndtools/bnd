@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jdt.internal.corext.refactoring.nls.changes.CreateTextFileChange;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
@@ -46,7 +45,6 @@ import org.eclipse.text.edits.TextEdit;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
-import bndtools.utils.FileUtils;
 import bndtools.utils.TextUtils;
 
 public class AdoptMavenPomProcessor extends RefactoringProcessor {
@@ -153,13 +151,8 @@ public class AdoptMavenPomProcessor extends RefactoringProcessor {
         IFile bndFile = pomFile.getProject().getFile(Project.BNDFILE);
         bndFile.refreshLocal(0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
         if (!bndFile.exists()) {
-            try {
-                InputStream templateBndStream = AdoptMavenPomProcessor.class.getResourceAsStream("maven-bnd.bnd");
-                String templateBnd = new String(FileUtils.readFully(templateBndStream), "UTF-8");
-                rootChange.add(new CreateTextFileChange(bndFile.getFullPath(), templateBnd, "UTF-8", "text"));
-            } catch (IOException e) {
-                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to read template bnd.bnd resource.", e));
-            }
+            InputStream templateBndStream = AdoptMavenPomProcessor.class.getResourceAsStream("maven-bnd.bnd");
+            rootChange.add(new CreateFileChange(bndFile.getFullPath(), templateBndStream, IResource.NONE, null));
         }
 
         // Edit POM

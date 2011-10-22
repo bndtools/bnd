@@ -77,7 +77,8 @@ eclipse.deps: \
 	org.eclipse.ltk.core.refactoring,\
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.core.filebuffers,\
-	org.eclipse.core.expressions
+	org.eclipse.core.expressions,\
+	org.eclipse.core.filesystem
 
 -buildpath: biz.aQute.bndlib;version=1.48.0,\
 	org.apache.felix.bundlerepository,\

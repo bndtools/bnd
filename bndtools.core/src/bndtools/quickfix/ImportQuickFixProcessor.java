@@ -1,7 +1,6 @@
 package bndtools.quickfix;
 
 import java.util.ArrayList;
-
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.CoreException;
@@ -12,18 +11,10 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
 import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
-
-// TODO dependencies for addSearchResults
-//import org.eclipse.jdt.core.dom.ArrayType;
-//import org.eclipse.jdt.core.dom.Name;
-//import org.eclipse.jdt.core.dom.QualifiedName;
-//import org.eclipse.jdt.core.dom.SimpleType;
-//import org.eclipse.jdt.core.dom.Type;
 
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.Constants;
@@ -77,7 +68,7 @@ public class ImportQuickFixProcessor implements IQuickFixProcessor {
                 }
             }
 
-            return (IJavaCompletionProposal[]) results.values().toArray(new IJavaCompletionProposal[results.size()]);
+            return results.values().toArray(new IJavaCompletionProposal[results.size()]);
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw e;
@@ -102,7 +93,7 @@ public class ImportQuickFixProcessor implements IQuickFixProcessor {
             // check QualifiedName for search results as well -
             // happens if import package is already added but exported package has
             // been removed
-            
+
             // TODO depends on addSearchResults
             // ClassInstanceCreation c = (ClassInstanceCreation) selectedNode;
             // Type t = c.getType();
@@ -148,10 +139,10 @@ public class ImportQuickFixProcessor implements IQuickFixProcessor {
     private String[] readPackage(ASTNode selectedNode, IProblemLocation location) {
         ArrayList<String> packages = new ArrayList<String>();
 
-        ImportDeclaration id = (ImportDeclaration) ASTNodes.getParent(selectedNode, ASTNode.IMPORT_DECLARATION);
+        ImportDeclaration id = (ImportDeclaration) getParent(selectedNode, ASTNode.IMPORT_DECLARATION);
 
         if (id == null) {
-            MethodInvocation m = (MethodInvocation) ASTNodes.getParent(selectedNode, ASTNode.METHOD_INVOCATION);
+            MethodInvocation m = (MethodInvocation) getParent(selectedNode, ASTNode.METHOD_INVOCATION);
 
             if (m != null) {
                 packages.add(readPackage(m));
@@ -175,10 +166,18 @@ public class ImportQuickFixProcessor implements IQuickFixProcessor {
     private String readPackage(MethodInvocation m) {
         return m.resolveMethodBinding().getDeclaringClass().getPackage().getName();
     }
-    
+
     private boolean isBuildPackage(Project project, String packageName) {
         return OSGiHeader.parseHeader(project.getProperty(Constants.BUILDPACKAGES)).containsKey(packageName);
     }
+
+    public static ASTNode getParent(ASTNode node, int nodeType) {
+        do {
+            node= node.getParent();
+        } while (node != null && node.getNodeType() != nodeType);
+        return node;
+    }
+
 
     // The following code is useful for searching for classes that are not yet exported or finding packages via a name but no package
     // i.e. HttpServlet - which one? Well javax.http.servlet.HttpServlet of course but we don't have a package with which to do a search

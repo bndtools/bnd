@@ -4,7 +4,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.containers.AbstractSourceContainerTypeDelegate;
 import org.eclipse.debug.core.sourcelookup.containers.DefaultSourceContainer;
-import org.eclipse.debug.internal.core.sourcelookup.SourceLookupMessages;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -31,9 +30,9 @@ public class BndDependencySourceContainerType extends AbstractSourceContainerTyp
             if ("default".equals(element.getNodeName())) { //$NON-NLS-1$
                 return new DefaultSourceContainer();
             }
-            abort(SourceLookupMessages.DefaultSourceContainerType_6, null);
+            abort("Unable to restore default source lookup path - expecting default element.", null);
         }
-        abort(SourceLookupMessages.DefaultSourceContainerType_7, null);
+        abort("Unable to restore default source lookup path - invalid memento.", null);
         return null;
     }
 

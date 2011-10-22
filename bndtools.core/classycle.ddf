@@ -1,13 +1,21 @@
 show allResults
 
+# Define package sets
 [all] = bndtools.* org.bndtools.core.*
 [util] = org.bndtools.core.utils.*
 [non-util] = [all] excluding [util]
-
 [exports] = bndtools.api.* bndtools.types.* bndtools.editor.model.* bndtools.model.clauses.*
 [non-exports] = [all] excluding [exports]
+[eclipse-internals] = org.eclipse.*.internal.*
 
+# Absolutely no package cycles!!
 check absenceOfPackageCycles > 1 in [all]
 
+# Layering issue: util packages must not depend on anything
 check [util] independentOf [non-util]
+
+# Exported packages should not depend on private packages
 check [exports] independentOf [non-exports]
+
+# No dependency on internal Eclipse APIs (disabled this check for now, still a few remaining).
+# check [all] independentOf [eclipse-internals]
