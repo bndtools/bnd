@@ -57,6 +57,7 @@ import bndtools.editor.model.conversions.VersionedClauseConverter;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
+import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.types.Pair;
 

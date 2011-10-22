@@ -16,7 +16,7 @@ import java.util.Set;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.wizard.Wizard;
 
-import bndtools.editor.model.ComponentSvcReference;
+import bndtools.model.clauses.ComponentSvcReference;
 
 public class ComponentSvcRefWizard extends Wizard {
 

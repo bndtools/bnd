@@ -160,11 +160,12 @@ public class Central {
         return matches[0];
     }
 
-    public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() {
+    public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() throws Exception {
         if (workspaceObr != null)
             return workspaceObr;
 
-        workspaceObr = new WorkspaceObrProvider(workspace);
+        workspaceObr = new WorkspaceObrProvider();
+        workspaceObr.setWorkspace(getWorkspace());
         return workspaceObr;
     }
 

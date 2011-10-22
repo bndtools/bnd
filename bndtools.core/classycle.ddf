@@ -1,0 +1,13 @@
+show allResults
+
+[all] = bndtools.* org.bndtools.core.*
+[util] = org.bndtools.core.utils.*
+[non-util] = [all] excluding [util]
+
+[exports] = bndtools.api.* bndtools.types.* bndtools.editor.model.* bndtools.model.clauses.*
+[non-exports] = [all] excluding [exports]
+
+check absenceOfPackageCycles > 1 in [all]
+
+check [util] independentOf [non-util]
+check [exports] independentOf [non-exports]

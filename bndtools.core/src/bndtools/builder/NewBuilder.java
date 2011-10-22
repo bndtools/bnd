@@ -125,8 +125,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
-            if (!builtAny)
-                Central.getWorkspaceObrProvider().initialise();
+            if (!builtAny) {
+                try {
+                    Central.getWorkspaceObrProvider().initialise();
+                } catch (Exception e) {
+                    Plugin.logError("Error initialising workspace OBR provider", e);
+                }
+            }
 
             if (!buildLog.isEmpty()) {
                 System.err.println(String.format("==> BUILD LOG for project %s follows (%d entries):", getProject(), buildLog.size()));
