@@ -17,11 +17,11 @@ import java.io.IOException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.propertiesfileeditor.PropertiesFileEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -31,7 +31,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import bndtools.Plugin;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
-public class BndSourceEditorPage extends PropertiesFileEditor implements IFormPage {
+public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
 	private final BndEditor formEditor;
 	private final String id;
