@@ -2,12 +2,10 @@ package bndtools.editor.project;
 
 import java.util.List;
 
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import aQute.bnd.build.Project;
 import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
@@ -23,12 +21,12 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 		section.setDescription("The selected bundles will be added to the project build path for compilation.");
 		super.createSection(section, toolkit);
 	}
-	@Override
-	protected GridData getTableLayoutData() {
-		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 200;
-		return gd;
-	}
+
+    @Override
+    protected int getTableHeightHint() {
+        return 200;
+    }
+
 	@Override
 	protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {
 		model.setBuildPath(bundles);
@@ -39,12 +37,8 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 	}
 
     @Override
-    protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles);
-
+    protected void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
         wizard.setSelectionPageTitle("Project Build Path");
         wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
-
-        return wizard;
     }
 }
