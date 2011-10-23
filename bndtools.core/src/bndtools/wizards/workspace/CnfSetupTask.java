@@ -1,5 +1,6 @@
 package bndtools.wizards.workspace;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -12,6 +13,9 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -29,65 +33,138 @@ import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
-import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.types.Pair;
 import bndtools.utils.BundleUtils;
+import bndtools.wizards.workspace.CnfSetupWizard.RequiredOperation;
 
 public class CnfSetupTask extends WorkspaceModifyOperation {
 
     private final IConfigurationElement templateConfig;
+    private final RequiredOperation operation;
 
-    public CnfSetupTask(IConfigurationElement templateConfig) {
+    public CnfSetupTask(RequiredOperation operation, IConfigurationElement templateConfig) {
+        this.operation = operation;
         this.templateConfig = templateConfig;
+    }
+
+    static enum CnfStatus {
+        NotExists, DirExists, ImportedClosed, ImportedOpen
     }
 
     /**
      * Returns whether the workspace is configured for bnd (i.e. the cnf project exists).
      * @return
      */
-    static boolean isBndWorkspaceConfigured() {
-        IProject cnfProject = getCnfProject();
-        return cnfProject != null && cnfProject.exists();
+    static Pair<CnfStatus, IPath> getWorkspaceCnfStatus() {
+        Pair<CnfStatus, IPath> result;
+
+        IProject cnf = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
+        if (cnf.exists()) {
+            CnfStatus status = cnf.isOpen() ? CnfStatus.ImportedOpen : CnfStatus.ImportedClosed;
+            result = Pair.newInstance(status, cnf.getLocation());
+        } else {
+            IPath cnfPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(Workspace.CNFDIR);
+            File cnfDir = cnfPath.toFile();
+
+            CnfStatus status = cnfDir.isDirectory() ? CnfStatus.DirExists : CnfStatus.NotExists;
+            result = Pair.newInstance(status, cnfPath);
+        }
+        return result;
     }
 
     @Override
     protected void execute(IProgressMonitor monitor) throws CoreException {
+        switch (operation) {
+        case Import:
+            importCnf(monitor);
+            break;
+        case Open:
+            openProject(monitor);
+            break;
+        case Create:
+            createOrReplaceCnf(monitor);
+            break;
+        case Nothing:
+            break;
+        }
+    }
+
+    private void openProject(IProgressMonitor monitor) throws CoreException {
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
+        project.open(monitor);
+    }
+
+    protected void importCnf(IProgressMonitor monitor) throws CoreException {
+        IPath path = getWorkspaceCnfStatus().getSecond();
+
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IContainer container = workspace.getRoot().getContainerForLocation(path);
+        if (container == null) {
+            IProjectDescription projDesc = workspace.loadProjectDescription(path.append(IProjectDescription.DESCRIPTION_FILE_NAME));
+            IProject project = workspace.getRoot().getProject(Workspace.CNFDIR);
+            project.create(projDesc, monitor);
+            project.open(monitor);
+        } else if (container.getType() == IResource.PROJECT) {
+            IProject project = (IProject) container;
+            if (project.exists()) {
+                project.open(monitor);
+            } else {
+                project.create(monitor);
+            }
+        } else {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Incorrect path (not a project): " + path, null));
+        }
+    }
+
+    protected void createOrReplaceCnf(IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
 
-        IProject cnfProject = getCnfProject();
-        if(cnfProject == null || !cnfProject.exists()) {
-            progress.setWorkRemaining(3);
-            JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-            configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-
-            String bsn = templateConfig.getContributor().getName();
-            Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
-            String paths = templateConfig.getAttribute("paths");
-            if (paths == null)
-                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Template is missing 'paths' property.", null));
-
-            StringTokenizer tokenizer = new StringTokenizer(paths, ",");
-            progress.setWorkRemaining(tokenizer.countTokens());
-
-            while (tokenizer.hasMoreTokens()) {
-                String path = tokenizer.nextToken().trim();
-                if (!path.endsWith("/"))
-                    path = path + "/";
-
-                copyBundleEntries(bundle, path, new Path(path), cnfProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-            }
-            try {
-                Central.getWorkspace().refresh();
-            } catch (Exception e) {
-                Plugin.logError("Unable to refresh Bnd workspace", e);
-            }
-
-        } else if(!cnfProject.isOpen()) {
-            progress.setWorkRemaining(1);
-            cnfProject.open(progress.newChild(1));
+        Pair<CnfStatus, IPath> cnf = getWorkspaceCnfStatus();
+        switch (cnf.getFirst()) {
+        case ImportedClosed:
+        case ImportedOpen:
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Cannot create: project already exists in the Eclipse workspace.", null));
+        case DirExists:
+            deleteDir(cnf.getSecond());
+            break;
+        case NotExists:
+            break;
         }
 
+        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
+        progress.setWorkRemaining(3);
+        JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+
+        String bsn = templateConfig.getContributor().getName();
+        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
+        String paths = templateConfig.getAttribute("paths");
+        if (paths == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Template is missing 'paths' property.", null));
+
+        StringTokenizer tokenizer = new StringTokenizer(paths, ",");
+        progress.setWorkRemaining(tokenizer.countTokens());
+
+        while (tokenizer.hasMoreTokens()) {
+            String path = tokenizer.nextToken().trim();
+            if (!path.endsWith("/"))
+                path = path + "/";
+
+            copyBundleEntries(bundle, path, new Path(path), cnfProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        }
+        try {
+            Central.getWorkspace().refresh();
+        } catch (Exception e) {
+            Plugin.logError("Unable to refresh Bnd workspace", e);
+        }
+    }
+
+    private void deleteDir(IPath path) {
+        IO.delete(path.toFile());
     }
 
     private static void copyBundleEntries(Bundle sourceBundle, String sourcePath, IPath sourcePrefix, IContainer destination, IProgressMonitor monitor) throws CoreException {
@@ -124,17 +201,11 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
             if (!file.exists()) {
                 file.create(entry.openStream(), false, monitor);
             } else {
-                file.appendContents(entry.openStream(), false, false, monitor);
+                file.setContents(entry.openStream(), false, true, monitor);
             }
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load data from template source bundle.", e));
         }
-    }
-
-
-    private static IProject getCnfProject() {
-        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
-        return cnfProject;
     }
 
     private static void configureJavaProject(IJavaProject javaProject, String newProjectCompliance, IProgressMonitor monitor) throws CoreException {

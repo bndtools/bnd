@@ -20,8 +20,8 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 
 	public CnfSetupUserConfirmationWizardPage(CnfSetupUserConfirmation confirmation) {
 		super(CnfSetupUserConfirmationWizardPage.class.getSimpleName());
-		setImageDescriptor(Plugin.imageDescriptorFromPlugin("/icons/bndtools-wizban.png")); //$NON-NLS-1$
 		this.confirmation = confirmation;
+		setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
 	}
 
 	public void createControl(Composite parent) {

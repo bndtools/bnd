@@ -4,59 +4,112 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import bndtools.Plugin;
+import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
+import bndtools.wizards.workspace.CnfSetupTask.CnfStatus;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
 
 public class CnfSetupWizard extends Wizard {
 
     private CnfSetupUserConfirmation confirmation;
 
-    private final CnfTemplateSelectionWizardPage templatePage = new CnfTemplateSelectionWizardPage("templateSelection");
     private final CnfSetupUserConfirmationWizardPage confirmPage;
+    private final CnfImportOrOpenWizardPage importPage;
+    private final CnfTemplateSelectionWizardPage templatePage = new CnfTemplateSelectionWizardPage();
 
-    public CnfSetupWizard(CnfSetupUserConfirmation confirmation) {
-        this.setNeedsProgressMonitor(true);
+    private RequiredOperation operation;
+    private final IPath cnfPath;
+
+    public enum RequiredOperation {
+        Nothing, Open, Import, Create
+    }
+
+    public CnfSetupWizard(CnfSetupUserConfirmation confirmation, RequiredOperation operation, IPath cnfPath) {
         this.confirmation = confirmation;
+        this.cnfPath = cnfPath;
+        importPage = new CnfImportOrOpenWizardPage(cnfPath);
         this.confirmPage = new CnfSetupUserConfirmationWizardPage(confirmation);
 
+        this.operation = operation;
+
+        setNeedsProgressMonitor(true);
+
         addPage(confirmPage);
+        if (operation == RequiredOperation.Import) {
+            importPage.setOperation(operation);
+            addPage(importPage);
+        }
+
         addPage(templatePage);
 
         confirmation.addPropertyChangeListener("decision", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                getContainer().updateButtons();
+                updateUi();
             }
         });
+        importPage.addPropertyChangeListener(CnfImportOrOpenWizardPage.PROP_OPERATION, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                CnfSetupWizard.this.operation = importPage.getOperation();
+                updateUi();
+            }
+        });
+        templatePage.addPropertyChangeListener(CnfTemplateSelectionWizardPage.PROP_ELEMENT, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateUi();
+            }
+        });
+    }
+
+    private void updateUi() {
+        IWizardContainer container = getContainer();
+        if (container != null) {
+            container.updateButtons();
+            container.updateMessage();
+        }
     }
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         IWizardPage next = null;
 
-        if (confirmPage == page)
-            next = confirmation.getDecision() == Decision.SETUP ? templatePage : null;
+        if (confirmPage == page) {
+            if (confirmation.getDecision() == Decision.SETUP)
+                next = operation == RequiredOperation.Import ? importPage : templatePage;
+            else
+                next = null;
+        }
+        else if (importPage == page)
+            next = operation == RequiredOperation.Create ? templatePage : null;
 
         return next;
     }
 
     @Override
     public boolean canFinish() {
-        return confirmation.getDecision() != Decision.SETUP || super.canFinish();
+        if (confirmation.getDecision() != Decision.SETUP)
+            return true;
+
+        if (operation == RequiredOperation.Import)
+            return importPage.isPageComplete();
+
+        if (operation == RequiredOperation.Create)
+            return templatePage.isPageComplete();
+
+        return false;
     }
 
     /**
@@ -72,22 +125,27 @@ public class CnfSetupWizard extends Wizard {
      *         used to decide whether to give the user alternative feedback.
      */
     public static boolean showIfNeeded(boolean overridePreference) {
-        final boolean shouldInstall = determineNecessaryOperation(overridePreference);
-        if (!shouldInstall)
+        final Pair<RequiredOperation,IPath> cnf = determineNecessaryOperation(overridePreference);
+        RequiredOperation operation = cnf.getFirst();
+        if (operation == RequiredOperation.Nothing)
             return false;
+
+        if (operation == RequiredOperation.Open) {
+            try {
+                new CnfSetupTask(operation, null).run(null);
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
 
         SWTConcurrencyUtil.execForDisplay(PlatformUI.getWorkbench().getDisplay(), true, new Runnable() {
             public void run() {
-                final CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation());
+                final CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation(), cnf.getFirst(), cnf.getSecond());
                 // Modified wizard dialog -- change "Finish" to "OK"
-                WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard) {
-                    @Override
-                    protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
-                        if (id == IDialogConstants.FINISH_ID)
-                            label = IDialogConstants.OK_LABEL;
-                        return super.createButton(parent, id, label, defaultButton);
-                    }
-                };
+                WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard);
                 dialog.open();
             }
         });
@@ -104,13 +162,30 @@ public class CnfSetupWizard extends Wizard {
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, disabled);
 	}
 
-	private static boolean determineNecessaryOperation(boolean overridePreference) {
-		if (!overridePreference && isDisabled())
-			return false;
-		if (!CnfSetupTask.isBndWorkspaceConfigured())
-			return true;
-		return false;
-	}
+    private static Pair<RequiredOperation, IPath> determineNecessaryOperation(boolean overridePreference) {
+        if (!overridePreference && isDisabled())
+            return Pair.newInstance(RequiredOperation.Nothing, null);
+
+        Pair<CnfStatus, IPath> cnf = CnfSetupTask.getWorkspaceCnfStatus();
+        RequiredOperation operation = RequiredOperation.Nothing;
+
+        switch (cnf.getFirst()) {
+        case ImportedOpen:
+            operation = RequiredOperation.Nothing;
+            break;
+        case ImportedClosed:
+            operation = RequiredOperation.Open;
+            break;
+        case DirExists:
+            operation = RequiredOperation.Import;
+            break;
+        case NotExists:
+            operation = RequiredOperation.Create;
+            break;
+        }
+
+        return Pair.newInstance(operation, cnf.getSecond());
+    }
 
     @Override
     public boolean performFinish() {
@@ -122,13 +197,12 @@ public class CnfSetupWizard extends Wizard {
                 return false;
             }
         }
-
         if (confirmation.getDecision() == Decision.SKIP) {
             return true;
         }
 
         try {
-            getContainer().run(false, false, new CnfSetupTask(templatePage.getSelectedElement()));
+            getContainer().run(false, false, new CnfSetupTask(operation, templatePage.getSelectedElement()));
             return true;
         } catch (InvocationTargetException e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.",

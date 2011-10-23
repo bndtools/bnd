@@ -92,6 +92,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setLabelProvider(new TemplateLabelProvider(parent.getDisplay()));
 
+        loadData();
+
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 IConfigurationElement element = (IConfigurationElement) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
@@ -115,7 +117,6 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
             }
         });
 
-        loadData();
         updateUI();
     }
 
@@ -135,13 +136,6 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         elements = loadConfigurationElements();
         Arrays.sort(elements, new PriorityConfigurationElementCompator(false));
         viewer.setInput(elements);
-
-        if (elements.length > 0) {
-            setSelectionFromConfigElement(elements[0]);
-
-            ISelection selection = new StructuredSelection(elements[0]);
-            viewer.setSelection(selection);
-        }
 
     }
 
@@ -179,8 +173,14 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
 
-        if (visible) {
+        if (visible && !shown) {
             shown  = true;
+            if (elements.length > 0) {
+                setSelectionFromConfigElement(elements[0]);
+
+                ISelection selection = new StructuredSelection(elements[0]);
+                viewer.setSelection(selection);
+            }
         }
     }
 
