@@ -95,7 +95,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     private void createSection(Section section, FormToolkit tk) {
-        section.setText("Requirements");
+        section.setText("Run Requirements");
         section.setDescription("The specified requirements will be used to resolve a set of runtime bundles from available OBR repositories.");
 
         // Create toolbar
@@ -153,6 +153,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         composite.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.heightHint = 100;
         table.setLayoutData(gd);
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);

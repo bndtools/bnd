@@ -56,7 +56,7 @@ public class ProjectRunPage extends FormPage {
         RunRequirementsPart requirementsPart = new RunRequirementsPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(requirementsPart);
 
-        RunBundlesPart runBundlesPart = new RunBundlesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
+        RunBundlesPart runBundlesPart = new RunBundlesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
         managedForm.addPart(runBundlesPart);
 
         LaunchPart launchPart = new LaunchPart(right, tk, Section.TITLE_BAR | Section.EXPANDED);
