@@ -2,7 +2,6 @@ package bndtools.builder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.core.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -69,7 +70,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
             if (model == null)
                 return null;
             this.model = model;
-            model.clear();
+
+            model.clear(); // Clear errors and warnings
 
             // CASE 1: CNF changed
             if (isCnfChanged()) {
@@ -99,7 +101,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     return calculateDependsOn();
                 } else {
                     log(LOG_FULL, "classpaths were not changed");
-                    rebuild(false);
+                    rebuildIfLocalChanges();
                     return calculateDependsOn();
                 }
             }
@@ -140,6 +142,29 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     System.err.println(builder.toString());
                 }
             }
+        }
+    }
+
+    @Override
+    protected void clean(IProgressMonitor monitor) throws CoreException {
+        try {
+            IProject myProject = getProject();
+            Project model = Workspace.getProject(myProject.getLocation().toFile());
+            if (model == null)
+                return;
+
+            // Delete everything in the target directory
+            File target = model.getTarget();
+            if (target.isDirectory() && target.getParentFile() != null) {
+                IO.delete(target);
+                target.mkdirs();
+            }
+
+            // Tell Eclipse what we did...
+            IFolder targetFolder = myProject.getFolder(calculateTargetDirPath(model));
+            targetFolder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         }
     }
 
@@ -273,51 +298,52 @@ public class NewBuilder extends IncrementalProjectBuilder {
         final Set<File> removedFiles = new HashSet<File>();
         final Set<File> changedFiles = new HashSet<File>();
 
-        IPath basePath = Path.fromOSString(model.getBase().getAbsolutePath());
-        final IPath targetDirPath = Path.fromOSString(model.getTarget().getAbsolutePath()).makeRelativeTo(basePath);
-
-        IResourceDelta delta = getDelta(getProject());
-        delta.accept(new IResourceDeltaVisitor() {
-            public boolean visit(IResourceDelta delta) throws CoreException {
-                if (!isChangeDelta(delta))
-                    return false;
-
-                IResource resource = delta.getResource();
-                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
-                    return true;
-
-                if (resource.getType() == IResource.FOLDER) {
-                    IPath folderPath = resource.getProjectRelativePath();
-                    // ignore ALL files in target dir
-                    return !folderPath.equals(targetDirPath);
-                }
-
-                if (resource.getType() == IResource.FILE) {
-                    File file = resource.getLocation().toFile();
-                    if ((delta.getKind() & IResourceDelta.REMOVED) != 0) {
-                        removedFiles.add(file);
-                    } else {
-                        changedFiles.add(file);
-                    }
-                }
-
-                return false;
-            }
-        });
-
-        log(LOG_FULL, "%d local files (outside target) removed: %s", removedFiles.size(), removedFiles);
-        log(LOG_FULL, "%d local files (outside target) changed: %s", changedFiles.size(), changedFiles);
+        final IPath targetDirPath = calculateTargetDirPath(model);
 
         boolean force = false;
+
+        IResourceDelta delta = getDelta(getProject());
+        if (delta != null) {
+            delta.accept(new IResourceDeltaVisitor() {
+                public boolean visit(IResourceDelta delta) throws CoreException {
+                    if (!isChangeDelta(delta))
+                        return false;
+
+                    IResource resource = delta.getResource();
+                    if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
+                        return true;
+
+                    if (resource.getType() == IResource.FOLDER) {
+                        IPath folderPath = resource.getProjectRelativePath();
+                        // ignore ALL files in target dir
+                        return !folderPath.equals(targetDirPath);
+                    }
+
+                    if (resource.getType() == IResource.FILE) {
+                        File file = resource.getLocation().toFile();
+                        if ((delta.getKind() & IResourceDelta.REMOVED) != 0) {
+                            removedFiles.add(file);
+                        } else {
+                            changedFiles.add(file);
+                        }
+                    }
+
+                    return false;
+                }
+            });
+            log(LOG_FULL, "%d local files (outside target) removed: %s", removedFiles.size(), removedFiles);
+            log(LOG_FULL, "%d local files (outside target) changed: %s", changedFiles.size(), changedFiles);
+        } else {
+            log(LOG_BASIC, "no info on local changes available");
+        }
 
         // Process the sub-builders to determine whether a rebuild, force rebuild, or nothing is required.
         for (Builder builder : model.getSubBuilders()) {
             // If the builder's output JAR has been removed, this could be because the user
             // deleted it, so we should force build in order to regenerate it.
-            IPath targetFilePath = targetDirPath.append(builder.getBsn() + ".jar");
-            IResourceDelta targetDelta = delta.findMember(targetFilePath);
-            if (targetDelta != null && targetDelta.getKind() == IResourceDelta.REMOVED) {
-                log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", targetFilePath, builder.getBsn());
+            File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
+            if (!targetFile.isFile()) {
+                log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", targetFile, builder.getBsn());
                 force = true;
                 break;
             }
@@ -341,6 +367,12 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return builtAny;
     }
 
+    private static IPath calculateTargetDirPath(Project model) throws Exception {
+        IPath basePath = Path.fromOSString(model.getBase().getAbsolutePath());
+        final IPath targetDirPath = Path.fromOSString(model.getTarget().getAbsolutePath()).makeRelativeTo(basePath);
+        return targetDirPath;
+    }
+
     /**
      * @param force Whether to force bnd to build
      * @return Whether any files were built
@@ -348,6 +380,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
+        // Abort build if compilation errors exist
         if (hasBlockingErrors()) {
             addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
             log(LOG_BASIC, "SKIPPING due to Java problem markers");
@@ -362,6 +395,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         File[] built;
 
+        // Build!
         model.clear();
         model.setTrace(true);
         if (force)
@@ -370,9 +404,19 @@ public class NewBuilder extends IncrementalProjectBuilder {
             built = model.build();
         if (built == null) built = new File[0];
 
-        log(LOG_BASIC, "REBUILT %d files", built.length);
-        if (logLevel >= LOG_FULL) log(LOG_FULL, "List of rebuilt files: %s", Arrays.toString(built));
+        // Log rebuilt files
+        log(LOG_BASIC, "requested rebuild of %d files", built.length);
+        if (logLevel >= LOG_FULL) {
+            for (File builtFile : built) {
+                log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
+            }
+        }
 
+        // Make sure Eclipse knows about the changed files (should already have been done?)
+        IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));
+        targetFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+        // Replace into the workspace OBR provider
         if (built.length > 0) {
             try {
                 Central.getWorkspaceObrProvider().replaceProjectFiles(model, built);
@@ -381,6 +425,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         }
 
+        // Report errors
         List<String> errors = new ArrayList<String>(model.getErrors());
         List<String> warnings = new ArrayList<String>(model.getWarnings());
         createBuildMarkers(errors, warnings);
