@@ -28,3 +28,5 @@ Import-Package: \
 	ee.minimum;version=1.2.1,\
 	junit.osgi
 	
+javac.target=1.4
+javac.source=1.4
