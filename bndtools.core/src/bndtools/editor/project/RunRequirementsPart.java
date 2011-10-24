@@ -220,7 +220,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 for (VersionedClause bundle : result) {
                     StringBuilder filterBuilder = new StringBuilder();
                     String versionRangeStr = bundle.getVersionRange();
-                    if (versionRangeStr != null) {
+                    if (versionRangeStr != null && !"latest".equals(versionRangeStr)) {
                         VersionRange versionRange = new VersionRange(versionRangeStr);
 
                         filterBuilder.append("(&");
