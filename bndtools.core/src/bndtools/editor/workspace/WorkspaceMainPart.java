@@ -11,8 +11,10 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -36,6 +38,7 @@ public class WorkspaceMainPart extends SectionPart {
     private final Color warningColor;
     private final Image bndFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
     private final Image extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png").createImage();
+    private final Image warningImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
 
     public WorkspaceMainPart(boolean mainFile, Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -98,10 +101,16 @@ public class WorkspaceMainPart extends SectionPart {
                 link.setImage(bndFileImg);
                 link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
             } else {
+                IResource[] extFiles;
+
                 IContainer cnfDir = buildFile.getParent();
                 IFolder extDir = cnfDir.getFolder(new Path("ext"));
-                if (extDir.exists()) {
-                    IResource[] extFiles = extDir.members();
+                if (extDir.exists())
+                    extFiles = extDir.members();
+                else
+                    extFiles = new IResource[0];
+
+                if (extFiles.length > 0) {
                     for (IResource extFile : extFiles) {
                         if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
                             ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);
@@ -110,11 +119,27 @@ public class WorkspaceMainPart extends SectionPart {
                             link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
                         }
                     }
+                } else {
+                    createMissingExtsWarningPanel(container, form.getToolkit(), extDir.getFullPath());
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void createMissingExtsWarningPanel(Composite parent, FormToolkit tk, IPath extPath) {
+        Composite composite = tk.createComposite(parent);
+
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        composite.setLayout(layout);
+
+        Label l1 = tk.createLabel(composite, "image");
+        l1.setImage(warningImg);
+        Label l2 = tk.createLabel(composite, String.format("No default configuration files found under %s", extPath));
+        l2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
     }
 
     @Override
@@ -123,6 +148,7 @@ public class WorkspaceMainPart extends SectionPart {
         warningColor.dispose();
         bndFileImg.dispose();
         extFileImg.dispose();
+        warningImg.dispose();
     }
 
 }
