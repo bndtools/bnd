@@ -1,20 +1,26 @@
 package bndtools.wizards.obr;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
+import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
 import org.apache.felix.utils.log.Logger;
@@ -35,6 +41,7 @@ import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.lib.osgi.Builder;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
@@ -102,6 +109,9 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         Resolver resolver = repoAdmin.resolver();
 
+        // Add project builders
+        Set<Resource> projectBuildResources = addProjectBuildBundles(resolver);
+
         // Add EE capabilities
         EE ee = model.getEE();
         if (ee == null)
@@ -109,6 +119,14 @@ public class ResolveOperation implements IRunnableWithProgress {
         resolver.addGlobalCapability(createEeCapability(ee));
         for (EE compat : ee.getCompatible()) {
             resolver.addGlobalCapability(createEeCapability(compat));
+        }
+
+        // HACK: add capabilities for usual framework services (not all frameworks declare these statically)
+        String[] frameworkServices = new String[] { "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin" };
+        for (String frameworkService : frameworkServices) {
+            Map<String, String> props = new HashMap<String, String>();
+            props.put(ObrConstants.FILTER_SERVICE, frameworkService);
+            resolver.addGlobalCapability(helper.capability(ObrConstants.REQUIREMENT_SERVICE, props));
         }
 
         // Add requirements
@@ -119,8 +137,48 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         boolean resolved = resolver.resolve();
 
-        result = new ObrResolutionResult(resolved, Arrays.asList(resolver.getRequiredResources()), Arrays.asList(resolver.getOptionalResources()),
+        result = new ObrResolutionResult(resolved, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
                 Arrays.asList(resolver.getUnsatisfiedRequirements()));
+    }
+
+    private Set<Resource> addProjectBuildBundles(Resolver resolver) {
+        if (!Project.BNDFILE.equals(runFile.getName()))
+            return Collections.emptySet();
+
+        Set<Resource> result = new HashSet<Resource>();
+        try {
+
+            Project model = Workspace.getProject(runFile.getProject().getLocation().toFile());
+            for (Builder builder : model.getSubBuilders()) {
+                File file = new File(model.getTarget(), builder.getBsn() + ".jar");
+                if (file.isFile()) {
+                    try {
+                        JarInputStream stream = new JarInputStream(new FileInputStream(file));
+                        Manifest manifest = stream.getManifest();
+
+                        Resource resource = helper.createResource(manifest.getMainAttributes());
+                        result.add(resource);
+                        resolver.add(resource);
+                    } catch (IOException e) {
+                        Plugin.logError("Error reading project bundle " + file, e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Plugin.logError("Error getting builders for project: " + runFile.getProject(), e);
+        }
+        return result;
+    }
+
+    private static List<Resource> filterGlobalResource(Resource[] resources) {
+        ArrayList<Resource> result = new ArrayList<Resource>(resources.length);
+
+        for (Resource resource : resources) {
+            if (resource != null && resource.getId() != null)
+                result.add(resource);
+        }
+
+        return result;
     }
 
     public ObrResolutionResult getResult() {

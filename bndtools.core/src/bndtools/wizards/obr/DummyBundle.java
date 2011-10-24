@@ -41,16 +41,16 @@ public class DummyBundle implements Bundle {
         props = new Properties() {
             @Override
             public Object get(Object key) {
-                if (DEBUG) System.out.println("=== getHeaders --> " + key);
-                return super.get(key);
+                Object value = super.get(key);
+                if (DEBUG) System.out.println("=== getHeaders --> " + key + " = " + value);
+                return value;
             }
         };
         Attributes attribs = manifest.getMainAttributes();
-
-        copy(attribs, props, Constants.BUNDLE_SYMBOLICNAME);
-        copy(attribs, props, Constants.BUNDLE_VERSION);
-        copy(attribs, props, Constants.EXPORT_PACKAGE);
-        copy(attribs, props, Constants.EXPORT_SERVICE);
+        for (Object key : attribs.keySet()) {
+            String name = key.toString();
+            props.put(name, attribs.getValue(name));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -130,7 +130,7 @@ public class DummyBundle implements Bundle {
 
     public int getState() {
         if (DEBUG) System.out.println("=== getState");
-        return 0;
+        return id == 0 ? ACTIVE : INSTALLED;
     }
 
     public String getSymbolicName() {

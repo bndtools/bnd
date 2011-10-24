@@ -3,7 +3,9 @@ package bndtools.wizards.obr;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -21,12 +23,16 @@ public class DummyBundleContext implements BundleContext {
 
     private static final boolean DEBUG = false;
 
-    private final File systemBundleFile;
-    private final DummyBundle systemBundle;;
+    private final List<DummyBundle> bundles = new ArrayList<DummyBundle>(5);
 
     public DummyBundleContext(File systemBundleFile) throws IOException {
-        this.systemBundleFile = systemBundleFile;
-        this.systemBundle = new DummyBundle(0, this, systemBundleFile);
+        DummyBundle systemBundle = new DummyBundle(0, this, systemBundleFile);
+        bundles.add(systemBundle);
+    }
+
+    public synchronized void installFile(File file) throws IOException {
+        DummyBundle bundle = new DummyBundle(bundles.size(), this, file);
+        bundles.add(bundle);
     }
 
     public void addBundleListener(BundleListener arg0) {
@@ -57,19 +63,17 @@ public class DummyBundleContext implements BundleContext {
 
     public Bundle getBundle() {
         if (DEBUG) System.out.println("--- getBundle()");
-        return systemBundle;
+        return bundles.get(0);
     }
 
     public Bundle getBundle(long id) {
         if (DEBUG) System.out.println("--- getBundle(" + id + ")");
-        if (id == 0)
-            return systemBundle;
-        return null;
+        return bundles.get((int) id);
     }
 
     public Bundle[] getBundles() {
         if (DEBUG) System.out.println("--- getBundles()");
-        return new Bundle[] { systemBundle };
+        return bundles.toArray(new Bundle[bundles.size()]);
     }
 
     public File getDataFile(String arg0) {
