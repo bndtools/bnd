@@ -13,6 +13,7 @@ import java.util.List;
 import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
+import org.bndtools.core.obr.ObrResolutionJob;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
 import org.bndtools.core.utils.filters.ObrConstants;
@@ -71,7 +72,6 @@ import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.wizards.obr.ObrResolutionJob;
 import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
@@ -297,12 +297,9 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         // Add the operation to perform at the end of the resolution job (i.e., showing the result)
         final Runnable showResult = new Runnable() {
             public void run() {
-                IStatus status = job.getResult();
-                if (status.isOK()) {
-                    ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
-                    WizardDialog dialog = new WizardDialog(parentShell, wizard);
-                    dialog.open();
-                }
+                ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
+                WizardDialog dialog = new WizardDialog(parentShell, wizard);
+                dialog.open();
             }
         };
         job.addJobChangeListener(new JobChangeAdapter() {

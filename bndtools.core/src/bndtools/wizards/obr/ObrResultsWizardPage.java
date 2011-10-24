@@ -12,6 +12,8 @@ import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
+import org.bndtools.core.obr.ObrResolutionResult;
+import org.bndtools.core.obr.ResolveOperation;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
 import org.bndtools.core.utils.jface.StatusLabelProvider;
@@ -19,10 +21,11 @@ import org.bndtools.core.utils.jface.StatusTreeContentProvider;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -65,7 +68,6 @@ public class ObrResultsWizardPage extends WizardPage {
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
-    private MultiStatus status;
 
     private TabFolder tabFolder;
 
@@ -202,7 +204,9 @@ public class ObrResultsWizardPage extends WizardPage {
 
         Composite composite = new Composite(tabFolder, SWT.NONE);
         tbtmErrors.setControl(composite);
-        composite.setLayout(new GridLayout(1, false));
+        GridLayout gl_composite = new GridLayout(1, false);
+        gl_composite.marginRight = 7;
+        composite.setLayout(gl_composite);
 
         Label lblProcessingErrors = new Label(composite, SWT.NONE);
         lblProcessingErrors.setText("Processing Errors:");
@@ -213,6 +217,11 @@ public class ObrResultsWizardPage extends WizardPage {
         tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
 
         processingErrorsViewer = new TableViewer(tblProcessingErrors);
+
+        ControlDecoration controlDecoration = new ControlDecoration(tblProcessingErrors, SWT.RIGHT | SWT.TOP);
+        controlDecoration.setMarginWidth(2);
+        controlDecoration.setDescriptionText("Double-click to view details");
+        controlDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
         processingErrorsViewer.setContentProvider(new StatusTreeContentProvider());
         processingErrorsViewer.setLabelProvider(new StatusLabelProvider());
 
@@ -277,12 +286,9 @@ public class ObrResultsWizardPage extends WizardPage {
     private void reresolve() {
         checkedOptional.clear();
         try {
-            status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors during OBR resolution.", null);
-
-            ResolveOperation resolver = new ResolveOperation(file, model, status);
+            ResolveOperation resolver = new ResolveOperation(file, model);
             getContainer().run(false, true, resolver);
 
-            processingErrorsViewer.setInput(status);
             setResult(resolver.getResult());
         } catch (InvocationTargetException e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unexpected error", e));
@@ -330,8 +336,9 @@ public class ObrResultsWizardPage extends WizardPage {
         requiredViewer.setInput(result != null ? result.getRequired() : null);
         optionalViewer.setInput(result != null ? result.getOptional() : null);
         unresolvedViewer.setInput(result != null ? result.getUnresolved() : null);
+        processingErrorsViewer.setInput(result != null ? result.getStatus() : null);
 
-        boolean resolved = result != null && result.isResolved() && (status == null || status.getSeverity() < IStatus.ERROR);
+        boolean resolved = result != null && result.isResolved() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
 
         SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
         SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
@@ -352,7 +359,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return result != null && result.isResolved() &&  checkedOptional.isEmpty() && (status == null || status.getSeverity() < IStatus.ERROR);
+        return result != null && result.isResolved() &&  checkedOptional.isEmpty() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

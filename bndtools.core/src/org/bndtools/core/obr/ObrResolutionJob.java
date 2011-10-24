@@ -1,9 +1,8 @@
-package bndtools.wizards.obr;
+package org.bndtools.core.obr;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
@@ -33,13 +32,11 @@ public class ObrResolutionJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Error during OBR resolution.", null);
-
-        ResolveOperation operation = new ResolveOperation(runFile, model, status);
+        ResolveOperation operation = new ResolveOperation(runFile, model);
         operation.run(monitor);
         result = operation.getResult();
 
-        return status.isOK() ? Status.OK_STATUS : status;
+        return Status.OK_STATUS;
     }
 
     public ObrResolutionResult getResolutionResult() {

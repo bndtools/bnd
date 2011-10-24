@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.felix.bundlerepository.Resource;
+import org.bndtools.core.obr.ObrResolutionResult;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.wizard.Wizard;
 import org.osgi.framework.Constants;

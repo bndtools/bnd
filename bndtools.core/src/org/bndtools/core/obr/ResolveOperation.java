@@ -1,8 +1,9 @@
-package bndtools.wizards.obr;
+package org.bndtools.core.obr;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +13,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.DataModelHelper;
+import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
@@ -32,6 +35,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
@@ -41,7 +45,9 @@ import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Processor;
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
@@ -60,18 +66,17 @@ public class ResolveOperation implements IRunnableWithProgress {
     private final IFile runFile;
     private final IBndModel model;
 
-    private final MultiStatus status;
-
     private ObrResolutionResult result = null;
 
-    public ResolveOperation(IFile runFile, IBndModel model, MultiStatus status) {
+    public ResolveOperation(IFile runFile, IBndModel model) {
         this.runFile = runFile;
         this.model = model;
-        this.status = status;
     }
 
     public void run(IProgressMonitor monitor) {
         SubMonitor progress = SubMonitor.convert(monitor, "Resolving...", 0);
+
+        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems during OBR resolution", null);
 
         // Get the repositories
         List<OBRIndexProvider> repos;
@@ -79,18 +84,22 @@ public class ResolveOperation implements IRunnableWithProgress {
             repos = loadRepos();
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading OBR indexes.", e));
+            result = createErrorResult(status);
             return;
         }
 
         // Create the dummy system bundle and repository admin
-        File frameworkFile = findFramework();
-        if (frameworkFile == null)
+        File frameworkFile = findFramework(status);
+        if (frameworkFile == null) {
+            result = createErrorResult(status);
             return;
+        }
         DummyBundleContext bundleContext;
         try {
             bundleContext = new DummyBundleContext(frameworkFile);
         } catch (IOException e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading system bundle manifest.", e));
+            result = createErrorResult(status);
             return;
         }
         RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
@@ -121,6 +130,15 @@ public class ResolveOperation implements IRunnableWithProgress {
             resolver.addGlobalCapability(createEeCapability(compat));
         }
 
+        // Add JRE package capabilities
+        try {
+            addJREPackageCapabilities(resolver, ee);
+        } catch (IOException e) {
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding JRE package capabilities", e));
+            result = createErrorResult(status);
+            return;
+        }
+
         // HACK: add capabilities for usual framework services (not all frameworks declare these statically)
         String[] frameworkServices = new String[] { "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin" };
         for (String frameworkService : frameworkServices) {
@@ -137,8 +155,43 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         boolean resolved = resolver.resolve();
 
-        result = new ObrResolutionResult(resolved, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
+        result = new ObrResolutionResult(resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
                 Arrays.asList(resolver.getUnsatisfiedRequirements()));
+    }
+
+    private ObrResolutionResult createErrorResult(MultiStatus status) {
+        return new ObrResolutionResult(false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList(), Collections.<Reason>emptyList());
+    }
+
+    private void addJREPackageCapabilities(Resolver resolver, EE ee) throws IOException {
+        // EE Package Capabilities
+        Properties pkgProps = new Properties();
+        URL pkgsResource = ResolveOperation.class.getResource(ee.name() + ".properties");
+        if (pkgsResource == null)
+            throw new IOException(String.format("No JRE package definition available for Execution Env %s.", ee.getEEName()));
+
+        InputStream stream = null;
+        try {
+            stream = pkgsResource.openStream();
+            pkgProps.load(stream);
+        } finally {
+            if (stream != null) IO.close(stream);
+        }
+        String pkgsStr = pkgProps.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES);
+
+        Map<String, Map<String, String>> header = OSGiHeader.parseHeader(pkgsStr);
+        for (Entry<String, Map<String, String>> entry : header.entrySet()) {
+            String pkgName = Processor.removeDuplicateMarker(entry.getKey());
+            String version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
+
+            Map<String, String> capabilityProps = new HashMap<String, String>();
+            capabilityProps.put(ObrConstants.FILTER_PACKAGE, pkgName);
+            if (version != null)
+                capabilityProps.put(ObrConstants.FILTER_VERSION, version);
+
+            Capability capability = helper.capability(ObrConstants.REQUIREMENT_PACKAGE, capabilityProps);
+            resolver.addGlobalCapability(capability);
+        }
     }
 
     private Set<Resource> addProjectBuildBundles(Resolver resolver) {
@@ -200,7 +253,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         return repos;
     }
 
-    private File findFramework() {
+    private File findFramework(MultiStatus status) {
         String runFramework = model.getRunFramework();
         Map<String, Map<String, String>> header = OSGiHeader.parseHeader(runFramework);
         if (header.size() != 1) {

@@ -1,4 +1,4 @@
-package bndtools.wizards.obr;
+package org.bndtools.core.obr;
 
 import java.io.File;
 import java.io.IOException;
