@@ -32,9 +32,23 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         */
     }
 
-
-
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
+
+    protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
+
+    @Override
+    public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        boolean result = super.buildForLaunch(configuration, mode, monitor);
+
+        Project model = LaunchUtils.getBndProject(configuration);
+        try {
+            initialiseBndLauncher(configuration, model);
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising bnd launcher", e));
+        }
+
+        return result;
+    }
 
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {

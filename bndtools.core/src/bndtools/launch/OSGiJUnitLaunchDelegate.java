@@ -31,8 +31,22 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     private static final String JDT_JUNIT_BSN = "org.eclipse.jdt.junit";
     private static final String ATTR_JUNIT_PORT = "org.eclipse.jdt.junit.PORT";
 
+    private int junitPort;
     private ProjectTester bndTester;
     private EclipseJUnitTester bndEclipseTester;
+
+    @Override
+    protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
+        Project project = LaunchUtils.getBndProject(configuration);
+        synchronized (project) {
+            bndTester = project.getProjectTester();
+        }
+
+        if (bndTester instanceof EclipseJUnitTester)
+            bndEclipseTester = (EclipseJUnitTester) bndTester;
+        junitPort = configureTester(configuration);
+        bndTester.prepare();
+    }
 
     // A couple of hacks to make sure the JUnit plugin is active and notices our launch.
     @Override
@@ -66,17 +80,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
-            Project project = LaunchUtils.getBndProject(configuration);
-            synchronized (project) {
-                bndTester = project.getProjectTester();
-            }
-
-            if (bndTester instanceof EclipseJUnitTester)
-                bndEclipseTester = (EclipseJUnitTester) bndTester;
-
-            configureTester(configuration, launch);
-            bndTester.prepare();
-
+            launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(junitPort));
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project tester.", e));
         }
@@ -84,13 +88,12 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
-    private void configureTester(ILaunchConfiguration configuration, ILaunch launch) throws CoreException {
+    private int configureTester(ILaunchConfiguration configuration) throws CoreException {
         assertBndEclipseTester();
 
         // Find free socket for JUnit protocol
         int port = SocketUtil.findFreePort();
         bndEclipseTester.setPort(port);
-        launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(port));
 
         // Enable tracing?
         bndTester.getProjectLauncher().setTrace(enableTraceOption(configuration));
@@ -107,6 +110,8 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
                 testName += ":" + testMethod;
             bndTester.addTest(testName);
         }
+
+        return port;
     }
 
     private void assertBndEclipseTester() throws CoreException {

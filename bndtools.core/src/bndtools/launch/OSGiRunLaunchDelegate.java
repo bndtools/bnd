@@ -30,26 +30,27 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     private ProjectLauncher bndLauncher = null;
 
     @Override
+    protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
+        synchronized (model) {
+            bndLauncher = model.getProjectLauncher();
+        }
+        configureLauncher(configuration);
+        bndLauncher.prepare();
+    }
+
+    @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
 
         waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
-            Project project = LaunchUtils.getBndProject(configuration);
-            synchronized (project) {
-                bndLauncher = project.getProjectLauncher();
-            }
-            configureLauncher(configuration);
-            bndLauncher.prepare();
-
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
             if (dynamic)
-                registerLaunchPropertiesRegenerator(project, launch);
+                registerLaunchPropertiesRegenerator(LaunchUtils.getBndProject(configuration), launch);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }
-
 
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
