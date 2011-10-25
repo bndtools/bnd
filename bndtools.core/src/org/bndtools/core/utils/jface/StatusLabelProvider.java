@@ -25,7 +25,7 @@ public class StatusLabelProvider extends StyledCellLabelProvider {
             cell.setImage(imgError);
             break;
         case IStatus.WARNING:
-            if (imgWarning == null) imgWarning = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning.gif").createImage();
+            if (imgWarning == null) imgWarning = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
             cell.setImage(imgWarning);
             break;
         case IStatus.INFO:

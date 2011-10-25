@@ -48,6 +48,11 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         bndTester.prepare();
     }
 
+    @Override
+    protected IStatus getLauncherStatus() {
+        return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher().getErrors(), bndTester.getProjectLauncher().getWarnings());
+    }
+
     // A couple of hacks to make sure the JUnit plugin is active and notices our launch.
     @Override
     public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
@@ -76,8 +81,6 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
-
-        waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
             launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(junitPort));

@@ -39,10 +39,13 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     }
 
     @Override
+    protected IStatus getLauncherStatus() {
+        return createStatus("Problem(s) preparing the runtime environment.", bndLauncher.getErrors(), bndLauncher.getWarnings());
+    }
+
+    @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
-
-        waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         try {
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);

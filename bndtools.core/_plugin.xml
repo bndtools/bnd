@@ -765,5 +765,14 @@
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
    </extension>
+   
+   <extension point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+         id="bndtools.core.debug.statusHandler"
+         class="bndtools.launch.ui.LaunchStatusHandler"
+         plugin="bndtools.core"
+         code="0"
+      />
+   </extension>
 
  </plugin>
