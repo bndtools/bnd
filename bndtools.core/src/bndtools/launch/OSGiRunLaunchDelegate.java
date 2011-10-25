@@ -1,5 +1,6 @@
 package bndtools.launch;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,7 +78,12 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
      */
     private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
         final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
-        final IPath bndbndPath = Central.toPath(project, project.getPropertiesFile());
+        final IPath bndbndPath;
+        try {
+            bndbndPath = Central.toPath(project, project.getPropertiesFile());
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
+        }
 
         final IPath targetPath;
         try {

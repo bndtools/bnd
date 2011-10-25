@@ -229,22 +229,28 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
                 }
 
-                IPath p = fileToPath(model, file);
-
-                if (c.getType() == Container.TYPE.PROJECT) {
-                    IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
-                    List<IAccessRule> rules = projectAccessRules.get(c.getProject());
-                    IAccessRule[] accessRules = null;
-                    if (rules != null) {
-                        rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-                        accessRules = rules.toArray(new IAccessRule[rules.size()]);
-                    }
-                    cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
-                } else {
-                    IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
-                    cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                IPath p = null;
+                try {
+                    p = fileToPath(model, file);
+                } catch (IOException e) {
+                    errors.add(String.format("Failed to convert file %s to Eclipse path", file));
                 }
-                result.add(cpe);
+                if (p != null) {
+                    if (c.getType() == Container.TYPE.PROJECT) {
+                        IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
+                        List<IAccessRule> rules = projectAccessRules.get(c.getProject());
+                        IAccessRule[] accessRules = null;
+                        if (rules != null) {
+                            rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                            accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                        }
+                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
+                    } else {
+                        IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
+                        cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                    }
+                    result.add(cpe);
+                }
             } else {
                 errors.add(c.getError());
             }
@@ -375,7 +381,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    protected static IPath fileToPath(Project project, File file) {
+    protected static IPath fileToPath(Project project, File file) throws IOException {
         IPath path = Central.toPath(project, file);
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
