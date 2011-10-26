@@ -30,6 +30,8 @@ public abstract class ProjectLauncher {
 	private Map<String, Map<String, String>>	runsystempackages;
 	private final List<String>					activators			= Create.list();
 	private File								storageDir;
+	private final List<String>					warnings			= Create.list();
+	private final List<String>					errors				= Create.list();
 
 	private boolean								trace;
 	private boolean								keep;
@@ -72,8 +74,11 @@ public abstract class ProjectLauncher {
 		
 		for (Container container : run) {
 			File file = container.getFile();
-			if (file != null && (file.isFile() || file.isDirectory()))
+			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(file.getAbsolutePath());
+			} else {
+				warning("Bundle file \"%s\" does not exist", file.getAbsolutePath());
+			}
 		}
 
 		if (project.getRunBuilds()) {
@@ -323,5 +328,28 @@ public abstract class ProjectLauncher {
 
 	public Jar executable() throws Exception {
 		throw new UnsupportedOperationException();
+	}
+	
+	public void clear() {
+		errors.clear();
+		warnings.clear();
+	}
+	
+	public List<String> getErrors() {
+		return Collections.unmodifiableList(errors);
+	}
+	
+	public List<String> getWarnings() {
+		return Collections.unmodifiableList(warnings);
+	}
+	
+	protected void error(String message, Object... args) {
+		String formatted = String.format(message, args);
+		errors.add(formatted);
+	}
+
+	protected void warning(String message, Object... args) {
+		String formatted = String.format(message, args);
+		warnings.add(formatted);
 	}
 }
