@@ -3,9 +3,6 @@ package aQute.eclipse.compiler;
 import java.io.*;
 import java.util.*;
 
-import org.eclipse.jdt.core.compiler.*;
-import org.eclipse.jdt.core.compiler.batch.*;
-
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
@@ -58,31 +55,31 @@ import aQute.libg.generics.*;
 		StringWriter warnings = new StringWriter();
 		project.trace("Compile cmd: %s", sb);
 
-		CompilationProgress cp = new CompilationProgress() {
-
-			@Override public void worked(int workIncrement, int remainingWork) {
-				project.trace("compiler worked: %d/%d", workIncrement,
-						remainingWork);
-			}
-
-			@Override public void setTaskName(String name) {
-				project.trace("compiler task: %s", name);
-			}
-
-			@Override public boolean isCanceled() {
-				return false;
-			}
-
-			@Override public void done() {
-				project.trace("compiler done");
-			}
-
-			@Override public void begin(int remainingWork) {
-				project.trace("compiler begin");
-			}
-		};
-		BatchCompiler.compile(sb.toString(), new PrintWriter(errors),
-				new PrintWriter(warnings), cp);
+//		CompilationProgress cp = new CompilationProgress() {
+//
+//			@Override public void worked(int workIncrement, int remainingWork) {
+//				project.trace("compiler worked: %d/%d", workIncrement,
+//						remainingWork);
+//			}
+//
+//			@Override public void setTaskName(String name) {
+//				project.trace("compiler task: %s", name);
+//			}
+//
+//			@Override public boolean isCanceled() {
+//				return false;
+//			}
+//
+//			@Override public void done() {
+//				project.trace("compiler done");
+//			}
+//
+//			@Override public void begin(int remainingWork) {
+//				project.trace("compiler begin");
+//			}
+//		};
+//		BatchCompiler.compile(sb.toString(), new PrintWriter(errors),
+//				new PrintWriter(warnings), cp);
 		project.getErrors().addAll(Processor.split(errors.toString(), "\n"));
 		project.getWarnings().addAll(Processor.split(warnings.toString(), "\n"));
 		return true;
