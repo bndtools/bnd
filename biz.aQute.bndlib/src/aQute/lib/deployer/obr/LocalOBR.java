@@ -23,8 +23,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import aQute.bnd.service.Refreshable;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryPlugin;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
@@ -33,22 +31,17 @@ import aQute.libg.sax.SAXUtil;
 import aQute.libg.sax.filters.MergeContentFilter;
 import aQute.libg.version.Version;
 
-public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
+public class LocalOBR extends OBR implements Refreshable {
 	
 	public static final String PROP_LOCAL_DIR = "local";
 	public static final String PROP_READONLY = "readonly";
 
 	private final FileRepo storageRepo = new FileRepo();
 	
-	private Registry registry;
 	private File storageDir;
 	private File localIndex;
 	
 	private List<URL> indexUrls;
-	
-	public void setRegistry(Registry registry) {
-		this.registry = registry;
-	}
 	
 	@Override
 	public void setReporter(Reporter reporter) {
@@ -112,7 +105,7 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 			if (!allFiles.isEmpty()) {
 				Map<String, String> config = new HashMap<String, String>();
 				config.put(BundleIndexer.REPOSITORY_NAME, this.getName());
-				config.put(BundleIndexer.ROOT_URL, localIndex.toURI().toURL().toString());
+				config.put(BundleIndexer.ROOT_URL, localIndex.getCanonicalFile().toURI().toURL().toString());
 				indexer.index(allFiles, out, config);
 			} else {
 				ByteArrayInputStream emptyRepo = new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>\n<repository lastmodified='0'/>".getBytes());
@@ -130,7 +123,7 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 			if (versions != null) for (Version version : versions) {
 				File file = storageRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
 				if (file != null)
-					allFiles.add(file);
+					allFiles.add(file.getCanonicalFile());
 			}
 		}
 	}
@@ -154,7 +147,11 @@ public class LocalOBR extends OBR implements Refreshable, RegistryPlugin {
 		if (indexer == null)
 			throw new IllegalStateException("Cannot index repository: no Bundle Indexer service or plugin found.");
 		ByteArrayOutputStream newIndexBuffer = new ByteArrayOutputStream();
-		indexer.index(Collections.singleton(newFile), newIndexBuffer, null);
+
+		Map<String, String> config = new HashMap<String, String>();
+		config.put(BundleIndexer.REPOSITORY_NAME, this.getName());
+		config.put(BundleIndexer.ROOT_URL, localIndex.getCanonicalFile().toURI().toURL().toString());
+		indexer.index(Collections.singleton(newFile.getCanonicalFile()), newIndexBuffer, null);
 		
 		// Merge into main index
 		File tempIndex = File.createTempFile("repository", ".xml");

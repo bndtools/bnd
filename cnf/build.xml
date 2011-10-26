@@ -104,8 +104,8 @@
 			</classpath>
 		</taskdef>
 
-		<bindex root="${workspacedir}/cnf/releaserepo" repositoryfile="${workspacedir}/cnf/releaserepo/repository.xml" quiet="yes">
-			<fileset dir="${workspacedir}/cnf/releaserepo" includes="**/*.jar" />
+		<bindex root="${releaserepo}" repositoryfile="${releaserepo}/repository.xml" quiet="yes">
+			<fileset dir="${releaserepo}" includes="**/*.jar" />
 		</bindex>
 	</target>
 

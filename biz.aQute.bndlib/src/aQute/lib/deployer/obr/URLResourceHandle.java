@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.url.URLConnector;
 
 public class URLResourceHandle implements ResourceHandle {
 	
@@ -18,6 +19,7 @@ public class URLResourceHandle implements ResourceHandle {
 	static final String HTTP_SCHEME = "http:";
 	
 	final File cacheDir;
+	final URLConnector connector;
 	
 	// The resolved, absolute URL of the resource
 	final URL url;
@@ -27,9 +29,15 @@ public class URLResourceHandle implements ResourceHandle {
 	
 	// The cached file copy of the resource, if it is remote and has been downloaded.
 	final File cachedFile;
-
+	
 	public URLResourceHandle(String url, String baseUrl, final File cacheDir) throws IOException {
+		this(url, baseUrl, cacheDir, new DefaultURLConnector());
+	}
+	
+	public URLResourceHandle(String url, String baseUrl, final File cacheDir, URLConnector connector) throws IOException {
 		this.cacheDir = cacheDir;
+		this.connector = connector;
+		
 		if (url.startsWith(FILE_SCHEME)) {
 			// File URL may be relative or absolute
 			File file = new File(url.substring(FILE_SCHEME.length()));
@@ -114,11 +122,11 @@ public class URLResourceHandle implements ResourceHandle {
 		return cachedFile;
 	}
 	
-	private static void downloadToFile(URL url, File file) throws IOException {
+	void downloadToFile(URL url, File file) throws IOException {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
-			in = url.openStream();
+			in = connector.connect(url);
 			out = new FileOutputStream(file);
 			
 			byte[] buf = new byte[1024];
