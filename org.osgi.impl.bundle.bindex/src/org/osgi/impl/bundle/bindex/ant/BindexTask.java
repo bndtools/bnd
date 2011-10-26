@@ -139,7 +139,7 @@ public class BindexTask extends Task {
 		run();
 	}
 
-	public void run() throws BuildException {
+	protected void run() throws BuildException {
 		try {
 			// Parameters setting section
 
