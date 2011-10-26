@@ -190,7 +190,7 @@ public class Central {
             workspace = Workspace.getWorkspace(workspaceDir);
         }
 
-        workspace.addBasicPlugin(new FilesystemUpdateListener());
+        workspace.addBasicPlugin(new WorkspaceListener(workspace));
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
         workspace.addBasicPlugin(getWorkspaceObrProvider());

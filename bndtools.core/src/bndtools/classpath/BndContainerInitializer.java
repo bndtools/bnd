@@ -385,12 +385,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         IPath path = Central.toPath(project, file);
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
-
-        try {
-            Central.refresh(path);
-        } catch (Throwable e) {
-        }
-
         return path;
     }
 }

@@ -80,7 +80,7 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: biz.aQute.bndlib;version=1.48.1,\
+-buildpath: biz.aQute.bndlib;version=1.48.2,\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\

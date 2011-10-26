@@ -79,9 +79,9 @@ public class ResolveOperation implements IRunnableWithProgress {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems during OBR resolution", null);
 
         // Get the repositories
-        List<OBRIndexProvider> repos;
+        List<OBRIndexProvider> indexProviders;
         try {
-            repos = loadRepos();
+            indexProviders = loadIndexProviders();
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading OBR indexes.", e));
             result = createErrorResult(status);
@@ -102,13 +102,14 @@ public class ResolveOperation implements IRunnableWithProgress {
             result = createErrorResult(status);
             return;
         }
-        RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
 
-        // Populate repository URLs
-        for (OBRIndexProvider repo : repos) {
-            String repoName = (repo instanceof RepositoryPlugin) ? ((RepositoryPlugin) repo).getName() : repo.toString();
+
+        // Load repositories
+        RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
+        for (OBRIndexProvider prov : indexProviders) {
+            String repoName = (prov instanceof RepositoryPlugin) ? ((RepositoryPlugin) prov).getName() : prov.toString();
             try {
-                for (URL indexUrl : repo.getOBRIndexes()) {
+                for (URL indexUrl : prov.getOBRIndexes()) {
                     repoAdmin.addRepository(indexUrl);
                 }
             } catch (Exception e) {
@@ -238,7 +239,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         return result;
     }
 
-    private List<OBRIndexProvider> loadRepos() throws Exception {
+    private List<OBRIndexProvider> loadIndexProviders() throws Exception {
         Pair<List<OBRIndexProvider>, Set<String>> preferences = ObrPreferences.loadAvailableReposAndExclusions();
         List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(preferences.getFirst().size());
 
