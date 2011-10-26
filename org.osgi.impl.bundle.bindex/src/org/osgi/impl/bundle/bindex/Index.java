@@ -89,7 +89,12 @@ public class Index {
 		this.repository = repository;
 	}
 
-	private String repositoryFile = "repository.xml";
+	private File repositoryFile = new File("repository.xml");
+
+	public void setRepositoryFile(File repositoryFile) {
+		this.repositoryFile = repositoryFile;
+	}
+
 	private boolean ignoreFlag = false;
 
 	/**
@@ -119,9 +124,9 @@ public class Index {
 				else if (args[i].equals("-stylesheet")) {
 					stylesheet = args[++i];
 				} else if (args[i].startsWith("-r")) {
-					repositoryFile = args[++i];
+					repositoryFile = new File(args[++i]);
 					repository = new RepositoryImpl(
-							new File(repositoryFile).getAbsoluteFile()
+							repositoryFile.getAbsoluteFile()
 									.toURI().toURL());
 				} else if (args[i].startsWith("-q"))
 					quiet = true;
@@ -179,7 +184,7 @@ public class Index {
 			String name = "repository.xml";
 			FileOutputStream fout = new FileOutputStream(repositoryFile);
 
-			if (repositoryFile.endsWith(".zip")) {
+			if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
 				ZipOutputStream zip = new ZipOutputStream(fout);
 				CRC32 checksum = new CRC32();
 				checksum.update(buffer);

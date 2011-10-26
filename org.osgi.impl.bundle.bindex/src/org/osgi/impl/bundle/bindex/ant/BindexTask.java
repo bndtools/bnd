@@ -95,7 +95,7 @@ public class BindexTask extends Task {
 		this.repository = repository;
 	}
 
-	private File repositoryFile; // optional
+	private File repositoryFile = null;
 
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
