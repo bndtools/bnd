@@ -26,7 +26,6 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.FileSet;
 import org.osgi.impl.bundle.obr.resource.*;
 
-
 /**
  * This Ant task is based on the http://bundles.osgi.org/build/jar/bindex.jar
  * source code
@@ -39,13 +38,12 @@ import org.osgi.impl.bundle.obr.resource.*;
  * server's file system.
  * 
  * @version $Revision$
- * 
  */
 public class BindexTask extends Task {
-	File			repositoryFile;										// optional
-	String			license;												// optional
-	boolean			quiet						= false;					// optional
-	String			name						= "Untitled";				// optional
+	File repositoryFile; // optional
+	String license; // optional
+	boolean quiet = false; // optional
+	String name = "Untitled"; // optional
 
 	/**
 	 * template for the URL containing the following symbols
@@ -58,13 +56,12 @@ public class BindexTask extends Task {
 	 * <p>
 	 * %p is the dir path
 	 */
-	String			urlTemplate					= null;					// optional
-	File			rootFile					= new File("")
-														.getAbsoluteFile(); // optional
-	List<FileSet>	filesets	= new LinkedList<FileSet>();		// mandatory
-	RepositoryImpl	repository;
-	String			root;
-	Set<ResourceImpl>	resources					= new HashSet<ResourceImpl>();
+	String urlTemplate = null; // optional
+	File rootFile = new File("").getAbsoluteFile(); // optional
+	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
+	RepositoryImpl repository;
+	String root;
+	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
 	public void setLicenseURL(String license) {
 		this.license = license;
@@ -99,7 +96,6 @@ public class BindexTask extends Task {
 	 * 
 	 * @param args
 	 * @throws Exception
-	 * @throws Exception
 	 */
 	public void execute() throws BuildException {
 
@@ -116,14 +112,12 @@ public class BindexTask extends Task {
 
 			try {
 				root = rootFile.toURI().toURL().toString();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new BuildException(e + " for rootFile");
 			}
 			try {
 				repository = new RepositoryImpl(rootFile.toURI().toURL());
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new BuildException(e + " for repo");
 			}
 
@@ -134,8 +128,7 @@ public class BindexTask extends Task {
 				for (int i = 0; i < files.length; i++)
 					try {
 						recurse(resources, new File(basedir, files[i]));
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new BuildException(e);
 					}
 			}
@@ -173,8 +166,7 @@ public class BindexTask extends Task {
 					zip.write(buffer, 0, buffer.length);
 					zip.closeEntry();
 					zip.close();
-				}
-				else {
+				} else {
 					fout.write(buffer);
 				}
 				fout.close();
@@ -187,11 +179,9 @@ public class BindexTask extends Task {
 				pw.close();
 			}
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BuildException(e);
 		}
-
 	}
 
 	String getName(ResourceImpl impl) {
@@ -209,8 +199,7 @@ public class BindexTask extends Task {
 			for (int i = 0; i < list.length; i++) {
 				recurse(resources, new File(path, list[i]));
 			}
-		}
-		else {
+		} else {
 			if (path.getName().endsWith(".jar")) {
 				// ADD by Didier
 				log("process " + path + " ...");
@@ -220,8 +209,7 @@ public class BindexTask extends Task {
 				ResourceImpl resource = info.build();
 				if (urlTemplate != null) {
 					doTemplate(path, resource);
-				}
-				else
+				} else
 					resource.setURL(path.toURI().toURL());
 
 				resources.add(resource);
@@ -231,7 +219,8 @@ public class BindexTask extends Task {
 
 	void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
-		String dir = path.getParentFile().getAbsoluteFile().toURI().toURL().toString();
+		String dir = path.getParentFile().getAbsoluteFile().toURI().toURL()
+				.toString();
 		if (dir.endsWith("/"))
 			dir = dir.substring(0, dir.length() - 1);
 
@@ -248,8 +237,10 @@ public class BindexTask extends Task {
 	/**
 	 * Create the repository index
 	 * 
-	 * @param resources Set of resources
-	 * @param collected The output zip file
+	 * @param resources
+	 *            Set of resources
+	 * @param collected
+	 *            The output zip file
 	 * @throws IOException
 	 */
 	Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
@@ -263,13 +254,15 @@ public class BindexTask extends Task {
 		return repository;
 	}
 
-
 	/**
 	 * Add the resource to the ZIP file, calculating the CRC etc.
 	 * 
-	 * @param zip The output ZIP file
-	 * @param name The name of the resource
-	 * @param actual The contents stream
+	 * @param zip
+	 *            The output ZIP file
+	 * @param name
+	 *            The name of the resource
+	 * @param actual
+	 *            The contents stream
 	 * @throws IOException
 	 */
 	void addToZip(ZipOutputStream zip, String name, InputStream actual)

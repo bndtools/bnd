@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.osgi.impl.bundle.bindex;
 
 import java.io.*;
@@ -82,7 +81,8 @@ public class Index {
 				} else if (args[i].startsWith("-t"))
 					urlTemplate = args[++i];
 				else if (args[i].startsWith("-l")) {
-					licenseURL = new URL(new File("").toURI().toURL(), args[++i]);
+					licenseURL = new URL(new File("").toURI().toURL(),
+							args[++i]);
 				} else if (args[i].startsWith("-i")) {
 					ignoreFlag = true;
 				} else if (args[i].startsWith("-help")) {
@@ -283,5 +283,4 @@ public class Index {
 		System.arraycopy(temp, 0, result, offset, size);
 		return result;
 	}
-
 }
