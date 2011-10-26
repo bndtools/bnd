@@ -60,7 +60,7 @@ public class BindexTask extends Task {
 	File rootFile = new File("").getAbsoluteFile(); // optional
 	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
 	RepositoryImpl repository;
-	String root;
+	URL root;
 	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
 	public void setLicenseURL(String license) {
@@ -111,7 +111,7 @@ public class BindexTask extends Task {
 			// <jar file>*");
 
 			try {
-				root = rootFile.toURI().toURL().toString();
+				root = rootFile.toURI().toURL();
 			} catch (Exception e) {
 				throw new BuildException(e + " for rootFile");
 			}
@@ -224,8 +224,8 @@ public class BindexTask extends Task {
 		if (dir.endsWith("/"))
 			dir = dir.substring(0, dir.length() - 1);
 
-		if (dir.startsWith(root))
-			dir = dir.substring(root.length());
+		if (dir.startsWith(root.toString()))
+			dir = dir.substring(root.toString().length());
 
 		String url = urlTemplate.replaceAll("%v", "" + resource.getVersion());
 		url = url.replaceAll("%s", resource.getSymbolicName());
