@@ -229,8 +229,7 @@ public class Index {
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", name);
 
-		for (Iterator<ResourceImpl> i = resources.iterator(); i.hasNext();) {
-			ResourceImpl resource = i.next();
+		for (ResourceImpl resource : resources) {
 			repository.addContent(resource.toXML());
 		}
 		return repository;
