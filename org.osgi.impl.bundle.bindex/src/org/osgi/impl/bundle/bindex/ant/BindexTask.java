@@ -40,10 +40,14 @@ import org.osgi.impl.bundle.obr.resource.*;
  * @version $Revision$
  */
 public class BindexTask extends Task {
+	RepositoryImpl repository;
+	String name = "Untitled";
+	boolean quiet = false;
+	URL root;
+	String urlTemplate = null;
+
 	File repositoryFile; // optional
 	String license; // optional
-	boolean quiet = false; // optional
-	String name = "Untitled"; // optional
 
 	/**
 	 * template for the URL containing the following symbols
@@ -56,11 +60,8 @@ public class BindexTask extends Task {
 	 * <p>
 	 * %p is the dir path
 	 */
-	String urlTemplate = null; // optional
 	File rootFile = new File("").getAbsoluteFile(); // optional
 	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
-	RepositoryImpl repository;
-	URL root;
 	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
 	public void setLicenseURL(String license) {

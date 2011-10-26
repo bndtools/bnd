@@ -34,14 +34,15 @@ import org.osgi.impl.bundle.obr.resource.*;
  * @version $Revision$
  */
 public class Index {
+	RepositoryImpl repository;
+	String name = "Untitled";
+	boolean quiet = false;
+	URL root;
+	String urlTemplate = null;
+
 	String repositoryFileName = "repository.xml";
 	URL licenseURL = null;
-	boolean quiet = false;
-	String name = "Untitled";
 	boolean ignoreFlag = false;
-	String urlTemplate = null;
-	URL root;
-	RepositoryImpl repository;
 	String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
 
 	/**
