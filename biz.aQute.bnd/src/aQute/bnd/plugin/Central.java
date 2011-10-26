@@ -131,7 +131,7 @@ public class Central implements IResourceChangeListener {
             });
 
             for (Project p : changed) {
-            	p.updateModified(now, "Eclipse resource listener");
+            	//p.updateModified(now, "Eclipse resource listener");
                 p.refresh();
                 changed(p);
             }
