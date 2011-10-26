@@ -26,6 +26,14 @@ public class Annotation {
 		return name;
 	}
 
+	public ElementType getElementType() {
+		return member;
+	}
+	
+	public RetentionPolicy getRetentionPolicy() {
+		return policy;
+	}
+	
 	public String toString() {
 		return name + ":" + member + ":" + policy + ":" + elements;
 	}
@@ -44,6 +52,12 @@ public class Annotation {
 		elements.put(string, v);
 	}
 
+	public Set<String> keySet() {
+		if (elements == null)
+			return Collections.emptySet();
+		
+		return elements.keySet();
+	}
 	@SuppressWarnings("unchecked") public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
 		String cname = Clazz.objectDescriptorToFQN(name);
 		Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
