@@ -80,8 +80,7 @@ public class BundleIndexerImpl extends Index implements BundleIndexer {
 
 		try {
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
-					+ "'?>");
+			pw.println("<?xml-stylesheet type='text/xsl' href='" + super.stylesheet + "'?>");
 			tag.print(0, pw);
 		} finally {
 			pw.close();

@@ -98,6 +98,8 @@ public class BindexTask extends Task {
 
 	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
+	String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
+
 	/**
 	 * Main entry. See -help for options.
 	 * 
@@ -159,6 +161,10 @@ public class BindexTask extends Task {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
 						"UTF-8"));
+
+				pw.println("<?xml version='1.0' encoding='utf-8'?>");
+				pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+
 				tag.print(0, pw);
 				pw.close();
 				byte buffer[] = out.toByteArray();
@@ -183,8 +189,9 @@ public class BindexTask extends Task {
 			}
 
 			if (!quiet) {
-				PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-						System.out));
+				PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
+				pw.println("<?xml version='1.0' encoding='utf-8'?>");
+				pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
 				tag.print(0, pw);
 				pw.close();
 			}

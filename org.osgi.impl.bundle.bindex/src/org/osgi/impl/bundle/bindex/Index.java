@@ -139,8 +139,7 @@ public class Index {
 					"UTF-8"));
 
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
-					+ "'?>");
+			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
 
 			tag.print(0, pw);
 			pw.close();
@@ -168,8 +167,7 @@ public class Index {
 		if (!quiet) {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
-					+ "'?>");
+			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
 			tag.print(0, pw);
 			pw.close();
 		}
