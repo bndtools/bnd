@@ -89,7 +89,7 @@ public class Index {
 		this.repository = repository;
 	}
 
-	private File repositoryFile = new File("repository.xml");
+	private File repositoryFile = null;
 
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
@@ -108,6 +108,7 @@ public class Index {
 		System.err.println("(c) 2007 OSGi, All Rights Reserved");
 
 		Index index = new Index();
+		index.setRepositoryFile(new File("repository.xml"));
 		index.run(args);
 	}
 

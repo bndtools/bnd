@@ -33,6 +33,12 @@ import aQute.bnd.annotation.component.*;
  */
 @Component
 public class BundleIndexerImpl extends Index implements BundleIndexer {
+
+	public BundleIndexerImpl() {
+		super();
+		setRepositoryFile(new File("repository.xml"));
+	}
+
 	OutputStream out;
 
 	public synchronized void index(Set<File> jarFiles, OutputStream out,
