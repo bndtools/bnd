@@ -133,8 +133,8 @@ public class BindexTask extends Task {
 	 * @throws Exception
 	 */
 	public void execute() throws BuildException {
-		System.err.println("Bundle Indexer | v2.0");
-		System.err.println("(c) 2005 OSGi, All Rights Reserved");
+		System.err.println("Bundle Indexer | v2.2");
+		System.err.println("(c) 2007 OSGi, All Rights Reserved");
 
 		run();
 	}
