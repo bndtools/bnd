@@ -40,14 +40,38 @@ import org.osgi.impl.bundle.obr.resource.*;
  * @version $Revision$
  */
 public class BindexTask extends Task {
-	RepositoryImpl repository;
 	String name = "Untitled";
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	boolean quiet = false;
-	URL root;
+
+	public void setQuiet(boolean quiet) {
+		this.quiet = quiet;
+	}
+
 	String urlTemplate = null;
 
+	public void setUrlTemplate(String urlTemplate) {
+		this.urlTemplate = urlTemplate;
+	}
+
+	RepositoryImpl repository;
+	URL root;
+
 	File repositoryFile; // optional
+
+	public void setRepositoryFile(File repositoryFile) {
+		this.repositoryFile = repositoryFile;
+	}
+
 	String license; // optional
+
+	public void setLicenseURL(String license) {
+		this.license = license;
+	}
 
 	/**
 	 * template for the URL containing the following symbols
@@ -61,36 +85,18 @@ public class BindexTask extends Task {
 	 * %p is the dir path
 	 */
 	File rootFile = new File("").getAbsoluteFile(); // optional
-	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
-	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-
-	public void setLicenseURL(String license) {
-		this.license = license;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public void setQuiet(boolean quiet) {
-		this.quiet = quiet;
-	}
-
-	public void setRepositoryFile(File repositoryFile) {
-		this.repositoryFile = repositoryFile;
-	}
 
 	public void setRoot(File rootFile) {
 		this.rootFile = rootFile;
 	}
 
-	public void setUrlTemplate(String urlTemplate) {
-		this.urlTemplate = urlTemplate;
-	}
+	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
 
 	public void addFileset(FileSet fs) {
 		filesets.add(fs);
 	}
+
+	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
 	/**
 	 * Main entry. See -help for options.

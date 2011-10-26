@@ -34,11 +34,26 @@ import org.osgi.impl.bundle.obr.resource.*;
  * @version $Revision$
  */
 public class Index {
-	RepositoryImpl repository;
 	String name = "Untitled";
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	boolean quiet = false;
-	URL root;
+
+	public void setQuiet(boolean quiet) {
+		this.quiet = quiet;
+	}
+
 	String urlTemplate = null;
+
+	public void setUrlTemplate(String urlTemplate) {
+		this.urlTemplate = urlTemplate;
+	}
+
+	RepositoryImpl repository;
+	URL root;
 
 	String repositoryFileName = "repository.xml";
 	URL licenseURL = null;
