@@ -40,34 +40,62 @@ import org.osgi.impl.bundle.obr.resource.*;
  * @version $Revision$
  */
 public class BindexTask extends Task {
-	String name = "Untitled";
+	private String name = "Untitled";
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	boolean quiet = false;
+	private boolean quiet = false;
 
 	public void setQuiet(boolean quiet) {
 		this.quiet = quiet;
 	}
 
-	String urlTemplate = null;
+	private String urlTemplate = null;
 
 	public void setUrlTemplate(String urlTemplate) {
 		this.urlTemplate = urlTemplate;
 	}
 
-	URL licenseURL = null;
+	@SuppressWarnings("unused")
+	private URL licenseURL = null;
 
 	public void setLicenseURL(String license) throws MalformedURLException {
 		this.licenseURL = new URL(license);
 	}
 
-	RepositoryImpl repository;
-	URL root;
+	private String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
 
-	File repositoryFile; // optional
+	public void setStylesheet(String stylesheet) {
+		this.stylesheet = stylesheet;
+	}
+
+	public String getStylesheet() {
+		return stylesheet;
+	}
+
+	private URL root;
+
+	public void setRootURL(URL root) {
+		this.root = root;
+	}
+
+	public void setRootURL(String root) throws MalformedURLException {
+		this.root = new URL(root);
+	}
+
+	public URL getRoot() {
+		return root;
+	}
+
+	private RepositoryImpl repository;
+
+	public void setRepository(RepositoryImpl repository) {
+		this.repository = repository;
+	}
+
+	private File repositoryFile; // optional
 
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
@@ -84,21 +112,19 @@ public class BindexTask extends Task {
 	 * <p>
 	 * %p is the dir path
 	 */
-	File rootFile = new File("").getAbsoluteFile(); // optional
+	private File rootFile = new File("").getAbsoluteFile(); // optional
 
 	public void setRoot(File rootFile) {
 		this.rootFile = rootFile;
 	}
 
-	List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
+	private List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
 
 	public void addFileset(FileSet fs) {
 		filesets.add(fs);
 	}
 
-	Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-
-	String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
+	private Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
 	/**
 	 * Main entry. See -help for options.
