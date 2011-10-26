@@ -99,12 +99,15 @@ public class BindexTask extends Task {
 	 * @throws Exception
 	 */
 	public void execute() throws BuildException {
+		System.err.println("Bundle Indexer | v2.0");
+		System.err.println("(c) 2005 OSGi, All Rights Reserved");
 
+		run();
+	}
+
+	public void run() throws BuildException {
 		try {
 			// Parameters setting section
-
-			System.err.println("Bundle Indexer | v2.0");
-			System.err.println("(c) 2005 OSGi, All Rights Reserved");
 
 			// System.err.println("bindex [-o repository.zip] [-t \"%s\"
 			// symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ] [

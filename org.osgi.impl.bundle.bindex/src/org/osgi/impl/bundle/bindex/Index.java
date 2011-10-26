@@ -52,13 +52,14 @@ public class Index {
 	 * @throws Exception
 	 */
 	public static void main(String args[]) throws Exception {
+		System.err.println("Bundle Indexer | v2.2");
+		System.err.println("(c) 2007 OSGi, All Rights Reserved");
+
 		Index index = new Index();
 		index.run(args);
 	}
 
 	protected void run(String args[]) throws Exception {
-		System.err.println("Bundle Indexer | v2.2");
-		System.err.println("(c) 2007 OSGi, All Rights Reserved");
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		root = new File("").getAbsoluteFile().toURI().toURL();
