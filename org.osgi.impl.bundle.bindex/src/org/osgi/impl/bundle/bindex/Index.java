@@ -89,7 +89,7 @@ public class Index {
 		this.repository = repository;
 	}
 
-	private String repositoryFileName = "repository.xml";
+	private String repositoryFile = "repository.xml";
 	private boolean ignoreFlag = false;
 
 	/**
@@ -119,9 +119,9 @@ public class Index {
 				else if (args[i].equals("-stylesheet")) {
 					stylesheet = args[++i];
 				} else if (args[i].startsWith("-r")) {
-					repositoryFileName = args[++i];
+					repositoryFile = args[++i];
 					repository = new RepositoryImpl(
-							new File(repositoryFileName).getAbsoluteFile()
+							new File(repositoryFile).getAbsoluteFile()
 									.toURI().toURL());
 				} else if (args[i].startsWith("-q"))
 					quiet = true;
@@ -165,7 +165,7 @@ public class Index {
 		});
 
 		Tag tag = doIndex(sorted);
-		if (repositoryFileName != null) {
+		if (repositoryFile != null) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
 					"UTF-8"));
@@ -177,9 +177,9 @@ public class Index {
 			pw.close();
 			byte buffer[] = out.toByteArray();
 			String name = "repository.xml";
-			FileOutputStream fout = new FileOutputStream(repositoryFileName);
+			FileOutputStream fout = new FileOutputStream(repositoryFile);
 
-			if (repositoryFileName.endsWith(".zip")) {
+			if (repositoryFile.endsWith(".zip")) {
 				ZipOutputStream zip = new ZipOutputStream(fout);
 				CRC32 checksum = new CRC32();
 				checksum.update(buffer);
