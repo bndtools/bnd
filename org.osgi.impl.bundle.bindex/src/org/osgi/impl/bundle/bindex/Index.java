@@ -57,13 +57,13 @@ public class Index {
 				else if (args[i].startsWith("-l")) {
 					index.setLicenseURL(new URL(new File("").toURI().toURL(),
 							args[++i]));
-				} else if (args[i].startsWith("-help")) {
+				} else if (args[i].startsWith("-h")) {
 					System.err
 							.println("bindex " //
 									+ "[-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ]\n" //
 									+ "[-d rootFile]\n" //
 									+ "[-r repository.(xml|zip)]\n" //
-									+ "[-help]\n" //
+									+ "[-h]\n" //
 									+ "[-l file:license.html]\n" //
 									+ "[-v]\n" //
 									+ "[-stylesheet " + index.getStylesheet() + "]\n" //
