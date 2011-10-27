@@ -108,12 +108,6 @@ public class BindexTask extends Task {
 		this.repositoryFile = repositoryFile;
 	}
 
-	private List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
-
-	public void addFileset(FileSet fs) {
-		filesets.add(fs);
-	}
-
 	/**
 	 * Create the repository index
 	 * 
@@ -265,6 +259,12 @@ public class BindexTask extends Task {
 		zip.putNextEntry(ze);
 		zip.write(buffer, 0, buffer.length);
 		zip.closeEntry();
+	}
+
+	private List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
+
+	public void addFileset(FileSet fs) {
+		filesets.add(fs);
 	}
 
 	/**
