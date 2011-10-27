@@ -48,6 +48,17 @@ public class BindexTask extends Task {
 		this.quiet = quiet;
 	}
 
+	/**
+	 * template for the URL containing the following symbols
+	 * <p>
+	 * %s is the symbolic name
+	 * <p>
+	 * %v is the version number
+	 * <p>
+	 * %f is the filename
+	 * <p>
+	 * %p is the dir path
+	 */
 	private String urlTemplate = null;
 
 	public void setUrlTemplate(String urlTemplate) {
@@ -97,17 +108,6 @@ public class BindexTask extends Task {
 		this.repositoryFile = repositoryFile;
 	}
 
-	/**
-	 * template for the URL containing the following symbols
-	 * <p>
-	 * %s is the symbolic name
-	 * <p>
-	 * %v is the version number
-	 * <p>
-	 * %f is the filename
-	 * <p>
-	 * %p is the dir path
-	 */
 	private File rootFile = new File("").getAbsoluteFile(); // optional
 
 	public void setRoot(File rootFile) {

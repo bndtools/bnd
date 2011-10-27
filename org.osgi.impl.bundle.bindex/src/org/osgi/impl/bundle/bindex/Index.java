@@ -46,6 +46,17 @@ public class Index {
 		this.quiet = quiet;
 	}
 
+	/**
+	 * template for the URL containing the following symbols
+	 * <p>
+	 * %s is the symbolic name
+	 * <p>
+	 * %v is the version number
+	 * <p>
+	 * %f is the filename
+	 * <p>
+	 * %p is the dir path
+	 */
 	private String urlTemplate = null;
 
 	public void setUrlTemplate(String urlTemplate) {
