@@ -128,7 +128,9 @@ public class Index {
 
 	private void run(String args[]) throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-		root = new File("").getAbsoluteFile().toURI().toURL();
+		if (root == null) {
+			root = new File("").getAbsoluteFile().toURI().toURL();
+		}
 		repository = new RepositoryImpl(root);
 
 		for (int i = 0; i < args.length; i++)

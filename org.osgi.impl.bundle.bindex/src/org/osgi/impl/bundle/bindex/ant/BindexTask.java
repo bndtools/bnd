@@ -108,12 +108,6 @@ public class BindexTask extends Task {
 		this.repositoryFile = repositoryFile;
 	}
 
-	private File rootFile = new File("").getAbsoluteFile(); // optional
-
-	public void setRoot(File rootFile) {
-		this.rootFile = rootFile;
-	}
-
 	private List<FileSet> filesets = new LinkedList<FileSet>(); // mandatory
 
 	public void addFileset(FileSet fs) {
@@ -142,7 +136,9 @@ public class BindexTask extends Task {
 
 	private void run() throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-		root = rootFile.toURI().toURL();
+		if (root == null) {
+			root = new File("").getAbsoluteFile().toURI().toURL();
+		}
 		repository = new RepositoryImpl(root);
 
 		for (FileSet fs : filesets) {
