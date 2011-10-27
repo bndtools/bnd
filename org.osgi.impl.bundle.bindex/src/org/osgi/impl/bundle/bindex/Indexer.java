@@ -66,8 +66,8 @@ public class Indexer {
 	@SuppressWarnings("unused")
 	private URL licenseURL = null;
 
-	public void setLicenseURL(String license) throws MalformedURLException {
-		this.licenseURL = new URL(license);
+	public void setLicenseURL(String licenseURL) throws MalformedURLException {
+		this.licenseURL = new URL(licenseURL);
 	}
 
 	private String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
