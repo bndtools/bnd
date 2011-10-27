@@ -95,8 +95,6 @@ public class Index {
 		this.repositoryFile = repositoryFile;
 	}
 
-	private boolean ignoreFlag = false;
-
 	/**
 	 * Create the repository index
 	 * 
@@ -142,8 +140,6 @@ public class Index {
 				else if (args[i].startsWith("-l")) {
 					licenseURL = new URL(new File("").toURI().toURL(),
 							args[++i]);
-				} else if (args[i].startsWith("-i")) {
-					ignoreFlag = true;
 				} else if (args[i].startsWith("-help")) {
 					System.err
 							.println("bindex " //
@@ -151,7 +147,6 @@ public class Index {
 									+ "[-d rootFile]\n" //
 									+ "[ -r repository.(xml|zip) ]\n" //
 									+ "[-help]\n" //
-									+ "[-ignore] #ignore exceptions when no manifest\n" //
 									+ "[-l file:license.html ]\n" //
 									+ "[-quiet]\n" //
 									+ "[-stylesheet " + stylesheet + "  ]\n" //
