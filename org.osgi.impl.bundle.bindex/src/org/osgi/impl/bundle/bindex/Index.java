@@ -112,7 +112,7 @@ public class Index {
 		index.run(args);
 	}
 
-	protected void run(String args[]) throws Exception {
+	private void run(String args[]) throws Exception {
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		root = new File("").getAbsoluteFile().toURI().toURL();
@@ -204,7 +204,7 @@ public class Index {
 		}
 	}
 
-	String getName(ResourceImpl impl) {
+	protected String getName(ResourceImpl impl) {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;
@@ -213,7 +213,7 @@ public class Index {
 		}
 	}
 
-	void recurse(Set<ResourceImpl> resources, File path) throws Exception {
+	protected void recurse(Set<ResourceImpl> resources, File path) throws Exception {
 		if (path.isDirectory()) {
 			String list[] = path.list();
 			for (int i = 0; i < list.length; i++) {
@@ -244,7 +244,7 @@ public class Index {
 		}
 	}
 
-	void doTemplate(File path, ResourceImpl resource)
+	private void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
 		String dir = path.getAbsoluteFile().getParentFile().getAbsoluteFile()
 				.toURI().toURL().toString();
@@ -270,7 +270,7 @@ public class Index {
 	 *            The output zip file
 	 * @throws IOException
 	 */
-	Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
+	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
 		Tag repository = new Tag("repository");
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", name);

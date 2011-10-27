@@ -139,7 +139,7 @@ public class BindexTask extends Task {
 		run();
 	}
 
-	protected void run() throws BuildException {
+	private void run() throws BuildException {
 		try {
 			// Parameters setting section
 
@@ -220,7 +220,7 @@ public class BindexTask extends Task {
 		}
 	}
 
-	String getName(ResourceImpl impl) {
+	protected String getName(ResourceImpl impl) {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;
@@ -229,7 +229,7 @@ public class BindexTask extends Task {
 		}
 	}
 
-	void recurse(Set<ResourceImpl> resources, File path) throws Exception {
+	protected void recurse(Set<ResourceImpl> resources, File path) throws Exception {
 		if (path.isDirectory()) {
 			String list[] = path.list();
 			for (int i = 0; i < list.length; i++) {
@@ -253,7 +253,7 @@ public class BindexTask extends Task {
 		}
 	}
 
-	void doTemplate(File path, ResourceImpl resource)
+	private void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
 		String dir = path.getAbsoluteFile().getParentFile().getAbsoluteFile()
 				.toURI().toURL().toString();
@@ -279,7 +279,7 @@ public class BindexTask extends Task {
 	 *            The output zip file
 	 * @throws IOException
 	 */
-	Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
+	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
 		Tag repository = new Tag("repository");
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", name);
