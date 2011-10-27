@@ -262,8 +262,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 return dep;
 
             IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
-            if (project == null)
+            if (project == null) {
                 Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Dependency project '%s' from project '%s' is not in the Eclipse workspace.", dep.getName(), model.getName()), null));
+                return null;
+            }
 
             IFile buildFile = project.getFolder(targetDir.getName()).getFile(Workspace.BUILDFILES);
             IPath buildFilePath = buildFile.getProjectRelativePath();
