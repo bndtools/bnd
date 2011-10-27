@@ -142,84 +142,58 @@ public class BindexTask extends Task {
 		return repository;
 	}
 
-	private void run() throws BuildException {
-		try {
-			// Parameters setting section
+	private void run() throws Exception {
+		root = rootFile.toURI().toURL();
+		repository = new RepositoryImpl(rootFile.toURI().toURL());
 
-			// System.err.println("bindex [-o repository.zip] [-t \"%s\"
-			// symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ] [
-			// -r repository.xml ] [-help] [-l file:license.html ] [-qiueit]
-			// <jar file>*");
+		for (FileSet fs : filesets) {
+			DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+			File basedir = ds.getBasedir();
+			String[] files = ds.getIncludedFiles();
+			for (int i = 0; i < files.length; i++)
+				recurse(resources, new File(basedir, files[i]));
+		}
 
-			try {
-				root = rootFile.toURI().toURL();
-			} catch (Exception e) {
-				throw new BuildException(e + " for rootFile");
+		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
+		Collections.sort(sorted, new Comparator<ResourceImpl>() {
+			public int compare(ResourceImpl r1, ResourceImpl r2) {
+				String s1 = getName(r1);
+				String s2 = getName(r2);
+				return s1.compareTo(s2);
 			}
-			try {
-				repository = new RepositoryImpl(rootFile.toURI().toURL());
-			} catch (Exception e) {
-				throw new BuildException(e + " for repo");
+		});
+
+		Tag tag = doIndex(sorted);
+		if (repositoryFile != null) {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
+					"UTF-8"));
+
+			pw.println("<?xml version='1.0' encoding='utf-8'?>");
+			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+
+			tag.print(0, pw);
+			pw.close();
+			byte buffer[] = out.toByteArray();
+			String name = "repository.xml";
+			FileOutputStream fout = new FileOutputStream(repositoryFile);
+
+			if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
+				ZipOutputStream zip = new ZipOutputStream(fout);
+				addToZip(zip, name, buffer);
+				zip.close();
+			} else {
+				fout.write(buffer);
 			}
+			fout.close();
+		}
 
-			for (FileSet fs : filesets) {
-				DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-				File basedir = ds.getBasedir();
-				String[] files = ds.getIncludedFiles();
-				for (int i = 0; i < files.length; i++)
-					try {
-						recurse(resources, new File(basedir, files[i]));
-					} catch (Exception e) {
-						throw new BuildException(e);
-					}
-			}
-
-			// Execution section
-
-			List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
-			Collections.sort(sorted, new Comparator<ResourceImpl>() {
-				public int compare(ResourceImpl r1, ResourceImpl r2) {
-					String s1 = getName(r1);
-					String s2 = getName(r2);
-					return s1.compareTo(s2);
-				}
-			});
-
-			Tag tag = doIndex(sorted);
-			if (repositoryFile != null) {
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
-						"UTF-8"));
-
-				pw.println("<?xml version='1.0' encoding='utf-8'?>");
-				pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
-
-				tag.print(0, pw);
-				pw.close();
-				byte buffer[] = out.toByteArray();
-				String name = "repository.xml";
-				FileOutputStream fout = new FileOutputStream(repositoryFile);
-
-				if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
-					ZipOutputStream zip = new ZipOutputStream(fout);
-					addToZip(zip, name, buffer);
-					zip.close();
-				} else {
-					fout.write(buffer);
-				}
-				fout.close();
-			}
-
-			if (!quiet) {
-				PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
-				pw.println("<?xml version='1.0' encoding='utf-8'?>");
-				pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
-				tag.print(0, pw);
-				pw.close();
-			}
-
-		} catch (Exception e) {
-			throw new BuildException(e);
+		if (!quiet) {
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
+			pw.println("<?xml version='1.0' encoding='utf-8'?>");
+			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+			tag.print(0, pw);
+			pw.close();
 		}
 	}
 
@@ -306,6 +280,10 @@ public class BindexTask extends Task {
 		System.err.println("Bundle Indexer | v2.2");
 		System.err.println("(c) 2007 OSGi, All Rights Reserved");
 
-		run();
+		try {
+			run();
+		} catch (Exception e) {
+			throw new BuildException(e);
+		}
 	}
 }
