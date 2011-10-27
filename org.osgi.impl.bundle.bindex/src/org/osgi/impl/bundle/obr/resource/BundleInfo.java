@@ -80,7 +80,7 @@ public class BundleInfo {
 	 * could be local.
 	 * 
 	 * @return the resource
-	 * @throws Exception
+	 * @throws Exception in case of an error
 	 */
 	public ResourceImpl build() throws Exception {
 		ResourceImpl resource;
@@ -122,7 +122,7 @@ public class BundleInfo {
 	/**
 	 * Check the size and add it.
 	 * 
-	 * @param resource
+	 * @param resource the resource to get the size from
 	 */
 	void doSize(ResourceImpl resource) {
 		long size = bundleJar.length();
@@ -133,7 +133,7 @@ public class BundleInfo {
 	/**
 	 * Find the categories, break them up and add them.
 	 * 
-	 * @param resource
+	 * @param resource the resource to get the categories from
 	 */
 	void doCategories(ResourceImpl resource) {
 		for (int i = 0; i < manifest.getCategories().length; i++) {

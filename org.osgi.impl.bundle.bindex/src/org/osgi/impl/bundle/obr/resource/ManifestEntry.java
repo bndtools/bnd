@@ -58,9 +58,6 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 		return name.compareTo(p.name);
 	}
 
-	/**
-	 * @return
-	 */
 	public Object getPath() {
 		return getName().replace('.', '/');
 	}
@@ -74,7 +71,7 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 	}
 
 	/**
-	 * @param parameter
+	 * @param parameter the parameter to add
 	 */
 	public void addParameter(Parameter parameter) {
 		switch (parameter.type) {

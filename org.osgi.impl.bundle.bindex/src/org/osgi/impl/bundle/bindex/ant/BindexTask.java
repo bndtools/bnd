@@ -71,9 +71,6 @@ public class BindexTask extends Task {
 
 	/**
 	 * Main entry. See -help for options.
-	 * 
-	 * @param args
-	 * @throws Exception
 	 */
 	public void execute() throws BuildException {
 		indexer.printCopyright(System.err);

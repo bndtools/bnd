@@ -33,9 +33,7 @@ public class RequirementImpl implements Requirement {
 	boolean extend;
 
 	/**
-	 * Create a requirement with the given name.
-	 * 
-	 * @param name
+	 * @param name the name of the requirement
 	 */
 	public RequirementImpl(String name) {
 		this.name = name;
@@ -43,9 +41,6 @@ public class RequirementImpl implements Requirement {
 
 	/**
 	 * Parse the requirement from the pull parser.
-	 * 
-	 * @param parser
-	 * @throws Exception
 	 */
 	public RequirementImpl(XmlPullParser parser) throws Exception {
 		parser.require(XmlPullParser.START_TAG, null, null);

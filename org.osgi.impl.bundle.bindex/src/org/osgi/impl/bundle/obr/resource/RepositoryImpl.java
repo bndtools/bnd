@@ -54,7 +54,7 @@ public class RepositoryImpl implements Repository {
 	 * A repository can hold referrals to other repositories. These referred
 	 * repositories are included at the point of referall.
 	 * 
-	 * @param url
+	 * @param url the root directory URL
 	 */
 	public RepositoryImpl(URL url) {
 		this.url = url;
@@ -62,8 +62,6 @@ public class RepositoryImpl implements Repository {
 
 	/**
 	 * Refresh the repository from the URL.
-	 * 
-	 * @throws Exception
 	 */
 	public boolean refresh() {
 		exception = null;
@@ -81,9 +79,6 @@ public class RepositoryImpl implements Repository {
 
 	/**
 	 * Parse the repository.
-	 * 
-	 * @param parser
-	 * @throws Exception
 	 */
 	private void parseRepository(XmlPullParser parser) throws Exception {
 		try {
@@ -268,8 +263,6 @@ public class RepositoryImpl implements Repository {
 	/**
 	 * We have a referral to another repository. Just create another parser and
 	 * read it inline.
-	 * 
-	 * @param parser
 	 */
 	void referral(XmlPullParser parser) {
 		// TODO handle depth!
@@ -288,11 +281,6 @@ public class RepositoryImpl implements Repository {
 
 	/**
 	 * Parse a repository document.
-	 * 
-	 * @param url
-	 * @throws IOException
-	 * @throws XmlPullParserException
-	 * @throws Exception
 	 */
 	void parseDocument(URL url) throws IOException, XmlPullParserException,
 			Exception {
@@ -329,9 +317,6 @@ public class RepositoryImpl implements Repository {
 		return url;
 	}
 
-	/**
-	 * @return
-	 */
 	public Collection<Resource> getResourceList() {
 		return resources;
 	}

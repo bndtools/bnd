@@ -26,8 +26,8 @@ public class Index {
 	/**
 	 * Main entry. See -help for options.
 	 * 
-	 * @param args
-	 * @throws Exception
+	 * @param args commandline arguments
+	 * @throws Exception in case of error
 	 */
 	public static void main(String args[]) throws Exception {
 		Indexer index = new Indexer();
