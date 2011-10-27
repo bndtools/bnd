@@ -49,88 +49,129 @@ import org.osgi.impl.bundle.obr.resource.Tag;
  * on the web server's file system.
  */
 public class Indexer {
+	/** the default repository name */
 	static public final String REPOSITORYNAME_DEFAULT = "Untitled";
 
 	private String repositoryName = REPOSITORYNAME_DEFAULT;
 
-	public void setRepositoryName(String name) {
-		this.repositoryName = name;
+	/**
+	 * @param repositoryName
+	 *            the repository name
+	 */
+	public void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
 	}
 
 	private boolean verbose = false;
 
-	public void setVerbose(boolean quiet) {
-		this.verbose = quiet;
+	/**
+	 * @param verbose
+	 *            the repository inventory xml file will be output to stdout
+	 *            when true
+	 */
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 
-	/**
-	 * template for the URL containing the following symbols
-	 * <p>
-	 * %s is the symbolic name
-	 * <p>
-	 * %v is the version number
-	 * <p>
-	 * %f is the filename
-	 * <p>
-	 * %p is the dir path
-	 */
 	private String urlTemplate = null;
 
+	/**
+	 * @param urlTemplate
+	 *            Template for the URLs in the repository inventory xml file. It
+	 *            can contain the following symbols:
+	 *            <ul>
+	 *            <li>%s is the symbolic name</li>
+	 *            <li>%v is the version number</li>
+	 *            <li>%f is the filename</li>
+	 *            <li>%p is the directory path</li>
+	 *            </ul>
+	 */
 	public void setUrlTemplate(String urlTemplate) {
 		this.urlTemplate = urlTemplate;
 	}
 
+	/** the license URL for the repository */
 	@SuppressWarnings("unused")
 	private URL licenseURL = null;
 
+	/**
+	 * @param licenseURL
+	 *            the license URL for the repository
+	 * @throws MalformedURLException
+	 *             when the license URL is not a valid URL string
+	 */
 	public void setLicenseURL(String licenseURL) throws MalformedURLException {
 		this.licenseURL = new URL(licenseURL);
 	}
 
+	/** the default stylesheet for the repository inventory xml file */
 	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
 
 	private String stylesheet = STYLESHEET_DEFAULT;
 
+	/**
+	 * @param stylesheet
+	 *            the stylesheet for the repository inventory xml file
+	 */
 	public void setStylesheet(String stylesheet) {
 		this.stylesheet = stylesheet;
 	}
 
 	private URL rootURL = null;
 
+	/**
+	 * @param rootURL
+	 *            the root directory URL of the repository
+	 */
 	public void setRootURL(URL rootURL) {
 		this.rootURL = rootURL;
 	}
 
+	/**
+	 * @param rootURL
+	 *            the root directory URL of the repository
+	 * @throws MalformedURLException
+	 *             when the root URL is not a valid URL string
+	 */
 	public void setRootURL(String rootURL) throws MalformedURLException {
 		this.rootURL = new URL(rootURL);
 	}
 
+	/**
+	 * @return the root directory URL of the repository
+	 */
 	public URL getRootURL() {
 		return rootURL;
 	}
 
 	private RepositoryImpl repository = null;
 
+	/**
+	 * @param repository
+	 *            the repository
+	 */
 	public void setRepository(RepositoryImpl repository) {
 		this.repository = repository;
 	}
 
 	private File repositoryFile = null;
 
+	/**
+	 * @param repositoryFile
+	 *            the repository inventory file
+	 */
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
 	}
 
 	/**
-	 * Create the repository index
+	 * Create the repository index from a collection of resources
 	 * 
 	 * @param resources
-	 *            Set of resources
-	 * @param collected
-	 *            The output zip file
-	 * @throws IOException
+	 *            a collection of resources
+	 * @return the repository index
 	 */
-	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
+	public Tag doIndex(Collection<ResourceImpl> resources) {
 		Tag repository = new Tag("repository");
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", repositoryName);
@@ -141,13 +182,27 @@ public class Indexer {
 		return repository;
 	}
 
+	/**
+	 * Create the repository inventory xml file from a list of files
+	 * 
+	 * @param fileList
+	 *            a list of files to iterate over. Each entry in the list will
+	 *            be traversed recursively.
+	 * @throws Exception
+	 *             in case of an error
+	 */
 	public void run(List<File> fileList) throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
+		/*
+		 * only set the root directory URL to the current directory when it
+		 * wasn't set yet
+		 */
 		if (rootURL == null) {
 			rootURL = new File("").getAbsoluteFile().toURI().toURL();
 		}
 		repository = new RepositoryImpl(rootURL);
 
+		/* recurse over every entry in the list */
 		for (File file : fileList) {
 			recurse(resources, file);
 		}
@@ -156,6 +211,11 @@ public class Indexer {
 		Collections.sort(sorted, new ResourceImplComparator());
 
 		Tag tag = doIndex(sorted);
+
+		/*
+		 * only write out the repository inventory file when the repository file
+		 * is configured
+		 */
 		if (repositoryFile != null) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
@@ -179,6 +239,7 @@ public class Indexer {
 			fout.close();
 		}
 
+		/* only print out the repository inventory when verbose is configured */
 		if (verbose) {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
 			printXmlHeader(pw);
@@ -187,12 +248,29 @@ public class Indexer {
 		}
 	}
 
+	/**
+	 * @param pw
+	 *            the print writer to print the repository inventory xml file
+	 *            header to
+	 */
 	public void printXmlHeader(PrintWriter pw) {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
 		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
 				+ "'?>");
 	}
 
+	/**
+	 * Recurse on path to find all bundles/jars and add their information to the
+	 * set of resources. It recursively visits every file under path, determines
+	 * whether it is a bundle/jar and if so then get its information.
+	 * 
+	 * @param resources
+	 *            the set of resources to add bundle/jar information to
+	 * @param path
+	 *            the path to recurse on
+	 * @throws Exception
+	 *             in case of an error
+	 */
 	public void recurse(Set<ResourceImpl> resources, File path)
 			throws Exception {
 		if (path.isDirectory()) {
@@ -219,11 +297,25 @@ public class Indexer {
 		}
 	}
 
+	/**
+	 * @param out
+	 *            the print stream to print the copyright message to
+	 */
 	public void printCopyright(PrintStream out) {
 		out.println("Bundle Indexer | v3.0");
 		out.println("(c) 2007 OSGi, All Rights Reserved");
 	}
 
+	/**
+	 * Apply the URL template to a path, and set the resulting URL in resource
+	 * 
+	 * @param path
+	 *            the path to apply the template to
+	 * @param resource
+	 *            the resource to set the resulting URL in
+	 * @throws MalformedURLException
+	 *             in case of an error
+	 */
 	private void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
 		String dir = path.getAbsoluteFile().getParentFile().getAbsoluteFile()
@@ -250,7 +342,6 @@ public class Indexer {
 	 *            The name of the resource
 	 * @param buffer
 	 *            The buffer that contain the resource
-	 * @throws IOException
 	 */
 	private void addToZip(ZipOutputStream zip, String name, byte[] buffer)
 			throws IOException {
