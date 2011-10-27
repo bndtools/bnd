@@ -46,7 +46,12 @@ public class ObrResolutionWizard extends Wizard {
                 VersionedClause runBundle = resourceToRunBundle(resource);
                 runBundles.add(runBundle);
             }
+
+            List<VersionedClause> backup = model.getRunBundles();
             model.setRunBundles(runBundles);
+            if (backup != null)
+                model.setBackupRunBundles(backup);
+
             return true;
         }
         return false;

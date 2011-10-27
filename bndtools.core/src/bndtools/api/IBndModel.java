@@ -24,6 +24,10 @@ public interface IBndModel {
 
     void setRunBundles(List<? extends VersionedClause> paths);
 
+    List<VersionedClause> getBackupRunBundles();
+
+    void setBackupRunBundles(List<? extends VersionedClause> paths);
+
     String getRunFramework();
 
     void setRunFramework(String framework);

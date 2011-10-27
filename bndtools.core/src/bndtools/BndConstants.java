@@ -32,6 +32,7 @@ public interface BndConstants extends Constants {
 
     public static final String RUNREQUIRE = "-runrequire";
     public static final String RUNEE = "-runee";
+    public static final String BACKUP_RUNBUNDLES = "-runbundles-old";
 
     /**
      * The URI to which a resource was resolved by OBR

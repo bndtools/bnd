@@ -521,6 +521,17 @@ public class BndEditModel implements IPersistableBndModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
+
+    public List<VersionedClause> getBackupRunBundles() {
+        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, runBundlesConverter);
+    }
+    public void setBackupRunBundles(List<? extends VersionedClause> paths) {
+        List<VersionedClause> oldValue = getBuildPath();
+        doSetObject(BndConstants.BACKUP_RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
+    }
+
+
+
 	public String getRunFramework() {
 	    return doGetObject(BndConstants.RUNFRAMEWORK, stringConverter);
 	}
