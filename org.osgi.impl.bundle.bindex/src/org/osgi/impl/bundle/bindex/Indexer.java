@@ -156,8 +156,7 @@ public class Indexer {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
 					"UTF-8"));
 
-			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+			printXmlHeader(pw);
 
 			tag.print(0, pw);
 			pw.close();
@@ -177,11 +176,15 @@ public class Indexer {
 
 		if (!quiet) {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
-			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+			printXmlHeader(pw);
 			tag.print(0, pw);
 			pw.close();
 		}
+	}
+
+	protected void printXmlHeader(PrintWriter pw) {
+		pw.println("<?xml version='1.0' encoding='utf-8'?>");
+		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
 	}
 
 	protected String getName(ResourceImpl impl) {

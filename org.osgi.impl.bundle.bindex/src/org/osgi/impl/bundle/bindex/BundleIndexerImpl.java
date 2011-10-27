@@ -84,8 +84,7 @@ public class BundleIndexerImpl extends Indexer implements BundleIndexer {
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 
 		try {
-			pw.println("<?xml version='1.0' encoding='utf-8'?>");
-			pw.println("<?xml-stylesheet type='text/xsl' href='" + getStylesheet() + "'?>");
+			printXmlHeader(pw);
 			tag.print(0, pw);
 		} finally {
 			pw.close();
