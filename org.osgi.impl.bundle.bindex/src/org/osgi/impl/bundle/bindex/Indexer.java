@@ -219,6 +219,11 @@ public class Indexer {
 		}
 	}
 
+	public void printCopyright(PrintStream out) {
+		out.println("Bundle Indexer | v2.2");
+		out.println("(c) 2007 OSGi, All Rights Reserved");
+	}
+
 	private void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
 		String dir = path.getAbsoluteFile().getParentFile().getAbsoluteFile()

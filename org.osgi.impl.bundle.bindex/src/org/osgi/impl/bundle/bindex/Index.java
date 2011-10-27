@@ -32,10 +32,8 @@ public class Index {
 	 * @throws Exception
 	 */
 	public static void main(String args[]) throws Exception {
-		System.err.println("Bundle Indexer | v2.2");
-		System.err.println("(c) 2007 OSGi, All Rights Reserved");
-
 		Indexer index = new Indexer();
+		index.printCopyright(System.err);
 		index.setRepositoryFile(new File("repository.xml"));
 
 		List<File> fileList = new ArrayList<File>();

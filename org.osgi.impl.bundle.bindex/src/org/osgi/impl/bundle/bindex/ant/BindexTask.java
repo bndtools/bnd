@@ -78,8 +78,7 @@ public class BindexTask extends Task {
 	 * @throws Exception
 	 */
 	public void execute() throws BuildException {
-		System.err.println("Bundle Indexer | v2.2");
-		System.err.println("(c) 2007 OSGi, All Rights Reserved");
+		indexer.printCopyright(System.err);
 
 		List<File> fileList = new ArrayList<File>();
 		for (FileSet fs : filesets) {
