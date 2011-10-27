@@ -192,7 +192,13 @@ public class Indexer {
 	 *             in case of an error
 	 */
 	public void run(List<File> fileList) throws Exception {
+		/* fast return when nothing to do */
+		if (!((repositoryFile != null) || verbose)) {
+			return;
+		}
+
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
+
 		/*
 		 * only set the root directory URL to the current directory when it
 		 * wasn't set yet
