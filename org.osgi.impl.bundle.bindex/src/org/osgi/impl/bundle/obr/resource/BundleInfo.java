@@ -1,6 +1,4 @@
 /*
- * $Id$
- * 
  * Copyright (c) OSGi Alliance (2002, 2006, 2007). All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,8 +27,6 @@ import org.osgi.service.obr.Resource;
 /**
  * Convert a bundle to a generic resource description and store its local
  * dependencies (like for example a license file in the JAR) in a zip file.
- * 
- * @version $Revision$
  */
 public class BundleInfo {
 	Manifest manifest;

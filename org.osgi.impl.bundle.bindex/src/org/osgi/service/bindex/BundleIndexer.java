@@ -1,6 +1,4 @@
 /*
- * $Id$
- * 
  * Copyright (c) OSGi Alliance (2002, 2006, 2007). All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +24,6 @@ import java.io.OutputStream;
 /**
  * The BundleIndexer is an OSGi service for indexing bundle capabiilities 
  * and requirements and create an OBR XML representation.
- * 
- * @version $Revision$
  */
 public interface BundleIndexer {
   static final String REPOSITORY_NAME = "repository.name";

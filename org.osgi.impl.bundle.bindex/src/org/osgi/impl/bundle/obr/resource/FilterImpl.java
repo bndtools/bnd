@@ -1,6 +1,4 @@
 /*
- * $Id$
- * 
  * Copyright (c) 2000 Gatespace AB. All Rights Reserved.
  * Copyright (c) OSGi Alliance (2002, 2006, 2007). All Rights Reserved.
  *

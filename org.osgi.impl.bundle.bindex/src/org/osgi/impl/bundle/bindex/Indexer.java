@@ -1,6 +1,4 @@
 /*
- * $Id$
- * 
  * Copyright (c) OSGi Alliance (2002, 2006, 2007). All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +28,6 @@ import org.osgi.impl.bundle.obr.resource.*;
  * create a ZIP file with the complete content. This ZIP file can be used in an
  * OSGi Framework to map to an http service or it can be expanded on the web
  * server's file system.
- * 
- * @version $Revision$
  */
 public class Indexer {
 	private String name = "Untitled";

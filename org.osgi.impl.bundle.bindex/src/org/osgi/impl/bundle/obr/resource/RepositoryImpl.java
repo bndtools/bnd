@@ -1,6 +1,4 @@
 /*
- * $Id$
- * 
  * Copyright (c) OSGi Alliance (2002, 2006, 2007). All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +27,6 @@ import org.xmlpull.v1.*;
 
 /**
  * Implements the basic repository. A repository holds a set of resources.
- * 
- * 
- * @version $Revision$
  */
 public class RepositoryImpl implements Repository {
 	transient Set<Resource>	resources		= new HashSet<Resource>();
