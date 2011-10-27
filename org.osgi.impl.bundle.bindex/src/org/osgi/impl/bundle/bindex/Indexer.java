@@ -70,14 +70,12 @@ public class Indexer {
 		this.licenseURL = new URL(licenseURL);
 	}
 
-	private String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
+	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
+
+	private String stylesheet = STYLESHEET_DEFAULT;
 
 	public void setStylesheet(String stylesheet) {
 		this.stylesheet = stylesheet;
-	}
-
-	public String getStylesheet() {
-		return stylesheet;
 	}
 
 	private URL rootURL = null;

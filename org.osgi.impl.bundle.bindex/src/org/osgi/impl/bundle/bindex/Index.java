@@ -64,7 +64,7 @@ public class Index {
 									+ "[-h]\n" //
 									+ "[-l file:license.html]\n" //
 									+ "[-v]\n" //
-									+ "[-stylesheet " + index.getStylesheet() + "]\n" //
+									+ "[-stylesheet " + Indexer.STYLESHEET_DEFAULT + "]\n" //
 									+ "<jar file>*");
 				} else {
 					fileList.add(new File(args[i]));
