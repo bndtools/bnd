@@ -217,32 +217,28 @@ public class Index {
 		}
 	}
 
-	protected void recurse(Set<ResourceImpl> resources, File path) throws Exception {
+	protected void recurse(Set<ResourceImpl> resources, File path)
+			throws Exception {
 		if (path.isDirectory()) {
-			for (String pathEntry: path.list()) {
+			for (String pathEntry : path.list()) {
 				recurse(resources, new File(path, pathEntry));
 			}
 		} else {
-			if (path.getName().endsWith("ar")) { // ARJUN PATCH.jar")) {
-				BundleInfo info;
-				try {
-					info = new BundleInfo(repository, path);
-					ResourceImpl resource = info.build();
-					if (urlTemplate != null) {
-						doTemplate(path, resource);
-					} else
-						resource.setURL(path.toURI().toURL());
-
-					resources.add(resource);
-				} catch (Exception e) {
-					if (ignoreFlag == false) {
-						throw e;
-					} else {
-						System.err.println("Ignoring: " + path.getName()
-								+ " with exception " + e.getMessage());
-					}
-
+			BundleInfo info = null;
+			try {
+				info = new BundleInfo(repository, path);
+			} catch (Exception e) {
+				/* swallow: is not a bundle/jar */
+			}
+			if (info != null) {
+				ResourceImpl resource = info.build();
+				if (urlTemplate != null) {
+					doTemplate(path, resource);
+				} else {
+					resource.setURL(path.toURI().toURL());
 				}
+
+				resources.add(resource);
 			}
 		}
 	}
