@@ -63,9 +63,9 @@ public class BundleIndexerImpl extends Indexer implements BundleIndexer {
 				setLicenseURL(v);
 		}
 
-		if (getRoot() == null)
+		if (getRootURL() == null)
 			setRootURL(new File("").getAbsoluteFile().toURI().toURL());
-		setRepository(new RepositoryImpl(getRoot()));
+		setRepository(new RepositoryImpl(getRootURL()));
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		for (File f : jarFiles)

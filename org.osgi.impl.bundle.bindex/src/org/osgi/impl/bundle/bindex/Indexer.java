@@ -80,18 +80,18 @@ public class Indexer {
 		return stylesheet;
 	}
 
-	private URL root = null;
+	private URL rootURL = null;
 
-	public void setRootURL(URL root) {
-		this.root = root;
+	public void setRootURL(URL rootURL) {
+		this.rootURL = rootURL;
 	}
 
-	public void setRootURL(String root) throws MalformedURLException {
-		this.root = new URL(root);
+	public void setRootURL(String rootURL) throws MalformedURLException {
+		this.rootURL = new URL(rootURL);
 	}
 
-	public URL getRoot() {
-		return root;
+	public URL getRootURL() {
+		return rootURL;
 	}
 
 	private RepositoryImpl repository = null;
@@ -128,10 +128,10 @@ public class Indexer {
 
 	public void run(List<File> fileList) throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-		if (root == null) {
-			root = new File("").getAbsoluteFile().toURI().toURL();
+		if (rootURL == null) {
+			rootURL = new File("").getAbsoluteFile().toURI().toURL();
 		}
-		repository = new RepositoryImpl(root);
+		repository = new RepositoryImpl(rootURL);
 
 		for (File file : fileList) {
 			recurse(resources, file);
@@ -230,8 +230,8 @@ public class Indexer {
 		if (dir.endsWith("/"))
 			dir = dir.substring(0, dir.length() - 1);
 
-		if (dir.startsWith(root.toString()))
-			dir = dir.substring(root.toString().length());
+		if (dir.startsWith(rootURL.toString()))
+			dir = dir.substring(rootURL.toString().length());
 
 		String url = urlTemplate.replaceAll("%v", "" + resource.getVersion());
 		url = url.replaceAll("%s", resource.getSymbolicName());
