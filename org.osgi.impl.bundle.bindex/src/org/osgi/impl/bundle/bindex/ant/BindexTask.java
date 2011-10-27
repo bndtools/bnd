@@ -312,26 +312,4 @@ public class BindexTask extends Task {
 		zip.write(buffer, 0, buffer.length);
 		zip.closeEntry();
 	}
-
-	/**
-	 * Read a complete stream till EOF. This method will parse the input stream
-	 * until a -1 is discovered.
-	 * 
-	 * The method is recursive. It keeps on calling a higher level routine until
-	 * EOF. Only then is the result buffer calculated.
-	 */
-	byte[] readAll(InputStream in, int offset) throws IOException {
-		byte temp[] = new byte[4096];
-		byte result[];
-		int size = in.read(temp, 0, temp.length);
-		if (size <= 0)
-			return new byte[offset];
-		//
-		// We have a positive result, copy it
-		// to the right offset.
-		//
-		result = readAll(in, offset + size);
-		System.arraycopy(temp, 0, result, offset, size);
-		return result;
-	}
 }
