@@ -55,10 +55,6 @@ public class BindexTask extends Task {
 		indexer.setRootURL(root);
 	}
 
-	public void setRepository(RepositoryImpl repository) {
-		indexer.setRepository(repository);
-	}
-
 	public void setRepositoryFile(String repositoryFile) {
 		indexer.setRepositoryFile(new File(repositoryFile));
 	}
