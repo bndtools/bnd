@@ -128,19 +128,15 @@ public class BindexTask extends Task {
 		return repository;
 	}
 
-	private void run() throws Exception {
+	private void run(List<File> fileList) throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		if (root == null) {
 			root = new File("").getAbsoluteFile().toURI().toURL();
 		}
 		repository = new RepositoryImpl(root);
 
-		for (FileSet fs : filesets) {
-			DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-			File basedir = ds.getBasedir();
-			String[] files = ds.getIncludedFiles();
-			for (int i = 0; i < files.length; i++)
-				recurse(resources, new File(basedir, files[i]));
+		for (File file : fileList) {
+			recurse(resources, file);
 		}
 
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
@@ -277,8 +273,17 @@ public class BindexTask extends Task {
 		System.err.println("Bundle Indexer | v2.2");
 		System.err.println("(c) 2007 OSGi, All Rights Reserved");
 
+		List<File> fileList = new ArrayList<File>();
+		for (FileSet fs : filesets) {
+			DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+			File basedir = ds.getBasedir();
+			String[] files = ds.getIncludedFiles();
+			for (int i = 0; i < files.length; i++)
+				fileList.add(new File(basedir, files[i]));
+		}
+
 		try {
-			run();
+			run(fileList);
 		} catch (Exception e) {
 			throw new BuildException(e);
 		}
