@@ -223,7 +223,7 @@ public class Indexer {
 	}
 
 	public void printCopyright(PrintStream out) {
-		out.println("Bundle Indexer | v2.2");
+		out.println("Bundle Indexer | v3.0");
 		out.println("(c) 2007 OSGi, All Rights Reserved");
 	}
 

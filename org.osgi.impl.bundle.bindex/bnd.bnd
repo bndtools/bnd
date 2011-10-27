@@ -7,7 +7,7 @@ Private-Package: org.osgi.service.obr.*,\
 	org.osgi.impl.bundle.obr.resource
 
 Include-Resource:       {../LICENSE.txt},{../about.html},{../NOTICE.txt},{../README}
-Bundle-Version: 2.2.2
+Bundle-Version: 3.0.0
 Bundle-Vendor: 			OSGi Alliance
 Bundle-Description: 	Provides a command line utility to index a set of bundles. This code can be run from the command line.
 Bundle-Copyright: 		(c) Copyright OSGi Alliance, contains licensed code from kXML
