@@ -69,7 +69,7 @@ public class Index {
 		return stylesheet;
 	}
 
-	private URL root;
+	private URL root = null;
 
 	public void setRootURL(URL root) {
 		this.root = root;
@@ -83,7 +83,7 @@ public class Index {
 		return root;
 	}
 
-	private RepositoryImpl repository;
+	private RepositoryImpl repository = null;
 
 	public void setRepository(RepositoryImpl repository) {
 		this.repository = repository;
