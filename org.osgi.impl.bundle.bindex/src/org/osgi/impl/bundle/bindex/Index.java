@@ -219,9 +219,8 @@ public class Index {
 
 	protected void recurse(Set<ResourceImpl> resources, File path) throws Exception {
 		if (path.isDirectory()) {
-			String list[] = path.list();
-			for (int i = 0; i < list.length; i++) {
-				recurse(resources, new File(path, list[i]));
+			for (String pathEntry: path.list()) {
+				recurse(resources, new File(path, pathEntry));
 			}
 		} else {
 			if (path.getName().endsWith("ar")) { // ARJUN PATCH.jar")) {
