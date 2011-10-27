@@ -130,52 +130,16 @@ public class Index {
 		return repository;
 	}
 
-	private void run(String args[]) throws Exception {
+	private void run(List<File> fileList) throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		if (root == null) {
 			root = new File("").getAbsoluteFile().toURI().toURL();
 		}
 		repository = new RepositoryImpl(root);
 
-		for (int i = 0; i < args.length; i++)
-			try {
-				if (args[i].startsWith("-n"))
-					name = args[++i];
-				else if (args[i].equals("-stylesheet")) {
-					stylesheet = args[++i];
-				} else if (args[i].startsWith("-r")) {
-					repositoryFile = new File(args[++i]);
-					repository = new RepositoryImpl(
-							repositoryFile.getAbsoluteFile()
-									.toURI().toURL());
-				} else if (args[i].startsWith("-q"))
-					quiet = true;
-				else if (args[i].startsWith("-d")) {
-					root = new File(args[++i]).toURI().toURL();
-				} else if (args[i].startsWith("-t"))
-					urlTemplate = args[++i];
-				else if (args[i].startsWith("-l")) {
-					licenseURL = new URL(new File("").toURI().toURL(),
-							args[++i]);
-				} else if (args[i].startsWith("-help")) {
-					System.err
-							.println("bindex " //
-									+ "[-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ]\n" //
-									+ "[-d rootFile]\n" //
-									+ "[ -r repository.(xml|zip) ]\n" //
-									+ "[-help]\n" //
-									+ "[-l file:license.html ]\n" //
-									+ "[-quiet]\n" //
-									+ "[-stylesheet " + stylesheet + "  ]\n" //
-									+ "<jar file>*");
-				} else {
-					recurse(resources, new File(args[i]));
-				}
-			} catch (Exception e) {
-				System.err.println("Error in " + args[i] + " : "
-						+ e.getMessage());
-				e.printStackTrace();
-			}
+		for (File file : fileList) {
+			recurse(resources, file);
+		}
 
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
 		Collections.sort(sorted, new Comparator<ResourceImpl>() {
@@ -307,6 +271,49 @@ public class Index {
 
 		Index index = new Index();
 		index.setRepositoryFile(new File("repository.xml"));
-		index.run(args);
+
+		List<File> fileList = new ArrayList<File>();
+		for (int i = 0; i < args.length; i++) {
+			try {
+				if (args[i].startsWith("-n"))
+					index.setName(args[++i]);
+				else if (args[i].equals("-stylesheet")) {
+					index.setStylesheet(args[++i]);
+				} else if (args[i].startsWith("-r")) {
+					File repositoryFile = new File(args[++i]);
+					index.setRepositoryFile(repositoryFile);
+					index.setRepository(new RepositoryImpl(repositoryFile
+							.getAbsoluteFile().toURI().toURL()));
+				} else if (args[i].startsWith("-q"))
+					index.setQuiet(true);
+				else if (args[i].startsWith("-d")) {
+					index.setRootURL(args[++i]);
+				} else if (args[i].startsWith("-t"))
+					index.setUrlTemplate(args[++i]);
+				else if (args[i].startsWith("-l")) {
+					index.setLicenseURL(new URL(new File("").toURI().toURL(),
+							args[++i]));
+				} else if (args[i].startsWith("-help")) {
+					System.err
+							.println("bindex " //
+									+ "[-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ]\n" //
+									+ "[-d rootFile]\n" //
+									+ "[ -r repository.(xml|zip) ]\n" //
+									+ "[-help]\n" //
+									+ "[-l file:license.html ]\n" //
+									+ "[-quiet]\n" //
+									+ "[-stylesheet " + index.getStylesheet() + "  ]\n" //
+									+ "<jar file>*");
+				} else {
+					fileList.add(new File(args[i]));
+				}
+			} catch (Exception e) {
+				System.err.println("Error in " + args[i] + " : "
+						+ e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		index.run(fileList);
 	}
 }
