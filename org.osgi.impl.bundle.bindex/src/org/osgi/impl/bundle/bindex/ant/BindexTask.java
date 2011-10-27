@@ -72,6 +72,10 @@ public class BindexTask extends Task {
 		this.licenseURL = new URL(license);
 	}
 
+	public void setLicenseURL(URL license) {
+		this.licenseURL = license;
+	}
+
 	private String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
 
 	public void setStylesheet(String stylesheet) {
