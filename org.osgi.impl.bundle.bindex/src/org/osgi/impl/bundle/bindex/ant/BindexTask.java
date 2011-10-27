@@ -120,8 +120,6 @@ public class BindexTask extends Task {
 		filesets.add(fs);
 	}
 
-	private Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
-
 	/**
 	 * Create the repository index
 	 * 
@@ -143,6 +141,7 @@ public class BindexTask extends Task {
 	}
 
 	private void run() throws Exception {
+		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		root = rootFile.toURI().toURL();
 		repository = new RepositoryImpl(rootFile.toURI().toURL());
 
