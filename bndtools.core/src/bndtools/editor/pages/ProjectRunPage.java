@@ -10,9 +10,10 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.project.LaunchPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
 import bndtools.editor.project.RunPropertiesPart;
@@ -45,22 +46,33 @@ public class ProjectRunPage extends FormPage {
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
+        RunAction runAction = new RunAction(this, "run");
+        runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
+        runAction.setText("Run OSGi");
+        form.getToolBarManager().add(runAction);
+
+        RunAction debugAction = new RunAction(this, "debug");
+        debugAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/debug.gif"));
+        debugAction.setText("Debug OSGi");
+        form.getToolBarManager().add(debugAction);
+
+        form.getToolBarManager().update(true);
+
         // Create Controls
         Composite body = form.getBody();
         final Composite left = tk.createComposite(body);
         final Composite right = tk.createComposite(body);
 
-        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.EXPANDED);
-        managedForm.addPart(runFwkPart);
-
+        // First column
         RunRequirementsPart requirementsPart = new RunRequirementsPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(requirementsPart);
 
         RunBundlesPart runBundlesPart = new RunBundlesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
         managedForm.addPart(runBundlesPart);
 
-        LaunchPart launchPart = new LaunchPart(right, tk, Section.TITLE_BAR | Section.EXPANDED);
-        managedForm.addPart(launchPart);
+        // Second column
+        RunFrameworkPart runFwkPart = new RunFrameworkPart(right, tk, Section.TITLE_BAR | Section.EXPANDED);
+        managedForm.addPart(runFwkPart);
 
         RunPropertiesPart runPropertiesPart = new RunPropertiesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
         managedForm.addPart(runPropertiesPart);
@@ -104,10 +116,6 @@ public class ProjectRunPage extends FormPage {
         twd.maxWidth = 200;
         twd.heightHint = 200;
         requirementsPart.getSection().setLayoutData(twd);
-
-        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
-        twd.maxWidth = 200;
-        launchPart.getSection().setLayoutData(twd);
 
         twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
         twd.maxWidth = 200;
