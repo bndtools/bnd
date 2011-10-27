@@ -27,10 +27,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.osgi.impl.bundle.obr.resource.*;
 
 /**
- * This Ant task is based on the http://bundles.osgi.org/build/jar/bindex.jar
- * source code
- * 
- * <p>
  * Iterate over a set of given bundles and convert them to resources. After
  * this, convert an local urls (file systems, JAR file) to relative URLs and
  * create a ZIP file with the complete content. This ZIP file can be used in an
