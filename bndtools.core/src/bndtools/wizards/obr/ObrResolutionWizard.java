@@ -13,6 +13,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
+import bndtools.BndConstants;
 import bndtools.WorkspaceObrProvider;
 import bndtools.api.IBndModel;
 import bndtools.model.clauses.VersionedClause;
@@ -54,6 +55,7 @@ public class ObrResolutionWizard extends Wizard {
     private VersionedClause resourceToRunBundle(Resource resource) {
         String bsn = resource.getSymbolicName();
 
+        // Map version range string, using "latest" for any workspace resources
         Map<String, String> attribs = new HashMap<String, String>();
         String versionRangeStr;
         if (isWorkspace(resource)) {
@@ -63,6 +65,9 @@ public class ObrResolutionWizard extends Wizard {
             versionRangeStr = versionRange.toString();
         }
         attribs.put(Constants.VERSION_ATTRIBUTE, versionRangeStr);
+
+        // Add the resolved URI of the resource
+        attribs.put(BndConstants.RESOLUTION_URI_ATTRIBUTE, resource.getURI());
 
         return new VersionedClause(bsn, attribs);
 

@@ -25,10 +25,11 @@ import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
-import org.apache.felix.bundlerepository.impl.Referral;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
-import org.apache.felix.bundlerepository.impl.RepositoryImpl;
 import org.apache.felix.utils.log.Logger;
+import org.bndtools.core.obr.model.PullParser;
+import org.bndtools.core.obr.model.Referral;
+import org.bndtools.core.obr.model.RepositoryImpl;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -173,7 +174,10 @@ public class ResolveOperation implements IRunnableWithProgress {
     private void addRepository(URL index, Set<URL> visited, List<? super Repository> repos, int hopCount, URLConnector connector) throws Exception {
         if (visited.add(index)) {
             InputStream stream = connector.connect(index);
-            RepositoryImpl repo = helper.repository(stream);
+
+            PullParser repoParser = new PullParser();
+            RepositoryImpl repo = repoParser.parseRepository(stream);
+            repo.setURI(index.toExternalForm());
             repos.add(repo);
 
             hopCount--;

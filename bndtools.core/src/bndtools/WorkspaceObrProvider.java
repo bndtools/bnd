@@ -33,6 +33,7 @@ import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Builder;
 import aQute.libg.sax.SAXUtil;
+import bndtools.bindex.AbsoluteizeContentFilter;
 import bndtools.bindex.CategoryInsertionContentFilter;
 
 @ThreadSafe
@@ -108,14 +109,21 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
         Set<File> jars = new HashSet<File>();
         for (File[] files : projectFileMap.values()) {
             for (File file : files) {
-                if (file.exists()) jars.add(file);
+                if (file.exists()) jars.add(file.getCanonicalFile());
             }
         }
-        XMLReader pipeline = SAXUtil.buildPipeline(new StreamResult(indexFile), new CategoryInsertionContentFilter(CATEGORY_WORKSPACE));
+
+        // Needed because bindex relativizes the URIs to the repository root even if we don't want it to!
+        AbsoluteizeContentFilter absoluteizeFilter = new AbsoluteizeContentFilter(workspace.getBase().getCanonicalFile().toURI().toURL().toString());
+
+        XMLReader pipeline = SAXUtil.buildPipeline(new StreamResult(indexFile), absoluteizeFilter, new CategoryInsertionContentFilter(CATEGORY_WORKSPACE));
 
         File tempFile = File.createTempFile("workspace-repository", ".xml");
         try {
-            indexer.index(jars, new FileOutputStream(tempFile), null);
+            Map<String, String> config = new HashMap<String, String>();
+            config.put(BundleIndexer.REPOSITORY_NAME, "Bndtools Workspace Repository");
+            config.put(BundleIndexer.ROOT_URL, workspace.getBase().getCanonicalFile().toURI().toURL().toString());
+            indexer.index(jars, new FileOutputStream(tempFile), config);
             pipeline.parse(new InputSource(new FileInputStream(tempFile)));
         } finally {
             tempFile.delete();
