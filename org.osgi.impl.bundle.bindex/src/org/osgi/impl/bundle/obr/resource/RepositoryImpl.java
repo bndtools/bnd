@@ -16,14 +16,23 @@
 
 package org.osgi.impl.bundle.obr.resource;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.kxml2.io.KXmlParser;
-import org.osgi.service.obr.*;
-import org.xmlpull.v1.*;
+import org.osgi.service.obr.Repository;
+import org.osgi.service.obr.Resource;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implements the basic repository. A repository holds a set of resources.

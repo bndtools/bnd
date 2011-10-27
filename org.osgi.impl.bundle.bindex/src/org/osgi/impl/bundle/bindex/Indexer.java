@@ -15,12 +15,31 @@
  */
 package org.osgi.impl.bundle.bindex;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import org.osgi.impl.bundle.obr.resource.*;
+import org.osgi.impl.bundle.obr.resource.BundleInfo;
+import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
+import org.osgi.impl.bundle.obr.resource.ResourceImpl;
+import org.osgi.impl.bundle.obr.resource.ResourceImplComparator;
+import org.osgi.impl.bundle.obr.resource.Tag;
 
 /**
  * Iterate over a set of given bundles and convert them to resources. After

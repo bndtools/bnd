@@ -16,14 +16,25 @@
 
 package org.osgi.impl.bundle.bindex.service;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.osgi.impl.bundle.bindex.Indexer;
-import org.osgi.impl.bundle.obr.resource.*;
-import org.osgi.service.bindex.*;
+import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
+import org.osgi.impl.bundle.obr.resource.ResourceImpl;
+import org.osgi.impl.bundle.obr.resource.ResourceImplComparator;
+import org.osgi.impl.bundle.obr.resource.Tag;
+import org.osgi.service.bindex.BundleIndexer;
 
-import aQute.bnd.annotation.component.*;
+import aQute.bnd.annotation.component.Component;
 
 /**
  * BundleIndexer implementation based on Indexer

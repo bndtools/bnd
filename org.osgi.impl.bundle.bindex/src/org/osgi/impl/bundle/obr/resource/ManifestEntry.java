@@ -15,7 +15,8 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ManifestEntry implements Comparable<ManifestEntry> {
 	String name;

@@ -15,8 +15,19 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 public class Manifest extends Hashtable<Object, Object> {
 	static final long serialVersionUID = 1L;

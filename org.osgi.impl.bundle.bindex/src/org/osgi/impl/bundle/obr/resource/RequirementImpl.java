@@ -15,7 +15,8 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
-import org.osgi.service.obr.*;
+import org.osgi.service.obr.Capability;
+import org.osgi.service.obr.Requirement;
 import org.xmlpull.v1.XmlPullParser;
 
 /**

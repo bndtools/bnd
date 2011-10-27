@@ -16,9 +16,10 @@
 
 package org.osgi.impl.bundle.obr.resource;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Version;
 
 public class VersionRange implements Comparable<VersionRange> {
 	Version high;

@@ -15,9 +15,14 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Vector;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element

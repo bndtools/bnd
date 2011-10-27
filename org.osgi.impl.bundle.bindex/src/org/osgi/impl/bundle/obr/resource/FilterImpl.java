@@ -16,9 +16,11 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 public class FilterImpl {
 	final char WILDCARD = 65535;

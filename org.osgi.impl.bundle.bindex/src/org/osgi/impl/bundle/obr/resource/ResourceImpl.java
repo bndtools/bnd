@@ -17,10 +17,21 @@ package org.osgi.impl.bundle.obr.resource;
 
 import java.io.File;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.osgi.framework.Version;
-import org.osgi.service.obr.*;
+import org.osgi.service.obr.Capability;
+import org.osgi.service.obr.Repository;
+import org.osgi.service.obr.Requirement;
+import org.osgi.service.obr.Resource;
 import org.xmlpull.v1.XmlPullParser;
 
 public class ResourceImpl implements Resource {

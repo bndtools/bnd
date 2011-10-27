@@ -16,10 +16,10 @@
 
 package org.osgi.service.bindex;
 
-import java.util.Set;
-import java.util.Map;
 import java.io.File;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The BundleIndexer is an OSGi service for indexing bundle capabiilities and

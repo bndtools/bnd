@@ -16,7 +16,8 @@
 
 package org.osgi.impl.bundle.obr.resource;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.StringTokenizer;
 
 public class StringSet extends HashSet<String> {
 	static final long serialVersionUID = 1L;

@@ -16,9 +16,9 @@
 
 package test;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.impl.bundle.obr.resource.*;
+import org.osgi.impl.bundle.obr.resource.VersionRange;
 
 public class TestVersionImpl extends TestCase {
 
