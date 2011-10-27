@@ -122,19 +122,6 @@ public class BindexTask extends Task {
 
 	private Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 
-	/**
-	 * Main entry. See -help for options.
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	public void execute() throws BuildException {
-		System.err.println("Bundle Indexer | v2.2");
-		System.err.println("(c) 2007 OSGi, All Rights Reserved");
-
-		run();
-	}
-
 	private void run() throws BuildException {
 		try {
 			// Parameters setting section
@@ -307,5 +294,18 @@ public class BindexTask extends Task {
 		zip.putNextEntry(ze);
 		zip.write(buffer, 0, buffer.length);
 		zip.closeEntry();
+	}
+
+	/**
+	 * Main entry. See -help for options.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public void execute() throws BuildException {
+		System.err.println("Bundle Indexer | v2.2");
+		System.err.println("(c) 2007 OSGi, All Rights Reserved");
+
+		run();
 	}
 }

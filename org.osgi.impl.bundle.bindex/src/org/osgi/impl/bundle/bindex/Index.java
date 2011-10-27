@@ -97,21 +97,6 @@ public class Index {
 
 	private boolean ignoreFlag = false;
 
-	/**
-	 * Main entry. See -help for options.
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String args[]) throws Exception {
-		System.err.println("Bundle Indexer | v2.2");
-		System.err.println("(c) 2007 OSGi, All Rights Reserved");
-
-		Index index = new Index();
-		index.setRepositoryFile(new File("repository.xml"));
-		index.run(args);
-	}
-
 	private void run(String args[]) throws Exception {
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
@@ -302,5 +287,20 @@ public class Index {
 		zip.putNextEntry(ze);
 		zip.write(buffer, 0, buffer.length);
 		zip.closeEntry();
+	}
+
+	/**
+	 * Main entry. See -help for options.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String args[]) throws Exception {
+		System.err.println("Bundle Indexer | v2.2");
+		System.err.println("(c) 2007 OSGi, All Rights Reserved");
+
+		Index index = new Index();
+		index.setRepositoryFile(new File("repository.xml"));
+		index.run(args);
 	}
 }
