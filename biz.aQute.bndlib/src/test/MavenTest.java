@@ -357,10 +357,5 @@ public class MavenTest extends TestCase {
 		assertNotNull(files);
 		;
 		assertEquals(1, files.length);
-
-		files = maven.get("biz.aQute.bndlib", null);
-		assertNotNull(files);
-		;
-		assertEquals(5, files.length);
 	}
 }
