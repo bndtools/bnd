@@ -19,13 +19,15 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import org.apache.felix.bundlerepository.Capability;
-import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Reason;
+import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
+import org.apache.felix.bundlerepository.impl.Referral;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
+import org.apache.felix.bundlerepository.impl.RepositoryImpl;
 import org.apache.felix.utils.log.Logger;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.eclipse.core.resources.IFile;
@@ -45,6 +47,7 @@ import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.url.URLConnector;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
@@ -61,7 +64,7 @@ import bndtools.types.Pair;
 
 public class ResolveOperation implements IRunnableWithProgress {
 
-    private final DataModelHelper helper = new DataModelHelperImpl();
+    private final DataModelHelperImpl helper = new DataModelHelperImpl();
 
     private final IFile runFile;
     private final IBndModel model;
@@ -105,19 +108,20 @@ public class ResolveOperation implements IRunnableWithProgress {
 
 
         // Load repositories
-        RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
+        List<Repository> repos = new ArrayList<Repository>(indexProviders.size() * 2);
         for (OBRIndexProvider prov : indexProviders) {
             String repoName = (prov instanceof RepositoryPlugin) ? ((RepositoryPlugin) prov).getName() : prov.toString();
             try {
                 for (URL indexUrl : prov.getOBRIndexes()) {
-                    repoAdmin.addRepository(indexUrl);
+                    addRepository(indexUrl, repos);
                 }
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error processing index for repository " + repoName, e));
             }
         }
 
-        Resolver resolver = repoAdmin.resolver();
+        RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
+        Resolver resolver = repoAdmin.resolver(repos.toArray(new Repository[repos.size()]));
 
         // Add project builders
         Set<Resource> projectBuildResources = addProjectBuildBundles(resolver);
@@ -158,6 +162,42 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         result = new ObrResolutionResult(resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
                 Arrays.asList(resolver.getUnsatisfiedRequirements()));
+    }
+
+    private void addRepository(URL index, List<? super Repository> repos) throws Exception {
+        URLConnector connector = getConnector();
+
+        addRepository(index, new HashSet<URL>(), repos, Integer.MAX_VALUE, connector);
+    }
+
+    private void addRepository(URL index, Set<URL> visited, List<? super Repository> repos, int hopCount, URLConnector connector) throws Exception {
+        if (visited.add(index)) {
+            InputStream stream = connector.connect(index);
+            RepositoryImpl repo = helper.repository(stream);
+            repos.add(repo);
+
+            hopCount--;
+            if (hopCount > 0 && repo.getReferrals() != null) {
+                for (Referral referral : repo.getReferrals()) {
+                    URL referralUrl = new URL(index, referral.getUrl());
+                    hopCount = (referral.getDepth() > hopCount) ? hopCount : referral.getDepth();
+
+                    addRepository(referralUrl, visited, repos, hopCount, connector);
+                }
+            }
+        }
+    }
+
+    URLConnector getConnector() throws Exception {
+        URLConnector connector = Central.getWorkspace().getPlugin(URLConnector.class);
+        if (connector == null) {
+            connector = new URLConnector() {
+                public InputStream connect(URL url) throws IOException {
+                    return url.openStream();
+                }
+            };
+        }
+        return connector;
     }
 
     private ObrResolutionResult createErrorResult(MultiStatus status) {
