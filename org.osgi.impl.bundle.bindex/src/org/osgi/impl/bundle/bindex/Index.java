@@ -18,7 +18,6 @@
 package org.osgi.impl.bundle.bindex;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +54,7 @@ public class Index {
 				} else if (args[i].startsWith("-t"))
 					index.setUrlTemplate(args[++i]);
 				else if (args[i].startsWith("-l")) {
-					index.setLicenseURL(new URL(new File("").toURI().toURL(),
-							args[++i]));
+					index.setLicenseURL(args[++i]);
 				} else if (args[i].startsWith("-h")) {
 					System.err
 							.println("bindex " //
