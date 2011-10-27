@@ -26,13 +26,12 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag						parent;
-	String					name;
-	Map<String, String>		attributes	= new TreeMap<String, String>();
-	Vector<Object>			content		= new Vector<Object>();
+	Tag parent;
+	String name;
+	Map<String, String> attributes = new TreeMap<String, String>();
+	Vector<Object> content = new Vector<Object>();
 
-	static SimpleDateFormat	format		= new SimpleDateFormat(
-												"yyyyMMddHHmmss.SSS");
+	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -223,8 +222,7 @@ public class Tag {
 			for (Object content : this.content) {
 				if (content instanceof String) {
 					formatted(pw, indent + 2, 60, escape((String) content));
-				}
-				else if (content instanceof Tag) {
+				} else if (content instanceof Tag) {
 					Tag tag = (Tag) content;
 					tag.print(indent + 2, pw);
 				}
@@ -253,22 +251,22 @@ public class Tag {
 				pos = 0;
 			}
 			switch (c) {
-				case '<' :
-					pw.print("&lt;");
-					pos += 4;
-					break;
-				case '>' :
-					pw.print("&gt;");
-					pos += 4;
-					break;
-				case '&' :
-					pw.print("&amp;");
-					pos += 5;
-					break;
-				default :
-					pw.print(c);
-					pos++;
-					break;
+			case '<':
+				pw.print("&lt;");
+				pos += 4;
+				break;
+			case '>':
+				pw.print("&gt;");
+				pos += 4;
+				break;
+			case '&':
+				pw.print("&amp;");
+				pos += 5;
+				break;
+			default:
+				pw.print(c);
+				pos++;
+				break;
 			}
 
 		}
@@ -278,25 +276,25 @@ public class Tag {
 	 * Escape a string, do entity conversion.
 	 */
 	String escape(String s) {
-		if  ( s == null )
+		if (s == null)
 			return "?null?";
-		
+
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-				case '<' :
-					sb.append("&lt;");
-					break;
-				case '>' :
-					sb.append("&gt;");
-					break;
-				case '&' :
-					sb.append("&amp;");
-					break;
-				default :
-					sb.append(c);
-					break;
+			case '<':
+				sb.append("&lt;");
+				break;
+			case '>':
+				sb.append("&gt;");
+				break;
+			case '&':
+				sb.append("&amp;");
+				break;
+			default:
+				sb.append(c);
+				break;
 			}
 		}
 		return sb.toString();
@@ -389,8 +387,7 @@ public class Tag {
 
 		if (mapping == null) {
 			return tn == sn || (sn != null && sn.equals(tn));
-		}
-		else {
+		} else {
 			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
 					.getAttribute("xmlns:" + sn);
 			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
@@ -410,8 +407,7 @@ public class Tag {
 			if (index > 0) {
 				// prefix path
 				path = path.substring(index - 1); // skip -1
-			}
-			else
+			} else
 				path = "";
 		}
 		Tag tags[] = select(path);
@@ -443,8 +439,7 @@ public class Tag {
 		if (index > 0) {
 			String ns = name.substring(0, index);
 			return findRecursiveAttribute("xmlns:" + ns);
-		}
-		else
+		} else
 			return findRecursiveAttribute("xmlns");
 	}
 
@@ -469,10 +464,10 @@ public class Tag {
 		name = string;
 	}
 
-
-	public static void convert( Collection<Map<String, String>> c, String type, Tag parent ) {
+	public static void convert(Collection<Map<String, String>> c, String type,
+			Tag parent) {
 		for (Map<String, String> map : c) {
-			parent.addContent( new Tag(type, map) );
+			parent.addContent(new Tag(type, map));
 		}
 	}
 

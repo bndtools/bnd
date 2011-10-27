@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package test;
 
 import junit.framework.*;
@@ -22,7 +21,7 @@ import junit.framework.*;
 import org.osgi.impl.bundle.obr.resource.*;
 
 public class TestVersionImpl extends TestCase {
-	
+
 	public void testVersion() {
 		tv("[0.0.0,1.1.1]");
 		tv("(0.0.0,1.1.1)");
@@ -32,7 +31,7 @@ public class TestVersionImpl extends TestCase {
 		try {
 			tv("(2.0.0,1.1.1]");
 			fail("Invalid range succeeded");
-		} catch( IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// Ok
 		}
 	}
@@ -40,7 +39,7 @@ public class TestVersionImpl extends TestCase {
 	void tv(String string) {
 		VersionRange v = new VersionRange(string);
 		String s = v.toString();
-		assertEquals(string,s);
+		assertEquals(string, s);
 	}
 
 }

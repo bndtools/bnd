@@ -82,7 +82,8 @@ public class BundleInfo {
 		try {
 
 			// Calculate the location URL of the JAR
-			URL location = new URL("jar:" + bundleJar.toURI().toURL().toString() + "!/");
+			URL location = new URL("jar:"
+					+ bundleJar.toURI().toURL().toString() + "!/");
 			resource.setURL(bundleJar.toURI().toURL());
 			resource.setFile(bundleJar);
 
@@ -351,8 +352,8 @@ public class BundleInfo {
 		appendVersion(filter, pack.getVersion());
 		Map<String, String> attributes = pack.getAttributes();
 		Set<String> attrs = doImportPackageAttributes(req, filter, attributes);
-		
-		// The next code is using the subset operator 
+
+		// The next code is using the subset operator
 		// to check mandatory attributes, it seems to be
 		// impossible to rewrite. It must assert that whateber
 		// is in mandatory: must be in any of the attributes.
@@ -379,21 +380,19 @@ public class BundleInfo {
 					filter.append(">=");
 					filter.append(version.low);
 					filter.append(")");
-				}
-				else {
+				} else {
 					filter.append("(!(version");
 					filter.append("<=");
 					filter.append(version.low);
 					filter.append("))");
 				}
 
-				if ( version.includeHigh() ) {
+				if (version.includeHigh()) {
 					filter.append("(version");
 					filter.append("<=");
 					filter.append(version.high);
-					filter.append(")");					
-				}
-				else {
+					filter.append(")");
+				} else {
 					filter.append("(!(version");
 					filter.append(">=");
 					filter.append(version.high);
@@ -407,8 +406,8 @@ public class BundleInfo {
 		}
 	}
 
-	Set<String> doImportPackageAttributes(RequirementImpl req, StringBuffer filter,
-			Map<String, String> attributes) {
+	Set<String> doImportPackageAttributes(RequirementImpl req,
+			StringBuffer filter, Map<String, String> attributes) {
 		HashSet<String> set = new HashSet<String>();
 
 		if (attributes != null)

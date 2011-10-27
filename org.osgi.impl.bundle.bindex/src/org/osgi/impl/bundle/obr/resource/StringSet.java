@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-
 package org.osgi.impl.bundle.obr.resource;
 
 import java.util.*;
 
 public class StringSet extends HashSet<String> {
-	static final long	serialVersionUID	= 1L;
+	static final long serialVersionUID = 1L;
 
 	public StringSet(String set) {
 		StringTokenizer st = new StringTokenizer(set, ",");

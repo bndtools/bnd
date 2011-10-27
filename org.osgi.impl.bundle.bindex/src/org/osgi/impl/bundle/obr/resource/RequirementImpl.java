@@ -18,21 +18,19 @@ package org.osgi.impl.bundle.obr.resource;
 import org.osgi.service.obr.*;
 import org.xmlpull.v1.XmlPullParser;
 
-
-
 /**
  * Implements the Requirement interface.
  */
 public class RequirementImpl implements Requirement {
-	int		id;
-	String	name;
-	String	filter="()";
-	FilterImpl	_filter;
-	String	comment;
+	int id;
+	String name;
+	String filter = "()";
+	FilterImpl _filter;
+	String comment;
 	boolean optional;
 	boolean multiple;
 	boolean extend;
-	
+
 	/**
 	 * Create a requirement with the given name.
 	 * 
@@ -42,7 +40,6 @@ public class RequirementImpl implements Requirement {
 		this.name = name;
 	}
 
-
 	/**
 	 * Parse the requirement from the pull parser.
 	 * 
@@ -50,31 +47,30 @@ public class RequirementImpl implements Requirement {
 	 * @throws Exception
 	 */
 	public RequirementImpl(XmlPullParser parser) throws Exception {
-		parser.require(XmlPullParser.START_TAG, null, null );
+		parser.require(XmlPullParser.START_TAG, null, null);
 		name = parser.getAttributeValue(null, "name");
 		filter = parser.getAttributeValue(null, "filter");
-		
-		String opt = parser.getAttributeValue(null,"optional");
-		String mul = parser.getAttributeValue(null,"multiple");
-		String ext = parser.getAttributeValue(null,"extend");
+
+		String opt = parser.getAttributeValue(null, "optional");
+		String mul = parser.getAttributeValue(null, "multiple");
+		String ext = parser.getAttributeValue(null, "extend");
 		optional = "true".equalsIgnoreCase(opt);
 		multiple = "true".equalsIgnoreCase(mul);
 		extend = "true".equalsIgnoreCase(ext);
-		
-		
+
 		StringBuffer sb = new StringBuffer();
-		while ( parser.next() == XmlPullParser.TEXT ) {
-			sb.append( parser.getText() );
+		while (parser.next() == XmlPullParser.TEXT) {
+			sb.append(parser.getText());
 		}
-		if ( sb.length() > 0 )
+		if (sb.length() > 0)
 			setComment(sb.toString().trim());
-			
-		parser.require(XmlPullParser.END_TAG, null, null );
+
+		parser.require(XmlPullParser.END_TAG, null, null);
 	}
 
 	public void setFilter(String filter) {
 		this.filter = filter;
-		_filter= null;
+		_filter = null;
 	}
 
 	public String getFilter() {
@@ -86,7 +82,6 @@ public class RequirementImpl implements Requirement {
 		tag.rename(name);
 		return tag;
 	}
-
 
 	public String getName() {
 		return name;
@@ -105,42 +100,36 @@ public class RequirementImpl implements Requirement {
 		return name + " " + filter;
 	}
 
-
 	public String getComment() {
 		return comment;
 	}
 
-
 	public void setComment(String comment) {
-		this.comment=comment;
+		this.comment = comment;
 	}
-
 
 	public static Tag toXML(Requirement requirement) {
 		Tag req = new Tag("require");
 		req.addAttribute("name", requirement.getName());
 		req.addAttribute("filter", requirement.getFilter());
-		
-		req.addAttribute("optional", requirement.isOptional()+"");
-		req.addAttribute("multiple", requirement.isMultiple()+"");
-		req.addAttribute("extend", requirement.isExtend()+"");
-		
-		if ( requirement.getComment() != null )
+
+		req.addAttribute("optional", requirement.isOptional() + "");
+		req.addAttribute("multiple", requirement.isMultiple() + "");
+		req.addAttribute("extend", requirement.isExtend() + "");
+
+		if (requirement.getComment() != null)
 			req.addContent(requirement.getComment());
-		
+
 		return req;
 	}
-
 
 	public boolean isMultiple() {
 		return multiple;
 	}
 
-
 	public boolean isOptional() {
 		return optional;
 	}
-
 
 	public void setOptional(boolean b) {
 		optional = b;
@@ -150,23 +139,22 @@ public class RequirementImpl implements Requirement {
 		multiple = b;
 	}
 
-
 	public boolean equals(Object o) {
-		if ( ! (o instanceof Requirement) )
+		if (!(o instanceof Requirement))
 			return false;
-		
-		Requirement r2 = (Requirement)o;
-		return filter.equals(r2.getFilter()) && name.equals(r2.getName()); 
+
+		Requirement r2 = (Requirement) o;
+		return filter.equals(r2.getFilter()) && name.equals(r2.getName());
 	}
-	
+
 	public int hashCode() {
 		return filter.hashCode() ^ name.hashCode();
 	}
-	
+
 	public boolean isExtend() {
 		return extend;
 	}
-	
+
 	public void setExtend(boolean extend) {
 		this.extend = extend;
 	}

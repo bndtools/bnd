@@ -21,11 +21,9 @@ import java.util.*;
 import org.osgi.service.obr.Capability;
 import org.xmlpull.v1.XmlPullParser;
 
-
-
 public class CapabilityImpl implements Capability {
-	String				name;
-	Map<String, List<Object>>	properties	= new TreeMap<String, List<Object>>();
+	String name;
+	Map<String, List<Object>> properties = new TreeMap<String, List<Object>>();
 
 	public CapabilityImpl(String name) {
 		this.name = name;
@@ -33,26 +31,25 @@ public class CapabilityImpl implements Capability {
 
 	public CapabilityImpl(XmlPullParser parser) throws Exception {
 		parser.require(XmlPullParser.START_TAG, null, "capability");
-		name = parser.getAttributeValue(null,"name");
-		while ( parser.nextTag() == XmlPullParser.START_TAG ) {
-			if ( parser.getName().equals("p")) {
-				String name = parser.getAttributeValue(null,"n");
-				String value = parser.getAttributeValue(null,"v");
-				String type = parser.getAttributeValue(null,"t");
+		name = parser.getAttributeValue(null, "name");
+		while (parser.nextTag() == XmlPullParser.START_TAG) {
+			if (parser.getName().equals("p")) {
+				String name = parser.getAttributeValue(null, "n");
+				String value = parser.getAttributeValue(null, "v");
+				String type = parser.getAttributeValue(null, "t");
 				Object v = value;
 
-				if ( "nummeric".equals(type))
+				if ("nummeric".equals(type))
 					v = new Long(value);
-				else if ( "version".equals(type))
+				else if ("version".equals(type))
 					v = new VersionRange(value);
-				addProperty(name,v);
+				addProperty(name, v);
 			}
 			parser.next();
-			parser.require(XmlPullParser.END_TAG, null, "p" );
+			parser.require(XmlPullParser.END_TAG, null, "p");
 		}
-		parser.require(XmlPullParser.END_TAG, null, "capability" );
+		parser.require(XmlPullParser.END_TAG, null, "capability");
 	}
-
 
 	public void addProperty(String key, Object value) {
 		List<Object> values = properties.get(key);
@@ -66,7 +63,7 @@ public class CapabilityImpl implements Capability {
 	public Tag toXML() {
 		return toXML(this);
 	}
-	
+
 	public static Tag toXML(Capability capability) {
 		Tag tag = new Tag("capability");
 		tag.addAttribute("name", capability.getName());
@@ -79,40 +76,37 @@ public class CapabilityImpl implements Capability {
 				Tag p = new Tag("p");
 				tag.addContent(p);
 				p.addAttribute("n", key);
-				if ( value != null ) {
+				if (value != null) {
 					p.addAttribute("v", valueString(value));
 					String type = null;
-					if (value instanceof Number )
+					if (value instanceof Number)
 						type = "number";
 					else if (value.getClass() == VersionRange.class)
 						type = "version";
-					else if ( value.getClass().isArray() ) {
+					else if (value.getClass().isArray()) {
 						type = "set";
 					}
-					
+
 					if (type != null)
 						p.addAttribute("t", type);
-				}
-				else
+				} else
 					System.out.println("Missing value " + key);
 			}
 		}
 		return tag;
 	}
 
-
 	private static String valueString(Object value) {
-		if ( value.getClass().isArray() ) {
+		if (value.getClass().isArray()) {
 			StringBuffer buf = new StringBuffer();
-			for ( int i = 0; i < Array.getLength(value); i++) {
-				if ( i > 0 ) {
-					buf.append( "," );
+			for (int i = 0; i < Array.getLength(value); i++) {
+				if (i > 0) {
+					buf.append(",");
 				}
-				buf.append( Array.get(value, i).toString() );
+				buf.append(Array.get(value, i).toString());
 			}
 			return buf.toString();
-		}
-		else {
+		} else {
 			return value.toString();
 		}
 	}
@@ -120,7 +114,6 @@ public class CapabilityImpl implements Capability {
 	public String getName() {
 		return name;
 	}
-
 
 	public Map<String, List<Object>> getProperties() {
 		return properties;

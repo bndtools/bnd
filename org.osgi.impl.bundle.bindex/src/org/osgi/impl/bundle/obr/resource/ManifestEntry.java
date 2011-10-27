@@ -17,12 +17,11 @@ package org.osgi.impl.bundle.obr.resource;
 
 import java.util.*;
 
-
 public class ManifestEntry implements Comparable<ManifestEntry> {
-	String		name;
-	VersionRange	version;
-	Map<String, String>			attributes;
-	public Map<String, String>	directives;
+	String name;
+	VersionRange version;
+	Map<String, String> attributes;
+	public Map<String, String> directives;
 
 	public ManifestEntry(String name) {
 		this.name = name;
@@ -78,21 +77,20 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 	 */
 	public void addParameter(Parameter parameter) {
 		switch (parameter.type) {
-			case Parameter.ATTRIBUTE :
-				if (attributes == null)
-					attributes = new HashMap<String, String>();
-				attributes.put(parameter.key, parameter.value);
-				if (parameter.key.equalsIgnoreCase("version")
-						|| parameter.key
-								.equalsIgnoreCase("specification-version"))
-					this.version = new VersionRange(parameter.value);
-				break;
+		case Parameter.ATTRIBUTE:
+			if (attributes == null)
+				attributes = new HashMap<String, String>();
+			attributes.put(parameter.key, parameter.value);
+			if (parameter.key.equalsIgnoreCase("version")
+					|| parameter.key.equalsIgnoreCase("specification-version"))
+				this.version = new VersionRange(parameter.value);
+			break;
 
-			case Parameter.DIRECTIVE :
-				if (directives == null)
-					directives = new HashMap<String, String>();
-				directives.put(parameter.key, parameter.value);
-				break;
+		case Parameter.DIRECTIVE:
+			if (directives == null)
+				directives = new HashMap<String, String>();
+			directives.put(parameter.key, parameter.value);
+			break;
 		}
 	}
 
@@ -105,16 +103,16 @@ public class ManifestEntry implements Comparable<ManifestEntry> {
 	}
 
 	public String getDirective(String directive) {
-		if ( directives == null )
+		if (directives == null)
 			return null;
-		
+
 		return (String) directives.get(directive);
 	}
 
 	public String getAttribute(String attribute) {
-		if ( attributes == null )
+		if (attributes == null)
 			return null;
-		
+
 		return (String) attributes.get(attribute);
 	}
 

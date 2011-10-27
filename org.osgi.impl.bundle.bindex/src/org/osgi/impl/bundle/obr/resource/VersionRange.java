@@ -27,8 +27,8 @@ public class VersionRange implements Comparable<VersionRange> {
 	char end = ']';
 
 	static String V = "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[a-zA-Z0-9_-]+)?)?)?";
-	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*(" + V
-			+ ")\\s*(\\)|\\])");
+	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*("
+			+ V + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
 		string = string.trim();
@@ -73,7 +73,7 @@ public class VersionRange implements Comparable<VersionRange> {
 	}
 
 	public boolean equals(VersionRange other) {
-		return compareTo(other)==0;
+		return compareTo(other) == 0;
 	}
 
 	public int hashCode() {
@@ -86,7 +86,7 @@ public class VersionRange implements Comparable<VersionRange> {
 			a = range;
 			b = this;
 		} else {
-			if ( !isRange() )
+			if (!isRange())
 				return low.compareTo(range.high);
 		}
 		int l = a.low.compareTo(b.low);

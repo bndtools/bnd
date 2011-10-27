@@ -22,21 +22,27 @@ import java.io.File;
 import java.io.OutputStream;
 
 /**
- * The BundleIndexer is an OSGi service for indexing bundle capabiilities 
- * and requirements and create an OBR XML representation.
+ * The BundleIndexer is an OSGi service for indexing bundle capabiilities and
+ * requirements and create an OBR XML representation.
  */
 public interface BundleIndexer {
-  static final String REPOSITORY_NAME = "repository.name";
-  static final String STYLESHEET = "stylesheet";
-  static final String URL_TEMPLATE = "url.template";
-  static final String ROOT_URL = "root.url";
-  static final String LICENSE_URL = "license.url";
+	static final String REPOSITORY_NAME = "repository.name";
+	static final String STYLESHEET = "stylesheet";
+	static final String URL_TEMPLATE = "url.template";
+	static final String ROOT_URL = "root.url";
+	static final String LICENSE_URL = "license.url";
 
-  /**
-   * Index the input files and write the result to the given OutputStream
-   * @param jarFiles a set of input jar files or directories
-   * @param out the OutputStream to write to
-   * @param config a set of optional parameters (use constants of this interface as keys)
-   */
-  void index(Set<File> jarFiles, OutputStream out, Map<String, String> config) throws Exception;
+	/**
+	 * Index the input files and write the result to the given OutputStream
+	 * 
+	 * @param jarFiles
+	 *            a set of input jar files or directories
+	 * @param out
+	 *            the OutputStream to write to
+	 * @param config
+	 *            a set of optional parameters (use constants of this interface
+	 *            as keys)
+	 */
+	void index(Set<File> jarFiles, OutputStream out, Map<String, String> config)
+			throws Exception;
 }

@@ -18,23 +18,22 @@ package org.osgi.impl.bundle.obr.resource;
 import java.io.*;
 import java.util.*;
 
-
 public class Manifest extends Hashtable<Object, Object> {
-	static final long	serialVersionUID	= 1L;
-	List<ManifestEntry>	imports;
-	List<ManifestEntry>	exports;
-	ManifestEntry		name;
-	String				activator;
-	String				classpath[]	= new String[] {"."};
-	int					section;
-	String				location;
-	Native				_native[];
-	Vector<String>		duplicates	= new Vector<String>();
-	final static String	wordparts	= "~!@#$%^&*_/?><.-+";
-	ManifestEntry		bsn;
-	VersionRange			version;
-	ManifestEntry		host;
-	List<ManifestEntry>	require;
+	static final long serialVersionUID = 1L;
+	List<ManifestEntry> imports;
+	List<ManifestEntry> exports;
+	ManifestEntry name;
+	String activator;
+	String classpath[] = new String[] { "." };
+	int section;
+	String location;
+	Native _native[];
+	Vector<String> duplicates = new Vector<String>();
+	final static String wordparts = "~!@#$%^&*_/?><.-+";
+	ManifestEntry bsn;
+	VersionRange version;
+	ManifestEntry host;
+	List<ManifestEntry> require;
 
 	public Manifest(InputStream in) throws IOException {
 		parse(new InputStreamReader(in, "UTF8"));
@@ -66,8 +65,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		while (buffer != null && current != null && section == 0) {
 			if (current.startsWith(" ")) {
 				buffer += current.substring(1);
-			}
-			else {
+			} else {
 				section += entry(buffer);
 				buffer = current;
 			}
@@ -82,8 +80,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		int colon = line.indexOf(':');
 		if (colon < 1) {
 			error("Invalid header '" + line + "'");
-		}
-		else {
+		} else {
 			String header = line.substring(0, colon).toLowerCase();
 			String alphanum = "abcdefghijklmnopqrstuvwxyz0123456789";
 			String set = alphanum;
@@ -106,8 +103,7 @@ public class Manifest extends Hashtable<Object, Object> {
 				if (header.equals("bundle-version")) {
 					try {
 						version = new VersionRange(value.trim());
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						version = new VersionRange("0");
 						System.err.println("Invalid version attr for: " + bsn
 								+ " value is " + value);
@@ -158,11 +154,11 @@ public class Manifest extends Hashtable<Object, Object> {
 
 	String word(StreamTokenizer st) throws IOException {
 		switch (st.nextToken()) {
-			case '"' :
-			case StreamTokenizer.TT_WORD :
-				String result = st.sval;
-				st.nextToken();
-				return result;
+		case '"':
+		case StreamTokenizer.TT_WORD:
+			String result = st.sval;
+			st.nextToken();
+			return result;
 		}
 		return null;
 	}
@@ -174,8 +170,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		if (st.ttype == ':') {
 			st.nextToken();
 			parameter.type = Parameter.DIRECTIVE;
-		}
-		else {
+		} else {
 			parameter.type = Parameter.ATTRIBUTE;
 		}
 
@@ -202,11 +197,10 @@ public class Manifest extends Hashtable<Object, Object> {
 				parameter = getParameter(st);
 				if (parameter.value == null) {
 					aliases.add(parameter.key);
-				}
-				else {
+				} else {
 					if (parameter.type == Parameter.ATTRIBUTE)
 						p.addParameter(parameter);
-					else if ( parameter.type == Parameter.DIRECTIVE )
+					else if (parameter.type == Parameter.DIRECTIVE)
 						p.addParameter(parameter);
 					else
 						p.addParameter(parameter);
@@ -325,8 +319,7 @@ public class Manifest extends Hashtable<Object, Object> {
 			if (name == null)
 				name = "Untitled-" + hashCode();
 			return name;
-		}
-		else
+		} else
 			return bsn.getName();
 	}
 
@@ -389,12 +382,12 @@ public class Manifest extends Hashtable<Object, Object> {
 }
 
 class Native {
-	String	filter;
-	int		index	= -1;
-	String	paths[];
-	String	osname;
-	String	osversion;
-	String	language;
-	String	processor;
+	String filter;
+	int index = -1;
+	String paths[];
+	String osname;
+	String osversion;
+	String language;
+	String processor;
 
 }

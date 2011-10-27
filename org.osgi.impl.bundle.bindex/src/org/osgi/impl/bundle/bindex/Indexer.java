@@ -168,7 +168,8 @@ public class Indexer {
 
 	public void printXmlHeader(PrintWriter pw) {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
-		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
+		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
+				+ "'?>");
 	}
 
 	public void recurse(Set<ResourceImpl> resources, File path)
