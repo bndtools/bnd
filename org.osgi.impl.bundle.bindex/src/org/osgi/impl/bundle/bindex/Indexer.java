@@ -132,13 +132,7 @@ public class Indexer {
 		}
 
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
-		Collections.sort(sorted, new Comparator<ResourceImpl>() {
-			public int compare(ResourceImpl r1, ResourceImpl r2) {
-				String s1 = getName(r1);
-				String s2 = getName(r2);
-				return s1.compareTo(s2);
-			}
-		});
+		Collections.sort(sorted, new ResourceImplComparator());
 
 		Tag tag = doIndex(sorted);
 		if (repositoryFile != null) {
@@ -175,15 +169,6 @@ public class Indexer {
 	public void printXmlHeader(PrintWriter pw) {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
 		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
-	}
-
-	public String getName(ResourceImpl impl) {
-		String s = impl.getSymbolicName();
-		if (s != null)
-			return s;
-		else {
-			return "no-symbolic-name";
-		}
 	}
 
 	public void recurse(Set<ResourceImpl> resources, File path)

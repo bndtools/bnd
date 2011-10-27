@@ -70,13 +70,7 @@ public class BundleIndexerImpl implements BundleIndexer {
 			indexer.recurse(resources, f);
 
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
-		Collections.sort(sorted, new Comparator<ResourceImpl>() {
-			public int compare(ResourceImpl r1, ResourceImpl r2) {
-				String s1 = indexer.getName((ResourceImpl) r1);
-				String s2 = indexer.getName((ResourceImpl) r2);
-				return s1.compareTo(s2);
-			}
-		});
+		Collections.sort(sorted, new ResourceImplComparator());
 
 		Tag tag = indexer.doIndex(sorted);
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
