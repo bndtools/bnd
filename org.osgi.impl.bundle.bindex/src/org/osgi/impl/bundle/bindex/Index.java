@@ -62,11 +62,11 @@ public class Index {
 							.println("bindex " //
 									+ "[-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ]\n" //
 									+ "[-d rootFile]\n" //
-									+ "[ -r repository.(xml|zip) ]\n" //
+									+ "[-r repository.(xml|zip)]\n" //
 									+ "[-help]\n" //
-									+ "[-l file:license.html ]\n" //
+									+ "[-l file:license.html]\n" //
 									+ "[-v]\n" //
-									+ "[-stylesheet " + index.getStylesheet() + "  ]\n" //
+									+ "[-stylesheet " + index.getStylesheet() + "]\n" //
 									+ "<jar file>*");
 				} else {
 					fileList.add(new File(args[i]));
