@@ -28,11 +28,12 @@ import aQute.bnd.annotation.component.*;
  * BundleIndexer implementation based on Indexer
  */
 @Component
-public class BundleIndexerImpl extends Indexer implements BundleIndexer {
+public class BundleIndexerImpl implements BundleIndexer {
+	private Indexer indexer = new Indexer();
 
 	public BundleIndexerImpl() {
 		super();
-		setRepositoryFile(new File("repository.xml"));
+		indexer.setRepositoryFile(new File("repository.xml"));
 	}
 
 	OutputStream out;
@@ -48,39 +49,39 @@ public class BundleIndexerImpl extends Indexer implements BundleIndexer {
 		if (config != null) {
 			String v = null;
 			if ((v = config.get(REPOSITORY_NAME)) != null)
-				setName(v);
+				indexer.setName(v);
 			if ((v = config.get(STYLESHEET)) != null)
-				setStylesheet(v);
+				indexer.setStylesheet(v);
 			if ((v = config.get(URL_TEMPLATE)) != null)
-				setUrlTemplate(v);
+				indexer.setUrlTemplate(v);
 			if ((v = config.get(ROOT_URL)) != null)
-				setRootURL(v);
+				indexer.setRootURL(v);
 			if ((v = config.get(LICENSE_URL)) != null)
-				setLicenseURL(v);
+				indexer.setLicenseURL(v);
 		}
 
-		if (getRootURL() == null)
-			setRootURL(new File("").getAbsoluteFile().toURI().toURL());
-		setRepository(new RepositoryImpl(getRootURL()));
+		if (indexer.getRootURL() == null)
+			indexer.setRootURL(new File("").getAbsoluteFile().toURI().toURL());
+		indexer.setRepository(new RepositoryImpl(indexer.getRootURL()));
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		for (File f : jarFiles)
-			super.recurse(resources, f);
+			indexer.recurse(resources, f);
 
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
 		Collections.sort(sorted, new Comparator<ResourceImpl>() {
 			public int compare(ResourceImpl r1, ResourceImpl r2) {
-				String s1 = getName((ResourceImpl) r1);
-				String s2 = getName((ResourceImpl) r2);
+				String s1 = indexer.getName((ResourceImpl) r1);
+				String s2 = indexer.getName((ResourceImpl) r2);
 				return s1.compareTo(s2);
 			}
 		});
 
-		Tag tag = super.doIndex(sorted);
+		Tag tag = indexer.doIndex(sorted);
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 
 		try {
-			printXmlHeader(pw);
+			indexer.printXmlHeader(pw);
 			tag.print(0, pw);
 		} finally {
 			pw.close();
