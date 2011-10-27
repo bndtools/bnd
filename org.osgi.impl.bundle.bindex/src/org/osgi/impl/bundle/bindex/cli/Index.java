@@ -72,7 +72,7 @@ public class Index {
 			} catch (Exception e) {
 				System.err.println("Error in " + args[i] + " : "
 						+ e.getMessage());
-				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 
