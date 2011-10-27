@@ -143,7 +143,7 @@ public class BindexTask extends Task {
 	private void run() throws Exception {
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
 		root = rootFile.toURI().toURL();
-		repository = new RepositoryImpl(rootFile.toURI().toURL());
+		repository = new RepositoryImpl(root);
 
 		for (FileSet fs : filesets) {
 			DirectoryScanner ds = fs.getDirectoryScanner(getProject());
