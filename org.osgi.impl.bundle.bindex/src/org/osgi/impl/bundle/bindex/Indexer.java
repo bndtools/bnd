@@ -172,12 +172,12 @@ public class Indexer {
 		}
 	}
 
-	protected void printXmlHeader(PrintWriter pw) {
+	public void printXmlHeader(PrintWriter pw) {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
 		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet + "'?>");
 	}
 
-	protected String getName(ResourceImpl impl) {
+	public String getName(ResourceImpl impl) {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;
@@ -186,7 +186,7 @@ public class Indexer {
 		}
 	}
 
-	protected void recurse(Set<ResourceImpl> resources, File path)
+	public void recurse(Set<ResourceImpl> resources, File path)
 			throws Exception {
 		if (path.isDirectory()) {
 			for (String pathEntry : path.list()) {

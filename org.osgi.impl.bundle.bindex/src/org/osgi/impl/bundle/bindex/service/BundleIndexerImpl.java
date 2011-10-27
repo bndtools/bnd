@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.osgi.impl.bundle.bindex;
+package org.osgi.impl.bundle.bindex.service;
 
 import java.io.*;
 import java.util.*;
 
+import org.osgi.impl.bundle.bindex.Indexer;
 import org.osgi.impl.bundle.obr.resource.*;
 import org.osgi.service.bindex.*;
 
