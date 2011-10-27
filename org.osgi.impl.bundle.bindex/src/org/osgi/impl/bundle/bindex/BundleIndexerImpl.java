@@ -27,12 +27,12 @@ import org.osgi.service.bindex.*;
 import aQute.bnd.annotation.component.*;
 
 /**
- * BundleIndexer implementation based on Index
+ * BundleIndexer implementation based on Indexer
  * 
  * @version $Revision$
  */
 @Component
-public class BundleIndexerImpl extends Index implements BundleIndexer {
+public class BundleIndexerImpl extends Indexer implements BundleIndexer {
 
 	public BundleIndexerImpl() {
 		super();
