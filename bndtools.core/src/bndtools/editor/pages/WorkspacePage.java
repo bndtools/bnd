@@ -75,7 +75,6 @@ public class WorkspacePage extends FormPage {
         twd.grabVertical = true;
         twd.grabHorizontal = true;
         twd.maxWidth = 200;
-        twd.heightHint = 100;
         linksPart.getSection().setLayoutData(twd);
 
         twd = new TableWrapData();
