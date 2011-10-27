@@ -40,10 +40,10 @@ public class Indexer {
 		this.name = name;
 	}
 
-	private boolean quiet = false;
+	private boolean verbose = false;
 
-	public void setQuiet(boolean quiet) {
-		this.quiet = quiet;
+	public void setVerbose(boolean quiet) {
+		this.verbose = quiet;
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class Indexer {
 			fout.close();
 		}
 
-		if (!quiet) {
+		if (verbose) {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
 			printXmlHeader(pw);
 			tag.print(0, pw);

@@ -48,8 +48,8 @@ public class Index {
 					index.setRepositoryFile(repositoryFile);
 					index.setRepository(new RepositoryImpl(repositoryFile
 							.getAbsoluteFile().toURI().toURL()));
-				} else if (args[i].startsWith("-q"))
-					index.setQuiet(true);
+				} else if (args[i].startsWith("-v"))
+					index.setVerbose(true);
 				else if (args[i].startsWith("-d")) {
 					index.setRootURL(args[++i]);
 				} else if (args[i].startsWith("-t"))
@@ -65,7 +65,7 @@ public class Index {
 									+ "[ -r repository.(xml|zip) ]\n" //
 									+ "[-help]\n" //
 									+ "[-l file:license.html ]\n" //
-									+ "[-quiet]\n" //
+									+ "[-v]\n" //
 									+ "[-stylesheet " + index.getStylesheet() + "  ]\n" //
 									+ "<jar file>*");
 				} else {

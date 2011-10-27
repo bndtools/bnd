@@ -37,8 +37,8 @@ public class BindexTask extends Task {
 		indexer.setName(name);
 	}
 
-	public void setQuiet(boolean quiet) {
-		indexer.setQuiet(quiet);
+	public void setVerbose(boolean verbose) {
+		indexer.setVerbose(verbose);
 	}
 
 	public void setUrlTemplate(String urlTemplate) {
