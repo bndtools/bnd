@@ -223,26 +223,42 @@ public class Indexer {
 		 * is configured
 		 */
 		if (repositoryFile != null) {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out,
-					"UTF-8"));
+			ByteArrayOutputStream out = null;
+			PrintWriter pw = null;
+			FileOutputStream fout = null;
 
-			printXmlHeader(pw);
+			try {
+				out = new ByteArrayOutputStream();
 
-			tag.print(0, pw);
-			pw.close();
-			byte buffer[] = out.toByteArray();
-			String name = "repository.xml";
-			FileOutputStream fout = new FileOutputStream(repositoryFile);
+				pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+				printXmlHeader(pw);
+				tag.print(0, pw);
+				pw.close();
 
-			if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
-				ZipOutputStream zip = new ZipOutputStream(fout);
-				addToZip(zip, name, buffer);
-				zip.close();
-			} else {
-				fout.write(buffer);
+				byte buffer[] = out.toByteArray();
+
+				fout = new FileOutputStream(repositoryFile);
+				if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
+					ZipOutputStream zip = new ZipOutputStream(fout);
+					try {
+						addToZip(zip, "repository.xml", buffer);
+					} finally {
+						zip.close();
+					}
+				} else {
+					fout.write(buffer);
+				}
+			} finally {
+				if (fout != null) {
+					fout.close();
+				}
+				if (pw != null) {
+					pw.close();
+				}
+				if (out != null) {
+					out.close();
+				}
 			}
-			fout.close();
 		}
 
 		/* only print out the repository inventory when verbose is configured */
