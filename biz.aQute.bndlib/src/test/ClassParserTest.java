@@ -200,18 +200,6 @@ public class ClassParserTest extends TestCase {
 		assertTrue(c.getReferred().contains("java.lang"));
 	}
 
-	public void testWeirdClass() throws Exception {
-		Builder b = new Builder();
-		b.setProperty("Private-Package", "crap");
-		b.addClasspath(new File("test/craptest"));
-		b.build();
-		System.out.println(b.getWarnings());
-		System.out.println(b.getErrors());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(1, b.getWarnings().size());
-
-	}
-
 	public void testGenericsSignature3() throws Exception {
 		Clazz c = new Clazz("genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("Generics.class"));
