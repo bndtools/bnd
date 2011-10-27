@@ -36,19 +36,19 @@ public class Index {
 		List<File> fileList = new ArrayList<File>();
 		for (int i = 0; i < args.length; i++) {
 			try {
-				if (args[i].startsWith("-n"))
+				if (args[i].startsWith("-n")) {
 					index.setRepositoryName(args[++i]);
-				else if (args[i].equals("-stylesheet")) {
+				} else if (args[i].equals("-stylesheet")) {
 					index.setStylesheet(args[++i]);
 				} else if (args[i].startsWith("-r")) {
 					index.setRepositoryFile(new File(args[++i]));
-				} else if (args[i].startsWith("-v"))
+				} else if (args[i].startsWith("-v")) {
 					index.setVerbose(true);
-				else if (args[i].startsWith("-d")) {
+				} else if (args[i].startsWith("-d")) {
 					index.setRootURL(args[++i]);
-				} else if (args[i].startsWith("-t"))
+				} else if (args[i].startsWith("-t")) {
 					index.setUrlTemplate(args[++i]);
-				else if (args[i].startsWith("-l")) {
+				} else if (args[i].startsWith("-l")) {
 					index.setLicenseURL(args[++i]);
 				} else if (args[i].startsWith("-h")) {
 					System.err
