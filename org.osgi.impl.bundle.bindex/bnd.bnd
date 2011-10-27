@@ -14,7 +14,7 @@ Bundle-Copyright: 		(c) Copyright OSGi Alliance, contains licensed code from kXM
 Bundle-License: 		http://www.apache.org/licenses/LICENSE-2.0;\
 							description="This material is licensed under the Apache Software License, Version 2.0"; \
                         	link="http://www.apache.org/licenses/LICENSE-2.0"
-Main-Class: 			org.osgi.impl.bundle.bindex.Index
+Main-Class: 			org.osgi.impl.bundle.bindex.cli.Index
 
 Service-Component: *
 Bundle-ActivationPolicy: lazy
