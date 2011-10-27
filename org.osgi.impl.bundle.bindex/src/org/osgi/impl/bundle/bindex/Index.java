@@ -52,11 +52,16 @@ public class Index {
 		this.urlTemplate = urlTemplate;
 	}
 
+	URL licenseURL = null;
+
+	public void setLicenseURL(String license) throws MalformedURLException {
+		this.licenseURL = new URL(license);
+	}
+
 	RepositoryImpl repository;
 	URL root;
 
 	String repositoryFileName = "repository.xml";
-	URL licenseURL = null;
 	boolean ignoreFlag = false;
 	String stylesheet = "http://www.osgi.org/www/obr2html.xsl";
 

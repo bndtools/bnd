@@ -58,6 +58,12 @@ public class BindexTask extends Task {
 		this.urlTemplate = urlTemplate;
 	}
 
+	URL licenseURL = null;
+
+	public void setLicenseURL(String license) throws MalformedURLException {
+		this.licenseURL = new URL(license);
+	}
+
 	RepositoryImpl repository;
 	URL root;
 
@@ -65,12 +71,6 @@ public class BindexTask extends Task {
 
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
-	}
-
-	String license; // optional
-
-	public void setLicenseURL(String license) {
-		this.license = license;
 	}
 
 	/**
