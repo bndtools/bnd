@@ -89,6 +89,7 @@ public class BundleIndexerImpl implements BundleIndexer {
 		try {
 			indexer.printXmlHeader(pw);
 			tag.print(0, pw);
+			pw.print("\n");
 		} finally {
 			pw.close();
 		}

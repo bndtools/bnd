@@ -233,6 +233,7 @@ public class Indexer {
 				pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 				printXmlHeader(pw);
 				tag.print(0, pw);
+				pw.print("\n");
 				pw.close();
 
 				byte buffer[] = out.toByteArray();
@@ -266,6 +267,7 @@ public class Indexer {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
 			printXmlHeader(pw);
 			tag.print(0, pw);
+			pw.print("\n");
 			pw.close();
 		}
 	}
