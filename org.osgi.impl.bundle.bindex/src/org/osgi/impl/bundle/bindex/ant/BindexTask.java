@@ -199,14 +199,7 @@ public class BindexTask extends Task {
 
 				if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
 					ZipOutputStream zip = new ZipOutputStream(fout);
-					CRC32 checksum = new CRC32();
-					checksum.update(buffer);
-					ZipEntry ze = new ZipEntry(name);
-					ze.setSize(buffer.length);
-					ze.setCrc(checksum.getValue());
-					zip.putNextEntry(ze);
-					zip.write(buffer, 0, buffer.length);
-					zip.closeEntry();
+					addToZip(zip, name, buffer);
 					zip.close();
 				} else {
 					fout.write(buffer);
@@ -304,15 +297,12 @@ public class BindexTask extends Task {
 	 *            The output ZIP file
 	 * @param name
 	 *            The name of the resource
-	 * @param actual
-	 *            The contents stream
+	 * @param buffer
+	 *            The buffer that contain the resource
 	 * @throws IOException
 	 */
-	void addToZip(ZipOutputStream zip, String name, InputStream actual)
+	private void addToZip(ZipOutputStream zip, String name, byte[] buffer)
 			throws IOException {
-		byte buffer[];
-		buffer = readAll(actual, 0);
-		actual.close();
 		CRC32 checksum = new CRC32();
 		checksum.update(buffer);
 		ZipEntry ze = new ZipEntry(name);
