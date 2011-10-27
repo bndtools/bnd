@@ -43,10 +43,10 @@ import org.osgi.impl.bundle.obr.resource.Tag;
 
 /**
  * Iterate over a set of given bundles and convert them to resources. After
- * this, convert an local urls (file systems, JAR file) to relative URLs and
- * create a ZIP file with the complete content. This ZIP file can be used in an
- * OSGi Framework to map to an http service or it can be expanded on the web
- * server's file system.
+ * this, convert any local urls (file systems, JAR file) to relative URLs and
+ * (optionally) create a ZIP file with the complete content. This ZIP file can
+ * be used in an OSGi Framework to map to an http service or it can be expanded
+ * on the web server's file system.
  */
 public class Indexer {
 	private String name = "Untitled";
