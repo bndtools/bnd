@@ -97,6 +97,26 @@ public class Index {
 
 	private boolean ignoreFlag = false;
 
+	/**
+	 * Create the repository index
+	 * 
+	 * @param resources
+	 *            Set of resources
+	 * @param collected
+	 *            The output zip file
+	 * @throws IOException
+	 */
+	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
+		Tag repository = new Tag("repository");
+		repository.addAttribute("lastmodified", new Date());
+		repository.addAttribute("name", name);
+
+		for (ResourceImpl resource : resources) {
+			repository.addContent(resource.toXML());
+		}
+		return repository;
+	}
+
 	private void run(String args[]) throws Exception {
 
 		Set<ResourceImpl> resources = new HashSet<ResourceImpl>();
@@ -244,26 +264,6 @@ public class Index {
 		url = url.replaceAll("%f", path.getName());
 		url = url.replaceAll("%p", dir);
 		resource.setURL(new URL(url));
-	}
-
-	/**
-	 * Create the repository index
-	 * 
-	 * @param resources
-	 *            Set of resources
-	 * @param collected
-	 *            The output zip file
-	 * @throws IOException
-	 */
-	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
-		Tag repository = new Tag("repository");
-		repository.addAttribute("lastmodified", new Date());
-		repository.addAttribute("name", name);
-
-		for (ResourceImpl resource : resources) {
-			repository.addContent(resource.toXML());
-		}
-		return repository;
 	}
 
 	/**
