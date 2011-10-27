@@ -61,7 +61,7 @@ public class BundleIndexerImpl implements BundleIndexer {
 		if (config != null) {
 			String v = null;
 			if ((v = config.get(REPOSITORY_NAME)) != null)
-				indexer.setName(v);
+				indexer.setRepositoryName(v);
 			if ((v = config.get(STYLESHEET)) != null)
 				indexer.setStylesheet(v);
 			if ((v = config.get(URL_TEMPLATE)) != null)

@@ -38,7 +38,7 @@ public class Index {
 		for (int i = 0; i < args.length; i++) {
 			try {
 				if (args[i].startsWith("-n"))
-					index.setName(args[++i]);
+					index.setRepositoryName(args[++i]);
 				else if (args[i].equals("-stylesheet")) {
 					index.setStylesheet(args[++i]);
 				} else if (args[i].startsWith("-r")) {

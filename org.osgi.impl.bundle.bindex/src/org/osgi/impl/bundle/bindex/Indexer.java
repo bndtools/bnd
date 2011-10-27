@@ -49,10 +49,12 @@ import org.osgi.impl.bundle.obr.resource.Tag;
  * on the web server's file system.
  */
 public class Indexer {
-	private String name = "Untitled";
+	static public final String REPOSITORYNAME_DEFAULT = "Untitled";
 
-	public void setName(String name) {
-		this.name = name;
+	private String repositoryName = REPOSITORYNAME_DEFAULT;
+
+	public void setRepositoryName(String name) {
+		this.repositoryName = name;
 	}
 
 	private boolean verbose = false;
@@ -131,7 +133,7 @@ public class Indexer {
 	public Tag doIndex(Collection<ResourceImpl> resources) throws IOException {
 		Tag repository = new Tag("repository");
 		repository.addAttribute("lastmodified", new Date());
-		repository.addAttribute("name", name);
+		repository.addAttribute("name", repositoryName);
 
 		for (ResourceImpl resource : resources) {
 			repository.addContent(resource.toXML());

@@ -32,7 +32,7 @@ public class BindexTask extends Task {
 	private Indexer indexer = new Indexer();
 
 	public void setName(String name) {
-		indexer.setName(name);
+		indexer.setRepositoryName(name);
 	}
 
 	public void setVerbose(boolean verbose) {
