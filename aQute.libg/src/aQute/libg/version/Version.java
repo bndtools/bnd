@@ -16,6 +16,8 @@ public class Version implements Comparable<Version> {
                                                        Integer.MAX_VALUE,
                                                        "\uFFFF");
 
+    public static final Version	emptyVersion	= LOWEST;
+
     public Version() {
         this(0);
     }
@@ -144,5 +146,19 @@ public class Version implements Comparable<Version> {
         default:
             throw new IllegalArgumentException("Version can only get 0 (major), 1 (minor), or 2 (micro)");
         }
+    }
+    
+    public static Version parseVersion(String version) {
+		if (version == null) {
+			return LOWEST;
+		}
+
+		version = version.trim();
+		if (version.length() == 0) {
+			return LOWEST;
+		}
+
+		return new Version(version);
+
     }
 }
