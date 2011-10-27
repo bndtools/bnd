@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.impl.bundle.bindex.Indexer;
-import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 
 public class Index {
 	/**
@@ -42,10 +41,7 @@ public class Index {
 				else if (args[i].equals("-stylesheet")) {
 					index.setStylesheet(args[++i]);
 				} else if (args[i].startsWith("-r")) {
-					File repositoryFile = new File(args[++i]);
-					index.setRepositoryFile(repositoryFile);
-					index.setRepository(new RepositoryImpl(repositoryFile
-							.getAbsoluteFile().toURI().toURL()));
+					index.setRepositoryFile(new File(args[++i]));
 				} else if (args[i].startsWith("-v"))
 					index.setVerbose(true);
 				else if (args[i].startsWith("-d")) {
