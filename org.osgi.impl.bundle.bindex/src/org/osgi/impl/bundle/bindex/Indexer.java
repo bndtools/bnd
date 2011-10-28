@@ -239,7 +239,7 @@ public class Indexer {
 				byte buffer[] = out.toByteArray();
 
 				fout = new FileOutputStream(repositoryFile);
-				if (repositoryFile.getAbsolutePath().endsWith(".zip")) {
+				if (repositoryFile.getName().endsWith(".zip")) {
 					ZipOutputStream zip = new ZipOutputStream(fout);
 					try {
 						addToZip(zip, "repository.xml", buffer);
