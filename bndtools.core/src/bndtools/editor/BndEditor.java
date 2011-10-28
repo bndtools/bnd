@@ -58,6 +58,7 @@ import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
+import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
@@ -90,14 +91,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
     }
 
-    void updatePages() {
-        List<String> requiredPageIds = new LinkedList<String>();
-
-        // Need to know the file and project names.
+    Pair<String, String> getFileAndProject(IEditorInput input) {
         String path;
         String projectName;
-
-        IEditorInput input = getEditorInput();
         if (input instanceof IFileEditorInput) {
             IFile file = ((IFileEditorInput) input).getFile();
             path = file.getProjectRelativePath().toString();
@@ -106,6 +102,17 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             path = input.getName();
             projectName = null;
         }
+        return Pair.newInstance(path, projectName);
+    }
+
+    void updatePages() {
+        List<String> requiredPageIds = new LinkedList<String>();
+
+        // Need to know the file and project names.
+        Pair<String,String> fileAndProject = getFileAndProject(getEditorInput());
+        String path = fileAndProject.getFirst();
+        String projectName = fileAndProject.getSecond();
+
 
         if (isMainWorkspaceConfig(path, projectName)) {
             requiredPageIds.add(WORKSPACE_PAGE);
@@ -323,15 +330,21 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	}
 
     private void setPartNameForInput(IEditorInput input) {
+        Pair<String,String> fileAndProject = getFileAndProject(input);
+        String path = fileAndProject.getFirst();
+        String projectName = fileAndProject.getSecond();
+
         String name = input.getName();
-        if (Project.BNDFILE.equals(name)) {
+        if (isMainWorkspaceConfig(path, projectName) || isExtWorkspaceConfig(path, projectName)) {
+            name = path;
+        } else if (Project.BNDFILE.equals(name)) {
             IResource resource = ResourceUtil.getResource(input);
             if (resource != null)
-                name = resource.getProject().getName();
+                name = projectName;
         } else if(name.endsWith(".bnd")) {
             IResource resource = ResourceUtil.getResource(input);
             if (resource != null)
-                name = resource.getProject().getName() + "." + name.substring(0, name.length() - ".bnd".length());
+                name = projectName + "." + name.substring(0, name.length() - ".bnd".length());
         } else if(name.endsWith(".bndrun")) {
             name = name.substring(0, name.length() - ".bndrun".length());
         }
