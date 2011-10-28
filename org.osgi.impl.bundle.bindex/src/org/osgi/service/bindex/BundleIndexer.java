@@ -30,13 +30,13 @@ public interface BundleIndexer {
 	public static final String REPOSITORYNAME_DEFAULT = "Untitled";
 
 	/** the name of the OBR XML representation */
-	static final String REPOSITORY_NAME = "repository.name";
+	public static final String REPOSITORY_NAME = "repository.name";
 
 	/** the default stylesheet for the OBR XML representation */
 	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
 
 	/** the stylesheet of the OBR XML representation */
-	static final String STYLESHEET = "stylesheet";
+	public static final String STYLESHEET = "stylesheet";
 
 	/**
 	 * Template for the URLs in the OBR XML representation. It can contain the
@@ -48,13 +48,13 @@ public interface BundleIndexer {
 	 * <li>%p is the directory path</li>
 	 * </ul>
 	 */
-	static final String URL_TEMPLATE = "url.template";
+	public static final String URL_TEMPLATE = "url.template";
 
 	/** the root (directory) URL of the OBR */
-	static final String ROOT_URL = "root.url";
+	public static final String ROOT_URL = "root.url";
 
 	/** the license URL of the OBR XML representation */
-	static final String LICENSE_URL = "license.url";
+	public static final String LICENSE_URL = "license.url";
 
 	/**
 	 * Index a set of input files (bundles/jars) and/or directories, and write
@@ -68,6 +68,6 @@ public interface BundleIndexer {
 	 *            a set of optional parameters (use the interface constants as
 	 *            keys)
 	 */
-	void index(Set<File> jarFiles, OutputStream out, Map<String, String> config)
-			throws Exception;
+	public void index(Set<File> jarFiles, OutputStream out,
+			Map<String, String> config) throws Exception;
 }
