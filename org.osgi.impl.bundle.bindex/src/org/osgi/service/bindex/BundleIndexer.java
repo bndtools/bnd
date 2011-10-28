@@ -22,26 +22,45 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The BundleIndexer is an OSGi service for indexing bundle capabiilities and
- * requirements and create an OBR XML representation.
+ * BundleIndexer is an OSGi service that creates an OBR XML representation by
+ * indexing bundle capabilities and requirements.
  */
 public interface BundleIndexer {
+	/** the name of the OBR XML representation */
 	static final String REPOSITORY_NAME = "repository.name";
+
+	/** the stylesheet of the OBR XML representation */
 	static final String STYLESHEET = "stylesheet";
+
+	/**
+	 * Template for the URLs in the OBR XML representation. It can contain the
+	 * following symbols:
+	 * <ul>
+	 * <li>%s is the symbolic name</li>
+	 * <li>%v is the version number</li>
+	 * <li>%f is the filename</li>
+	 * <li>%p is the directory path</li>
+	 * </ul>
+	 */
 	static final String URL_TEMPLATE = "url.template";
+
+	/** the root (directory) URL of the OBR */
 	static final String ROOT_URL = "root.url";
+
+	/** the license URL of the OBR XML representation */
 	static final String LICENSE_URL = "license.url";
 
 	/**
-	 * Index the input files and write the result to the given OutputStream
+	 * Index a set of input files (bundles/jars) and/or directories, and write
+	 * the OBR XML representation to the given OutputStream
 	 * 
 	 * @param jarFiles
-	 *            a set of input jar files or directories
+	 *            a set of input files (bundles/jars) and/or directories
 	 * @param out
-	 *            the OutputStream to write to
+	 *            the OutputStream to write the OBR XML representation to
 	 * @param config
-	 *            a set of optional parameters (use constants of this interface
-	 *            as keys)
+	 *            a set of optional parameters (use the interface constants as
+	 *            keys)
 	 */
 	void index(Set<File> jarFiles, OutputStream out, Map<String, String> config)
 			throws Exception;

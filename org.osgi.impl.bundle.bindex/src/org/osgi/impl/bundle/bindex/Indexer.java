@@ -66,8 +66,7 @@ public class Indexer {
 
 	/**
 	 * @param verbose
-	 *            the repository inventory xml file will be output to stdout
-	 *            when true
+	 *            the OBR XML representation will be output to stdout when true
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -76,15 +75,7 @@ public class Indexer {
 	private String urlTemplate = null;
 
 	/**
-	 * @param urlTemplate
-	 *            Template for the URLs in the repository inventory xml file. It
-	 *            can contain the following symbols:
-	 *            <ul>
-	 *            <li>%s is the symbolic name</li>
-	 *            <li>%v is the version number</li>
-	 *            <li>%f is the filename</li>
-	 *            <li>%p is the directory path</li>
-	 *            </ul>
+	 * @param urlTemplate template for the URLs in the OBR XML representation
 	 */
 	public void setUrlTemplate(String urlTemplate) {
 		this.urlTemplate = urlTemplate;
@@ -104,14 +95,14 @@ public class Indexer {
 		this.licenseURL = new URL(licenseURL);
 	}
 
-	/** the default stylesheet for the repository inventory xml file */
+	/** the default stylesheet for the OBR XML representation */
 	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
 
 	private String stylesheet = STYLESHEET_DEFAULT;
 
 	/**
 	 * @param stylesheet
-	 *            the stylesheet for the repository inventory xml file
+	 *            the stylesheet for the OBR XML representation
 	 */
 	public void setStylesheet(String stylesheet) {
 		this.stylesheet = stylesheet;
@@ -158,7 +149,7 @@ public class Indexer {
 
 	/**
 	 * @param repositoryFile
-	 *            the repository inventory file
+	 *            the OBR XML representation file
 	 */
 	public void setRepositoryFile(File repositoryFile) {
 		this.repositoryFile = repositoryFile;
@@ -183,7 +174,7 @@ public class Indexer {
 	}
 
 	/**
-	 * Create the repository inventory xml file from a list of files
+	 * Create the OBR XML representation from a list of files
 	 * 
 	 * @param fileList
 	 *            a list of files to iterate over. Each entry in the list will
@@ -219,8 +210,8 @@ public class Indexer {
 		Tag tag = doIndex(sorted);
 
 		/*
-		 * only write out the repository inventory file when the repository file
-		 * is configured
+		 * only write out the OBR XML representation when the repository file is
+		 * configured
 		 */
 		if (repositoryFile != null) {
 			ByteArrayOutputStream out = null;
@@ -262,7 +253,7 @@ public class Indexer {
 			}
 		}
 
-		/* only print out the repository inventory when verbose is configured */
+		/* only print out the OBR XML representation when verbose is configured */
 		if (verbose) {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
 			printXmlHeader(pw);
@@ -274,8 +265,7 @@ public class Indexer {
 
 	/**
 	 * @param pw
-	 *            the print writer to print the repository inventory xml file
-	 *            header to
+	 *            the print writer to print the OBR XML representation header to
 	 */
 	public void printXmlHeader(PrintWriter pw) {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
