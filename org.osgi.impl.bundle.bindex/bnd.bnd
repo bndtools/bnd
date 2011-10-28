@@ -2,9 +2,8 @@ Private-Package: org.osgi.service.obr.*,\
 	org.osgi.framework.*,\
 	org.kxml2.*,\
 	org.xmlpull.*,\
-	org.osgi.impl.bundle.bindex,\
 	org.osgi.impl.bundle.bindex.*,\
-	org.osgi.impl.bundle.obr.resource,\
+	org.osgi.impl.bundle.obr.resource.*,\
 	org.osgi.service.bindex.*
 
 Include-Resource:       {../LICENSE.txt},{../about.html},{../NOTICE.txt},{../README}
