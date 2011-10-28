@@ -342,8 +342,8 @@ public class Indexer {
 	 */
 	private void doTemplate(File path, ResourceImpl resource)
 			throws MalformedURLException {
-		String dir = path.getAbsoluteFile().getParentFile().getAbsoluteFile()
-				.toURI().toURL().toString();
+		String dir = path.getParentFile().getAbsoluteFile().toURI().toURL()
+				.toString();
 		if (dir.endsWith("/"))
 			dir = dir.substring(0, dir.length() - 1);
 
