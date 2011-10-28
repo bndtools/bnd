@@ -80,7 +80,6 @@ public class Indexer {
 	}
 
 	/** the license URL for the repository */
-	@SuppressWarnings("unused")
 	private URL licenseURL = null;
 
 	/**
@@ -266,6 +265,9 @@ public class Indexer {
 		pw.println("<?xml version='1.0' encoding='utf-8'?>");
 		pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
 				+ "'?>");
+		if (licenseURL != null) {
+			pw.println("<!--\n  License: " + licenseURL.toString() + "\n-->");
+		}
 	}
 
 	/**
