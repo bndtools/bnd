@@ -26,6 +26,9 @@ import java.util.Set;
  * indexing bundle capabilities and requirements.
  */
 public interface BundleIndexer {
+	/** the default repository name */
+	public static final String REPOSITORYNAME_DEFAULT = "Untitled";
+
 	/** the name of the OBR XML representation */
 	static final String REPOSITORY_NAME = "repository.name";
 

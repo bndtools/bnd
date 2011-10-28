@@ -50,10 +50,7 @@ import org.osgi.service.bindex.BundleIndexer;
  * on the web server's file system.
  */
 public class Indexer {
-	/** the default repository name */
-	static public final String REPOSITORYNAME_DEFAULT = "Untitled";
-
-	private String repositoryName = REPOSITORYNAME_DEFAULT;
+	private String repositoryName = BundleIndexer.REPOSITORYNAME_DEFAULT;
 
 	/**
 	 * @param repositoryName
