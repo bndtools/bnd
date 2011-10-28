@@ -137,7 +137,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 
-		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -295,8 +295,9 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		layout.marginHeight = 0; layout.marginWidth = 0;
 		composite.setLayout(layout);
 
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd.heightHint = getTableHeightHint();
+		gd.widthHint = 50;
 		table.setLayoutData(gd);
 	}
 

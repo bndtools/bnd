@@ -134,11 +134,17 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         GridLayout layout = new GridLayout(2, false);
         layout.horizontalSpacing = 10;
         composite.setLayout(layout);
+
         lblFramework.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-        cmbFramework.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        GridData gd;
+        gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        gd.widthHint = 20; gd.heightHint = 20;
+        cmbFramework.setLayoutData(gd);
 
         lblExecEnv.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-        cmbExecEnv.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        gd.widthHint = 20; gd.heightHint = 20;
+        cmbExecEnv.setLayoutData(gd);
     }
 
     @Override

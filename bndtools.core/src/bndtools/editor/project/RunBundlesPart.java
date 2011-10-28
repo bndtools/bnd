@@ -140,7 +140,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
     @Override
     protected int getTableHeightHint() {
-        return 80;
+        return -1;
     }
 
     @Override

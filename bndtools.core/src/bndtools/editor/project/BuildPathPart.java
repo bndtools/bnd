@@ -24,7 +24,7 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
 
     @Override
     protected int getTableHeightHint() {
-        return 200;
+        return 50;
     }
 
 	@Override

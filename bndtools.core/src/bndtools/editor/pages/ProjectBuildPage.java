@@ -45,51 +45,43 @@ public class ProjectBuildPage extends FormPage {
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
-        // Create Controls
-        Composite body = form.getBody();
-        MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
-        sashForm.setSashWidth(6);
-        tk.adapt(sashForm, false, false);
-
-        Composite panel1 = tk.createComposite(sashForm);
-
-        SubBundlesPart subBundlesPart = new SubBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-        managedForm.addPart(subBundlesPart);
-
-        BuildPathPart buildPathPart = new BuildPathPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-        managedForm.addPart(buildPathPart);
-
-        Composite panel2 = tk.createComposite(sashForm);
-
-//        BuildSectionPart buildPart = new BuildSectionPart(panel2, tk, Section.TITLE_BAR);
-//        managedForm.addPart(buildPart);
-
-        sashForm.hookResizeListener();
-
-        // Layout
         GridLayout layout;
         GridData gd;
 
+        // Create Controls
+        Composite body = form.getBody();
         body.setLayout(new FillLayout());
 
-        gd = new GridData(SWT.FILL, SWT.TOP, false, true);
-        panel1.setLayoutData(gd);
+        MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
+        sashForm.setSashWidth(6);
+        tk.adapt(sashForm, false, false);
+        sashForm.hookResizeListener();
+
+        Composite leftPanel = tk.createComposite(sashForm);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        leftPanel.setLayoutData(gd);
 
         layout = new GridLayout(1, false);
-        panel1.setLayout(layout);
+        leftPanel.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        buildPathPart.getSection().setLayoutData(gd);
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        SubBundlesPart subBundlesPart = new SubBundlesPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(subBundlesPart);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         subBundlesPart.getSection().setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.TOP, false, true);
-        panel2.setLayoutData(gd);
+        BuildPathPart buildPathPart = new BuildPathPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(buildPathPart);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = 50;
+        buildPathPart.getSection().setLayoutData(gd);
+
+        Composite rightPanel = tk.createComposite(sashForm);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        rightPanel.setLayoutData(gd);
 
         layout = new GridLayout(1, false);
-        panel2.setLayout(layout);
+        rightPanel.setLayout(layout);
 
-//        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-//        buildPart.getSection().setLayoutData(gd);
     };
 }

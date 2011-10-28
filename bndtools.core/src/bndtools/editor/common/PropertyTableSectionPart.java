@@ -90,6 +90,7 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gd.heightHint = 100;
+		gd.widthHint = 50;
 		table.setLayoutData(gd);
 
 		// Listeners

@@ -153,7 +153,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         composite.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 100;
+        gd.widthHint = 50;
+        gd.heightHint = 50;
         table.setLayoutData(gd);
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
