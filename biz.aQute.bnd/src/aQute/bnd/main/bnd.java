@@ -1499,15 +1499,12 @@ public class bnd extends Processor {
 			System.err.println("Must have 2 files ...");
 			return;
 		}
-		Diff diff = new Diff();
-
-		Map<String, Object> map = diff.diff(targets[0], targets[1], strict);
-		diff.print(System.out, map, 0);
+		JarDiff diff = JarDiff.diff(targets[0], targets[1]);
+		JarDiff.printDiff(diff, new PrintWriter(System.out));
 
 		for (Jar jar : targets) {
 			jar.close();
 		}
-		diff.close();
 	}
 
 	void copy(File a, File b) {

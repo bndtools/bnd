@@ -10,23 +10,15 @@
  *******************************************************************************/
 package aQute.lib.jardiff;
 
-import java.util.*;
+import aQute.libg.version.*;
 
-public interface Diff {
+public interface VersionRangeDiff {
+
+	VersionRange getOldVersionRange();
+
+	VersionRange getSuggestedVersionRange();
 	
-	public enum Delta {
-		ADDED, REMOVED, MODIFIED, UNCHANGED
-	};
+	void setNewVersionRange(VersionRange version);
 
-	Delta getDelta();
-
-	String getName();
-
-	Diff getContainer();
-
-	Collection<? extends Diff> getContained();
-
-	String explain();
-
-	String toString();
+	VersionRange getNewVersionRange();
 }

@@ -10,23 +10,28 @@
  *******************************************************************************/
 package aQute.lib.jardiff;
 
-import java.util.*;
+public interface PackageDiff extends Diff, VersionDiff, VersionRangeDiff {
 
-public interface Diff {
+	public enum PackageSeverity {
+		NONE(0),
+		VERSION_MISSING(10),
+		MINOR(20),
+		MAJOR(30);
+		
+		private final int severity;
+		private PackageSeverity(int severity) {
+			this.severity = severity;
+		}
+		
+		public int value() {
+			return severity;
+		}
+	}
+
+	String getPackageName();
 	
-	public enum Delta {
-		ADDED, REMOVED, MODIFIED, UNCHANGED
-	};
-
-	Delta getDelta();
-
-	String getName();
-
-	Diff getContainer();
-
-	Collection<? extends Diff> getContained();
-
-	String explain();
-
-	String toString();
+	boolean isImported();
+	
+	boolean isExported();
+		
 }

@@ -8,25 +8,14 @@
  * Contributors:
  *     Per Kr. Soreide - initial API and implementation
  *******************************************************************************/
-package aQute.lib.jardiff;
+package aQute.lib.jardiff.java;
 
-import java.util.*;
+import aQute.lib.osgi.Annotation;
 
-public interface Diff {
-	
-	public enum Delta {
-		ADDED, REMOVED, MODIFIED, UNCHANGED
-	};
+public class AnnotationInfo {
 
-	Delta getDelta();
-
-	String getName();
-
-	Diff getContainer();
-
-	Collection<? extends Diff> getContained();
-
-	String explain();
-
-	String toString();
+	private Annotation annotation;
+	public AnnotationInfo(Annotation annotation) {
+		this.annotation = annotation;
+	}
 }

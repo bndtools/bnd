@@ -12,21 +12,11 @@ package aQute.lib.jardiff;
 
 import java.util.*;
 
-public interface Diff {
+import aQute.lib.osgi.*;
+
+public interface DiffPlugin {
+
+	boolean canDiff(String name);
 	
-	public enum Delta {
-		ADDED, REMOVED, MODIFIED, UNCHANGED
-	};
-
-	Delta getDelta();
-
-	String getName();
-
-	Diff getContainer();
-
-	Collection<? extends Diff> getContained();
-
-	String explain();
-
-	String toString();
+	Collection<Diff> diff(Diff container, String name, Resource newResource, Resource oldResource) throws Exception;
 }

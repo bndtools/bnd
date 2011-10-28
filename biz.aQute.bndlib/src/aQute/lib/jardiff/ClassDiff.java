@@ -10,23 +10,6 @@
  *******************************************************************************/
 package aQute.lib.jardiff;
 
-import java.util.*;
+public interface ClassDiff extends Diff {
 
-public interface Diff {
-	
-	public enum Delta {
-		ADDED, REMOVED, MODIFIED, UNCHANGED
-	};
-
-	Delta getDelta();
-
-	String getName();
-
-	Diff getContainer();
-
-	Collection<? extends Diff> getContained();
-
-	String explain();
-
-	String toString();
 }
