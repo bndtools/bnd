@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.osgi.impl.bundle.bindex.service;
+package org.osgi.service.bindex.impl;
 
 import java.io.File;
 import java.io.OutputStream;

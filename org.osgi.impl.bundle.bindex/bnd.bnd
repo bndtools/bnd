@@ -4,7 +4,8 @@ Private-Package: org.osgi.service.obr.*,\
 	org.xmlpull.*,\
 	org.osgi.impl.bundle.bindex,\
 	org.osgi.impl.bundle.bindex.*,\
-	org.osgi.impl.bundle.obr.resource
+	org.osgi.impl.bundle.obr.resource,\
+	org.osgi.service.bindex.*
 
 Include-Resource:       {../LICENSE.txt},{../about.html},{../NOTICE.txt},{../README}
 Bundle-Version: 3.0.0
