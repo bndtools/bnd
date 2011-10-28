@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.impl.bundle.bindex.Indexer;
+import org.osgi.service.bindex.BundleIndexer;
 
 public class Index {
 	/**
@@ -60,7 +61,7 @@ public class Index {
 									+ "[-l file:license.html]\n" //
 									+ "[-v]\n" //
 									+ "[-stylesheet "
-									+ Indexer.STYLESHEET_DEFAULT + "]\n" //
+									+ BundleIndexer.STYLESHEET_DEFAULT + "]\n" //
 									+ "<jar file>*");
 				} else {
 					fileList.add(new File(args[i]));

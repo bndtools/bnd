@@ -40,6 +40,7 @@ import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImplComparator;
 import org.osgi.impl.bundle.obr.resource.Tag;
+import org.osgi.service.bindex.BundleIndexer;
 
 /**
  * Iterate over a set of given bundles and convert them to resources. After
@@ -95,10 +96,7 @@ public class Indexer {
 		this.licenseURL = new URL(licenseURL);
 	}
 
-	/** the default stylesheet for the OBR XML representation */
-	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
-
-	private String stylesheet = STYLESHEET_DEFAULT;
+	private String stylesheet = BundleIndexer.STYLESHEET_DEFAULT;
 
 	/**
 	 * @param stylesheet

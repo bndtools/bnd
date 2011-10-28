@@ -29,6 +29,9 @@ public interface BundleIndexer {
 	/** the name of the OBR XML representation */
 	static final String REPOSITORY_NAME = "repository.name";
 
+	/** the default stylesheet for the OBR XML representation */
+	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
+
 	/** the stylesheet of the OBR XML representation */
 	static final String STYLESHEET = "stylesheet";
 
