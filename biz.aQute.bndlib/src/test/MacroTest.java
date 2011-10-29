@@ -88,6 +88,13 @@ public class MacroTest extends TestCase {
 		assertTrue(macro.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
+	public void testSystemFail() throws Exception {
+		Processor p = new Processor();
+		Macro macro = new Macro(p);
+		String cmd = "${system;mostidioticcommandthatwillsurelyfail}";
+		assertEquals(cmd, macro.process(cmd));
+	}
+
 	/**
 	 * Check that variables override macros.
 	 */
