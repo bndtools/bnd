@@ -9,7 +9,6 @@ Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
-Git-Descriptor: ${system;git describe --dirty --always}
 
 # 1. JUNit and Felix Shell are optional dependencies.
 # 2. Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
