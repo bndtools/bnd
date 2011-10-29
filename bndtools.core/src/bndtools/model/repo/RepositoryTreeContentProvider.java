@@ -2,6 +2,7 @@ package bndtools.model.repo;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -40,14 +41,21 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         this.modes = modes;
     }
 
+    @SuppressWarnings("unchecked")
     public Object[] getElements(Object inputElement) {
-        List<Object> result = new ArrayList<Object>();
-        Workspace workspace = (Workspace) inputElement;
-
-        addRepositoryPlugins(result, workspace);
-        addProjects(result, workspace);
-
-//        Collections.sort(result, repositoryComparator);
+        Collection<Object> result;
+        if (inputElement instanceof Workspace) {
+            result = new ArrayList<Object>();
+            Workspace workspace = (Workspace) inputElement;
+            addRepositoryPlugins(result, workspace);
+//            addProjects(result, workspace);
+        } else if (inputElement instanceof Collection) {
+            result = (Collection<Object>) inputElement;
+        } else if (inputElement instanceof Object[]) {
+            result = Arrays.asList((Object[]) inputElement);
+        } else {
+            result = Collections.emptyList();
+        }
 
         return result.toArray(new Object[result.size()]);
     }
@@ -89,7 +97,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
     }
 
-    void addRepositoryPlugins(List<Object> result, Workspace workspace) {
+    void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
         workspace.getErrors().clear();
         List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
         for (String error : workspace.getErrors()) {
@@ -115,7 +123,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    void addProjects(List<Object> result, Workspace workspace) {
+    void addProjects(Collection<Object> result, Workspace workspace) {
         try {
             result.addAll(workspace.getAllProjects());
         } catch (Exception e) {

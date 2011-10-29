@@ -99,7 +99,8 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.TESTCASES,
 		aQute.lib.osgi.Constants.PLUGIN,
 		BndConstants.RUNREQUIRE,
-		BndConstants.RUNEE
+		BndConstants.RUNEE,
+		BndConstants.RUNREPOS
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -181,19 +182,20 @@ public class BndEditModel implements IPersistableBndModel {
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
     Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
     Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
-    Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR);
-    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter());
-    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter());
+    Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR, (String) null);
+    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter(), null);
+    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
     Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String, Requirement>() {
         public String convert(Requirement input) throws IllegalArgumentException {
             return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
         }
-    });
+    }, null);
     Converter<String, EE> eeFormatter = new Converter<String, EE>() {
         public String convert(EE input) throws IllegalArgumentException {
             return input != null ? input.getEEName() : null;
         }
     };
+    Converter<String,Collection<? extends String>> runReposFormatter = new CollectionFormatter<String>(LIST_SEPARATOR, aQute.lib.osgi.Constants.EMPTY_HEADER);
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
@@ -222,6 +224,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
         converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
+        converters.put(BndConstants.RUNREPOS, listConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -247,6 +250,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
+        formatters.put(BndConstants.RUNREPOS, runReposFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -636,6 +640,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setEE(EE ee) {
         EE old = getEE();
         doSetObject(BndConstants.RUNEE, old, ee, eeFormatter);
+    }
+
+    public List<String> getRunRepos() {
+        return doGetObject(BndConstants.RUNREPOS, listConverter);
+    }
+
+    public void setRunRepos(List<String> repos) {
+        List<String> old = getRunRepos();
+        doSetObject(BndConstants.RUNREPOS, old, repos, runReposFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

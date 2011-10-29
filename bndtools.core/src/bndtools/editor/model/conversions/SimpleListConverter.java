@@ -3,6 +3,7 @@ package bndtools.editor.model.conversions;
 import java.util.ArrayList;
 import java.util.List;
 
+import aQute.lib.osgi.Constants;
 import aQute.libg.qtokens.QuotedTokenizer;
 
 public class SimpleListConverter<R> implements Converter<List<R>, String> {
@@ -23,6 +24,9 @@ public class SimpleListConverter<R> implements Converter<List<R>, String> {
 
     public List<R> convert(String input) throws IllegalArgumentException {
         List<R> result = new ArrayList<R>();
+
+        if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
+            return result;
 
         QuotedTokenizer qt = new QuotedTokenizer(input, ",");
         String token = qt.nextToken();

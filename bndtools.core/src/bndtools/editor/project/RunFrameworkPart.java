@@ -177,6 +177,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
                 eeViewer.setSelection(selectedEE != null ? new StructuredSelection(selectedEE) : StructuredSelection.EMPTY);
             }
         });
+        super.refresh();
     }
 
     @Override
