@@ -85,7 +85,7 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
-		assertTrue(macro.process("${system;wc;Hello World}").matches("[0-9]+\\s*[0-9]+\\s*[0-9]+"));
+		assertTrue(macro.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
 	/**
