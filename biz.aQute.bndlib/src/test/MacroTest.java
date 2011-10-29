@@ -96,6 +96,16 @@ public class MacroTest extends TestCase {
 	}
 
 	/**
+	 * Verify system-allow-fail command
+	 */
+
+	public void testSystemAllowFail() throws Exception {
+		Processor p = new Processor();
+		Macro macro = new Macro(p);
+		assertEquals("", macro.process("${system-allow-fail;mostidioticcommandthatwillsurelyfail}"));
+	}
+
+	/**
 	 * Check that variables override macros.
 	 */
 	public void testPriority() {
