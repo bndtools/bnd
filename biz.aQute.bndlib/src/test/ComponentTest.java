@@ -226,7 +226,7 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test if a reference is made to an interface implemented on a superclass.
 	 * 
-	 * This is from https://github.com/bnd/bnd/issues#issue/23
+	 * This is from https://github.com/bndtools/bnd/issues#issue/23
 	 */
 
 	public void testProvideFromSuperClass() throws Exception {

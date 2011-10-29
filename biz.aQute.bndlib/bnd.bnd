@@ -1,6 +1,6 @@
 -sourcepath:					../aQute.libg/src
 
-Bundle-SCM:						git://github.com/bnd/bnd.git
+Bundle-SCM:						git://github.com/bndtools/bnd.git
 Bundle-Vendor: 					aQute SARL http://www.aQute.biz
 Bundle-Copyright:				Copyright © aQute SARL (2000, 2011). All Rights Reserved.
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \

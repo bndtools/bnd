@@ -1,5 +1,5 @@
 
-Bundle-SCM				= git://github.com/bnd/bnd.git
+Bundle-SCM				= git://github.com/bndtools/bnd.git
 
 # Very general
 project.dependson       = ${p-dependson;:}
