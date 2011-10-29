@@ -761,8 +761,9 @@ public class Macro implements Replacer {
 	 * @param low
 	 * @param high
 	 */
-	public String _system(String args[]) throws Exception {
-		verifyCommand(args, "${system;<command>[;<in>]}, execute a system command", null, 2, 3);
+	public String system_internal(boolean allowFail, String args[]) throws Exception {
+		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
+				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -778,10 +779,24 @@ public class Macro implements Replacer {
 
 		String s = IO.collect(process.getInputStream(), "UTF-8");
 		int exitValue = process.waitFor();
-		if (exitValue != 0) {
+		if (!allowFail && (exitValue != 0)) {
 			domain.error("System command " + command + " failed with " + exitValue);
 		}
 		return s.trim();
+	}
+
+	public String _system(String args[]) throws Exception {
+		return system_internal(false, args);
+	}
+
+	public String _system_allow_fail(String args[]) throws Exception {
+		String result = "";
+		try {
+			result = system_internal(true, args);
+		} catch (Throwable t) {
+			/* ignore */
+		}
+		return result;
 	}
 
 	public String _env(String args[]) {
