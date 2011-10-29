@@ -17,10 +17,13 @@ import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -50,6 +53,7 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.utils.SelectionDragAdapter;
+import bndtools.views.RepositoryBsnFilter;
 
 public class RepositorySelectionPart extends BndEditorPart {
 
@@ -102,6 +106,16 @@ public class RepositorySelectionPart extends BndEditorPart {
         txtSearch = new Text(container, SWT.BORDER | SWT.H_SCROLL | SWT.SEARCH | SWT.ICON_SEARCH | SWT.CANCEL);
         txtSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         toolkit.adapt(txtSearch, true, true);
+
+        txtSearch.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                if(e.detail == SWT.CANCEL)
+                    updatedFilter("");
+                else
+                    updatedFilter(txtSearch.getText());
+            }
+        });
 
         Composite treeContainer = new Composite(container, SWT.NONE);
         TreeColumnLayout treeLayout = new TreeColumnLayout();
@@ -211,6 +225,15 @@ public class RepositorySelectionPart extends BndEditorPart {
         });
 
         reloadRepos();
+    }
+
+    void updatedFilter(String filterString) {
+        if(filterString == null || filterString.length() == 0) {
+            viewer.setFilters(new ViewerFilter[0]);
+        } else {
+            viewer.setFilters(new ViewerFilter[] { new RepositoryBsnFilter(filterString) });
+            viewer.expandToLevel(2);
+        }
     }
 
     boolean isIncludedRepo(RepositoryPlugin repo) {

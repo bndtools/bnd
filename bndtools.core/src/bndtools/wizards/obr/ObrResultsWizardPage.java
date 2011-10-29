@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Requirement;
@@ -26,7 +25,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -44,18 +42,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.model.obr.UnresolvedReasonLabelProvider;
-import bndtools.preferences.obr.ObrPreferences;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
 public class ObrResultsWizardPage extends WizardPage {
@@ -123,7 +118,7 @@ public class ObrResultsWizardPage extends WizardPage {
         Label lblRequired = new Label(compResults, SWT.NONE);
         lblRequired.setText("Required Resources");
 
-        tblRequired = new Table(compResults, SWT.BORDER | SWT.FULL_SELECTION);
+        tblRequired = new Table(compResults, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL);
         GridData gd_tblRequired = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblRequired.heightHint = 100;
         tblRequired.setLayoutData(gd_tblRequired);
@@ -247,26 +242,6 @@ public class ObrResultsWizardPage extends WizardPage {
 
         Button btnErrorsToClipboard = new Button(composite, SWT.NONE);
         btnErrorsToClipboard.setText("Copy to Clipboard");
-
-        Link lnkConfigRepos = new Link(container, SWT.NONE);
-        lnkConfigRepos.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    Set<String> before = ObrPreferences.loadAvailableReposAndExclusions().getSecond();
-                    PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(getShell(), "bndtools.prefPages.obr", new String[] { "bndtools.prefPages.obr" }, null);
-                    dialog.open();
-                    Set<String> after = ObrPreferences.loadAvailableReposAndExclusions().getSecond();
-                    if (!before.equals(after)) {
-                        reresolve();
-                    }
-                } catch (Exception e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
-        });
-        lnkConfigRepos.setText("<a>Configure OBR repositories</a>");
 
         updateUi();
     }

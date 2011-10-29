@@ -60,8 +60,6 @@ import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.model.clauses.VersionedClause;
-import bndtools.preferences.obr.ObrPreferences;
-import bndtools.types.Pair;
 
 public class ResolveOperation implements IRunnableWithProgress {
 
@@ -284,13 +282,14 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private List<OBRIndexProvider> loadIndexProviders() throws Exception {
-        Pair<List<OBRIndexProvider>, Set<String>> preferences = ObrPreferences.loadAvailableReposAndExclusions();
-        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(preferences.getFirst().size());
+        List<OBRIndexProvider> plugins = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
+        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(plugins.size());
 
-        for (OBRIndexProvider plugin : preferences.getFirst()) {
+        List<String> includedRepos = model.getRunRepos();
+        for (OBRIndexProvider plugin : plugins) {
             if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) {
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
-                if (!preferences.getSecond().contains(name))
+                if (includedRepos == null || includedRepos.contains(name))
                     repos.add(plugin);
             }
         }

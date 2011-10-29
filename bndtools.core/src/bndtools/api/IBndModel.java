@@ -68,4 +68,8 @@ public interface IBndModel {
 
     void setRunRequire(List<Requirement> requires);
 
+    List<String> getRunRepos();
+
+    void setRunRepos(List<String> repos);
+
 }

@@ -618,12 +618,6 @@
              id="bndtools.prefPages.basic"
              name="Bnd OSGi Tools">
        </page>
-       <page
-            class="bndtools.preferences.ui.obr.ObrPreferencePage"
-            id="bndtools.prefPages.obr"
-            name="OBR Repository Exclusions"
-            category="bndtools.prefPages.basic">
-       </page>
     </extension>
     <extension
           point="org.eclipse.debug.ui.launchConfigurationTypeImages">

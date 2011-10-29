@@ -18,7 +18,6 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -49,8 +48,6 @@ import aQute.lib.osgi.Jar;
 import bndtools.Activator;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.model.repo.ProjectBundle;
-import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.utils.SWTConcurrencyUtil;
@@ -66,29 +63,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
     private Action addBundlesAction;
 
     private ServiceRegistration registration;
-
-    private class BsnFilter extends ViewerFilter {
-        private final String filterStr;
-        public BsnFilter(String filterStr) {
-            this.filterStr = filterStr;
-        }
-        @Override
-        public boolean select(Viewer viewer, Object parentElement, Object element) {
-            String bsn = null;
-            if(element instanceof RepositoryBundle) {
-                bsn = ((RepositoryBundle) element).getBsn();
-            } else if (element instanceof ProjectBundle) {
-                bsn = ((ProjectBundle) element).getBsn();
-            }
-            if(bsn != null) {
-                if(filterStr != null && filterStr.length() > 0 && bsn.toLowerCase().indexOf(filterStr) == -1) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    };
-
 
     @Override
     protected void createMainControl(Composite container) {
@@ -218,7 +192,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         if(filterString == null || filterString.length() == 0) {
             viewer.setFilters(new ViewerFilter[0]);
         } else {
-            viewer.setFilters(new ViewerFilter[] { new BsnFilter(filterString) });
+            viewer.setFilters(new ViewerFilter[] { new RepositoryBsnFilter(filterString) });
             viewer.expandToLevel(2);
         }
     }
