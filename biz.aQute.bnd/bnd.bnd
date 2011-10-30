@@ -1,6 +1,6 @@
 -dependson: biz.aQute.junit, biz.aQute.launcher, demo
 
-Bundle-Version: 				1.50.0
+Bundle-Version: 				1.50.1
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="${Bundle-Copyright}"; \
 									link=LICENSE
@@ -33,7 +33,7 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.registry,\
 	org.apache.tools.ant,\
-	osgi.cmpn,\
+	osgi.cmpn;version=4.3,\
 	osgi.core;version=4.1,\
 	junit.osgi,\
 	org.osgi.impl.bundle.bindex

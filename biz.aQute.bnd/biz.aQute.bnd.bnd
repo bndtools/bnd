@@ -7,7 +7,7 @@ Private-Package: 				aQute.bnd.*, aQute.lib.*
 
 #, org.osgi.service.component.annotations
 Conditional-Package: 			aQute.libg.*
-Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
+Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex, org.osgi.service.coordinator
 Import-Package: 				!org.eclipse.*,org.apache.tools.ant;resolution:=optional,org.osgi.service.bindex,*
 Bundle-ClassPath:				.
 Main-Class: 					aQute.bnd.main.bnd
