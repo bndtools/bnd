@@ -15,6 +15,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.lib.osgi,\
 	aQute.bnd.build,\
 	aQute.bnd.service.*,\
+	aQute.bnd.help.*,\
 	aQute.libg.reporter,\
 	aQute.libg.version,\
 	aQute.libg.sed,\
