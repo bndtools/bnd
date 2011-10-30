@@ -1,6 +1,7 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,8 +42,10 @@ import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.URLConnector;
+import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 import aQute.lib.filter.Filter;
 import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.URLResource;
 import aQute.libg.generics.Create;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.version.Version;
@@ -101,8 +104,8 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			pkgResourceMap.clear();
 			
 			initialiseIndexes();
-			final URLConnector connector = getConnector();
 			
+			final URLConnector connector = getConnector();
 			IRepositoryListener listener = new IRepositoryListener() {
 				public boolean processResource(Resource resource) {
 					addResourceToIndex(resource);
@@ -113,8 +116,9 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 					try {
 						URL indexLocation = new URL(referral.getUrl());
 						try {
-							InputStream stream = connector.connect(indexLocation);
-							return readIndex(indexLocation.toString(), stream, this);
+							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+							indexHandle.setReporter(reporter);
+							return readIndex(indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
 						} catch (Exception e) {
 							reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
 						}
@@ -129,8 +133,10 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			Collection<URL> indexes = getOBRIndexes();
 			for (URL indexLocation : indexes) {
 				try {
-					InputStream stream = connector.connect(indexLocation);
-					readIndex(indexLocation.toString(), stream, listener);
+					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					indexHandle.setReporter(reporter);
+					File indexFile = indexHandle.request();
+					readIndex(indexLocation.toExternalForm(), new FileInputStream(indexFile), listener);
 				} catch (Exception e) {
 					reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
@@ -423,9 +429,9 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	ResourceHandle mapResourceToHandle(Resource resource) throws Exception {
 		ResourceHandle result = null;
 		
-		URLResourceHandle handle ;
+		CachingURLResourceHandle handle ;
 		try {
-			handle = new URLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory(), getConnector());
+			handle = new CachingURLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory(), getConnector(), CachingMode.PreferCache);
 		} catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
 		}
