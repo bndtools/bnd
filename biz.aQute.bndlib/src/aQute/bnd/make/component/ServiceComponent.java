@@ -18,51 +18,6 @@ import aQute.libg.version.*;
  * and added to the JAR and the header is modified appropriately.
  */
 public class ServiceComponent implements AnalyzerPlugin {
-	public final static String			NAMESPACE_STEM					= "http://www.osgi.org/xmlns/scr";
-	public final static String			JIDENTIFIER						= "<<identifier>>";
-	public final static String			COMPONENT_NAME					= "name:";
-	public final static String			COMPONENT_FACTORY				= "factory:";
-	public final static String			COMPONENT_SERVICEFACTORY		= "servicefactory:";
-	public final static String			COMPONENT_IMMEDIATE				= "immediate:";
-	public final static String			COMPONENT_ENABLED				= "enabled:";
-	public final static String			COMPONENT_DYNAMIC				= "dynamic:";
-	public final static String			COMPONENT_MULTIPLE				= "multiple:";
-	public final static String			COMPONENT_PROVIDE				= "provide:";
-	public final static String			COMPONENT_OPTIONAL				= "optional:";
-	public final static String			COMPONENT_PROPERTIES			= "properties:";
-	public final static String			COMPONENT_IMPLEMENTATION		= "implementation:";
-	public final static String			COMPONENT_DESIGNATE				= "designate:";
-	public final static String			COMPONENT_DESIGNATEFACTORY		= "designateFactory:";
-	public final static String			COMPONENT_DESCRIPTORS			= ".descriptors:";
-
-	// v1.1.0
-	public final static String			COMPONENT_VERSION				= "version:";
-	public final static String			COMPONENT_CONFIGURATION_POLICY	= "configuration-policy:";
-	public final static String			COMPONENT_MODIFIED				= "modified:";
-	public final static String			COMPONENT_ACTIVATE				= "activate:";
-	public final static String			COMPONENT_DEACTIVATE			= "deactivate:";
-
-	final static Map<String, String>	EMPTY							= Collections.emptyMap();
-
-	public final static String[]		componentDirectives				= new String[] {
-			COMPONENT_FACTORY, COMPONENT_IMMEDIATE, COMPONENT_ENABLED, COMPONENT_DYNAMIC,
-			COMPONENT_MULTIPLE, COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES,
-			COMPONENT_IMPLEMENTATION, COMPONENT_SERVICEFACTORY, COMPONENT_VERSION,
-			COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED, COMPONENT_ACTIVATE,
-			COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS, COMPONENT_DESIGNATE,
-			COMPONENT_DESIGNATEFACTORY									};
-
-	public final static Set<String>		SET_COMPONENT_DIRECTIVES		= new HashSet<String>(
-																				Arrays.asList(componentDirectives));
-
-	public final static Set<String>		SET_COMPONENT_DIRECTIVES_1_1	= //
-																		new HashSet<String>(
-																				Arrays.asList(
-																						COMPONENT_VERSION,
-																						COMPONENT_CONFIGURATION_POLICY,
-																						COMPONENT_MODIFIED,
-																						COMPONENT_ACTIVATE,
-																						COMPONENT_DEACTIVATE));
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
