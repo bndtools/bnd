@@ -1,3 +1,5 @@
+# We use git
+Git-Descriptor: ${system;git describe --dirty --always}
 
 Bundle-SCM				= git://github.com/bndtools/bnd.git
 
