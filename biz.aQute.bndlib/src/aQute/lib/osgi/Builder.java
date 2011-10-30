@@ -501,7 +501,7 @@ public class Builder extends Analyzer {
 			sb.append(Processor.join(getClasspath()));
 			sb.append("\n");
 
-			warning(sb.toString());
+			warning("%s",sb.toString());
 			if (isPedantic())
 				diagnostics = true;
 		}
@@ -559,7 +559,7 @@ public class Builder extends Analyzer {
 							continue loop;
 
 						default:
-							warning(diagnostic(pack, getClasspath(), classpathEntry.source));
+							warning("%s", diagnostic(pack, getClasspath(), classpathEntry.source));
 							overwriteResource = false;
 							break;
 						}
