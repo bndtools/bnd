@@ -374,8 +374,7 @@ public class Project extends Processor {
 	 *            The header
 	 * @return
 	 */
-	
-	
+
 	public List<Container> getBundles(Strategy strategyx, String spec, String source)
 			throws Exception {
 		List<Container> result = new ArrayList<Container>();
@@ -463,7 +462,8 @@ public class Project extends Processor {
 
 	/**
 	 * Just calls a new method with a default parm.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 * 
 	 */
 	Collection<Container> getBundles(Strategy strategy, String spec) throws Exception {
@@ -914,8 +914,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 *             when something goes wrong
 	 */
-	
-	
+
 	public Container getBundle(String bsn, String range, Strategy strategy,
 			Map<String, String> attrs) throws Exception {
 
@@ -961,11 +960,25 @@ public class Project extends Processor {
 
 			SortedMap<Version, RepositoryPlugin> versions = new TreeMap<Version, RepositoryPlugin>();
 			for (RepositoryPlugin plugin : plugins) {
-				List<Version> vs = plugin.versions(bsn);
-				if (vs != null) {
-					for (Version v : vs) {
-						if (!versions.containsKey(v) && versionRange.includes(v))
-							versions.put(v, plugin);
+				try {
+					List<Version> vs = plugin.versions(bsn);
+					if (vs != null) {
+						for (Version v : vs) {
+							if (!versions.containsKey(v) && versionRange.includes(v))
+								versions.put(v, plugin);
+						}
+					}
+				} catch (UnsupportedOperationException ose) {
+					// We have a plugin that cannot list versions, try
+					// if it has this specific version
+					// The main reaosn for this code was the Maven Remote Repository
+					// To query, we must have a real version
+					if (!versions.isEmpty() && Verifier.isVersion(range)) {
+						File file = plugin.get(bsn, range, useStrategy, attrs);
+						// and the entry must exist
+						// if it does, return this as a result
+						if (file != null)
+							return toContainer(bsn, range, attrs, file);
 					}
 				}
 			}
