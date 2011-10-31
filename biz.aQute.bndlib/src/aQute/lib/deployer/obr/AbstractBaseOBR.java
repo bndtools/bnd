@@ -1,6 +1,7 @@
 package aQute.lib.deployer.obr;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,8 +41,11 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 import aQute.lib.filter.Filter;
 import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.URLResource;
 import aQute.libg.generics.Create;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.version.Version;
@@ -101,6 +105,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			
 			initialiseIndexes();
 			
+			final URLConnector connector = getConnector();
 			IRepositoryListener listener = new IRepositoryListener() {
 				public boolean processResource(Resource resource) {
 					addResourceToIndex(resource);
@@ -111,16 +116,15 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 					try {
 						URL indexLocation = new URL(referral.getUrl());
 						try {
-							InputStream stream = indexLocation.openStream();
-							return readIndex(indexLocation.toString(), stream, this);
+							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+							indexHandle.setReporter(reporter);
+							return readIndex(indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
 						} catch (Exception e) {
-							e.printStackTrace();
-							reporter.error("Unable to read referral index at URL '%s'. Parent index '%s'.", indexLocation, fromUrl);
+							reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
 						}
 						
 					} catch (MalformedURLException e) {
-						e.printStackTrace();
-						reporter.error("Invalid referral URL '%s'. Parent index '%s'", referral.getUrl(), fromUrl);
+						reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), fromUrl, e);
 					}
 					return false;
 				}
@@ -129,11 +133,12 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			Collection<URL> indexes = getOBRIndexes();
 			for (URL indexLocation : indexes) {
 				try {
-					InputStream stream = indexLocation.openStream();
-					readIndex(indexLocation.toString(), stream, listener);
+					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					indexHandle.setReporter(reporter);
+					File indexFile = indexHandle.request();
+					readIndex(indexLocation.toExternalForm(), new FileInputStream(indexFile), listener);
 				} catch (Exception e) {
-					e.printStackTrace();
-					reporter.error("Unable to read index at URL '%s'.", indexLocation);
+					reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
 			
@@ -141,11 +146,21 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 		}
 	}
 	
-	public void setRegistry(Registry registry) {
+	private URLConnector getConnector() {
+		URLConnector connector;
+		synchronized (this) {
+			connector = registry.getPlugin(URLConnector.class);
+		}
+		if (connector == null)
+			connector = new DefaultURLConnector();
+		return connector;
+	}
+
+	public synchronized final void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
 
-	public void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		if (map.containsKey(PROP_NAME))
 			name = map.get(PROP_NAME);
 		
@@ -198,7 +213,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
 	}
 	
-	public void setReporter(Reporter reporter) {
+	public synchronized void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 	
@@ -259,7 +274,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 		return list;
 	}
 
-	public String getName() {
+	public synchronized String getName() {
 		return name;
 	}
 
@@ -389,8 +404,10 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 					if (!filter.match(modeCapability))
 						iter.remove();
 				} catch (IllegalArgumentException e) {
-					if (reporter != null)
-						reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
+					synchronized (this) {
+						if (reporter != null)
+							reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
+					}
 					iter.remove();
 				}
 			}
@@ -412,9 +429,9 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	ResourceHandle mapResourceToHandle(Resource resource) throws Exception {
 		ResourceHandle result = null;
 		
-		URLResourceHandle handle ;
+		CachingURLResourceHandle handle ;
 		try {
-			handle = new URLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory());
+			handle = new CachingURLResourceHandle(resource.getUrl(), resource.getBaseUrl(), getCacheDirectory(), getConnector(), CachingMode.PreferCache);
 		} catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
 		}
