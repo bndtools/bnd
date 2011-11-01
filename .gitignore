@@ -1,12 +1,9 @@
 *.class
 *.bak
-tmp
-bin
-.metadata
+/*/tmp
+/*/bin
+.metadata/
 Archive
 .DS_Store
 .*.swp
-
-biz.aQute.launcher/bin_test/test/demo.jar
-aQute.libg/test.tmp
-cache
+buildfiles
