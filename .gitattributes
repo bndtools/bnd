@@ -15,13 +15,16 @@
 *.js crlf=input
 *.lib crlf=input
 *.MF crlf=input
+*.mf crlf=input
 *.perm crlf=input
 *.php crlf=input
 *.pl crlf=input
+*.pom crlf=input
 *.prefs crlf=input
 *.properties crlf=input
 *.py crlf=input
 *.schema crlf=input
+*.SF crlf=input
 *.sh crlf=input
 *.tcl crlf=input
 *.txt crlf=input
@@ -33,6 +36,8 @@
 .project crlf=input
 packageinfo crlf=input
 Makefile crlf=input
+README crlf=input
+LICENSE crlf=input
 
 # No EOL translation
 *.bat -crlf
