@@ -46,9 +46,12 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.url.URLConnector;
+import aQute.lib.deployer.obr.CachingURLResourceHandle;
+import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
@@ -109,10 +112,24 @@ public class ResolveOperation implements IRunnableWithProgress {
         // Load repository indexes
         List<Repository> repos = new ArrayList<Repository>(indexProviders.size() * 2);
         for (OBRIndexProvider prov : indexProviders) {
-            String repoName = (prov instanceof RepositoryPlugin) ? ((RepositoryPlugin) prov).getName() : prov.toString();
+            String repoName;
+            if (prov instanceof RepositoryPlugin) {
+                RepositoryPlugin repo = (RepositoryPlugin) prov;
+                repoName = repo.getName();
+            } else {
+                repoName = prov.toString();
+            }
+
+            File cacheDir;
+            if (prov instanceof RemoteRepositoryPlugin) {
+                cacheDir = ((RemoteRepositoryPlugin) prov).getCacheDirectory();
+            } else {
+                cacheDir = Plugin.getDefault().getStateLocation().toFile();
+            }
+
             try {
                 for (URL indexUrl : prov.getOBRIndexes()) {
-                    addRepository(indexUrl, repos);
+                    addRepository(indexUrl, repos, cacheDir);
                 }
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error processing index for repository " + repoName, e));
@@ -163,18 +180,20 @@ public class ResolveOperation implements IRunnableWithProgress {
                 Arrays.asList(resolver.getUnsatisfiedRequirements()));
     }
 
-    private void addRepository(URL index, List<? super Repository> repos) throws Exception {
+    private void addRepository(URL index, List<? super Repository> repos, File cacheDir) throws Exception {
         URLConnector connector = getConnector();
 
-        addRepository(index, new HashSet<URL>(), repos, Integer.MAX_VALUE, connector);
+        addRepository(index, new HashSet<URL>(), repos, Integer.MAX_VALUE, connector, cacheDir);
     }
 
-    private void addRepository(URL index, Set<URL> visited, List<? super Repository> repos, int hopCount, URLConnector connector) throws Exception {
+    private void addRepository(URL index, Set<URL> visited, List<? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
         if (visited.add(index)) {
-            InputStream stream = connector.connect(index);
+            CachingURLResourceHandle handle = new CachingURLResourceHandle(index.toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
+            handle.setReporter(Central.getWorkspace());
+            File file = handle.request();
 
             PullParser repoParser = new PullParser();
-            RepositoryImpl repo = repoParser.parseRepository(stream);
+            RepositoryImpl repo = repoParser.parseRepository(new FileInputStream(file));
             repo.setURI(index.toExternalForm());
             repos.add(repo);
 
@@ -184,7 +203,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                     URL referralUrl = new URL(index, referral.getUrl());
                     hopCount = (referral.getDepth() > hopCount) ? hopCount : referral.getDepth();
 
-                    addRepository(referralUrl, visited, repos, hopCount, connector);
+                    addRepository(referralUrl, visited, repos, hopCount, connector, cacheDir);
                 }
             }
         }

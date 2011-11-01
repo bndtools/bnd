@@ -35,8 +35,7 @@ public class WrappingObrRepository extends AbstractBaseOBR {
         return delegate.getSupportedModes();
     }
 
-    @Override
-    protected File getCacheDirectory() {
+    public File getCacheDirectory() {
         return cacheDir;
     }
 
