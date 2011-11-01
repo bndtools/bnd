@@ -41,6 +41,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
@@ -52,6 +53,7 @@ import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
+import bndtools.model.repo.WrappingObrRepository;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.views.RepositoryBsnFilter;
 
@@ -161,7 +163,12 @@ public class RepositorySelectionPart extends BndEditorPart {
                     boolean included = isIncludedRepo(repo);
                     if (column == 0) {
                         label = repo.getName();
-                        image = (element instanceof WorkspaceObrProvider) ? projectImg : repoImg;
+
+                        image = repoImg;
+                        if (repo instanceof WrappingObrRepository) {
+                            if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
+                                image = projectImg;
+                        }
                     } else if (column == 1) {
                         image = included ? checkedImg : uncheckedImg;
                     }
@@ -195,9 +202,8 @@ public class RepositorySelectionPart extends BndEditorPart {
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 for (Object element : selection.toList()) {
-                    if (element instanceof RepositoryPlugin) {
+                    if (element instanceof RepositoryPlugin)
                         toggleSelection((RepositoryPlugin) element);
-                    }
                 }
             }
         });
@@ -259,11 +265,20 @@ public class RepositorySelectionPart extends BndEditorPart {
     private void reloadRepos() {
         allRepos.clear();
         try {
-            List<OBRIndexProvider> repos = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
+            Workspace workspace = Central.getWorkspace();
+
+            List<OBRIndexProvider> repos = workspace.getPlugins(OBRIndexProvider.class);
             allRepos.ensureCapacity(repos.size());
+
             for (OBRIndexProvider repo : repos) {
-                if (repo instanceof RepositoryPlugin && repo.getSupportedModes().contains(OBRResolutionMode.runtime))
-                    allRepos.add((RepositoryPlugin) repo);
+                if (repo.getSupportedModes().contains(OBRResolutionMode.runtime)) {
+                    if (repo instanceof RepositoryPlugin)
+                        allRepos.add((RepositoryPlugin) repo);
+                    else {
+                        WrappingObrRepository wrappingRepo = new WrappingObrRepository(repo, null, workspace);
+                        allRepos.add(wrappingRepo);
+                    }
+                }
             }
         } catch (Exception e) {
             Plugin.logError("Error getting repository list from workspace", e);

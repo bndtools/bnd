@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,19 +29,20 @@ import org.xml.sax.XMLReader;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.lib.deployer.obr.AbstractBaseOBR;
+import aQute.bnd.service.OBRIndexProvider;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.lib.osgi.Builder;
 import aQute.libg.sax.SAXUtil;
 import bndtools.bindex.AbsoluteizeContentFilter;
 import bndtools.bindex.CategoryInsertionContentFilter;
 
 @ThreadSafe
-public class WorkspaceObrProvider extends AbstractBaseOBR {
+public class WorkspaceObrProvider implements OBRIndexProvider {
 
     public static final String CATEGORY_WORKSPACE = "__WORKSPACE";
 
     // Generate warnings if the index generation takes longer than this (millisecs)
-    private static final long WARNING_THRESHOLD_TIME = 500;
+    private static final long WARNING_THRESHOLD_TIME = 1000;
 
     private final File indexFile;
     private Workspace workspace;
@@ -57,7 +59,6 @@ public class WorkspaceObrProvider extends AbstractBaseOBR {
 
     void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
-        this.registry = workspace;
     }
 
     public synchronized void initialise() {
@@ -131,8 +132,6 @@ public class WorkspaceObrProvider extends AbstractBaseOBR {
             if (timeTaken >= WARNING_THRESHOLD_TIME)
                 Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Workspace OBR index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null));
         }
-
-        super.reset();
     }
 
     public Collection<URL> getOBRIndexes() throws IOException {
@@ -140,20 +139,12 @@ public class WorkspaceObrProvider extends AbstractBaseOBR {
         return Collections.singletonList(indexFile.toURI().toURL());
     }
 
-    @Override
-    public synchronized String getName() {
-        return "Workspace";
+    public Set<OBRResolutionMode> getSupportedModes() {
+        return EnumSet.allOf(OBRResolutionMode.class);
     }
 
     @Override
     public String toString() {
-        return getName();
+        return "Workspace";
     }
-
-    @Override
-    protected File getCacheDirectory() {
-        // Shouldn't ever be necessary because we only contain local files.
-        return null;
-    }
-
 }

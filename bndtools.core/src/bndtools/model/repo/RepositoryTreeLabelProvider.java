@@ -23,11 +23,11 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
-        WorkspaceObrProvider workspace;
+        WorkspaceObrProvider workspaceObr;
         try {
-            workspace = Central.getWorkspaceObrProvider();
+            workspaceObr = Central.getWorkspaceObrProvider();
         } catch (Exception e) {
-            workspace = null;
+            workspaceObr = null;
         }
 
         Object element = cell.getElement();
@@ -37,10 +37,13 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             if (index == 0) {
                 String name = ((RepositoryPlugin) element).getName();
                 cell.setText(name);
-                if (element == workspace)
-                    cell.setImage(projectImg);
-                else
-                    cell.setImage(repoImg);
+
+                Image image = repoImg;
+                if (element instanceof WrappingObrRepository) {
+                    if (((WrappingObrRepository) element).getDelegate() == workspaceObr)
+                        image = projectImg;
+                }
+                cell.setImage(image);
             }
         } else if (element instanceof Project) {
             if (index == 0) {

@@ -54,22 +54,27 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.WorkspaceObrProvider;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.WrappingObrRepository;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
 
-	private final String propertyName;
+	private static final String VERSION_LATEST = "latest";
+
+    private final String propertyName;
 	private Table table;
 	protected TableViewer viewer;
 
@@ -250,18 +255,12 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 while(iterator.hasNext()) {
                     Object item = iterator.next();
                     if(item instanceof RepositoryBundle) {
-                        String bsn = ((RepositoryBundle) item).getBsn();
-                        adding.add(new VersionedClause(bsn, new HashMap<String, String>()));
+                        VersionedClause newClause = convertDroppedRepoBundle((RepositoryBundle) item);
+                        adding.add(newClause);
                     } else if(item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-                        Map<String,String> attribs = new HashMap<String, String>();
-                        attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
-                        adding.add(new VersionedClause(bundleVersion.getBundle().getBsn(), attribs));
-                    } else if(item instanceof ProjectBundle) {
-                        String bsn = ((ProjectBundle) item).getBsn();
-                        Map<String,String> attribs = new HashMap<String, String>();
-                        attribs.put(Constants.VERSION_ATTRIBUTE, "snapshot");
-                        adding.add(new VersionedClause(bsn, attribs));
+                        VersionedClause newClause = convertDroppedRepoBundleVersion(bundleVersion);
+                        adding.add(newClause);
                     }
                 }
                 if(!adding.isEmpty()) {
@@ -300,6 +299,31 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		gd.widthHint = 50;
 		table.setLayoutData(gd);
 	}
+
+    protected VersionedClause convertDroppedRepoBundle(RepositoryBundle bundle) {
+        Map<String, String> attribs = new HashMap<String, String>();
+        if (isWorkspaceRepo(bundle.getRepo())) {
+            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+        }
+        return new VersionedClause(bundle.getBsn(), attribs);
+    }
+
+    protected VersionedClause convertDroppedRepoBundleVersion(RepositoryBundleVersion bundleVersion) {
+        Map<String, String> attribs = new HashMap<String, String>();
+        if (isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
+            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+        else
+            attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
+        return new VersionedClause(bundleVersion.getBundle().getBsn(), attribs);
+    }
+
+    private boolean isWorkspaceRepo(RepositoryPlugin repo) {
+        if (repo instanceof WrappingObrRepository) {
+            if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
+                return true;
+        }
+        return false;
+    }
 
     private boolean isRemovable(ISelection selection) {
         if (selection.isEmpty())

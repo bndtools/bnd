@@ -106,7 +106,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
 
 
-        // Load repositories
+        // Load repository indexes
         List<Repository> repos = new ArrayList<Repository>(indexProviders.size() * 2);
         for (OBRIndexProvider prov : indexProviders) {
             String repoName = (prov instanceof RepositoryPlugin) ? ((RepositoryPlugin) prov).getName() : prov.toString();
