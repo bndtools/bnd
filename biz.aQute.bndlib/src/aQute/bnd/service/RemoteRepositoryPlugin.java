@@ -1,5 +1,6 @@
 package aQute.bnd.service;
 
+import java.io.File;
 import java.util.Map;
 
 public interface RemoteRepositoryPlugin extends RepositoryPlugin {
@@ -14,4 +15,6 @@ public interface RemoteRepositoryPlugin extends RepositoryPlugin {
 	 * @throws Exception
 	 */
 	ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
+	
+	File getCacheDirectory();
 }

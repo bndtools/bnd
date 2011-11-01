@@ -80,7 +80,6 @@ public class OBR extends AbstractBaseOBR {
 		return locations;
 	}
 
-	@Override
 	public synchronized File getCacheDirectory() {
 		if (cacheDir == null) {
 			FileRepo cacheRepo = lookupCachedFileRepo();
