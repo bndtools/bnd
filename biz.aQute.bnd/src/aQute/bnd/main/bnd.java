@@ -17,8 +17,6 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
-import aQute.bnd.concurrent.*;
-import aQute.bnd.libsync.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
