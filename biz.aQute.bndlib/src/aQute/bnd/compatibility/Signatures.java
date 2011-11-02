@@ -26,7 +26,7 @@ import java.util.*;
  * signatures can be string compared and match even if the type variable names
  * differ.
  * 
- * @version $Id: 230efd4ab3c595f8f0e9741bd82fe538fb49f391 $
+ * @version $Id$
  */
 public class Signatures {
 	

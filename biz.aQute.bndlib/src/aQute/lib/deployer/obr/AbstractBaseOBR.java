@@ -78,8 +78,6 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	private final Map<String, SortedMap<Version, Resource>> pkgResourceMap = new HashMap<String, SortedMap<Version, Resource>>();
 	private final Map<String, SortedMap<Version, Resource>> bsnMap = new HashMap<String, SortedMap<Version, Resource>>();
 	
-	protected abstract File getCacheDirectory();
-
 	protected void addResourceToIndex(Resource resource) {
 		addBundleSymbolicNameToIndex(resource);
 		addPackagesToIndex(resource);

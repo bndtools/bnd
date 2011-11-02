@@ -1,10 +1,12 @@
 package aQute.bnd.make.component;
 
-import static aQute.bnd.make.component.ServiceComponent.*;
+import static aQute.lib.osgi.Constants.*;
 
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
+
+import aQute.lib.osgi.Annotation;
 
 import aQute.bnd.annotation.component.*;
 import aQute.lib.osgi.*;
@@ -246,7 +248,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
 
-	private void doProperties(Annotation annotation) {
+	private void doProperties(aQute.lib.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
 
 		if (properties != null) {

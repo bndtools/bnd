@@ -35,7 +35,7 @@ public class BndScanner extends RuleBasedScanner {
             addWords(Analyzer.headers, bsvc.T_INSTRUCTION);
             addWords(Analyzer.options, bsvc.T_OPTION);
             addWords(Analyzer.directives, bsvc.T_DIRECTIVE);
-            addWords(ServiceComponent.componentDirectives, bsvc.T_COMPONENT);
+            addWords(Constants.componentDirectives, bsvc.T_COMPONENT);
         }
 
         private boolean isWordStart(char c) {

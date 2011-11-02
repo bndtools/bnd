@@ -15,6 +15,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.lib.osgi,\
 	aQute.bnd.build,\
 	aQute.bnd.service.*,\
+	aQute.bnd.help.*,\
 	aQute.libg.reporter,\
 	aQute.libg.version,\
 	aQute.libg.sed,\
@@ -36,4 +37,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	ee.j2se; version=1.5, \
 	org.osgi.impl.bundle.bindex
 
-Bundle-Version: 1.48.3
+Bundle-Version: 1.49.0
