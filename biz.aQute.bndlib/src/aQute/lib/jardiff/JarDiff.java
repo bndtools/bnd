@@ -6,16 +6,17 @@ import java.util.jar.*;
 
 import org.osgi.framework.Constants;
 
+import aQute.bnd.build.*;
+import aQute.bnd.service.*;
 import aQute.lib.jardiff.java.*;
 import aQute.lib.jardiff.manifest.*;
 import aQute.lib.osgi.*;
+import aQute.libg.version.*;
 import aQute.libg.version.Version;
 
 public class JarDiff implements Diff, VersionDiff {
 
 	public static final Version VERSION_ONE = Version.parseVersion("1.0.0");
-	
-	public static final String MANIFEST_MF = "META-INF/MANIFEST.MF";
 	
 	protected String bundleSymbolicName;
 	
@@ -66,6 +67,7 @@ public class JarDiff implements Diff, VersionDiff {
 
 		String prevName = stripInstructions(getAttribute(previousManifest, Constants.BUNDLE_SYMBOLICNAME));
 		if (bundleSymbolicName != null && prevName != null && !bundleSymbolicName.equals(prevName)) {
+			//TODO: This should be a Diff...
 			throw new IllegalArgumentException(Constants.BUNDLE_SYMBOLICNAME + " must be equal");
 		}
 
@@ -74,18 +76,24 @@ public class JarDiff implements Diff, VersionDiff {
 		javaDiff.compare();
 		
 		diffs.add(javaDiff);
-		
-		//TODO: Plugins
-		
-		// Manifest
-		ManifestDiffPlugin plugin = new ManifestDiffPlugin();
-		Resource newResource = newJar.getResource(MANIFEST_MF);
-		Resource oldResource = oldJar.getResource(MANIFEST_MF);
-		diffs.addAll(plugin.diff(this, MANIFEST_MF, newResource, oldResource));
-		
-		
+
+		for (DiffPlugin plugin : getDiffPlugins()) {
+	        for (String path : newJar.getResources().keySet()) {
+	            Resource ra = newJar.getResource(path);
+	            Resource rb = oldJar.getResource(path);
+	            
+	            if (plugin.canDiff(path)) {
+	            	diffs.addAll(plugin.diff(this, path, ra, rb));
+	            }
+	        }
+		}
 	}
 
+	static Collection<DiffPlugin> getDiffPlugins() {
+		//TODO : Plugins
+		return Arrays.asList((DiffPlugin) new ManifestDiffPlugin());
+	}
+	
 	public String explain() {
 		CharArrayWriter writer = new CharArrayWriter();
 		printDiff(this, new PrintWriter(writer));
@@ -231,6 +239,83 @@ public class JarDiff implements Diff, VersionDiff {
 			return true;
 		}
 		return false;
+	}
+
+	public static List<JarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
+
+		List<JarDiff> diffs = new ArrayList<JarDiff>();
+
+		try {
+			project.refresh();
+			List<Builder> builders = project.getBuilder(null).getSubBuilders();
+			for (Builder b : builders) {
+
+				if (subBundles != null) {
+					if (!subBundles.contains(b.getPropertiesFile())) {
+						continue;
+					}
+				}
+				
+				Jar jar = b.build();
+
+				//List<String> errors = b.getErrors();
+
+				String bundleVersion = b.getProperty(Constants.BUNDLE_VERSION);
+				if (bundleVersion == null) {
+				    b.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
+					bundleVersion = "0.0.0";
+				}
+
+				String unqualifiedVersion = removeVersionQualifier(bundleVersion);
+				Version projectVersion = Version.parseVersion(unqualifiedVersion);
+
+				String symbolicName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+				if (symbolicName == null) {
+					symbolicName = jar.getName().substring(0, jar.getName().lastIndexOf('-'));
+				}
+				File[] bundleJars = new File[0];
+				for (RepositoryPlugin repo : repos) {
+					try {
+						File[] files =  repo.get(symbolicName, null);
+						if (files != null && files.length > 0) {
+							File[] tmp = new File[bundleJars.length + files.length];
+							System.arraycopy(bundleJars, 0, tmp, 0, bundleJars.length);
+							System.arraycopy(files, 0, tmp, bundleJars.length, files.length);
+							bundleJars = tmp;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						return null;
+					}
+				}
+
+				Jar currentJar = null;
+				for (RepositoryPlugin repo : repos) {
+					VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
+					try {
+						File[] files =  repo.get(symbolicName, range.toString());
+						if (files != null && files.length > 0) {
+							currentJar = new Jar(files[0]);
+							break;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+
+				JarDiff diff = new JarDiff(jar, currentJar);
+				diff.compare();
+				diff.calculateVersions();
+
+				diffs.add(diff);
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+
+		return diffs;
 	}
 
 }

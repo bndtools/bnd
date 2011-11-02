@@ -1907,4 +1907,74 @@ public class Project extends Processor {
 		delayRunDependencies = x;
 	}
 
+	/**
+	 * Sets the package version on an exported package
+	 * @param packageName The package name
+	 * @param version The new package version
+	 */
+	public void setPackageInfo(String packageName, Version version) {
+		try {
+			updatePackageInfoFile(packageName, version);
+		} catch (Exception e) {
+			error(e.getMessage(), e);
+		}
+	}
+
+	void updatePackageInfoFile(String packageName, Version newVersion) throws Exception {
+		
+		File file = getPackageInfoFile(packageName);
+
+		// If package/classes are copied into the bundle through Private-Package etc, there will be no source
+		if (!file.getParentFile().exists()) {
+			return;
+		}
+
+		Version oldVersion = getPackageInfo(packageName);
+		
+		if (newVersion.compareTo(oldVersion) == 0) {
+			return;
+		} else {
+			FileOutputStream fos = new FileOutputStream(file);
+			PrintWriter pw = new PrintWriter(fos);
+			pw.println("version " + newVersion);
+			pw.flush();
+			pw.close();
+	
+			String path = packageName.replace('.', '/') + "/packageinfo";
+			File binary = IO.getFile(getOutput(), path);
+			binary.getParentFile().mkdirs();
+			IO.copy(file, binary);
+			
+			refresh();
+		}
+	}
+
+	File getPackageInfoFile(String packageName) throws IOException {
+		String path = packageName.replace('.', '/') + "/packageinfo";
+		return IO.getFile(getSrc(), path);
+
+	}
+	
+	public Version getPackageInfo(String packageName) throws IOException {
+		File packageInfoFile = getPackageInfoFile(packageName);
+		if (!packageInfoFile.exists()) {
+			return Version.emptyVersion;
+		}
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(packageInfoFile));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("version ")) {
+					return Version.parseVersion(line.substring(8));
+				}
+			}
+		} finally {
+			if (reader != null) {
+				IO.close(reader);
+			}
+		}
+		return Version.emptyVersion;
+	}
 }
