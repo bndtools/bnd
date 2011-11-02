@@ -77,6 +77,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             if (isCnfChanged()) {
                 log(LOG_BASIC, "cnf project changed");
                 model.refresh();
+                model.getWorkspace().refresh();
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                 } else {
