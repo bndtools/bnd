@@ -5,9 +5,11 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
+import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
@@ -35,6 +37,9 @@ import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -63,6 +68,7 @@ public class ObrResultsWizardPage extends WizardPage {
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
+    private final UnresolvedReasonLabelProvider unresolvedLabelProvider = new UnresolvedReasonLabelProvider();
 
     private TabFolder tabFolder;
 
@@ -79,6 +85,7 @@ public class ObrResultsWizardPage extends WizardPage {
     private TableViewer unresolvedViewer;
 
     private ObrResolutionResult result;
+
 
     /**
      * Create the wizard.
@@ -238,10 +245,16 @@ public class ObrResultsWizardPage extends WizardPage {
 
         unresolvedViewer = new TableViewer(tblUnresolved);
         unresolvedViewer.setContentProvider(ArrayContentProvider.getInstance());
-        unresolvedViewer.setLabelProvider(new UnresolvedReasonLabelProvider());
+        unresolvedViewer.setLabelProvider(unresolvedLabelProvider);
 
         Button btnErrorsToClipboard = new Button(composite, SWT.NONE);
         btnErrorsToClipboard.setText("Copy to Clipboard");
+        btnErrorsToClipboard.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                copyUnresolvedToClipboard();
+            }
+        });
 
         updateUi();
     }
@@ -335,6 +348,29 @@ public class ObrResultsWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete() {
         return result != null && result.isResolved() &&  checkedOptional.isEmpty() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
+    }
+
+
+    private void copyUnresolvedToClipboard() {
+        if (result != null) {
+            StringBuilder buffer = new StringBuilder();
+            List<Reason> unresolved = result.getUnresolved();
+
+            if (unresolved != null) for (Iterator<Reason> iter = unresolved.iterator(); iter.hasNext(); ) {
+                Reason reason = iter.next();
+                buffer.append(unresolvedLabelProvider.getLabel(reason.getRequirement()).getString());
+                buffer.append('\t');
+                buffer.append(unresolvedLabelProvider.getLabel(reason.getResource()));
+
+                if (iter.hasNext())
+                    buffer.append('\n');
+            }
+
+            Clipboard clipboard = new Clipboard(getShell().getDisplay());
+            TextTransfer transfer = TextTransfer.getInstance();
+            clipboard.setContents(new Object[] { buffer.toString() }, new Transfer[] { transfer });
+            clipboard.dispose();
+        }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -13,12 +13,16 @@ public class UnresolvedReasonLabelProvider extends RequirementLabelProvider {
 
         cell.setImage(getIcon(reason.getRequirement()));
 
-        Resource resource = reason.getResource();
-        String resourceName = (resource != null && resource.getId() != null) ? resource.getId() : "<<initial>>";
+        String resourceName = getLabel(reason.getResource());
 
         StyledString label = getLabel(reason.getRequirement()).append(" FROM: ").append(resourceName, StyledString.COUNTER_STYLER);
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());
+    }
+
+    public String getLabel(Resource resource) {
+        String resourceName = (resource != null && resource.getId() != null) ? resource.getId() : "«initial»";
+        return resourceName;
     }
 
 }
