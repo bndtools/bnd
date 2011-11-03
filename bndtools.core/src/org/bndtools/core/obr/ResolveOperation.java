@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -110,7 +111,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
 
         // Load repository indexes
-        List<Repository> repos = new ArrayList<Repository>(indexProviders.size() * 2);
+        List<Repository> repos = new LinkedList<Repository>();
         for (OBRIndexProvider prov : indexProviders) {
             String repoName;
             if (prov instanceof RepositoryPlugin) {
@@ -137,6 +138,9 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
 
         RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
+
+        repos.add(0, repoAdmin.getLocalRepository()); // BUG? Calling `resolver(Repository[])` excludes the local and system repos!
+        repos.add(0, repoAdmin.getSystemRepository());
         Resolver resolver = repoAdmin.resolver(repos.toArray(new Repository[repos.size()]));
 
         // Add project builders

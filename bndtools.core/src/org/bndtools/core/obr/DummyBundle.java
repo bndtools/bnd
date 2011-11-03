@@ -130,7 +130,7 @@ public class DummyBundle implements Bundle {
 
     public int getState() {
         if (DEBUG) System.out.println("=== getState");
-        return id == 0 ? ACTIVE : INSTALLED;
+        return ACTIVE;
     }
 
     public String getSymbolicName() {
