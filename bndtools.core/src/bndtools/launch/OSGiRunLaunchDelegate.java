@@ -1,5 +1,6 @@
 package bndtools.launch;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,11 +61,28 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
         boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
+        
+        if (clean) {
+            File storage = bndLauncher.getStorageDir();
+            if (storage.exists()) {
+                deleteRecursively(storage);
+            }
+        }
+        
         bndLauncher.setKeep(!clean);
 
         bndLauncher.setTrace(enableTraceOption(configuration));
     }
 
+    private void deleteRecursively(File dir) {
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory()) {
+                deleteRecursively(f);
+            }
+            f.delete();
+        }
+    }
+    
     /**
      * Registers a resource listener with the project model file to update the
      * launcher when the model or any of the run-bundles changes. The resource
