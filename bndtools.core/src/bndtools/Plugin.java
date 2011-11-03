@@ -96,7 +96,9 @@ public class Plugin extends AbstractUIPlugin {
 
                         if (resource.getType() == IResource.PROJECT) {
                             if (Project.BNDCNF.equals(resource.getName())) {
-                                cnf[0] = true;
+                                IResourceDelta[] affectedChildren = delta.getAffectedChildren();
+                                if ( affectedChildren != null && affectedChildren.length > 0)
+                                    cnf[0] = true;
                                 return false;
                             } else {
                                 IProject project = (IProject) resource;
