@@ -249,10 +249,10 @@ public class JarDiff implements Diff, VersionDiff {
 		Version suggestedVersion;
 		switch (severity) {
 		case MAJOR :
-			suggestedVersion = new Version(oldVersion.getMajor() + 1, oldVersion.getMinor(), oldVersion.getMicro(), oldVersion.getQualifier());
+			suggestedVersion = new Version(oldVersion.getMajor() + 1, 0, 0, oldVersion.getQualifier());
 			break;
 		case MINOR :
-			suggestedVersion = new Version(oldVersion.getMajor(), oldVersion.getMinor() + 1, oldVersion.getMicro(), oldVersion.getQualifier());
+			suggestedVersion = new Version(oldVersion.getMajor(), oldVersion.getMinor() + 1, 0, oldVersion.getQualifier());
 			break;
 		default:
 			suggestedVersion = new Version(oldVersion.getMajor(), oldVersion.getMinor(), oldVersion.getMicro() + 1, oldVersion.getQualifier());
