@@ -53,12 +53,13 @@ You now have the large versions (regular and glow) of the bitmaps.
 
 * Create Eclipse welcome page icons
 ===================================
-- Open the file 'swirl-64.png' with GIMP
+- Open the file 'swirl-48.png' with GIMP
 - Select in the menu: File->Save As...
 - Set the filename to 'bndtools.gif' and press the 'Save' button, press the
   'Export' botton, and finally press the 'Save' button
 
-- Repeat the above procedure for the 'swirl-glow-64.png' file
+- Repeat the above procedure for the 'swirl-glow-48.png' file, but name it
+  'bndtools-glow.gif'.
 
 - Move both these gif images into the bndtools.core/resources/intro/images
   directory
