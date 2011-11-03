@@ -1,7 +1,6 @@
 package bndtools;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -231,11 +230,11 @@ public class Central {
         return null;
     }
 
-    public static IPath toPath(Project project, File file) throws IOException {
+    public static IPath toPath(File file) throws Exception {
         String path = file.getCanonicalPath();
-        String workspace = project.getWorkspace().getBase().getAbsolutePath();
-        if (path.startsWith(workspace))
-            path = path.substring(workspace.length());
+        String workspacePath = getWorkspace().getBase().getAbsolutePath();
+        if (path.startsWith(workspacePath))
+            path = path.substring(workspacePath.length());
         else
             return null;
 

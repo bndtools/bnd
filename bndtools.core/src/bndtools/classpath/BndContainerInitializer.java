@@ -44,6 +44,7 @@ import aQute.libg.header.OSGiHeader;
 import bndtools.Central;
 import bndtools.ModelListener;
 import bndtools.Plugin;
+import bndtools.RefreshFileJob;
 import bndtools.utils.JarUtils;
 
 /**
@@ -231,8 +232,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
                 IPath p = null;
                 try {
-                    p = fileToPath(model, file);
-                } catch (IOException e) {
+                    p = fileToPath(file);
+                } catch (Exception e) {
                     errors.add(String.format("Failed to convert file %s to Eclipse path", file));
                 }
                 if (p != null) {
@@ -381,10 +382,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    protected static IPath fileToPath(Project project, File file) throws IOException {
-        IPath path = Central.toPath(project, file);
+    protected static IPath fileToPath(File file) throws Exception {
+        IPath path = Central.toPath(file);
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
+
+        RefreshFileJob refreshJob = new RefreshFileJob(file);
+        refreshJob.schedule(100);
+
         return path;
     }
 }

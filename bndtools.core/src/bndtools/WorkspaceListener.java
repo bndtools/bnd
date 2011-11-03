@@ -21,9 +21,13 @@ public final class WorkspaceListener extends BndListener {
 
     @Override
     public void changed(final File file) {
-        RefreshFileJob job = new RefreshFileJob(file);
-        if (job.isFileInWorkspace()) {
-            job.schedule();
+        try {
+            RefreshFileJob job = new RefreshFileJob(file);
+            if (job.isFileInWorkspace()) {
+                job.schedule();
+            }
+        } catch (Exception e) {
+            Plugin.logError("Error refreshing workspace", e);
         }
     }
 
