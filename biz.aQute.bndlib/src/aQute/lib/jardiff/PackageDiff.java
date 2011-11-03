@@ -14,7 +14,7 @@ public interface PackageDiff extends Diff, VersionDiff, VersionRangeDiff {
 
 	public enum PackageSeverity {
 		NONE(0),
-		VERSION_MISSING(10),
+		MICRO(10),
 		MINOR(20),
 		MAJOR(30);
 		

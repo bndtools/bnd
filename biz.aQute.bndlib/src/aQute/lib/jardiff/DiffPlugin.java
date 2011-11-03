@@ -16,7 +16,7 @@ import aQute.lib.osgi.*;
 
 public interface DiffPlugin {
 
-	boolean canDiff(String name);
-	
 	Collection<Diff> diff(Diff container, String name, Resource newResource, Resource oldResource) throws Exception;
+	
+	String getName();
 }

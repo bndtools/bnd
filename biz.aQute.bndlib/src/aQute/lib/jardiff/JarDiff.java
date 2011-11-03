@@ -8,11 +8,11 @@ import org.osgi.framework.Constants;
 
 import aQute.bnd.build.*;
 import aQute.bnd.service.*;
+import aQute.lib.jardiff.PackageDiff.PackageSeverity;
 import aQute.lib.jardiff.java.*;
 import aQute.lib.jardiff.manifest.*;
 import aQute.lib.osgi.*;
 import aQute.libg.version.*;
-import aQute.libg.version.Version;
 
 public class JarDiff implements Diff, VersionDiff {
 
@@ -78,20 +78,25 @@ public class JarDiff implements Diff, VersionDiff {
 		diffs.add(javaDiff);
 
 		for (DiffPlugin plugin : getDiffPlugins()) {
-	        for (String path : newJar.getResources().keySet()) {
+			
+			PluginGroup grp = new PluginGroup(this, plugin);
+			for (String path : newJar.getResources().keySet()) {
 	            Resource ra = newJar.getResource(path);
-	            Resource rb = oldJar.getResource(path);
-	            
-	            if (plugin.canDiff(path)) {
-	            	diffs.addAll(plugin.diff(this, path, ra, rb));
+	            Resource rb = null;
+	            if (oldJar != null) {
+	            	rb = oldJar.getResource(path);
 	            }
-	        }
+	            
+            	Collection<Diff> pluginDiffs = plugin.diff(grp, path, ra, rb);
+            	grp.setContained(pluginDiffs);
+			}
 		}
 	}
 
 	static Collection<DiffPlugin> getDiffPlugins() {
 		//TODO : Plugins
-		return Arrays.asList((DiffPlugin) new ManifestDiffPlugin());
+		//return Arrays.asList((DiffPlugin) new ManifestDiffPlugin());
+		return Collections.emptyList();
 	}
 	
 	public String explain() {
@@ -232,10 +237,44 @@ public class JarDiff implements Diff, VersionDiff {
 		for (Diff diff : diffs) {
 			calculateVersions(diff);
 		}
+		
+		JavaDiff javaDiff = getJavaDiff();
+		PackageSeverity severity = javaDiff.getHighestSeverity();
+		
+		Version oldVersion = getOldVersion();
+		if (oldVersion == null) {
+			oldVersion = Version.emptyVersion;
+		}
+		
+		Version suggestedVersion;
+		switch (severity) {
+		case MAJOR :
+			suggestedVersion = new Version(oldVersion.getMajor() + 1, oldVersion.getMinor(), oldVersion.getMicro(), oldVersion.getQualifier());
+			break;
+		case MINOR :
+			suggestedVersion = new Version(oldVersion.getMajor(), oldVersion.getMinor() + 1, oldVersion.getMicro(), oldVersion.getQualifier());
+			break;
+		default:
+			suggestedVersion = new Version(oldVersion.getMajor(), oldVersion.getMinor(), oldVersion.getMicro() + 1, oldVersion.getQualifier());
+		}
+		
+		addSuggestedVersion(suggestedVersion);
+		if (suggestVersionOne(suggestedVersion)) {
+			addSuggestedVersion(VERSION_ONE);
+		}
 	}
 
+	private JavaDiff getJavaDiff() {
+		for (Diff diff : diffs) {
+			if (diff instanceof JavaDiff) {
+				return (JavaDiff) diff;
+			}
+		}
+		return null;
+	}
+	
 	public static boolean suggestVersionOne(Version version) {
-		if (version.compareTo(new aQute.libg.version.Version("1.0.0")) < 0) {
+		if (version.compareTo(VERSION_ONE) < 0) {
 			return true;
 		}
 		return false;
@@ -318,4 +357,62 @@ public class JarDiff implements Diff, VersionDiff {
 		return diffs;
 	}
 
+	private static class PluginGroup implements Group {
+
+		private Diff container;
+		private String name;
+		private Collection<? extends Diff> contained;
+		
+		public PluginGroup(Diff container, DiffPlugin diffplugin) {
+			this.name = diffplugin.getName();
+			this.container = container;
+		}
+		
+		public Delta getDelta() {
+			boolean added = false;
+			boolean modified = false;
+			boolean removed = false;
+			for (Diff diff : getContained()) {
+				switch (diff.getDelta()) {
+				case ADDED :
+					added = true;
+					continue;
+				case MODIFIED :
+					modified = true;
+					continue;
+				case REMOVED :
+					removed = true;
+					continue;
+				}
+			}
+			
+			if (modified || added && removed) {
+				return Delta.MODIFIED;
+			}
+			if (added) {
+				return Delta.ADDED;
+			}
+			return Delta.REMOVED;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Diff getContainer() {
+			return container;
+		}
+
+		public Collection<? extends Diff> getContained() {
+			return contained;
+		}
+
+		public String explain() {
+			return getDelta() + " " + getName();
+		}
+	
+		public void setContained(Collection<? extends Diff> contained) {
+			this.contained = contained;
+		}
+	}
 }

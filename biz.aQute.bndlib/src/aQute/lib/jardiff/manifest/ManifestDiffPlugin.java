@@ -92,4 +92,8 @@ public class ManifestDiffPlugin implements DiffPlugin {
         	manifestInfo.setDelta(Delta.MODIFIED);
         }
     }
+
+	public String getName() {
+		return "Manifest Changes";
+	}
 }

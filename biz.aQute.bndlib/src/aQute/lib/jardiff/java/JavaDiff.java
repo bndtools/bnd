@@ -25,7 +25,7 @@ import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
 
-public class JavaDiff implements Diff {
+public class JavaDiff implements Group {
 
 	private static final String VERSION = "version";
 	
@@ -105,7 +105,7 @@ public class JavaDiff implements Diff {
 				}
 
 				if (previousVersion != null) {
-					pi.setSeverity(PackageSeverity.VERSION_MISSING);
+					pi.setSeverity(PackageSeverity.MICRO);
 					pi.setDelta(Delta.MODIFIED);
 					pi.setOldVersionRange(previousVersion);
 				}
@@ -127,7 +127,7 @@ public class JavaDiff implements Diff {
 					packages.put(packageName, pi);
 				}
 				pi.setImported(true);
-				pi.setSeverity(PackageSeverity.VERSION_MISSING);
+				pi.setSeverity(PackageSeverity.MICRO);
 				pi.setDelta(Delta.REMOVED);
 				pi.setOldVersionRange(previousVersion);
 			}
@@ -198,7 +198,7 @@ public class JavaDiff implements Diff {
 			if (pi.getSeverity() == PackageSeverity.NONE) {
 				if (previousClasses != null && previousVersion == null) {
 					// No change, but version missing on package
-					pi.setSeverity(PackageSeverity.VERSION_MISSING);
+					pi.setSeverity(PackageSeverity.MICRO);
 //					pi.setChangeCode(PackageInfo.CHANGE_CODE_VERSION_MISSING);
 					pi.setDelta(Delta.MODIFIED);
 					pi.addSuggestedVersion(jarDiff.getOldVersion());
@@ -575,7 +575,7 @@ public class JavaDiff implements Diff {
 	}
 
 	public String getName() {
-		return jarDiff.getSymbolicName();
+		return "Java Packages";
 	}
 
 	public Diff getContainer() {
@@ -591,116 +591,9 @@ public class JavaDiff implements Diff {
 	}
 
 	public String toString() {
-		return getName();
+		return getName() + " " + jarDiff.getSymbolicName();
 	}
 	
-	public void calculateVersions() {
-
-
-		PackageSeverity highestSeverity = PackageSeverity.NONE;
-
-		for (PackageInfo pi : getExportedPackages()) {
-			if (pi.getDelta() != Delta.MODIFIED) {
-				continue;
-			}
-			String ver = getVersionString(jarDiff.getNewJar(), pi.getPackageName());
-			Version version = null;
-			if (ver != null) {
-				version = Version.parseVersion(getVersionString(jarDiff.getNewJar(), pi.getPackageName()));
-			} else {
-				version = pi.getOldVersion();
-			}
-			String mask;
-			if (pi.getSeverity().value() > highestSeverity.value()) {
-				highestSeverity = pi.getSeverity();
-			}
-			switch(pi.getSeverity()) {
-			case MINOR :
-				mask = "=+0";
-				break;
-			case MAJOR :
-				mask = "+00";
-				break;
-			default:
-				mask = null;
-			}
-			if (mask != null) {
-				String suggestedVersion = _version(new String[] { "", mask, version.toString()});
-				pi.addSuggestedVersion(Version.parseVersion(suggestedVersion));
-			} else {
-				pi.addSuggestedVersion(version);
-			}
-		}
-
-		for (PackageInfo pi : getImportedPackages()) {
-			if (pi.getDelta() != Delta.REMOVED) {
-				continue;
-			}
-			String mask;
-			if (pi.getSeverity().value() > highestSeverity.value()) {
-				highestSeverity = pi.getSeverity();
-			}
-			switch(pi.getSeverity()) {
-			case MINOR :
-				mask = "=+0";
-				break;
-			case MAJOR :
-				mask = "+00";
-				break;
-			default:
-				mask = null;
-			}
-			if (mask != null) {
-				String suggestedVersion = "[" + _version(new String[] { "", mask, jarDiff.getOldVersion().toString()}) + "]";
-				pi.addSuggestedVersion(Version.parseVersion(suggestedVersion));
-			} else {
-				pi.addSuggestedVersion(jarDiff.getOldVersion());
-			}
-		}
-
-		String mask;
-		switch(highestSeverity) {
-		case MINOR :
-			mask = "=+0";
-			break;
-		case MAJOR :
-			mask = "+00";
-			break;
-		default:
-			mask = "==+";
-		}
-		String bundleVersion = jarDiff.getOldVersion() == null ? "0.0.0" : jarDiff.getOldVersion().toString();
-		String unqualifiedVersion = JarDiff.removeVersionQualifier(bundleVersion);
-
-		Version suggestedVersion = Version.parseVersion(_version(new String[] { "", mask, unqualifiedVersion}));
-		jarDiff.addSuggestedVersion(suggestedVersion);
-		if (JarDiff.suggestVersionOne(suggestedVersion)) {
-			jarDiff.addSuggestedVersion(JarDiff.VERSION_ONE);
-		}
-
-		for (PackageInfo pi : getExportedPackages()) {
-			if (pi.getDelta() != Delta.ADDED) {
-				continue;
-			}
-			// Obey packageinfo if it exist
-			String ver = getVersionString(jarDiff.getNewJar(), pi.getPackageName());
-			if (ver != null) {
-				Version version = Version.parseVersion(getVersionString(jarDiff.getNewJar(), pi.getPackageName()));
-				pi.addSuggestedVersion(version);
-				if (JarDiff.suggestVersionOne(version)) {
-					pi.addSuggestedVersion(JarDiff.VERSION_ONE);
-				}
-			} else {
-				if (pi.getSuggestedVersion() == null || Version.LOWEST.equals(pi.getSuggestedVersion())) {
-					pi.addSuggestedVersion(suggestedVersion);
-				}
-				if (JarDiff.suggestVersionOne(suggestedVersion)) {
-					pi.addSuggestedVersion(JarDiff.VERSION_ONE);
-				}
-			}
-			
-		}
-	}
 	
 	// From aQute.libg.version.Macro _version. Without dependencies on project and properties
 	public static  String _version(String[] args) {
@@ -743,8 +636,9 @@ public class JavaDiff implements Diff {
 		return sb.toString();
 
 	}
-
-	public static String getVersionString(Jar jar, String packageName) {
+	
+	
+	static String getVersionString(Jar jar, String packageName) {
 		Resource resource = jar.getResource(getResourcePath(packageName, "packageinfo"));
 		if (resource == null) {
 			return null;
@@ -770,6 +664,7 @@ public class JavaDiff implements Diff {
 		s += "/" + resourceName;
 		return s;
 	}
+
 	public static String getSeverityText(PackageSeverity severity) {
 		switch (severity) {
 		case MINOR : {
@@ -888,4 +783,20 @@ public class JavaDiff implements Diff {
 			return v.get(i);
 		}
 	}
+
+	public PackageSeverity getHighestSeverity() {
+		PackageSeverity highestSeverity = PackageSeverity.NONE;
+
+		for (PackageInfo pi : getPackages()) {
+			if (pi.getSeverity().value() > highestSeverity.value()) {
+				highestSeverity = pi.getSeverity();
+			}
+		}
+		return highestSeverity;
+	}
+
+	public String getGroupName() {
+		return "Java Packages";
+	}
+
 }

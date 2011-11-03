@@ -22,7 +22,9 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.libg.header,\
 	aQute.libg.qtokens,\
 	aQute.libg.sax,\
-	org.osgi.service.bindex
+	org.osgi.service.bindex,\
+	aQute.lib.jardiff,\
+	aQute.lib.jardiff.java
 #Workaround, bnd should be adding this automatically:
 Import-Package: org.osgi.service.bindex,*
 

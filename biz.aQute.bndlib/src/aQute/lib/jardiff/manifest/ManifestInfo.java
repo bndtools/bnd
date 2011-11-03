@@ -58,6 +58,5 @@ public class ManifestInfo implements ManifestDiff {
 	public Manifest getOldManifest() {
 		return oldManifest;
 	}
-	
-	
+
 }
