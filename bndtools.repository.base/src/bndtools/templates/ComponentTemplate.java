@@ -8,7 +8,7 @@ import java.util.List;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
-import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
 public class ComponentTemplate implements IProjectTemplate {

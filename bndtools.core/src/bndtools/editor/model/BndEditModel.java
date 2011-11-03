@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.felix.bundlerepository.DataModelHelper;
+import org.apache.felix.bundlerepository.Requirement;
+import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -35,6 +38,7 @@ import org.osgi.framework.Constants;
 
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.api.EE;
 import bndtools.api.IPersistableBndModel;
 import bndtools.editor.model.conversions.ClauseListConverter;
 import bndtools.editor.model.conversions.CollectionFormatter;
@@ -53,6 +57,7 @@ import bndtools.editor.model.conversions.VersionedClauseConverter;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
+import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.types.Pair;
 
@@ -92,13 +97,17 @@ public class BndEditModel implements IPersistableBndModel {
 		BndConstants.RUNVMARGS,
 		BndConstants.TESTSUITES,
 		aQute.lib.osgi.Constants.TESTCASES,
-		aQute.lib.osgi.Constants.PLUGIN
+		aQute.lib.osgi.Constants.PLUGIN,
+		BndConstants.RUNREQUIRE,
+		BndConstants.RUNEE,
+		BndConstants.RUNREPOS
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
 	private final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
 	private final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
+	private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;
@@ -131,7 +140,7 @@ public class BndEditModel implements IPersistableBndModel {
             return VersionPolicy.parse(string);
         }
     };
-    Converter<List<String>, String> listConverter = new SimpleListConverter<String>(new NoopConverter<String>());
+    Converter<List<String>, String> listConverter = SimpleListConverter.create();
     Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
     ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String,Map<String,String>>>() {
         public ExportedPackage convert(Pair<String, Map<String, String>> input) {
@@ -148,16 +157,45 @@ public class BndEditModel implements IPersistableBndModel {
             return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });
-    
+
     Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
+
+    Converter<List<Requirement>, String> requirementListConverter = SimpleListConverter.create(new Converter<Requirement, String>() {
+        public Requirement convert(String input) throws IllegalArgumentException {
+            int index = input.indexOf(":");
+            if (index < 0)
+                throw new IllegalArgumentException("Invalid format for OBR requirement");
+
+            String name = input.substring(0, index);
+            String filter = input.substring(index + 1);
+
+            return obrModelHelper.requirement(name, filter);
+        }
+    });
+    Converter<EE, String> eeConverter = new Converter<EE, String>() {
+        public EE convert(String input) throws IllegalArgumentException {
+            return EE.parse(input);
+        }
+    };
 
     // FORMATTERS
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
     Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
     Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
-    Converter<String, Collection<? extends String>> stringListFormatter = new CollectionFormatter<String>();
-    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(new HeaderClauseFormatter());
-    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(new PropertiesEntryFormatter());
+    Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR, (String) null);
+    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter(), null);
+    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
+    Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String, Requirement>() {
+        public String convert(Requirement input) throws IllegalArgumentException {
+            return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
+        }
+    }, null);
+    Converter<String, EE> eeFormatter = new Converter<String, EE>() {
+        public String convert(EE input) throws IllegalArgumentException {
+            return input != null ? input.getEEName() : null;
+        }
+    };
+    Converter<String,Collection<? extends String>> runReposFormatter = new CollectionFormatter<String>(LIST_SEPARATOR, aQute.lib.osgi.Constants.EMPTY_HEADER);
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
@@ -184,6 +222,9 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.TESTSUITES, listConverter);
         converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
         converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
+        converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
+        converters.put(BndConstants.RUNEE, new NoopConverter<String>());
+        converters.put(BndConstants.RUNREPOS, listConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -207,6 +248,9 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.TESTSUITES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
+        formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
+        formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
+        formatters.put(BndConstants.RUNREPOS, runReposFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -464,16 +508,16 @@ public class BndEditModel implements IPersistableBndModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
-	
+
     public List<VersionedClause> getBuildPackages() {
         return doGetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
     }
-    
+
     public void setBuildPackages(List<? extends VersionedClause> paths) {
         List<VersionedClause> oldValue = getBuildPackages();
         doSetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
     }
-    
+
 	public List<VersionedClause> getRunBundles() {
 		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
 	}
@@ -481,6 +525,17 @@ public class BndEditModel implements IPersistableBndModel {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
+
+    public List<VersionedClause> getBackupRunBundles() {
+        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, runBundlesConverter);
+    }
+    public void setBackupRunBundles(List<? extends VersionedClause> paths) {
+        List<VersionedClause> oldValue = getBuildPath();
+        doSetObject(BndConstants.BACKUP_RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
+    }
+
+
+
 	public String getRunFramework() {
 	    return doGetObject(BndConstants.RUNFRAMEWORK, stringConverter);
 	}
@@ -567,6 +622,33 @@ public class BndEditModel implements IPersistableBndModel {
     public void setPlugins(List<HeaderClause> plugins) {
         List<HeaderClause> old = getPlugins();
         doSetObject(aQute.lib.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
+    }
+
+    public List<Requirement> getRunRequire() {
+        return doGetObject(BndConstants.RUNREQUIRE, requirementListConverter);
+    }
+
+    public void setRunRequire(List<Requirement> requires) {
+        List<Requirement> old = getRunRequire();
+        doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
+    }
+
+    public EE getEE() {
+        return doGetObject(BndConstants.RUNEE, eeConverter);
+    }
+
+    public void setEE(EE ee) {
+        EE old = getEE();
+        doSetObject(BndConstants.RUNEE, old, ee, eeFormatter);
+    }
+
+    public List<String> getRunRepos() {
+        return doGetObject(BndConstants.RUNREPOS, listConverter);
+    }
+
+    public void setRunRepos(List<String> repos) {
+        List<String> old = getRunRepos();
+        doSetObject(BndConstants.RUNREPOS, old, repos, runReposFormatter);
     }
 
     <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {

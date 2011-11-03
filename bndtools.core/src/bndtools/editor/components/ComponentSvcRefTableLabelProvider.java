@@ -18,7 +18,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.model.ComponentSvcReference;
+import bndtools.model.clauses.ComponentSvcReference;
 
 public class ComponentSvcRefTableLabelProvider extends StyledCellLabelProvider {
 	

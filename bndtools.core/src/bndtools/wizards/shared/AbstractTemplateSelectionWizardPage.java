@@ -72,7 +72,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 120;
+        gd_table.heightHint = 100;
         table.setLayoutData(gd_table);
 
         viewer = new TableViewer(table);
@@ -86,11 +86,13 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         txtDescription.getFormText().setForeground(table.getForeground());
 
         GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_txtDescription.heightHint = 120;
+        gd_txtDescription.heightHint = 100;
         txtDescription.setLayoutData(gd_txtDescription);
 
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setLabelProvider(new TemplateLabelProvider(parent.getDisplay()));
+
+        loadData();
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
@@ -115,7 +117,6 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
             }
         });
 
-        loadData();
         updateUI();
     }
 
@@ -135,13 +136,6 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         elements = loadConfigurationElements();
         Arrays.sort(elements, new PriorityConfigurationElementCompator(false));
         viewer.setInput(elements);
-
-        if (elements.length > 0) {
-            setSelectionFromConfigElement(elements[0]);
-
-            ISelection selection = new StructuredSelection(elements[0]);
-            viewer.setSelection(selection);
-        }
 
     }
 
@@ -179,8 +173,14 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
 
-        if (visible) {
+        if (visible && !shown) {
             shown  = true;
+            if (elements.length > 0) {
+                setSelectionFromConfigElement(elements[0]);
+
+                ISelection selection = new StructuredSelection(elements[0]);
+                viewer.setSelection(selection);
+            }
         }
     }
 

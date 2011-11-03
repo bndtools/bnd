@@ -3,7 +3,9 @@ package bndtools.api;
 import java.util.List;
 import java.util.Map;
 
-import bndtools.editor.model.ServiceComponent;
+import org.apache.felix.bundlerepository.Requirement;
+
+import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
 public interface IBndModel {
@@ -21,6 +23,10 @@ public interface IBndModel {
     List<VersionedClause> getRunBundles();
 
     void setRunBundles(List<? extends VersionedClause> paths);
+
+    List<VersionedClause> getBackupRunBundles();
+
+    void setBackupRunBundles(List<? extends VersionedClause> paths);
 
     String getRunFramework();
 
@@ -53,5 +59,17 @@ public interface IBndModel {
     void setSystemPackages(List<? extends String> packages);
 
     List<String> getSystemPackages();
+
+    EE getEE();
+
+    void setEE(EE ee);
+
+    List<Requirement> getRunRequire();
+
+    void setRunRequire(List<Requirement> requires);
+
+    List<String> getRunRepos();
+
+    void setRunRepos(List<String> repos);
 
 }

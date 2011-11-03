@@ -9,16 +9,19 @@ import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -31,7 +34,6 @@ public class PluginPropertiesPage extends WizardPage {
     private boolean changed = false;
 
     private Composite mainComposite;
-    private Label titleLabel;
     private Composite fieldContainer;
     private Text txtPath;
 
@@ -45,9 +47,17 @@ public class PluginPropertiesPage extends WizardPage {
 
         // Create controls
         mainComposite = new Composite(parent, SWT.NONE);
-        titleLabel = new Label(mainComposite, SWT.NONE);
-        titleLabel.setText("Nothing here");
-        fieldContainer = new Composite(mainComposite, SWT.NONE);
+
+        Group group = new Group(mainComposite, SWT.NONE);
+        group.setText("Properties");
+        group.setLayout(new FillLayout());
+        ScrolledComposite scroller = new ScrolledComposite(group, SWT.V_SCROLL);
+        fieldContainer = new Composite(scroller, SWT.NONE);
+        scroller.setMinSize(200, 200);
+        scroller.setExpandVertical(true);
+        scroller.setExpandHorizontal(true);
+        scroller.setContent(fieldContainer);
+
         Label separator = new Label(mainComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
 
         Composite classpathComposite = new Composite(mainComposite, SWT.NONE);
@@ -78,7 +88,7 @@ public class PluginPropertiesPage extends WizardPage {
         mainComposite.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        fieldContainer.setLayoutData(gd);
+        group.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
         separator.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -86,6 +96,7 @@ public class PluginPropertiesPage extends WizardPage {
 
         layout = new GridLayout(2, false);
         layout.verticalSpacing = 10;
+        layout.horizontalSpacing = 10;
         fieldContainer.setLayout(layout);
 
         layout = new GridLayout(2, false);
@@ -93,7 +104,7 @@ public class PluginPropertiesPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
         txtPath.setLayoutData(gd);
 
-        setControl(fieldContainer);
+        setControl(mainComposite);
     }
 
     void resetPropertyFields() {
@@ -108,7 +119,8 @@ public class PluginPropertiesPage extends WizardPage {
             String path = configElement.getAttribute("path");
             String className = configElement.getAttribute("class");
 
-            titleLabel.setText(MessageFormat.format("Found {0,choice,0#no properties|1#one property|1<{0} properties} for plug-in class {1}.", propertyElements.length, className));
+            String summaryMessage = MessageFormat.format("Found {0,choice,0#no properties|1#one property|1<{0} properties} for plug-in class {1}.", propertyElements.length, className);
+
             if (path != null) {
                 properties.put(Constants.PATH_DIRECTIVE, path);
                 txtPath.setText(path);
@@ -168,6 +180,9 @@ public class PluginPropertiesPage extends WizardPage {
                     decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
                 }
             }
+            Label summaryLabel = new Label(fieldContainer, SWT.NONE);
+            summaryLabel.setText(summaryMessage);
+            summaryLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
         }
         mainComposite.layout(true, true);
     }

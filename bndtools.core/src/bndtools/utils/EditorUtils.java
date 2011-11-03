@@ -17,6 +17,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.forms.IFormPart;
+import org.eclipse.ui.forms.IManagedForm;
 
 public class EditorUtils {
 	public static boolean saveEditorIfDirty(final IEditorPart editor, String dialogTitle, String message) {
@@ -38,4 +40,13 @@ public class EditorUtils {
 		}
 		return !editor.isDirty();
 	}
+
+    public static final IFormPart findPartByClass(IManagedForm form, Class<? extends IFormPart> clazz) {
+        IFormPart[] parts = form.getParts();
+        for (IFormPart part : parts) {
+            if (clazz.isInstance(part))
+                return part;
+        }
+        return null;
+    }
 }

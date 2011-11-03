@@ -18,6 +18,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -53,27 +54,32 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.WorkspaceObrProvider;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.WrappingObrRepository;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
 
-	private final String propertyName;
+	private static final String VERSION_LATEST = "latest";
+
+    private final String propertyName;
 	private Table table;
-	private TableViewer viewer;
+	protected TableViewer viewer;
 
 	private BndEditModel model;
-	private List<VersionedClause> bundles;
+	protected List<VersionedClause> bundles;
     protected ToolItem removeItemTool;
 
 	protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
@@ -122,6 +128,11 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         createAddItemTool(toolbar);
         this.removeItemTool = createRemoveItemTool(toolbar);
     }
+
+    protected IBaseLabelProvider getLabelProvider() {
+        return new VersionedClauseLabelProvider();
+    }
+
 	void createSection(Section section, FormToolkit toolkit) {
 		// Toolbar buttons
 		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
@@ -131,18 +142,18 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 
-		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL);
 
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new VersionedClauseLabelProvider());
+		viewer.setLabelProvider(getLabelProvider());
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 ToolItem remove = getRemoveItemTool();
                 if (remove != null)
-                    remove.setEnabled(!viewer.getSelection().isEmpty());
+                    remove.setEnabled(isRemovable(event.getSelection()));
             }
         });
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
@@ -244,18 +255,12 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 while(iterator.hasNext()) {
                     Object item = iterator.next();
                     if(item instanceof RepositoryBundle) {
-                        String bsn = ((RepositoryBundle) item).getBsn();
-                        adding.add(new VersionedClause(bsn, new HashMap<String, String>()));
+                        VersionedClause newClause = convertDroppedRepoBundle((RepositoryBundle) item);
+                        adding.add(newClause);
                     } else if(item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-                        Map<String,String> attribs = new HashMap<String, String>();
-                        attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
-                        adding.add(new VersionedClause(bundleVersion.getBundle().getBsn(), attribs));
-                    } else if(item instanceof ProjectBundle) {
-                        String bsn = ((ProjectBundle) item).getBsn();
-                        Map<String,String> attribs = new HashMap<String, String>();
-                        attribs.put(Constants.VERSION_ATTRIBUTE, "snapshot");
-                        adding.add(new VersionedClause(bsn, attribs));
+                        VersionedClause newClause = convertDroppedRepoBundleVersion(bundleVersion);
+                        adding.add(newClause);
                     }
                 }
                 if(!adding.isEmpty()) {
@@ -276,7 +281,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             public void keyReleased(KeyEvent e) {
                 if(e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {;
+                } else if(e.character == '+') {
                     doAdd();
                 }
             }
@@ -289,22 +294,66 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		layout.marginHeight = 0; layout.marginWidth = 0;
 		composite.setLayout(layout);
 
-		GridData gd = getTableLayoutData();
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.heightHint = getTableHeightHint();
+		gd.widthHint = 50;
 		table.setLayoutData(gd);
 	}
-	protected GridData getTableLayoutData() {
-		return new GridData(SWT.FILL, SWT.FILL, true, false);
+
+    protected VersionedClause convertDroppedRepoBundle(RepositoryBundle bundle) {
+        Map<String, String> attribs = new HashMap<String, String>();
+        if (isWorkspaceRepo(bundle.getRepo())) {
+            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+        }
+        return new VersionedClause(bundle.getBsn(), attribs);
+    }
+
+    protected VersionedClause convertDroppedRepoBundleVersion(RepositoryBundleVersion bundleVersion) {
+        Map<String, String> attribs = new HashMap<String, String>();
+        if (isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
+            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+        else
+            attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
+        return new VersionedClause(bundleVersion.getBundle().getBsn(), attribs);
+    }
+
+    private boolean isWorkspaceRepo(RepositoryPlugin repo) {
+        if (repo instanceof WrappingObrRepository) {
+            if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isRemovable(ISelection selection) {
+        if (selection.isEmpty())
+            return false;
+
+        if (selection instanceof IStructuredSelection) {
+            List list = ((IStructuredSelection) selection).toList();
+            for (Object object : list) {
+                if (!(object instanceof VersionedClause)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    protected int getTableHeightHint() {
+	    return SWT.DEFAULT;
 	}
 
 	protected List<VersionedClause> getBundles() {
 	    return bundles;
 	}
 
-	protected void setBundles(List<VersionedClause> bundles) {
-	    this.bundles = bundles;
-	    viewer.setInput(bundles);
-	    markDirty();
-	}
+    protected void setBundles(List<VersionedClause> bundles) {
+        this.bundles = bundles;
+        viewer.setInput(bundles);
+    }
 
     private void doAdd() {
         Project project = getProject();
@@ -314,6 +363,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
                 if (dialog.open() == Window.OK) {
                     setBundles(wizard.getSelectedBundles());
+                    markDirty();
                 }
             }
         } catch (Exception e) {
@@ -338,23 +388,27 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         return project;
     }
 
-	private void doRemove() {
-		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-		if(!selection.isEmpty()) {
-			Iterator<?> elements = selection.iterator();
-			List<Object> removed = new LinkedList<Object>();
-			while(elements.hasNext()) {
-				Object element = elements.next();
-				if(bundles.remove(element))
-					removed.add(element);
-			}
+    private void doRemove() {
+        if (!isRemovable(viewer.getSelection()))
+            return;
 
-			if(!removed.isEmpty()) {
-				viewer.remove(removed.toArray(new Object[removed.size()]));
-				markDirty();
-			}
-		}
-	}
+        IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+        if (!selection.isEmpty()) {
+            Iterator<?> elements = selection.iterator();
+            List<Object> removed = new LinkedList<Object>();
+            while (elements.hasNext()) {
+                Object element = elements.next();
+                if (bundles.remove(element))
+                    removed.add(element);
+            }
+
+            if (!removed.isEmpty()) {
+                viewer.remove(removed.toArray(new Object[removed.size()]));
+                markDirty();
+            }
+        }
+    }
+
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
@@ -364,21 +418,27 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project sourceProject, List<VersionedClause> bundles) throws Exception {
-	    return null;
-	}
+    protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
+        // Need to get the project from the input model...
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles);
+        setSelectionWizardTitleAndMessage(wizard);
 
-	@Override
-	public void refresh() {
-		List<VersionedClause> bundles = loadFromModel(model);
-		if(bundles != null) {
-			this.bundles = new ArrayList<VersionedClause>(bundles);
-		} else {
-			this.bundles = new ArrayList<VersionedClause>();
-		}
-		viewer.setInput(this.bundles);
-		super.refresh();
-	}
+        return wizard;
+    }
+
+    protected abstract void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard);
+
+    @Override
+    public void refresh() {
+        List<VersionedClause> bundles = loadFromModel(model);
+        if (bundles != null) {
+            setBundles(new ArrayList<VersionedClause>(bundles));
+        } else {
+            setBundles(new ArrayList<VersionedClause>());
+        }
+        super.refresh();
+    }
+
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);

@@ -8,10 +8,10 @@ import bndtools.wizards.shared.AbstractTemplateSelectionWizardPage;
 
 public class CnfTemplateSelectionWizardPage extends AbstractTemplateSelectionWizardPage {
 
-    protected CnfTemplateSelectionWizardPage(String pageName) {
-        super(pageName);
+    protected CnfTemplateSelectionWizardPage() {
+        super("templateSelection");
         setTitle("Configuration Template");
-        setImageDescriptor(Plugin.imageDescriptorFromPlugin("/icons/bndtools-wizban.png")); //$NON-NLS-1$
+        setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
     }
 
     @Override

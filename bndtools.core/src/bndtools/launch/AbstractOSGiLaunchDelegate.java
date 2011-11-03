@@ -4,13 +4,17 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Project;
@@ -19,22 +23,37 @@ import bndtools.Plugin;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
-    protected void waitForBuilds(IProgressMonitor monitor) {
-        /*
-        SubMonitor progress = SubMonitor.convert(monitor, "Waiting for background Bnd builds to complete...", 1);
-        try {
-            Job.getJobManager().join(BndBuildJob.class, progress.newChild(1));
-        } catch (OperationCanceledException e) {
-            // Ignore
-        } catch (InterruptedException e) {
-            // Ignore
-        }
-        */
-    }
-
-
+    protected Project model;
 
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
+
+    protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
+
+    protected abstract IStatus getLauncherStatus();
+
+    @Override
+    public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        boolean result = super.buildForLaunch(configuration, mode, monitor);
+
+        model = LaunchUtils.getBndProject(configuration);
+        try {
+            initialiseBndLauncher(configuration, model);
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising bnd launcher", e));
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        IStatus launchStatus = getLauncherStatus();
+
+        IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(launchStatus);
+
+        boolean continueLaunch = (Boolean) prompter.handleStatus(launchStatus, model);
+        return continueLaunch;
+    }
 
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
@@ -117,5 +136,18 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             trace |= logLevel.intValue() <= Level.FINE.intValue();
         }
         return trace;
+    }
+
+    protected MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {
+        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, message, null);
+    
+        for (String error : errors) {
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
+        }
+        for (String warning : warnings) {
+            status.add(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
+        }
+    
+        return status;
     }
 }

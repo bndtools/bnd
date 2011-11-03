@@ -29,4 +29,15 @@ public interface BndConstants extends Constants {
      */
     @Deprecated
     public static final String TESTSUITES = "Test-Suites";
+
+    public static final String RUNREQUIRE = "-runrequire";
+    public static final String RUNEE = "-runee";
+    public static final String BACKUP_RUNBUNDLES = "-runbundles-old";
+
+    /**
+     * The URI to which a resource was resolved by OBR
+     */
+    public static final String RESOLUTION_URI_ATTRIBUTE = "resolution";
+
+    public static final String RUNREPOS = "-runrepos";
 }

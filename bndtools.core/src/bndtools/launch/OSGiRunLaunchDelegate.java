@@ -1,5 +1,6 @@
 package bndtools.launch;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,37 +31,58 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     private ProjectLauncher bndLauncher = null;
 
     @Override
+    protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
+        synchronized (model) {
+            bndLauncher = model.getProjectLauncher();
+        }
+        configureLauncher(configuration);
+        bndLauncher.prepare();
+    }
+
+    @Override
+    protected IStatus getLauncherStatus() {
+        return createStatus("Problem(s) preparing the runtime environment.", bndLauncher.getErrors(), bndLauncher.getWarnings());
+    }
+
+    @Override
     public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
 
-        waitForBuilds(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-
         try {
-            Project project = LaunchUtils.getBndProject(configuration);
-            synchronized (project) {
-                bndLauncher = project.getProjectLauncher();
-            }
-            configureLauncher(configuration);
-            bndLauncher.prepare();
-
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
             if (dynamic)
-                registerLaunchPropertiesRegenerator(project, launch);
+                registerLaunchPropertiesRegenerator(LaunchUtils.getBndProject(configuration), launch);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }
-
 
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
     private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
         boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
+        
+        if (clean) {
+            File storage = bndLauncher.getStorageDir();
+            if (storage.exists()) {
+                deleteRecursively(storage);
+            }
+        }
+        
         bndLauncher.setKeep(!clean);
 
         bndLauncher.setTrace(enableTraceOption(configuration));
     }
 
+    private void deleteRecursively(File dir) {
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory()) {
+                deleteRecursively(f);
+            }
+            f.delete();
+        }
+    }
+    
     /**
      * Registers a resource listener with the project model file to update the
      * launcher when the model or any of the run-bundles changes. The resource
@@ -73,11 +95,16 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
      */
     private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
         final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
-        final IPath bndbndPath = Central.toPath(project, project.getPropertiesFile());
+        final IPath bndbndPath;
+        try {
+            bndbndPath = Central.toPath(project.getPropertiesFile());
+        } catch (Exception e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
+        }
 
         final IPath targetPath;
         try {
-            targetPath = Central.toPath(project, project.getTarget());
+            targetPath = Central.toPath(project.getTarget());
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying project output folder", e));
         }

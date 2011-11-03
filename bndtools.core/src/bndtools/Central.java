@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.eclipse.core.internal.resources.ResourceException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -29,6 +29,7 @@ import aQute.bnd.service.Refreshable;
 
 public class Central {
     static Workspace workspace = null;
+    static WorkspaceObrProvider workspaceObr = null;
 
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
@@ -146,6 +147,27 @@ public class Central {
         }
     }
 
+    public static IFile getWorkspaceBuildFile() throws Exception {
+        File file = Central.getWorkspace().getPropertiesFile();
+        IFile[] matches = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());
+
+        if (matches == null || matches.length != 1) {
+            Plugin.logError("Cannot find workspace location for bnd configuration file " + file, null);
+            return null;
+        }
+
+        return matches[0];
+    }
+
+    public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() throws Exception {
+        if (workspaceObr != null)
+            return workspaceObr;
+
+        workspaceObr = new WorkspaceObrProvider();
+        workspaceObr.setWorkspace(getWorkspace());
+        return workspaceObr;
+    }
+
     public synchronized static Workspace getWorkspace() throws Exception {
         if (workspace != null)
             return workspace;
@@ -167,11 +189,10 @@ public class Central {
             workspace = Workspace.getWorkspace(workspaceDir);
         }
 
-        workspace.addBasicPlugin(new FilesystemUpdateListener());
+        workspace.addBasicPlugin(new WorkspaceListener(workspace));
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
-
-        Activator.instance.context.registerService(Workspace.class.getName(), workspace, null);
+        workspace.addBasicPlugin(getWorkspaceObrProvider());
 
         return workspace;
     }
@@ -209,11 +230,11 @@ public class Central {
         return null;
     }
 
-    public static IPath toPath(Project project, File file) {
-        String path = file.getAbsolutePath();
-        String workspace = project.getWorkspace().getBase().getAbsolutePath();
-        if (path.startsWith(workspace))
-            path = path.substring(workspace.length());
+    public static IPath toPath(File file) throws Exception {
+        String path = file.getCanonicalPath();
+        String workspacePath = getWorkspace().getBase().getAbsolutePath();
+        if (path.startsWith(workspacePath))
+            path = path.substring(workspacePath.length());
         else
             return null;
 
@@ -223,25 +244,20 @@ public class Central {
 
     public static void refresh(IPath path) {
         try {
-            IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(
-                    path);
+            IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
             if (r != null)
                 return;
 
             IPath p = (IPath) path.clone();
             while (p.segmentCount() > 0) {
                 p = p.removeLastSegments(1);
-                IResource resource = ResourcesPlugin.getWorkspace().getRoot()
-                        .findMember(p);
+                IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
                 if (resource != null) {
                     resource.refreshLocal(2, null);
                     return;
                 }
             }
-        } catch( ResourceException re ) {
-            // TODO Ignore for now
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Activator.getDefault().error("While refreshing path " + path, e);
         }
     }

@@ -143,13 +143,87 @@
             restorable="true">
       </view>
    </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.core.removeRepoResource"
+         name="Remove Resource"
+         description="Remove selected resource from the repository"
+      />
+      <command
+         id="bndtools.workspace.openMainConfig"
+         name="Open main bnd config"
+         description=""
+      />
+   </extension>
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+         commandId="bndtools.core.removeRepoResource"
+         icon="icons/cross.png"
+      />
+      <image
+         commandId="bndtools.workspace.openMainConfig"
+         icon="icons/bndtools-logo-16x16.png"
+      />
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+         commandId="bndtools.core.removeRepoResource"
+         class="bndtools.views.RemoveRepoResourceHandler">
+         <enabledWhen>
+            <with variable="selection">
+               <count value="+" />
+               <iterate operator="and">
+                  <adapt type="bndtools.model.repo.RepositoryBundle" />
+               </iterate>
+            </with>
+         </enabledWhen>
+       </handler>
+       <handler
+         commandId="bndtools.workspace.openMainConfig"
+         class="bndtools.OpenMainConfigHandler"
+       />
+   </extension>
+   
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         <command commandId="bndtools.core.removeRepoResource">
+            <visibleWhen checkEnabled="true"/>
+         </command>
+      </menuContribution>
+      
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=project">
+         <menu
+            id="bndtools"
+            label="Bndtools"
+            mnemonic="B">
+            <visibleWhen>
+               <with variable="activeWorkbenchWindow.activePerspective">
+                  <equals value="bndtools.perspective"/>
+               </with>
+            </visibleWhen>
+            <command commandId="bndtools.workspace.openMainConfig" mnemonic="M"/>
+            <dynamic id="bndtools.workspace.openExtConfigs"
+               class="bndtools.OpenExtConfigsContributionItem"/>
+         </menu>
+      </menuContribution>
+   </extension>
+   
+   <extension point="org.eclipse.ui.bindings">
+      <key
+            commandId="bndtools.workspace.openMainConfig"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M"> <!-- M2 is Ctrl on Win, Cmd on Mac. M1 is Shift -->
+      </key>
+   </extension>
+   
    <extension
       point="org.eclipse.ui.actionSets">
       <actionSet
          id="bndtools.actions"
          label="OSGi"
          visible="false">
-
+         
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
@@ -174,6 +248,15 @@
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />
+         <!--
+         <action
+            id="bndtools.actions.workspace.openMainConfig"
+            label="Open main bnd config"
+            menubarPath="bndtools/config"
+            icon="icons/bndtools-logo-16x16.png"
+            class="bndtools."
+         />
+         -->
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -208,7 +291,7 @@
             callOnEmptyDelta="true"
             hasNature="true">
          <run
-               class="bndtools.builder.BndIncrementalBuilder">
+               class="bndtools.builder.NewBuilder">
          </run>
       </builder>
    </extension>
@@ -422,46 +505,6 @@
    <!-- LAUNCH SHORTCUTS -->
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
-      <shortcut
-            label="OSGi JUnit Test"
-            icon="icons/bricks_junit.png"
-            class="bndtools.launch.JUnitShortcut"
-            modes="run, debug"
-            id="bndtools.launch.junitShortcut">
-         <contextualLaunch>
-            <enablement>
-               <with variable="selection">
-                  <count value="1"/>
-                  <iterate>
-                     <or>
-                        <!-- Java/Bnd Project -->
-                        <and>
-                           <test property="org.eclipse.jdt.launching.isContainer"/>
-                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
-                        </and>
-                        
-                        <!-- bnd.bnd or *.bndrun file -->
-                        <test property="org.eclipse.core.resources.name" value="bnd.bnd" forcePluginActivation="true"/>
-                        <test property="org.eclipse.core.resources.extension" value="bndrun" forcePluginActivation="true"/>
-                        
-                     </or>
-                  </iterate>
-               </with>
-            </enablement>
-         </contextualLaunch>
-         <configurationType
-               id="org.eclipse.jdt.junit.launchconfig">
-         </configurationType>
-         <description
-               description="Debug a JUnit Test in an OSGi Framework"
-               mode="debug">
-         </description>
-         <description
-               description="Run an OSGi JUnit Test in an OSGi framework"
-               mode="run">
-         </description>
-      </shortcut>
       
       <shortcut
             class="bndtools.launch.RunShortcut"
@@ -535,12 +578,6 @@
              id="bndtools.prefPages.basic"
              name="Bnd OSGi Tools">
        </page>
-       <page
-            class="bndtools.preferences.ui.OBRPreferencePage"
-            id="bndtools.prefPages.obr"
-            name="OSGi Bundle Repositories"
-            category="bndtools.prefPages.basic">
-       </page>
     </extension>
     <extension
           point="org.eclipse.debug.ui.launchConfigurationTypeImages">
@@ -556,12 +593,6 @@
        </launchConfigurationTypeImage>
     </extension>
     <extension
-          point="org.eclipse.core.runtime.preferences">
-       <initializer
-             class="bndtools.preferences.OBRPreferences">
-       </initializer>
-    </extension>
-    <extension
          point="org.eclipse.help.contexts">
          <contexts file="contexthelp.xml"/>
     </extension>
@@ -575,11 +606,12 @@
                label="Eclipse Orbit R20100519200754"
                resource="obr/orbit-R20100519200754.xml"/>
     </extension>
-    <extension
-         point="bndtoolsStartupParticipant">
-         <startupParticipant
-               class="bndtools.wizards.workspace.CnfSetupStartupParticipant"/>
-    </extension>
+
+   <extension point="bndtoolsStartupParticipant">
+      <startupParticipant class="bndtools.wizards.workspace.CnfSetupStartupParticipant" />
+      <startipParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+   </extension>
+
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
          priority="-2147483648"
@@ -660,6 +692,13 @@
       </plugin>
       
       <plugin
+         class="aQute.bnd.maven.support.MavenRemoteRepository"
+         icon="icons/bundlefolder.png"
+         name="Maven Remote Repository">
+         <property name="repositories" type="string" description="List of remote repository URLs"/>
+      </plugin>
+      
+      <plugin
          class="aQute.lib.spring.SpringXMLType"
          icon="icons/magnifier.png"
          name="Spring Component Analyzer"/>
@@ -673,6 +712,15 @@
 
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
+   </extension>
+   
+   <extension point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+         id="bndtools.core.debug.statusHandler"
+         class="bndtools.launch.ui.LaunchStatusHandler"
+         plugin="bndtools.core"
+         code="0"
+      />
    </extension>
 
  </plugin>

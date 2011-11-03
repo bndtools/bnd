@@ -12,10 +12,10 @@ Bundle-Localization: plugin
 
 # 1. JUNit and Felix Shell are optional dependencies.
 # 2. Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
-Import-Package: \
-	junit.framework;resolution:=optional,\
+Import-Package: junit.framework;resolution:=optional,\
 	org.apache.felix.shell;resolution:=optional,\
 	com.ctc.wstx.stax,\
+	!net.jcip.annotations,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 # Bundle Content
@@ -33,7 +33,12 @@ Private-Package: bndtools,\
 	org.osgi.impl.bundle.obr.resource,\
 	org.osgi.service.obr,\
 	${felix.obr.packages},\
-
+	aQute.libg.generics,\
+	aQute.libg.sax.filters,\
+	aQute.lib.io,\
+	aQute.lib.filter,\
+	aQute.lib.deployer,\
+	aQute.lib.deployer.obr
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
 	bndtools.editor.model,\
@@ -77,15 +82,17 @@ eclipse.deps: \
 	org.eclipse.ltk.core.refactoring,\
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.core.filebuffers,\
-	org.eclipse.core.expressions
+	org.eclipse.core.expressions,\
+	org.eclipse.core.filesystem
 
--buildpath: biz.aQute.bndlib;version=1.44,\
+-buildpath: biz.aQute.bndlib;version=1.49.0,\
 	org.apache.felix.bundlerepository,\
-	patricia_trie,\
+	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
 	woodstox-core-asl,\
 	javax.xml.stream,\
 	org.osgi.impl.bundle.bindex;version=project,\
-	org.osgi.service.obr
+	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
+	libs/jcip-annotations.jar;version=file

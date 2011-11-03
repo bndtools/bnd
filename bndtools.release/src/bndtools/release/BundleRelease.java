@@ -362,10 +362,10 @@ public class BundleRelease {
 		currentVersion.setLabelProvider(new ColumnLabelProvider() {
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
-					return ((JarDiff) element).getVersion();
+					return ((JarDiff) element).getCurrentVersion();
 				}
 				if (element instanceof PackageInfo) {
-					return ((PackageInfo) element).getVersion();
+					return ((PackageInfo) element).getCurrentVersion();
 				}
 				if (element instanceof ClassInfo) {
 					return "";
@@ -556,47 +556,49 @@ public class BundleRelease {
 
 		protected CellEditor getCellEditor(Object element) {
 			
-			String suggestedVersion = null;
+//			String suggestedVersion = null;
 			
 			Set<String> versions = new TreeSet<String>();
 			if (element instanceof JarDiff) {
 				JarDiff diff = (JarDiff) element;
-				if (diff.getVersion() != null) {
-					versions.add(diff.getVersion());
-					suggestedVersion = diff.getVersion();
+				if (diff.getCurrentVersion() != null) {
+					versions.add(diff.getCurrentVersion());
 				}
-				if (diff.getSuggestedVersion() != null) {
-					versions.add(diff.getSuggestedVersion());
-					suggestedVersion = diff.getSuggestedVersion();
+				
+				for (String suggestedVersion : diff.getSuggestedVersions()) {
+					versions.add(suggestedVersion);
 				}
+				
 			} else {
 				PackageInfo pi = (PackageInfo) element;
 	
-				if (pi.getVersion() != null) {
-					versions.add(pi.getVersion());
+				if (pi.getCurrentVersion() != null) {
+					versions.add(pi.getCurrentVersion());
 				}
-				if (pi.getSuggestedVersion() != null) {
-					versions.add(pi.getSuggestedVersion());
+				for (String suggestedVersion : pi.getSuggestedVersions()) {
+					versions.add(suggestedVersion);
 				}
-				if (pi.getJarDiff().getVersion() != null) {
-					versions.add(pi.getJarDiff().getVersion());
+				if (pi.getJarDiff().getCurrentVersion() != null) {
+					versions.add(pi.getJarDiff().getCurrentVersion());
 				}
 				if (pi.getJarDiff().getSuggestedVersion() != null) {
 					versions.add(pi.getJarDiff().getSuggestedVersion());
-					suggestedVersion = pi.getJarDiff().getSuggestedVersion();
+				}
+				for (String suggestedVersion : pi.getJarDiff().getSuggestedVersions()) {
+					versions.add(suggestedVersion);
 				}
 			}
 			
-			String[] items = versions.toArray(new String[versions.size()]);
-			int idx = 0;
-			for (int i = 0; i < items.length; i++) {
-				if (items[i].equals(suggestedVersion)) {
-					idx = i;
-					break;
-				}
-			}
+//			String[] items = versions.toArray(new String[versions.size()]);
+//			int idx = 0;
+//			for (int i = 0; i < items.length; i++) {
+//				if (items[i].equals(suggestedVersion)) {
+//					idx = i;
+//					break;
+//				}
+//			}
 			editor.setItems(versions.toArray(new String[versions.size()]));
-			editor.setValue(idx);
+//			editor.setValue(idx);
 			return editor;
 		}
 
@@ -611,25 +613,25 @@ public class BundleRelease {
 
 		protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 			
-			String suggestedVersion;
+			String selectedVersion;
 			if (cell.getElement() instanceof JarDiff) {
-				suggestedVersion = ((JarDiff) cell.getElement()).getSuggestedVersion();
+				selectedVersion = ((JarDiff) cell.getElement()).getSelectedVersion();
 			} else {
 				PackageInfo pi = (PackageInfo) cell.getElement();
-				suggestedVersion = pi.getSuggestedVersion();
+				selectedVersion = pi.getSelectedVersion();
 			}
 
 			String[] items = ((ComboBoxCellEditor)cellEditor).getItems();
 			int idx = 0;
 			for (int i = 0; i < items.length; i++) {
-				if (items[i].equals(suggestedVersion)) {
+				if (items[i].equals(selectedVersion)) {
 					idx = i;
 					break;
 				}
 			}
 			
 			cellEditor.setValue(idx);
-			cell.setText(suggestedVersion);
+			cell.setText(selectedVersion);
 
 		}
 
@@ -637,15 +639,15 @@ public class BundleRelease {
 			int idx = ((Integer)cellEditor.getValue()).intValue();
 			String[] items = ((ComboBoxCellEditor)cellEditor).getItems();
 			
-			String suggestedVersion = items[idx];
-			cell.setText(suggestedVersion);
+			String selectedVersion = items[idx];
+			cell.setText(selectedVersion);
 
 			if (cell.getElement() instanceof JarDiff) {
-				((JarDiff)cell.getElement()).setSuggestedVersion(suggestedVersion);
+				((JarDiff)cell.getElement()).setSelectedVersion(selectedVersion);
 				return;
 			}
 			PackageInfo modelElement = (PackageInfo) cell.getElement();
-			modelElement.setSuggestedVersion(suggestedVersion);
+			modelElement.setSelectedVersion(selectedVersion);
 		}
 	}
 	

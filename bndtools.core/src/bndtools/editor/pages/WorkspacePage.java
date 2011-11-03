@@ -12,9 +12,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
-import bndtools.editor.IPageFactory;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.workspace.PluginsPart;
+import bndtools.editor.workspace.WorkspaceMainPart;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.MessageHyperlinkAdapter;
 
@@ -23,14 +23,23 @@ public class WorkspacePage extends FormPage {
     private final BndEditModel model;
     private PluginsPart pluginsPart;
 
-    public static IPageFactory FACTORY = new IPageFactory() {
+    public static IPageFactory MAIN_FACTORY = new IPageFactory() {
         public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
-            return new WorkspacePage(editor, model, id, "Workspace");
+            return new WorkspacePage(true, editor, model, id, "Workspace");
         }
     };
 
-    private WorkspacePage(FormEditor editor, BndEditModel model, String id, String title) {
+    public static IPageFactory EXT_FACTORY = new IPageFactory() {
+        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new WorkspacePage(false, editor, model, id, "Workspace");
+        }
+    };
+
+    private final boolean mainBuildFile;
+
+    private WorkspacePage(boolean mainBuildFile, FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
+        this.mainBuildFile = mainBuildFile;
         this.model = model;
     }
 
@@ -46,13 +55,29 @@ public class WorkspacePage extends FormPage {
 
         // Create controls
         Composite body = form.getBody();
+
+        WorkspaceMainPart linksPart = new WorkspaceMainPart(mainBuildFile, body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(linksPart);
+
         pluginsPart = new PluginsPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(pluginsPart);
 
         // Layout
-        TableWrapLayout twl = new TableWrapLayout();
+        TableWrapLayout twl;
+        TableWrapData twd;
+
+        twl = new TableWrapLayout();
         body.setLayout(twl);
-        TableWrapData twd = new TableWrapData();
+
+        twd = new TableWrapData();
+        twd.align = TableWrapData.FILL;
+        twd.valign = TableWrapData.FILL;
+        twd.grabVertical = true;
+        twd.grabHorizontal = true;
+        twd.maxWidth = 200;
+        linksPart.getSection().setLayoutData(twd);
+
+        twd = new TableWrapData();
         twd.align = TableWrapData.FILL;
         twd.valign = TableWrapData.FILL;
         twd.grabVertical = true;
@@ -60,6 +85,7 @@ public class WorkspacePage extends FormPage {
         twd.maxWidth = 200;
         twd.heightHint = 300;
         pluginsPart.getSection().setLayoutData(twd);
+
     }
 
     public void setSelectedPlugin(HeaderClause header) {

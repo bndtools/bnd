@@ -78,7 +78,11 @@ public class BundleReleaseDialog extends Dialog {
 		//combo.setLayout(gridLayout);
 		combo.setItems (items);
 		combo.setSize (200, 200);
-		combo.setText(items[idx]);
+		if (items.length > 0) {
+			combo.setText(items[idx]);
+		} else {
+			combo.setText("");
+		}
 		
 		ScrolledComposite scrolled = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 
@@ -104,7 +108,7 @@ public class BundleReleaseDialog extends Dialog {
 	}
 	
 	private String[] getRepositories() {
-		List<RepositoryPlugin> repos = project.getWorkspace().getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> repos = Activator.getRepositories();
 		Set<String> ret = new TreeSet<String>();
 		for (RepositoryPlugin repo : repos) {
 			if (repo.canWrite()) {

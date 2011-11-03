@@ -10,8 +10,10 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -36,10 +38,10 @@ import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
 import bndtools.editor.model.BndEditModel;
 import bndtools.release.api.IReleaseParticipant;
+import bndtools.release.api.ReleaseUtils;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
-import bndtools.release.api.ReleaseUtils;
 
 public class ReleaseHelper {
 
@@ -53,7 +55,7 @@ public class ReleaseHelper {
 				continue;
 			}
 			for (PackageInfo pi : current.getModifiedExportedPackages()) {
-				if (pi.getVersion() != null && !pi.getVersion().equals(pi.getSuggestedVersion())) {
+				if (pi.getCurrentVersion() != null && !pi.getCurrentVersion().equals(pi.getSuggestedVersion())) {
 					updatePackageInfoFile(context.getProject(), pi);
 				}
 			}
@@ -68,7 +70,7 @@ public class ReleaseHelper {
 
 	private static void updateBundleVersion(ReleaseContext context, JarDiff current, Builder builder) throws IOException, CoreException {
 
-		String bundleVersion = current.getSuggestedVersion();
+		String bundleVersion = current.getSelectedVersion();
 		if (bundleVersion != null) {
 
 			File file = builder.getPropertiesFile();
@@ -257,18 +259,48 @@ public class ReleaseHelper {
 			return;
 		}
 
-		FileOutputStream fos = new FileOutputStream(file);
-		PrintWriter pw = new PrintWriter(fos);
-		pw.println("version " + packageInfo.getSuggestedVersion());
-		pw.flush();
-		pw.close();
-		ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
-
-		File binary = IO.getFile(project.getOutput(), path);
-		IO.copy(file, binary);
-		ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
+		if (file.exists() && equalsPackageInfoFileVersion(file, packageInfo.getSuggestedVersion())) {
+			return;
+		} else {
+			FileOutputStream fos = new FileOutputStream(file);
+			PrintWriter pw = new PrintWriter(fos);
+			pw.println("version " + packageInfo.getSuggestedVersion());
+			pw.flush();
+			pw.close();
+			ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
+	
+			File binary = IO.getFile(project.getOutput(), path);
+			IO.copy(file, binary);
+			ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
+		}
 	}
 
+	private static boolean equalsPackageInfoFileVersion(File packageInfoFile, String version) throws IOException {
+		// Check existing version
+		if (packageInfoFile.exists()) {
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(packageInfoFile));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					line = line.trim();
+					if (line.startsWith("version ")) {
+						String fileVersion = line.substring(8);
+						if (fileVersion.equals(version)) {
+							return true;
+						}
+						return false;
+					}
+				}
+			} finally {
+				if (reader != null) {
+					IO.close(reader);
+				}
+			}
+		}
+		return false;
+	}
+	
 	private static File getSourceFile(Project project, String path) {
 		String src = project.getProperty("src", "src");
 		return project.getFile(src + "/" + path);

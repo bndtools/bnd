@@ -20,7 +20,7 @@ import org.eclipse.ui.forms.MasterDetailsBlock;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.editor.model.ServiceComponent;
+import bndtools.model.clauses.ServiceComponent;
 
 public class ComponentsBlock extends MasterDetailsBlock {
 

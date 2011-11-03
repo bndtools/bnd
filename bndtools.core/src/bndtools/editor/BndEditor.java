@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,6 +31,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -41,6 +41,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -51,30 +52,38 @@ import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
+import bndtools.editor.pages.IPageFactory;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
+import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends FormEditor implements IResourceChangeListener {
 
+    public static final String WORKSPACE_EDITOR  = "bndtools.bndWorkspaceConfigEditor";
+
     static final String WORKSPACE_PAGE = "__workspace_page";
+    static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
     static final String CONTENT_PAGE = "__content_page";
-	static final String BUILD_PAGE = "__build_page";
+    static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
-	static final String COMPONENTS_PAGE = "__components_page";
-	static final String TEST_SUITES_PAGE = "__test_suites_page";
-	static final String SOURCE_PAGE = "__source_page";
+    static final String COMPONENTS_PAGE = "__components_page";
+    static final String TEST_SUITES_PAGE = "__test_suites_page";
+    static final String SOURCE_PAGE = "__source_page";
 
-	private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
+    private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
 
-	private final BndEditModel model = new BndEditModel();
-	private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+    private final BndEditModel model = new BndEditModel();
+    private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+
+    private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
     public BndEditor() {
-        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.FACTORY);
+        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
+        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
@@ -82,28 +91,9 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
     }
 
-    /*
-	private final PropertyChangeListener modelListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Constants.SUB.equals(evt.getPropertyName())) {
-                try {
-                    updatePages();
-                } catch (PartInitException e) {
-                    Plugin.logError("Error updating pages in the editor.", e);
-                }
-            }
-        }
-    };
-    */
-
-    void updatePages() {
-        List<String> requiredPageIds = new LinkedList<String>();
-
-        // Need to know the file and project names.
+    Pair<String, String> getFileAndProject(IEditorInput input) {
         String path;
         String projectName;
-
-        IEditorInput input = getEditorInput();
         if (input instanceof IFileEditorInput) {
             IFile file = ((IFileEditorInput) input).getFile();
             path = file.getProjectRelativePath().toString();
@@ -112,64 +102,100 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             path = input.getName();
             projectName = null;
         }
+        return Pair.newInstance(path, projectName);
+    }
 
-        if (isWorkspaceConfig(path, projectName)) {
-            requiredPageIds.addAll(getPagesBuildBnd());
+    void updatePages() {
+        List<String> requiredPageIds = new LinkedList<String>();
+
+        // Need to know the file and project names.
+        Pair<String,String> fileAndProject = getFileAndProject(getEditorInput());
+        String path = fileAndProject.getFirst();
+        String projectName = fileAndProject.getSecond();
+
+
+        if (isMainWorkspaceConfig(path, projectName)) {
+            requiredPageIds.add(WORKSPACE_PAGE);
+        } else if (isExtWorkspaceConfig(path, projectName)) {
+            requiredPageIds.add(WORKSPACE_EXT_PAGE);
+            setTitleImage(buildFileImg);
         } else if (path.endsWith(LaunchConstants.EXT_BNDRUN)) {
             requiredPageIds.addAll(getPagesBndRun());
         } else {
             requiredPageIds.addAll(getPagesBnd(path));
         }
+        requiredPageIds.add(SOURCE_PAGE);
 
         IFormPage activePage = getActivePageInstance();
         String currentPageId = activePage != null ? activePage.getId() : null;
 
-        // Remove all pages except source
-        while (getPageCount() > 1) removePage(0);
-
-        // Add required pages;
-        for (ListIterator<String> iter = requiredPageIds.listIterator(requiredPageIds.size()); iter.hasPrevious(); ) {
-            String pageId = iter.previous();
-            IPageFactory pf = pageFactories.get(pageId);
-            if (pf == null)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No page factory available for page ID: " + pageId, null));
+        // Remove pages no longer required and remember the rest in a map
+        int i = 0;
+        Map<String, IFormPage> pageCache = new HashMap<String, IFormPage>(requiredPageIds.size());
+        while (i < getPageCount()) {
+            IFormPage current = (IFormPage) pages.get(i);
+            if (!requiredPageIds.contains(current.getId()))
+                removePage(i);
             else {
-                try {
-                    IFormPage page = pf.createPage(this, model, pageId);
-                    addPage(0, page);
-                } catch (IllegalArgumentException e) {
-                    Plugin.logError("Error creating page for ID: " + pageId, e);
-                } catch (PartInitException e) {
-                    Plugin.logError("Error adding page(s) to the editor.", e);
-                }
+                pageCache.put(current.getId(), current);
+                i++;
             }
-        }
-        // Always add the source page if it doesn't exist
-        try {
-            if (findPage(SOURCE_PAGE) == null) {
-                int sourcePageIndex = addPage(sourcePage, getEditorInput());
-                setPageText(sourcePageIndex, "Source");
-            }
-        } catch (PartInitException e) {
-            Plugin.logError("Error adding page(s) to the editor.", e);
         }
 
-        // Restore the current selected page
-        if (currentPageId != null) {
-            setActivePage(currentPageId);
+        // Cache new pages
+        for (String pageId : requiredPageIds) {
+            if (!pageCache.containsKey(pageId)) {
+                IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage : pageFactories.get(pageId).createPage(this, model, pageId);
+                pageCache.put(pageId, page);
+            }
         }
+
+        // Add pages back in
+        int requiredPointer = 0;
+        int existingPointer = 0;
+
+        while (requiredPointer < requiredPageIds.size()) {
+            try {
+                String requiredId = requiredPageIds.get(requiredPointer);
+                if (existingPointer >= getPageCount()) {
+                    if (SOURCE_PAGE.equals(requiredId))
+                        addPage(sourcePage, getEditorInput());
+                    else
+                        addPage(pageCache.get(requiredId));
+                }
+                else {
+                    IFormPage existingPage = (IFormPage) pages.get(existingPointer);
+                    if (!requiredId.equals(existingPage.getId())) {
+                        if (SOURCE_PAGE.equals(requiredId))
+                            addPage(existingPointer, sourcePage, getEditorInput());
+                        else
+                            addPage(existingPointer, pageCache.get(requiredId));
+                    }
+                }
+                existingPointer++;
+            } catch (PartInitException e) {
+                Plugin.logError("Error adding page(s) to the editor.", e);
+            }
+            requiredPointer++;
+        }
+
+        // Set the source page title
+        setPageText(sourcePage.getIndex(), "Source");
+
     }
 
-    private boolean isWorkspaceConfig(String path, String projectName) {
-        boolean result = false;
+    private boolean isMainWorkspaceConfig(String path, String projectName) {
         if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
-            if (Workspace.BUILDFILE.equals(path)) {
-                result = true;
-            } else if (path.startsWith("ext/") && path.endsWith(".bnd")) {
-                result = true;
-            }
+            return Workspace.BUILDFILE.equals(path);
         }
-        return result;
+        return false;
+    }
+
+    private boolean isExtWorkspaceConfig(String path, String projectName) {
+        if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+            return path.startsWith("ext/") && path.endsWith(".bnd");
+        }
+        return false;
     }
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
@@ -231,10 +257,6 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
     @Override
     protected void addPages() {
         updatePages();
-    }
-
-    private List<String> getPagesBuildBnd() {
-        return Collections.singletonList(WORKSPACE_PAGE);
     }
 
     private List<String> getPagesBnd(String fileName) {
@@ -308,32 +330,39 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 	}
 
     private void setPartNameForInput(IEditorInput input) {
+        Pair<String,String> fileAndProject = getFileAndProject(input);
+        String path = fileAndProject.getFirst();
+        String projectName = fileAndProject.getSecond();
+
         String name = input.getName();
-        if (Project.BNDFILE.equals(name)) {
+        if (isMainWorkspaceConfig(path, projectName) || isExtWorkspaceConfig(path, projectName)) {
+            name = path;
+        } else if (Project.BNDFILE.equals(name)) {
             IResource resource = ResourceUtil.getResource(input);
             if (resource != null)
-                name = resource.getProject().getName();
+                name = projectName;
         } else if(name.endsWith(".bnd")) {
-            name = name.substring(0, name.length() - ".bnd".length());
+            IResource resource = ResourceUtil.getResource(input);
+            if (resource != null)
+                name = projectName + "." + name.substring(0, name.length() - ".bnd".length());
         } else if(name.endsWith(".bndrun")) {
             name = name.substring(0, name.length() - ".bndrun".length());
         }
         setPartName(name);
     }
 
-	@Override
-	public void dispose() {
-//	    if (model != null)
-//	        model.removePropertyChangeListener(modelListener);
+    @Override
+    public void dispose() {
+        IResource resource = ResourceUtil.getResource(getEditorInput());
 
-		IResource resource = ResourceUtil.getResource(getEditorInput());
+        super.dispose();
 
-		super.dispose();
+        if (resource != null) {
+            resource.getWorkspace().removeResourceChangeListener(this);
+        }
 
-		if(resource != null) {
-			resource.getWorkspace().removeResourceChangeListener(this);
-		}
-	}
+        buildFileImg.dispose();
+    }
 
 	public BndEditModel getBndModel() {
 		return this.model;

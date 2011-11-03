@@ -1,112 +1,204 @@
 package bndtools.editor.project;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.IFormPart;
+import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.build.Workspace;
+import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
+import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.utils.EditorUtils;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
-    private Image wizardImg;
+    private final List<Builder> projectBuilders = new ArrayList<Builder>();
+    private Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
-	public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
-		super(Constants.RUNBUNDLES, parent, toolkit, style);
-	}
-	@Override
-	void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Run Bundles");
-		section.setDescription("The selected bundles will be added to the runtime framework. NB: This project's own bundles are automatically included.");
-		super.createSection(section, toolkit);
-	}
-	@Override
-	protected void fillToolBar(ToolBar toolbar) {
-	    createAddItemTool(toolbar);
-	    createWizardItemtool(toolbar);
-	    this.removeItemTool = createRemoveItemTool(toolbar);
-	}
-	protected ToolItem createWizardItemtool(ToolBar toolbar) {
-	    if (wizardImg == null)
-	        wizardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/wand.png").createImage();
+    private Image warningImg;
+    private ControlDecoration warningDecor = null;
 
-        ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
+    public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
+        super(Constants.RUNBUNDLES, parent, toolkit, style);
+    }
 
-        tool.setImage(wizardImg);
-        tool.setToolTipText("Add Bundle");
-        tool.addSelectionListener(new SelectionAdapter() {
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
+
+        IFormPage page = (IFormPage) form.getContainer();
+        IFile file = ResourceUtil.getFile(page.getEditorInput());
+        if (file != null) {
+            if (Project.BNDFILE.equals(file.getName())) {
+                loadBuilders(file.getProject());
+            }
+        }
+    }
+
+    private void loadBuilders(IProject project) {
+        try {
+            Project model = Workspace.getProject(project.getLocation().toFile());
+            if (model != null)
+                projectBuilders.addAll(model.getSubBuilders());
+        } catch (Exception e) {
+            Plugin.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected void setBundles(List<VersionedClause> bundles) {
+        this.bundles = bundles;
+
+        @SuppressWarnings("rawtypes")
+        List displayList;
+        if (projectBuilders.isEmpty())
+            displayList = bundles;
+        else {
+            displayList = new ArrayList<Object>(projectBuilders.size() + bundles.size());
+            displayList.addAll(projectBuilders);
+            displayList.addAll(bundles);
+        }
+        viewer.setInput(displayList);
+    }
+
+    @Override
+    protected IBaseLabelProvider getLabelProvider() {
+        return new VersionedClauseLabelProvider() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                doAddWizard();
+            public void update(ViewerCell cell) {
+                Object element = cell.getElement();
+
+                if (element instanceof Builder) {
+                    Builder builder = (Builder) element;
+                    StyledString label = new StyledString(builder.getBsn(), StyledString.QUALIFIER_STYLER);
+                    cell.setText(label.getString());
+                    cell.setStyleRanges(label.getStyleRanges());
+                    cell.setImage(projectImg);
+                } else {
+                    super.update(cell);
+                }
+            }
+        };
+    }
+
+    @Override
+    void createSection(Section section, FormToolkit toolkit) {
+        section.setText(Messages.RunBundlesPart_title);
+
+        FormText description = new FormText(section, SWT.READ_ONLY | SWT.WRAP);
+        description.setText(Messages.RunBundlesPart_description, true, false);
+        warningImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage(); //$NON-NLS-1$
+        description.setImage(Messages.RunBundlesPart_warningKey, warningImg);
+        description.addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent e) {
+                if ("requirements".equals(e.data)) {
+                    IFormPart part = EditorUtils.findPartByClass(getManagedForm(), RunRequirementsPart.class);
+                    if (part != null)
+                        part.setFocus();
+                }
             }
         });
 
-        return tool;
+        section.setDescriptionControl(description);
+        super.createSection(section, toolkit);
+
+        Composite composite = (Composite) section.getClient();
+
+        GridLayout layout = (GridLayout) composite.getLayout();
+        layout.marginRight = 10;
     }
+
     @Override
-	protected GridData getTableLayoutData() {
-		GridData gd = super.getTableLayoutData();
-		gd.heightHint = 200;
-		return gd;
-	}
-	@Override
-	protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {
-		model.setRunBundles(bundles);
-	}
-	@Override
-	protected List<VersionedClause> loadFromModel(BndEditModel model) {
-		return model.getRunBundles();
-	}
-	@Override
-	protected RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
-        // Need to get the project from the input model...
-	    RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, false, new OBRResolutionMode[] { OBRResolutionMode.runtime });
-        setSelectionWizardTitleAndMessage(wizard);
-
-	    return wizard;
-	}
-    void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
-        wizard.setSelectionPageTitle("Project Run Path");
-        wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
+    protected int getTableHeightHint() {
+        return -1;
     }
-    private void doAddWizard() {
-        Project project = getProject();
-        try {
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, getBundles(), true, new OBRResolutionMode[] { OBRResolutionMode.runtime });
-            setSelectionWizardTitleAndMessage(wizard);
 
-            WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-            if (dialog.open() == Window.OK) {
-                setBundles(wizard.getSelectedBundles());
+    @Override
+    protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {
+        model.setRunBundles(bundles);
+    }
+
+    @Override
+    protected List<VersionedClause> loadFromModel(BndEditModel model) {
+        return model.getRunBundles();
+    }
+
+    @Override
+    protected void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
+        wizard.setSelectionPageTitle(Messages.RunBundlesPart_addWizardTitle);
+        wizard.setSelectionPageDescription(Messages.RunBundlesPart_addWizardDescription);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        warningImg.dispose();
+    }
+
+    @Override
+    public void markDirty() {
+        super.markDirty();
+        updateWarning();
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        updateWarning();
+    }
+
+    @Override
+    public void commit(boolean onSave) {
+        super.commit(onSave);
+        updateWarning();
+    }
+
+    private void updateWarning() {
+        if (isDirty()) {
+            if (warningDecor != null) {
+                warningDecor.show();
+            } else {
+                warningDecor  = new ControlDecoration(viewer.getControl(), SWT.RIGHT | SWT.TOP, (Composite) getSection().getClient());
+                warningDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
+                warningDecor.setDescriptionText(Messages.RunBundlesPart_warningHover);
+                warningDecor.setMarginWidth(2);
+                warningDecor.setShowHover(true);
             }
-        } catch (Exception e) {
-            ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
+        } else {
+            if (warningDecor != null) {
+                warningDecor.hide();
+            }
         }
     }
-	@Override
-	public void dispose() {
-	    if (wizardImg != null)
-	        wizardImg.dispose();
-	    super.dispose();
-	}
+
 }

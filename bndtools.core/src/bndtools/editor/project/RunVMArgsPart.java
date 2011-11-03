@@ -60,6 +60,7 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
 
 	    GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 	    gd.heightHint = 75;
+	    gd.widthHint = 50;
 	    textField.setLayoutData(gd);
 
 	    section.setClient(composite);

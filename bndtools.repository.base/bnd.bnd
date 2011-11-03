@@ -14,9 +14,5 @@ Include-Resource:\
 	templates/=${target}/templates
 
 Private-Package: bndtools.templates
-Import-Package: \
-	bndtools.api.repository,\
-	bndtools.api.repository.impl,\
-	*
 
 -removeheaders: Private-Package

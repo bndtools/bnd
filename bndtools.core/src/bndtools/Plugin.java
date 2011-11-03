@@ -15,14 +15,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
@@ -40,10 +33,9 @@ import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
-import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
-import bndtools.builder.BndProjectNature;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
@@ -60,13 +52,14 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
 
 	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
-	
+
 	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
 	private static volatile Plugin plugin;
 
 	private BundleContext bundleContext;
 	private Activator bndActivator;
+	private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
     private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
@@ -75,87 +68,35 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile Central central;
 
-    private final IResourceChangeListener refreshWorkspaceListener = new IResourceChangeListener() {
-        public void resourceChanged(IResourceChangeEvent event) {
-            int type = event.getType();
-            IResourceDelta delta = event.getDelta();
-            if (delta == null)
-                return;
-
-            final boolean[] cnf = new boolean[] { false };
-            final List<IResource> changedBnds = new LinkedList<IResource>();
-            final List<IProject> newBndProjects = new LinkedList<IProject>();
-
-            try {
-                delta.accept(new IResourceDeltaVisitor() {
-                    public boolean visit(IResourceDelta delta) throws CoreException {
-                        IResource resource = delta.getResource();
-
-                        if (resource.getType() == IResource.ROOT)
-                            return true;
-
-                        if (resource.getType() == IResource.PROJECT) {
-                            if (Project.BNDCNF.equals(resource.getName())) {
-                                IResourceDelta[] affectedChildren = delta.getAffectedChildren();
-                                if ( affectedChildren != null && affectedChildren.length > 0)
-                                    cnf[0] = true;
-                                return false;
-                            } else {
-                                IProject project = (IProject) resource;
-                                if (!project.exists() || !project.isOpen())
-                                    return false;
-
-                                if (project.hasNature(BndProjectNature.NATURE_ID)) {
-                                    if ((IResourceDelta.ADDED & delta.getKind()) > 0) {
-                                        boolean openFlag = (IResourceDelta.OPEN & delta.getFlags()) > 0;
-                                        newBndProjects.add(project);
-                                        new RequiredObrCheckingJob(project).schedule();
-                                    }
-                                    return true;
-                                }
-                                return false;
-                            }
-                        }
-
-                        if (Project.BNDFILE.equals(resource.getName())) {
-                            if ((IResourceDelta.CHANGED | delta.getKind()) > 0) {
-                                if ((delta.getFlags() & IResourceDelta.CONTENT) > 0)
-                                    changedBnds.add(resource);
-                            }
-                        }
-
-                        return false;
-                    }
-                });
-            } catch (CoreException e) {
-                Plugin.logError("Error processing resource delta", e);
-                return;
-            }
-            if (cnf[0] || !changedBnds.isEmpty())
-                new UpdateClasspathJob(cnf[0], changedBnds).schedule();
-        }
-    };
 
     @Override
     public void start(BundleContext context) throws Exception {
-	    registerWorkspaceURLHandler(context);
-		super.start(context);
-		plugin = this;
-		this.bundleContext = context;
+        registerWorkspaceURLHandler(context);
+        super.start(context);
+        plugin = this;
+        this.bundleContext = context;
 
-		bndActivator = new Activator();
-		bndActivator.start(context);
+        bndActivator = new Activator();
+        bndActivator.start(context);
 
-		indexerTracker = new IndexerTracker(context);
-		indexerTracker.open();
+        indexerTracker = new IndexerTracker(context);
+        indexerTracker.open();
 
-		central = new Central();
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(refreshWorkspaceListener);
+        registerWorkspaceServiceFactory(context);
 
-		repositoryModel = new RepositoryModel();
+        central = new Central();
 
-		runStartupParticipants();
-	}
+        repositoryModel = new RepositoryModel();
+
+        runStartupParticipants();
+    }
+
+    private void registerWorkspaceServiceFactory(BundleContext context) {
+        Properties props = new Properties();
+        props.put("name", "bndtools");
+
+        context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
+    }
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
 	    workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
@@ -166,18 +107,35 @@ public class Plugin extends AbstractUIPlugin {
 	    urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
-	private void runStartupParticipants() {
-	    IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
+    private void runStartupParticipants() {
+        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
 
         for (IConfigurationElement element : elements) {
             try {
-                Runnable participant = (Runnable) element.createExecutableExtension("class");
-                participant.run();
+                Object obj = element.createExecutableExtension("class");
+                if (obj instanceof Runnable) {
+                    Runnable participant = (Runnable) obj;
+                    participant.run();
+                } else if (obj instanceof IStartupParticipant) {
+                    IStartupParticipant isp = (IStartupParticipant) obj;
+                    startupParticipants.add(isp);
+                    isp.start();
+                }
             } catch (CoreException e) {
                 logError("Error executing startup participant", e);
             }
         }
-	}
+    }
+
+    private void stopStartupParticipants() {
+        for (IStartupParticipant isp : startupParticipants) {
+            try {
+                isp.stop();
+            } catch (Exception e) {
+                logError("Error stopping startup participant", e);
+            }
+        }
+    }
 
 	private void unregisterWorkspaceURLHandler() {
 	    urlHandlerReg.unregister();
@@ -186,16 +144,16 @@ public class Plugin extends AbstractUIPlugin {
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(refreshWorkspaceListener);
+        stopStartupParticipants();
 
-		bndActivator.stop(context);
-		central.close();
-		indexerTracker.close();
-		this.bundleContext = null;
-		plugin = null;
-		super.stop(context);
-		unregisterWorkspaceURLHandler();
-	}
+        bndActivator.stop(context);
+        central.close();
+        indexerTracker.close();
+        this.bundleContext = null;
+        plugin = null;
+        super.stop(context);
+        unregisterWorkspaceURLHandler();
+    }
 
 	public static Plugin getDefault() {
 		return plugin;

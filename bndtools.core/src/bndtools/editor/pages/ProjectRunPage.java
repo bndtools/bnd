@@ -1,8 +1,7 @@
 package bndtools.editor.pages;
 
-
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -13,14 +12,15 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.editor.IPageFactory;
-import bndtools.editor.common.MDSashForm;
+import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
-import bndtools.editor.project.LaunchPart;
+import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
 import bndtools.editor.project.RunPropertiesPart;
+import bndtools.editor.project.RunRequirementsPart;
 import bndtools.editor.project.RunVMArgsPart;
 import bndtools.utils.MessageHyperlinkAdapter;
 
@@ -34,80 +34,128 @@ public class ProjectRunPage extends FormPage {
         }
     };
 
-	public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
-		super(editor, id, title);
-		this.model = model;
-	}
-	@Override
-	protected void createFormContent(IManagedForm managedForm) {
-		managedForm.setInput(model);
+    public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
+        super(editor, id, title);
+        this.model = model;
+    }
 
-		FormToolkit tk = managedForm.getToolkit();
-		ScrolledForm form = managedForm.getForm();
-		form.setText("Run");
-		tk.decorateFormHeading(form.getForm());
-		form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+    @Override
+    protected void createFormContent(IManagedForm managedForm) {
+        managedForm.setInput(model);
 
-		// Create Controls
-		Composite body = form.getBody();
+        FormToolkit tk = managedForm.getToolkit();
+        final ScrolledForm form = managedForm.getForm();
+        form.setText("Run");
+        tk.decorateFormHeading(form.getForm());
+        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
-		MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
-		tk.adapt(sashForm, false, false);
-		sashForm.setSashWidth(6);
+        RunAction runAction = new RunAction(this, "run");
+        runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
+        runAction.setText("Run OSGi");
+        ActionContributionItem runContrib = new ActionContributionItem(runAction);
+        runContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        form.getToolBarManager().add(runContrib);
 
-		Composite panel1 = tk.createComposite(sashForm);
-		Composite panel2 = tk.createComposite(sashForm);
+        RunAction debugAction = new RunAction(this, "debug");
+        debugAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/debug.gif"));
+        debugAction.setText("Debug OSGi");
+        ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
+        debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        form.getToolBarManager().add(debugContrib);
 
-		RunFrameworkPart runFwkPart = new RunFrameworkPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED);
-		managedForm.addPart(runFwkPart);
+        form.getToolBarManager().update(true);
 
-		RunBundlesPart runBundlesPart = new RunBundlesPart(panel1, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
-		managedForm.addPart(runBundlesPart);
+        GridLayout gl;
+        GridData gd;
 
-		LaunchPart launchPart = new LaunchPart(panel2, tk, Section.TITLE_BAR | Section.EXPANDED);
-		managedForm.addPart(launchPart);
+        // Create Controls
+        final Composite body = form.getBody();
+//        TableWrapLayout twl = new TableWrapLayout();
+//        twl.numColumns = 1;
+//        twl.makeColumnsEqualWidth = true;
+//        body.setLayout(twl);
+        gl = new GridLayout(2, true);
+        body.setLayout(gl);
 
-        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
-		managedForm.addPart(runPropertiesPart);
+        final Composite left = tk.createComposite(body);
+//        TableWrapData twd;
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+//        left.setLayoutData(twd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        left.setLayoutData(gd);
+//        twl = new TableWrapLayout();
+//        twl.numColumns = 1;
+//        left.setLayout(twl);
+        gl = new GridLayout(1, true);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        left.setLayout(gl);
 
-		RunVMArgsPart vmArgsPart = new RunVMArgsPart(panel2, tk, Section.TITLE_BAR | Section.TWISTIE);
-		managedForm.addPart(vmArgsPart);
+        final Composite right = tk.createComposite(body);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+//        right.setLayoutData(twd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        right.setLayoutData(gd);
+//        twl = new TableWrapLayout();
+//        twl.numColumns = 1;
+//        right.setLayout(twl);
+        gl = new GridLayout(1, true);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        right.setLayout(gl);
 
-		sashForm.hookResizeListener();
 
-		// Layout
-		GridLayout layout;
-		GridData gd;
 
-		body.setLayout(new FillLayout());
-
-		gd = new GridData(SWT.FILL, SWT.TOP, false, true);
-		panel1.setLayoutData(gd);
-
-		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 10;
-		panel1.setLayout(layout);
-
-		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 10;
-		panel2.setLayout(layout);
-
-		gd = new GridData(SWT.FILL, SWT.TOP, false, true);
-		panel2.setLayoutData(gd);
-
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        // First column
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(reposPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
+//        twd.maxWidth = 200;
+//        twd.heightHint = 200;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = 50;
+        reposPart.getSection().setLayoutData(gd);
+//
+        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        managedForm.addPart(runFwkPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
+//        twd.maxWidth = 200;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runFwkPart.getSection().setLayoutData(gd);
-
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		runBundlesPart.getSection().setLayoutData(gd);
-
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		launchPart.getSection().setLayoutData(gd);
-
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		runPropertiesPart.getSection().setLayoutData(gd);
-
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+//
+//
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
+        managedForm.addPart(runPropertiesPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
+//        twd.maxWidth = 200;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        runPropertiesPart.getSection().setLayoutData(gd);
+//
+//
+        RunVMArgsPart vmArgsPart = new RunVMArgsPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        managedForm.addPart(vmArgsPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
+//        twd.maxWidth = 200;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         vmArgsPart.getSection().setLayoutData(gd);
-	};
+
+        // Second column
+        RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(requirementsPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+//        requirementsPart.getSection().setLayoutData(twd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = 50;
+        requirementsPart.getSection().setLayoutData(gd);
+
+        RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
+        managedForm.addPart(runBundlesPart);
+//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+//        runBundlesPart.getSection().setLayoutData(twd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        runBundlesPart.getSection().setLayoutData(gd);
+
+    };
 }
