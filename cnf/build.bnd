@@ -1,5 +1,6 @@
 # We use git
-Git-Descriptor: ${system;git rev-list --max-count=1 HEAD}
+Git-Descriptor: ${system;git describe --dirty --always}
+Git-SHA: ${system;git rev-list -1 HEAD}
 
 # Very general
 project.dependson       = ${p-dependson;:}
