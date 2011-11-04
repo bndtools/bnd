@@ -24,25 +24,6 @@
    />
    
    <!-- Popup Menus -->
-   <!--
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            adaptable="false"
-            id="bndtools.makeBundleContribution"
-            nameFilter="*.bnd"
-            objectClass="org.eclipse.core.resources.IFile">
-         <action
-               class="bndtools.MakeBundleWithRefreshAction"
-               enablesFor="+"
-               id="bndtools.makeBundle"
-               label="Make Bundle"
-               menubarPath="additions"
-               tooltip="Create a bundle from this definition file">
-         </action>
-      </objectContribution>
-   </extension>
-   -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -82,7 +63,7 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="bndtools.wizardCategory"
-            name="OSGi">
+            name="Bndtools">
       </category>
       <wizard
             id="bndtools.newBndFile"
@@ -106,7 +87,7 @@
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
             icon="icons/bricks.png"
-            name="Bnd OSGi Project"
+            name="Bndtools OSGi Project"
             project="true">
       </wizard>
       <wizard
@@ -124,7 +105,7 @@
          point="org.eclipse.ui.views">
       <category
             id="bndtools.viewCategory"
-            name="Bnd OSGi">
+            name="Bndtools">
       </category>
       <view
             category="bndtools.viewCategory"
@@ -221,13 +202,13 @@
       point="org.eclipse.ui.actionSets">
       <actionSet
          id="bndtools.actions"
-         label="OSGi"
+         label="Bndtools"
          visible="false">
          
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/browser.gif"
             tooltip="Open Web Browser"
             class="org.bndtools.core.actions.OpenBrowserActionDelegate"
@@ -235,7 +216,7 @@
          <action
             id="bndtools.actions.newRunDescriptor"
             label="New OSGi Run Descriptor"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/brick_run_new.gif"
             tooltip="New OSGi Run Descriptor"
             class="bndtools.wizards.bndfile.NewRunDescriptorActionDelegate"
@@ -243,20 +224,11 @@
          <action
             id="bndtools.actions.newBundle"
             label="New Bundle Descriptor"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/brick_new.png"
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />
-         <!--
-         <action
-            id="bndtools.actions.workspace.openMainConfig"
-            label="Open main bnd config"
-            menubarPath="bndtools/config"
-            icon="icons/bndtools-logo-16x16.png"
-            class="bndtools."
-         />
-         -->
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -269,7 +241,7 @@
    </extension>
    <extension
          id="bndnature"
-         name="Bnd OSGi Nature"
+         name="Bndtools Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
@@ -285,7 +257,7 @@
    </extension>
    <extension
          id="bndbuilder"
-         name="Bnd OSGi Builder"
+         name="Bndtools Builder"
          point="org.eclipse.core.resources.builders">
       <builder
             callOnEmptyDelta="true"
@@ -306,7 +278,7 @@
                enablesFor="+"
                icon="icons/bnd_nature_add.png"
                id="bndtools.addBndNatureAction"
-               label="Add Bnd OSGi Project Nature"
+               label="Add Bndtools Project Nature"
                menubarPath="additions"
                style="push">
          </action>
@@ -334,7 +306,7 @@
                enablesFor="1"
                icon="icons/bnd_nature_remove.png"
                id="bndtools.removeBndNatureAction"
-               label="Remove Bnd OSGi Project Nature"
+               label="Remove Bndtools Project Nature"
                menubarPath="additions"
                style="push">
          </action>
@@ -356,7 +328,7 @@
             enablesFor="1"
             icon="icons/bnd_nature_add.png"
             id="org.bndtools.adoptPomAction"
-            label="Add OSGi/Bnd Support"
+            label="Add Bndtools Support"
             menubarPath="additions"
             style="push">
          </action>
@@ -365,7 +337,7 @@
    <extension
          point="org.eclipse.core.resources.markers"
          id="bndproblem"
-         name="Bnd OSGi Problem Marker">
+         name="Bndtools Problem Marker">
       <persistent
             value="true">
       </persistent>
@@ -374,7 +346,7 @@
       </super>
    </extension>
    <extension point="org.eclipse.ui.perspectiveExtensions">
-      <!-- Add lots of lovely OSGi stuff to the Java perspective -->
+      <!-- Add lots of lovely Bndtools stuff to the Java perspective -->
       <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
          <newWizardShortcut id="bndtools.newProjWiz"/>
          <newWizardShortcut id="bndtools.newWrapProjWiz"/>
@@ -383,7 +355,7 @@
          <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
       
-      <!-- Add a way back to the OSGi perspective from the Debug perspective -->
+      <!-- Add a way back to the Bndtools perspective from the Debug perspective -->
       <perspectiveExtension targetID="org.eclipse.debug.ui.DebugPerspective">
          <viewShortcut id="bndtools.impExpView"/>
          <perspectiveShortcut id="bndtools.perspective"/>
@@ -489,7 +461,7 @@
    <extension point="org.eclipse.debug.core.sourceLocators">
       <sourceLocator
          id="org.bndtools.core.launch.BndDependencySourceLookupDirector"
-         name="OSGi Source Lookup Director"
+         name="Bndtools Source Lookup Director"
          class="bndtools.launch.BndDependencySourceLookupDirector"
       />
    </extension>
@@ -576,7 +548,7 @@
        <page
              class="bndtools.preferences.ui.BndPreferencePage"
              id="bndtools.prefPages.basic"
-             name="Bnd OSGi Tools">
+             name="Bndtools OSGi">
        </page>
     </extension>
     <extension
