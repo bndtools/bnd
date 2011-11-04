@@ -57,16 +57,6 @@ public class OBRTest extends TestCase {
 		assertEquals(this.obr.getCacheDirectory(), obr2.getCacheDirectory());
 	}
 	
-	public void testInvalidProperties() {
-		OBR obr2 = new OBR();
-		try {
-			obr2.setProperties(new HashMap<String, String>());
-			fail("Should throw IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// Expected
-		}
-	}
-	
 	public void testCacheDirectoryNotSpecified() {
 		OBR obr2 = new OBR();
 		
@@ -101,7 +91,7 @@ public class OBRTest extends TestCase {
 		assertEquals(1, files.length);
 
 		assertNotNull(files[0]);
-		assertEquals("bundles_dummybundle.jar", files[0].getName());
+		assertEquals("dummybundle.jar", files[0].getName());
 	}
 	
 	public void testGetBsnLowest() throws Exception {

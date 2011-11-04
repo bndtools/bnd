@@ -147,7 +147,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	private URLConnector getConnector() {
 		URLConnector connector;
 		synchronized (this) {
-			connector = registry.getPlugin(URLConnector.class);
+			connector = registry != null ? registry.getPlugin(URLConnector.class) : null;
 		}
 		if (connector == null)
 			connector = new DefaultURLConnector();
