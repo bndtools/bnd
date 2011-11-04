@@ -1,5 +1,6 @@
-package test.lib.deployer.obr;
+package test;
 
+import test.lib.deployer.obr.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 

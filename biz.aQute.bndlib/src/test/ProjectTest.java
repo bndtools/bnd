@@ -40,17 +40,19 @@ public class ProjectTest extends TestCase {
 		stale(bottom,true);
 		assertTrue(top.isStale());
 		assertTrue(bottom.isStale());
-		
+		Thread.sleep(1000);
 		stale(top, false);
 		stale(bottom, true);
 		assertTrue(top.isStale());
 		assertTrue(bottom.isStale());
 		
+		Thread.sleep(1000);
 		stale(top, true);
 		stale(bottom, false);
 		assertTrue(top.isStale());
 		assertFalse(bottom.isStale());
 		
+		Thread.sleep(1000);
 		stale(top, false);
 		stale(bottom, false);
 		assertFalse(top.isStale());
