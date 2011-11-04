@@ -28,40 +28,47 @@ public class ProjectTest extends TestCase {
 	
 	public void testIsStale() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
-		Project pstale = ws.getProject("p-stale");
-		assertNotNull(pstale);
-		Project pstaledep = ws.getProject("p-stale-dep");
-		assertNotNull(pstaledep);
+		Project top = ws.getProject("p-stale");
+		assertNotNull(top);
+		Project bottom = ws.getProject("p-stale-dep");
+		assertNotNull(bottom);
 		
-		long lastModified = pstaledep.lastModified();
-		File f = pstaledep.getBuildFiles(false)[0];
+		long lastModified = bottom.lastModified();
+		top.getPropertiesFile().setLastModified(lastModified+1000);
 		
-		// Make sure the build < modified (stale)
-		f.setLastModified(lastModified-10000);
-		assertTrue( pstaledep.isStale());
+		stale(top,true);
+		stale(bottom,true);
+		assertTrue(top.isStale());
+		assertTrue(bottom.isStale());
 		
+		stale(top, false);
+		stale(bottom, true);
+		assertTrue(top.isStale());
+		assertTrue(bottom.isStale());
 		
-		// Make sure the build > modified (not stale)
-		f.setLastModified(lastModified+10000);		
-		assertFalse( pstaledep.isStale());
+		stale(top, true);
+		stale(bottom, false);
+		assertTrue(top.isStale());
+		assertFalse(bottom.isStale());
 		
-		// No pstale depends on pstale-dep
-		// first make it not stale
-		File bnd = pstaledep.getPropertiesFile();
-		bnd.setLastModified(lastModified+5000);
-		File fdep = pstaledep.getBuildFiles()[0];
-		fdep.setLastModified(lastModified+10000);		
-		assertFalse( pstaledep.isStale());
-		
-		// Make sure the build < modified (stale)
-		// now pstale most be stale
-		f.setLastModified(lastModified-10000);
-		assertTrue( pstale.isStale());
-		
+		stale(top, false);
+		stale(bottom, false);
+		assertFalse(top.isStale());
+		assertFalse(bottom.isStale());
 	}
 	
 	
 	
+	private void stale(Project project, boolean b) throws Exception {
+		File file = project.getBuildFiles(false)[0];
+		if ( b ) 
+			file.setLastModified(project.lastModified()-10000);
+		else
+			file.setLastModified(project.lastModified()+10000);
+	}
+
+
+
 	/**
 	 * Check multiple repos
 	 * 
