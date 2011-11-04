@@ -80,8 +80,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
             try {
                 File newFile = repository.put(jar);
 
-                RefreshFileJob refreshJob = new RefreshFileJob(newFile);
-                if(refreshJob.isFileInWorkspace())
+                RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
+                if(refreshJob.needsToSchedule())
                     refreshJob.schedule();
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));

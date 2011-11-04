@@ -387,8 +387,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
 
-        RefreshFileJob refreshJob = new RefreshFileJob(file);
-        refreshJob.schedule(100);
+        RefreshFileJob refreshJob = new RefreshFileJob(file, false);
+        if (refreshJob.needsToSchedule())
+            refreshJob.schedule(100);
 
         return path;
     }
