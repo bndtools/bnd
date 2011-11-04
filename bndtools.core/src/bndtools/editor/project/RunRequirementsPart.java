@@ -62,6 +62,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
@@ -189,11 +190,14 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private Requirement createRequirement(Object elem) {
         String bsn = null;
+        Version version = null;
 
         if (elem instanceof RepositoryBundle) {
             bsn = ((RepositoryBundle) elem).getBsn();
         } else if (elem instanceof RepositoryBundleVersion) {
-            bsn = ((RepositoryBundleVersion) elem).getBundle().getBsn();
+            RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
+            bsn = rbv.getBundle().getBsn();
+            version = rbv.getVersion();
         } else if (elem instanceof ProjectBundle) {
             bsn = ((ProjectBundle) elem).getBsn();
         }
@@ -201,6 +205,11 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         if (bsn != null) {
             StringBuilder filterBuilder = new StringBuilder();
             ObrFilterUtil.appendBsnFilter(filterBuilder, bsn);
+            if (version != null) {
+                filterBuilder.insert(0, "(&");
+                filterBuilder.append("(version>=").append(version).append(")");
+                filterBuilder.append(")");
+            }
             Requirement requirement = obrModelHelper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
             return requirement;
         }
