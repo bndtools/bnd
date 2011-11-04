@@ -7,10 +7,7 @@ import java.util.Set;
 
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.util.LocalSelectionTransfer;
-import org.eclipse.jface.viewers.ColumnPixelData;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
@@ -26,6 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -120,13 +118,13 @@ public class RepositorySelectionPart extends BndEditorPart {
         });
 
         Composite treeContainer = new Composite(container, SWT.NONE);
-        TreeColumnLayout treeLayout = new TreeColumnLayout();
-        treeContainer.setLayout(treeLayout);
+//        TreeColumnLayout treeLayout = new TreeColumnLayout();
+        treeContainer.setLayout(new FillLayout());
         treeContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        Tree tree = new Tree(treeContainer, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
-        toolkit.adapt(tree);
-        toolkit.paintBordersFor(tree);
+        Tree tree = toolkit.createTree(treeContainer, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
+        tree.setHeaderVisible(true);
+        tree.setLinesVisible(false);
 
         ControlDecoration treeDecoration = new ControlDecoration(tree, SWT.RIGHT | SWT.TOP, container);
         treeDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
@@ -140,13 +138,19 @@ public class RepositorySelectionPart extends BndEditorPart {
         final Color enabledColor = section.getDisplay().getSystemColor(SWT.COLOR_BLACK);
         final Color disabledColor = section.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
+        TreeColumn colSelected = new TreeColumn(tree, SWT.CENTER);
+        colSelected.setWidth(45);
+        colSelected.setMoveable(false);
+        colSelected.setResizable(false);
+
         TreeColumn colName = new TreeColumn(tree, SWT.NONE);
         colName.setText("Name");
-        treeLayout.setColumnData(colName, new ColumnWeightData(85, true));
+        colName.setWidth(450);
+        colName.setMoveable(false);
+        colName.setResizable(true);
 
-        TreeColumn colSelected = new TreeColumn(tree, SWT.CENTER);
-        colSelected.setText("Selected");
-        treeLayout.setColumnData(colSelected, new ColumnPixelData(19, false));
+//        treeLayout.setColumnData(colSelected, new ColumnPixelData(20, true));
+//        treeLayout.setColumnData(colName, new ColumnWeightData(85, true));
 
         viewer.setLabelProvider(new StyledCellLabelProvider() {
             @Override
@@ -161,7 +165,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                 if (element instanceof RepositoryPlugin) {
                     RepositoryPlugin repo = (RepositoryPlugin) element;
                     boolean included = isIncludedRepo(repo);
-                    if (column == 0) {
+                    if (column == 1) {
                         label = repo.getName();
 
                         image = repoImg;
@@ -169,7 +173,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                             if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
                                 image = projectImg;
                         }
-                    } else if (column == 1) {
+                    } else if (column == 0) {
                         image = included ? checkedImg : uncheckedImg;
                     }
                     foreground = included ? enabledColor : disabledColor;
@@ -177,7 +181,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                     RepositoryBundle bundle = (RepositoryBundle) element;
                     RepositoryPlugin repo = bundle.getRepo();
 
-                    if (column == 0) {
+                    if (column == 1) {
                         label = bundle.getBsn();
                         image = bundleImg;
                     }
@@ -185,7 +189,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                 } else if (element instanceof RepositoryBundleVersion) {
                     RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
                     RepositoryPlugin repo = bundleVersion.getBundle().getRepo();
-                    if (column == 0)
+                    if (column == 1)
                         label = bundleVersion.getVersion().toString();
                     foreground = isIncludedRepo(repo) ? enabledColor : disabledColor;
                 } else {
