@@ -4,7 +4,7 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.1.0.BETA-${tstamp;yyyyMMdd-HHmm}
+Bundle-Version: 1.0.0.RC1-${tstamp;yyyyMMdd-HHmm}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\

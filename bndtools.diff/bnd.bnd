@@ -1,5 +1,5 @@
-baseversion: 0.0.1
-version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
+baseversion: 1.0.0.RC1
+version: ${baseversion}-${tstamp;yyyyMMdd-HHmm}
 bndlibver: 1.0.0
 
 Test: true
