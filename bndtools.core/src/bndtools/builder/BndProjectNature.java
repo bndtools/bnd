@@ -10,76 +10,131 @@
  *******************************************************************************/
 package bndtools.builder;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
+import bndtools.classpath.BndContainerInitializer;
 
 public class BndProjectNature implements IProjectNature {
 
-	public static final String NATURE_ID = Plugin.PLUGIN_ID + ".bndnature";
+    public static final String NATURE_ID = Plugin.PLUGIN_ID + ".bndnature";
 
-	private IProject project;
+    private IProject project;
 
-	public void configure() throws CoreException {
-		final IProjectDescription desc = project.getDescription();
-		ICommand[] commands = desc.getBuildSpec();
+    public IProject getProject() {
+        return project;
+    }
 
-		for (ICommand command : commands) {
-			if(command.getBuilderName().equals(NewBuilder.BUILDER_ID))
-				return;
-		}
+    public void setProject(IProject project) {
+        this.project = project;
+    }
 
-		ICommand[] nu = new ICommand[commands.length + 1];
-		System.arraycopy(commands, 0, nu, 0, commands.length);
+    public void configure() throws CoreException {
+        final IProjectDescription desc = project.getDescription();
+        addBuilder(desc);
+        updateProject(desc, true);
+    }
 
-		ICommand command = desc.newCommand();
-		command.setBuilderName(NewBuilder.BUILDER_ID);
-		nu[commands.length] = command;
-		desc.setBuildSpec(nu);
+    public void deconfigure() throws CoreException {
+        IProjectDescription desc = project.getDescription();
+        removeBuilder(desc);
+        updateProject(desc, false);
+    }
 
-		doSetProjectDesc(desc);
-	}
+    private void addBuilder(IProjectDescription desc) {
+        ICommand[] commands = desc.getBuildSpec();
+        for (ICommand command : commands) {
+            if (command.getBuilderName().equals(NewBuilder.BUILDER_ID))
+                return;
+        }
 
-	void doSetProjectDesc(final IProjectDescription desc)
-			throws CoreException {
-		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
-			public void run(IProgressMonitor monitor) throws CoreException {
-				project.setDescription(desc, monitor);
-			}
-		};
-		project.getWorkspace().run(runnable, null);
-	}
+        ICommand[] nu = new ICommand[commands.length + 1];
+        System.arraycopy(commands, 0, nu, 0, commands.length);
 
-	public void deconfigure() throws CoreException {
-		IProjectDescription desc = project.getDescription();
-		ICommand[] commands = desc.getBuildSpec();
-		List<ICommand> nu = new ArrayList<ICommand>();
+        ICommand command = desc.newCommand();
+        command.setBuilderName(NewBuilder.BUILDER_ID);
+        nu[commands.length] = command;
+        desc.setBuildSpec(nu);
+    }
 
-		for (ICommand command : commands) {
-			if(!command.getBuilderName().equals(NewBuilder.BUILDER_ID)) {
-				nu.add(command);
-			}
-		}
+    private void removeBuilder(IProjectDescription desc) {
+        ICommand[] commands = desc.getBuildSpec();
+        List<ICommand> nu = new ArrayList<ICommand>();
+        for (ICommand command : commands) {
+            if (!command.getBuilderName().equals(NewBuilder.BUILDER_ID)) {
+                nu.add(command);
+            }
+        }
+        desc.setBuildSpec(nu.toArray(new ICommand[nu.size()]));
+    }
 
-		desc.setBuildSpec(nu.toArray(new ICommand[nu.size()]));
-		doSetProjectDesc(desc);
-	}
+    private void ensureBndBndExists() throws CoreException {
+        IFile bndfile = project.getFile(Project.BNDFILE);
+        if (!bndfile.exists())
+            bndfile.create(new ByteArrayInputStream(new byte[0]), false, null);
+    }
 
-	public IProject getProject() {
-		return project;
-	}
+    private void installBndClasspath() throws CoreException {
+        IJavaProject javaProject = JavaCore.create(project);
+        IClasspathEntry[] classpath = javaProject.getRawClasspath();
+        for (IClasspathEntry entry : classpath) {
+            if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && BndContainerInitializer.PATH_ID.equals(entry.getPath()))
+                return; // already installed
+        }
 
-	public void setProject(IProject project) {
-		this.project = project;
-	}
+        IClasspathEntry[] newEntries = new IClasspathEntry[classpath.length + 1];
+        System.arraycopy(classpath, 0, newEntries, 0, classpath.length);
+        newEntries[classpath.length] = JavaCore.newContainerEntry(BndContainerInitializer.PATH_ID);
+
+        javaProject.setRawClasspath(newEntries, null);
+    }
+
+    private void removeBndClasspath() throws CoreException {
+        IJavaProject javaProject = JavaCore.create(project);
+        IClasspathEntry[] classpath = javaProject.getRawClasspath();
+        List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(classpath.length);
+
+        boolean changed = false;
+        for (IClasspathEntry entry : classpath) {
+            if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && BndContainerInitializer.PATH_ID.equals(entry.getPath())) {
+                changed = true;
+            } else {
+                newEntries.add(entry);
+            }
+        }
+
+        if (changed)
+            javaProject.setRawClasspath(newEntries.toArray(new IClasspathEntry[newEntries.size()]), null);
+    }
+
+    private void updateProject(final IProjectDescription desc, final boolean adding) throws CoreException {
+        IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+            public void run(IProgressMonitor monitor) throws CoreException {
+                project.setDescription(desc, monitor);
+                if (adding) {
+                    ensureBndBndExists();
+                    installBndClasspath();
+                } else {
+                    removeBndClasspath();
+                }
+            }
+        };
+        project.getWorkspace().run(runnable, null);
+    }
 
 }
