@@ -20,24 +20,26 @@ public class RefreshFileJob extends WorkspaceJob {
     private final int depth;
 
     public RefreshFileJob(File file, boolean derived) throws Exception {
-        super("Refreshing file");
+        super("Refreshing " + file);
         this.file = file;
         this.derived = derived;
 
         IPath wsPath = Central.toPath(file);
         IResource target;
-        if (wsPath == null)
+        if (wsPath == null) {
             target = null;
-        else
-            target = ResourcesPlugin.getWorkspace().getRoot().findMember(wsPath);
-
-        if (!file.isDirectory() && !file.isFile()) {
-            // File has been deleted or is something else, e.g a pipe. Check the parent folder
-            target = target.getParent();
-            this.depth = 1;
-        } else {
             this.depth = 0;
+        } else if (file.isFile()) {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFile(wsPath);
+            this.depth = 0;
+        } else if (file.isDirectory()) {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath);
+            this.depth = IResource.DEPTH_INFINITE;
+        } else {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath.removeLastSegments(1));
+            this.depth = IResource.DEPTH_INFINITE;
         }
+
         this.resource = target;
     }
 
