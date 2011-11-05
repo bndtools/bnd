@@ -4,6 +4,7 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
+Bundle-Vendor: Bndtools
 Bundle-Version: 1.0.0.RC1-${tstamp;yyyyMMdd-HHmm}
 
 Include-Resource:\

@@ -4,6 +4,7 @@ bndlibver: 1.0.0
 
 Test: true
 Bundle-SymbolicName: bndtools.diff
+Bundle-Vendor: Bndtools
 Bundle-Version: ${version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
