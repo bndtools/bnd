@@ -51,7 +51,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         try {
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
             if (dynamic)
-                registerLaunchPropertiesRegenerator(LaunchUtils.getBndProject(configuration), launch);
+                registerLaunchPropertiesRegenerator(model, launch);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }
@@ -61,14 +61,14 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
         boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
-        
+
         if (clean) {
             File storage = bndLauncher.getStorageDir();
             if (storage.exists()) {
                 deleteRecursively(storage);
             }
         }
-        
+
         bndLauncher.setKeep(!clean);
 
         bndLauncher.setTrace(enableTraceOption(configuration));
@@ -82,7 +82,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             f.delete();
         }
     }
-    
+
     /**
      * Registers a resource listener with the project model file to update the
      * launcher when the model or any of the run-bundles changes. The resource
@@ -150,7 +150,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     update.compareAndSet(false, targetPathChanged);
 
                     if(update.get()) {
-                        project.refresh();
+                        project.forceRefresh();
+                        project.setChanged();
                         bndLauncher.update();
                     }
                 } catch (Exception e) {

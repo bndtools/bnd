@@ -7,7 +7,7 @@ import org.eclipse.jface.viewers.Viewer;
 public class StatusTreeContentProvider implements ITreeContentProvider {
 
     public Object[] getElements(Object inputElement) {
-        return getChildren(inputElement);
+        return new Object[] { inputElement };
     }
 
     public void dispose() {
