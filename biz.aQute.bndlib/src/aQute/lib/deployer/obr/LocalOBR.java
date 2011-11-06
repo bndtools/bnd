@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,10 +20,12 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
 
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.reporter.Reporter;
+import aQute.libg.tuple.Pair;
 import aQute.libg.version.Version;
 
 public class LocalOBR extends OBR implements Refreshable, Participant {
@@ -37,8 +40,8 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 	
 	private List<URL> indexUrls;
 
-	// @GuardedBy("this")
-	private File newFileInCoordination;
+	// @GuardedBy("newFilesInCoordination")
+	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
 
 	@Override
 	public void setReporter(Reporter reporter) {
@@ -135,15 +138,24 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 		return storageRepo.canWrite();
 	}
 	
-	private void beginPut(Jar jar) throws Exception {
+	private File beginPut(Jar jar) throws Exception {
 		File newFile = storageRepo.put(jar);
-		synchronized (this) {
-			newFileInCoordination = newFile;
+		synchronized (newFilesInCoordination) {
+			newFilesInCoordination.add(new Pair<Jar, File>(jar, newFile));
 		}
+		return newFile;
 	}
 	
 	private synchronized void finishPut() throws Exception {
+		reset();
 		regenerateIndex();
+		List<Pair<Jar,File>> clone = new ArrayList<Pair<Jar, File>>(newFilesInCoordination);
+		synchronized (newFilesInCoordination) {
+			newFilesInCoordination.clear();
+		}
+		for (Pair<Jar, File> entry : clone) {
+			fireBundleAdded(entry.a, entry.b);
+		}
 	}
 	
 	public synchronized void ended(Coordination coordination) throws Exception {
@@ -151,19 +163,31 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 	}
 	
 	public void failed(Coordination coordination) throws Exception {
-		newFileInCoordination.delete();
+		ArrayList<Pair<Jar,File>> clone;
+		synchronized (newFilesInCoordination) {
+			clone = new ArrayList<Pair<Jar, File>>(newFilesInCoordination);
+			newFilesInCoordination.clear();
+		}
+		for (Pair<Jar, File> entry : clone) {
+			try {
+				entry.b.delete();
+			} catch (Exception e) {
+				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry.b, e);
+			}
+		}
 	}
 	
 	@Override
 	public synchronized File put(Jar jar) throws Exception {
 		Coordinator coordinator = registry.getPlugin(Coordinator.class);
+		File newFile;
 		if (coordinator != null && coordinator.addParticipant(this)) {
-			beginPut(jar);
+			newFile = beginPut(jar);
 		} else {
-			beginPut(jar);
+			newFile = beginPut(jar);
 			finishPut();
 		}
-		return newFileInCoordination;
+		return newFile;
 	}
 
 	public boolean refresh() {
@@ -173,5 +197,19 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 
 	public File getRoot() {
 		return storageDir;
+	}
+	
+	protected void fireBundleAdded(Jar jar, File file) {
+		if (registry == null)
+			return;
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		for (RepositoryListenerPlugin listener : listeners) {
+			try {
+				listener.bundleAdded(this, jar, file);
+			} catch (Exception e) {
+				if (reporter != null)
+					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+		}
 	}
 }
