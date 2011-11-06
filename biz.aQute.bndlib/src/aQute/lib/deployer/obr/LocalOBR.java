@@ -121,7 +121,7 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 		if (bsns != null) for (String bsn : bsns) {
 			List<Version> versions = storageRepo.versions(bsn);
 			if (versions != null) for (Version version : versions) {
-				File file = storageRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
+				File file = storageRepo.get(bsn, version.toString(), Strategy.EXACT, null);
 				if (file != null)
 					allFiles.add(file.getCanonicalFile());
 			}
