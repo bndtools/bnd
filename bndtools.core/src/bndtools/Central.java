@@ -28,6 +28,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
 
 public class Central {
+
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
 
@@ -294,4 +295,5 @@ public class Central {
 
     public void close() {
     }
+
 }

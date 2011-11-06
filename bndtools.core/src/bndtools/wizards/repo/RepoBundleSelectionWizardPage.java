@@ -39,7 +39,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
-import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -50,6 +49,7 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.model.repo.RepositoryUtils;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 
@@ -269,49 +269,45 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	}
 
     protected void refreshBundleList() throws Exception {
-        Workspace workspace = Central.getWorkspace();
-        workspace.refresh();
-        availableViewer.setInput(workspace);
+        Central.getWorkspace().refresh();
+        availableViewer.setInput(RepositoryUtils.listRepositories(true));
     }
 
-	void doAdd() {
-		IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
-		List<VersionedClause> adding = new ArrayList<VersionedClause>(selection.size());
-		for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
-			Object item = iter.next();
-			if(item instanceof RepositoryBundle) {
-				String bsn = ((RepositoryBundle) item).getBsn();
-				adding.add(new VersionedClause(bsn, new HashMap<String, String>()));
-			} else if(item instanceof RepositoryBundleVersion) {
-				RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-				Map<String,String> attribs = new HashMap<String, String>();
-				attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
-				adding.add(new VersionedClause(bundleVersion.getBundle().getBsn(), attribs));
-			} else if(item instanceof ProjectBundle) {
-				String bsn = ((ProjectBundle) item).getBsn();
-				Map<String,String> attribs = new HashMap<String, String>();
-				attribs.put(Constants.VERSION_ATTRIBUTE, "latest");
-				adding.add(new VersionedClause(bsn, attribs));
-			}
-		}
-		if(!adding.isEmpty()) {
-		    for (VersionedClause clause : adding) {
+    void doAdd() {
+        IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
+        List<VersionedClause> adding = new ArrayList<VersionedClause>(selection.size());
+        for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
+            Object item = iter.next();
+            if (item instanceof RepositoryBundle) {
+                adding.add(RepositoryUtils.convertRepoBundle((RepositoryBundle) item));
+            } else if (item instanceof RepositoryBundleVersion) {
+                adding.add(RepositoryUtils.convertRepoBundleVersion((RepositoryBundleVersion) item));
+            } else if (item instanceof ProjectBundle) {
+                String bsn = ((ProjectBundle) item).getBsn();
+                Map<String, String> attribs = new HashMap<String, String>();
+                attribs.put(Constants.VERSION_ATTRIBUTE, "latest");
+                adding.add(new VersionedClause(bsn, attribs));
+            }
+        }
+        if (!adding.isEmpty()) {
+            for (VersionedClause clause : adding) {
                 selectedBundles.put(clause.getName(), clause);
             }
-			selectedViewer.add(adding.toArray(new Object[adding.size()]));
-			availableViewer.refresh();
-			propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
-		}
-	}
-	void doRemove() {
-		IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
-		for (Object clause : selection.toList()) {
+            selectedViewer.add(adding.toArray(new Object[adding.size()]));
+            availableViewer.refresh();
+            propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
+        }
+    }
+
+    void doRemove() {
+        IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
+        for (Object clause : selection.toList()) {
             selectedBundles.remove(((VersionedClause) clause).getName());
         }
-		selectedViewer.remove(selection.toArray());
-		availableViewer.refresh();
-		propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
-	}
+        selectedViewer.remove(selection.toArray());
+        availableViewer.refresh();
+        propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propSupport.addPropertyChangeListener(listener);

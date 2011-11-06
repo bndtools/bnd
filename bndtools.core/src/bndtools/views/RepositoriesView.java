@@ -1,8 +1,6 @@
 package bndtools.views;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -41,16 +39,14 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
 import bndtools.Activator;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.WrappingObrRepository;
+import bndtools.model.repo.RepositoryUtils;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
@@ -157,7 +153,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         createContextMenu();
 
         // LOAD
-        loadRepositories();
+        viewer.setInput(RepositoryUtils.listRepositories(true));
 
         // LAYOUT
         GridLayout layout = new GridLayout(1,false);
@@ -170,25 +166,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
-    }
-
-    void loadRepositories() {
-        try {
-            Workspace workspace = Central.getWorkspace();
-            List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
-
-            List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
-            repos.add(new WrappingObrRepository(Central.getWorkspaceObrProvider(), null, workspace));
-
-            for (RepositoryPlugin plugin : plugins) {
-                if (!CACHE_REPO.equals(plugin.getName()))
-                    repos.add(plugin);
-            }
-
-            viewer.setInput(repos);
-        } catch (Exception e) {
-            Plugin.logError("Error loading repositories", e);
-        }
     }
 
     @Override
@@ -229,7 +206,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         refreshAction = new Action() {
             @Override
             public void run() {
-                loadRepositories();
+                viewer.setInput(RepositoryUtils.listRepositories(true));
             };
         };
         refreshAction.setText("Refresh");
