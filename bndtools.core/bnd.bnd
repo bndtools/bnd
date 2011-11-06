@@ -27,7 +27,8 @@ felix.obr.packages: \
 	org.kxml2.io;-split-package:=first,\
 	org.xmlpull.v1;-split-package:=first
 
-Private-Package: bndtools,\
+Private-Package:\
+	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
@@ -36,6 +37,7 @@ Private-Package: bndtools,\
 	${felix.obr.packages},\
 	aQute.libg.generics,\
 	aQute.libg.sax.filters,\
+	aQute.libg.tuple,\
 	aQute.lib.io,\
 	aQute.lib.filter,\
 	aQute.lib.deployer,\
@@ -86,7 +88,7 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: biz.aQute.bndlib;version=1.50.1,\
+-buildpath: biz.aQute.bndlib;version=1.50.3,\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\
