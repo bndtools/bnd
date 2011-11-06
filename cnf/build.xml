@@ -23,7 +23,7 @@
 		<dirname property="workspacedir" file="${projectdir}" />
 		<taskdef resource="aQute/bnd/ant/taskdef.properties">
 			<classpath>
-				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-1.45.0.jar"/>
+				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-1.50.1.jar"/>
 				<!--<path location="${workspacedir}/cnf/buildlib/bndtools.bndplugins.repos.jar"/>-->
 			</classpath>
 		</taskdef>
