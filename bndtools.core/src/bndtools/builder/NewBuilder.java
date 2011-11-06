@@ -298,7 +298,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private boolean rebuildIfLocalChanges() throws Exception {
         log(LOG_FULL, "calculating local changes...");
 
-        final Set<File> removedFiles = new HashSet<File>();
         final Set<File> changedFiles = new HashSet<File>();
 
         final IPath targetDirPath = calculateTargetDirPath(model);
@@ -324,18 +323,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
                     if (resource.getType() == IResource.FILE) {
                         File file = resource.getLocation().toFile();
-                        if ((delta.getKind() & IResourceDelta.REMOVED) != 0) {
-                            removedFiles.add(file);
-                        } else {
-                            changedFiles.add(file);
-                        }
+                        changedFiles.add(file);
                     }
 
                     return false;
                 }
             });
-            log(LOG_FULL, "%d local files (outside target) removed: %s", removedFiles.size(), removedFiles);
-            log(LOG_FULL, "%d local files (outside target) changed: %s", changedFiles.size(), changedFiles);
+            log(LOG_FULL, "%d local files (outside target) changed or removed: %s", changedFiles.size(), changedFiles);
         } else {
             log(LOG_BASIC, "no info on local changes available");
         }
@@ -351,9 +345,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 break;
             }
 
-            // Finally if any removed files are in scope for the bundle, we must force it to rebuild
-            // because bnd will not notice the deletion
-            if (!removedFiles.isEmpty() && builder.isInScope(removedFiles)) {
+            // Finally if any removed or changed files are in scope for the bundle, we simply force rebuild
+            if (!changedFiles.isEmpty() && builder.isInScope(changedFiles)) {
                 log(LOG_FULL, "some removed files were in scope for builder %s, will force a rebuild", builder.getBsn());
                 force = true;
                 break;
