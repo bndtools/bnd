@@ -440,7 +440,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
         Collection<Project> dependsOn = model.getDependson();
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
-        result.add(WorkspaceUtils.findCnfProject());
+        IProject cnfProject = WorkspaceUtils.findCnfProject();
+        if (cnfProject != null)
+            result.add(cnfProject);
 
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         for (Project project : dependsOn) {
