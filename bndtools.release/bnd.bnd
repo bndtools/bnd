@@ -1,9 +1,6 @@
-baseversion: 1.0.0.RC1
-version: ${baseversion}-${tstamp;yyyyMMdd-HHmm}
-
 Test: true
 Bundle-SymbolicName: bndtools.release;singleton:=true
-Bundle-Version: ${version}
+Bundle-Version: ${master-version}
 Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

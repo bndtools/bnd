@@ -1,7 +1,6 @@
 -dependson: bndtools.bndplugins
 
-baseversion: 1.0.0.RC1
-version: ${baseversion}-${tstamp;yyyyMMdd-HHmm}
+version: ${master-version}
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: ${version}

@@ -1,3 +1,6 @@
+base-version: 1.0.0.RC2
+master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
+
 # We use git
 Git-Descriptor: ${system;git describe --dirty --always}
 Git-SHA: ${system;git rev-list -1 HEAD}

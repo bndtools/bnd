@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/bndtools.feature_1.0.0.RC1" id="bndtools.feature" version="1.0.0.RC1">
+   <feature url="features/bndtools.feature_1.0.0.RC2" id="bndtools.feature" version="1.0.0.RC2">
       <category name="bndtools"/>
    </feature>
    <category-def name="bndtools" label="Bndtools"/>
