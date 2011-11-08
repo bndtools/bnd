@@ -23,7 +23,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		project.trace("created a aQute launcher plugin");
 		this.project = project;
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
-		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}", propertiesFile.getAbsolutePath()));
+		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
+				propertiesFile.getAbsolutePath()));
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "="
 				+ propertiesFile.getAbsolutePath());
 
@@ -43,8 +44,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		updateFromProject();
 		writeProperties();
 	}
-	
-	
+
 	public int launch() throws Exception {
 		prepare();
 		return super.launch();
@@ -56,7 +56,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		prepared = true;
 		writeProperties();
 	}
-	
+
 	void writeProperties() throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles());
 		OutputStream out = new FileOutputStream(propertiesFile);
@@ -68,7 +68,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	/**
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -89,46 +89,53 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.activators.addAll(getActivators());
 
 		if (!getSystemPackages().isEmpty()) {
-			lc.systemPackages = Processor.printClauses(getSystemPackages());
+			try {
+				lc.systemPackages = Processor.printClauses(getSystemPackages());
+			} catch (Throwable e) {
+				// ignore for now
+			}
 		}
 		return lc;
-		
+
 	}
 
 	/**
 	 * Create a standalone executable
-	 * @throws Exception 
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
+	 * 
+	 * @throws Exception
+	 * @throws IOException
+	 * @throws FileNotFoundException
 	 */
 
 	public Jar executable() throws Exception {
 		Jar jar = new Jar(project.getName());
-		
+
 		Collection<String> runbundles = copyBundles(jar, getRunBundles());
 		LauncherConstants lc = getConstants(runbundles);
 		final Properties p = lc.getProperties();
-		p.setProperty(RUNBUNDLES, Processor.join(runbundles,", \\\n  ") );
+		p.setProperty(RUNBUNDLES, Processor.join(runbundles, ", \\\n  "));
 
 		jar.putResource("descriptor.properties", new WriteResource() {
 			@Override public void write(OutputStream outStream) throws IOException, Exception {
 				p.store(outStream, "comment");
 			}
+
 			@Override public long lastModified() {
 				return 0L;
 			}
 		});
 
 		List<String> paths = Create.list();
-		paths.addAll( getRunpath());
-		paths.add( project.getBundle("biz.aQute.launcher", null, Strategy.HIGHEST, null).getFile().getAbsolutePath());
-		
-		for ( String path : paths) {
+		paths.addAll(getRunpath());
+		paths.add(project.getBundle("biz.aQute.launcher", null, Strategy.HIGHEST, null).getFile()
+				.getAbsolutePath());
+
+		for (String path : paths) {
 			File f = IO.getFile(project.getBase(), path);
 			Jar roll = new Jar(f);
 			jar.addAll(roll);
 		}
-		
+
 		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
 		jar.setManifest(m);
@@ -140,7 +147,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 */
 	private Collection<String> copyBundles(Jar jar, Collection<String> runbundles) {
 		List<String> list = Create.list();
-		
+
 		for (String s : runbundles) {
 			File f = IO.getFile(new File("").getAbsoluteFile(), s);
 			if (!f.isFile()) {

@@ -9,7 +9,7 @@ public class TestIndex extends TestCase {
 
 	
 	public void testPersistence() throws Exception {
-		File test = new File("test.tmp");
+		File test = new File("tmp/test.tmp");
 		test.delete();
 		Index index = new Index(test, 2000);
 		index.insert( new byte[]{1}, 2);
@@ -33,7 +33,7 @@ public class TestIndex extends TestCase {
 	
 	
 	public void testBasic() throws Exception {
-		File test = new File("test.tmp");
+		File test = new File("tmp/test.tmp");
 		test.delete();
 		Index index = new Index(test, 2000);
 		
@@ -49,7 +49,7 @@ public class TestIndex extends TestCase {
 	}
 
 //	public void testMany() throws Exception {
-//		File test = new File("test.tmp");
+//		File test = new File("tmp/test.tmp");
 //		test.delete();
 //		Index index = new Index(test, 1000);
 //		for ( int i = 1; i<127; i++)

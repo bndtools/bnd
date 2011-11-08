@@ -971,7 +971,8 @@ public class Project extends Processor {
 				} catch (UnsupportedOperationException ose) {
 					// We have a plugin that cannot list versions, try
 					// if it has this specific version
-					// The main reaosn for this code was the Maven Remote Repository
+					// The main reaosn for this code was the Maven Remote
+					// Repository
 					// To query, we must have a real version
 					if (!versions.isEmpty() && Verifier.isVersion(range)) {
 						File file = plugin.get(bsn, range, useStrategy, attrs);
@@ -1002,7 +1003,8 @@ public class Project extends Processor {
 					RepositoryPlugin repo = versions.get(provider);
 					String version = provider.toString();
 					File result = repo.get(bsn, version, Strategy.EXACT, attrs);
-					return toContainer(bsn, version, attrs, result);
+					if (result != null)
+						return toContainer(bsn, version, attrs, result);
 				} else
 					error("Unexpected, found versions %s but then not provider for startegy %s?",
 							versions, useStrategy);
@@ -1240,7 +1242,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
-		if (getProperty(NOBUNDLES) != null)
+		if (isNoBundles())
 			return null;
 
 		if (getProperty("-nope") != null) {
@@ -1265,26 +1267,40 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Check if this project needs building
+	 * Check if this project needs building. This is defined as:
+	 * 
 	 */
 	public boolean isStale() throws Exception {
+		// When we do not generate anything ...
+		if (isNoBundles())
+			return false;
+
+		long buildTime = 0;
+
+		files = getBuildFiles(false);
 		if (files == null)
 			return true;
 
-		long localTime = getBuildTime();
-		if (lastModified() > localTime)
-			return true;
+		for (File f : files) {
+			if (f.lastModified() < lastModified())
+				return true;
+
+			if (buildTime < f.lastModified())
+				buildTime = f.lastModified();
+		}
 
 		for (Project dependency : getDependson()) {
 			if (dependency.isStale())
 				return true;
 
-			if (dependency.getBuildTime() > localTime)
-				return true;
+			if (dependency.isNoBundles())
+				continue;
 
-			if (dependency.lastModified() > localTime)
-				return true;
-
+			File[] deps = dependency.getBuildFiles();
+			for (File f : deps) {
+				if (f.lastModified() >= buildTime)
+					return true;
+			}
 		}
 		return false;
 	}
@@ -1296,6 +1312,8 @@ public class Project extends Processor {
 	 * It is a bit yucky, but ant creates different class spaces which makes it
 	 * hard to detect we already build it.
 	 * 
+	 * This method remembers the files in the appropriate instance vars.
+	 * 
 	 * @return
 	 */
 
@@ -1304,6 +1322,9 @@ public class Project extends Processor {
 	}
 
 	public File[] getBuildFiles(boolean buildIfAbsent) throws Exception {
+		if (files != null)
+			return files;
+
 		File f = new File(getTarget(), BUILDFILES);
 		if (f.isFile()) {
 			FileReader fin = new FileReader(f);
@@ -1318,15 +1339,15 @@ public class Project extends Processor {
 					} else
 						files.add(ff);
 				}
-				return files.toArray(new File[files.size()]);
+				return this.files = files.toArray(new File[files.size()]);
 			} finally {
 				fin.close();
 			}
 		}
 		if (buildIfAbsent)
-			return buildLocal(false);
+			return files = buildLocal(false);
 		else
-			return null;
+			return files = null;
 	}
 
 	/**
@@ -1338,7 +1359,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] buildLocal(boolean underTest) throws Exception {
-		if (getProperty(NOBUNDLES) != null)
+		if (isNoBundles())
 			return null;
 
 		long buildtime = System.currentTimeMillis();
@@ -1377,6 +1398,15 @@ public class Project extends Processor {
 			return files;
 		} else
 			return null;
+	}
+
+	/**
+	 * Answer if this project does not have any output
+	 * 
+	 * @return
+	 */
+	public boolean isNoBundles() {
+		return getProperty(NOBUNDLES) != null;
 	}
 
 	public File saveBuild(Jar jar) throws Exception {
@@ -1898,16 +1928,6 @@ public class Project extends Processor {
 	public void unlock() {
 		lockingReason = null;
 		lock.unlock();
-	}
-
-	public long getBuildTime() throws Exception {
-		if (buildtime == 0) {
-
-			files = getBuildFiles();
-			if (files != null && files.length >= 1)
-				buildtime = files[0].lastModified();
-		}
-		return buildtime;
 	}
 
 	/**

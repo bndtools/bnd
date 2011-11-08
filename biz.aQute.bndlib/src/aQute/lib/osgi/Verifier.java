@@ -50,6 +50,7 @@ public class Verifier extends Analyzer {
     final static int                 V1_5      = 49;
     final static int                 V1_6      = 50;
     final static int                 V1_7      = 51;
+    final static int                 V1_8      = 52;
 
     static class EE {
         String name;
@@ -699,11 +700,19 @@ public class Verifier extends Analyzer {
                 error("More than one BSN specified " + bsn);
 
             String name = (String) bsn.keySet().iterator().next();
-            if (!SYMBOLICNAME.matcher(name).matches()) {
+            if (!isBsn(name)) {
                 error("Symbolic Name has invalid format: " + name);
             }
         }
     }
+
+	/**
+	 * @param name
+	 * @return
+	 */
+	public static boolean isBsn(String name) {
+		return SYMBOLICNAME.matcher(name).matches();
+	}
 
     /**
      * <pre>

@@ -20,6 +20,56 @@ import aQute.libg.version.Version;
 
 public class ProjectTest extends TestCase {
 
+	
+	
+	/**
+	 * Check isStale
+	 */
+	
+	public void testIsStale() throws Exception {
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+		Project top = ws.getProject("p-stale");
+		assertNotNull(top);
+		Project bottom = ws.getProject("p-stale-dep");
+		assertNotNull(bottom);
+		
+		long lastModified = bottom.lastModified();
+		top.getPropertiesFile().setLastModified(lastModified+1000);
+		
+		stale(top,true);
+		stale(bottom,true);
+		assertTrue(top.isStale());
+		assertTrue(bottom.isStale());
+		
+		stale(top, false);
+		stale(bottom, true);
+		assertTrue(top.isStale());
+		assertTrue(bottom.isStale());
+		
+		stale(top, true);
+		stale(bottom, false);
+		assertTrue(top.isStale());
+		assertFalse(bottom.isStale());
+		
+//		Thread.sleep(1000);
+//		stale(top, false);
+//		stale(bottom, false);
+//		assertFalse(top.isStale());
+//		assertFalse(bottom.isStale());
+	}
+	
+	
+	
+	private void stale(Project project, boolean b) throws Exception {
+		File file = project.getBuildFiles(false)[0];
+		if ( b ) 
+			file.setLastModified(project.lastModified()-10000);
+		else
+			file.setLastModified(project.lastModified()+10000);
+	}
+
+
+
 	/**
 	 * Check multiple repos
 	 * 

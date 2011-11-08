@@ -1,37 +1,34 @@
 package aQute.lib.deployer.obr;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.osgi.service.bindex.BundleIndexer;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
+import org.osgi.service.coordinator.Coordination;
+import org.osgi.service.coordinator.Coordinator;
+import org.osgi.service.coordinator.Participant;
 
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.reporter.Reporter;
-import aQute.libg.sax.SAXUtil;
-import aQute.libg.sax.filters.MergeContentFilter;
+import aQute.libg.tuple.Pair;
 import aQute.libg.version.Version;
 
-public class LocalOBR extends OBR implements Refreshable {
+public class LocalOBR extends OBR implements Refreshable, Participant {
 	
 	public static final String PROP_LOCAL_DIR = "local";
 	public static final String PROP_READONLY = "readonly";
@@ -42,7 +39,10 @@ public class LocalOBR extends OBR implements Refreshable {
 	private File localIndex;
 	
 	private List<URL> indexUrls;
-	
+
+	// @GuardedBy("newFilesInCoordination")
+	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
+
 	@Override
 	public void setReporter(Reporter reporter) {
 		super.setReporter(reporter);
@@ -91,7 +91,7 @@ public class LocalOBR extends OBR implements Refreshable {
 		}
 	}
 	
-	private void regenerateIndex() throws Exception {
+	private synchronized void regenerateIndex() throws Exception {
 		BundleIndexer indexer = registry.getPlugin(BundleIndexer.class);
 		if (indexer == null)
 			throw new IllegalStateException("Cannot index repository: no Bundle Indexer service or plugin found.");
@@ -121,7 +121,7 @@ public class LocalOBR extends OBR implements Refreshable {
 		if (bsns != null) for (String bsn : bsns) {
 			List<Version> versions = storageRepo.versions(bsn);
 			if (versions != null) for (Version version : versions) {
-				File file = storageRepo.get(bsn, version.toString(), Strategy.HIGHEST, null);
+				File file = storageRepo.get(bsn, version.toString(), Strategy.EXACT, null);
 				if (file != null)
 					allFiles.add(file.getCanonicalFile());
 			}
@@ -138,49 +138,55 @@ public class LocalOBR extends OBR implements Refreshable {
 		return storageRepo.canWrite();
 	}
 	
+	private File beginPut(Jar jar) throws Exception {
+		File newFile = storageRepo.put(jar);
+		synchronized (newFilesInCoordination) {
+			newFilesInCoordination.add(new Pair<Jar, File>(jar, newFile));
+		}
+		return newFile;
+	}
+	
+	private synchronized void finishPut() throws Exception {
+		reset();
+		regenerateIndex();
+		List<Pair<Jar,File>> clone = new ArrayList<Pair<Jar, File>>(newFilesInCoordination);
+		synchronized (newFilesInCoordination) {
+			newFilesInCoordination.clear();
+		}
+		for (Pair<Jar, File> entry : clone) {
+			fireBundleAdded(entry.a, entry.b);
+		}
+	}
+	
+	public synchronized void ended(Coordination coordination) throws Exception {
+		finishPut();
+	}
+	
+	public void failed(Coordination coordination) throws Exception {
+		ArrayList<Pair<Jar,File>> clone;
+		synchronized (newFilesInCoordination) {
+			clone = new ArrayList<Pair<Jar, File>>(newFilesInCoordination);
+			newFilesInCoordination.clear();
+		}
+		for (Pair<Jar, File> entry : clone) {
+			try {
+				entry.b.delete();
+			} catch (Exception e) {
+				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry.b, e);
+			}
+		}
+	}
+	
 	@Override
 	public synchronized File put(Jar jar) throws Exception {
-		File newFile = storageRepo.put(jar);
-		
-		// Index the new file
-		BundleIndexer indexer = registry.getPlugin(BundleIndexer.class);
-		if (indexer == null)
-			throw new IllegalStateException("Cannot index repository: no Bundle Indexer service or plugin found.");
-		ByteArrayOutputStream newIndexBuffer = new ByteArrayOutputStream();
-
-		Map<String, String> config = new HashMap<String, String>();
-		config.put(BundleIndexer.REPOSITORY_NAME, this.getName());
-		config.put(BundleIndexer.ROOT_URL, localIndex.getCanonicalFile().toURI().toURL().toString());
-		indexer.index(Collections.singleton(newFile.getCanonicalFile()), newIndexBuffer, null);
-		
-		// Merge into main index
-		File tempIndex = File.createTempFile("repository", ".xml");
-		FileOutputStream tempIndexOutput = new FileOutputStream(tempIndex);
-		MergeContentFilter merger = new MergeContentFilter();
-		XMLReader reader = SAXUtil.buildPipeline(new StreamResult(tempIndexOutput), new UniqueResourceFilter(), merger);
-		
-		try {
-			// Parse the newly generated index
-			reader.parse(new InputSource(new ByteArrayInputStream(newIndexBuffer.toByteArray())));
-			
-			// Parse the existing index (which may be empty/missing)
-			try {
-				reader.parse(new InputSource(new FileInputStream(localIndex)));
-			} catch (Exception e) {
-				reporter.warning("Existing local index is invalid or missing, overwriting (%s).", localIndex.getAbsolutePath());
-			}
-			
-			merger.closeRootAndDocument();
-		} finally {
-			tempIndexOutput.flush();
-			tempIndexOutput.close();
+		Coordinator coordinator = registry.getPlugin(Coordinator.class);
+		File newFile;
+		if (coordinator != null && coordinator.addParticipant(this)) {
+			newFile = beginPut(jar);
+		} else {
+			newFile = beginPut(jar);
+			finishPut();
 		}
-		IO.copy(tempIndex, localIndex);
-		
-		// Re-read the index
-		reset();
-		init();
-		
 		return newFile;
 	}
 
@@ -191,5 +197,19 @@ public class LocalOBR extends OBR implements Refreshable {
 
 	public File getRoot() {
 		return storageDir;
+	}
+	
+	protected void fireBundleAdded(Jar jar, File file) {
+		if (registry == null)
+			return;
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		for (RepositoryListenerPlugin listener : listeners) {
+			try {
+				listener.bundleAdded(this, jar, file);
+			} catch (Exception e) {
+				if (reporter != null)
+					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+		}
 	}
 }

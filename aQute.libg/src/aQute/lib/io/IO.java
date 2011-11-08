@@ -45,14 +45,15 @@ public class IO {
 			} finally {
 				out.close();
 			}
-		} else if ( a.isDirectory()) {
-			 b.mkdirs();
-			 if ( !b.isDirectory())
-				 throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
-			 File subs[] = a.listFiles();
-			 for ( File sub : subs ) {
-				 copy(sub, new File(b,sub.getName()));
-			 }
+		} else if (a.isDirectory()) {
+			b.mkdirs();
+			if (!b.isDirectory())
+				throw new IllegalArgumentException(
+						"target directory for a directory must be a directory: " + b);
+			File subs[] = a.listFiles();
+			for (File sub : subs) {
+				copy(sub, new File(b, sub.getName()));
+			}
 		} else
 			throw new FileNotFoundException("During copy: " + a.toString());
 	}
@@ -169,5 +170,14 @@ public class IO {
 		} catch (Throwable e) {
 			return e;
 		}
+	}
+
+	public static URL toURL(String s, File base) throws MalformedURLException {
+		int n = s.indexOf(':');
+		if (n > 0 && n < 10) {
+			// is url
+			return new URL(s);
+		}
+		return getFile(base, s).toURI().toURL();
 	}
 }

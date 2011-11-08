@@ -118,11 +118,11 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 							indexHandle.setReporter(reporter);
 							return readIndex(indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
 						} catch (Exception e) {
-							reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
+							if (reporter != null) reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
 						}
 						
 					} catch (MalformedURLException e) {
-						reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), fromUrl, e);
+						if (reporter != null) reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), fromUrl, e);
 					}
 					return false;
 				}
@@ -136,7 +136,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 					File indexFile = indexHandle.request();
 					readIndex(indexLocation.toExternalForm(), new FileInputStream(indexFile), listener);
 				} catch (Exception e) {
-					reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
+					if (reporter != null) reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
 			
@@ -147,7 +147,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 	private URLConnector getConnector() {
 		URLConnector connector;
 		synchronized (this) {
-			connector = registry.getPlugin(URLConnector.class);
+			connector = registry != null ? registry.getPlugin(URLConnector.class) : null;
 		}
 		if (connector == null)
 			connector = new DefaultURLConnector();
@@ -403,8 +403,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 						iter.remove();
 				} catch (IllegalArgumentException e) {
 					synchronized (this) {
-						if (reporter != null)
-							reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
+						if (reporter != null) reporter.error("Error parsing mode filter requirement on resource %s: %s", resource.getUrl(), modeRequire.getFilter());
 					}
 					iter.remove();
 				}
