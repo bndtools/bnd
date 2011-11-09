@@ -40,27 +40,6 @@ public class MavenTest extends TestCase {
 		
 	}
 	
-	/**
-	 * Test reading a pom for the buildpath
-	 * @throws Exception 
-	 */
-	
-	public void testPom() throws Exception{
-		
-		Project project = getProject("maven2");
-		
-		Collection<Container> containers = project.getBuildpath();
-		List<String> files = new ArrayList<String>();
-		for ( Container c : containers ) {
-			files.add( c.getFile().getName());
-		}
-		assertTrue(files.remove("bin"));
-		System.out.println(files);
-		assertTrue( files.contains("com.springsource.org.apache.commons.beanutils-1.6.1.jar"));		
-		assertTrue( files.contains("com.springsource.org.apache.commons.collections-2.1.1.jar"));		
-		assertTrue( files.contains("com.springsource.org.apache.commons.logging-1.0.4.jar"));		
-		
-	}
 	
 	
 	/**
