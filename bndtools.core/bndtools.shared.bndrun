@@ -59,7 +59,7 @@ help.bundles: \
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles:\
-	biz.aQute.bndlib;version=1.49.0,\
+	biz.aQute.bndlib;version=1.51.0,\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	stax2-api,\
