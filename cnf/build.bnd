@@ -1,3 +1,4 @@
+# Master Version Settings
 base-version: 1.0.0.RC2
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 
@@ -5,70 +6,8 @@ master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 Git-Descriptor: ${system;git describe --dirty --always}
 Git-SHA: ${system;git rev-list -1 HEAD}
 
-# Very general
-project.dependson       = ${p-dependson;:}
-project.bootclasspath   = ${p-bootclasspath;:}
-project.buildpath       = ${p-buildpath;:}
-project.sourcepath      = ${p-sourcepath;:}
-project.allsourcepath   = ${p-allsourcepath;:}
-project.output          = ${p-output}
-project.testpath        = ${p-testpath;:}
-
--verbose:     false
-project:      ${basedir}
-src:          src
-bin:          bin
-target:       ${project}/${target-dir}
-build:        ${workspace}/cnf
-repo:         ${workspace}/../repo
-target-dir:   generated
-p:            ${basename;${project}}
-project.name: ${p}
-
-# Eclipse Repo
-eclipse-version:  3.5.2
-eclipse-repo:     ${build}/eclipse-${eclipse-version}
-#eclipse-version:  3.7.1
-#eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
-
-# Java Compiler Options
-java:         java
-javac:        javac
-javac.source: 1.5
-javac.target: 1.5
-javac.debug:  on
-
-# Bnd Options
--sources:       true
--sourcepath:    ${project}/src
-
-common-plugins: bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
-
-# Local OBR
-#-plugin:\
-#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=BndRepoBuild,\
-#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd,\
-#	${common-plugins}
-
-# Remote OBR
--plugin:\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/jars/repository.xml';name='Bnd Build Repository',\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bnd/repo/master/bundles/repository.xml';name='Bnd Repository',\
-	${common-plugins}
-
-# Local FileRepo
-#-plugin:\
-#	aQute.lib.deployer.FileRepo;location=${repo}/bundles;name=Bundles,\
-#	aQute.lib.deployer.FileRepo;location=${repo}/jars;name=Jars,\
-#	${common-plugins}
-
-# Original embedded repo
-#-plugin:\
-#	aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
-#	${common-plugins}
-
+# Recipe for embedded JARs
 -make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
-
 
 # Runtime Options and Variables
 junit:    junit.osgi;version=3.8;export="junit.framework;version=3.8"
