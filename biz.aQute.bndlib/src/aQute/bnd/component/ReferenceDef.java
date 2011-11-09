@@ -6,84 +6,79 @@ import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
+/**
+ * Holds the information in the reference element.
+ */
+
 class ReferenceDef {
-	Version					version;
+	Version					version = AnnotationReader.V1_1;
 	String					name;
-	String					interfce;
+	String					service;
 	ReferenceCardinality	cardinality;
 	ReferencePolicy			policy;
+	ReferencePolicyOption	policyOption;
 	String					target;
 	String					bind;
 	String					unbind;
-	String					modified;
+	String					updated;
 
+	/**
+	 * Prepare the reference, will check for any errors.
+	 * 
+	 * @param analyzer the analyzer to report errors to.
+	 */
 	public void prepare(Analyzer analyzer) {
+		Verifier v = new Verifier();
 		if (name == null)
 			analyzer.error("No name for a reference");
+		
+		if ((updated != null && !updated.equals("-")) || policyOption!= null)
+			version = max(version, AnnotationReader.V1_2);
 
-		if (version == null)
-			version = AnnotationReader.V1_1;
+		if (target != null)
+			v.verifyFilter(target);
 
+		if ( service == null)
+			analyzer.error("No interface specified on %s", name);
+		
+		analyzer.getInfo(v);
 	}
 
+	/**
+	 * Calculate the tag.
+	 * 
+	 * @return a tag for the reference element.
+	 */
 	public Tag getTag() {
 		Tag ref = new Tag("reference");
 		ref.addAttribute("name", name);
 		if (cardinality != null)
-			ref.addAttribute("cardinality", p(cardinality));
-		if (policy != null)
-			ref.addAttribute("policy", p(policy));
+			ref.addAttribute("cardinality", cardinality.toString());
 
-		if (interfce != null)
-			ref.addAttribute("interface", interfce);
+		if (policy != null)
+			ref.addAttribute("policy", policy.toString());
+
+		ref.addAttribute("interface", service);
 
 		if (target != null)
 			ref.addAttribute("target", target);
 
-		if (bind != null)
+		if (bind != null && !"-".equals(bind))
 			ref.addAttribute("bind", bind);
 
-		if (unbind != null)
+		if (unbind != null && !"-".equals(unbind))
 			ref.addAttribute("unbind", unbind);
 
-		if (modified != null) {
-			ref.addAttribute("modified", modified);
-			version = max(version, AnnotationReader.V1_2);
-		}
+		if (updated != null && !"-".equals(updated)) 
+			ref.addAttribute("updated", updated);
 
+		if ( policyOption != null)
+			ref.addAttribute("policy-option", policyOption.toString());
+		
 		return ref;
 	}
 
-	private String p(ReferencePolicy policy) {
-		switch(policy) {
-		case DYNAMIC:
-			return "dynamic";
-			
-		case STATIC:
-			return "static";
-		}
-		return policy.toString();
-	}
-
-	private String p(ReferenceCardinality crd) {
-		switch (crd) {
-		case AT_LEAST_ONE:
-			return "1..n";
-
-		case MANDATORY:
-			return "1..1";
-
-		case MULTIPLE:
-			return "0..n";
-
-		case OPTIONAL:
-			return "0..1";
-
-		}
-		return crd.toString();
-	}
-
-	private <T extends Comparable<T>> T max(T a, T b) {
+	static <T extends Comparable<T>> T max(T a, T b) {
 		int n = a.compareTo(b);
 		if (n >= 0)
 			return a;
