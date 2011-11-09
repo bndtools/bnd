@@ -389,12 +389,6 @@ public class Project extends Processor {
 
 				Container found = null;
 
-				// Check if we have to use the maven pom ...
-				if (bsn.equals("pom")) {
-					doMavenPom(strategyx, result, attrs.get("scope"));
-					continue;
-				}
-
 				String versionRange = attrs.get("version");
 
 				if (versionRange != null) {
@@ -937,7 +931,7 @@ public class Project extends Processor {
 
 		useStrategy = overrideStrategy(attrs, useStrategy);
 
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
 
@@ -1885,7 +1879,8 @@ public class Project extends Processor {
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
 		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
-
+		trace("candidates for tester %s", withDefault);
+		
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
 
@@ -1907,6 +1902,8 @@ public class Project extends Processor {
 				}
 			}
 		}
+		
+		
 		throw new IllegalArgumentException("Default handler for " + header + " not found in "
 				+ defaultHandler);
 	}
