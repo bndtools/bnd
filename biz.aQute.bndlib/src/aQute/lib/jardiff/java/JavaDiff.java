@@ -40,16 +40,16 @@ public class JavaDiff implements Group {
 	public void compare() throws Exception {
 
 		Manifest projectManifest = jarDiff.getNewJar().getManifest();
-		Map<String, Map<String, String>> projectExportedPackages = OSGiHeader.parseHeader(BundleJarDiff.getAttribute(projectManifest, Constants.EXPORT_PACKAGE), null);
-		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader(BundleJarDiff.getAttribute(projectManifest, Constants.IMPORT_PACKAGE), null);
+		Map<String, Map<String, String>> projectExportedPackages = OSGiHeader.parseHeader(JarDiff.getAttribute(projectManifest, Constants.EXPORT_PACKAGE), null);
+		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader(JarDiff.getAttribute(projectManifest, Constants.IMPORT_PACKAGE), null);
 
 		Map<String, Map<String, String>> previousPackages;
 		Map<String, Map<String, String>> previousImportedPackages;
 		Manifest previousManifest = null;
 		if (jarDiff.getOldJar() != null) {
 			previousManifest = jarDiff.getOldJar().getManifest();
-			previousPackages = OSGiHeader.parseHeader(BundleJarDiff.getAttribute(previousManifest, Constants.EXPORT_PACKAGE), null);
-			previousImportedPackages = OSGiHeader.parseHeader(BundleJarDiff.getAttribute(previousManifest, Constants.IMPORT_PACKAGE), null);
+			previousPackages = OSGiHeader.parseHeader(JarDiff.getAttribute(previousManifest, Constants.EXPORT_PACKAGE), null);
+			previousImportedPackages = OSGiHeader.parseHeader(JarDiff.getAttribute(previousManifest, Constants.IMPORT_PACKAGE), null);
 		} else {
 			previousPackages = Collections.emptyMap();
 			previousImportedPackages = Collections.emptyMap();
@@ -493,9 +493,9 @@ public class JavaDiff implements Group {
 		return getImportedPackages(Delta.UNCHANGED, true);
 	}
 
-	public static List<BundleJarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
+	public static List<JarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
 
-		List<BundleJarDiff> diffs = new ArrayList<BundleJarDiff>();
+		List<JarDiff> diffs = new ArrayList<JarDiff>();
 
 		try {
 			project.refresh();
@@ -518,7 +518,7 @@ public class JavaDiff implements Group {
 					bundleVersion = "0.0.0";
 				}
 
-				String unqualifiedVersion = BundleJarDiff.removeVersionQualifier(bundleVersion);
+				String unqualifiedVersion = JarDiff.removeVersionQualifier(bundleVersion);
 				Version projectVersion = Version.parseVersion(unqualifiedVersion);
 
 				String symbolicName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
@@ -556,7 +556,7 @@ public class JavaDiff implements Group {
 					}
 				}
 
-				BundleJarDiff diff = new BundleJarDiff(jar, currentJar);
+				JarDiff diff = new JarDiff(jar, currentJar);
 				diff.compare();
 				diff.calculateVersions();
 
