@@ -10,8 +10,6 @@
  *******************************************************************************/
 package bndtools.release;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -35,9 +33,9 @@ import bndtools.release.nl.Messages;
 
 public class BundleReleaseDialog extends Dialog {
 
-	private static final int UPDATE_BUTTON = 0;
-	private static final int CANCEL_BUTTON = 1;
-	private static final int UPDATE_RELEASE_BUTTON = 2;
+	private static final int UPDATE_RELEASE_BUTTON = IDialogConstants.CLIENT_ID + 1;
+	private static final int UPDATE_BUTTON = IDialogConstants.CLIENT_ID + 3;
+	private static final int CANCEL_BUTTON = IDialogConstants.CLIENT_ID + 2;
 
 	private BundleRelease release;
 	private Project project;
@@ -149,8 +147,8 @@ public class BundleReleaseDialog extends Dialog {
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, UPDATE_BUTTON, Messages.updateVersions, true);
-		createButton(parent, UPDATE_RELEASE_BUTTON, Messages.updateVersionsAndRelease, false);
+		createButton(parent, UPDATE_RELEASE_BUTTON, Messages.updateVersionsAndRelease, true);
+		createButton(parent, UPDATE_BUTTON, Messages.updateVersions, false);
 		createButton(parent, CANCEL_BUTTON, IDialogConstants.CANCEL_LABEL, false);
 	}
 }
