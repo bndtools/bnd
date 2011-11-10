@@ -68,10 +68,11 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
 
 		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
-			if (entry.getValue() == null)
-				p.remove(entry.getKey());
-			else
+			if (entry.getValue() == null) {
+				if (entry.getKey() != null) p.remove(entry.getKey());
+			} else {
 				p.put(entry.getKey(), entry.getValue());
+			}
 
 		}
 		return p;
