@@ -11,6 +11,7 @@
 package bndtools.release;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -24,9 +25,11 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Builder;
 import bndtools.diff.JarDiff;
 import bndtools.release.nl.Messages;
 
@@ -34,13 +37,11 @@ public class ReleaseDialogJob extends Job {
 
 	private final Shell shell;
 	private final Project project;
-	private final List<RepositoryPlugin> repos;
 	private final List<File> subBundles;
 	
-	public ReleaseDialogJob(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
+	public ReleaseDialogJob(Project project, List<File> subBundles) {
 		super(Messages.releaseJob);
 		this.project = project;
-		this.repos = repos;
 		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 		this.subBundles = subBundles;
 		setUser(true);
@@ -60,8 +61,27 @@ public class ReleaseDialogJob extends Job {
 			monitor.setTaskName(Messages.releasing);
 			monitor.worked(33);
 			monitor.subTask(Messages.checkingExported);
-			final List<JarDiff> diffs = JarDiff.createJarDiffs(project, repos, subBundles);
-			if (diffs == null || diffs.size() == 0) {
+			
+			final List<JarDiff> diffs = new ArrayList<JarDiff>();
+			
+			List<Builder> builders = project.getBuilder(null).getSubBuilders();
+			for (Builder b : builders) {
+				
+				if (subBundles != null) {
+					if (!subBundles.contains(b.getPropertiesFile())) {
+						continue;
+					}
+				}
+				
+				RepositoryPlugin baselineRepository = ReleaseHelper.getBaselineRepository(project, b.getBsn(), b.getProperty(Constants.BUNDLE_VERSION));
+				
+				JarDiff jarDiff = JarDiff.createJarDiff(project, baselineRepository, b.getBsn());
+				if (jarDiff != null) {
+					diffs.add(jarDiff);
+				}
+			}
+			if (diffs.size() == 0) {
+				//TODO: message
 				return Status.OK_STATUS;
 			}
 			monitor.worked(33);
@@ -81,6 +101,8 @@ public class ReleaseDialogJob extends Job {
 			
 			monitor.worked(33);
 	        return Status.OK_STATUS;
+        } catch (Exception e) {
+        	return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
         } finally {
         	
         	monitor.done();

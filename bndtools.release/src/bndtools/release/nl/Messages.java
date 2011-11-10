@@ -33,7 +33,10 @@ public class Messages extends NLS {
 	public static String errorDialogTitle;
 	public static String bundleReleaseJob;
 	public static String released;
+	public static String updatedVersionInfo;
 	public static String releasedTo;
+	public static String updateVersions;
+	public static String updateVersionsAndRelease;
 
 	static {
 		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);

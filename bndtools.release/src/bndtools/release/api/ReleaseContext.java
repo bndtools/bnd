@@ -28,19 +28,20 @@ public class ReleaseContext {
 
 	private Project project;
 	private List<JarDiff> jarDiffs;
-	private RepositoryPlugin repository;
+	private RepositoryPlugin releaseRepo;
 	private IProgressMonitor progressMonitor;
 	
 	private List<Jar> releasedJars;
 	private Map<String, Object> properties;
 	private ErrorHandler errorHandler;
 	private Scope currentScope;
-
-	public ReleaseContext(Project project, List<JarDiff> jarDiffs, RepositoryPlugin repository, IProgressMonitor progressMonitor) {
+	private boolean updateOnly;
+	
+	public ReleaseContext(Project project, List<JarDiff> jarDiffs, RepositoryPlugin releaseRepo, boolean updateOnly) {
 		this.project = project;
 		this.jarDiffs = jarDiffs;
-		this.repository = repository;
-		this.progressMonitor = progressMonitor;
+		this.releaseRepo = releaseRepo;
+		this.updateOnly = updateOnly;
 		
 		this.releasedJars = new ArrayList<Jar>();
 		this.properties = new HashMap<String, Object>();
@@ -55,14 +56,17 @@ public class ReleaseContext {
 		return jarDiffs;
 	}
 
-	public RepositoryPlugin getRepository() {
-		return repository;
+	public RepositoryPlugin getReleaseRepository() {
+		return releaseRepo;
 	}
 
 	public IProgressMonitor getProgressMonitor() {
 		return progressMonitor;
 	}
 
+	public void setProgressMonitor(IProgressMonitor progressMonitor) {
+		this.progressMonitor = progressMonitor;
+	}
 	public void addReleasedJar(Jar jar) {
 		releasedJars.add(jar);
 	}
@@ -128,6 +132,14 @@ public class ReleaseContext {
 		public List<Error> getErrors() {
 			return errors;
 		}
+	}
+
+	public boolean isUpdateOnly() {
+		return updateOnly;
+	}
+
+	public void setUpdateOnly(boolean updateOnly) {
+		this.updateOnly = updateOnly;
 	}
 	
 	public static class Error {
