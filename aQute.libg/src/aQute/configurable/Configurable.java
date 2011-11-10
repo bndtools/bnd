@@ -1,4 +1,4 @@
-package aQute.bnd.annotation.metatype;
+package aQute.configurable;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -34,10 +34,10 @@ public class Configurable<T> {
 		}
 
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			Meta.AD ad = method.getAnnotation(Meta.AD.class);
+			Config ad = method.getAnnotation(Config.class);
 			String id = Configurable.mangleMethodName(method.getName());
 
-			if (ad != null && !ad.id().equals(Meta.NULL))
+			if (ad != null && !ad.id().equals(Config.NULL))
 				id = ad.id();
 
 			Object o = properties.get(id);
@@ -49,7 +49,7 @@ public class Configurable<T> {
 								+ method.getName());
 
 					o = ad.deflt();
-					if (o.equals(Meta.NULL))
+					if (o.equals(Config.NULL))
 						o = null;
 				}
 			}
@@ -57,9 +57,8 @@ public class Configurable<T> {
 				Class<?> rt = method.getReturnType();
 				if ( rt == boolean.class || rt==Boolean.class)
 					return false;
-				
 				if (method.getReturnType().isPrimitive()
-						|| Number.class.isAssignableFrom(method.getReturnType())) {
+						|| Number.class.isAssignableFrom(method.getReturnType()) ) {
 
 					o = "0";
 				} else
