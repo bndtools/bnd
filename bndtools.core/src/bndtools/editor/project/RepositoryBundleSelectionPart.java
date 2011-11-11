@@ -293,8 +293,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		composite.setLayout(layout);
 
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.heightHint = getTableHeightHint();
 		gd.widthHint = 50;
+		gd.heightHint = getTableHeightHint();
 		table.setLayoutData(gd);
 	}
 

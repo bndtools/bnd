@@ -70,92 +70,59 @@ public class ProjectRunPage extends FormPage {
 
         // Create Controls
         final Composite body = form.getBody();
-//        TableWrapLayout twl = new TableWrapLayout();
-//        twl.numColumns = 1;
-//        twl.makeColumnsEqualWidth = true;
-//        body.setLayout(twl);
         gl = new GridLayout(2, true);
         body.setLayout(gl);
 
         final Composite left = tk.createComposite(body);
-//        TableWrapData twd;
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
-//        left.setLayoutData(twd);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         left.setLayoutData(gd);
-//        twl = new TableWrapLayout();
-//        twl.numColumns = 1;
-//        left.setLayout(twl);
         gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         left.setLayout(gl);
 
         final Composite right = tk.createComposite(body);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
-//        right.setLayoutData(twd);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         right.setLayoutData(gd);
-//        twl = new TableWrapLayout();
-//        twl.numColumns = 1;
-//        right.setLayout(twl);
         gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         right.setLayout(gl);
 
-
-
         // First column
         RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(reposPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
-//        twd.maxWidth = 200;
-//        twd.heightHint = 200;
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        reposPart.getSection().setLayoutData(gd);
-//
+        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+
         RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(runFwkPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
-//        twd.maxWidth = 200;
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runFwkPart.getSection().setLayoutData(gd);
-//
-//
+
         RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
         managedForm.addPart(runPropertiesPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
-//        twd.maxWidth = 200;
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runPropertiesPart.getSection().setLayoutData(gd);
-//
-//
+
         RunVMArgsPart vmArgsPart = new RunVMArgsPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
         managedForm.addPart(vmArgsPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL);
-//        twd.maxWidth = 200;
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         vmArgsPart.getSection().setLayoutData(gd);
 
         // Second column
-        RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(requirementsPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
-//        requirementsPart.getSection().setLayoutData(twd);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 50;
-        gd.heightHint = 50;
-        requirementsPart.getSection().setLayoutData(gd);
+        requirementsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        requirementsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
 
-        RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
+        final RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(runBundlesPart);
-//        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
-//        runBundlesPart.getSection().setLayoutData(twd);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        runBundlesPart.getSection().setLayoutData(gd);
-
+        runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
     };
+
+
 }

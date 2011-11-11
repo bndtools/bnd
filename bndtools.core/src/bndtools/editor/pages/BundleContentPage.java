@@ -113,7 +113,7 @@ public class BundleContentPage extends FormPage {
     void createLeftPanel(IManagedForm mform, Composite parent) {
         FormToolkit toolkit = mform.getToolkit();
 
-        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE);
+        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         mform.addPart(infoPart);
 
         privPkgsPart = new PrivatePackagesPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);

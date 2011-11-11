@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -68,6 +67,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
+import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.UIConstants;
@@ -83,7 +83,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
 	private static final String BND_SUFFIX = ".bnd";
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
 		BndConstants.SOURCES,
@@ -97,7 +96,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
 	private BndEditModel model;
 
-	private Text txtBSN;
 	private Text txtVersion;
 	private Text txtActivator;
 
@@ -127,14 +125,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		Composite composite = toolkit.createComposite(section);
 		section.setClient(composite);
 
-		toolkit.createLabel(composite, "Symbolic Name:");
-		txtBSN = toolkit.createText(composite, "", SWT.BORDER);
-
 		toolkit.createLabel(composite, "Version:");
 		txtVersion = toolkit.createText(composite, "", SWT.BORDER);
+		txtVersion.setMessage(Version.LOWEST.toString());
 
 		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
 		txtActivator = toolkit.createText(composite, "", SWT.BORDER);
+		txtActivator.setMessage("Enter activator class name");
 
 		// Content Proposal for the Activator field
 		ContentProposalAdapter activatorProposalAdapter = null;
@@ -152,16 +149,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		decorActivator.setShowOnlyOnFocus(true);
 		decorActivator.setShowHover(true);
 
-		// Listeners
-        txtBSN.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                lock.ifNotModifying(new Runnable() {
-                    public void run() {
-                        addDirtyProperty(Constants.BUNDLE_SYMBOLICNAME);
-                    }
-                });
-            }
-        });
+        // Listeners
         txtVersion.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
@@ -171,8 +159,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 });
             }
         });
-		txtActivator.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent ev) {
+        txtActivator.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent ev) {
                 lock.ifNotModifying(new Runnable() {
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
@@ -255,10 +243,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		GridData gd;
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 		gd.horizontalIndent = 5;
-		txtBSN.setLayoutData(gd);
-
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.horizontalIndent = 5;
 		txtVersion.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
@@ -330,11 +314,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		try {
 			// Stop listening to property changes during the commit only
 			model.removePropertyChangeListener(this);
-			if(dirtySet.contains(Constants.BUNDLE_SYMBOLICNAME)) {
-				String bsn = txtBSN.getText();
-				if(bsn != null && bsn.length() == 0) bsn = null;
-				model.setBundleSymbolicName(bsn);
-			}
 			if(dirtySet.contains(Constants.BUNDLE_VERSION)) {
 				String version = txtVersion.getText();
 				if(version != null && version.length() == 0) version = null;
@@ -358,25 +337,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         super.refresh();
         lock.modifyOperation(new Runnable() {
             public void run() {
-                String defaultBSN = "";
-                IResource bndResource = model.getBndResource();
-                if(bndResource != null && bndResource.getType() == IResource.FILE) {
-                    String baseName = bndResource.getProject().getName();
-                    if(model.isProjectFile()) {
-                        defaultBSN = baseName;
-                    } else {
-                        String name = bndResource.getName();
-                        if(name.toLowerCase().endsWith(BND_SUFFIX)) {
-                            name = name.substring(0, name.length() - BND_SUFFIX.length());
-                        }
-                        defaultBSN = baseName + "." + name;
-                    }
-                }
-                txtBSN.setMessage(defaultBSN);
-
-                String bsn = model.getBundleSymbolicName();
-                txtBSN.setText(bsn != null ? bsn : ""); //$NON-NLS-1$
-
                 String bundleVersion = model.getBundleVersionString();
                 txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
 
