@@ -1,53 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="bndtools.repository.base" default="build">
-	
-	<import file="../cnf/build.xml"/>
-	
-	<!-- Override 'build' target to execute 'updateIndexes' first -->
-	<target name="build" depends="updateIndexes,master.build"/>
-	
-	<target name="updateBndFromRepo">
-		<delete dir="templates/cnfs/standard/repo/biz.aQute.bnd"/>
-		<delete dir="templates/cnfs/standard/repo/biz.aQute.bnd.annotation"/>
-		<delete dir="templates/cnfs/standard/repo/biz.aQute.bndlib"/>
-		<delete dir="templates/cnfs/standard/repo/biz.aQute.junit"/>
-		<delete dir="templates/cnfs/standard/repo/biz.aQute.launcher"/>
-		
-		<copy todir="templates/cnfs/standard/repo">
-			<fileset dir="../cnf/repo">
-				<include name="biz.aQute.*/**"/>
-				<include name="bndtools.runtime.eclipse.applaunch/**"/>
+
+	<import file="../cnf/build.xml" />
+
+	<!-- Taskdefs -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath location="ant-contrib-1.0b3.jar" />
+	</taskdef>
+	<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+		<classpath location="org.osgi.impl.bundle.bindex-2.2.0.jar" />
+	</taskdef>
+
+	<property name="templates.cnf" location="templates/cnfs" />
+	<property name="templates.cnf.standard" location="${templates.cnf}/standard" />
+	<property name="templates.cnf.lightweight" location="${templates.cnf}/lightweight" />
+
+	<target name="__copy_bundle_std">
+		<fail unless="bsn" />
+		<timestampselector property="latest">
+			<path>
+				<fileset dir="${repo}/bundles/${bsn}" includes="${bsn}-*.jar" />
+			</path>
+		</timestampselector>
+		<echo message="Latest ${bsn} is ${latest}" />
+		<copy todir="${templates.cnf.standard}/repo/${bsn}" file="${latest}" />
+	</target>
+
+	<target name="__copy_bundle_lwt">
+		<fail unless="bsn" />
+		<timestampselector property="latest">
+			<path>
+				<fileset dir="${repo}/bundles/${bsn}" includes="${bsn}-*.jar" />
+			</path>
+		</timestampselector>
+		<echo message="Latest ${bsn} is ${latest}" />
+		<copy todir="${templates.cnf.lightweight}/repo/${bsn}" file="${latest}" />
+	</target>
+
+	<target name="updateTemplates" depends="init">
+		<delete>
+			<fileset dir="${templates.cnf.standard}/repo" includes="biz.aQute.*/**" />
+			<fileset dir="${templates.cnf.lightweight}/repo" includes="biz.aQute.*/**" />
+		</delete>
+
+		<foreach list="biz.aQute.bnd,biz.aQute.bnd.annotation,biz.aQute.bndlib,biz.aQute.junit,biz.aQute.launcher" param="bsn" target="__copy_bundle_std" inheritall="true" />
+		<bindex name="Local Repository" root="${templates.cnf.standard}/repo" repositoryfile="${templates.cnf.standard}/repo/repository.xml" quiet="yes">
+			<fileset dir="${templates.cnf.standard}/repo" includes="**/*.jar">
 			</fileset>
-		</copy>
-		
-		<delete dir="templates/cnfs/lightweight/repo/biz.aQute.bnd"/>
-		<copy todir="templates/cnfs/lightweight/repo">
-			<fileset dir="../cnf/repo" includes="biz.aQute.bnd/**"/>
-		</copy>
-	</target>
-	
-	<target name="updateIndexes" depends="init,updateBndFromRepo">
-		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
-			<classpath>
-				<fileset dir="${workspacedir}/org.osgi.impl.bundle.bindex/generated" includes="*.jar"/>
-			</classpath>
-		</taskdef>
-		
-		<antcall target="__generateIndex">
-			<param name="repopath" value="templates/cnfs/standard/buildrepo/"/>
-		</antcall>
-		<antcall target="__generateIndex">
-			<param name="repopath" value="templates/cnfs/standard/repo/"/>
-		</antcall>
-	</target>
-	
-	<target name="__generateIndex">
-		<fail unless="repopath"/>
-		<echo message="Indexing ${basedir}/${repopath} into ${target}/${repopath}/repository.xml"/>
-		<mkdir dir="${target}/${repopath}"/>
-		<bindex root="${basedir}/${repopath}" repositoryfile="${target}/${repopath}/repository.xml" quiet="yes">
-			<fileset dir="${basedir}/${repopath}" includes="**/*.jar"/>
+		</bindex>
+
+		<foreach list="biz.aQute.bnd,org.osgi.impl.bundle.bindex" param="bsn" target="__copy_bundle_lwt" inheritall="true" />
+		<bindex name="Local Repository" root="${templates.cnf.lightweight}/repo" repositoryfile="${templates.cnf.lightweight}/repo/repository.xml" quiet="yes">
+			<fileset dir="${templates.cnf.lightweight}/repo" includes="**/*.jar">
+			</fileset>
 		</bindex>
 	</target>
-	
+
 </project>
