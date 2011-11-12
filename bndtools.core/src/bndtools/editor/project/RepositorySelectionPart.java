@@ -42,6 +42,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.service.OBRIndexProvider;
+import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.BndConstants;
 import bndtools.Plugin;
@@ -277,7 +278,12 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     boolean isIncludedRepo(RepositoryPlugin repo) {
-        return (repo instanceof OBRIndexProvider) && (includedRepos == null || includedRepos.contains(repo.getName()));
+        boolean included = false;
+        if (repo instanceof OBRIndexProvider) {
+            OBRIndexProvider obrProvider = (OBRIndexProvider) repo;
+            included = obrProvider.getSupportedModes().contains(OBRResolutionMode.runtime) && (includedRepos == null || includedRepos.contains(repo.getName()));
+        }
+        return included;
     }
 
     void toggleSelection(RepositoryPlugin selectedRepo) {
@@ -309,6 +315,13 @@ public class RepositorySelectionPart extends BndEditorPart {
     private void fillToolBar(ToolBar toolbar) {
         ToolItem refreshTool = new ToolItem(toolbar, SWT.PUSH);
         refreshTool.setImage(refreshImg);
+
+        refreshTool.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                reloadRepos();
+            }
+        });
     }
 
     @Override
