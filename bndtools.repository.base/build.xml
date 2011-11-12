@@ -48,6 +48,10 @@
 			<fileset dir="${templates.cnf.standard}/repo" includes="**/*.jar">
 			</fileset>
 		</bindex>
+		<bindex name="Build Repository" root="${templates.cnf.standard}/buildrepo" repositoryfile="${templates.cnf.standard}/buildrepo/repository.xml" quiet="yes">
+			<fileset dir="${templates.cnf.standard}/buildrepo" includes="**/*.jar">
+			</fileset>
+		</bindex>
 
 		<foreach list="biz.aQute.bnd,org.osgi.impl.bundle.bindex" param="bsn" target="__copy_bundle_lwt" inheritall="true" />
 		<bindex name="Local Repository" root="${templates.cnf.lightweight}/repo" repositoryfile="${templates.cnf.lightweight}/repo/repository.xml" quiet="yes">

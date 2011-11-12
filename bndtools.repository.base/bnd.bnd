@@ -11,8 +11,7 @@ Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
-	templates/=templates,\
-	templates/=${target}/templates
+	templates/=templates
 
 Private-Package: bndtools.templates
 

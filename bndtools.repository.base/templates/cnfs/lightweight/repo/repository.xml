@@ -1,5 +1,5 @@
 
-<repository lastmodified='20111111015422.955' name='Local Repository'>
+<repository lastmodified='20111112014300.783' name='Local Repository'>
   <resource id='biz.aQute.bnd/1.51.1' presentationname='bnd' symbolicname='biz.aQute.bnd' uri='biz.aQute.bnd/biz.aQute.bnd-1.51.1.jar' version='1.51.1'>
     <description>
       A utility and plugin to wrap, build, print, or otherwise manipulate
