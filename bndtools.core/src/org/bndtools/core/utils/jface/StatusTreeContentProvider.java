@@ -7,7 +7,11 @@ import org.eclipse.jface.viewers.Viewer;
 public class StatusTreeContentProvider implements ITreeContentProvider {
 
     public Object[] getElements(Object inputElement) {
-        return new Object[] { inputElement };
+        IStatus rootStatus = (IStatus) inputElement;
+        if (rootStatus.isMultiStatus()) {
+            return rootStatus.getChildren();
+        }
+        return new Object[] { rootStatus };
     }
 
     public void dispose() {

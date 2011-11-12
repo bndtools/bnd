@@ -1,7 +1,9 @@
 package bndtools.launch;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,7 +43,19 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     @Override
     protected IStatus getLauncherStatus() {
-        return createStatus("Problem(s) preparing the runtime environment.", bndLauncher.getErrors(), bndLauncher.getWarnings());
+        List<String> launcherErrors = bndLauncher.getErrors();
+        List<String> projectErrors = bndLauncher.getProject().getErrors();
+        List<String> errors = new ArrayList<String>(projectErrors.size() + launcherErrors.size());
+        errors.addAll(launcherErrors);
+        errors.addAll(projectErrors);
+
+        List<String> launcherWarnings = bndLauncher.getWarnings();
+        List<String> projectWarnings = bndLauncher.getProject().getWarnings();
+        List<String> warnings = new ArrayList<String>(launcherWarnings.size() + projectWarnings.size());
+        warnings.addAll(launcherWarnings);
+        warnings.addAll(projectWarnings);
+
+        return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
     }
 
     @Override
