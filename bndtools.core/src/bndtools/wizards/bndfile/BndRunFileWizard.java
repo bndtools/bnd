@@ -10,10 +10,12 @@
  *******************************************************************************/
 package bndtools.wizards.bndfile;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -26,8 +28,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
+import org.osgi.framework.Bundle;
 
 import bndtools.Plugin;
+import bndtools.utils.BundleUtils;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
 
@@ -35,24 +39,22 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
     protected IWorkbench workbench;
 
     protected WizardNewFileCreationPage mainPage;
-    private FrameworkConsoleSelectionWizardPage fwkConsolePge;
+    private final LaunchTemplateSelectionPage templatePage = new LaunchTemplateSelectionPage();
 
     @Override
     public void addPages() {
         mainPage = new WizardNewFileCreationPage("newFilePage", selection) {
             @Override
             protected InputStream getInitialContents() {
-                return generateContents();
+                return getTemplateContents();
             };
         };
         mainPage.setTitle("New Bnd Run Descriptor");
         mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
         mainPage.setAllowExistingResources(false);
 
-        fwkConsolePge = new FrameworkConsoleSelectionWizardPage("fwkConsolePage");
-
         addPage(mainPage);
-        addPage(fwkConsolePge);
+        addPage(templatePage);
     }
 
     @Override
@@ -83,22 +85,24 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         this.selection = selection;
     }
 
-    private InputStream generateContents() {
-        StringBuilder builder = new StringBuilder();
+    private InputStream getTemplateContents() throws IllegalArgumentException {
+        IConfigurationElement configElem = templatePage.getSelectedElement();
+        String bsn = configElem.getContributor().getName();
 
-        String framework = fwkConsolePge.getFramework();
-        builder.append("-runfw: ").append(framework).append('\n');
+        String path = configElem.getAttribute("path");
+        if (path == null)
+            throw new IllegalArgumentException("Missing 'path' attribute.");
 
-        // Handle the console in different ways for Equinox and Felix
-        if (fwkConsolePge.getConsole()) {
-            if ("org.eclipse.osgi".equals(framework)) {
-                builder.append("-runproperties: osgi.console=");
-            } else {
-                builder.append("-runbundles: org.apache.felix.shell,\\\n");
-                builder.append("\torg.apache.felix.shell.tui");
-            }
+        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
+        if (bundle == null)
+            throw new IllegalArgumentException(String.format("Cannot find bundle %s.", bsn));
+
+        try {
+            URL entry = bundle.getEntry(path);
+            return entry != null ? entry.openStream() : null;
+        } catch (IOException e) {
+            Plugin.logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
+            return null;
         }
-
-        return new ByteArrayInputStream(builder.toString().getBytes());
     }
 }

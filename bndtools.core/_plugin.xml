@@ -6,6 +6,10 @@
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
+   <extension-point id="launchTemplates"
+      name="Launch Templates"
+      schema="schema/launchTemplates.exsd"
+   />
    <extension-point id="projectTemplates"
       name="Project Templates"
       schema="schema/projectTemplates.exsd"
@@ -589,6 +593,29 @@
          priority="-2147483648"
          class="bndtools.api.EmptyTemplate"
          doc="html/emptyTemplate.html"/>
+   </extension>
+   
+   <extension point="bndtools.core.launchTemplates">
+      <template
+         name="Apache Felix 4 with Shell"
+         path="launchTemplates/felix4+shell.bndrun"
+         doc="html/felix4+shell.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 with Web Console"
+         path="launchTemplates/felix4+webconsole.bndrun"
+         doc="html/felix4+webconsole.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 (Empty)"
+         path="launchTemplates/felix4l.bndrun"
+         doc="html/felix4.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Console"
+         path="launchTemplates/equinox37+console.bndrun"
+         doc="html/equinox37+console.form.xml"
+         icon="icons/equinox.gif"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">

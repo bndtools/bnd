@@ -1,0 +1,9 @@
+-runfw: org.apache.felix.framework;version=4
+
+-runbundles:\
+	org.apache.felix.shell,\
+	org.apache.felix.shell.tui
+
+-runrequire:\
+	bundle:(symbolicname=org.apache.felix.shell),\
+	bundle:(symbolicname=org.apache.felix.shell.tui)

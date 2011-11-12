@@ -1,0 +1,4 @@
+<form>Apache Felix 4 or above, plus the following bundles:
+<li>Felix Shell</li>
+<li>Felix Shell TUI</li>
+</form>

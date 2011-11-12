@@ -1,0 +1,25 @@
+-runfw: org.apache.felix.framework;version=4
+
+-runbundles:\
+	org.apache.felix.shell,\
+	org.apache.felix.shell.tui,\
+	org.apache.felix.scr,\
+	org.apache.felix.http.jetty,\
+	org.apache.felix.configadmin,\
+	org.apache.felix.metatype,\
+	org.apache.felix.log,\
+	org.apache.felix.webconsole,\
+	osgi.cmpn
+
+## Uncomment if you need to change the HTTP port
+#-runproperties: org.osgi.service.http.port=8080
+
+-runrequire:\
+	bundle:(symbolicname=org.apache.felix.shell),\
+	bundle:(symbolicname=org.apache.felix.shell.tui),\
+	bundle:(symbolicname=org.apache.felix.webconsole),\
+	bundle:(symbolicname=org.apache.felix.configadmin),\
+	bundle:(symbolicname=org.apache.felix.metatype),\
+	bundle:(symbolicname=org.apache.felix.log),\
+	bundle:(&(symbolicname=osgi.cmpn)(version>=4.2)),\
+	bundle:(&(symbolicname=org.apache.felix.scr)(version>=1.6.0))
