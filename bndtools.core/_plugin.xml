@@ -616,6 +616,11 @@
          path="launchTemplates/equinox37+console.bndrun"
          doc="html/equinox37+console.form.xml"
          icon="icons/equinox.gif"/>
+      <template
+         name="Knopflerfish 5.1 with Felix Shell"
+         path="launchTemplates/knopflerfish.bndrun"
+         doc="html/knopflerfish.form.xml"
+         icon="icons/knopflerfish_16x16_inverted.gif"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
