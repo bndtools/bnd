@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -66,29 +67,28 @@ public class LaunchStatusDialog extends TitleAreaDialog {
         Composite container = (Composite) super.createDialogArea(parent);
         container.setLayout(new GridLayout(1, true));
 
-        Composite composite = new Composite(container, SWT.NONE);
+        SashForm composite = new SashForm(container, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        GridLayout gl_composite = new GridLayout(2, true);
+        Composite left = new Composite(composite, SWT.NONE);
+        left.setLayout(new GridLayout(1, false));
+        Composite right = new Composite(composite, SWT.NONE);
+        right.setLayout(new GridLayout(1, false));
 
-        gl_composite.marginWidth = 0;
-        gl_composite.marginHeight = 0;
-        composite.setLayout(gl_composite);
-
-        Label lblProblems = new Label(composite, SWT.NONE);
+        Label lblProblems = new Label(left, SWT.NONE);
         lblProblems.setText("Problems:");
 
-        Label lblDetails = new Label(composite, SWT.NONE);
+        Label lblDetails = new Label(right, SWT.NONE);
         lblDetails.setText("Details:");
 
-        table = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
+        table = new Table(left, SWT.BORDER | SWT.FULL_SELECTION);
         table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         viewer = new TableViewer(table);
 
-        txtDetails = new Text(composite, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        txtDetails = new Text(right, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         txtDetails.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        Label lblQuestion = new Label(composite, SWT.NONE);
+        Label lblQuestion = new Label(container, SWT.NONE);
         GridData gd_lblQuestion = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
         gd_lblQuestion.horizontalSpan = 2;
         lblQuestion.setLayoutData(gd_lblQuestion);
@@ -154,6 +154,6 @@ public class LaunchStatusDialog extends TitleAreaDialog {
      */
     @Override
     protected Point getInitialSize() {
-        return new Point(580, 300);
+        return new Point(700, 400);
     }
 }
