@@ -72,4 +72,8 @@ public interface IBndModel {
 
     void setRunRepos(List<String> repos);
 
+    ResolveMode getResolveMode();
+
+    void setResolveMode(ResolveMode mode);
+
 }

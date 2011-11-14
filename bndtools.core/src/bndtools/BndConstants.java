@@ -40,4 +40,6 @@ public interface BndConstants extends Constants {
     public static final String RESOLUTION_URI_ATTRIBUTE = "resolution";
 
     public static final String RUNREPOS = "-runrepos";
+
+    public static final String RESOLVE_MODE = "-resolve";
 }

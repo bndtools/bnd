@@ -40,11 +40,14 @@ import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.api.EE;
 import bndtools.api.IPersistableBndModel;
+import bndtools.api.ResolveMode;
 import bndtools.editor.model.conversions.ClauseListConverter;
 import bndtools.editor.model.conversions.CollectionFormatter;
 import bndtools.editor.model.conversions.Converter;
 import bndtools.editor.model.conversions.DefaultBooleanFormatter;
 import bndtools.editor.model.conversions.DefaultFormatter;
+import bndtools.editor.model.conversions.EnumConverter;
+import bndtools.editor.model.conversions.EnumFormatter;
 import bndtools.editor.model.conversions.HeaderClauseFormatter;
 import bndtools.editor.model.conversions.HeaderClauseListConverter;
 import bndtools.editor.model.conversions.MapFormatter;
@@ -100,7 +103,8 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.PLUGIN,
 		BndConstants.RUNREQUIRE,
 		BndConstants.RUNEE,
-		BndConstants.RUNREPOS
+		BndConstants.RUNREPOS,
+		BndConstants.RESOLVE_MODE
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -178,6 +182,8 @@ public class BndEditModel implements IPersistableBndModel {
         }
     };
 
+    Converter<ResolveMode, String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
+
     // FORMATTERS
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
     Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
@@ -196,6 +202,7 @@ public class BndEditModel implements IPersistableBndModel {
         }
     };
     Converter<String,Collection<? extends String>> runReposFormatter = new CollectionFormatter<String>(LIST_SEPARATOR, aQute.lib.osgi.Constants.EMPTY_HEADER);
+    Converter<String, ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
@@ -225,6 +232,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
         converters.put(BndConstants.RUNREPOS, listConverter);
+        converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -251,6 +259,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
         formatters.put(BndConstants.RUNREPOS, runReposFormatter);
+        formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -596,6 +605,7 @@ public class BndEditModel implements IPersistableBndModel {
         doSetObject(aQute.lib.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
     }
 
+    @SuppressWarnings("deprecation")
     public List<String> getTestSuites() {
         List<String> testCases = doGetObject(aQute.lib.osgi.Constants.TESTCASES, listConverter);
         testCases = testCases != null ? testCases : Collections.<String>emptyList();
@@ -609,6 +619,7 @@ public class BndEditModel implements IPersistableBndModel {
         return result;
     }
 
+    @SuppressWarnings("deprecation")
     public void setTestSuites(List<String> suites) {
         List<String> old = getTestSuites();
         doSetObject(aQute.lib.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
@@ -631,6 +642,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setRunRequire(List<Requirement> requires) {
         List<Requirement> old = getRunRequire();
         doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
+    }
+
+    public ResolveMode getResolveMode() {
+        return doGetObject(BndConstants.RESOLVE_MODE, resolveModeConverter);
+    }
+
+    public void setResolveMode(ResolveMode mode) {
+        ResolveMode old = getResolveMode();
+        doSetObject(BndConstants.RESOLVE_MODE, old, mode, resolveModeFormatter);
     }
 
     public EE getEE() {

@@ -1,6 +1,7 @@
 package bndtools.wizards.obr;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,24 +38,22 @@ public class ObrResolutionWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
+        List<Resource> resources;
+
         ObrResolutionResult result = resultsPage.getResult();
-        if (result != null) {
-            List<Resource> resources = result.getRequired();
-            List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
+        if (result != null && result.isResolved())
+            resources = result.getRequired();
+        else
+            resources = Collections.emptyList();
 
-            for (Resource resource : resources) {
-                VersionedClause runBundle = resourceToRunBundle(resource);
-                runBundles.add(runBundle);
-            }
-
-            List<VersionedClause> backup = model.getRunBundles();
-            model.setRunBundles(runBundles);
-            if (backup != null)
-                model.setBackupRunBundles(backup);
-
-            return true;
+        List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
+        for (Resource resource : resources) {
+            VersionedClause runBundle = resourceToRunBundle(resource);
+            runBundles.add(runBundle);
         }
-        return false;
+        model.setRunBundles(runBundles);
+
+        return true;
     }
 
     private VersionedClause resourceToRunBundle(Resource resource) {
