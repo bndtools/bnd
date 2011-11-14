@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -138,6 +140,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         viewer.setContentProvider(new RepositoryTreeContentProvider());
 
         final Color enabledColor = section.getDisplay().getSystemColor(SWT.COLOR_BLACK);
+        final Color enabledVersionColor = JFaceResources.getColorRegistry().get(JFacePreferences.COUNTER_COLOR);
         final Color disabledColor = section.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         TreeColumn colSelected = new TreeColumn(tree, SWT.CENTER);
@@ -199,7 +202,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                     RepositoryPlugin repo = bundleVersion.getBundle().getRepo();
                     if (column == 1)
                         label = bundleVersion.getVersion().toString();
-                    foreground = isIncludedRepo(repo) ? enabledColor : disabledColor;
+                    foreground = isIncludedRepo(repo) ? enabledVersionColor : disabledColor;
                 } else {
                     label = element.toString();
                 }
