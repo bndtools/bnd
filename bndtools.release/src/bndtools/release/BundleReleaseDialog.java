@@ -54,17 +54,26 @@ public class BundleReleaseDialog extends Dialog {
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 
-		Composite c2 = new Composite(composite, SWT.NONE);
 		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 1;
+		gridLayout.horizontalSpacing = 0;
+		gridLayout.verticalSpacing = 5;
+		gridLayout.marginWidth = 0;
+		gridLayout.marginHeight = 0;
+		composite.setLayout(gridLayout);
+		
+		Composite repoPart = new Composite(composite, SWT.NONE);
+		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridLayout.horizontalSpacing = 0;
 		gridLayout.verticalSpacing = 5;
 		gridLayout.marginWidth = 0;
-		gridLayout.marginHeight = 10;
-		c2.setLayout(gridLayout);
-		c2.setLayoutData(new GridData(SWT.HORIZONTAL, SWT.VERTICAL, true, true));
+		gridLayout.marginHeight = 5;
+		repoPart.setLayout(gridLayout);
+		GridData gd = new GridData();
+		repoPart.setLayoutData(gd);
 
-		Label label = new Label(c2, SWT.NONE);
+		Label label = new Label(repoPart, SWT.NONE);
 		label.setText(Messages.releaseToRepo);
 
 		String[] items = ReleaseHelper.getReleaseRepositories();
@@ -79,7 +88,7 @@ public class BundleReleaseDialog extends Dialog {
 			}
 		}
 		
-		releaseRepoCombo = new Combo (c2, SWT.READ_ONLY);
+		releaseRepoCombo = new Combo (repoPart, SWT.READ_ONLY);
 		//combo.setLayout(gridLayout);
 		releaseRepoCombo.setItems (items);
 		releaseRepoCombo.setSize (200, 200);
@@ -89,8 +98,17 @@ public class BundleReleaseDialog extends Dialog {
 			releaseRepoCombo.setText("");
 		}
 		
-		ScrolledComposite scrolled = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL);
+		Composite diffPart = new Composite(composite, SWT.NONE);
+		gridLayout = new GridLayout();
+		gridLayout.numColumns = 1;
+		gridLayout.horizontalSpacing = 0;
+		gridLayout.verticalSpacing = 5;
+		gridLayout.marginWidth = 0;
+		gridLayout.marginHeight = 0;
+		diffPart.setLayout(gridLayout);
+		diffPart.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 
+		ScrolledComposite scrolled = new ScrolledComposite(diffPart, SWT.H_SCROLL | SWT.V_SCROLL);
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridLayout.horizontalSpacing = 0;
@@ -106,7 +124,7 @@ public class BundleReleaseDialog extends Dialog {
 		scrolled.setExpandHorizontal(true);
 		scrolled.setExpandVertical(true);
 		scrolled.setContent(release.getControl());
-		scrolled.setMinSize(500, 500);
+		scrolled.setMinSize(300, 300);
 		scrolled.layout(true);
 
 		return composite;
