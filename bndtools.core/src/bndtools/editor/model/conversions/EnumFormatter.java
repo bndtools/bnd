@@ -47,7 +47,7 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
         if (input == defaultValue)
             result = null;
         else
-            result = input.toString();
+            result = input != null ? input.toString() : null;
         return result;
     }
 
