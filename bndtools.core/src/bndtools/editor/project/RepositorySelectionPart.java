@@ -291,6 +291,11 @@ public class RepositorySelectionPart extends BndEditorPart {
             return;
         }
 
+        OBRIndexProvider obrProvider = (OBRIndexProvider) selectedRepo;
+        if (!obrProvider.getSupportedModes().contains(OBRResolutionMode.runtime)) {
+            return;
+        }
+
         if (includedRepos == null) {
             includedRepos = new LinkedHashSet<String>();
 
