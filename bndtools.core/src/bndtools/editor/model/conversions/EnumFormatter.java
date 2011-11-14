@@ -44,10 +44,11 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 
     public String convert(E input) throws IllegalArgumentException {
         String result;
-        if (input == defaultValue)
+        if (input == defaultValue || input == null)
             result = null;
-        else
-            result = input != null ? input.toString() : null;
+        else {
+            result = input.toString();
+        }
         return result;
     }
 

@@ -95,6 +95,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     private ToolItem removeTool;
     private Button btnResolveNow;
 
+    private boolean committing = false;
+
     public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         createSection(getSection(), toolkit);
@@ -144,9 +146,12 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         btnAutoResolve.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                ResolveMode old = resolveMode;
                 resolveMode = btnAutoResolve.getSelection() ? ResolveMode.auto : ResolveMode.manual;
                 updateButtonStates();
-                markDirty();
+
+                if (old != resolveMode)
+                    markDirty();
             }
         });
         btnResolveNow.addSelectionListener(new SelectionAdapter() {
@@ -342,6 +347,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         super.initialize(form);
 
         model = (BndEditModel) form.getInput();
+
         model.addPropertyChangeListener(BndConstants.RUNREQUIRE, this);
         model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
     }
@@ -360,8 +366,13 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
-        model.setRunRequire(requires);
-        model.setResolveMode(resolveMode);
+        try {
+            committing = true;
+            model.setRunRequire(requires);
+            model.setResolveMode(resolveMode);
+        } finally {
+            committing = false;
+        }
     }
 
     @Override
@@ -383,11 +394,13 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if (page.isActive()) {
-            refresh();
-        } else {
-            markStale();
+        if (!committing) {
+            IFormPage page = (IFormPage) getManagedForm().getContainer();
+            if (page.isActive()) {
+                refresh();
+            } else {
+                markStale();
+            }
         }
     }
 
