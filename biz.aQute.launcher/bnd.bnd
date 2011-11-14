@@ -9,6 +9,6 @@ Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 Private-Package: aQute.launcher.*
 	
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 javac.source = 1.5
 javac.target = jsr14

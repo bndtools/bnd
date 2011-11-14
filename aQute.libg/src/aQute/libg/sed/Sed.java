@@ -25,7 +25,8 @@ public class Sed {
         replacements.put(Pattern.compile(pattern), replacement);
     }
 
-    public void doIt() throws IOException {
+    public int doIt() throws IOException {
+    	int actions = 0;
         BufferedReader brdr = new BufferedReader(new FileReader(file));
         File out;
         if (output != null)
@@ -46,6 +47,7 @@ public class Sed {
                         String tmp = setReferences(m, replace);
                         tmp = macro.process(tmp);
                         m.appendReplacement(sb, Matcher.quoteReplacement(tmp));
+                        actions++;
                     }
                     m.appendTail(sb);
 
@@ -62,6 +64,7 @@ public class Sed {
             brdr.close();
             pw.close();
         }
+        return actions;
     }
 
     private String setReferences(Matcher m, String replace) {

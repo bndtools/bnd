@@ -26,10 +26,8 @@ public class Workspace extends Processor {
 	static Map<File, WeakReference<Workspace>>	cache		= newHashMap();
 	final Map<String, Project>					models		= newHashMap();
 	final Map<String, Action>					commands	= newMap();
-	final CachedFileRepo						cachedRepo;
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
-	private boolean								postpone;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -98,7 +96,6 @@ public class Workspace extends Processor {
 		setProperties(buildFile, dir);
 		propertiesChanged();
 
-		cachedRepo = new CachedFileRepo();
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -252,6 +249,10 @@ public class Workspace extends Processor {
 		CachedFileRepo() {
 			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
+		
+		public String toString() {
+			return "bnd-cache";
+		}
 
 		protected void init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
@@ -319,7 +320,7 @@ public class Workspace extends Processor {
 	@Override protected void setTypeSpecificPlugins(Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
 		list.add(maven);
-		list.add(cachedRepo);
+		list.add(new CachedFileRepo());
 	}
 
 }

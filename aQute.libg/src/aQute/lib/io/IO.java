@@ -180,4 +180,38 @@ public class IO {
 		}
 		return getFile(base, s).toURI().toURL();
 	}
+
+	public static void store(Object o, File out) throws IOException {
+		store(o, out, "UTF-8");
+	}
+
+	public static void store(Object o, File out, String encoding) throws IOException {
+		FileOutputStream fout = new FileOutputStream(out);
+		try {
+			store(o, fout, encoding);
+		} finally {
+			fout.close();
+		}
+	}
+
+	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException, IOException {
+		store(o, fout, "UTF-8");
+	}
+
+	public static void store(Object o, OutputStream fout, String encoding)
+			throws UnsupportedEncodingException, IOException {
+		String s;
+
+		if (o == null)
+			s = "";
+		else
+			s = o.toString();
+
+		try {
+			fout.write(s.getBytes(encoding));
+		} finally {
+			fout.close();
+		}
+	}
+
 }

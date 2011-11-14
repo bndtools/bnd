@@ -238,6 +238,63 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
+	public void testBumpIncludeFile() throws Exception {
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.delete(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+
+		try {
+			IO.copy(new File("test/ws"), tmp);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("bump-included");
+			project.setTrace(true);
+			Version old = new Version(project.getProperty("Bundle-Version"));
+			assertEquals( new Version(1,0,0), old);
+			project.bump("=+0");
+			
+			Processor processor = new Processor();
+			processor.setProperties(project.getFile("include.txt"));
+			
+			
+			Version newv = new Version(processor.getProperty("Bundle-Version"));
+			System.out.println("New version " + newv);
+			assertEquals(1, newv.getMajor());
+			assertEquals(1, newv.getMinor());
+			assertEquals(0, newv.getMicro());
+		} finally {
+			IO.delete(tmp);
+		}
+	}
+	
+	public void testBumpSubBuilders() throws Exception {
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.delete(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+
+		try {
+			IO.copy(new File("test/ws"), tmp);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("bump-sub");
+			project.setTrace(true);
+			
+			assertNull( project.getProperty("Bundle-Version"));
+			
+			project.bump("=+0");
+			
+			assertNull( project.getProperty("Bundle-Version"));
+
+			for ( Builder b : project.getSubBuilders()) {
+				Version newv = new Version(b.getProperty("Bundle-Version"));
+				assertEquals( new Version(1,1,0), new Version(b.getVersion()));
+			}
+		} finally {
+			IO.delete(tmp);
+		}
+	}
 	public void testRunBuilds() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 

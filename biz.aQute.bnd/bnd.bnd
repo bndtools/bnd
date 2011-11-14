@@ -1,6 +1,6 @@
 -dependson: biz.aQute.junit, biz.aQute.launcher, demo
 
-Bundle-Version: 				1.50.1
+Bundle-Version: 				1.51.1
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="${Bundle-Copyright}"; \
 									link=LICENSE

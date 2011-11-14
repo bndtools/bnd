@@ -9,9 +9,20 @@ import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
+/**
+ * This class just holds the information for the component, implementation, and
+ * service/provide elements. The {@link #prepare(Analyzer)} method will check if
+ * things are ok and the {@link #getTag()} method returns a tag if the prepare
+ * method returns without any errors. The class uses {@link ReferenceDef} to
+ * hold the references.
+ */
 class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
-	Version							version			= new Version("1.1.0");
+	final List<String>				properties		= new ArrayList<String>();
+	final MultiMap<String, String>	property		= new MultiMap<String, String>();
+	final Map<String, ReferenceDef>	references		= new TreeMap<String, ReferenceDef>();
+
+	Version							version			= AnnotationReader.V1_1;
 	String							name;
 	String							factory;
 	Boolean							immediate;
@@ -23,10 +34,16 @@ class ComponentDef {
 	String							deactivate;
 	String							modified;
 	Boolean							enabled;
-	final List<String>				properties		= new ArrayList<String>();
-	final MultiMap<String, String>	property		= new MultiMap<String, String>();
-	final Map<String, ReferenceDef>	references		= new TreeMap<String, ReferenceDef>();
+	String							xmlns;
+	String							configurationPid;
 
+	/**
+	 * Called to prepare. If will look for any errors or inconsistencies in the
+	 * setup.
+	 * 
+	 * @param analyzer
+	 *            the analyzer to report errors and create references
+	 */
 	void prepare(Analyzer analyzer) {
 
 		for (ReferenceDef ref : references.values()) {
@@ -35,23 +52,38 @@ class ComponentDef {
 				version = ref.version;
 		}
 
-		if (implementation == null)
+		if (implementation == null) {
 			analyzer.error("No Implementation defined for component " + name);
-		else
-			analyzer.referTo(implementation);
+			return;
+		} 
 
-		name = implementation;
+		analyzer.referTo(implementation);
+
+		if (name == null)
+			name = implementation;
 
 		if (service != null && service.length > 0) {
 			for (String interfaceName : service)
 				analyzer.referTo(interfaceName);
 		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
+		
+		if ( configurationPid != null)
+			version = ReferenceDef.max(version,AnnotationReader.V1_2);
 	}
 
+	/**
+	 * Returns a tag describing the component element.
+	 * 
+	 * @return a component element
+	 */
 	Tag getTag() {
 		Tag component = new Tag("scr:component");
-		component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/" + version);
+		if (xmlns != null)
+			component.addAttribute("xmlns:scr", xmlns);
+		else
+			component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/" + version);
+
 		component.addAttribute("name", name);
 
 		if (servicefactory != null)
@@ -60,8 +92,10 @@ class ComponentDef {
 		if (configurationPolicy != null)
 			component.addAttribute("configuration-policy", configurationPolicy.toString()
 					.toLowerCase());
+
 		if (enabled != null)
 			component.addAttribute("enabled", enabled);
+
 		if (immediate != null)
 			component.addAttribute("immediate", immediate);
 
@@ -76,6 +110,9 @@ class ComponentDef {
 
 		if (modified != null)
 			component.addAttribute("modified", modified);
+
+		if (configurationPid != null)
+			component.addAttribute("configuration-pid", configurationPid);
 
 		Tag impl = new Tag(component, "implementation");
 		impl.addAttribute("class", implementation);
@@ -94,7 +131,6 @@ class ComponentDef {
 		for (ReferenceDef ref : references.values()) {
 			Tag refTag = ref.getTag();
 			component.addContent(refTag);
-
 		}
 
 		for (Map.Entry<String, Set<String>> kvs : property.entrySet()) {

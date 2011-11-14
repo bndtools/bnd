@@ -10,86 +10,86 @@ import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
 import aQute.libg.version.*;
 
+/**
+ * fixup any unbind methods To declare no unbind method, the value "-" must be
+ * used. If not specified, the name of the unbind method is derived from the
+ * name of the annotated bind method. If the annotated method name begins with
+ * set, that is replaced with unset to derive the unbind method name. If the
+ * annotated method name begins with add, that is replaced with remove to derive
+ * the unbind method name. Otherwise, un is prefixed to the annotated method
+ * name to derive the unbind method name.
+ * 
+ * @return
+ * @throws Exception
+ */
 public class AnnotationReader extends ClassDataCollector {
-	final static String[]			EMPTY					= new String[0];
-	final static Pattern			PROPERTY_PATTERN		= Pattern
-																	.compile("([^=]+(:(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
+	final static String[]		EMPTY					= new String[0];
+	final static Pattern		PROPERTY_PATTERN		= Pattern
+																.compile("([^=]+(:(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
-	static Pattern					BINDDESCRIPTOR			= Pattern
-																	.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
-	static Pattern					BINDMETHOD				= Pattern
-																	.compile("(set|bind|add)?(.*)");
+	static Pattern				BINDDESCRIPTOR			= Pattern
+																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
 
-	static Pattern					ACTIVATEDESCRIPTOR		= Pattern
-																	.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
-	static Pattern					REFERENCEBINDDESCRIPTOR	= Pattern
-																	.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+	static Pattern				LIFECYCLEDESCRIPTOR		= Pattern
+																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
+																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
-	ComponentDef					component				= new ComponentDef();
+	ComponentDef				component				= new ComponentDef();
 
-	Clazz							clazz;
-	String							interfaces[];
-	String							methodDescriptor;
-	String							method;
-	String							className;
-	int								methodAccess;
-	Analyzer						analyzer;
-	MultiMap<String, String>		methods					= new MultiMap<String, String>();
-	String							extendsClass;
+	Clazz						clazz;
+	String						interfaces[];
+	String						methodDescriptor;
+	String						method;
+	String						className;
+	int							methodAccess;
+	Analyzer					analyzer;
+	MultiMap<String, String>	methods					= new MultiMap<String, String>();
+	String						extendsClass;
+	boolean						inherit;
+	boolean						baseclass=true;
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, boolean inherit) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
+		this.inherit = inherit;
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer) throws Exception {
-		AnnotationReader r = new AnnotationReader(analyzer, c);
-
-		return r.getDef(c, analyzer);
+		boolean inherit = Processor.isTrue(analyzer.getProperty("-dsannotations-inherit"));
+		AnnotationReader r = new AnnotationReader(analyzer, c, inherit);
+		return r.getDef();
 	}
 
-	/**
-	 * fixup any unbind methods To declare no unbind method, the value "-" must
-	 * be used. If not specified, the name of the unbind method is derived from
-	 * the name of the annotated bind method. If the annotated method name
-	 * begins with set, that is replaced with unset to derive the unbind method
-	 * name. If the annotated method name begins with add, that is replaced with
-	 * remove to derive the unbind method name. Otherwise, un is prefixed to the
-	 * annotated method name to derive the unbind method name.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	private ComponentDef getDef(Clazz c, Analyzer analyzer) throws Exception {
-		c.parseClassFileWithCollector(this);
+	private ComponentDef getDef() throws Exception {
+		clazz.parseClassFileWithCollector(this);
 		if (component.implementation == null)
 			return null;
 
-		while (extendsClass != null) {
-			if (extendsClass.startsWith("java/"))
-				break;
+		if (inherit) {
+			baseclass = false;
+			while (extendsClass != null) {
+				if (extendsClass.startsWith("java/"))
+					break;
 
-			Clazz ec = analyzer.findClass(extendsClass);
-			if (ec == null) {
-				analyzer.error("Missing super class for DS annotations: "
-						+ Clazz.pathToFqn(extendsClass) + " from " + c.getFQN());
-			} else {
-				c.parseClassFileWithCollector(this);
+				Clazz ec = analyzer.findClass(extendsClass + ".class");
+				if (ec == null) {
+					analyzer.error("Missing super class for DS annotations: "
+							+ Clazz.pathToFqn(extendsClass) + " from " + clazz.getFQN());
+				} else {
+					ec.parseClassFileWithCollector(this);
+				}
 			}
 		}
-
-		if (component.implementation != null) {
-			for (ReferenceDef rdef : component.references.values()) {
-				rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)",
-						"un$1");
-				rdef.modified = referredMethod(analyzer, rdef, rdef.modified, "(add|set)(.*)", "modified$2",
-						"(.*)", "modified$1");
-			}
-			return component;
-		} else
-			return null;
+		for (ReferenceDef rdef : component.references.values()) {
+			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1",
+					"(.*)", "un$1");
+			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set)(.*)",
+					"updated$2", "(.*)", "updated$1");
+		}
+		return component;
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class AnnotationReader extends ClassDataCollector {
 			for (int i = 0; i < matches.length; i += 2) {
 				Matcher m = Pattern.compile(matches[i]).matcher(bind);
 				if (m.matches()) {
-					value = m.replaceFirst(matches[i+1]);
+					value = m.replaceFirst(matches[i + 1]);
 					break;
 				}
 			}
@@ -116,7 +116,7 @@ public class AnnotationReader extends ClassDataCollector {
 				Matcher matcher = BINDDESCRIPTOR.matcher(descriptor);
 				if (matcher.matches()) {
 					String type = matcher.group(2);
-					if (rdef.interfce.equals(Clazz.objectDescriptorToFQN(type))
+					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type))
 							|| type.equals("Ljava/util/Map;")
 							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
 
@@ -126,7 +126,7 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 			analyzer.error(
 					"A related method to %s from the reference %s has no proper prototype for class %s. Expected void %s(%s s [,Map m] | ServiceReference r)",
-					rdef.bind, value, component.implementation, value, rdef.interfce);
+					rdef.bind, value, component.implementation, value, rdef.service);
 		}
 		return null;
 	}
@@ -134,7 +134,6 @@ public class AnnotationReader extends ClassDataCollector {
 	public void annotation(Annotation annotation) {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
-
 			if (a instanceof Component)
 				doComponent((Component) a, annotation);
 			else if (a instanceof Activate)
@@ -145,9 +144,7 @@ public class AnnotationReader extends ClassDataCollector {
 				doModified();
 			else if (a instanceof Reference)
 				doReference((Reference) a, annotation);
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
 	}
@@ -156,7 +153,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doDeactivate() {
-		if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
 			analyzer.error(
 					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 					clazz, methodDescriptor);
@@ -169,7 +166,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doModified() {
-		if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
 			analyzer.error(
 					"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 					clazz, methodDescriptor);
@@ -177,6 +174,7 @@ public class AnnotationReader extends ClassDataCollector {
 			component.modified = method;
 		}
 	}
+
 	/**
 	 * @param annotation
 	 * @throws Exception
@@ -185,27 +183,22 @@ public class AnnotationReader extends ClassDataCollector {
 		ReferenceDef def = new ReferenceDef();
 		def.name = reference.name();
 
-		if (def.name == null) {
-			Matcher m = BINDMETHOD.matcher(method);
-			if (m.matches()) {
-				def.name = m.group(2);
-			} else {
-				def.name = method;
-			}
-		}
+		if (def.name == null)
+			def.name = method;
 
 		def.unbind = reference.unbind();
+		def.updated = reference.updated();
 		def.bind = method;
 
-		def.interfce = raw.get("service");
-		if (def.interfce != null) {
-			def.interfce = Clazz.objectDescriptorToFQN(def.interfce);
+		def.service = raw.get("service");
+		if (def.service != null) {
+			def.service = Clazz.objectDescriptorToFQN(def.service);
 		} else {
 			// We have to find the type of the current method to
 			// link it to the referenced service.
 			Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
 			if (m.matches()) {
-				def.interfce = Clazz.internalToFqn(m.group(3));
+				def.service = Clazz.internalToFqn(m.group(3));
 			} else
 				throw new IllegalArgumentException(
 						"Cannot detect the type of a Component Reference from the descriptor: "
@@ -214,26 +207,24 @@ public class AnnotationReader extends ClassDataCollector {
 
 		// Check if we have a target, this must be a filter
 		def.target = reference.target();
-		if (def.target != null) {
-			Verifier.verifyFilter(def.target, 0);
-		}
 
 		if (component.references.containsKey(def.name))
 			analyzer.error(
 					"In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
-					component.implementation, component.references.get(def.name), def.interfce, "");
+					component.implementation, component.references.get(def.name), def.service, "");
 		else
 			component.references.put(def.name, def);
 
 		def.cardinality = reference.cardinality();
 		def.policy = reference.policy();
+		def.policyOption = reference.policyOption();
 	}
 
 	/**
 	 * 
 	 */
 	protected void doActivate() {
-		if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
 			analyzer.error(
 					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 					clazz, methodDescriptor);
@@ -266,14 +257,20 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("servicefactory") != null)
 			component.servicefactory = comp.servicefactory();
 
+		if (annotation.get("configurationPid") != null)
+			component.configurationPid = comp.configurationPid();
+
+		if (annotation.get("xmlns") != null)
+			component.xmlns = comp.xmlns();
+
 		String properties[] = comp.properties();
 		if (properties != null)
 			for (String entry : properties)
 				component.properties.add(entry);
 
 		doProperties(comp.property());
-		Object [] x = annotation.get("service");
-		
+		Object[] x = annotation.get("service");
+
 		if (x == null) {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
@@ -287,7 +284,7 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		} else {
 			// We have explicit interfaces set
-			component.service= new String[x.length];
+			component.service = new String[x.length];
 			for (int i = 0; i < x.length; i++) {
 				component.service[i] = Clazz.objectDescriptorToFQN(x[i].toString());
 			}
@@ -328,9 +325,12 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	@Override public void method(int access, String name, String descriptor) {
-		if (Modifier.isPrivate(access) || Modifier.isAbstract(access) || Modifier.isStatic(access))
+		if (Modifier.isAbstract(access) || Modifier.isStatic(access))
 			return;
 
+		if ( !baseclass && Modifier.isPrivate(access))
+			return;
+		
 		this.method = name;
 		this.methodDescriptor = descriptor;
 		this.methodAccess = access;

@@ -41,7 +41,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	private boolean					fixup			= true;
 	long							modified;
 	Processor						parent;
-	Set<File>						included;
+	List<File>						included;
+
 	CL								pluginLoader;
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
@@ -494,7 +495,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	public synchronized void addIncluded(File file) {
 		if (included == null)
-			included = new HashSet<File>();
+			included = new ArrayList<File>();
 		included.add(file);
 	}
 
@@ -1418,5 +1419,9 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		basicPlugins.remove(plugin);
 		if (plugins != null)
 			plugins.remove(plugin);
+	}
+
+	public List<File> getIncluded() {
+		return included;
 	}
 }

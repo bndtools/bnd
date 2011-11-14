@@ -53,7 +53,6 @@ public class Project extends Processor {
 	boolean						inPrepare;
 	int							revision;
 	File						files[];
-	private long				buildtime;
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
 
@@ -388,12 +387,6 @@ public class Project extends Processor {
 				Map<String, String> attrs = entry.getValue();
 
 				Container found = null;
-
-				// Check if we have to use the maven pom ...
-				if (bsn.equals("pom")) {
-					doMavenPom(strategyx, result, attrs.get("scope"));
-					continue;
-				}
 
 				String versionRange = attrs.get("version");
 
@@ -937,7 +930,7 @@ public class Project extends Processor {
 
 		useStrategy = overrideStrategy(attrs, useStrategy);
 
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
 
@@ -1362,7 +1355,6 @@ public class Project extends Processor {
 		if (isNoBundles())
 			return null;
 
-		long buildtime = System.currentTimeMillis();
 		File bfs = new File(getTarget(), BUILDFILES);
 		bfs.delete();
 
@@ -1394,7 +1386,6 @@ public class Project extends Processor {
 				fw.close();
 			}
 			getWorkspace().changedFile(bfs);
-			this.buildtime = buildtime;
 			return files;
 		} else
 			return null;
@@ -1631,15 +1622,67 @@ public class Project extends Processor {
 		return getBase().getAbsolutePath();
 	}
 
-	public void bump(String mask) throws IOException {
-		Sed sed = new Sed(getReplacer(), getPropertiesFile());
-		sed.replace("(Bundle-Version\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))",
-				"$1${version;" + mask + ";$3}");
-		sed.doIt();
-		forceRefresh();
+	/**
+	 * Bump the version of this project. First check the main bnd file. If this
+	 * does not contain a version, check the include files. If they still do not
+	 * contain a version, then check ALL the sub builders. If not, add a version
+	 * to the main bnd file.
+	 * 
+	 * @param mask
+	 *            the mask for bumping, see {@link Macro#_version(String[])}
+	 * @throws Exception
+	 */
+	public void bump(String mask) throws Exception {
+		String pattern = "(Bundle-Version\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))";
+		String replace = "$1${version;" + mask + ";$3}";
+		try {
+			// First try our main bnd file
+			if (replace(getPropertiesFile(), pattern, replace))
+				return;
+
+			trace("no version in bnd.bnd");
+
+			// Try the included filed in reverse order (last has highest
+			// priority)
+			List<File> included = getIncluded();
+			if (included != null) {
+				List<File> copy = new ArrayList<File>(included);
+				Collections.reverse(copy);
+
+				for (File file : copy) {
+					if (replace(file, pattern, replace)) {
+						trace("replaced version in file %s", file);
+						return;
+					}
+				}
+			}
+			trace("no version in included files");
+
+			boolean found = false;
+
+			// Replace in all sub builders.
+			for (Builder sub : getSubBuilders()) {
+				found |= replace(sub.getPropertiesFile(), pattern, replace);
+			}
+
+			if (!found) {
+				trace("no version in sub builders, add it to bnd.bnd");
+				String bndfile = IO.collect(getPropertiesFile());
+				bndfile += "\n# Added by by bump\nBundle-Version: 0.0.0\n";
+				IO.store(bndfile, getPropertiesFile());
+			}
+		} finally {
+			forceRefresh();
+		}
 	}
 
-	public void bump() throws IOException {
+	boolean replace(File f, String pattern, String replacement) throws IOException {
+		Sed sed = new Sed(getReplacer(), f);
+		sed.replace(pattern, replacement);
+		return sed.doIt() > 0;
+	}
+
+	public void bump() throws Exception {
 		bump(getProperty(BUMPPOLICY, "=+0"));
 	}
 
@@ -1885,6 +1928,7 @@ public class Project extends Processor {
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
 		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
+		trace("candidates for tester %s", withDefault);
 
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
@@ -1907,6 +1951,7 @@ public class Project extends Processor {
 				}
 			}
 		}
+
 		throw new IllegalArgumentException("Default handler for " + header + " not found in "
 				+ defaultHandler);
 	}
