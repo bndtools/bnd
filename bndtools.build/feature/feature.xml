@@ -13,7 +13,7 @@
 <feature
       id="bndtools.feature"
       label="Bndtools"
-      version="1.0.0.RC2-qualifier"
+      version="1.0.0.RC3-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.core">
 
