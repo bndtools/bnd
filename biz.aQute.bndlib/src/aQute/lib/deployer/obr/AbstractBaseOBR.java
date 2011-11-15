@@ -594,4 +594,7 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 		return supportedModes;
 	}
 
+	public String toString() {
+		return getName();
+	}
 }
