@@ -1,2 +1,2 @@
--runfw: org.eclipse.osgi;version=3.7
+-runfw: org.eclipse.osgi;version='[3.7,4)'
 -runvm: -Dosgi.console

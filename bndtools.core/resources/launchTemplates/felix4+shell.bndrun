@@ -1,4 +1,4 @@
--runfw: org.apache.felix.framework;version=4
+-runfw: org.apache.felix.framework;version='[4,5)'
 
 -runbundles:\
 	org.apache.felix.shell,\
