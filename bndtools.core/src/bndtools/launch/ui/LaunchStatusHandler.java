@@ -21,7 +21,7 @@ public class LaunchStatusHandler implements IStatusHandler {
                 LaunchStatusDialog dialog = new LaunchStatusDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), status);
                 int response = dialog.open();
 
-                result.set(response == Window.OK && status.getSeverity() < IStatus.ERROR);
+                result.set(response == Window.OK);
             }
         };
 

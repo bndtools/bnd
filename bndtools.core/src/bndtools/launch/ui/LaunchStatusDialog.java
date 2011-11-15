@@ -120,15 +120,9 @@ public class LaunchStatusDialog extends TitleAreaDialog {
             }
         });
 
-        if (status.getSeverity() >= IStatus.ERROR) {
-            lblQuestion.setText("One or more errors occurred while preparing the runtime environment.");
-            lblQuestion.setText("The launch will be aborted");
-        } else if (status.getSeverity() >= IStatus.WARNING) {
-            lblQuestion.setText("One or more warnings occurred while preparing the runtime environment.");
-            lblQuestion.setText("Do you want to continue launching?");
-        } else {
-            lblQuestion.setText("Something happened when preparing the runtime environment.");
-            lblQuestion.setText("Do you want to continue launching?");
+        if (status.getSeverity() >= IStatus.WARNING) {
+            setMessage("One or more warnings occurred while preparing the runtime environment.");
+            lblQuestion.setText("Continue launching anyway?");
         }
 
         return container;
@@ -141,9 +135,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
      */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        if (status.getSeverity() >= IStatus.ERROR) {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        } else {
+        if (status.getSeverity() >= IStatus.WARNING) {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, true);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.NO_LABEL, false);
         }

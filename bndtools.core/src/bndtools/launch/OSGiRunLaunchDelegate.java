@@ -1,7 +1,9 @@
 package bndtools.launch;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,9 +24,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.lib.osgi.Jar;
 import bndtools.Central;
 import bndtools.Plugin;
 
@@ -55,7 +59,28 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         warnings.addAll(launcherWarnings);
         warnings.addAll(projectWarnings);
 
+        String frameworkPath = validateClasspath(bndLauncher.getClasspath());
+        if (frameworkPath == null)
+            errors.add("No OSGi framework has been added to the run path.");
+
         return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
+    }
+
+    private String validateClasspath(Collection<String> classpath) {
+        for (String fileName : classpath) {
+            Jar jar = null;
+            try {
+                jar = new Jar(new File(fileName));
+                boolean frameworkExists = jar.exists("META-INF/services/" + FrameworkFactory.class.getName());
+                if (frameworkExists)
+                    return fileName;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                jar.close();
+            }
+        }
+        return null;
     }
 
     @Override
