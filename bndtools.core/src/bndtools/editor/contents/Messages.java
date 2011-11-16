@@ -23,6 +23,12 @@ public class Messages extends NLS {
     public static String PackageInfoDialog_btnCheckAll_text;
     public static String PackageInfoDialog_btnUncheckAll_text;
     public static String PackageInfoDialog_btnUncheckAll_text_1;
+    public static String TestSuitesPart_add;
+    public static String TestSuitesPart_remove;
+    public static String TestSuitesPart_section_junit_tests;
+    public static String TestSuitesPart_title;
+    public static String TestSuitesPart_errorJavaType;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
