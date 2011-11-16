@@ -1,5 +1,5 @@
 # Master Version Settings
-base-version: 1.0.0.RC3
+base-version: 1.0.0.RC4
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 
 # We use git
