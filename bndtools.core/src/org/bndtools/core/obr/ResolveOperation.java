@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -305,19 +306,32 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private List<OBRIndexProvider> loadIndexProviders() throws Exception {
-        List<OBRIndexProvider> plugins = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
-        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(plugins.size());
-
-        List<String> includedRepos = model.getRunRepos();
-        for (OBRIndexProvider plugin : plugins) {
-            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) {
+        // Load the OBR providers into a map keyed on repo name
+        Map<String, OBRIndexProvider> repoMap = new LinkedHashMap<String, OBRIndexProvider>();
+        for (OBRIndexProvider plugin : Central.getWorkspace().getPlugins(OBRIndexProvider.class)) {
+            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) { // filter out non-runtime repos nice and early
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
-                if (includedRepos == null || includedRepos.contains(name))
-                    repos.add(plugin);
+                repoMap.put(name, plugin);
             }
         }
 
-        return repos;
+        List<OBRIndexProvider> result = new ArrayList<OBRIndexProvider>(repoMap.size());
+        List<String> includedRepoNames = model.getRunRepos();
+
+        if (includedRepoNames != null) {
+            // Use the specified providers in the order that they are specified
+            for (String name : includedRepoNames) {
+                OBRIndexProvider repo = repoMap.get(name);
+                if (repo != null) result.add(repo);
+            }
+        } else {
+            // Take all the providers in the natural order offered by the Workspace plugins
+            for (OBRIndexProvider repo : repoMap.values()) {
+                result.add(repo);
+            }
+        }
+
+        return result;
     }
 
     private File findFramework(MultiStatus status) {

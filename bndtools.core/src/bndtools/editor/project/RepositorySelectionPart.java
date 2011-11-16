@@ -1,10 +1,10 @@
 package bndtools.editor.project;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
+import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.JFacePreferences;
@@ -12,12 +12,16 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IOpenListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -69,11 +73,17 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final Image repoImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private final Image nonObrRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
 
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+
+
     private Text txtSearch;
     private TreeViewer viewer;
+    private ToolItem btnMoveUp;
+    private ToolItem btnMoveDown;
 
     private final ArrayList<RepositoryPlugin> allRepos = new ArrayList<RepositoryPlugin>();
-    private Set<String> includedRepos = null;
+    private List<String> includedRepos = null;
 
     /**
      * Create the SectionPart.
@@ -154,6 +164,19 @@ public class RepositorySelectionPart extends BndEditorPart {
         colName.setMoveable(false);
         colName.setResizable(true);
 
+        toolbar = new ToolBar(container, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
+        btnMoveUp = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveUp.setText("Up");
+        btnMoveUp.setImage(imgUp);
+        btnMoveUp.setEnabled(false);
+
+        btnMoveDown = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveDown.setText("Down");
+        btnMoveDown.setImage(imgDown);
+        btnMoveDown.setEnabled(false);
+
         viewer.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
@@ -177,7 +200,14 @@ public class RepositorySelectionPart extends BndEditorPart {
                                     image = projectImg;
                             }
                         } else if (column == 0) {
-                            image = included ? checkedImg : uncheckedImg;
+                            if (included)
+                                image = checkedImg;
+                            else {
+                                if (((OBRIndexProvider) repo).getSupportedModes().contains(OBRResolutionMode.runtime))
+                                    image = uncheckedImg;
+                                else
+                                    image = nonObrRepoImg;
+                            }
                         }
                         foreground = included ? enabledColor : disabledColor;
                     } else {
@@ -219,8 +249,12 @@ public class RepositorySelectionPart extends BndEditorPart {
                     if (element instanceof OBRIndexProvider) {
                         if (isIncludedRepo((RepositoryPlugin) element))
                             tooltip = "Included in OBR resolution.";
-                        else
-                            tooltip = "Excluded from OBR resolution.";
+                        else {
+                            if (((OBRIndexProvider) element).getSupportedModes().contains(OBRResolutionMode.runtime))
+                                tooltip = "Excluded from OBR resolution.";
+                            else
+                                tooltip = "Repository provides non-runtime resources.";
+                        }
                     } else {
                         tooltip = "Not an OBR repository, cannot be used for OBR resolution.";
                     }
@@ -229,6 +263,51 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         });
 
+        ViewerSorter sorter = new ViewerSorter() {
+            @Override
+            public int compare(Viewer viewer, Object e1, Object e2) {
+                if (e1 instanceof RepositoryPlugin && e2 instanceof RepositoryPlugin) {
+                    return compareRepos((RepositoryPlugin) e1, (RepositoryPlugin) e2);
+                } else if (e1 instanceof RepositoryBundle && e2 instanceof RepositoryBundle) {
+                    return compareBundles((RepositoryBundle) e1, (RepositoryBundle) e2);
+                } else if (e1 instanceof RepositoryBundleVersion && e2 instanceof RepositoryBundleVersion) {
+                    return compareBundleVersions((RepositoryBundleVersion) e1, (RepositoryBundleVersion) e2);
+                }
+                return 0;
+            }
+
+            public int compareRepos(RepositoryPlugin r1, RepositoryPlugin r2) {
+                if (isIncludedRepo(r1)) {
+                    if (isIncludedRepo(r2)) {
+                        // Both included => sort on position in included list
+                        if (includedRepos != null) {
+                            return includedRepos.indexOf(r1.getName()) - includedRepos.indexOf(r2.getName());
+                        } else {
+                            return allRepos.indexOf(r1) - allRepos.indexOf(r2);
+                        }
+                    }
+                    // r1 included but r2 not => r1 comes first
+                    return -1;
+                }
+                if (isIncludedRepo(r2)) {
+                    // r1 not included but r2 is => r2 comes first
+                    return +1;
+                }
+                // Neither included => sort on name
+                return r1.getName().compareTo(r2.getName());
+            }
+
+            public int compareBundles(RepositoryBundle b1, RepositoryBundle b2) {
+                return b1.getBsn().compareTo(b2.getBsn());
+            }
+
+            public int compareBundleVersions(RepositoryBundleVersion v1, RepositoryBundleVersion v2) {
+                return v1.getVersion().compareTo(v2.getVersion());
+            }
+        };
+
+        viewer.setSorter(sorter);
+
         viewer.addOpenListener(new IOpenListener() {
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -236,6 +315,12 @@ public class RepositorySelectionPart extends BndEditorPart {
                     if (element instanceof RepositoryPlugin)
                         toggleSelection((RepositoryPlugin) element);
                 }
+            }
+        });
+
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                updateButtons();
             }
         });
 
@@ -266,9 +351,41 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         });
 
+        btnMoveUp.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveUp();
+            }
+        });
+        btnMoveDown.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveDown();
+            }
+        });
+
         ColumnViewerToolTipSupport.enableFor(viewer, ToolTip.NO_RECREATE);
 
         reloadRepos();
+    }
+
+    void updateButtons() {
+        boolean enable = !viewer.getSelection().isEmpty();
+        IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+        for (Object elem : sel.toList()) {
+            if (!(elem instanceof RepositoryPlugin)) {
+                enable = false;
+                break;
+            }
+            RepositoryPlugin plugin = (RepositoryPlugin) elem;
+            if (!isIncludedRepo(plugin)) {
+                enable = false;
+                break;
+            }
+        }
+
+        btnMoveUp.setEnabled(enable);
+        btnMoveDown.setEnabled(enable);
     }
 
     void updatedFilter(String filterString) {
@@ -299,25 +416,34 @@ public class RepositorySelectionPart extends BndEditorPart {
             return;
         }
 
-        if (includedRepos == null) {
-            includedRepos = new LinkedHashSet<String>();
-
-            for (RepositoryPlugin repo : allRepos) {
-                includedRepos.add(repo.getName());
-            }
-        }
-
+        lazyInitIncludedRepos();
         if (!includedRepos.remove(selectedRepo.getName()))
             includedRepos.add(selectedRepo.getName());
 
-        viewer.refresh(selectedRepo);
+        viewer.refresh();
+        updateButtons();
+
         markDirty();
+    }
+
+    void lazyInitIncludedRepos() {
+        if (includedRepos == null) {
+            includedRepos = new LinkedList<String>();
+            for (RepositoryPlugin repo : allRepos) {
+                if (repo instanceof OBRIndexProvider) {
+                    if (((OBRIndexProvider) repo).getSupportedModes().contains(OBRResolutionMode.runtime)) {
+                        includedRepos.add(repo.getName());
+                    }
+                }
+            }
+        }
     }
 
     private void reloadRepos() {
         allRepos.clear();
         allRepos.addAll(RepositoryUtils.listRepositories(true));
         viewer.setInput(allRepos);
+        updateButtons();
     }
 
     private void fillToolBar(ToolBar toolbar) {
@@ -332,6 +458,37 @@ public class RepositorySelectionPart extends BndEditorPart {
         });
     }
 
+    void doMoveUp() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveUp(includedRepos, selectedIndexes)) {
+            viewer.refresh();
+            updateButtons();
+
+            markDirty();
+        }
+    }
+
+    void doMoveDown() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveDown(includedRepos, selectedIndexes)) {
+            viewer.refresh();
+            updateButtons();
+            markDirty();
+        }
+    }
+
+    int[] findSelectedIndexes() {
+        Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
+        int[] selectionIndexes = new int[selection.length];
+
+        for(int i=0; i<selection.length; i++) {
+            RepositoryPlugin item = (RepositoryPlugin) selection[i];
+            selectionIndexes[i] = includedRepos.indexOf(item.getName());
+        }
+        return selectionIndexes;
+    }
+
+
     @Override
     protected String[] getProperties() {
         return new String[] { BndConstants.RUNREPOS };
@@ -340,8 +497,10 @@ public class RepositorySelectionPart extends BndEditorPart {
     @Override
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
-        includedRepos = tmp == null ? null : new LinkedHashSet<String>(tmp);
+        includedRepos = tmp == null ? null : new LinkedList<String>(tmp);
         viewer.refresh(true);
+        updateButtons();
+
     }
 
     @Override
@@ -352,7 +511,12 @@ public class RepositorySelectionPart extends BndEditorPart {
     @Override
     public void dispose() {
         super.dispose();
+
         refreshImg.dispose();
+
+        imgUp.dispose();
+        imgDown.dispose();
+
         bundleImg.dispose();
         checkedImg.dispose();
         nonObrRepoImg.dispose();
