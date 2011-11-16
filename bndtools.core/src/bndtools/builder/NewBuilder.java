@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -53,11 +54,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private List<String> classpathErrors;
 
     private List<String> buildLog;
-    private int logLevel = LOG_FULL; // TODO: load this from some config??
+    private int logLevel = LOG_NONE;
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, "Building bundles", 0);
+
+        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
         classpathErrors = new LinkedList<String>();
         buildLog = new ArrayList<String>(5);
@@ -137,12 +141,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
             }
 
-            if (!buildLog.isEmpty()) {
-                System.err.println(String.format("==> BUILD LOG for project %s follows (%d entries):", getProject(), buildLog.size()));
+            if (!buildLog.isEmpty() && logLevel > 0) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(String.format("BUILD LOG for project %s (%d entries):", getProject(), buildLog.size()));
                 for (String message : buildLog) {
-                    StringBuilder builder = new StringBuilder().append("    ").append(message);
-                    System.err.println(builder.toString());
+                    builder.append("\n -> ").append(message);
                 }
+                Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
             }
         }
     }

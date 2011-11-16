@@ -13,9 +13,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -36,6 +38,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	private String enableSubs;
 	private boolean noAskPackageInfo = false;
 	private boolean noCheckCnf = false;
+	private int buildLogging = 0;
 
 	@Override
 	protected Control createContents(Composite parent) {
@@ -66,6 +69,15 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
 		btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
 
+        Group grpDebugging = new Group(composite, SWT.NONE);
+        grpDebugging.setText(Messages.BndPreferencePage_grpDebugging_text);
+
+        Label lblBuildLogging = new Label(grpDebugging, SWT.NONE);
+        lblBuildLogging.setText(Messages.BndPreferencePage_lblBuildLogging_text);
+
+        final Combo cmbBuildLogging = new Combo(grpDebugging, SWT.READ_ONLY);
+        cmbBuildLogging.setItems(new String[] { "None", "Basic", "Full" });
+
 		// Load Data
 		if(MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
 			btnAlways.setSelection(true);
@@ -83,6 +95,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		btnNoAskPackageInfo.setSelection(noAskPackageInfo);
 		btnNoCheckCnf.setSelection(noCheckCnf);
 		btnCheckCnfNow.setEnabled(!noCheckCnf);
+		cmbBuildLogging.select(buildLogging);
 
 		// Listeners
 		SelectionAdapter adapter = new SelectionAdapter() {
@@ -125,6 +138,12 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		        }
 		    }
         });
+		cmbBuildLogging.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        buildLogging = cmbBuildLogging.getSelectionIndex();
+		    }
+        });
 
 		// Layout
 		GridLayout layout;
@@ -155,6 +174,10 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
 		btnCheckCnfNow.setLayoutData(gd);
 
+        grpDebugging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        grpDebugging.setLayout(new GridLayout(2, false));
+        cmbBuildLogging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
 		return composite;
 	}
 
@@ -163,6 +186,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		store.setValue(Plugin.PREF_ENABLE_SUB_BUNDLES, enableSubs);
 		store.setValue(Plugin.PREF_NOASK_PACKAGEINFO, noAskPackageInfo);
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, noCheckCnf);
+		store.setValue(Plugin.PREF_BUILD_LOGGING, buildLogging);
 		return true;
 	}
 
@@ -172,5 +196,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		enableSubs = store.getString(Plugin.PREF_ENABLE_SUB_BUNDLES);
 		noAskPackageInfo = store.getBoolean(Plugin.PREF_NOASK_PACKAGEINFO);
 		noCheckCnf = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
+		buildLogging = store.getInt(Plugin.PREF_BUILD_LOGGING);
 	}
 }
