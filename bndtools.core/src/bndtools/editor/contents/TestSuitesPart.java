@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -81,6 +82,9 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     private TableViewer viewer;
 
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+
     public TestSuitesPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
 
@@ -90,9 +94,13 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     private void createSection(Section section, FormToolkit toolkit) {
         section.setText(Messages.TestSuitesPart_section_junit_tests);
 
+        Composite composite = toolkit.createComposite(section);
+        section.setClient(composite);
+
         // Section toolbar buttons
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
+        
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
         addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText(Messages.TestSuitesPart_add);
@@ -103,20 +111,32 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         removeItem.setToolTipText(Messages.TestSuitesPart_remove);
         removeItem.setEnabled(false);
 
-        Composite composite = toolkit.createComposite(section);
-        section.setClient(composite);
-
         Table table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 
         viewer = new TableViewer(table);
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setLabelProvider(new TestSuiteLabelProvider());
 
+        toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+
+        final ToolItem btnMoveUp = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveUp.setText("Up");
+        btnMoveUp.setImage(imgUp);
+        btnMoveUp.setEnabled(false);
+
+        final ToolItem btnMoveDown = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveDown.setText("Down");
+        btnMoveDown.setImage(imgDown);
+        btnMoveDown.setEnabled(false);
+
         // LISTENERS
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection selection = event.getSelection();
-                removeItem.setEnabled(selection != null && !selection.isEmpty());
+                boolean enabled = selection != null && !selection.isEmpty();
+                removeItem.setEnabled(enabled);
+                btnMoveUp.setEnabled(enabled);
+                btnMoveDown.setEnabled(enabled);
                 getManagedForm().fireSelectionChanged(TestSuitesPart.this, selection);
             }
         });
@@ -151,15 +171,35 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         });
 
+        btnMoveUp.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveUp();
+            }
+        });
+        btnMoveDown.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveDown();
+            }
+        });
 
-        // LAYOUT
+        // Layout
         GridLayout layout;
 
-        layout = new GridLayout();
+        layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         composite.setLayout(layout);
-        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        //gd.widthHint = 75;
+        gd.heightHint = 75;
+        table.setLayoutData(gd);
+        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
     }
 
     void doOpenSource(String name) {
@@ -233,6 +273,34 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             markDirty();
             validate();
         }
+    }
+    
+    void doMoveUp() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveUp(testSuites, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
+    void doMoveDown() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveDown(testSuites, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
+    int[] findSelectedIndexes() {
+        Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
+        int[] selectionIndexes = new int[selection.length];
+
+        for(int i=0; i<selection.length; i++) {
+            selectionIndexes[i] = testSuites.indexOf(selection[i]);
+        }
+        return selectionIndexes;
     }
 
     @Override
