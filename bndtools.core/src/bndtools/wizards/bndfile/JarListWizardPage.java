@@ -244,8 +244,10 @@ public class JarListWizardPage extends WizardPage {
 
 	private void update() {
 		btnRemove.setEnabled(!viewer.getSelection().isEmpty());
-		getContainer().updateButtons();
-		getContainer().updateMessage();
+		if (isCurrentPage()) {
+		    getContainer().updateButtons();
+		    getContainer().updateMessage();
+		}
 	}
 
     private void checkExistingBundles() {
