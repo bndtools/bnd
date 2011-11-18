@@ -132,7 +132,7 @@ public class BndEditModel implements IPersistableBndModel {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
-    private Converter<List<VersionedClause>, String> runBundlesConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
+    private Converter<List<VersionedClause>, String> clauseListConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
     private Converter<String, String> stringConverter = new NoopConverter<String>();
     private Converter<Boolean, String> includedSourcesConverter = new Converter<Boolean,String>() {
         public Boolean convert(String string) throws IllegalArgumentException {
@@ -209,7 +209,7 @@ public class BndEditModel implements IPersistableBndModel {
 	    // register converters
         converters.put(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
         converters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
-        converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
+        converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
         converters.put(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
         converters.put(Constants.BUNDLE_VERSION, stringConverter);
         converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
@@ -446,12 +446,12 @@ public class BndEditModel implements IPersistableBndModel {
 		List<String> oldPackages = getPrivatePackages();
 		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
-    public List<String> getSystemPackages() {
-        return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, listConverter);
+    public List<ExportedPackage> getSystemPackages() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, exportPackageConverter);
     }
-    public void setSystemPackages(List<? extends String> packages) {
-        List<String> oldPackages = getSystemPackages();
-        doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, stringListFormatter);
+    public void setSystemPackages(List<? extends ExportedPackage> packages) {
+        List<ExportedPackage> oldPackages = getSystemPackages();
+        doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, headerClauseListFormatter);
     }
 	public List<String> getClassPath() {
 		return doGetObject(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
@@ -528,7 +528,7 @@ public class BndEditModel implements IPersistableBndModel {
     }
 
 	public List<VersionedClause> getRunBundles() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
+		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
 	}
 	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
@@ -536,7 +536,7 @@ public class BndEditModel implements IPersistableBndModel {
 	}
 
     public List<VersionedClause> getBackupRunBundles() {
-        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, runBundlesConverter);
+        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, clauseListConverter);
     }
     public void setBackupRunBundles(List<? extends VersionedClause> paths) {
         List<VersionedClause> oldValue = getBuildPath();

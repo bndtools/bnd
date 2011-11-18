@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +65,7 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.VersionedClause;
 
 public class ResolveOperation implements IRunnableWithProgress {
@@ -173,6 +175,11 @@ public class ResolveOperation implements IRunnableWithProgress {
             resolver.addGlobalCapability(helper.capability(ObrConstants.REQUIREMENT_SERVICE, props));
         }
 
+        // Add system packages-extra capabilities (from -runsystempackages)
+        List<ExportedPackage> systemPackages = model.getSystemPackages();
+        if (systemPackages != null)
+            addSystemPackagesExtraCapabilities(resolver, systemPackages);
+
         // Add requirements
         List<Requirement> requirements = model.getRunRequire();
         if (requirements != null) for (Requirement req : requirements) {
@@ -256,6 +263,20 @@ public class ResolveOperation implements IRunnableWithProgress {
             if (version != null)
                 capabilityProps.put(ObrConstants.FILTER_VERSION, version);
 
+            Capability capability = helper.capability(ObrConstants.REQUIREMENT_PACKAGE, capabilityProps);
+            resolver.addGlobalCapability(capability);
+        }
+    }
+
+    private void addSystemPackagesExtraCapabilities(Resolver resolver, Collection<? extends ExportedPackage> systemPackages) {
+        for (ExportedPackage clause : systemPackages) {
+            String pkgName = clause.getName();
+            String version = clause.getVersionString();
+
+            Map<String, String> capabilityProps = new HashMap<String, String>();
+            capabilityProps.put(ObrConstants.FILTER_PACKAGE, pkgName);
+            if (version != null)
+                capabilityProps.put(ObrConstants.FILTER_VERSION, version);
             Capability capability = helper.capability(ObrConstants.REQUIREMENT_PACKAGE, capabilityProps);
             resolver.addGlobalCapability(capability);
         }
