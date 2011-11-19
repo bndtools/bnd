@@ -47,6 +47,8 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     private Combo cmbExecEnv;
     private ComboViewer eeViewer;
 
+    private boolean committing = false;
+
     public RunFrameworkPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         createSection(getSection(), toolkit);
@@ -183,16 +185,23 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
-        model.setRunFramework(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
-        model.setEE(selectedEE);
+        try {
+            committing = true;
+            model.setRunFramework(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
+            model.setEE(selectedEE);
+        } finally {
+            committing = false;
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if(page.isActive()) {
-            refresh();
-        } else {
-            markStale();
+        if (!committing) {
+            IFormPage page = (IFormPage) getManagedForm().getContainer();
+            if(page.isActive()) {
+                refresh();
+            } else {
+                markStale();
+            }
         }
     }
 }
