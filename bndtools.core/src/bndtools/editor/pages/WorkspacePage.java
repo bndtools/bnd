@@ -12,6 +12,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
+import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
@@ -24,13 +25,13 @@ public class WorkspacePage extends FormPage {
     private PluginsPart pluginsPart;
 
     public static IPageFactory MAIN_FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
         }
     };
 
     public static IPageFactory EXT_FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
         }
     };

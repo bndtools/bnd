@@ -46,7 +46,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -60,6 +59,8 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.api.ResolveMode;
+import bndtools.editor.common.AbstractBaseFormEditor;
+import bndtools.editor.common.IPriority;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
@@ -73,7 +74,7 @@ import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.wizards.obr.ObrResolutionWizard;
 
-public class BndEditor extends FormEditor implements IResourceChangeListener {
+public class BndEditor extends AbstractBaseFormEditor implements IResourceChangeListener {
 
     public static final String WORKSPACE_EDITOR  = "bndtools.bndWorkspaceConfigEditor";
 
@@ -334,6 +335,27 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
     @Override
     protected void addPages() {
         updatePages();
+
+        showHighestPriorityPage();
+    }
+
+    void showHighestPriorityPage() {
+        int selectedPrio = Integer.MIN_VALUE;
+        String selected = null;
+
+        for (Object pageObj : pages) {
+            IFormPage page = (IFormPage) pageObj;
+            int priority = 0;
+            if (page instanceof IPriority)
+                priority = ((IPriority) page).getPriority();
+            if (priority > selectedPrio) {
+                selected = page.getId();
+                selectedPrio = priority;
+            }
+        }
+
+        if (selected != null)
+            setActivePage(selected);
     }
 
     private List<String> getPagesBnd(String fileName) {
@@ -456,6 +478,14 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         if (delta == null)
             return;
 
+        // Delegate to any interested pages
+        for (Object page : pages) {
+            if (page instanceof IResourceChangeListener) {
+                ((IResourceChangeListener) page).resourceChanged(event);
+            }
+        }
+
+        // Close editor if file removed or switch to new location if file moved
         if (delta.getKind() == IResourceDelta.REMOVED) {
             if ((delta.getFlags() & IResourceDelta.MOVED_TO) > 0) {
                 IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
@@ -474,7 +504,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             } else {
                 close(false);
             }
-        } else if ( (delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.CONTENT) > 0) {
+
+        }
+        // File content updated externally => reload all pages
+        else if ((delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.CONTENT) > 0) {
             if (!saving.get()) {
                 final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
                 final IDocument document = docProvider.getDocument(getEditorInput());

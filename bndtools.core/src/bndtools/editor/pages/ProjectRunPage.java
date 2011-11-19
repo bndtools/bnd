@@ -15,6 +15,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
@@ -29,7 +30,7 @@ public class ProjectRunPage extends FormPage {
     private final BndEditModel model;
 
     public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectRunPage(editor, model, id, "Run");
         }
     };
