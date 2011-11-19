@@ -608,7 +608,7 @@
          icon="icons/felix.gif"/>
       <template
          name="Apache Felix 4 (Empty)"
-         path="launchTemplates/felix4l.bndrun"
+         path="launchTemplates/felix4.bndrun"
          doc="html/felix4.form.xml"
          icon="icons/felix.gif"/>
       <template
@@ -621,6 +621,10 @@
          path="launchTemplates/knopflerfish.bndrun"
          doc="html/knopflerfish.form.xml"
          icon="icons/knopflerfish_16x16_inverted.gif"/>
+      <template
+         name="«Empty»"
+         path="launchTempaltes/empty.bndrun"
+         doc="html/empty.form.xml"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
