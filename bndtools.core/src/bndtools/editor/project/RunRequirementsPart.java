@@ -390,7 +390,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     private void updateButtonStates() {
-        btnResolveNow.setEnabled(resolveMode != ResolveMode.auto);
+        // btnResolveNow.setEnabled(resolveMode != ResolveMode.auto);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
