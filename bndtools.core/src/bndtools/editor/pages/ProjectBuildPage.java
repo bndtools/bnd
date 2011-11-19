@@ -39,6 +39,7 @@ import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.project.BuildOperationsPart;
 import bndtools.editor.project.BuildPathPart;
 import bndtools.editor.project.SubBundlesPart;
 import bndtools.utils.MessageHyperlinkAdapter;
@@ -114,6 +115,12 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         Composite rightPanel = tk.createComposite(sashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         rightPanel.setLayoutData(gd);
+
+        BuildOperationsPart buildOpsPart = new BuildOperationsPart(rightPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(buildOpsPart);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        buildOpsPart.getSection().setLayoutData(gd);
 
         layout = new GridLayout(1, false);
         rightPanel.setLayout(layout);
