@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.model.clauses;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.framework.Constants;
@@ -46,6 +47,6 @@ public class ExportedPackage extends HeaderClause {
 
     @Override
     public ExportedPackage clone() {
-        return new ExportedPackage(this.name, this.attribs);
+        return new ExportedPackage(this.name, new HashMap<String, String>(this.attribs));
     }
 }
