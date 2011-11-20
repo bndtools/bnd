@@ -8,8 +8,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -24,6 +30,9 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
@@ -35,6 +44,7 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
@@ -44,6 +54,9 @@ import bndtools.model.clauses.HeaderClause;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
+    private final Image editImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png").createImage();
+    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
+
     private final Map<String, IConfigurationElement> configElements = new HashMap<String, IConfigurationElement>();
 
     private List<HeaderClause> data;
@@ -51,7 +64,6 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     private Table table;
     private TableViewer viewer;
 
-    private Image editImg;
     private ToolItem editItemTool;
     private ToolItem removeItemTool;
 
@@ -75,11 +87,15 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
         createToolBar(section);
 
-        table = toolkit.createTable(section, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
+        Composite composite = toolkit.createComposite(section, SWT.NONE);
+        table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
 
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
+
+        Button btnReload = toolkit.createButton(composite, "Reload", SWT.NONE);
+        btnReload.setImage(refreshImg);
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -99,8 +115,35 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
                 }
             }
         });
+        btnReload.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doReload();
+            }
+        });
 
-        section.setClient(table);
+        composite.setLayout(new GridLayout(1, false));
+        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        btnReload.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
+        section.setClient(composite);
+
+    }
+
+    void doReload() {
+        IFormPage page = (IFormPage) getManagedForm().getContainer();
+        final IFile file = ResourceUtil.getFile(page.getEditorInput());
+        if (file != null && file.exists()) {
+            WorkspaceJob job = new WorkspaceJob("Reload Plugins") {
+                @Override
+                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                    file.touch(monitor);
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setUser(true);
+            job.schedule();
+        }
     }
 
     void createToolBar(Section section) {
@@ -118,7 +161,6 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         });
 
         editItemTool = new ToolItem(toolbar, SWT.PUSH);
-        editImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png").createImage();
         editItemTool.setImage(editImg);
         editItemTool.setToolTipText("Edit");
         editItemTool.setEnabled(false);
@@ -155,6 +197,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         super.dispose();
         if(model != null) model.removePropertyChangeListener(Constants.PLUGIN, this);
         editImg.dispose();
+        refreshImg.dispose();
     }
 
     @Override
