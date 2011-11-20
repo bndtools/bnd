@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/bndtools.feature_1.0.0.RC4-qualifier" id="bndtools.feature" version="1.0.0.RC4-qualifier">
+   <feature url="features/bndtools.feature_1.0.0.REL" id="bndtools.feature" version="1.0.0.REL">
       <category name="bndtools"/>
    </feature>
    <category-def name="bndtools" label="Bndtools"/>
