@@ -1,146 +1,358 @@
-Bndtools Tutorial
-=================
+% Bndtools Tutorial
+% Neil Bartlett
+% November 27, 2011
 
-In this tutorial we will build a sample application composed of two components and an API. There will be a total of three bundles created, and in this case we will deliver all three bundles from the same project (see Section TODO for information on the pros and cons of delivering multiple bundles from a single project).
+Introduction
+============
 
+In this tutorial we will build a sample application composed of two components and an API. The following diagram shows the bundle architecture (simplified):
+
+![](IMAGES/tutorial_bundles.png)
+
+In the tutorial we create the top three bundles (rectangles):
+
+ *	The API bundle exports a service interface, `Greeting`.
+ *	The Provider bundle imports the interface and publishes an instance of the service.
+ *	The Command bundle imports the interface and binds to the service instance, and also publishes a `Command` service that is used by the Felix Shell bundle.
+ 
 Installing Bndtools
--------------------
+===================
 
-Bndtools requires and has been tested with Eclipse versions 3.5 through 3.7. Installation of Bndtools uses the standard Eclipse update installer; if you are an experienced Eclipse user then you will only need to know the update site URL, which is as follows:
+Please refer to the [Installation Instructions](installation.html).
 
-	http://bndtools-updates.s3.amazonaws.com/
-
-TODO: full installation instructions for newbies.
-
-Create a New Bndtools OSGi Project
-----------------------------------
+Create an API Project
+=====================
 
 First we need to create a Bndtools OSGi Project. This is just a standard Eclipse Java Project, with an additional builder for constructing OSGi bundles.
 
-From the File menu, select New -> Bndtools OSGi Project.
+1.	From the File menu, select **New -> Bndtools OSGi Project**.
 
-![](images/newwizard_01.png)
+	![](IMAGES/tutorial_01.png)
 
-On the next page, enter `org.example` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
+1.	If this is the first time you have used Bndtools, you will now see the "Welcome" dialog. Click **Next** followed by **Finish** to allow Bndtools to setup a configuration project and import a basic repository.
 
-![](images/newwizard_02.png)
+	![](IMAGES/tutorial_02.png)
 
-On the next page, you are offered a choice of static repositories to import into the workspace. These repositories host bundles that you may wish to use during development or runtime. We will use bundles from the Base repository, so leave this entry checked in the list and click Next. As this is the first time a repository has been configured, the tool will take a few seconds to copy in the contents.
+	![](IMAGES/tutorial_03.png)
 
-![](images/newwizard_03.png)
+1.	On the next page, enter `org.example.api` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
 
-The next page shows the bundles available in the workspace repository, which we can choose to add to the project build path. This is necessary if our project will use the APIs defined in those bundles. The list also contains "libraries", which are aggregations of bundles that are expanded upon addition. For this example, double click on the @lib.component-dev@ library to add it to the right-hand list. This library contains: an annotations API that will be useful for defining components; the OSGi core and compendium APIs; JUnit for testing.
+	![](IMAGES/tutorial_04.png)
 
-!(images/newwizard_04.png)
+1. Next you are offered a choice of project templates to start off your project. Select **Empty Project** and click **Finish**. The new project will be created.
 
-Important Points:
+	![](IMAGES/tutorial_05.png)
 
-* Bnd projects are based on standard Eclipse Java projects.
-* The bundles used by the project are provided by a repository.
-* The @bnd.bnd@ file in each project controls the settings for that project.
+*Important Points:*
 
-Write and Export an API
------------------------
+* Bndtools projects are based on standard Eclipse Java (JDT) projects.
+* Bndtools uses a `cnf` project containing workspace-wide configuration that is normally shared between developers. It may also contain a repository of bundles.
+* A file named `bnd.bnd` is created at the top of each Bndtools project, which controls the settings for the project. The same settings are used by bnd when it is invoked from an offline ANT build.
+
+Write and Export the API
+-------------------------
 
 OSGi offers strong decoupling of producers and consumers of functionality. This is done by encouraging an API-based (or in Java terms, interface-based) programming model, where producers of functionality implement APIs and the consumers of functionality bind only to APIs, not any particular implementation. For our example we will use a fairly trivial API.
 
-*Create the Interface*
+In the `src` directory of the new project, create a package named `org.example.api`. In the new package create a Java interface named `Greeting`, as follows:
 
-In the @src@ directory of the new project, create a package named @org.example.api@. In the new package create a Java interface named @Greeting@, as follows:
 
-bc.. 
-package org.example.api;
+	package org.example.api;
 
-public interface Greeting {
-    String sayHello(String name);
-}
+	public interface Greeting {
+	    String sayHello(String name);
+	}
 
-h4. Build the API Bundle
 
-Now we will create a bundle that exports the API. Open the New Wizard and select New Bnd Bundle Descriptor.
+Define the Bundle
+-----------------
 
-!images/newbundle_01.png!
+The project we have created defines a single bundle with a Bundle Symbolic Name (BSN) of `org.example.api` (i.e., the same as the project name). As soon as we created the project, a bundle file named `org.example.api.jar` was created in the `generated` directory, and it will be rebuilt every time we change the bundle definition or its source code.
 
-Enter @api@ as the name of the bundle and click Finish.
+However, the bundle is currently empty, because we have not defined any Java packages to include in the bundle. This is an important difference of Bndtools with respect to other tools: bundles are always empty until we explicitly add some content. You can verify this by double-clicking the bundle file and viewing its contents: it will have only `META-INF/MANIFEST.MF` and `OSGI-OPT/bnd.bnd` entries.
 
-!images/newbundle_02.png!
+We want to add the package `org.example.api` to the exported packages of the bundle. So open the `bnd.bnd` file at the top of the project and select the **Contents** tab. Now the package can be added in one of two ways:
 
-A pop-up dialog will ask if "sub-bundles" should be enabled on the project; answer Yes to this question. The bundle editor will open on the new file, @api.bnd@.
+*	Click the "+" icon in the header of the **Export Packages** section, then select `org.example.api` from the dialog and click **OK**... *or*
+*	Drag-and-drop the package `org.example.api` from Eclipse's Package Explorer view into the **Export Packages** list.
 
-You will also notice that a bundle JAR has been build in the @generated@ directory, named @org.example.api.jar@. The bundle JAR is rebuilt every time its bundle descriptor (i.e., the @.bnd@ file) is changed, or when its contents change. However if you double-click on the JAR file to examine its contents, you will notice that it is empty, save for the @META-INF/MANIFEST.MF@ file and a copy of the bundle descriptor. This is because we have not told Bnd what packages to include in the bundle.
+(TIP: Advanced users may prefer to enter `Export-Package: org.example.api` manually in the **Source** tab).
 
-We wish to include the @org.example.api@ package in the bundle as an exported package. We can do this by selecting the Exports tab of the editor and then either dragging in the @org.example.api@ package from the Package Explorer view, or clicking the Add button and selecting the package from the pop-up dialog. Whichever way we choose, the tool then asks us for the version to be declared on the newly exported package. Select the default, which is to keep the exported package version in sync with its enclosing bundle's version.
+As soon as this is done, a popup dialog appears titled "Missing Package Info". This dialog is related to package versioning: it is asking us to declare the version of this exported package. Click **OK**.
 
-!images/exportversion.png!
+![](IMAGES/tutorial_06.png)
 
-The Exports tab of the editor should now look as it does below. If you save the file, the bundle JAR will be regenerated to include the declared package.
+The **Contents** tab should now appear as in the following screenshot:
 
-!images/export.png!
+![](IMAGES/tutorial_07.png)
 
-h4. Important Points:
+Save the file, and the bundle will be rebuilt to include the selected export. We can confirm by opening the **Imports/Exports** view and selecting the bundle file in the **Package Explorer**. Note the package has been assigned version 1.0.0:
 
-* Bnd projects can provide either a single or multiple bundles.
-* When a Bnd project provides a single bundle, the configuration for that bundle is in the main @bnd.bnd@ file. When providing multiple bundles, the settings for each are in separate @.bnd@ files called "sub-bundles", but project-wide settings (e.g., build path) are still defined in @bnd.bnd@.
-* The identity for a bundle -- known as its "Bundle Symbolic Name", or BSN -- is controlled by the Bnd project name. In the case of a single-bundle project, the BSN is equal to the project name. In the case of a multi-bundle project, the BSN for each bundle is prefixed by the project name. Therefore a sub-bundle named @api.bnd@ in the @org.example@ project results in a bundle with a BSN of @org.example.api@.
-* Sub-bundle descriptors should appear at the top level of a project. They can be placed elsewhere but then the @bnd.bnd@ file must be manually edited to point to their location.
-* Normally bundles contain more than just a single interface or class, but this is a trivial example!
+![](IMAGES/tutorial_08.png)
 
-h3. Write and Test an Implementation
+*Important Points:*
 
-We will now write a class that implements the API defined previously.
+*	The project configuration and the bundle contents are defined by `bnd.bnd`.
+*	The identity of a bundle -- its "Bundle Symbolic Name" or BSN -- is controlled by the project name. In this case, the bundle's BSN is equal to the project name.
+*	Bundles are always empty until we explicitly add contents to them. Adding a package to the **Export Packages** panel included that package in the bundle, and also declared it as an export in the `META-INF/MANIFEST.MF`.
+*	*Normally* bundles contain more than just a single interface. This example is intentionally simplistic.
 
-h4. Write the Implementation
 
-Create a new package named @org.example.impl@. In that package create a class named @BasicGreeting@ with the following code:
+Create an Implementation Project
+================================
 
-bc.. 
-package org.example.impl;
+We will now create another project that defines two bundles: a provider and a client of the `Greeting` API.
 
-import org.example.api.Greeting;
-import aQute.bnd.annotation.component.Component;
 
-@Component
-public class BasicGreeting implements Greeting {
-    public String sayHello(String name) {
-        return "Hello " + name;
-    }
-}
+Create the Project
+------------------
 
-p. Note the use of the @Component@ annotation. This enables our bundle to use OSGi __Declarative Services__ to declare the API implementation class. This means that instances of the class will be automatically created and registered with the OSGi service registry. However the annotation is build-time only, and does not pollute our class with runtime dependencies -- in other words, this is a "Plain Old Java Object" or POJO.
+Create another Bndtools project, named `org.example.impls`. At the **Project Templates** step, select **Component Development (Declarative Services)** and click **Finish**.
 
-h4. Test the Implementation
+![](IMAGES/tutorial_09.png)
 
-We should write a test case to ensure this implementation class works as expected. In the @test@ source folder, create a package named @org.example.impl@ and inside create a JUnit3 test case named @BasicGreetingTest@. Add the following code:
+Add the API as a Build Dependency
+---------------------------------
 
-bc.. 
-package org.example.impl;
+We need to add the API project as a build-time dependency of this new project.
 
-import junit.framework.TestCase;
+The `bnd.bnd` file of the newly created project will have opened automatically. Click the **Build** tab and add `org.example.api` in either of the following ways:
 
-public class BasicGreetingTest extends TestCase {
-    public void testHello() {
-        assertEquals("Hello Fred", new BasicGreeting().sayHello("Fred"));
-    }
-}
+ *	Click the "+" icon in the toolbar of the **Build Path** panel. Double-click `org.example.api` under "Workspace" in the resulting dialog; it will move over to the right-hand side. Click **Finish**
+ 
+	![](IMAGES/tutorial_10.png)
 
-p. Now we run the test to make sure we get a green bar before proceeding. Since this is a unit test rather than an integration test, we do not need to run an OSGi Framework, so we use the standard JUnit launcher. This is possible because the implementation class is a POJO with no dependencies on the OSGi APIs.
+ *	**OR** drag-and-drop `org.example.api` from the **Repositories** view into the **Build Path** panel.
 
-The simplest way to run the test is to right-click on the @BasicGreetingTest@ class and select "Run As" and then "JUnit Test".
+In either case, the `org.example.api` bundle will appear in the **Build Path** panel with the version annotation "latest":
 
-!images/unittest.png!
+![](IMAGES/tutorial_11.png)
 
-h4. Build the Implementation Bundle
+*Important Points:*
 
-Now we create a bundle to contain the implementation. Using the "New Bnd Bundle Descriptor" wizard again, create @greeting-impl.bnd@ at the top level of the project. Select the Components tab of the new editor, and drag in the @BasicGreeting@ class from the Package Explorer. This results in a warning, shown near the editor title, that the @org.example.impl@ package is not included in the bundle. Click on this warning and select the first fix action, which adds the package to the bundle as a private (i.e., not exported) package.
+ *	Build-time dependencies of the project can be added in the **Build Path** panel of the `bnd.bnd` editor.
+ *	Adding dependencies in this way (i.e. rather than via Eclipse's existing "Add to Build Path" menu) ensures that exactly the same dependencies are used when building offline with ANT.
 
-!images/fixpackage.png!
+Write an Implementation
+-----------------------
 
-h4. Important Points
+We will write a class that implements the `Greeting` interface. When the project was created from the template, Java source for a class named `org.example.ExampleComponent` was generated. Open this source file now and make it implement `Greeting`:
 
-* Components are Plain Old Java Objects (POJOs) that are declared to the OSGi __Declarative Services__ runtime. They have no dependency on the OSGi APIs.
-* As a result, components can and should be unit-tested outside of the OSGi framework, for example using a conventional JUnit runtime.
-* We need to tell Bnd to declare each component class; we do this by adding the class name to the Component list. We also need to ensure that the package(s) containing the component implementations are shipped in the bundle. The best way to do this is to add those packages as "private" packages.
+	@Component
+	public class ExampleComponent implements Greeting {
+	
+		public String sayHello(String name) {
+			return "Hello " + name;
+		}
+	
+	}
 
-h3. Write a Consumer Component
+Note the use of the `@Component` annotation. This enables our bundle to use OSGi Declarative Services to declare the API implementation class. This means that instances of the class will be automatically created and registered with the OSGi service registry. However the annotation is build-time only, and does not pollute our class with runtime dependencies -- in other words, this is a "Plain Old Java Object" or POJO.
 
-The consumer component for the API will be a simple Swing GUI.
+Test the Implementation
+-----------------------
+
+We should write a test case to ensure the implementation class works as expected. In the `test` folder, a test case class already exists named `org.example.ExampleComponentTest`. Write a test method as follows:
+
+	public class ExampleComponentTest extends TestCase {
+	
+		public void testSaysHello() throws Exception {
+			String result = new ExampleComponent().sayHello("Bob");
+			assertEquals("Hello Bob", result);
+		}
+	}
+
+Now right-click on the file and select **Run As > JUnit Test**.
+
+![](IMAGES/tutorial_12.png)
+
+Verify that the **JUnit** view shows a green bar. If not, go back and fix the code!
+
+Note that, since this is a unit test rather than an integration test, we did not need to run an OSGi Framework; the standard JUnit launcher is used. Again, this is possible because the component under test is a POJO.
+
+Build the Implementation Bundle
+-------------------------------
+
+As in the previous project, a bundle is automatically built based on the content of `bnd.bnd`. In the current project however, we want to build *two* separate bundles. To achieve this we need to enable a feature called "sub-bundles".
+
+Right-click on the project `org.example.impls` and select **New > Bundle Descriptor**. In the resulting dialog, type the name `provider` and click **Finish**.
+
+A popup dialog will ask whether to enable sub-bundles. Click **OK**.
+
+![](IMAGES/tutorial_13.png)
+
+Some settings will be moved from `bnd.bnd` into the new `provider.bnd` file. You should now find a bundle in `generated` named `org.example.impls.provider.jar` which contains the `org.example` package and a Declarative Services component declaration in `OSGI-INF/org.example.ExampleComponent.xml`.
+
+*Important Points:*
+
+ *	Bndtools project can output either a single bundle or multiple bundles.
+ *	In the case of single-bundle projects, the contents of that bundle are defined in `bnd.bnd`.
+ *	In the case of multi-bundle projects, the contents of each bundle is defined in a separate `.bnd` file. The `bnd.bnd` file is still used to define project-wide settings, such as build dependencies.
+
+Run an OSGi Framework
+=====================
+
+We'd now like to run OSGi. To achieve this we need to create a "Run Descriptor" that defines the collection of bundles to run, along with some other run-time settings.
+
+Right-click on the project `org.example.impls` and select **New > Run Descriptor**. In the resulting dialog, enter `run` as the file name and click **Next**. The next page of the dialog asks us to select a template; choose **Apache Felix 4 with Shell** and click **Finish**.
+
+![](IMAGES/tutorial_14.png)
+
+In the editor for the new `run.bndrun` file, click on **Run OSGi** near the top-right corner. Shortly, the Felix Shell prompt "`->`" will appear in the **Console** view. Type the `ps` command to view the list of bundles:
+
+	-> ps
+	START LEVEL 1
+	   ID   State         Level  Name
+	[   0] [Active     ] [    0] System Bundle (4.0.0)
+	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
+	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
+
+Next we want to include the `org.example.impls.provider` bundle. This can be done in the following ways:
+
+ *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` under "Workspace" and click **Finish**.
+ *	**OR** drag-and-drop `org.examples.impls.provider` from under Workspace in the **Run Repositories** to the **Run Requirements** panel.
+
+Either way, the **Run Requirements** panel should now look like this:
+
+![](IMAGES/tutorial_15.png)
+
+Check **Auto-resolve on save** and then save the file. Returning to the **Console** view, type `ps` again:
+
+	-> ps
+	START LEVEL 1
+	   ID   State         Level  Name
+	[   0] [Active     ] [    0] System Bundle (4.0.0)
+	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
+	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
+	[   3] [Active     ] [    1] org.example.api (0)
+	[   4] [Active     ] [    1] org.example.impls.provider (0)
+
+The provider bundle has been added to the runtime dynamically. Note that the API bundle was also added because it was resolved as a dependency of the provider.
+
+*Important Points:*
+
+ *	Run-time configurations can be defined in a `.bndrun` file. Multiple different run configurations can be used, resulting in different sets of bundles, different OSGi Framework implementations etc.
+ *	The set of bundles to include is derived from the **Run Requirements** list. Bndtools uses OBR resolution to resolve a list of bundles including their static dependencies.
+ *	If the OSGi Framework is still running, then saving the `bndrun` file will cause the list of bundles to be dynamically updated. So we can add and remove bundles without restarting.
+ *	Editing an existing bundle -- including editing the Java code that comprises it -- will also result in the bundle being dynamically updated in the runtime.
+
+Add the Declarative Services Runtime
+------------------------------------
+
+The provider bundle uses Declarative Services; however for the component to be activated we need to include the runtime part of Declarative Services, known as the Service Component Runtime (SCR).
+
+In the **Run Repositories** panel there is a search box; type `scr` and hit enter: `org.apache.felix.scr` will appear as a match. Drag this bundle into the **Run Requirements** panel.
+
+Save the file. This time a dialog appears during save, because the SCR bundle has optional dependencies that we might want to include. Just click **Finish**.
+
+![](IMAGES/tutorial_16.png)
+
+In the **Console** view, type `ps` again. Both the Declarative Services and OSGi Compendium ("cmpn") bundles have been added:
+
+	-> ps
+	START LEVEL 1
+	   ID   State         Level  Name
+	[   0] [Active     ] [    0] System Bundle (4.0.0)
+	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
+	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
+	[   3] [Active     ] [    1] org.example.api (0)
+	[   4] [Active     ] [    1] org.example.impls.provider (0)
+	[   5] [Active     ] [    1] Apache Felix Declarative Services (1.6.0)
+	[   6] [Active     ] [    1] osgi.cmpn (4.2.1.201001051203)
+
+We can now look at the services published by our provider bundle using the command `inspect service capability 4`... (or the short form `inspect s c 4`):
+
+	-> inspect s c 4
+	org.example.impls.provider (4) provides services:
+	-------------------------------------------------
+	component.id = 0
+	component.name = org.example.ExampleComponent
+	objectClass = org.example.api.Greeting
+	service.id = 27
+
+Our bundle now publishes a service under the `Greeting` interface.
+
+Write a Command Component
+=========================
+
+Finally we will write a component that consumes the Greeting service and publishes a shell command that can be invoked from the Felix shell.
+
+First we need to make the Felix shell API available to compile against. Open `bnd.bnd` and change to the **Build** tab. Add `org.apache.felix.shell` to the list of build dependencies, and save the file:
+
+![](IMAGES/tutorial_17.png)
+
+Now create a new Java package under the `src` folder named `org.example.command`. In this package create a class `GreetingCommand` as follows:
+
+	import java.io.PrintStream;
+	import java.util.StringTokenizer;
+	
+	import org.apache.felix.shell.Command;
+	import org.example.api.Greeting;
+	
+	import aQute.bnd.annotation.component.*;
+	
+	@Component
+	public class GreetingCommand implements Command {
+	
+		private Greeting greetingSvc;
+		
+		@Reference
+		public void setGreeting(Greeting greetingSvc) {
+			this.greetingSvc = greetingSvc;
+		}
+	
+		public void execute(String line, PrintStream out, PrintStream err) {
+			StringTokenizer tokenizer = new StringTokenizer(line);
+			tokenizer.nextToken(); // discard first token
+			
+			String name = "";
+			if (tokenizer.hasMoreTokens())
+				name = tokenizer.nextToken();
+			
+			System.out.println(greetingSvc.sayHello(name));
+		}
+		public String getName() {
+			return "greet";
+		}
+		public String getShortDescription() {
+			return "Example command";
+		}
+		public String getUsage() {
+			return "greet <name>";
+		}
+	}
+
+Create a Bundle for the Command Component
+-----------------------------------------
+
+The command component is not part of the provider bundle, because it lives in a package that was not included. We could add it to the provider bundle, but it would make more sense to create a separate bundle for it.
+
+Right-click again on the `org.example.impls` project and select **New > Bundle Descriptor** again. Enter the name as `command` and click **Finish**.
+
+Add the package `org.example.command` to the **Private Packages** panel of the newly created file. As before, this can be done using the "+" button in the toolbar or by drag-and-drop.
+
+We also need to declare that the bundle contains Declarative Services components. Change to the **Components** tab of the editor and click the **Add** button. In the name field, enter "*" (i.e. asterisk). Now save the file.
+
+Add the Command Bundle to the Runtime
+-------------------------------------
+
+Switch back to the editor for `run.bndrun`. In the **Run Requirements** tab, add the `org.example.impls.command` bundle, and save the file.
+
+The command bundle will now appear in the list of bundles when typing `ps`:
+
+	-> ps
+	START LEVEL 1
+	   ID   State         Level  Name
+	[   0] [Active     ] [    0] System Bundle (4.0.0)
+	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
+	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
+	[   3] [Active     ] [    1] org.example.api (0)
+	[   4] [Active     ] [    1] org.example.impls.provider (0)
+	[   5] [Active     ] [    1] Apache Felix Declarative Services (1.6.0)
+	[   6] [Active     ] [    1] osgi.cmpn (4.2.1.201001051203)
+	[   7] [Active     ] [    1] org.example.impls.command (0)
+
+Finally, the `greet` command will now be available from the Felix shell:
+
+	-> greet Neil
+	Hello Neil
