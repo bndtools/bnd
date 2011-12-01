@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
-import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
@@ -40,6 +39,7 @@ import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.api.EE;
 import bndtools.api.IPersistableBndModel;
+import bndtools.api.Requirement;
 import bndtools.api.ResolveMode;
 import bndtools.editor.model.conversions.ClauseListConverter;
 import bndtools.editor.model.conversions.CollectionFormatter;
@@ -173,7 +173,7 @@ public class BndEditModel implements IPersistableBndModel {
             String name = input.substring(0, index);
             String filter = input.substring(index + 1);
 
-            return obrModelHelper.requirement(name, filter);
+            return new Requirement(name, filter);
         }
     });
     Converter<EE, String> eeConverter = new Converter<EE, String>() {

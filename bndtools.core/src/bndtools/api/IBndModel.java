@@ -3,8 +3,6 @@ package bndtools.api;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.felix.bundlerepository.Requirement;
-
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;

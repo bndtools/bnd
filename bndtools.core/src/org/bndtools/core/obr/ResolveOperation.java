@@ -24,7 +24,6 @@ import java.util.jar.Manifest;
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Repository;
-import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
@@ -181,9 +180,9 @@ public class ResolveOperation implements IRunnableWithProgress {
             addSystemPackagesExtraCapabilities(resolver, systemPackages);
 
         // Add requirements
-        List<Requirement> requirements = model.getRunRequire();
-        if (requirements != null) for (Requirement req : requirements) {
-            resolver.add(req);
+        List<bndtools.api.Requirement> requirements = model.getRunRequire();
+        if (requirements != null) for (bndtools.api.Requirement req : requirements) {
+            resolver.add(helper.requirement(req.getName(), req.getFilter()));
         }
 
         boolean resolved = resolver.resolve();
@@ -293,8 +292,9 @@ public class ResolveOperation implements IRunnableWithProgress {
             for (Builder builder : model.getSubBuilders()) {
                 File file = new File(model.getTarget(), builder.getBsn() + ".jar");
                 if (file.isFile()) {
+                    JarInputStream stream = null;
                     try {
-                        JarInputStream stream = new JarInputStream(new FileInputStream(file));
+                        stream = new JarInputStream(new FileInputStream(file));
                         Manifest manifest = stream.getManifest();
 
                         Resource resource = helper.createResource(manifest.getMainAttributes());
@@ -302,6 +302,8 @@ public class ResolveOperation implements IRunnableWithProgress {
                         resolver.add(resource);
                     } catch (IOException e) {
                         Plugin.logError("Error reading project bundle " + file, e);
+                    } finally {
+                        if (stream != null) stream.close();
                     }
                 }
             }

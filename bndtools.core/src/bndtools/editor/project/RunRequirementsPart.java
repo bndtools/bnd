@@ -10,9 +10,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.felix.bundlerepository.DataModelHelper;
-import org.apache.felix.bundlerepository.Requirement;
-import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.bndtools.core.obr.ObrResolutionJob;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
@@ -67,6 +64,7 @@ import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.Requirement;
 import bndtools.api.ResolveMode;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
@@ -79,7 +77,6 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
 
-    private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
     private Table table;
     private TableViewer viewer;
     private Button btnAutoResolve;
@@ -229,7 +226,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 filterBuilder.append("(version>=").append(version).append(")");
                 filterBuilder.append(")");
             }
-            Requirement requirement = obrModelHelper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+            Requirement requirement = new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
             return requirement;
         }
         return null;
@@ -259,7 +256,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                     } else {
                         ObrFilterUtil.appendBsnFilter(filterBuilder, bundle.getName());
                     }
-                    Requirement req = obrModelHelper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+                    Requirement req = new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
                     adding.add(req);
                 }
                 if (!adding.isEmpty()) {
