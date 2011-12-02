@@ -85,4 +85,7 @@ public class ClassDataCollector {
 	public void constant(Object object) {
 	}
 
+	public void memberEnd() {
+	}
+
 }

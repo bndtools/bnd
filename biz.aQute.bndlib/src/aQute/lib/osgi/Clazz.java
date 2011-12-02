@@ -2,6 +2,7 @@ package aQute.lib.osgi;
 
 import java.io.*;
 import java.lang.annotation.*;
+import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
@@ -124,7 +125,11 @@ public class Clazz {
 		int		b;
 	}
 
-	static public class FieldDef implements Comparable<FieldDef> {
+	static public class Def {
+		
+	}
+	
+	static public class FieldDef extends Def implements Comparable<FieldDef> {
 		public FieldDef(int access, String clazz, String name, String descriptor) {
 			this.access = access;
 			this.clazz = clazz.replace('/', '.');
@@ -313,9 +318,6 @@ public class Clazz {
 			4, // 12 CONSTANT_NameAndType
 									};
 
-	boolean				isAbstract;
-	boolean				isPublic;
-	boolean				isEnum;
 	boolean				hasRuntimeAnnotations;
 	boolean				hasClassAnnotations;
 
@@ -339,6 +341,10 @@ public class Clazz {
 	ClassDataCollector	cd			= null;
 	Resource			resource;
 	FieldDef			last		= null;
+
+	private boolean	isProtected;
+
+	private int	access_flags;
 
 	public Clazz(String path, Resource resource) {
 		this.path = path;
@@ -456,10 +462,7 @@ public class Clazz {
 		 * Falkenberg
 		 */
 
-		int access_flags = in.readUnsignedShort(); // access
-		isAbstract = (access_flags & ACC_ABSTRACT) != 0;
-		isPublic = (access_flags & ACC_PUBLIC) != 0;
-		isEnum = (access_flags & ACC_ENUM) != 0;
+		access_flags = in.readUnsignedShort(); // access
 
 		int this_class = in.readUnsignedShort();
 		className = (String) pool[intPool[this_class]];
@@ -560,7 +563,9 @@ public class Clazz {
 					doAttributes(in, ElementType.METHOD, crawl);
 				}
 			}
-
+			if ( cd != null)
+				cd.memberEnd();
+			
 			doAttributes(in, ElementType.TYPE, false);
 
 			//
@@ -1138,7 +1143,8 @@ public class Clazz {
 
 		case 'Z': // Boolean
 			const_value_index = in.readUnsignedShort();
-			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false : true;
+			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false
+					: true;
 
 		case 'e': // enum constant
 			int type_name_index = in.readUnsignedShort();
@@ -1369,10 +1375,10 @@ public class Clazz {
 			break;
 
 		case PUBLIC:
-			return !isPublic;
+			return Modifier.isPublic(access_flags);
 
 		case CONCRETE:
-			return !isAbstract;
+			return !Modifier.isAbstract(access_flags);
 
 		case ANNOTATION:
 			if (annotations == null)
@@ -1394,7 +1400,7 @@ public class Clazz {
 			return hasClassAnnotations;
 
 		case ABSTRACT:
-			return isAbstract;
+			return Modifier.isAbstract(access_flags);
 
 		case IMPORTS:
 			for (String imp : imports) {
@@ -1528,11 +1534,15 @@ public class Clazz {
 	}
 
 	public boolean isPublic() {
-		return isPublic;
+		return Modifier.isPublic(access_flags);
+	}
+
+	public boolean isProtected() {
+		return Modifier.isProtected(access_flags);
 	}
 
 	public boolean isEnum() {
-		return isEnum;
+		return zuper != null && zuper.equals("java/lang/Enum");
 	}
 
 	public JAVA getFormat() {
@@ -1609,5 +1619,15 @@ public class Clazz {
 		out.replace(0, 1, Character.toUpperCase(out.charAt(0)) + "");
 		return out.toString();
 	}
+
+	public String getPackage() {
+		int n = className.lastIndexOf('.');
+		return className.substring(0,n == -1 ? 0 : n);
+	}
+
+	public boolean isInterface() {
+		return Modifier.isInterface(access_flags);
+	}
+
 
 }
