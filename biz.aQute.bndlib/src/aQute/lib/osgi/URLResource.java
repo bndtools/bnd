@@ -3,10 +3,13 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.net.*;
 
+import aQute.lib.io.*;
+
 public class URLResource implements Resource {
-	URL	url;
+	URL		url;
 	String	extra;
-	
+	long	size	= -1;
+
 	public URLResource(URL url) {
 		this.url = url;
 	}
@@ -20,7 +23,7 @@ public class URLResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		FileResource.copy(this, out);
+		IO.copy(this.openInputStream(), out);
 	}
 
 	public long lastModified() {
@@ -34,4 +37,38 @@ public class URLResource implements Resource {
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
+
+	public long size() throws Exception {
+		if (size >= 0)
+			return size;
+
+		try {
+			if (url.getProtocol().equals("file:")) {
+				File file = new File(url.getPath());
+				if ( file.isFile())
+					return size = file.length();
+			} else {
+				URLConnection con = url.openConnection();
+				if (con instanceof HttpURLConnection) {
+					HttpURLConnection http = (HttpURLConnection) con;
+					http.setRequestMethod("HEAD");
+					http.connect();
+					String l = http.getHeaderField("Content-Length");
+					if (l != null) {
+						return size = Long.parseLong(l);
+					}
+				}
+			}
+		} catch (Exception e) {
+			// Forget this exception, we do it the hard way
+		}
+		InputStream in = openInputStream();
+		DataInputStream din = new DataInputStream(in);
+		long result = din.skipBytes(Integer.MAX_VALUE);
+		while( in.read() >= 0) {
+			result += din.skipBytes(Integer.MAX_VALUE);
+		}
+		return size=result;
+	}
+
 }

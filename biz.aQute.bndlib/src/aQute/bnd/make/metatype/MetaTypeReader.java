@@ -2,17 +2,15 @@ package aQute.bnd.make.metatype;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.metatype.*;
-import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.MethodDef;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 
-public class MetaTypeReader extends ClassDataCollector implements Resource {
+public class MetaTypeReader extends WriteResource {
 	final Analyzer				reporter;
 	Clazz						clazz;
 	String						interfaces[];
@@ -44,23 +42,6 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	public MetaTypeReader(Clazz clazz, Analyzer reporter) {
 		this.clazz = clazz;
 		this.reporter = reporter;
-	}
-
-	public void annotation(Annotation annotation) {
-		try {
-			Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
-			Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
-			if (ocd != null) {
-				this.ocdAnnotation = annotation;
-			}
-			if (ad != null) {
-				assert method != null;
-				methods.put(method, ad);
-			}
-		} catch (Exception e) {
-			reporter.error("Error during annotation parsing %s : %s", clazz, e);
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -223,43 +204,33 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			return Meta.Type.String;
 	}
 
-	@Override public void method(MethodDef mdef) {
-		method = mdef;
-		methods.put(mdef, null);
-	}
-
-	public String getExtra() {
-		return extra;
-	}
-
-	public long lastModified() {
-		return 0;
-	}
-
-	public InputStream openInputStream() throws IOException {
-		final PipedInputStream pin = new PipedInputStream();
-		final PipedOutputStream pout = new PipedOutputStream(pin);
-		getExecutor().execute(new Runnable() {
-			public void run() {
-				try {
-					write(pout);
-				} catch (IOException e) {
-					// Cause an exception in the other end
-					IO.close(pin);
+	class Find extends ClassDataCollector {
+		
+		@Override public void method(MethodDef mdef) {
+			method = mdef;
+			methods.put(mdef, null);
+		}
+		
+		@Override public void annotation(Annotation annotation) {
+			try {
+				Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
+				Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
+				if (ocd != null) {
+					MetaTypeReader.this.ocdAnnotation = annotation;
 				}
-				IO.close(pout);
+				if (ad != null) {
+					assert method != null;
+					methods.put(method, ad);
+				}
+			} catch (Exception e) {
+				reporter.error("Error during annotation parsing %s : %s", clazz, e);
+				e.printStackTrace();
 			}
-		});
-		return pin;
-	}
+		}
 
-	private Executor getExecutor() {
-		return reporter.getPlugin(Executor.class);
 	}
+	
 
-	public void setExtra(String extra) {
-		this.extra = extra;
-	}
 
 	public void write(OutputStream out) throws IOException {
 		try {
@@ -276,7 +247,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	void finish() throws Exception {
 		if (!finished) {
 			finished = true;
-			clazz.parseClassFileWithCollector(this);
+			clazz.parseClassFileWithCollector(new Find());
 			Meta.OCD ocd = null;
 			if (this.ocdAnnotation != null)
 				ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
@@ -337,5 +308,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		this.override = true;
 		this.factory = factory;
 		this.designatePid = pid;
+	}
+
+	@Override public long lastModified() {
+		return 0;
 	}
 }

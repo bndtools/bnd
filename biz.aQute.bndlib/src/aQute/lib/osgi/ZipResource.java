@@ -81,4 +81,8 @@ public class ZipResource implements Resource {
         this.extra = extra;
     }
 
+    
+    public long size() {
+    	return entry.getSize();
+    }
 }

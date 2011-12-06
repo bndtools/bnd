@@ -67,6 +67,11 @@ public class CalltreeTest extends TestCase {
 			// TODO Auto-generated method stub
 
 		}
+
+		public long size() throws Exception {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	}
 
 	public void testCoverage() throws Exception {

@@ -2,17 +2,13 @@ package aQute.lib.osgi;
 
 import java.io.*;
 
-public class JarResource implements Resource {
+public class JarResource extends WriteResource {
 	Jar		jar;
-	String extra;
-	
+	long size = -1;
 	public JarResource(Jar jar ) {
 		this.jar = jar;
 	}
 	
-	public String getExtra() {
-		return extra;
-	}
 
 	public long lastModified() {
 		return jar.lastModified();
@@ -21,18 +17,6 @@ public class JarResource implements Resource {
 
 	public void write(OutputStream out) throws Exception {
 		jar.write(out);
-	}
-	
-	public InputStream openInputStream() throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		write(out);
-		out.close();
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		return in;
-	}
-
-	public void setExtra(String extra) {
-		this.extra = extra;
 	}
 	
 	public Jar getJar() { 
