@@ -197,9 +197,9 @@ public class Verifier extends Analyzer {
         }
         main = this.manifest.getMainAttributes();
         verifyHeaders(main);
-        r3 = getHeader(Analyzer.BUNDLE_MANIFESTVERSION) == null;
-        usesRequire = getHeader(Analyzer.REQUIRE_BUNDLE) != null;
-        fragment = getHeader(Analyzer.FRAGMENT_HOST) != null;
+        r3 = getLocalHeader(Analyzer.BUNDLE_MANIFESTVERSION) == null;
+        usesRequire = getLocalHeader(Analyzer.REQUIRE_BUNDLE) != null;
+        fragment = getLocalHeader(Analyzer.FRAGMENT_HOST) != null;
 
         bundleClasspath = getBundleClassPath();
         mimports = parseHeader(manifest.getMainAttributes().getValue(
@@ -229,7 +229,7 @@ public class Verifier extends Analyzer {
 
     private List<Jar> getBundleClassPath() {
         List<Jar> list = newList();
-        String bcp = getHeader(Analyzer.BUNDLE_CLASSPATH);
+        String bcp = getLocalHeader(Analyzer.BUNDLE_CLASSPATH);
         if (bcp == null) {
             list.add(dot);
         } else {
@@ -301,7 +301,7 @@ public class Verifier extends Analyzer {
      * optional ::= ’*’
      */
     public void verifyNative() {
-        String nc = getHeader("Bundle-NativeCode");
+        String nc = getLocalHeader("Bundle-NativeCode");
         doNative(nc);
     }
 
@@ -366,7 +366,7 @@ public class Verifier extends Analyzer {
     }
 
     private void verifyActivator() {
-        String bactivator = getHeader("Bundle-Activator");
+        String bactivator = getLocalHeader("Bundle-Activator");
         if (bactivator != null) {
             Clazz cl = loadClass(bactivator);
             if (cl == null) {
@@ -390,7 +390,7 @@ public class Verifier extends Analyzer {
     }
 
     private void verifyComponent() {
-        String serviceComponent = getHeader("Service-Component");
+        String serviceComponent = getLocalHeader("Service-Component");
         if (serviceComponent != null) {
             Map<String, Map<String, String>> map = parseHeader(serviceComponent);
             for (String component : map.keySet()) {
@@ -447,7 +447,7 @@ public class Verifier extends Analyzer {
         invalidImport.removeAll(referred.keySet());
         // TODO Added this line but not sure why it worked before ...
         invalidImport.removeAll(contained.keySet());
-        String bactivator = getHeader(Analyzer.BUNDLE_ACTIVATOR);
+        String bactivator = getLocalHeader(Analyzer.BUNDLE_ACTIVATOR);
         if (bactivator != null) {
             int n = bactivator.lastIndexOf('.');
             if (n > 0) {
@@ -533,7 +533,7 @@ public class Verifier extends Analyzer {
     public void verify() throws Exception {
         if (classSpace == null)
             classSpace = analyzeBundleClasspath(dot,
-                    parseHeader(getHeader(Analyzer.BUNDLE_CLASSPATH)),
+                    parseHeader(getLocalHeader(Analyzer.BUNDLE_CLASSPATH)),
                     contained, referred, uses);
         
         
@@ -603,7 +603,7 @@ public class Verifier extends Analyzer {
     }
 
     public boolean verifyActivationPolicy() {
-        String policy = getHeader(Constants.BUNDLE_ACTIVATIONPOLICY);
+        String policy = getLocalHeader(Constants.BUNDLE_ACTIVATIONPOLICY);
         if (policy == null)
             return true;
 
@@ -631,7 +631,7 @@ public class Verifier extends Analyzer {
     }
 
     public void verifyBundleClasspath() {
-        Map<String, Map<String, String>> bcp = parseHeader(getHeader(Analyzer.BUNDLE_CLASSPATH));
+        Map<String, Map<String, String>> bcp = parseHeader(getLocalHeader(Analyzer.BUNDLE_CLASSPATH));
         if (bcp.isEmpty() || bcp.containsKey("."))
             return;
 
@@ -667,7 +667,7 @@ public class Verifier extends Analyzer {
      */
     private void verifyDynamicImportPackage() {
         verifyListHeader("DynamicImport-Package", WILDCARDPACKAGE, true);
-        String dynamicImportPackage = getHeader("DynamicImport-Package");
+        String dynamicImportPackage = getLocalHeader("DynamicImport-Package");
         if (dynamicImportPackage == null)
             return;
 
@@ -694,7 +694,7 @@ public class Verifier extends Analyzer {
     }
 
     private void verifySymbolicName() {
-        Map<String, Map<String, String>> bsn = parseHeader(getHeader(Analyzer.BUNDLE_SYMBOLICNAME));
+        Map<String, Map<String, String>> bsn = parseHeader(getLocalHeader(Analyzer.BUNDLE_SYMBOLICNAME));
         if (!bsn.isEmpty()) {
             if (bsn.size() > 1)
                 error("More than one BSN specified " + bsn);
@@ -847,7 +847,7 @@ public class Verifier extends Analyzer {
         return index;
     }
 
-    private String getHeader(String string) {
+    private String getLocalHeader(String string) {
         return main.getValue(string);
     }
 

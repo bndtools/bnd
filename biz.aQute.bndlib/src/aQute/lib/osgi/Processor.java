@@ -1424,4 +1424,15 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	public List<File> getIncluded() {
 		return included;
 	}
+
+
+	/**
+	 * Return a header from the properties.
+	 * 
+	 * @param headerName
+	 * @return
+	 */
+	public Map<String, Map<String, String>> getHeader(String headerName) {
+		return parseHeader(getProperty(headerName));
+	}
 }

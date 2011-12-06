@@ -673,12 +673,6 @@ public class Builder extends Analyzer {
 		return null;
 	}
 
-	private Map<String, Map<String, String>> getHeader(String string) {
-		if (string == null)
-			return Collections.emptyMap();
-		return parseHeader(getProperty(string));
-	}
-
 	/**
 	 * Parse the Bundle-Includes header. Files in the bundles Include header are
 	 * included in the jar. The source can be a directory or a file.

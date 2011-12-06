@@ -143,16 +143,19 @@ public class IO {
 		f.delete();
 	}
 
-	public static void drain(InputStream in) throws IOException {
+	public static long drain(InputStream in) throws IOException {
+		long result = 0;
 		byte[] buffer = new byte[10000];
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
+				result+=size;
 				size = in.read(buffer);
 			}
 		} finally {
 			in.close();
 		}
+		return result;
 	}
 
 	public void copy(Collection<?> c, OutputStream out) {

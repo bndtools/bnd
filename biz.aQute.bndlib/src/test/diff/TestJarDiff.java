@@ -14,7 +14,8 @@ import java.io.*;
 import java.util.jar.*;
 
 import junit.framework.*;
-import aQute.lib.jardiff.*;
+import aQute.bnd.differ.*;
+import aQute.bnd.service.diff.*;
 import aQute.lib.osgi.*;
 
 public class TestJarDiff extends TestCase {
@@ -27,87 +28,60 @@ public class TestJarDiff extends TestCase {
 	}
 
 	public void testCompare() throws Exception{
+		DiffPlugin differ = new DiffPluginImpl();
 		
-		JarDiff diff = buildTestJarDiff();
+		Diff diff = buildTestJarDiff(differ);
 		
-		JarDiff.printDiff(diff, new PrintWriter(System.out));
+		show(diff, 0, true);
 		
-		diff.calculateVersions();
 		
-		JarDiff.printDiff(diff, new PrintWriter(System.out));
-		
+		assertDiff( diff, Delta.MAJOR, Type.BUNDLE, null, null);
+		Diff manifest = diff.get("<manifest>");
+		Diff export = manifest.get("Export-Package");
+		Diff clause = export.get("org.osgi.framework");
+		Diff parameter = clause.get("version");
+		assertDiff( manifest, Delta.MINOR, Type.MANIFEST, null, null);
+		assertDiff( export, Delta.MINOR, Type.HEADER, null, null);
+		assertDiff( clause, Delta.CHANGED, Type.CLAUSE, null, null);
+		assertDiff( parameter, Delta.CHANGED, Type.PARAMETER, "1.6", "1.5");
 	}
 	
-	public static JarDiff buildTestJarDiff() throws Exception {
-		
-		String bsn = "test.diff.classes";
-		String exportedPackages1 = "test.diff.classes.majorchange;version=1.0.0,test.diff.classes.minorchange;version=1.0.0,test.diff.classes.newpackage";
-		String exportedPackages2 = "test.diff.classes.majorchange;version=1.0.0,test.diff.classes.minorchange;version=1.0.0,test.diff.classes.deletedpackage;version=1.0.0";
-
-		Jar newJar = new Jar(bsn);
-		Manifest mf1 = new Manifest();
-		mf1.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-		mf1.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn + ";singleton:=true");
-		mf1.getMainAttributes().putValue(Constants.EXPORT_PACKAGE, exportedPackages1);
-		mf1.getMainAttributes().putValue("NewValueAdded", "new");
-		mf1.getMainAttributes().putValue("Unmodified", "true");
-		mf1.getMainAttributes().putValue("Modified", "true");
-		
-		Resource newManifest = Utils.createResource(mf1, null);
-		newJar.putResource("META-INF/MANIFEST.MF", newManifest);
-		//newJar.getManifest();
-		
-		Jar oldJar = new Jar(bsn);
-		Manifest mf2 = new Manifest();
-		mf2.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-		mf2.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
-		mf2.getMainAttributes().putValue(Constants.BUNDLE_VERSION, "1.0.0.201010101010");
-		mf2.getMainAttributes().putValue(Constants.EXPORT_PACKAGE, exportedPackages2);
-		mf2.getMainAttributes().putValue("OldValueRemoved", "old");
-		mf2.getMainAttributes().putValue("Unmodified", "true");
-		mf2.getMainAttributes().putValue("Modified", "false");
-
-		Resource oldManifest = Utils.createResource(mf2, null);
-		oldJar.putResource("META-INF/MANIFEST.MF", oldManifest);
-		//oldJar.getManifest();
-		
-		Resource unmodified = Utils.createResource(test.diff.classes.oldclasses.UnmodifiedClass.class, null);
-		Resource oldMinor = Utils.createResource(test.diff.classes.oldclasses.MinorModifiedClass.class, null);
-		Resource newMinor = Utils.createResource(test.diff.classes.newclasses.MinorModifiedClass.class, null);
-		Resource oldMajor = Utils.createResource(test.diff.classes.oldclasses.MajorModifiedClass.class, null);
-		Resource newMajor = Utils.createResource(test.diff.classes.newclasses.MajorModifiedClass.class, null);
-		
-		// Major changes
-		String packageName = "test.diff.classes.majorchange";
-		addResourceToJar(packageName, "UnmodifiedClass", newJar, unmodified);
-		addResourceToJar(packageName, "UnmodifiedClass", oldJar, unmodified);
-		addResourceToJar(packageName, "ModifiedClass", newJar, newMajor);
-		addResourceToJar(packageName, "ModifiedClass", oldJar, oldMajor);
-		
-		// Minor changes
-		packageName = "test.diff.classes.minorchange";
-		addResourceToJar(packageName, "UnmodifiedClass", newJar, unmodified);
-		addResourceToJar(packageName, "UnmodifiedClass", oldJar, unmodified);
-		addResourceToJar(packageName, "ModifiedClass", newJar, newMinor);
-		addResourceToJar(packageName, "ModifiedClass", oldJar, oldMinor);
-		
-		// New package
-		packageName = "test.diff.classes.newpackage";
-		addResourceToJar(packageName, "NewClass", newJar, unmodified);
-
-		// Deleted package
-		packageName = "test.diff.classes.deletedpackage";
-		addResourceToJar(packageName, "DeletedClass", oldJar, unmodified);
-		
-		return JarDiff.diff(newJar, oldJar);
+	private void assertDiff(Diff diff, Delta delta, Type type, String newer, String older) {
+		assertNotNull("No diff found", diff);
+		assertEquals(delta, diff.getDelta());
+		assertEquals(type, diff.getType());
+		assertEquals( newer, diff.getNewerValue());
+		assertEquals( older, diff.getOlderValue());
 	}
 
-	static void addResourceToJar(String packageName, String className, Jar jar, Resource resource) {
-		String qualifiedName = getQualifiedName(packageName, className);
-		jar.putResource(qualifiedName.replace('.', '/') + ".class", resource);
+	void show(Diff diff, int indent, boolean limited) {
+		if (limited && (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED))
+			return;
+
+		 for (int i = 0; i < indent; i++)
+			 System.out.print("   ");
+
+		System.out.println(diff.toString());
+
+		if (limited && diff.getDelta().isStructural())
+			return;
+
+		for (Diff c : diff.getChildren()) {
+			show(c, indent + 1, limited);
+		}
 	}
+
 	
-	static String getQualifiedName(String packageName, String className) {
-		return packageName + "." + className;
+	public Diff buildTestJarDiff(DiffPlugin differ) throws Exception {
+		Builder older = new Builder();
+		older.addClasspath( new File("jar/osgi.core.jar"));
+		Builder newer = new Builder();
+		newer.addClasspath( new File("jar/osgi.core-4.3.0.jar"));
+		older.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.framework.*");
+		newer.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.framework.*");
+		Jar n = newer.build();
+		Jar o = older.build();
+		
+		return differ.diff(n, o);
 	}
 }

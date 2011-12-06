@@ -7,3 +7,5 @@ Archive
 .DS_Store
 .*.swp
 buildfiles
+biz.aQute.launcher/bin_test/ws/p1/bnd.bnd
+biz.aQute.launcher/bin_test/ws/cnf/build.bnd

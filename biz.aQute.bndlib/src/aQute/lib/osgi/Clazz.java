@@ -1,5 +1,6 @@
 package aQute.lib.osgi;
 
+import java.beans.*;
 import java.io.*;
 import java.lang.annotation.*;
 import java.lang.reflect.*;
@@ -126,9 +127,9 @@ public class Clazz {
 	}
 
 	static public class Def {
-		
+
 	}
-	
+
 	static public class FieldDef extends Def implements Comparable<FieldDef> {
 		public FieldDef(int access, String clazz, String name, String descriptor) {
 			this.access = access;
@@ -342,10 +343,6 @@ public class Clazz {
 	Resource			resource;
 	FieldDef			last		= null;
 
-	private boolean	isProtected;
-
-	private int	access_flags;
-
 	public Clazz(String path, Resource resource) {
 		this.path = path;
 		this.resource = resource;
@@ -393,6 +390,8 @@ public class Clazz {
 
 		minor = in.readUnsignedShort(); // minor version
 		major = in.readUnsignedShort(); // major version
+		if ( cd != null) 
+			cd.version(minor,major);
 		int count = in.readUnsignedShort();
 		pool = new Object[count];
 		intPool = new int[count];
@@ -462,7 +461,7 @@ public class Clazz {
 		 * Falkenberg
 		 */
 
-		access_flags = in.readUnsignedShort(); // access
+		access = in.readUnsignedShort(); // access
 
 		int this_class = in.readUnsignedShort();
 		className = (String) pool[intPool[this_class]];
@@ -470,7 +469,7 @@ public class Clazz {
 		try {
 
 			if (cd != null) {
-				if (!cd.classStart(access_flags, className))
+				if (!cd.classStart(access, className))
 					return null;
 			}
 
@@ -494,7 +493,7 @@ public class Clazz {
 
 			int fieldsCount = in.readUnsignedShort();
 			for (int i = 0; i < fieldsCount; i++) {
-				access_flags = in.readUnsignedShort(); // skip access flags
+				int access_flags = in.readUnsignedShort(); // skip access flags
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
 
@@ -545,7 +544,7 @@ public class Clazz {
 			//
 			int methodCount = in.readUnsignedShort();
 			for (int i = 0; i < methodCount; i++) {
-				access_flags = in.readUnsignedShort();
+				int access_flags = in.readUnsignedShort();
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
 				descriptors.add(new Integer(descriptor_index));
@@ -563,9 +562,9 @@ public class Clazz {
 					doAttributes(in, ElementType.METHOD, crawl);
 				}
 			}
-			if ( cd != null)
+			if (cd != null)
 				cd.memberEnd();
-			
+
 			doAttributes(in, ElementType.TYPE, false);
 
 			//
@@ -1375,10 +1374,10 @@ public class Clazz {
 			break;
 
 		case PUBLIC:
-			return Modifier.isPublic(access_flags);
+			return Modifier.isPublic(access);
 
 		case CONCRETE:
-			return !Modifier.isAbstract(access_flags);
+			return !Modifier.isAbstract(access);
 
 		case ANNOTATION:
 			if (annotations == null)
@@ -1400,7 +1399,7 @@ public class Clazz {
 			return hasClassAnnotations;
 
 		case ABSTRACT:
-			return Modifier.isAbstract(access_flags);
+			return Modifier.isAbstract(access);
 
 		case IMPORTS:
 			for (String imp : imports) {
@@ -1534,11 +1533,11 @@ public class Clazz {
 	}
 
 	public boolean isPublic() {
-		return Modifier.isPublic(access_flags);
+		return Modifier.isPublic(access);
 	}
 
 	public boolean isProtected() {
-		return Modifier.isProtected(access_flags);
+		return Modifier.isProtected(access);
 	}
 
 	public boolean isEnum() {
@@ -1621,13 +1620,87 @@ public class Clazz {
 	}
 
 	public String getPackage() {
-		int n = className.lastIndexOf('.');
-		return className.substring(0,n == -1 ? 0 : n);
+		String fqn = getFQN();
+		int n = fqn.lastIndexOf('.');
+		return fqn.substring(0, n == -1 ? 0 : n);
 	}
 
 	public boolean isInterface() {
-		return Modifier.isInterface(access_flags);
+		return Modifier.isInterface(access);
 	}
 
+	public static String binaryToFQN(String name) {
+		return name.replace('/', '.');
+	}
+
+	public boolean isAbstract() {
+		return Modifier.isAbstract(access);
+	}
+
+	static Pattern	TYPE_PATTERN	= Pattern.compile("(\\[*)(L[^;]+;|V|B|C|I|S|D|F|J|Z)");
+
+	public static String descriptorToJava(String name, String descriptor) {
+		if ( descriptor == null)
+			return name;
+
+		StringBuilder sb = new StringBuilder();
+		int type = sb.length();
+		sb.append(" "); // will be prefixed with type
+		sb.append(name);
+		Matcher matcher = TYPE_PATTERN.matcher(descriptor);
+		int index = 0;
+		
+		if (descriptor.charAt(index) == '(') {
+			index++; // skip (
+			sb.append('(');
+			String del = "";
+			while (descriptor.charAt(index) != ')') {
+				sb.append(del);
+				matcher.find(index);
+				sb.append(objectDescriptorToJava(sb, descriptor, matcher.start(), matcher.end()));
+				index = matcher.end();
+				del = ",";
+			}
+			sb.append(')');
+			index++; // skip ')'
+		}
+		boolean end = matcher.find(index);
+		if ( end ) {
+			sb.insert(type, objectDescriptorToJava(sb,  descriptor, matcher.start(),matcher.end()));
+		} else
+			System.out.println("No end");
+		return sb.toString();
+	}
+
+	public static String objectDescriptorToJava(StringBuilder sb, String string, int start,int end) {
+
+		switch (string.charAt(start)) {
+		case 'L':
+			int last = end-1;
+			return string.substring(start+1, last).replace('/', '.');
+
+		case 'V':
+			return "void";
+		case 'B':
+			return "byte";
+		case 'C':
+			return "char";
+		case 'I':
+			return "int";
+		case 'S':
+			return "short";
+		case 'D':
+			return "double";
+		case 'F':
+			return "float";
+		case 'J':
+			return "long";
+		case 'Z':
+			return "boolean";
+		case '[': // Array
+			return objectDescriptorToJava(sb, string, start +1, end) + "[]";
+		}
+		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
+	}
 
 }
