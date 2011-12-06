@@ -20,11 +20,12 @@ import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.RepositoryPlugin.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
+import aQute.lib.jardiff.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
@@ -1463,13 +1464,6 @@ public class bnd extends Processor {
 			}
 		}
 	}
-	
-	/**
-	 * 
-	 * @param args
-	 * @param first
-	 * @throws Exception
-	 */
 
 	void doDiff(String args[], int first) throws Exception {
 		File base = new File("");
@@ -1506,10 +1500,15 @@ public class bnd extends Processor {
 			System.err.println("Must have 2 files ...");
 			return;
 		}
-// TODO
+		Diff diff = new Diff();
+
+		Map<String, Object> map = diff.diff(targets[0], targets[1], strict);
+		diff.print(System.out, map, 0);
+
 		for (Jar jar : targets) {
 			jar.close();
 		}
+		diff.close();
 	}
 
 	public void setOut(PrintStream out) {
