@@ -88,4 +88,9 @@ public class ClassDataCollector {
 	public void memberEnd() {
 	}
 
+	public void version(int minor, int major) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
