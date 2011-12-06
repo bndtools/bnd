@@ -1,5 +1,6 @@
 package aQute.libg.cryptography;
 
+import java.io.*;
 import java.security.*;
 
 
@@ -7,9 +8,10 @@ import java.security.*;
 public class SHA1 extends Digest {
 	public final static String ALGORITHM = "SHA1";
 	
-	public static Digester<SHA1> getDigester() throws NoSuchAlgorithmException {
+	
+	public static Digester<SHA1> getDigester(OutputStream ... out  ) throws NoSuchAlgorithmException {
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM);
-		return new Digester<SHA1>(md) {
+		return new Digester<SHA1>(md, out) {
 			@Override public SHA1 digest() throws Exception {
 				return new SHA1(md.digest());
 			}
