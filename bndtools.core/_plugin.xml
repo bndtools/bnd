@@ -734,5 +734,9 @@
          code="0"
       />
    </extension>
+   
+   <extension point="bndtools.core.validators">
+      <validator name="BSN check" class="org.bndtools.core.build.validate.BsnValidator"/>
+   </extension>
 
  </plugin>

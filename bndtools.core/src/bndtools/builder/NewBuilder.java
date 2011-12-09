@@ -23,10 +23,13 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
@@ -38,6 +41,7 @@ import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
 
 public class NewBuilder extends IncrementalProjectBuilder {
@@ -52,7 +56,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private Project model;
 
     private List<String> classpathErrors;
-    private List<IStatus> validationResults;
+    private MultiStatus validationResults;
 
     private List<String> buildLog;
     private int logLevel = LOG_NONE;
@@ -65,7 +69,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
         classpathErrors = new LinkedList<String>();
-        validationResults = new LinkedList<IStatus>();
+        validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
         buildLog = new ArrayList<String>(5);
 
         // Initialise workspace OBR index (should only happen once)
@@ -432,6 +436,15 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         File[] built;
 
+        // Validate
+        List<IValidator> validators = loadValidators();
+        if (validators != null) {
+            Collection<? extends Builder> builders = model.getSubBuilders();
+            for (Builder builder : builders) {
+                validate(builder, validators);
+            }
+        }
+
         // Build!
         model.clear();
         model.setTrace(true);
@@ -468,6 +481,30 @@ public class NewBuilder extends IncrementalProjectBuilder {
         createBuildMarkers(errors, warnings);
 
         return built.length > 0;
+    }
+
+    List<IValidator> loadValidators() {
+        List<IValidator> validators = null;
+        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "validators");
+        if (validatorElems != null && validatorElems.length > 0) {
+            validators = new ArrayList<IValidator>(validatorElems.length);
+            for (IConfigurationElement elem : validatorElems) {
+                try {
+                    validators.add((IValidator) elem.createExecutableExtension("class"));
+                } catch (Exception e) {
+                    Plugin.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
+                }
+            }
+        }
+        return validators;
+    }
+
+    void validate(Builder builder, List<IValidator> validators) {
+        for (IValidator validator : validators) {
+            IStatus status = validator.validate(builder);
+            if (!status.isOK())
+                validationResults.add(status);
+        }
     }
 
     private IProject[] calculateDependsOn() throws Exception {
@@ -530,6 +567,12 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (String error : classpathErrors) {
             addClasspathMarker(error, IMarker.SEVERITY_ERROR);
         }
+
+        if (!validationResults.isOK()) {
+            for (IStatus status : validationResults.getChildren()) {
+                addClasspathMarker(status);
+            }
+        }
     }
 
     private void clearBuildMarkers() throws CoreException {
@@ -564,6 +607,22 @@ public class NewBuilder extends IncrementalProjectBuilder {
         marker.setAttribute(IMarker.SEVERITY, severity);
         marker.setAttribute(IMarker.MESSAGE, message);
         // marker.setAttribute(IMarker.LINE_NUMBER, 1);
+    }
+
+    private void addClasspathMarker(IStatus status) throws CoreException {
+        int severity;
+        switch (status.getSeverity()) {
+        case IStatus.CANCEL:
+        case IStatus.ERROR:
+            severity = IMarker.SEVERITY_ERROR;
+            break;
+        case IStatus.WARNING:
+            severity = IMarker.SEVERITY_WARNING;
+            break;
+        default:
+            severity = IMarker.SEVERITY_INFO;
+        }
+        addClasspathMarker(status.getMessage(), severity);
     }
 
     private void log(int level, String message, Object... args) {
