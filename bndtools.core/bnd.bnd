@@ -87,13 +87,16 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: biz.aQute.bndlib;version=1.51,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bndlib;version=1.51,\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
 	woodstox-core-asl,\
+	javax.xml,\
 	javax.xml.stream,\
 	org.osgi.impl.bundle.bindex;version=project,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\

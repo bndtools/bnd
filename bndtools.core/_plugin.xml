@@ -26,6 +26,10 @@
       name="Bnd Plug-ins"
       schema="schema/bndPlugins.exsd"
    />
+   <extension-point id="validators"
+      name="Build Validators"
+      schema="schema/validators.exsd"
+   />
    
    <!-- Popup Menus -->
    <extension

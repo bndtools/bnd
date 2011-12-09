@@ -52,6 +52,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private Project model;
 
     private List<String> classpathErrors;
+    private List<IStatus> validationResults;
 
     private List<String> buildLog;
     private int logLevel = LOG_NONE;
@@ -64,6 +65,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
         classpathErrors = new LinkedList<String>();
+        validationResults = new LinkedList<IStatus>();
         buildLog = new ArrayList<String>(5);
 
         // Initialise workspace OBR index (should only happen once)
