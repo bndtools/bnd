@@ -1,10 +1,14 @@
 package bndtools.wizards.obr;
 
+import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.felix.bundlerepository.Resource;
 import org.bndtools.core.obr.ObrResolutionResult;
@@ -13,19 +17,34 @@ import org.eclipse.jface.wizard.Wizard;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
+import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
 import bndtools.api.IBndModel;
 import bndtools.model.clauses.VersionedClause;
 
 public class ObrResolutionWizard extends Wizard {
 
+    private static final String PATHS_EXTENSION = ".resolved";
+
     private final ObrResultsWizardPage resultsPage;
+    private final Comparator<Entry<String, String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
+        public int compare(Entry<String, String> e1, Entry<String, String> e2) {
+            // Reverse lexical ordering on keys
+            return e2.getKey().compareTo(e1.getKey());
+        }
+    };
+
     private final IBndModel model;
+    private final IFile file;
 
     public ObrResolutionWizard(IBndModel model, IFile file, ObrResolutionResult result) {
         this.model = model;
+        this.file = file;
 
         resultsPage = new ObrResultsWizardPage(model, file);
         resultsPage.setResult(result);
@@ -46,12 +65,40 @@ public class ObrResolutionWizard extends Wizard {
         else
             resources = Collections.emptyList();
 
-        List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
-        for (Resource resource : resources) {
-            VersionedClause runBundle = resourceToRunBundle(resource);
-            runBundles.add(runBundle);
+        // Open stream for physical paths list in target dir
+        PrintStream pathsStream = null;
+        try {
+            Project project = Workspace.getProject(file.getProject().getLocation().toFile());
+            File targetDir = project.getTarget();
+            targetDir.mkdirs();
+
+            File pathsFile = new File(targetDir, file.getName() + PATHS_EXTENSION);
+            pathsStream = new PrintStream(pathsFile);
+        } catch (Exception e) {
+            Plugin.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
         }
-        model.setRunBundles(runBundles);
+
+        // Generate -runbundles and path list
+        try {
+            List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
+            for (Resource resource : resources) {
+                VersionedClause runBundle = resourceToRunBundle(resource);
+                runBundles.add(runBundle);
+
+                if (pathsStream != null) {
+                    VersionedClause runBundleWithUri = runBundle.clone();
+                    runBundleWithUri.getAttribs().put(BndConstants.RESOLUTION_URI_ATTRIBUTE, resource.getURI());
+
+                    StringBuilder builder = new StringBuilder();
+                    runBundleWithUri.formatTo(builder, clauseAttributeSorter);
+
+                    pathsStream.println(builder.toString());
+                }
+            }
+            model.setRunBundles(runBundles);
+        } finally {
+            IO.close(pathsStream);
+        }
 
         return true;
     }
@@ -69,9 +116,6 @@ public class ObrResolutionWizard extends Wizard {
             versionRangeStr = versionRange.toString();
         }
         attribs.put(Constants.VERSION_ATTRIBUTE, versionRangeStr);
-
-        // Add the resolved URI of the resource
-        attribs.put(BndConstants.RESOLUTION_URI_ATTRIBUTE, resource.getURI());
 
         return new VersionedClause(bsn, attribs);
 

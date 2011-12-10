@@ -12,12 +12,15 @@ package bndtools.model.clauses;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -71,26 +74,43 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 			attribs.put(attrib, buffer.toString());
 		}
 	}
-	public void formatTo(StringBuilder buffer) {
-		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
-		buffer.append(name);
-		if (attribs != null) for(Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext(); ) {
-			Entry<String, String> entry = iter.next();
-			String name = entry.getKey();
-			String value = entry.getValue();
 
-			if(value != null && value.length() > 0) {
-				buffer.append(separator);
+    public void formatTo(StringBuilder buffer) {
+        formatTo(buffer, null);
+    }
 
-				// If the value contains any comma or equals, then quote the whole thing
-				if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
-				    value = "'" + value + "'";
+    public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
+        String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
+        buffer.append(name);
+        if (attribs != null) {
+            Set<Entry<String,String>> set;
+            if (sorter != null) {
+                set = new TreeSet<Map.Entry<String,String>>(sorter);
+                set.addAll(attribs.entrySet());
+            } else {
+                set = attribs.entrySet();
+            }
 
-				buffer.append(name).append('=').append(value);
-			}
-		}
-	}
-	protected boolean newlinesBetweenAttributes() {
+            for (Iterator<Entry<String, String>> iter = set.iterator(); iter.hasNext();) {
+                Entry<String, String> entry = iter.next();
+                String name = entry.getKey();
+                String value = entry.getValue();
+
+                if (value != null && value.length() > 0) {
+                    buffer.append(separator);
+
+                    // If the value contains any comma or equals, then quote the
+                    // whole thing
+                    if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
+                        value = "'" + value + "'";
+
+                    buffer.append(name).append('=').append(value);
+                }
+            }
+        }
+    }
+
+    protected boolean newlinesBetweenAttributes() {
 		return false;
 	}
 	@Override
