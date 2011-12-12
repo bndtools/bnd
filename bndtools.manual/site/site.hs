@@ -6,10 +6,17 @@ import Control.Arrow (arr, (>>>), (***))
 import Data.Monoid (mempty, mconcat)
 
 import Hakyll
+import Text.Pandoc
 
 static name = match name $ do
     route idRoute
     compile copyFileCompiler
+
+withToc = defaultWriterOptions
+    { writerTableOfContents = True
+    , writerTemplate = "<h1 id='TOC'>Table of Contents</h1>$toc$\n$body$"
+    , writerStandalone = True
+    }
 
 main :: IO ()
 main = hakyll $ do
@@ -71,7 +78,7 @@ main = hakyll $ do
     -- Articles
     match (list ["tutorial.md", "development.md"]) $ do
         route   $ setExtension ".html"
-        compile $ pageCompiler 
+        compile $ pageCompilerWith defaultHakyllParserState withToc
             >>> applyTemplateCompiler "templates/article.html"
             >>> processPage
 

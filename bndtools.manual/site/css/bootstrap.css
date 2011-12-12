@@ -239,6 +239,14 @@ body {
 .container > .content {
   background-color: #fff;
 }
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  color: #404040
+}
 a {
   color: #0069d6;
   text-decoration: none;
