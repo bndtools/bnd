@@ -19,7 +19,7 @@ Checking Out from GitHub
 
 First check out the source code from GitHub as follows:
 
-	git clone git://github.com/njbartlett/bndtools.git
+	git clone git://github.com/bndtools/bndtools.git
 
 If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketplace) then skip to **Importing Into Eclipse** below. Otherwise read on...
 
