@@ -636,6 +636,9 @@ public class Jar implements Closeable {
 			return null;
 
 		String s = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+		if ( s == null)
+			return null;
+		
 		Matcher matcher = BSN.matcher(s);
 		if (matcher.matches()) {
 			return matcher.group(1);

@@ -1,4 +1,4 @@
-package test;
+package test.diff;
 
 import java.io.*;
 
@@ -19,12 +19,12 @@ public class DiffTest extends TestCase {
 	public void testInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath( new File("bin"));
-		b.setProperty(Constants.EXPORT_PACKAGE, "test.diff");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test");
 		b.build();
 		Diff diff = differ.diff(b, b);
-		Diff p = diff.get("<api>").get("test.diff");
+		Diff p = diff.get("<api>").get("test");
 		show(p,0);
-		Diff c = p.get("test.diff.DiffTest$I");
+		Diff c = p.get("test.DiffTest$I");
 		assertNotNull(c.get("int hashCode()"));
 		assertNotNull(c.get("void finalize()"));
 		assertNotNull(c.get("void foo()"));
@@ -47,16 +47,16 @@ public class DiffTest extends TestCase {
 	
 	
 	void show(Diff diff, int indent) {
-//		if (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED)
-//			return;
+		if (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED)
+			return;
 
 		 for (int i = 0; i < indent; i++)
 			 System.out.print("   ");
 
 		System.out.println(diff.toString());
 
-//		if (diff.getDelta().isStructural())
-//			return;
+		if (diff.getDelta() == Delta.ADDED || diff.getDelta() == Delta.REMOVED)
+			return;
 
 		for (Diff c : diff.getChildren()) {
 			show(c, indent + 1);

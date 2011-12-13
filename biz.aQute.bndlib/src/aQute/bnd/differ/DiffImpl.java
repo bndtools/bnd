@@ -36,8 +36,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 			{ IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR }, // MINOR
 			{ IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR }, // MAJOR
 			{ IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR }, // REMOVED
-			{ IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR }, // ADDED_MINOR
-			{ IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR }, // ADDED_MAJOR
+			{ IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR }, // ADDED
 											};
 
 	/**
@@ -58,26 +57,44 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 
 			// Either newer or older can be null, indicating remove or add
 			// so we have to be very careful.
+			Element[] newerChildren = newer == null ? Element.EMPTY : ((Structured) newer).children;
+			Element[] olderChildren = older == null ? Element.EMPTY : ((Structured) older).children;
 
-			Map<String, ? extends Element> newerChildren = Collections.emptyMap();
-			Map<String, ? extends Element> olderChildren = Collections.emptyMap();
+			int o = 0;
+			int n = 0;
+			List<DiffImpl> children = new ArrayList<DiffImpl>();
+			while (true) {
+				Element nw = n < newerChildren.length ? newerChildren[n] : null;
+				Element ol = o < olderChildren.length ? olderChildren[o] : null;
+				DiffImpl diff;
 
-			if (newer != null)
-				newerChildren = ((Structured) newer).getIndex();
+				if (nw == null && ol == null)
+					break;
 
-			if (older != null)
-				olderChildren = ((Structured) older).getIndex();
-
-			// Create a list with all key names.
-
-			Set<String> all = new HashSet<String>(newerChildren.keySet());
-			all.addAll(olderChildren.keySet());
-			TreeSet<DiffImpl> children = new TreeSet<DiffImpl>();
-
-			// Compare the children
-
-			for (String key : all) {
-				DiffImpl diff = new DiffImpl(newerChildren.get(key), olderChildren.get(key));
+				if (nw != null && ol != null) {
+					// we have both sides
+					int result = nw.compareTo(ol);
+					if (result == 0) {
+						// we have two equal named elements
+						// use normal diff
+						diff = new DiffImpl(nw, ol);
+						n++;
+						o++;
+					} else if (result > 0) {
+						// we newer > older, so there is no newer == removed
+						diff = new DiffImpl(null, ol);
+						o++;
+					} else {
+						// we newer < older, so there is no older == added
+						diff = new DiffImpl(nw, null);
+						n++;
+					}
+				} else {
+					// we reached the end of one of the list
+					diff = new DiffImpl(nw, ol);
+					n++;
+					o++;
+				}
 				children.add(diff);
 			}
 
@@ -102,33 +119,31 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 * This getDelta calculates the delta but allows the caller to ignore
 	 * certain Diff objects by calling back the ignore call back parameter.
 	 */
+
 	public Delta getDelta(Ignore ignore) {
 
 		// If ignored, we just return ignore.
 		if (ignore != null && ignore.contains(this))
-			return Delta.IGNORED;
+			return IGNORED;
 
 		if (newer == null) {
-			return Delta.REMOVED;
+			return REMOVED;
 		} else if (older == null) {
-
-			// Depending on the Element type we can see an add as major (adding
-			// a
-			// method to an interface for example) or minor (adding a method
-			// to a class).
-
-			if (newer.isAddMajor())
-				return Delta.ADD_MAJOR;
-			else
-				return Delta.ADD_MINOR;
-
+			return ADDED;
 		} else {
 			// now we're sure newer and older are both not null
+			assert newer != null && older != null;
+			assert newer.getClass() == older.getClass();
 
+			Delta local = newer.getValueDelta(older);
+			
 			if (newer instanceof Structured) {
-				Delta local = Delta.UNCHANGED;
 				for (DiffImpl child : children) {
 					Delta sub = child.getDelta(ignore);
+					if (sub == REMOVED)
+						sub = child.older.remove;
+					else if (sub == ADDED)
+						sub = child.newer.add;
 
 					// The escalate method is used to calculate the default
 					// transition in the
@@ -139,9 +154,8 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 					local = TRANSITIONS[sub.ordinal()][local.ordinal()];
 				}
 				return local;
-			} else {
-				return ((Leaf) newer).isEqual((Leaf) older) ? Delta.UNCHANGED : Delta.CHANGED;
 			}
+			return UNCHANGED;
 		}
 	}
 
@@ -154,11 +168,11 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	}
 
 	public String getOlderValue() {
-		return older == null || !(older instanceof Leaf) ? null : ((Leaf) older).getValue();
+		return older == null ? null : older.getValue();
 	}
 
 	public String getNewerValue() {
-		return newer == null || !(newer instanceof Leaf) ? null : ((Leaf) newer).getValue();
+		return newer == null ? null : newer.getValue();
 	}
 
 	public Collection<? extends Diff> getChildren() {
@@ -167,24 +181,21 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 
 	public String toString() {
 		String value = "";
-		if ((newer != null ? newer : older) instanceof Leaf) {
-			String oldv = older == null ? null : ((Leaf) older).getValue();
-			String newv = newer == null ? null : ((Leaf) newer).getValue();
-			if (oldv != null || newv != null) {
-				switch (getDelta()) {
-				case REMOVED:
-					value = " = /" + oldv;
-					break;
-				case ADD_MAJOR:
-				case ADD_MINOR:
-					value = " = " + newv + "/";
-					break;
-				case UNCHANGED:
-					value = " = " + newv;
-					break;
-				default:
-					value = " = " + newv + "/" + oldv;
-				}
+		String oldv = older == null ? null : older.getValue();
+		String newv = newer == null ? null : newer.getValue();
+		if (oldv != null || newv != null) {
+			switch (getDelta()) {
+			case REMOVED:
+				value = " = <> /" + oldv;
+				break;
+			case ADDED:
+				value = " = " + newv + " / <>";
+				break;
+			default:
+				if ( newv.equals(oldv))
+					value = " = " + newv ;
+				else
+					value = " = " + newv + " != " + oldv;
 			}
 		}
 		return String.format("%-10s %-10s %s%s", getDelta(), getType(), getName(), value);

@@ -1703,4 +1703,8 @@ public class Clazz {
 		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
 	}
 
+	public int getAccess() {
+		return access;
+	}
+
 }

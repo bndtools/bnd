@@ -3,7 +3,6 @@ package aQute.bnd.service.diff;
 import java.util.*;
 
 public interface Diff {
-	
 	interface Ignore {
 		boolean contains(Diff diff);
 	}
@@ -20,5 +19,7 @@ public interface Diff {
 	Collection<? extends Diff> getChildren();
 	
 	Diff get(String name);
+	
+	String getName();
 	
 }
