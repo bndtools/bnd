@@ -20,15 +20,15 @@ public abstract class Pom {
 	public enum Scope {
 		compile, runtime, system, import_, provided, test, ;
 		
-		private boolean includes(Scope other) {
-			if (other == this) return true;
-			switch (this) {
-			case compile:
-				return other == provided || other == test;
-			default:
-				return false;
-			}
-		}
+//		private boolean includes(Scope other) {
+//			if (other == this) return true;
+//			switch (this) {
+//			case compile:
+//				return other == provided || other == test;
+//			default:
+//				return false;
+//			}
+//		}
 	};
 
 	final Maven			maven;
