@@ -4,7 +4,6 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
@@ -39,7 +38,7 @@ public class RepositoryBundle implements IAdaptable {
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
-        if(IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
+        if(IFile.class.equals(adapter)) { // || IResource.class.equals(adapter)) {
             try {
                 File file = getFile();
                 if(file != null) {
