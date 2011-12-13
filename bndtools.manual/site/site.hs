@@ -58,7 +58,7 @@ main = hakyll $ do
     match (list ["navigation.html", "footer.html"]) $ compile readPageCompiler
 
     -- Html-sourced pages
-    match (list ["index.html", "installation.html" ]) $ do
+    match (list ["index.html", "installation.html", "training.html" ]) $ do
         route idRoute
         compile $ readPageCompiler >>> processPage
 
