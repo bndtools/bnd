@@ -3,7 +3,7 @@
 
 Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
 
-Private-Package: 				aQute.bnd.*, aQute.lib.*
+Private-Package: 				aQute.bnd.*, aQute.lib.*, aQute.configurable.*
 
 #, org.osgi.service.component.annotations
 Conditional-Package: 			aQute.libg.*
