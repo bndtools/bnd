@@ -738,5 +738,20 @@
    <extension point="bndtools.core.validators">
       <validator name="BSN check" class="org.bndtools.core.build.validate.BsnValidator"/>
    </extension>
+   
+   <extension point="org.eclipse.ui.propertyPages">
+      <page
+         id="org.bndtools.core.propPages.project"
+         name="Bndtools"
+         adaptable="true"
+         objectClass="org.eclipse.core.resources.IProject"
+         class="bndtools.preferences.ui.BndProjectPropertyPage">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test property="org.eclipse.core.resources.projectNature" value="bndtools.core.bndnature"/>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
 
  </plugin>

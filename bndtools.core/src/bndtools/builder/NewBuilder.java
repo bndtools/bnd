@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -31,9 +32,9 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -43,6 +44,7 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
+import bndtools.preferences.CompileErrorAction;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
@@ -63,8 +65,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, "Building bundles", 0);
-
         IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
         logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
@@ -414,6 +414,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return targetDirPath;
     }
 
+    private enum Action { build, delete };
+
     /**
      * @param force Whether to force bnd to build
      * @return Whether any files were built
@@ -421,18 +423,38 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
-        // Abort build if compilation errors exist
+        // Check if compilation errors exist, and if so check the project settings for what to do about that...
+        Action buildAction = Action.build;
         if (hasBlockingErrors()) {
-            addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
-            log(LOG_BASIC, "SKIPPING due to Java problem markers");
-            return false;
+            ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
+            switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
+            case skip:
+                addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
+                log(LOG_BASIC, "SKIPPING due to Java problem markers");
+                return false;
+            case build:
+                buildAction = Action.build;
+                break;
+            case delete:
+                buildAction = Action.delete;
+                break;
+            }
         } else if (!classpathErrors.isEmpty()) {
-            addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
-            log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
-            return false;
+            ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
+            switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
+            case skip:
+                addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
+                log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
+                return false;
+            case build:
+                buildAction = Action.build;
+                break;
+            case delete:
+                buildAction = Action.delete;
+                break;
+            }
         }
-
-        log(LOG_BASIC, "REBUILDING, force=%b", force);
+        log(LOG_BASIC, "REBUILDING, force=%b, action=%s", force, buildAction);
 
         File[] built;
 
@@ -445,22 +467,35 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         }
 
-        // Build!
+        // Clear errors & warnings before build
         model.clear();
-        model.setTrace(true);
-        if (force)
-            built = model.buildLocal(false);
-        else
-            built = model.build();
-        if (built == null) built = new File[0];
 
-        // Log rebuilt files
-        log(LOG_BASIC, "requested rebuild of %d files", built.length);
-        if (logLevel >= LOG_FULL) {
-            for (File builtFile : built) {
-                log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
+        if (buildAction == Action.build) {
+            // Build!
+            model.setTrace(true);
+            if (force)
+                built = model.buildLocal(false);
+            else
+                built = model.build();
+            if (built == null) built = new File[0];
+
+            // Log rebuilt files
+            log(LOG_BASIC, "requested rebuild of %d files", built.length);
+            if (logLevel >= LOG_FULL) {
+                for (File builtFile : built) {
+                    log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
+                }
             }
+        } else {
+            // Delete target files since the project has compile errors and the delete action was selected.
+            for (Builder builder : model.getSubBuilders()) {
+                File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
+                boolean deleted = targetFile.delete();
+                log(LOG_FULL, "deleted target file %s (%b)", targetFile, deleted);
+            }
+            built = new File[0];
         }
+
 
         // Make sure Eclipse knows about the changed files (should already have been done?)
         IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));
