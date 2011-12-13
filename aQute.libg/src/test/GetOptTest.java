@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.getopt.*;
+import aQute.lib.getopt.*;
 
 public class GetOptTest extends TestCase {
 
@@ -17,7 +17,7 @@ public class GetOptTest extends TestCase {
 	};
 	
 	public void testSimple() {
-		c1 x = GetOpt.getopt(new String[]{"-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i", "f2.txt", "--", "-a", "--a", "a"}, c1.class);
+		c1 x = GetOpt.getopt(new String[]{"-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i", "f2.txt", "--", "-a", "--a", "a"}, 0, c1.class);
 		assertEquals( true, x.flag());
 		assertEquals( 33, x.a());
 		assertEquals( "bb", x.bb(), "bb");

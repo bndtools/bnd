@@ -1,4 +1,4 @@
-package aQute.getopt;
+package aQute.lib.getopt;
 
 import java.lang.reflect.*;
 
