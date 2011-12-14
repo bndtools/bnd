@@ -224,7 +224,7 @@ public class bnd extends Processor {
 		} else if ("diff".equals(args[i])) {
 			doDiff(args, ++i);
 		} else if ("forensics".equals(args[i])) {
-			doForensics(args, ++i);
+//			doForensics(args, ++i);
 		} else if ("help".equals(args[i])) {
 			doHelp(args, ++i);
 		} else if ("macro".equals(args[i])) {
@@ -2463,133 +2463,133 @@ public class bnd extends Processor {
 														}
 													};
 
-	void doForensics(String args[], int first) throws Exception {
-		forensics cmd = GetOpt.getopt(args, first, forensics.class);
-
-		FileRepo fr = new FileRepo();
-		fr.setReporter(this);
-		fr.setLocation(cmd.database());
-
-		File output = cmd.output();
-		PrintWriter pw;
-		if (output == null)
-			pw = new PrintWriter(out);
-		else
-			pw = new PrintWriter(output);
-
-		DiffPlugin differ = new DiffPluginImpl();
-
-		for (String arg : cmd._()) {
-			File file = getFile(arg);
-			if (file.isFile()) {
-				Jar jar = new Jar(file);
-				Manifest manifest = jar.getManifest();
-				Map<String, Map<String, String>> exports = parseHeader(manifest.getMainAttributes()
-						.getValue(Constants.EXPORT_PACKAGE));
-
-				outer: for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
-						.entrySet()) {
-
-					String packageName = entry.getKey();
-					if (packageName.length() > 0 && Character.isUpperCase(packageName.charAt(0))) {
-						trace("adding package %s", packageName);
-
-						// Create a jar with only our package
-						Jar sub = new Jar(packageName);
-						sub.addDirectory(entry.getValue(), true);
-
-						// Default versions to use
-						Version useVersion = new Version(1, 0, 0);
-						
-
-						// Get all existing versions sorted so that the highest
-						// version is highest
-						List<Version> versions = fr.versions(packageName);
-						Collections.sort(versions);
-
-						if ( cmd.calculate() ) {
-							// ignore the version in the jar but set them
-							calculate(fr,sub,packageName)
-						} else {
-							// get the old version set, could be null
-							Map<String,String> attrs = exports.get(packageName);
-							if ( attrs == null)
-								exports.put(packageName, attrs=Create.map());
-							Version v = Version.parseVersion(attrs.get(Constants.VERSION_ATTRIBUTE));
-							Version oldVersion =new Version(v.getMajor(), v.getMinor(), v.getMicro());
-							// verify 
-						}
-						
-						
-						
-						versions: for (int i = versions.size() - 1; i >= 0; i--) {
-							Version version = versions.get(i);
-							Jar existing = fr.get(packageName, version);
-							Diff diff = differ.diff(sub, existing).get("<api>").get(packageName);
-							switch (diff.getDelta()) {
-							case UNCHANGED:
-								trace("unchanged %s %s", packageName, version);
-								// will not save due to existing version
-								if ( cmd.check()) {
-									
-								}
-								useVersion = version;
-								
-								break versions;
-
-							case ADDED:
-							case REMOVED:
-								throw new IllegalArgumentException(); // Impossible
-
-							case CHANGED:
-							case MICRO:
-								version = new Version(version.getMajor(), version.getMinor(),
-										version.getMicro()+10);
-								break versions;
-								
-							case MINOR:
-								version = new Version(version.getMajor(), version.getMinor() + 10,
-										0);
-								break versions;
-
-							case MAJOR:
-								if (version.compareTo(useVersion) > 0)
-									useVersion = new Version(versions.get(versions.size() - 1)
-											.getMajor() + 1, 0, 0);
-								break;
-							}
-						}
-
-
-						trace("setting %s version to: %s, was %s", packageName, useVersion, oldVersion);
-						if ( useVersion.compareTo(oldVersion))
-							attrs.put(Constants.VERSION_ATTRIBUTE, useVersion.toString());
-						
-						if (!versions.contains(useVersion)) {
-							// annotate the original bundle the package
-							Builder builder = new Builder();
-							builder.setJar(sub);
-							builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, packageName);
-							builder.setProperty(Constants.BUNDLE_VERSION, useVersion.toString());
-							builder.setProperty(Constants.EXPORT_CONTENTS, packageName);
-							jar.putResource(packageName.replace('.', '/') + "/packageinfo",
-									new EmbeddedResource(useVersion.toString().getBytes(), 0));
-							
-							fr.put(sub);
-						}
-
-					}
-					
-					jar.getManifest().getMainAttributes().putValue(Constants.EXPORT_PACKAGE, printClauses(exports));
-				}
-				// Save the JAR
-				jar.write(file);
-			} else
-				throw new IllegalArgumentException("Not a file: " + file);
-		}
-
-		pw.close();
-	}
+//	void doForensics(String args[], int first) throws Exception {
+//		forensics cmd = GetOpt.getopt(args, first, forensics.class);
+//
+//		FileRepo fr = new FileRepo();
+//		fr.setReporter(this);
+//		fr.setLocation(cmd.database());
+//
+//		File output = cmd.output();
+//		PrintWriter pw;
+//		if (output == null)
+//			pw = new PrintWriter(out);
+//		else
+//			pw = new PrintWriter(output);
+//
+//		DiffPlugin differ = new DiffPluginImpl();
+//
+//		for (String arg : cmd._()) {
+//			File file = getFile(arg);
+//			if (file.isFile()) {
+//				Jar jar = new Jar(file);
+//				Manifest manifest = jar.getManifest();
+//				Map<String, Map<String, String>> exports = parseHeader(manifest.getMainAttributes()
+//						.getValue(Constants.EXPORT_PACKAGE));
+//
+//				outer: for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
+//						.entrySet()) {
+//
+//					String packageName = entry.getKey();
+//					if (packageName.length() > 0 && Character.isUpperCase(packageName.charAt(0))) {
+//						trace("adding package %s", packageName);
+//
+//						// Create a jar with only our package
+//						Jar sub = new Jar(packageName);
+//						sub.addDirectory(entry.getValue(), true);
+//
+//						// Default versions to use
+//						Version useVersion = new Version(1, 0, 0);
+//						
+//
+//						// Get all existing versions sorted so that the highest
+//						// version is highest
+//						List<Version> versions = fr.versions(packageName);
+//						Collections.sort(versions);
+//
+//						if ( cmd.calculate() ) {
+//							// ignore the version in the jar but set them
+//							calculate(fr,sub,packageName)
+//						} else {
+//							// get the old version set, could be null
+//							Map<String,String> attrs = exports.get(packageName);
+//							if ( attrs == null)
+//								exports.put(packageName, attrs=Create.map());
+//							Version v = Version.parseVersion(attrs.get(Constants.VERSION_ATTRIBUTE));
+//							Version oldVersion =new Version(v.getMajor(), v.getMinor(), v.getMicro());
+//							// verify 
+//						}
+//						
+//						
+//						
+//						versions: for (int i = versions.size() - 1; i >= 0; i--) {
+//							Version version = versions.get(i);
+//							Jar existing = fr.get(packageName, version);
+//							Diff diff = differ.diff(sub, existing).get("<api>").get(packageName);
+//							switch (diff.getDelta()) {
+//							case UNCHANGED:
+//								trace("unchanged %s %s", packageName, version);
+//								// will not save due to existing version
+//								if ( cmd.check()) {
+//									
+//								}
+//								useVersion = version;
+//								
+//								break versions;
+//
+//							case ADDED:
+//							case REMOVED:
+//								throw new IllegalArgumentException(); // Impossible
+//
+//							case CHANGED:
+//							case MICRO:
+//								version = new Version(version.getMajor(), version.getMinor(),
+//										version.getMicro()+10);
+//								break versions;
+//								
+//							case MINOR:
+//								version = new Version(version.getMajor(), version.getMinor() + 10,
+//										0);
+//								break versions;
+//
+//							case MAJOR:
+//								if (version.compareTo(useVersion) > 0)
+//									useVersion = new Version(versions.get(versions.size() - 1)
+//											.getMajor() + 1, 0, 0);
+//								break;
+//							}
+//						}
+//
+//
+//						trace("setting %s version to: %s, was %s", packageName, useVersion, oldVersion);
+//						if ( useVersion.compareTo(oldVersion))
+//							attrs.put(Constants.VERSION_ATTRIBUTE, useVersion.toString());
+//						
+//						if (!versions.contains(useVersion)) {
+//							// annotate the original bundle the package
+//							Builder builder = new Builder();
+//							builder.setJar(sub);
+//							builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, packageName);
+//							builder.setProperty(Constants.BUNDLE_VERSION, useVersion.toString());
+//							builder.setProperty(Constants.EXPORT_CONTENTS, packageName);
+//							jar.putResource(packageName.replace('.', '/') + "/packageinfo",
+//									new EmbeddedResource(useVersion.toString().getBytes(), 0));
+//							
+//							fr.put(sub);
+//						}
+//
+//					}
+//					
+//					jar.getManifest().getMainAttributes().putValue(Constants.EXPORT_PACKAGE, printClauses(exports));
+//				}
+//				// Save the JAR
+//				jar.write(file);
+//			} else
+//				throw new IllegalArgumentException("Not a file: " + file);
+//		}
+//
+//		pw.close();
+//	}
 
 	static Pattern	REPO_PATTERN	= Pattern.compile("(" + Verifier.SYMBOLICNAME_STRING + ")-("
 											+ Verifier.VERSION_STRING + ")");
