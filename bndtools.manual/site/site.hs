@@ -12,10 +12,11 @@ static name = match name $ do
     route idRoute
     compile copyFileCompiler
 
-withToc = defaultWriterOptions
+writerOpts = defaultWriterOptions
     { writerTableOfContents = True
     , writerTemplate = "<h1 id='TOC'>Table of Contents</h1>$toc$\n$body$"
     , writerStandalone = True
+    , writerNumberSections = True
     }
 
 main :: IO ()
@@ -76,9 +77,9 @@ main = hakyll $ do
         compile $ readPageCompiler >>> processPagePartial
 
     -- Articles
-    match (list ["tutorial.md", "development.md", "faq.md", "release-notes.md"]) $ do
+    match (list ["tutorial.md", "development.md", "faq.md", "release-notes.md", "concepts.md"]) $ do
         route   $ setExtension ".html"
-        compile $ pageCompilerWith defaultHakyllParserState withToc
+        compile $ pageCompilerWith defaultHakyllParserState writerOpts
             >>> applyTemplateCompiler "templates/article.html"
             >>> processPage
 

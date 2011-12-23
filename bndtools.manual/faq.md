@@ -13,6 +13,24 @@ There are several ways to add external bundles into your repository in order to 
 
 Importing the bundles this way is better than directly modifying the contents of the `cnf/repo` directory, since Bndtools is immediately aware of the new bundles and regenerates the OBR index for the repository.
 
+**NB:** not all repository types support adding bundles! For example, the `OBR` repository type is based on an index file that may be anywhere local or remote; Bndtools would not know where to put the new bundle or how to update the index. However the following repository types *do* support additions:
+
+* `LocalOBR`
+* `FileRepo`
+
+How Do I Remove Bundles from a Repository?
+------------------------------------------
+
+Unfortunately the current repository API does not support a generic way to remove bundles. We plan to update this API, but for now it is necessary to remove the bundles manually from the filesystem.
+
+For repositories of type `LocalOBR` perform the following steps:
+
+1. Delete the bundle file from `<repo_dir>/<bsn>`. If you want to delete all versions of the bundle, then also delete the `<bsn>` directory itself (i.e., do not leave an empty directory).
+2. Delete the OBR index file, `<repo_dir>/repository.xml`.
+3. Touch the `cnf/build.bnd` file. This causes the index file to be regenerated and the repository contents to be refreshed.
+
+For repositories of type `FileRepo`, perform the same steps except for deleting the OBR index (which will not exist anyway).
+
 Why is My Bundle Empty?
 -----------------------
 
