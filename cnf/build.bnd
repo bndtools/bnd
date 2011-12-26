@@ -3,8 +3,8 @@ base-version: 1.0.0.REL
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 
 # We use git
-Git-Descriptor: ${system;git describe --dirty --always}
-Git-SHA: ${system;git rev-list -1 HEAD}
+Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
+Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
 
 # Recipe for embedded JARs
 -make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
