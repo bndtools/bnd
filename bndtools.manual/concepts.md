@@ -26,7 +26,7 @@ Repositories are implemented as bnd plug-ins, and can be configured by editing t
 
 ![](/images/concepts/repositories01.png)
 
-Since repositories are implemented as plug-ins, it is theoretically possible to support almost any kind of repository, by developing a new plug-in type. Of course it is more convenient to use an existing repository plug-in. Bnd and Bndtools support the following repository types out-of-the-box.
+Since repositories are implemented as plug-ins, it is theoretically possible to support almost any kind of repository, by developing a new plug-in type; though of course it is more convenient to use an existing repository plug-in. Bnd and Bndtools support the following repository types out-of-the-box.
 
 ## OBR Repository ##
 
@@ -133,6 +133,24 @@ Name            Description                                      Required?
                 entry.
 ------------------------------------------------------------------------------------------------------
 
+Plug-ins and Plug-in Paths
+==========================
+
+Repositories and other kinds of plug-in can be added to the workspace by editing the `-plugin` entry in `cnf/build.bnd`. Plug-ins are specified by their class name, with additional configuration properties passed as follows:
+
+    -plugin: <classname>;<property>=<value>;<property>=<value>,\
+             <classname>;<property>=<value>;<property>=<value>
+
+For example:
+
+    -plugin: org.example.Plugin1;name=First;location=http://www.example.com/,\
+             org.example.Plugin2;name=Second;licence=ApacheV2
+
+Note that if a property value contains a comma then the whole value must be enclosed in single or double quotes, to prevent the comma being interpreted as a delimiter in the plug-in list.
+
+If the plug-in class is not built into bnd/Bndtools then we must use the `path:` directive to specify the classpath for the plug-in, e.g.:
+
+    -plugin: org.example.MyPlugin;path:="cnf/plugins/myplugin-1.0.jar,/usr/local/lib/foo.jar"
 
 Bundles and Bnd Files
 =====================
