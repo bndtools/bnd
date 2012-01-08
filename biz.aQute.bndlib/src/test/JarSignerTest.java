@@ -55,7 +55,7 @@ public class JarSignerTest extends TestCase {
         properties.put("keystore", "test/keystore");
         properties.put("keypass", "testtest");
         properties.put("storepass", "testtest");
-        properties.put("sigfile", "test");
+        properties.put("sigFile", "test");
         signer.setProperties(properties);
         
         Jar jar = new Jar( new File("test/test.jar"));
