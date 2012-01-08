@@ -1,4 +1,6 @@
--buildpath: biz.aQute.bndlib;version=project,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.2.1,\
 	junit.osgi;version=3.8.2

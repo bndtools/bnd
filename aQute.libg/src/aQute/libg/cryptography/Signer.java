@@ -16,7 +16,7 @@ public class Signer<D extends Digest> extends OutputStream {
 		try {
 			signature.update(buffer, offset, length);
 		} catch (SignatureException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -24,7 +24,7 @@ public class Signer<D extends Digest> extends OutputStream {
 		try {
 			signature.update((byte) b);
 		} catch (SignatureException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 	

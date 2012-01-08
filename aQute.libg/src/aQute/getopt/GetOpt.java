@@ -151,7 +151,7 @@ public class GetOpt {
 			boolean flag = m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class;
 			
 			f.format("   %s -%s, --%s %s%s%s%s\n", required?"":"[", getName(m), flag ? "":"<", flag ? "": lastPart(m.getReturnType().getName().toLowerCase()), flag ? "":">", required?"":"]");
-			if ( cfg != null && !cfg.description().isEmpty())
+			if ( cfg != null && cfg.description().length() != 0)
 				f.format("        %s\n", cfg.description());
 		}
 		return sb.toString();
