@@ -1,5 +1,6 @@
 -nobundles: true
--buildpath: com.springsource.junit
+-buildpath: com.springsource.junit,\
+	ee.j2se;version='[1.5,1.6)'
 
 Private-Package: aQute.lib.*, aQute.libg.*
 

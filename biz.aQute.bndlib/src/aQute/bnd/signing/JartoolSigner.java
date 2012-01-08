@@ -25,6 +25,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
     String storepass;
     String keypass;
     String sigFile;
+    String digestalg;
 
     public void setProperties(Map<String, String> map) {
         if (map.containsKey("keystore"))
@@ -39,7 +40,8 @@ public class JartoolSigner implements Plugin, SignerPlugin {
             this.path = map.get("path");
         if (map.containsKey("sigFile"))
             this.sigFile = map.get("sigFile");
-
+        if (map.containsKey("digestalg"))
+            this.digestalg = map.get("digestalg");
     }
 
     public void setReporter(Reporter processor) {
@@ -84,6 +86,11 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         	command.add("-sigFile");
         	command.add(sigFile);
         }
+
+        if (digestalg != null) {
+        	command.add("-digestalg");
+        	command.add(digestalg);
+	    }
 
         command.add(tmp.getAbsolutePath());
         command.add(alias);

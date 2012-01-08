@@ -1,5 +1,6 @@
 package aQute.libg.cryptography;
 
+import java.io.*;
 import java.security.*;
 
 
@@ -7,8 +8,8 @@ import java.security.*;
 public class MD5 extends Digest {
 	public final static String ALGORITHM = "MD5";
 	
-	public static Digester<MD5> getDigester() throws Exception {
-		return new Digester<MD5>(MessageDigest.getInstance(ALGORITHM)) {
+	public static Digester<MD5> getDigester(OutputStream ... out) throws Exception {
+		return new Digester<MD5>(MessageDigest.getInstance(ALGORITHM), out) {
 			
 			@Override public MD5 digest() throws Exception {
 				return new MD5(md.digest());

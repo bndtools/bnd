@@ -2,6 +2,7 @@
 *.bak
 /*/tmp
 /*/bin
+/*/bin_test
 .metadata/
 Archive
 .DS_Store

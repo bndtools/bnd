@@ -94,9 +94,9 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		Deflater deflater = new Deflater();
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM);
 		DigestInputStream din = new DigestInputStream(in, md);
-		DeflaterInputStream dfl = new DeflaterInputStream(din, deflater);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		copy(dfl, bout);
+		DeflaterOutputStream dout = new DeflaterOutputStream(bout, deflater);
+		copy(din, dout);
 
 		synchronized (store) {
 			// First check if it already exists

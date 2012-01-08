@@ -1,4 +1,6 @@
--buildpath: biz.aQute.bndlib;version=project,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.2.1,\
 	junit.osgi;version=3.8.2
@@ -9,6 +11,6 @@ Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 Private-Package: aQute.launcher.*
 	
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 javac.source = 1.5
 javac.target = jsr14
