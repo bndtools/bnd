@@ -1,6 +1,7 @@
 package test;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -129,6 +130,8 @@ public class ProjectTest extends TestCase {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p4-sub");
 		File[] files = project.build();
+		Arrays.sort(files);
+
 		System.out.println(Processor.join(project.getErrors(), "\n"));
 		System.out.println(Processor.join(project.getWarnings(), "\n"));
 
