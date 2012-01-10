@@ -1,14 +1,14 @@
 package aQute.configurable;
 
+import java.io.*;
 import java.lang.reflect.*;
+import java.lang.reflect.Proxy;
+import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 
 public class Configurable<T> {
 
-	
-	
-	
 	public static <T> T createConfigurable(Class<T> c, Map<?, ?> properties) {
 		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] { c },
 				new ConfigurableHandler(properties, c.getClassLoader()));
@@ -16,8 +16,8 @@ public class Configurable<T> {
 	}
 
 	public static <T> T createConfigurable(Class<T> c, Dictionary<?, ?> properties) {
-		Map<Object,Object> alt = new HashMap<Object,Object>();
-		for( Enumeration<?> e = properties.keys(); e.hasMoreElements(); ) {
+		Map<Object, Object> alt = new HashMap<Object, Object>();
+		for (Enumeration<?> e = properties.keys(); e.hasMoreElements();) {
 			Object key = e.nextElement();
 			alt.put(key, properties.get(key));
 		}
@@ -25,8 +25,8 @@ public class Configurable<T> {
 	}
 
 	static class ConfigurableHandler implements InvocationHandler {
-		final Map<?, ?>	properties;
-		final ClassLoader			loader;
+		final Map<?, ?>		properties;
+		final ClassLoader	loader;
 
 		ConfigurableHandler(Map<?, ?> properties, ClassLoader loader) {
 			this.properties = properties;
@@ -41,6 +41,8 @@ public class Configurable<T> {
 				id = ad.id();
 
 			Object o = properties.get(id);
+			if (o == null && args != null && args.length == 1)
+				o = args[0];
 
 			if (o == null) {
 				if (ad != null) {
@@ -55,21 +57,37 @@ public class Configurable<T> {
 			}
 			if (o == null) {
 				Class<?> rt = method.getReturnType();
-				if ( rt == boolean.class || rt==Boolean.class)
+				if (rt == boolean.class || rt == Boolean.class)
 					return false;
 				if (method.getReturnType().isPrimitive()
-						|| Number.class.isAssignableFrom(method.getReturnType()) ) {
+						|| Number.class.isAssignableFrom(method.getReturnType())) {
 
 					o = "0";
 				} else
 					return null;
 			}
 
+			if (args != null && args.length == 1) {
+				String s = (String) convert(String.class, o);
+
+				// Allow a base to be specified for File and URL
+				if (method.getReturnType() == File.class && args[0].getClass() == File.class) {
+					return new File((File) args[0], s);
+				} else if (method.getReturnType() == URL.class && args[0].getClass() == File.class) {
+					return new URL(((File) args[0]).toURI().toURL(), s);
+				} else if (method.getReturnType() == URL.class && args[0].getClass() == URL.class) {
+					return new URL((URL) args[0], s);
+				}
+			}
 			return convert(method.getGenericReturnType(), o);
 		}
 
-		@SuppressWarnings( { "unchecked" }) public Object convert(Type type, Object o)
+		@SuppressWarnings({ "unchecked" }) public Object convert(Type type, Object o)
 				throws Exception {
+
+			// TODO type variables
+			// TODO wildcards
+
 			if (type instanceof ParameterizedType) {
 				ParameterizedType pType = (ParameterizedType) type;
 				return convert(pType, o);
@@ -91,9 +109,9 @@ public class Configurable<T> {
 				return o;
 
 			if (resultType == boolean.class || resultType == Boolean.class) {
-				if ( actualType == boolean.class || actualType == Boolean.class)
+				if (actualType == boolean.class || actualType == Boolean.class)
 					return o;
-				
+
 				if (Number.class.isAssignableFrom(actualType)) {
 					double b = ((Number) o).doubleValue();
 					if (b == 0)
@@ -102,7 +120,7 @@ public class Configurable<T> {
 						return true;
 				}
 				return true;
-				
+
 			} else if (resultType == byte.class || resultType == Byte.class) {
 				if (Number.class.isAssignableFrom(actualType))
 					return ((Number) o).byteValue();
@@ -170,16 +188,22 @@ public class Configurable<T> {
 						resultType = ArrayList.class;
 					else if (resultType == Set.class || resultType == SortedSet.class)
 						resultType = TreeSet.class;
-					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
+					else if (resultType == Queue.class /*
+														 * || resultType ==
+														 * Deque.class
+														 */)
 						resultType = LinkedList.class;
-					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
+					else if (resultType == Queue.class /*
+														 * || resultType ==
+														 * Deque.class
+														 */)
 						resultType = LinkedList.class;
 					else
 						throw new IllegalArgumentException(
 								"Unknown interface for a collection, no concrete class found: "
 										+ resultType);
 				}
-				
+
 				@SuppressWarnings("unchecked") Collection<Object> result = (Collection<Object>) resultType
 						.newInstance();
 				Type componentType = pType.getActualTypeArguments()[0];
@@ -223,42 +247,40 @@ public class Configurable<T> {
 				return (Collection<?>) o;
 
 			if (o.getClass().isArray()) {
-				if ( o.getClass().getComponentType().isPrimitive()) {
+				if (o.getClass().getComponentType().isPrimitive()) {
 					int length = Array.getLength(o);
 					List<Object> result = new ArrayList<Object>(length);
-					for ( int i=0; i<length; i++) {
-						result.add( Array.get(o, i));
+					for (int i = 0; i < length; i++) {
+						result.add(Array.get(o, i));
 					}
 					return result;
 				} else
 					return Arrays.asList((Object[]) o);
 			}
 
-			if ( o instanceof String) {
-				String s = (String)o;
-				if (s.indexOf('|')>0)
-					return Arrays.asList(s.split("\\|"));					
+			if (o instanceof String) {
+				String s = (String) o;
+				if (s.indexOf('|') > 0)
+					return Arrays.asList(s.split("\\|"));
 			}
 			return Arrays.asList(o);
 		}
 
 	}
-	
-	
+
 	public static String mangleMethodName(String id) {
 		StringBuilder sb = new StringBuilder(id);
-		for ( int i =0; i<sb.length(); i++) {
-			char c  = sb.charAt(i);
-			boolean twice = i < sb.length()-1 && sb.charAt(i+1) ==c;
-			if ( c == '$' || c == '_') {
-				if ( twice )
-					sb.deleteCharAt(i+1);
-				else 
-					if ( c == '$')
-						sb.deleteCharAt(i--); // Remove dollars
-					else
-						sb.setCharAt(i, '.'); // Make _ into .
-			}				
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
+			if (c == '$' || c == '_') {
+				if (twice)
+					sb.deleteCharAt(i + 1);
+				else if (c == '$')
+					sb.deleteCharAt(i--); // Remove dollars
+				else
+					sb.setCharAt(i, '.'); // Make _ into .
+			}
 		}
 		return sb.toString();
 	}
