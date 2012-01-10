@@ -3,6 +3,7 @@ package aQute.bnd.compatibility;
 import java.io.*;
 
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.TypeRef;
 
 public class ParseSignatureBuilder {
 	final Scope			root;
@@ -34,21 +35,24 @@ public class ParseSignatureBuilder {
 			Scope	enclosing;
 			Scope	declaring;
 
-			public void classBegin(int access, String name) {
-				s = root.getScope(Scope.classIdentity(name));
+			@Override
+			public void classBegin(int access, TypeRef name) {
+				s = root.getScope(name.getBinary());
 				s.access = Access.modifier(access);
 				s.kind = Kind.CLASS;
 			}
 
-			public void extendsClass(String name) {
+			@Override
+			public void extendsClass(TypeRef name) {
 //				s.setBase(new GenericType(name));
 			}
 
-			public void implementsInterfaces(String names[]) {
+			@Override
+			public void implementsInterfaces(TypeRef names[]) {
 				s.setParameterTypes(convert(names));
 			}
 
-			GenericType[] convert(String names[]) {
+			GenericType[] convert(TypeRef names[]) {
 				GenericType tss[] = new GenericType[names.length];
 				for (int i = 0; i < names.length; i++) {
 //					tss[i] = new GenericType(names[i]);
@@ -56,6 +60,7 @@ public class ParseSignatureBuilder {
 				return tss;
 			}
 
+			@Override
 			public void method(Clazz.MethodDef defined) {
 				String descriptor;
 				Kind kind;
@@ -73,6 +78,7 @@ public class ParseSignatureBuilder {
 				s.add(m);
 			}
 
+			@Override
 			public void field(Clazz.FieldDef defined) {
 				String descriptor = defined.getName() + ":" + defined.getDescriptor();
 				Kind kind = Kind.FIELD;
@@ -83,6 +89,7 @@ public class ParseSignatureBuilder {
 				s.add(m);
 			}
 
+			@Override
 			public void classEnd() {
 				if (enclosing != null)
 					s.setEnclosing( enclosing );
@@ -90,17 +97,19 @@ public class ParseSignatureBuilder {
 					s.setDeclaring( declaring );				
 			}
 
-			public void enclosingMethod(String cName, String mName, String mDescriptor) {
-				enclosing = root.getScope(Scope.classIdentity(cName));
+			@Override
+			public void enclosingMethod(TypeRef cName, String mName, String mDescriptor) {
+				enclosing = root.getScope(cName.getBinary());
 				if (mName != null) {
 					enclosing = enclosing.getScope(Scope.methodIdentity(mName, mDescriptor));
 				}
 			}
 
-			public void innerClass(String innerClass, String outerClass, String innerName,
+			@Override
+			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
 					int innerClassAccessFlags) {
 				if (outerClass != null && innerClass != null && innerClass.equals(s.name))
-					declaring = root.getScope(Scope.classIdentity(outerClass));
+					declaring = root.getScope(outerClass.getBinary());
 			}
 		});
 		
