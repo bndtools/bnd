@@ -1,5 +1,6 @@
 package aQute.libg.version;
 
+import java.util.*;
 import java.util.regex.*;
 
 public class VersionRange {
@@ -47,7 +48,7 @@ public class VersionRange {
 		if (high == low)
 			return high.toString();
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(start);
 		sb.append(low);
 		sb.append(',');
@@ -82,4 +83,14 @@ public class VersionRange {
 		
 		return true;
 	}
+	
+	public Iterable<Version> filter( final Iterable<Version> versions) {
+		List<Version> list = new ArrayList<Version>();
+		for ( Version v : versions) {
+			if ( includes(v))
+				list.add(v);
+		}
+		return list;
+	}
+	
 }
