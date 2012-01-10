@@ -83,8 +83,16 @@ public class IO {
 		return new String(out.toByteArray(), encoding);
 	}
 
+	public static String collect(URL a) throws IOException {
+		return collect(a, "UTF-8");
+	}
+
 	public static String collect(File a) throws IOException {
 		return collect(a, "UTF-8");
+	}
+
+	public static String collect(String a) throws IOException {
+		return collect(new File(a), "UTF-8");
 	}
 
 	public static String collect(InputStream a, String encoding) throws IOException {
@@ -149,7 +157,7 @@ public class IO {
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
-				result+=size;
+				result += size;
 				size = in.read(buffer);
 			}
 		} finally {
@@ -197,7 +205,8 @@ public class IO {
 		}
 	}
 
-	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException, IOException {
+	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException,
+			IOException {
 		store(o, fout, "UTF-8");
 	}
 
@@ -215,6 +224,32 @@ public class IO {
 		} finally {
 			fout.close();
 		}
+	}
+
+	public static InputStream stream(String s) {
+		try {
+			return new ByteArrayInputStream(s.getBytes("UTF-8"));
+		} catch(Exception e) {
+			// Ignore
+			return null;
+		}
+	}
+
+	public static InputStream stream(String s, String encoding) throws UnsupportedEncodingException {
+		return new ByteArrayInputStream(s.getBytes(encoding));
+	}
+
+	public static InputStream stream(File s) throws FileNotFoundException {
+		return new FileInputStream(s);
+	}
+
+	public static InputStream stream(URL s) throws IOException {
+		return s.openStream();
+	}
+
+
+	public static Reader reader(String s) {
+		return new StringReader(s);
 	}
 
 }
