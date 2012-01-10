@@ -7,7 +7,7 @@ import java.util.regex.*;
 import aQute.configurable.*;
 
 public class GetOpt {
-	public static <T> T getopt(String args[], int first, Class<T> specification)
+	public static <T extends IGetOpt> T getopt(String args[], int first, Class<T> specification)
 			throws SecurityException {
 		Collection<String> value = new ArrayList<String>();
 		Map<String, Object> line = new HashMap<String, Object>();
@@ -106,7 +106,7 @@ public class GetOpt {
 				throw new GetOptException("Not last in a set of options but requires parameter", m,
 						args, i);
 
-			if (i >= args.length)
+			if (i >= args.length-1)
 				throw new GetOptException(
 						"Option requires an argument but it is the last in the command line", m,
 						args, i);
@@ -135,7 +135,7 @@ public class GetOpt {
 
 	private static String getName(Method m) {
 		Config cfg = m.getAnnotation(Config.class);
-		if (cfg == null || cfg.id()==null || cfg.id().equals(Config.NULL))
+		if (cfg == null || cfg.id() == null || cfg.id().equals(Config.NULL))
 			return m.getName();
 
 		return cfg.id();
@@ -170,8 +170,8 @@ public class GetOpt {
 			String name = getName(m);
 
 			String type = "";
-			if ( !flag ) {
-				type = "<"+lastPart(m.getReturnType().getName().toLowerCase())+">";
+			if (!flag) {
+				type = "<" + lastPart(m.getReturnType().getName().toLowerCase()) + ">";
 			}
 			f.format("   %s -%s, --%-20s %-12s%s %s\n",
 			//
@@ -193,5 +193,43 @@ public class GetOpt {
 			return m.group(1);
 		else
 			return name;
+	}
+
+	@SuppressWarnings("unchecked") public static Object subcmd(Object target, String[] args,
+			int start, Appendable out) throws Exception {
+		if (start < args.length) {
+			String arg = args[start++];
+			if (!arg.equals("help")) {
+				arg = "_" + arg;
+				for (Method m : target.getClass().getDeclaredMethods()) {
+					if (m.getParameterTypes().length == 1 && m.getName().equals(arg)) {
+						Class<? extends IGetOpt> specification = (Class<? extends IGetOpt>) m
+								.getParameterTypes()[0];
+						IGetOpt getopt = getopt(args, start, specification);
+						if (getopt.help() != null) {
+							out.append(getopt.help());
+							out.append("\n");
+							return null;
+						} else
+							return m.invoke(target, getopt);
+					}
+				}
+				out.append("Cannot find subcommand: ");
+				out.append(arg);
+				out.append("\n");
+			}
+
+		}
+		out.append("Available sub commands: ");
+		String del = "";
+		for (Method m : target.getClass().getDeclaredMethods()) {
+			if (m.getParameterTypes().length == 1 && m.getName().startsWith("_")) {
+				out.append(del);
+				out.append(m.getName().toLowerCase().substring(1));
+				del = ", ";
+			}
+		}
+		out.append("\n");
+		return null;
 	}
 }
