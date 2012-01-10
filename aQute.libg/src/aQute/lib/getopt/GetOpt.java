@@ -1,17 +1,16 @@
-package aQute.lib.getopt;
+package aQute.getopt;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.regex.*;
 
 import aQute.configurable.*;
 
 public class GetOpt {
-	public static <T> T getopt(String args[], int first, Class<T> specification)
-			throws SecurityException {
+	public static <T> T getopt(String args[], Class<T> specification) throws SecurityException {
 		Collection<String> value = new ArrayList<String>();
 		Map<String, Object> line = new HashMap<String, Object>();
-		argloop: for (int i = first; i < args.length; i++) {
+
+		argloop: for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
 			if (arg.startsWith("-")) {
 				//
@@ -30,22 +29,18 @@ public class GetOpt {
 						break argloop;
 					}
 
-					if ("--help".equals(arg) || "-h".equals(arg) || "-?".equals(arg)) {
-						line.put("help", getHelp(specification));
-						break argloop;
-					}
-
 					// Full named option, e.g. --output
 					try {
 						Method m = specification.getMethod(arg.substring(2));
 						i = assign(line, m, args, i, true);
 					} catch (NoSuchMethodException nsme) {
-						throw new GetOptException("No such option " + arg, null, args, i);
+						throw new GetOptException("No such option "+ arg, null, args, i);
 					}
 
 				} else // Set of single character named options
 				{
-					charloop: for (int j = 1; j < arg.length(); j++) {
+					charloop:
+					for (int j = 1; j < arg.length(); j++) {
 
 						char c = arg.charAt(j); // get option
 
@@ -64,15 +59,16 @@ public class GetOpt {
 			} else
 				value.add(arg);
 		}
-
+		
 		// check if all required elements are set
-
-		for (Method m : specification.getMethods()) {
+		
+		for ( Method m : specification.getMethods()) {
 			Config cfg = m.getAnnotation(Config.class);
-			if (cfg != null && cfg.required() && !line.containsKey(getName(m)))
+			if ( cfg != null && cfg.required() && ! line.containsKey(getName(m)))
 				throw new GetOptException("Required option not found in command", m, args, 0);
 		}
-
+		
+		
 		line.put(".", value);
 		return Configurable.createConfigurable(specification, line);
 	}
@@ -115,8 +111,7 @@ public class GetOpt {
 
 			// The option is followed by an argument
 			if (Collection.class.isAssignableFrom(m.getReturnType())) {
-				@SuppressWarnings("unchecked") Collection<Object> set = (Collection<Object>) line
-						.get(m.getName());
+				@SuppressWarnings("unchecked") Collection<Object> set = (Collection<Object>) line.get(m.getName());
 				if (set == null) {
 					set = new ArrayList<Object>();
 					line.put(getName(m), set);
@@ -132,12 +127,12 @@ public class GetOpt {
 		}
 		return i;
 	}
-
+	
 	private static String getName(Method m) {
 		Config cfg = m.getAnnotation(Config.class);
-		if (cfg == null || cfg.id()==null || cfg.id().equals(Config.NULL))
+		if ( cfg == null || cfg.id() == Config.NULL)
 			return m.getName();
-
+		
 		return cfg.id();
 	}
 
@@ -148,50 +143,22 @@ public class GetOpt {
 	static public String getHelp(Class<?> specification) {
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
-
-		f.format("%s\n", lastPart(specification.getName()));
-		for (Method m : specification.getMethods()) {
-			if (m.getName() == "help") {
-				f.format("   [ --help ]\n");
-				continue;
-			}
-			if (m.getName() == "_") {
-				f.format(" ... \n");
-				continue;
-			}
-			if (m.getName() == "__") {
-				continue;
-			}
-
+		
+		f.format( "%s\n",lastPart(specification.getName()));
+		for ( Method m : specification.getMethods()) {
 			Config cfg = m.getAnnotation(Config.class);
-			boolean required = cfg != null && cfg.required();
+			boolean required = ( cfg != null && cfg.required());
 			boolean flag = m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class;
-			String description = cfg != null ? cfg.description() : "";
-			String name = getName(m);
-
-			String type = "";
-			if ( !flag ) {
-				type = "<"+lastPart(m.getReturnType().getName().toLowerCase())+">";
-			}
-			f.format("   %s -%s, --%-20s %-12s%s %s\n",
-			//
-					required ? " " : "[", //
-					name.charAt(0), //
-					name, //
-					type, //
-					required ? " " : "]",//
-					description);
+			
+			f.format("   %s -%s, --%s %s%s%s%s\n", required?"":"[", getName(m), flag ? "":"<", flag ? "": lastPart(m.getReturnType().getName().toLowerCase()), flag ? "":">", required?"":"]");
+			if ( cfg != null && !cfg.description().isEmpty())
+				f.format("        %s\n", cfg.description());
 		}
 		return sb.toString();
 	}
 
-	static Pattern	LAST_PART	= Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
-
-	private static String lastPart(String name) {
-		Matcher m = LAST_PART.matcher(name);
-		if (m.matches())
-			return m.group(1);
-		else
-			return name;
+	private static Object lastPart(String name) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
