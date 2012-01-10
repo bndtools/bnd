@@ -147,7 +147,7 @@ class ComponentDef {
 			if (type != null) {
 				property.addAttribute("type", type);
 			}
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 
 			String del = "";
 			for (String v : kvs.getValue()) {

@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.eclipse.jface.text.rules.*;
 
-import aQute.bnd.make.component.*;
 import aQute.lib.osgi.*;
 
 public class BndScanner extends RuleBasedScanner {
@@ -47,7 +46,7 @@ public class BndScanner extends RuleBasedScanner {
         }
 
         public IToken evaluate(ICharacterScanner scanner) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             int c = scanner.read();
             if (isWordStart((char) c) || c == '-') {

@@ -388,8 +388,8 @@ public class MavenCommand extends Processor {
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
 		System.out.println(command);
-		StringBuffer stdout = new StringBuffer();
-		StringBuffer stderr = new StringBuffer();
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
 			error("gpg signing %s failed because %s", file, "" + stdout + stderr);
@@ -450,8 +450,8 @@ public class MavenCommand extends Processor {
 			command.add(packageName);
 		}
 
-		StringBuffer out = new StringBuffer();
-		StringBuffer err = new StringBuffer();
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
 
 		System.out.println(command);
 

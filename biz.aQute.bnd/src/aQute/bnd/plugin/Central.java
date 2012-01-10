@@ -62,8 +62,6 @@ public class Central implements IResourceChangeListener {
     public synchronized void resourceChanged(IResourceChangeEvent event) {
         if (event.getType() != IResourceChangeEvent.POST_CHANGE)
             return;
-
-        long now = System.currentTimeMillis();
         
         IResourceDelta rootDelta = event.getDelta();
         try {

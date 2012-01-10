@@ -25,8 +25,9 @@ public class ParseSignatureBuilder {
 	public Scope getRoot() { return root; }
 	
 	
-	public void parse(InputStream in) throws IOException {
-		Clazz clazz = new Clazz("", null);
+	public void parse(InputStream in) throws Exception {
+		Analyzer analyzer = new Analyzer();
+		Clazz clazz = new Clazz(analyzer, "", null);
 		
 		clazz.parseClassFile(in, new ClassDataCollector() {
 			Scope	s;
@@ -59,24 +60,24 @@ public class ParseSignatureBuilder {
 				String descriptor;
 				Kind kind;
 				if (defined.isConstructor()) {
-					descriptor = ":" + defined.descriptor;
+					descriptor = ":" + defined.getDescriptor();
 					kind = Kind.CONSTRUCTOR;
 				} else {
-					descriptor = defined.name + ":" + defined.descriptor;
+					descriptor = defined.getName() + ":" + defined.getDescriptor();
 					kind = Kind.METHOD;
 				}
 				Scope m = s.getScope(descriptor);
-				m.access = Access.modifier(defined.access);
+				m.access = Access.modifier(defined.getAccess());
 				m.kind = kind;
 				m.declaring = s;
 				s.add(m);
 			}
 
 			public void field(Clazz.FieldDef defined) {
-				String descriptor = defined.name + ":" + defined.descriptor;
+				String descriptor = defined.getName() + ":" + defined.getDescriptor();
 				Kind kind = Kind.FIELD;
 				Scope m = s.getScope(descriptor);
-				m.access = Access.modifier(defined.access);
+				m.access = Access.modifier(defined.getAccess());
 				m.kind = kind;
 				m.declaring = s;
 				s.add(m);

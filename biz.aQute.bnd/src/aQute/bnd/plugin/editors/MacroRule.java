@@ -6,7 +6,7 @@ import aQute.lib.osgi.*;
 
 public class MacroRule implements IRule {
 
-    private StringBuffer buffer = new StringBuffer();
+    private StringBuilder buffer = new StringBuilder();
     private IToken       token;
 
     public MacroRule(IToken token) {
@@ -26,7 +26,7 @@ public class MacroRule implements IRule {
 
     }
 
-    boolean scan( ICharacterScanner scanner, StringBuffer buffer ) {
+    boolean scan( ICharacterScanner scanner, StringBuilder buffer ) {
         int c = scanner.read();
         if (c == ICharacterScanner.EOF)
             return false;

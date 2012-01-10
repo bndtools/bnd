@@ -353,7 +353,7 @@ public class ClassDumper {
         int number_of_exceptions = in.readUnsignedShort();
         ps.printf(NUM_COLUMN, indent + "number of exceptions",
                 number_of_exceptions);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String del = "";
         for (int i = 0; i < number_of_exceptions; i++) {
             int exception_index_table = in.readUnsignedShort();
@@ -542,7 +542,7 @@ public class ClassDumper {
         int line_number_table_length = in.readUnsignedShort();
         ps.printf(NUM_COLUMN, indent + "line number table length",
                 line_number_table_length);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < line_number_table_length; i++) {
             int start_pc = in.readUnsignedShort();
             int line_number = in.readUnsignedShort();

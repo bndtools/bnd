@@ -109,7 +109,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void error(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         for (String msg : errors) {
             sb.append(msg);
             sb.append("\n");
@@ -133,7 +133,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void warning(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         for (String msg : errors) {
             sb.append(msg);
             sb.append("\n");
@@ -188,7 +188,7 @@ public class Activator extends AbstractUIPlugin {
     public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
         if (reporter.getErrors().size() > 0
                 || (warnings && reporter.getWarnings().size() > 0)) {
-            final StringBuffer sb = new StringBuffer();
+            final StringBuilder sb = new StringBuilder();
             sb.append("\n");
             if (reporter.getErrors().size() > 0) {
                 sb.append("[Errors]\n");

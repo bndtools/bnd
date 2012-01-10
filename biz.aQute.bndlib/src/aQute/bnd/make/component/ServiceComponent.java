@@ -593,7 +593,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 	 * Escape a string, do entity conversion.
 	 */
 	static String escape(String s) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {

@@ -8,6 +8,8 @@ import org.osgi.service.component.annotations.*;
 
 import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Clazz.MethodDef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.version.*;
 
 /**
@@ -40,16 +42,14 @@ public class AnnotationReader extends ClassDataCollector {
 	ComponentDef				component				= new ComponentDef();
 
 	Clazz						clazz;
-	String						interfaces[];
-	String						methodDescriptor;
-	String						method;
-	String						className;
-	int							methodAccess;
+	TypeRef						interfaces[];
+	MethodDef					method;
+	TypeRef						className;
 	Analyzer					analyzer;
 	MultiMap<String, String>	methods					= new MultiMap<String, String>();
-	String						extendsClass;
+	TypeRef						extendsClass;
 	boolean						inherit;
-	boolean						baseclass=true;
+	boolean						baseclass				= true;
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, boolean inherit) {
 		this.analyzer = analyzer;
@@ -71,13 +71,13 @@ public class AnnotationReader extends ClassDataCollector {
 		if (inherit) {
 			baseclass = false;
 			while (extendsClass != null) {
-				if (extendsClass.startsWith("java/"))
+				if (extendsClass.isJava())
 					break;
 
-				Clazz ec = analyzer.findClass(extendsClass + ".class");
+				Clazz ec = analyzer.findClass(extendsClass.getPath());
 				if (ec == null) {
 					analyzer.error("Missing super class for DS annotations: "
-							+ Clazz.pathToFqn(extendsClass) + " from " + clazz.getFQN());
+							+ extendsClass + " from " + clazz.getClassName());
 				} else {
 					ec.parseClassFileWithCollector(this);
 				}
@@ -145,6 +145,7 @@ public class AnnotationReader extends ClassDataCollector {
 			else if (a instanceof Reference)
 				doReference((Reference) a, annotation);
 		} catch (Exception e) {
+			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
 	}
@@ -153,12 +154,12 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doDeactivate() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 			analyzer.error(
 					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, methodDescriptor);
+					clazz, method.getDescriptor());
 		else {
-			component.deactivate = method;
+			component.deactivate = method.getName();
 		}
 	}
 
@@ -166,12 +167,12 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doModified() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 			analyzer.error(
 					"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, methodDescriptor);
+					clazz, method.getDescriptor());
 		else {
-			component.modified = method;
+			component.modified = method.getName();
 		}
 	}
 
@@ -184,11 +185,11 @@ public class AnnotationReader extends ClassDataCollector {
 		def.name = reference.name();
 
 		if (def.name == null)
-			def.name = method;
+			def.name = method.getName();
 
 		def.unbind = reference.unbind();
 		def.updated = reference.updated();
-		def.bind = method;
+		def.bind = method.getName();
 
 		def.service = raw.get("service");
 		if (def.service != null) {
@@ -196,13 +197,13 @@ public class AnnotationReader extends ClassDataCollector {
 		} else {
 			// We have to find the type of the current method to
 			// link it to the referenced service.
-			Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
+			Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());
 			if (m.matches()) {
 				def.service = Clazz.internalToFqn(m.group(3));
 			} else
 				throw new IllegalArgumentException(
 						"Cannot detect the type of a Component Reference from the descriptor: "
-								+ methodDescriptor);
+								+ method.getDescriptor());
 		}
 
 		// Check if we have a target, this must be a filter
@@ -224,12 +225,12 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doActivate() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(methodDescriptor).matches())
+		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 			analyzer.error(
 					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, methodDescriptor);
+					clazz, method.getDescriptor());
 		else {
-			component.activate = method;
+			component.activate = method.getName();
 		}
 	}
 
@@ -278,7 +279,7 @@ public class AnnotationReader extends ClassDataCollector {
 				List<String> result = new ArrayList<String>();
 				for (int i = 0; i < interfaces.length; i++) {
 					if (!interfaces[i].equals("scala/ScalaObject"))
-						result.add(Clazz.internalToFqn(interfaces[i]));
+						result.add(interfaces[i].getFQN());
 				}
 				component.service = result.toArray(EMPTY);
 			}
@@ -316,28 +317,28 @@ public class AnnotationReader extends ClassDataCollector {
 	 * Are called during class parsing
 	 */
 
-	@Override public void classBegin(int access, String name) {
+	@Override public void classBegin(int access, TypeRef name) {
 		className = name;
 	}
 
-	@Override public void implementsInterfaces(String[] interfaces) {
+	@Override public void implementsInterfaces(TypeRef[] interfaces) {
 		this.interfaces = interfaces;
 	}
 
-	@Override public void method(int access, String name, String descriptor) {
+	@Override public void method(Clazz.MethodDef method) {
+		int access = method.getAccess();
+
 		if (Modifier.isAbstract(access) || Modifier.isStatic(access))
 			return;
 
-		if ( !baseclass && Modifier.isPrivate(access))
+		if (!baseclass && Modifier.isPrivate(access))
 			return;
-		
-		this.method = name;
-		this.methodDescriptor = descriptor;
-		this.methodAccess = access;
-		methods.add(name, descriptor);
+
+		this.method = method;
+		methods.add(method.getName(), method.getDescriptor().toString());
 	}
 
-	@Override public void extendsClass(String name) {
+	@Override public void extendsClass(TypeRef name) {
 		this.extendsClass = name;
 	}
 

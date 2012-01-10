@@ -182,7 +182,8 @@ public class Forker<T> {
 			}
 
 			for (Job job : waiting.values()) {
-				boolean x = job.dependencies.remove(done.target);
+				// boolean x =
+					job.dependencies.remove(done.target);
 				//System.out.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
 			}
 		}

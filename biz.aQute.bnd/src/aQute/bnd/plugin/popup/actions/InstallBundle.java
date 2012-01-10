@@ -63,7 +63,7 @@ public class InstallBundle implements IObjectActionDelegate {
 				}  else
 					activator.error("No Package Admin to refresh", null);
 			}
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			printBundles("Installed Bundles", installed, sb);		
 			printBundles("Updated Bundles", updated, sb);
 			switch(errors) {
@@ -75,7 +75,7 @@ public class InstallBundle implements IObjectActionDelegate {
 		}
 	}
 
-	private void printBundles(String msg, List<Bundle> list, StringBuffer sb) {
+	private void printBundles(String msg, List<Bundle> list, StringBuilder sb) {
 		if ( list.isEmpty() )
 			return;
 		

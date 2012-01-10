@@ -54,16 +54,16 @@ public class Macro implements Replacer {
 	}
 
 	String process(String line, Link link) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		process(line, 0, '\u0000', '\u0000', sb, link);
 		return sb.toString();
 	}
 
-	int process(CharSequence org, int index, char begin, char end, StringBuffer result, Link link) {
+	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link) {
 		StringBuilder line = new StringBuilder(org);
 		int nesting = 1;
 
-		StringBuffer variable = new StringBuffer();
+		StringBuilder variable = new StringBuilder();
 		outer: while (index < line.length()) {
 			char c1 = line.charAt(index++);
 			if (c1 == end) {
@@ -371,7 +371,7 @@ public class Macro implements Replacer {
 		}
 
 		String list[] = args[1].split("\\s*,\\s*");
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (int i = 0; i < list.length; i++) {
 			String element = list[i].trim();
@@ -457,7 +457,7 @@ public class Macro implements Replacer {
 			return null;
 		} else {
 			String del = "";
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for (int i = 1; i < args.length; i++) {
 				File f = domain.getFile(args[i]);
 				if (f.exists() && f.getParentFile().exists()) {
@@ -477,7 +477,7 @@ public class Macro implements Replacer {
 			return null;
 		} else {
 			String del = "";
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for (int i = 1; i < args.length; i++) {
 				File f = domain.getFile(args[i]);
 				if (f.exists() && f.getParentFile().exists()) {
@@ -890,7 +890,7 @@ public class Macro implements Replacer {
 		}
 
 		public String toString() {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			String del = "[";
 			for (Link r = this; r != null; r = r.previous) {
 				sb.append(del);
