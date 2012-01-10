@@ -40,13 +40,13 @@ public class GroupsTest extends TestCase{
 		}
 	}
 	
-	public void testSimple() throws Exception {
+	@SuppressWarnings("unchecked") public void testSimple() throws Exception {
 		Builder	b = new Builder();
 //		b.addClasspath(new File("../biz.aQute.bnd/tmp/biz.aQute.bnd.jar"));
 		b.addClasspath(new File("jar/spring.jar"));
 //		b.addClasspath(new File("/Ws/aQute.old/aQute.google/lib/gwt-dev-windows.jar"));
 		b.setProperty("Private-Package", "*");
-		Jar build = b.build();
+		b.build();
 			
 		System.out.println(b.getUses());
 		

@@ -35,6 +35,9 @@ import aQute.lib.filter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.Clazz.QUERY;
+import aQute.lib.osgi.Descriptors.Descriptor;
+import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
@@ -73,6 +76,7 @@ public class Analyzer extends Processor {
 	boolean									diagnostics				= false;
 	SortedSet<Clazz.JAVA>					formats					= new TreeSet<Clazz.JAVA>();
 	private boolean							inited;
+	Descriptors								descriptors				= new Descriptors();
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -594,7 +598,7 @@ public class Analyzer extends Processor {
 	 */
 	public String calculateExportsFromContents(Jar bundle) {
 		String ddel = "";
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Map<String, Map<String, Resource>> map = bundle.getDirectories();
 		for (Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
 			String directory = (String) i.next();
@@ -1089,15 +1093,7 @@ public class Analyzer extends Processor {
 			for (Iterator<String> j = current.getDirectories().keySet().iterator(); j.hasNext();) {
 				String dir = j.next();
 				Resource resource = current.getResource(dir + "/packageinfo");
-				if (resource != null) {
-					InputStream in = resource.openInputStream();
-					try {
-						String version = parsePackageInfo(in);
-						setPackageInfo(dir, VERSION_ATTRIBUTE, version);
-					} finally {
-						in.close();
-					}
-				}
+				setPackageInfo(dir, resource);
 			}
 		}
 	}
@@ -1359,7 +1355,7 @@ public class Analyzer extends Processor {
 			usedPackages.retainAll(sharedPackages);
 			usedPackages.remove(packageName);
 
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			String del = "";
 			for (Iterator<String> u = usedPackages.iterator(); u.hasNext();) {
 				String usedPackage = u.next();
@@ -1410,25 +1406,45 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Helper method to set the package info
+	 * Helper method to set the package info resource
 	 * 
 	 * @param dir
 	 * @param key
 	 * @param value
+	 * @throws Exception
 	 */
-	void setPackageInfo(String dir, String key, String value) {
-		if (value != null) {
-			String pack = dir.replace('/', '.');
-			Map<String, String> map = classpathExports.get(pack);
-			if (map == null) {
-				map = new HashMap<String, String>();
-				classpathExports.put(pack, map);
-			}
-			if (!map.containsKey(VERSION_ATTRIBUTE))
+	@SuppressWarnings("unchecked") void setPackageInfo(String dir, Resource r) throws Exception {
+		if (r == null)
+			return;
+
+		Properties p = new Properties();
+		InputStream in = r.openInputStream();
+		try {
+			p.load(in);
+		} finally {
+			in.close();
+		}
+
+		String pack = dir.replace('/', '.');
+		Map<String, String> map = classpathExports.get(pack);
+		if (map == null) {
+			classpathExports.put(pack, map = new HashMap<String, String>());
+		}
+		for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+			String key = t.nextElement();
+			String value = map.get(key);
+			if (value == null) {
+				value = p.getProperty(key);
+
+				// Messy, to allow directives we need to
+				// allow the value to start with a ':' since we cannot
+				// encode this in a property name
+
+				if (value.startsWith(":")) {
+					key = key + ":";
+					value = value.substring(1);
+				}
 				map.put(key, value);
-			else if (!map.get(VERSION_ATTRIBUTE).equals(value)) {
-				// System.out.println("duplicate version info for " + dir + " "
-				// + value + " and " + map.get(VERSION_ATTRIBUTE));
 			}
 		}
 	}
@@ -1501,7 +1517,7 @@ public class Analyzer extends Processor {
 		case 2:
 			regexp = args[1];
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String del = "";
 
 		Pattern expr = Pattern.compile(regexp);
@@ -1581,6 +1597,7 @@ public class Analyzer extends Processor {
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses) throws Exception {
 		Map<String, Clazz> classSpace = new HashMap<String, Clazz>();
+
 		Set<String> hide = Create.set();
 		boolean containsDirectory = false;
 
@@ -1692,17 +1709,7 @@ public class Analyzer extends Processor {
 
 						Resource pinfo = jar.getResource(prefix + pack.replace('.', '/')
 								+ "/packageinfo");
-						if (pinfo != null) {
-							InputStream in = pinfo.openInputStream();
-							String version;
-							try {
-								version = parsePackageInfo(in);
-							} finally {
-								in.close();
-							}
-							if (version != null)
-								info.put(VERSION_ATTRIBUTE, version);
-						}
+						setPackageInfo(pack, pinfo);
 					}
 				}
 
@@ -1713,7 +1720,7 @@ public class Analyzer extends Processor {
 
 					try {
 						InputStream in = resource.openInputStream();
-						clazz = new Clazz(relativePath, resource);
+						clazz = new Clazz(this, relativePath, resource);
 						try {
 							// Check if we have a package-info
 							if (relativePath.endsWith("/package-info.class")) {
@@ -1733,7 +1740,7 @@ public class Analyzer extends Processor {
 						continue next;
 					}
 
-					String calculatedPath = clazz.getClassName() + ".class";
+					String calculatedPath = clazz.getClassName().getBinary() + ".class";
 					if (!calculatedPath.equals(relativePath)) {
 						if (!isNoBundle() && reportWrongPath) {
 							error("Class in different directory than declared. Path from class name is "
@@ -1745,22 +1752,23 @@ public class Analyzer extends Processor {
 
 					classSpace.put(relativePath, clazz);
 
-					// Look at the referred packages
-					// and copy them to our baseline
-					for (String p : clazz.getReferred()) {
-						Map<String, String> attrs = referred.get(p);
-						if (attrs == null) {
-							attrs = newMap();
-							referred.put(p, attrs);
-						}
-					}
-
 					// Add all the used packages
 					// to this package
 					Set<String> t = uses.get(pack);
 					if (t == null)
 						uses.put(pack, t = new LinkedHashSet<String>());
-					t.addAll(clazz.getReferred());
+
+					// Look at the referred packages
+					// and copy them to our baseline
+					for (PackageRef p : clazz.getReferred()) {
+						Map<String, String> attrs = referred.get(p);
+						if (attrs == null) {
+							attrs = newMap();
+							referred.put(p.getFQN(), attrs);
+						}
+						t.add(p.getFQN());
+					}
+
 					t.remove(pack);
 				}
 			}
@@ -1794,7 +1802,7 @@ public class Analyzer extends Processor {
 							Version bv = new Version(version);
 							if (!av.equals(bv)) {
 								error("Version from annotation for %s differs with packageinfo or Manifest",
-										Clazz.getPackage(clazz.className));
+										clazz.getClassName().getFQN());
 							}
 						} catch (Exception e) {
 							// Ignore
@@ -1907,7 +1915,7 @@ public class Analyzer extends Processor {
 		} else {
 			m = fuzzyVersion.matcher(version);
 			if (m.matches()) {
-				StringBuffer result = new StringBuffer();
+				StringBuilder result = new StringBuilder();
 				String major = removeLeadingZeroes(m.group(1));
 				String minor = removeLeadingZeroes(m.group(3));
 				String micro = removeLeadingZeroes(m.group(5));
@@ -1950,7 +1958,7 @@ public class Analyzer extends Processor {
 		return group.substring(n);
 	}
 
-	static void cleanupModifier(StringBuffer result, String modifier) {
+	static void cleanupModifier(StringBuilder result, String modifier) {
 		Matcher m = fuzzyModifier.matcher(modifier);
 		if (m.matches())
 			modifier = m.group(2);
@@ -1982,24 +1990,6 @@ public class Analyzer extends Processor {
 		if (n < 0)
 			return ".";
 		return clazz.substring(0, n).replace('/', '.');
-	}
-
-	//
-	// We accept more than correct OSGi versions because in a later
-	// phase we actually cleanup maven versions. But it is a bit yucky
-	//
-	static String parsePackageInfo(InputStream jar) throws IOException {
-		try {
-			Properties p = new Properties();
-			p.load(jar);
-			jar.close();
-			if (p.containsKey("version")) {
-				return p.getProperty("version");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
@@ -2168,6 +2158,10 @@ public class Analyzer extends Processor {
 	 * @param path
 	 * @return
 	 */
+	public Clazz findClass(TypeRef type) throws Exception {
+		return findClass(type.getClassRef().getPath());
+	}
+
 	public Clazz findClass(String path) throws Exception {
 		Clazz c = classspace.get(path);
 		if (c != null)
@@ -2178,8 +2172,14 @@ public class Analyzer extends Processor {
 			return c;
 
 		Resource r = findResource(path);
+		if (r == null) {
+			getClass().getClassLoader();
+			URL url = ClassLoader.getSystemResource(path);
+			if (url != null)
+				r = new URLResource(url);
+		}
 		if (r != null) {
-			c = new Clazz(path, r);
+			c = new Clazz(this, path, r);
 			c.parseClassFile();
 			importedClassesCache.put(path, c);
 		}
@@ -2297,5 +2297,17 @@ public class Analyzer extends Processor {
 
 		IO.copy(r.openInputStream(), digester);
 		return Base64.encodeBase64(digester.digest().digest());
+	}
+
+	public Descriptor getDescriptor(String descriptor) {
+		return descriptors.getDescriptor(descriptor);
+	}
+
+	public TypeRef getTypeRef(String binaryClassName) {
+		return descriptors.getTypeRef(binaryClassName);
+	}
+
+	public PackageRef getPackageRef(String binaryName) {
+		return descriptors.getPackageRef(binaryName);
 	}
 }

@@ -606,7 +606,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private String fill(String s, int width, char filler, int dir) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (s.length() > width) {
 			int half = (width - 1) / 2;
 			return s.substring(0, half) + ".." + s.substring(s.length() - half);
@@ -754,7 +754,7 @@ public class Launcher implements ServiceListener {
 	private void message(String prefix, String string, Object[] objects) {
 		Throwable e = null;
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int n = 0;
 		sb.append(prefix);
 		for (int i = 0; i < string.length(); i++) {

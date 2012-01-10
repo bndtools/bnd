@@ -85,7 +85,7 @@ public class ComponentTest extends TestCase {
 		b.addClasspath( new File( "bin"));
 		b.setProperty("Service-Component", "*TestReferenceOrdering");
 		b.setProperty("Private-Package", "test");
-		Jar jar = b.build();
+		b.build();
 		Document doc = doc(b, "test.ComponentTest$TestReferenceOrdering");
 		NodeList nodes = (NodeList) xpath.evaluate("//reference", doc, XPathConstants.NODESET);
 		assertEquals("a", nodes.item(0).getAttributes().getNamedItem("name").getTextContent());
@@ -273,7 +273,7 @@ public class ComponentTest extends TestCase {
 
 		{
 			Document doc = doc(b, "packageprotected");
-			Object o = xpath.evaluate("component", doc, XPathConstants.NODE);
+			Object o = xpath.evaluate("scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
 		}
 		{
@@ -446,16 +446,10 @@ public class ComponentTest extends TestCase {
 
 		{
 			Document doc = doc(b, "ncomp");
-			Node o = (Node) xpath.evaluate("component", doc, XPathConstants.NODE);
+			Node o = (Node) xpath.evaluate("scr:component", doc, XPathConstants.NODE);
 			assertNotNull("Expected ncomp to have old namespace", o);
 		}
 
-		// Node node = doc.getElementsByTagName("component").item(0);
-		// assertNotNull(node.getNamespaceURI());
-		// doc = doc(b, "ndcomp");
-		// assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
-		// doc = doc(b, "nbcomp");
-		// assertNotNull(doc.getElementsByTagName("component").item(0).getNamespaceURI());
 	}
 
 	/**
@@ -532,20 +526,6 @@ public class ComponentTest extends TestCase {
 		}
 	}
 
-	public void testOldVersion() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
-		b.setProperty("Service-Component", "*.OldVersion");
-		b.setProperty("Private-Package", "test");
-		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-
-		Document doc = doc(b, "vcomp");
-		assertEquals(null, doc.getElementsByTagName("component").item(0).getNamespaceURI());
-	}
 
 	/**
 	 * Test if an activate/deactivate method that has wrong prototype

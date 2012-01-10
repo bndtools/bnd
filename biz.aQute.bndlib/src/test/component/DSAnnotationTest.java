@@ -18,6 +18,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * component that has all values set.
 	 */
 	@Component public class Defaults implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
 
 		@Activate void open() {
 		}
@@ -49,6 +50,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
 			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public class Explicit
 			implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
 
 		@Activate void open() {
 		}
@@ -339,7 +341,8 @@ public class DSAnnotationTest extends BndTestCase {
 		protected void setPrivateLogService(LogService l) {
 			
 		}
-		private void updatedPrivateLogService(ServiceReference ref) {
+		
+		@SuppressWarnings("unused") private void updatedPrivateLogService(ServiceReference ref) {
 			
 		}
 	}

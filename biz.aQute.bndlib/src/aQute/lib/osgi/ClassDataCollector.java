@@ -1,21 +1,23 @@
 package aQute.lib.osgi;
 
+import aQute.lib.osgi.Descriptors.TypeRef;
+
 public class ClassDataCollector {
-    public void classBegin(int access, String name) {
+    public void classBegin(int access, TypeRef name) {
     }
 
-    public boolean classStart(int access, String name) {
-        classBegin(access,name);
+    public boolean classStart(int access, TypeRef className) {
+        classBegin(access,className);
         return true;
     }
 
-    public void extendsClass(String name) {
+    public void extendsClass(TypeRef zuper) throws Exception {
     }
 
-    public void implementsInterfaces(String name[]) {
+    public void implementsInterfaces(TypeRef[] interfaces) throws Exception {
     }
 
-    public void addReference(String token) {
+    public void addReference(TypeRef ref) {
     }
 
     public void annotation(Annotation annotation) {
@@ -25,14 +27,9 @@ public class ClassDataCollector {
     }
 
     public void method(Clazz.MethodDef defined) {
-        if (defined.isConstructor())
-            constructor(defined.access, defined.descriptor);
-        else
-            method(defined.access, defined.name, defined.descriptor);
     }
 
     public void field(Clazz.FieldDef defined) {
-        field(defined.access, defined.name, defined.descriptor);
     }
 
     public void reference(Clazz.MethodDef referenced) {
@@ -41,20 +38,12 @@ public class ClassDataCollector {
     public void reference(Clazz.FieldDef referenced) {
     }
 
-    public void classEnd() {
+    public void classEnd() throws Exception {
     }
 
-    @Deprecated // Will really be removed!
-    public void field(int access, String name, String descriptor) {
+    public void deprecated() throws Exception {
     }
 
-    @Deprecated // Will really be removed!
-    public void constructor(int access, String descriptor) {
-    }
-
-    @Deprecated // Will really be removed!
-    public void method(int access, String name, String descriptor) {
-    }
 
     /**
      * The EnclosingMethod attribute
@@ -63,7 +52,7 @@ public class ClassDataCollector {
      * @param mName The name of the enclosing method in the class with cName or null
      * @param mDescriptor The descriptor of this type
      */
-	public void enclosingMethod(String cName, String mName, String mDescriptor) {
+	public void enclosingMethod(TypeRef cName, String mName, String mDescriptor) {
 		
 	}
 
@@ -74,9 +63,10 @@ public class ClassDataCollector {
 	 * @param outerClass The name of the outer class (with slashes) Can be null.
 	 * @param innerName The name inside the outer class, can be null.
 	 * @param modifiers The access flags 
+	 * @throws Exception 
 	 */
-	public void innerClass(String innerClass, String outerClass, String innerName,
-			int innerClassAccessFlags) {		
+	public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
+			int innerClassAccessFlags) throws Exception {		
 	}
 
 	public void signature(String signature) {
@@ -89,6 +79,11 @@ public class ClassDataCollector {
 	}
 
 	public void version(int minor, int major) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void referenceMethod(int access, TypeRef className, String method, String descriptor) {
 		// TODO Auto-generated method stub
 		
 	}

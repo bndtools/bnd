@@ -3,11 +3,10 @@ package aQute.bnd.make.coverage;
 import static aQute.bnd.make.coverage.Coverage.*;
 
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.osgi.Clazz.MethodDef;
 import aQute.lib.tag.*;
 
 /**
@@ -54,7 +53,7 @@ public class CoverageResource extends WriteResource {
         Tag classTag = null;
 
         for (Map.Entry<MethodDef, List<MethodDef>> m : catalog.entrySet()) {
-            String className = m.getKey().clazz;
+            String className = m.getKey().getContainingClass().getFQN();
             if (!className.equals(currentClass)) {
                 classTag = new Tag("class");
                 classTag.addAttribute("name", className);
@@ -74,19 +73,19 @@ public class CoverageResource extends WriteResource {
     }
 
     private static Tag doMethod(Tag tag, MethodDef method) {
-        tag.addAttribute("pretty", method.getPretty());
-        if (Modifier.isPublic(method.access))
+        tag.addAttribute("pretty", method.toString());
+        if (method.isPublic())
             tag.addAttribute("public", true);
-        if (Modifier.isStatic(method.access))
+        if (method.isStatic())
             tag.addAttribute("static", true);
-        if (Modifier.isProtected(method.access))
+        if (method.isProtected())
             tag.addAttribute("protected", true);
-        if (Modifier.isInterface(method.access))
+        if (method.isInterface())
             tag.addAttribute("interface", true);
         tag.addAttribute("constructor", method.isConstructor());
         if (!method.isConstructor())
-            tag.addAttribute("name", method.name);
-        tag.addAttribute("descriptor", method.descriptor);
+            tag.addAttribute("name", method.getName());
+        tag.addAttribute("descriptor", method.getDescriptor());
         return tag;
     }
 }

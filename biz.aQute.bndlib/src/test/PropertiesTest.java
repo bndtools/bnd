@@ -40,7 +40,7 @@ public class PropertiesTest extends TestCase {
     }
     
     public void testUnicode() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String s = "Loïc Cotonéa";
         for ( int i=0; i<s.length(); i++ ) {
             char c = s.charAt(i);

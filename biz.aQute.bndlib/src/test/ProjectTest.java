@@ -288,7 +288,6 @@ public class ProjectTest extends TestCase {
 			assertNull( project.getProperty("Bundle-Version"));
 
 			for ( Builder b : project.getSubBuilders()) {
-				Version newv = new Version(b.getProperty("Bundle-Version"));
 				assertEquals( new Version(1,1,0), new Version(b.getVersion()));
 			}
 		} finally {

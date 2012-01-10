@@ -7,11 +7,14 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import aQute.bnd.component.*;
+import aQute.bnd.differ.*;
+import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.diff.*;
 
 /**
  * Include-Resource: ( [name '=' ] file )+
@@ -25,6 +28,7 @@ import aQute.bnd.service.*;
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
+	DiffPluginImpl				differ				= new DiffPluginImpl();
 	Pattern						xdoNotCopy			= null;
 	private static final int	SPLIT_MERGE_LAST	= 1;
 	private static final int	SPLIT_MERGE_FIRST	= 2;
@@ -112,6 +116,9 @@ public class Builder extends Analyzer {
 		sign(dot);
 
 		doSaveManifest(dot);
+
+		doDiff(); // check if need to diff this bundle
+		doBaseline(); // check for a baseline
 		return dot;
 	}
 
@@ -376,12 +383,11 @@ public class Builder extends Analyzer {
 							File ff = getFile(bdir, fixed[j]);
 							if (ff.isFile()) {
 								String name = "OSGI-OPT/src/" + pack + fixed[j];
-								dot.putResource(name,
-										new FileResource(ff));
+								dot.putResource(name, new FileResource(ff));
 							}
 						}
 					}
-					if ( path.trim().length() == 0)
+					if (path.trim().length() == 0)
 						System.out.println("Duh?");
 					dot.putResource("OSGI-OPT/src/" + path, new FileResource(f));
 				}
@@ -390,11 +396,11 @@ public class Builder extends Analyzer {
 				for (Jar jar : classpath) {
 					Resource resource = jar.getResource(path);
 					if (resource != null) {
-						dot.putResource("OSGI-OPT/src/"+path, resource);
+						dot.putResource("OSGI-OPT/src/" + path, resource);
 					} else {
 						resource = jar.getResource("OSGI-OPT/src/" + path);
 						if (resource != null) {
-							dot.putResource("OSGI-OPT/src/"+path, resource);
+							dot.putResource("OSGI-OPT/src/" + path, resource);
 						}
 					}
 				}
@@ -406,7 +412,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	boolean	firstUse	= true;
+	boolean			firstUse	= true;
+	private Tree	tree;
 
 	public Collection<File> getSourcePath() {
 		if (firstUse) {
@@ -501,7 +508,7 @@ public class Builder extends Analyzer {
 			sb.append(Processor.join(getClasspath()));
 			sb.append("\n");
 
-			warning("%s",sb.toString());
+			warning("%s", sb.toString());
 			if (isPedantic())
 				diagnostics = true;
 		}
@@ -1209,6 +1216,130 @@ public class Builder extends Analyzer {
 		list.add(dsAnnotations);
 		list.add(metatypePlugin);
 		super.setTypeSpecificPlugins(list);
+	}
+
+	/**
+	 * Diff this bundle to another bundle for the given packages.
+	 * 
+	 * @throws Exception
+	 */
+
+	public void doDiff() throws Exception {
+		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-diff"));
+		if (diffs.isEmpty())
+			return;
+
+		trace("diff %s", diffs);
+
+		if (tree == null)
+			tree = differ.tree(this);
+
+		for (Map.Entry<String, Map<String, String>> entry : diffs.entrySet()) {
+			String path = entry.getKey();
+			File file = getFile(path);
+			if (!file.isFile()) {
+				error("Diffing against %s that is not a file", file);
+				continue;
+			}
+
+			boolean full = entry.getValue().get("--full") != null;
+			boolean warning = entry.getValue().get("--warning") != null;
+
+			Tree other = differ.tree(file);
+			Diff api = tree.diff(other).get("<api>");
+			Collection<Instruction> instructions = Instruction.toInstruction(entry.getValue().get(
+					"--pack"));
+
+			trace("diff against %s --full=%s --pack=%s --warning=%s", file, full, instructions);
+			for (Diff p : api.getChildren()) {
+				String pname = p.getName();
+				if (p.getType() == Type.PACKAGE && Instruction.matches(instructions, pname)) {
+					if (p.getDelta() != Delta.UNCHANGED) {
+
+						if (!full)
+							if (warning)
+								warning("Differ %s", p);
+							else
+								error("Differ %s", p);
+						else {
+							if (warning)
+								warning("Diff found a difference in %s for packages %s", file,
+										instructions);
+							else
+								error("Diff found a difference in %s for packages %s", file,
+										instructions);
+							show(p, "", warning);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Show the diff recursively
+	 * 
+	 * @param p
+	 * @param i
+	 */
+	private void show(Diff p, String indent, boolean warning) {
+		Delta d = p.getDelta();
+		if (d == Delta.UNCHANGED)
+			return;
+
+		if (warning)
+			warning("%s%s", indent, p);
+		else
+			error("%s%s", indent, p);
+		
+		indent = indent + " ";
+		switch (d) {
+		case CHANGED:
+		case MAJOR:
+		case MINOR:
+		case MICRO:
+			break;
+
+		default:
+			return;
+		}
+		for (Diff c : p.getChildren())
+			show(c, indent,warning);
+	}
+
+	/**
+	 * Base line against a previous version
+	 * 
+	 * @throws Exception
+	 */
+
+	private void doBaseline() throws Exception {
+		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-baseline"));
+		if (diffs.isEmpty())
+			return;
+
+		System.out.printf("baseline %s\n", diffs);
+
+		Baseline baseline = new Baseline(this, differ);
+
+		for (Map.Entry<String, Map<String, String>> entry : diffs.entrySet()) {
+			String path = entry.getKey();
+			File file = getFile(path);
+			if (!file.isFile()) {
+				error("Diffing against %s that is not a file", file);
+				continue;
+			}
+			Jar other = new Jar(file);
+			Set<Info> infos = baseline.baseline(dot, other, null);
+			for (Info info : infos) {
+				if (info.mismatch) {
+					error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ',
+							info.packageName, info.packageDiff.getDelta(), info.newerVersion,
+							info.olderVersion, info.suggestedVersion,
+							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+				}
+			}
+		}
 	}
 
 }

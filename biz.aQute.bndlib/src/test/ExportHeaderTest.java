@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class ExportHeaderTest extends TestCase {
     
@@ -55,6 +56,9 @@ public class ExportHeaderTest extends TestCase {
         Manifest manifest = jar.getManifest();
         
         String exph = manifest.getMainAttributes().getValue("Export-Package");
-        assertEquals("test.packageinfo;version=\"1.0.0.SNAPSHOT\"", exph);
+        Map<String,String> exports = OSGiHeader.parseHeader(exph).get("test.packageinfo");
+        assertEquals("1.0.0.SNAPSHOT", exports.get(Constants.VERSION_ATTRIBUTE));
+        assertEquals("1.2.3", exports.get("Implementation-Version"));
+        assertEquals("", exports.get("Implementation-Title"));
     }
 }

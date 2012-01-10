@@ -9,6 +9,7 @@ import junit.framework.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 
@@ -70,6 +71,7 @@ class Implemented implements Plugin {
 }
 
 public class ClassParserTest extends TestCase {
+	Analyzer a = new Analyzer();
 
 	/**
 	 * Test the constant values
@@ -80,7 +82,7 @@ public class ClassParserTest extends TestCase {
 
 	public void testConstantValues() throws Exception {
 		final Map<String, Object> values = new HashMap<String, Object>();
-		Clazz c = new Clazz("ConstantValues", new FileResource(IO.getFile(
+		Clazz c = new Clazz(a,"ConstantValues", new FileResource(IO.getFile(
 				new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
 		c.parseClassFileWithCollector(new ClassDataCollector() {
 			Clazz.FieldDef	last;
@@ -90,7 +92,7 @@ public class ClassParserTest extends TestCase {
 			}
 
 			@Override public void constant(Object value) {
-				values.put(last.name, value);
+				values.put(last.getName(), value);
 			}
 
 		});
@@ -184,41 +186,42 @@ public class ClassParserTest extends TestCase {
 		a.setProperty("Private-Package", "test");
 		a.build();
 		Clazz c = a.getClassspace().get("test/Implemented.class");
-		Set<String> s = Create.set();
+		Set<PackageRef> s = Create.set();
+	
 		Clazz.getImplementedPackages(s, a, c);
-		assertTrue(s.contains("aQute.bnd.service"));
+		assertTrue(s.contains( a.getPackageRef("aQute/bnd/service")));
 	}
 
 	public void testWildcards() throws Exception {
-		Clazz c = new Clazz("genericstest", null);
+		Clazz c = new Clazz(a,"genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("WithGenerics.class"));
 		System.out.println(c.getReferred());
 		assertEquals("size ", 5, c.getReferred().size());
-		assertTrue(c.getReferred().contains("aQute.lib.osgi"));
-		assertTrue(c.getReferred().contains("java.util"));
-		assertTrue(c.getReferred().contains("java.net"));
-		assertTrue(c.getReferred().contains("java.lang"));
+		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/lib/osgi")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("java/util")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("java/net")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("java/lang")));
 	}
 
 	public void testGenericsSignature3() throws Exception {
-		Clazz c = new Clazz("genericstest", null);
+		Clazz c = new Clazz(a,"genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("Generics.class"));
-		assertTrue(c.getReferred().contains("test"));
-		assertTrue(c.getReferred().contains("aQute.lib.osgi"));
+		assertTrue(c.getReferred().contains(a.getPackageRef("test")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/lib/osgi")));
 	}
 
 	public void testGenericsSignature2() throws Exception {
-		Clazz c = new Clazz("genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a,"genericstest", new FileResource(new File("src/test/generics.clazz")));
 		c.parseClassFile();
-		assertTrue(c.getReferred().contains("javax.swing.table"));
-		assertTrue(c.getReferred().contains("javax.swing"));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
 	}
 
 	public void testGenericsSignature() throws Exception {
-		Clazz c = new Clazz("genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a,"genericstest", new FileResource(new File("src/test/generics.clazz")));
 		c.parseClassFile();
-		assertTrue(c.getReferred().contains("javax.swing.table"));
-		assertTrue(c.getReferred().contains("javax.swing"));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
 	}
 
 	/**
@@ -255,38 +258,38 @@ public class ClassParserTest extends TestCase {
 	public void testMissingPackage2() throws Exception {
 		InputStream in = getClass().getResourceAsStream("JobsService.clazz");
 		assertNotNull(in);
-		Clazz clazz = new Clazz("test", null);
+		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
-		assertTrue(clazz.getReferred().contains("com.linkedin.member2.pub.profile.core.view"));
+		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
 	public void testMissingPackage1() throws Exception {
 		InputStream in = getClass().getResourceAsStream("JobsService.clazz");
 		assertNotNull(in);
-		Clazz clazz = new Clazz("test", null);
+		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
 
 		System.out.println(clazz.getReferred());
 		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;");
-		assertTrue(clazz.getReferred().contains("com.linkedin.member2.pub.profile.core.view"));
+		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
-	public void testGeneratedClass() throws IOException {
+	public void testGeneratedClass() throws Exception {
 		InputStream in = getClass().getResourceAsStream("XDbCmpXView.clazz");
 		assertNotNull(in);
-		Clazz clazz = new Clazz("test", null);
+		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
 		clazz.getReferred();
 	}
 
-	public void testParameterAnnotation() throws IOException {
+	public void testParameterAnnotation() throws Exception {
 		InputStream in = getClass().getResourceAsStream("Test2.jclass");
 		assertNotNull(in);
-		Clazz clazz = new Clazz("test", null);
+		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
-		Set<String> set = clazz.getReferred();
-		assertTrue(set.contains("test"));
-		assertTrue(set.contains("test.annotations"));
+		Set<PackageRef> set = clazz.getReferred();
+		assertTrue(set.contains(a.getPackageRef("test")));
+		assertTrue(set.contains(a.getPackageRef("test/annotations")));
 	}
 
 	public void testLargeClass2() throws IOException {
@@ -295,7 +298,7 @@ public class ClassParserTest extends TestCase {
 					"jar:file:jar/ecj_3.2.2.jar!/org/eclipse/jdt/internal/compiler/parser/Parser.class");
 			InputStream in = url.openStream();
 			assertNotNull(in);
-			Clazz clazz = new Clazz("test", null);
+			Clazz clazz = new Clazz(a,"test", null);
 			clazz.parseClassFile(in);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -332,7 +335,7 @@ public class ClassParserTest extends TestCase {
 		InputStream in = getClass().getResourceAsStream("Parser.jclass");
 		assertNotNull(in);
 		try {
-			Clazz clazz = new Clazz("test", null);
+			Clazz clazz = new Clazz(a,"test", null);
 			clazz.parseClassFile(in);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -340,13 +343,15 @@ public class ClassParserTest extends TestCase {
 		}
 	}
 
-	public void testSimple() throws IOException {
+	public void testSimple() throws Exception {
 		InputStream in = getClass().getResourceAsStream("WithAnnotations.jclass");
 		assertNotNull(in);
-		Clazz clazz = new Clazz("test", null);
+		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
-		Set<String> set = clazz.getReferred();
-		assertTrue(set.contains("test"));
-		assertTrue(set.contains("test.annotations"));
+		Set<PackageRef> set = clazz.getReferred();
+		PackageRef test = a.getPackageRef("test");
+		PackageRef testAnnotations = a.getPackageRef("test/annotations");
+		assertTrue(set.contains(test));
+		assertTrue(set.contains(testAnnotations));
 	}
 }

@@ -16,7 +16,9 @@ public class Z<C> extends X<String> implements Y<Integer> {
 		}
 	}
 
-	public abstract class U extends Z<String> implements Cloneable, Serializable {}
+	public abstract class U extends Z<String> implements Cloneable, Serializable {
+		private static final long	serialVersionUID	= 1L;
+	}
 	
 	// Constructors
 	public Z() {

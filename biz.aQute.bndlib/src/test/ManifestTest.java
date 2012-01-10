@@ -177,7 +177,7 @@ public class ManifestTest extends TestCase {
         System.out.println( new String(result));
     }
     
-	public void testQuotes() {
+	public void testQuotes() throws IOException {
 		Map<String,Map<String,String>> map = new HashMap<String,Map<String,String>>();
 		Map<String,String> clause = new HashMap<String,String>();
 		clause.put("version1", "0");

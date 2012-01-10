@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import javax.print.attribute.standard.MediaSize.*;
-
 import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;

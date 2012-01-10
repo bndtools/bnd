@@ -414,7 +414,6 @@ public class MetatypeTest extends TestCase {
 	<T> T set(Class<T> interf, Object value) {
 		Properties p = new Properties();
 		Method ms[] = interf.getMethods();
-		Set<String> failed = new HashSet<String>();
 
 		for (Method m : ms) {
 			p.put(m.getName(), value);

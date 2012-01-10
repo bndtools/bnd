@@ -531,6 +531,8 @@ public class Verifier extends Analyzer {
     }
 
     public void verify() throws Exception {
+		classpathExports = newHashMap();
+
         if (classSpace == null)
             classSpace = analyzeBundleClasspath(dot,
                     parseHeader(getLocalHeader(Analyzer.BUNDLE_CLASSPATH)),
@@ -812,7 +814,7 @@ public class Verifier extends Analyzer {
     }
 
     static private int verifyFilterOperation(String expr, int index) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while ("=><~()".indexOf(expr.charAt(index)) < 0) {
             sb.append(expr.charAt(index++));
         }
@@ -820,7 +822,7 @@ public class Verifier extends Analyzer {
         if (attr.length() == 0)
             throw new IllegalArgumentException(
                     "Filter mismatch: attr at index " + index + " is 0");
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         while ("=><~".indexOf(expr.charAt(index)) >= 0) {
             sb.append(expr.charAt(index++));
         }
@@ -830,7 +832,7 @@ public class Verifier extends Analyzer {
                     "Filter error, illegal operator " + operator + " at index "
                             + index);
 
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         while (")".indexOf(expr.charAt(index)) < 0) {
             switch (expr.charAt(index)) {
             case '\\':
@@ -953,7 +955,7 @@ public class Verifier extends Analyzer {
 	}
 
     /*
-     * public int verifyFilter(StringBuffer sb, String s, int rover) { rover =
+     * public int verifyFilter(StringBuilder sb, String s, int rover) { rover =
      * skip(s, rover); char c = s.charAt(rover); if (c == '(') { sb.append('(');
      * char type; rover = skip(s, ++rover); c = s.charAt(rover); switch (c) {
      * case '!': // not case '&': // and case '|': // or sb.append(c); type = c;

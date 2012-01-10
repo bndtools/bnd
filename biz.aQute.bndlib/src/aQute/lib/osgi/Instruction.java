@@ -6,15 +6,16 @@ import java.util.regex.*;
 import aQute.libg.generics.*;
 
 public class Instruction {
-	Pattern	pattern;
-	String	instruction;
-	boolean	negated;
-	boolean	optional;
+	final String		instruction;
+	final boolean		negated;
+	transient Pattern	pattern;
+	transient boolean	optional;
 
 	public Instruction(String instruction, boolean negated) {
 		this.instruction = instruction;
 		this.negated = negated;
 	}
+
 
 	public boolean matches(String value) {
 		return getMatcher(value).matches();
@@ -42,7 +43,7 @@ public class Instruction {
 			negated = true;
 			string = string.substring(1);
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int c = 0; c < string.length(); c++) {
 			switch (string.charAt(c)) {
 			case '.':
@@ -111,6 +112,18 @@ public class Instruction {
 		return map;
 	}
 
+	public static Collection<Instruction> toInstruction(Collection<String> instructions) {
+		if ( instructions == null || instructions.isEmpty())
+			return Collections.emptySet();
+		
+		Set<Instruction> set = Create.set();
+		for (String s : instructions) {
+			Instruction instr = getPattern(s);
+			set.add(instr);
+		}
+		return set;
+	}
+
 	public static <T> Collection<T> select(Collection<Instruction> matchers, Collection<T> targets) {
 		Collection<T> result = Create.list();
 		outer: for (T t : targets) {
@@ -140,8 +153,11 @@ public class Instruction {
 	}
 
 	public static boolean matches(Collection<Instruction> x, String value) {
-		for ( Instruction i : x ) {
-			if ( i.matches(value) )
+		if ( x == null || x.isEmpty())
+			return true;
+		
+		for (Instruction i : x) {
+			if (i.matches(value))
 				return true;
 		}
 		return false;

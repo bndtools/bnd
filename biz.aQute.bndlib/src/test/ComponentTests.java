@@ -1,9 +1,7 @@
 package test;
 
+import junit.framework.*;
 import test.component.*;
-import test.lib.deployer.obr.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 public class ComponentTests {
 

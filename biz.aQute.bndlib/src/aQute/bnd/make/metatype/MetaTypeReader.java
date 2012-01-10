@@ -63,8 +63,9 @@ public class MetaTypeReader extends WriteResource {
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
 		// Set all the defaults.
-		String rtype = method.getReturnType();
-		String id = Configurable.mangleMethodName(method.name);
+		
+		String rtype = method.getGenericReturnType();
+		String id = Configurable.mangleMethodName(method.getName());
 		String name = Clazz.unCamel(id);
 
 		int cardinality = 0;
@@ -77,7 +78,7 @@ public class MetaTypeReader extends WriteResource {
 			if (cardinality != 0)
 				reporter.error(
 						"AD for %s.%s uses an array of collections in return type (%s), Metatype allows either Vector or array",
-						clazz.getFQN(), method.name, method.getReturnType());
+						clazz.getClassName().getFQN(), method.getName(), method.getType().getFQN());
 			Matcher m = COLLECTION.matcher(rtype);
 			if (m.matches()) {
 				rtype = Clazz.objectDescriptorToFQN(m.group(3));
@@ -170,7 +171,7 @@ public class MetaTypeReader extends WriteResource {
 		c.parseClassFileWithCollector(new ClassDataCollector() {
 			public void field(Clazz.FieldDef def) {
 				if (def.isEnum()) {
-					values.add(def.name);
+					values.add(def.getName());
 				}
 			}
 		});
@@ -256,8 +257,8 @@ public class MetaTypeReader extends WriteResource {
 						new HashMap<String, Object>());
 
 			// defaults
-			String id = clazz.getFQN();
-			String name = Clazz.unCamel(Clazz.getShortName(clazz.getFQN()));
+			String id = clazz.getClassName().getFQN();
+			String name = Clazz.unCamel(Clazz.getShortName(clazz.getClassName().getFQN()));
 			String description = null;
 			String localization = id;
 			boolean factory = this.factory;

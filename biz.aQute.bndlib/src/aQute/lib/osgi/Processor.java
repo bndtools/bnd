@@ -78,18 +78,18 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			return parent.getTop();
 	}
 
-	public void getInfo(Processor processor, String prefix) {
+	public void getInfo(Reporter processor, String prefix) {
 		if (isFailOk())
 			addAll(warnings, processor.getErrors(), prefix);
 		else
 			addAll(errors, processor.getErrors(), prefix);
 		addAll(warnings, processor.getWarnings(), prefix);
 
-		processor.errors.clear();
-		processor.warnings.clear();
+		processor.getErrors().clear();
+		processor.getWarnings().clear();
 	}
 
-	public void getInfo(Processor processor) {
+	public void getInfo(Reporter processor) {
 		getInfo(processor, "");
 	}
 
@@ -848,14 +848,15 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param exports
 	 *            map { name => Map { attribute|directive => value } }
 	 * @return the clauses
+	 * @throws IOException 
 	 */
-	public static String printClauses(Map<String, Map<String, String>> exports) {
+	public static String printClauses(Map<String, Map<String, String>> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
 	public static String printClauses(Map<String, Map<String, String>> exports,
-			boolean checkMultipleVersions) {
-		StringBuffer sb = new StringBuffer();
+			boolean checkMultipleVersions) throws IOException {
+		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
 			String name = i.next();
@@ -875,7 +876,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, StringBuffer sb) {
+	public static void printClause(Map<String, String> map, StringBuilder sb) throws IOException {
 
 		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
 			String key = j.next();
@@ -890,14 +891,25 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			sb.append(key);
 			sb.append("=");
 
-			boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
-					.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
-			if (!clean)
-				sb.append("\"");
-			sb.append(value);
-			if (!clean)
-				sb.append("\"");
+			quote(sb, value);
 		}
+	}
+
+	/**
+	 * @param sb
+	 * @param value
+	 * @return
+	 * @throws IOException 
+	 */
+	public static boolean quote(Appendable sb, String value) throws IOException {
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
+				.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
+		if (!clean)
+			sb.append("\"");
+		sb.append(value);
+		if (!clean)
+			sb.append("\"");
+		return clean;
 	}
 
 	public Macro getReplacer() {

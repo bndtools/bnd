@@ -114,7 +114,7 @@ public class LauncherConstants {
 	}
 
 	private static String join(List<?> runbundles2, String string) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Object r : runbundles2) {
 			sb.append(del);
