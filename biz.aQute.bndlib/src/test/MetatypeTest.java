@@ -583,7 +583,7 @@ public class MetatypeTest extends TestCase {
 
 		@Meta.AD(type = Meta.Type.Integer) String withString();
 
-		@Meta.AD(description = "description") String a();
+		@Meta.AD(description = "description_xxx\"xxx'xxx") String a();
 
 		@Meta.AD(optionValues = { "a", "b" }) String valuesOnly();
 
@@ -630,7 +630,7 @@ public class MetatypeTest extends TestCase {
 				null);
 		assertAD(d, "withString", "With string", "withString", null, null, null, 0, "Integer",
 				null, null, null);
-		assertAD(d, "a", "A", "a", null, null, null, 0, "String", "description", null, null);
+		assertAD(d, "a", "A", "a", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
 		assertAD(d, "valuesOnly", "Values only", "valuesOnly", null, null, null, 0, "String", null,
 				new String[] { "a", "b" }, new String[] { "a", "b" });
 		assertAD(d, "labelsAndValues", "Labels and values", "labelsAndValues", null, null, null, 0,

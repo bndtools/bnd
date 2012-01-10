@@ -206,13 +206,9 @@ public class Tag {
 			String value = escape(attributes.get(key));
 			pw.print(' ');
 			pw.print(key);
-			pw.print("=");
-			String quote = "'";
-			if (value.indexOf(quote) >= 0)
-				quote = "\"";
-			pw.print(quote);
+			pw.print("=\"");
 			pw.print(value);
-			pw.print(quote);
+			pw.print("\"");
 		}
 
 		if (content.size() == 0)
@@ -286,6 +282,9 @@ public class Tag {
 				break;
 			case '>':
 				sb.append("&gt;");
+				break;
+			case '\"':
+				sb.append("&quot;");
 				break;
 			case '&':
 				sb.append("&amp;");
