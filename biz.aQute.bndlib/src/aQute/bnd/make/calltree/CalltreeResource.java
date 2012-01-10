@@ -5,6 +5,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Clazz.*;
 
 /**
  * Create an XML call tree of a set of classes. The structure of the XML is:
@@ -76,8 +77,8 @@ public class CalltreeResource extends WriteResource {
     public static void writeCalltree(PrintWriter out, Collection<Clazz> classes)
             throws Exception {
 
-        final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> using = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>();
-        final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> usedby = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>();
+        final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> using = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>(COMPARATOR);
+        final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> usedby = new TreeMap<Clazz.MethodDef, Set<Clazz.MethodDef>>(COMPARATOR);
 
         ClassDataCollector cd = new ClassDataCollector() {
             Clazz.MethodDef source;
@@ -108,12 +109,19 @@ public class CalltreeResource extends WriteResource {
     /*
      * Add a new reference
      */
+    static Comparator<Clazz.MethodDef> COMPARATOR = new Comparator<Clazz.MethodDef>() {
+		
+		public int compare(MethodDef a, MethodDef b) {
+			int r =a.getName().compareTo(b.getName()); 
+			return  r != 0 ? r : a.getDescriptor().toString().compareTo(b.getDescriptor().toString());
+		}
+	};
     private static void xref(
             Map<Clazz.MethodDef, Set<Clazz.MethodDef>> references,
             Clazz.MethodDef source, Clazz.MethodDef reference) {
         Set<Clazz.MethodDef> set = references.get(source);
         if (set == null)
-            references.put(source, set=new TreeSet<Clazz.MethodDef>());
+            references.put(source, set=new TreeSet<Clazz.MethodDef>(COMPARATOR));
         if ( reference != null)
             set.add(reference);
     }
@@ -142,10 +150,10 @@ public class CalltreeResource extends WriteResource {
      */
     private static void method(PrintWriter out, String element,
             Clazz.MethodDef source, String closeElement) {
-        out.println("      <" + element + " class='" + source.clazz + "'"
-                + getAccess(source.access) + 
-                ( source.isConstructor() ? "" :  " name='" + source.name + "'") + " descriptor='" + source.descriptor + "' pretty='"
-                + source.getPretty() + "'" + closeElement);
+        out.println("      <" + element + " class='" + source.getContainingClass().getFQN() + "'"
+                + getAccess(source.getAccess()) + 
+                ( source.isConstructor() ? "" :  " name='" + source.getName() + "'") + " descriptor='" + source.getDescriptor() + "' pretty='"
+                + source.toString() + "'" + closeElement);
     }
 
     private static String getAccess(int access) {

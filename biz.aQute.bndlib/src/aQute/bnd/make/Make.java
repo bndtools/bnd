@@ -56,7 +56,7 @@ public class Make {
     }
 
     String replace(Matcher m, CharSequence s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int max = '0' + m.groupCount() + 1;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
