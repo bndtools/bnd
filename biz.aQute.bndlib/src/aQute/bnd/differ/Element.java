@@ -19,47 +19,74 @@ import aQute.bnd.service.diff.*;
  * The classes are prepared for extension but so far it turned out to be
  * unnecessary.
  */
-class Element implements Comparable<Element> {
-	final String		value;
+
+class Element implements Comparable<Element>, Tree {
 	final static Element[]	EMPTY	= new Element[0];
 	final Type				type;
 	final String			name;
 	final Delta				add;
 	final Delta				remove;
 	final String			comment;
+	final Element[]			children;
 
-	/**
-	 * Use for elements that have children
-	 */
-	static class Structured extends Element {
-
-		final Element[]	children;
-
-		Structured(Type type, String name, String value, Collection<? extends Element> children,
-				Delta add, Delta remove, String comment) {
-			super(type, name, value, add, remove, comment);
-			if (children != null && children.size() > 0) {
-				this.children = children.toArray(new Element[children.size()]);
-				Arrays.sort(this.children);
-			} else
-				this.children = EMPTY;
-		}
+	Element(Type type, String name) {
+		this(type, name, null, Delta.MINOR, Delta.MAJOR, null);
 	}
 
-	Element(Type type, String name, String value, Delta add, Delta remove, String comment) {
+	Element(Type type, String name, Element... children) {
+		this(type, name, Arrays.asList(children), Delta.MINOR, Delta.MAJOR, null);
+	}
+
+	Element(Type type, String name, Collection<? extends Element> children, Delta add,
+			Delta remove, String comment) {
 		this.type = type;
 		this.name = name;
-		this.value = value;
 		this.add = add;
 		this.remove = remove;
 		this.comment = comment;
+		if (children != null && children.size() > 0) {
+			this.children = children.toArray(new Element[children.size()]);
+			Arrays.sort(this.children);
+		} else
+			this.children = EMPTY;
 	}
 
-	Type getType() {
+	public Element(Data data) {
+		this.name = data.name;
+		this.type = data.type;
+		this.comment = data.comment;
+		this.add = data.add;
+		this.remove = data.rem;
+		if (data.children != null)
+			children = EMPTY;
+		else {
+			this.children = new Element[data.children.length];
+			for (int i = 0; i < children.length; i++)
+				children[i] = new Element(data.children[i]);
+			Arrays.sort(this.children);
+		}
+	}
+	public Data serialize() {
+		Data data = new Data();
+		data.type = this.type;
+		data.name = this.name;
+		data.add = this.add;
+		data.rem = this.remove;
+		data.comment = this.comment;
+		if (children.length != 0) {
+			data.children = new Data[children.length];
+			for (int i = 0; i < children.length; i++) {
+				data.children[i] = children[i].serialize();
+			}
+		}
+		return data;
+	}
+
+	public Type getType() {
 		return type;
 	}
 
-	String getName() {
+	public String getName() {
 		return name;
 	}
 
@@ -68,32 +95,50 @@ class Element implements Comparable<Element> {
 	}
 
 	public int compareTo(Element other) {
-		if ( type == other.type)
+		if (type == other.type)
 			return name.compareTo(other.name);
 		else
 			return type.compareTo(other.type);
 	}
 
-	String getValue() {
-		return value;
-	}
-
-	Delta getValueDelta(Element other) {
-		if( getValue() == other.getValue()
-				|| (getValue() != null && getValue().equals(other.getValue())))
-			return Delta.UNCHANGED;
-		
-		return Delta.CHANGED;
-	}
-	
 	public boolean equals(Object other) {
-		if ( getClass() != other.getClass())
+		if (getClass() != other.getClass())
 			return false;
-		
+
 		return compareTo((Element) other) == 0;
 	}
-	
+
 	public int hashCode() {
 		return type.hashCode() ^ name.hashCode();
 	}
+
+	public Tree[] getChildren() {
+		return children;
+	}
+
+	public Delta ifAdded() {
+		return add;
+	}
+
+	public Delta ifRemoved() {
+		return remove;
+	}
+
+	public Diff diff(Tree older) {
+		return new DiffImpl(this, (Element) older);
+	}
+
+	public Element get(String name) {
+		for (Element e : children) {
+			if (e.name.equals(name))
+				return e;
+		}
+		return null;
+	}
+	
+	public String toString() {
+		return type + " " + name + " (" + add + "/" + remove + ")";
+	}
+
+
 }

@@ -11,15 +11,13 @@ public interface Diff {
 	Delta getDelta(Ignore ignore);
 
 	Type getType();
-
-	String getOlderValue();
-
-	String getNewerValue();
+	String getName();
+	Tree getOlder();
+	Tree getNewer();
 
 	Collection<? extends Diff> getChildren();
 	
 	Diff get(String name);
 	
-	String getName();
 	
 }

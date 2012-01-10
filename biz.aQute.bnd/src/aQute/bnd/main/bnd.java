@@ -17,15 +17,12 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
-import aQute.bnd.differ.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
-import aQute.bnd.service.diff.*;
 import aQute.bnd.settings.*;
-import aQute.configurable.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
@@ -175,68 +172,73 @@ public class bnd extends Processor {
 	}
 
 	boolean doCommand(String args[], int i) throws Exception {
-		String cmd = args[i];
-		trace("command %s", cmd);
-		if ("wrap".equals(args[i])) {
-			doWrap(args, ++i);
-		} else if ("maven".equals(args[i])) {
-			MavenCommand maven = new MavenCommand(this);
-			maven.setTrace(isTrace());
-			maven.setPedantic(isPedantic());
-			maven.run(args, ++i);
-			getInfo(maven);
-		} else if ("global".equals(args[i])) {
-			global(args, ++i);
-		} else if ("exec".equals(args[i])) {
-			doRun(args[++i]);
-		} else if ("print".equals(args[i])) {
-			doPrint(args, ++i);
-		} else if ("lib".equals(args[i])) {
-			doLib(args, ++i);
-		} else if ("graph".equals(args[i])) {
-			doDot(args, ++i);
-		} else if ("create-repo".equals(args[i])) {
-			createRepo(args, ++i);
-		} else if ("release".equals(args[i])) {
-			doRelease(args, ++i);
-		} else if ("debug".equals(args[i])) {
-			debug(args, ++i);
-		} else if ("bump".equals(args[i])) {
-			bump(args, ++i);
-		} else if ("deliverables".equals(args[i])) {
-			deliverables(args, ++i);
-		} else if ("view".equals(args[i])) {
-			doView(args, ++i);
-		} else if ("buildx".equals(args[i])) {
-			doBuild(args, ++i);
-		} else if ("extract".equals(args[i])) {
-			doExtract(args, ++i);
-		} else if ("patch".equals(args[i])) {
-			patch(args, ++i);
-		} else if ("runtests".equals(args[i])) {
-			runtests(args, ++i);
-		} else if ("xref".equals(args[i])) {
-			doXref(args, ++i);
-		} else if ("eclipse".equals(args[i])) {
-			doEclipse(args, ++i);
-		} else if ("repo".equals(args[i])) {
-			repo(args, ++i);
-		} else if ("diff".equals(args[i])) {
-			doDiff(args, ++i);
-		} else if ("forensics".equals(args[i])) {
-//			doForensics(args, ++i);
-		} else if ("help".equals(args[i])) {
-			doHelp(args, ++i);
-		} else if ("macro".equals(args[i])) {
-			doMacro(args, ++i);
-		} else if ("merge".equals(args[i])) {
-			doMerge(args, ++i);
-		} else {
-			trace("command %s not found", cmd);
-			return false;
+		try {
+			String cmd = args[i];
+			trace("command %s", cmd);
+			if ("wrap".equals(args[i])) {
+				doWrap(args, ++i);
+			} else if ("maven".equals(args[i])) {
+				MavenCommand maven = new MavenCommand(this);
+				maven.setTrace(isTrace());
+				maven.setPedantic(isPedantic());
+				maven.run(args, ++i);
+				getInfo(maven);
+			} else if ("global".equals(args[i])) {
+				global(args, ++i);
+			} else if ("exec".equals(args[i])) {
+				doRun(args[++i]);
+			} else if ("print".equals(args[i])) {
+				doPrint(args, ++i);
+			} else if ("lib".equals(args[i])) {
+				doLib(args, ++i);
+			} else if ("graph".equals(args[i])) {
+				doDot(args, ++i);
+			} else if ("create-repo".equals(args[i])) {
+				createRepo(args, ++i);
+			} else if ("release".equals(args[i])) {
+				doRelease(args, ++i);
+			} else if ("debug".equals(args[i])) {
+				debug(args, ++i);
+			} else if ("bump".equals(args[i])) {
+				bump(args, ++i);
+			} else if ("deliverables".equals(args[i])) {
+				deliverables(args, ++i);
+			} else if ("view".equals(args[i])) {
+				doView(args, ++i);
+			} else if ("buildx".equals(args[i])) {
+				doBuild(args, ++i);
+			} else if ("extract".equals(args[i])) {
+				doExtract(args, ++i);
+			} else if ("patch".equals(args[i])) {
+				patch(args, ++i);
+			} else if ("runtests".equals(args[i])) {
+				runtests(args, ++i);
+			} else if ("xref".equals(args[i])) {
+				doXref(args, ++i);
+			} else if ("eclipse".equals(args[i])) {
+				doEclipse(args, ++i);
+			} else if ("repo".equals(args[i])) {
+				repo(args, ++i);
+			} else if ("package".equals(args[i])) {
+				GetOpt.subcmd(new PackageCommand(this), args, ++i, out);
+			} else if ("slurp".equals(args[i])) {
+				SlurpCommand.slurp(this, args, ++i, out);
+			} else if ("diff".equals(args[i])) {
+				DiffCommand.diff(this, args, ++i, out);
+			} else if ("help".equals(args[i])) {
+				doHelp(args, ++i);
+			} else if ("macro".equals(args[i])) {
+				doMacro(args, ++i);
+			} else if ("merge".equals(args[i])) {
+				doMerge(args, ++i);
+			} else {
+				trace("command %s not found", cmd);
+				return false;
+			}
+			trace("command %s executed", cmd);
+		} catch (GetOptException e) {
+			error(e.getMessage());
 		}
-
-		trace("command %s executed", cmd);
 		return true;
 	}
 
@@ -508,6 +510,8 @@ public class bnd extends Processor {
 	 */
 
 	private void doXref(String[] args, int i) {
+		Analyzer analyzer = new Analyzer();
+		
 		for (; i < args.length; i++) {
 			try {
 				File file = new File(args[i]);
@@ -518,7 +522,11 @@ public class bnd extends Processor {
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
 							InputStream in = r.openInputStream();
-							Clazz clazz = new Clazz(key, r);
+							Clazz clazz = new Clazz(analyzer,key, r);
+							
+							// TODO use the proper bcp instead
+							// of using the default layout
+							
 							out.print(key);
 							Set<String> xref = clazz.parseClassFile();
 							in.close();
@@ -1104,7 +1112,7 @@ public class bnd extends Processor {
 	}
 
 	String vertical(int padding, Set<String> used) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Iterator<String> u = used.iterator(); u.hasNext();) {
 			String name = (String) u.next();
@@ -1119,7 +1127,7 @@ public class bnd extends Processor {
 	}
 
 	String pad(int i) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		while (i-- > 0)
 			sb.append(' ');
 		return sb.toString();
@@ -1264,7 +1272,7 @@ public class bnd extends Processor {
 		if (objects == null || objects.length == 0)
 			return;
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int index = 0;
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
@@ -1443,135 +1451,6 @@ public class bnd extends Processor {
 			} finally {
 				analyzer.close();
 			}
-		}
-	}
-
-	/**
-	 * Show the diff between two jars.
-	 * 
-	 */
-
-	interface diff extends IGetOpt {
-		@Config(description = "Print the API") boolean api();
-
-		@Config(description = "Print the Resources") boolean resources();
-
-		@Config(description = "Print the Manifest") boolean manifest();
-
-		@Config(description = "Do not show unchanged") boolean limited();
-
-		@Config(description = "Print difference as valid XML") boolean xml();
-
-		@Config(description = "Where to send the output") File output();
-	}
-
-	void doDiff(String args[], int first) throws Exception {
-		diff cmd = GetOpt.getopt(args, first, diff.class);
-
-		if (cmd.help() != null) {
-			System.out.println(GetOpt.getHelp(diff.class));
-			return;
-		}
-
-		if (cmd._().size() != 2) {
-			System.out.println(cmd._());
-			throw new IllegalArgumentException("Requires 2 jar files input");
-		}
-		File fout = cmd.output();
-		PrintWriter pw;
-		if (fout == null)
-			pw = new PrintWriter(out);
-		else
-			pw = new PrintWriter(fout);
-
-		Iterator<String> it = cmd._().iterator();
-		Jar newer = new Jar(getFile(it.next()));
-		try {
-			Jar older = new Jar(getFile(it.next()));
-			try {
-				DiffPlugin di = new DiffPluginImpl();
-				Diff diff = di.diff(newer, older);
-				boolean all = cmd.api() == false && cmd.resources() == false
-						&& cmd.manifest() == false;
-				if (!cmd.xml()) {
-					if (all || cmd.api())
-						show(pw, diff.get("<api>"), 0, cmd.limited());
-					if (all || cmd.manifest())
-						show(pw, diff.get("<manifest>"), 0, cmd.limited());
-					if (all || cmd.resources())
-						show(pw, diff.get("<resources>"), 0, cmd.limited());
-				} else {
-					Tag tag = new Tag("diff");
-					tag.addAttribute("date", new Date());
-					tag.addContent(getTagFrom("newer", newer));
-					tag.addContent(getTagFrom("older", older));
-					if (all || cmd.api())
-						tag.addContent(getTagFrom(diff.get("<api>"), cmd.limited()));
-					if (all || cmd.manifest())
-						tag.addContent(getTagFrom(diff.get("<manifest>"), cmd.limited()));
-					if (all || cmd.resources())
-						tag.addContent(getTagFrom(diff.get("<resources>"), cmd.limited()));
-
-					pw.println("<?xml version='1.0'?>");
-					tag.print(0, pw);
-				}
-				pw.close();
-			} finally {
-				older.close();
-			}
-		} finally {
-			newer.close();
-		}
-	}
-
-	private Tag getTagFrom(Diff diff, boolean limited) {
-		if (limited && (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED))
-			return null;
-
-		Tag tag = new Tag("diff");
-		tag.addAttribute("name", diff.getName());
-		if (diff.getNewerValue() != null)
-			tag.addAttribute("newerValue", diff.getNewerValue());
-		if (diff.getOlderValue() != null)
-			tag.addAttribute("olderValue", diff.getOlderValue());
-
-		tag.addAttribute("delta", diff.getDelta());
-		tag.addAttribute("type", diff.getType());
-
-		if (limited && (diff.getDelta() == Delta.ADDED || diff.getDelta() == Delta.REMOVED))
-			return tag;
-
-		for (Diff c : diff.getChildren()) {
-			Tag child = getTagFrom(c, limited);
-			if (child != null)
-				tag.addContent(child);
-		}
-		return tag;
-	}
-
-	private Tag getTagFrom(String name, Jar jar) throws Exception {
-		Tag tag = new Tag(name);
-		tag.addAttribute("bsn", jar.getBsn());
-		tag.addAttribute("name", jar.getName());
-		tag.addAttribute("version", jar.getVersion());
-		tag.addAttribute("lastmodified", jar.lastModified());
-		return tag;
-	}
-
-	private void show(PrintWriter out, Diff diff, int indent, boolean limited) {
-		if (limited && (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED))
-			return;
-
-		for (int i = 0; i < indent; i++)
-			out.print("   ");
-
-		out.println(diff.toString());
-
-		if (limited && (diff.getDelta() == Delta.ADDED || diff.getDelta() == Delta.REMOVED))
-			return;
-
-		for (Diff c : diff.getChildren()) {
-			show(out, c, indent + 1, limited);
 		}
 	}
 
@@ -1764,31 +1643,31 @@ public class bnd extends Processor {
 		return;
 	}
 
-	private void repoPut(RepositoryPlugin writable, Project project, String file, String bsn,
-			String version) throws Exception {
-		Jar jar = null;
-		int n = file.indexOf(':');
-		if (n > 1 && n < 10) {
-			jar = project.getValidJar(new URL(file));
-		} else {
-			File f = getFile(file);
-			if (f.isFile()) {
-				jar = project.getValidJar(f);
-			}
-		}
-
-		if (jar != null) {
-			Manifest manifest = jar.getManifest();
-			if (bsn != null)
-				manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
-			if (version != null)
-				manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
-
-			writable.put(jar);
-
-		} else
-			error("There is no such file or url: " + file);
-	}
+//	private void repoPut(RepositoryPlugin writable, Project project, String file, String bsn,
+//			String version) throws Exception {
+//		Jar jar = null;
+//		int n = file.indexOf(':');
+//		if (n > 1 && n < 10) {
+//			jar = project.getValidJar(new URL(file));
+//		} else {
+//			File f = getFile(file);
+//			if (f.isFile()) {
+//				jar = project.getValidJar(f);
+//			}
+//		}
+//
+//		if (jar != null) {
+//			Manifest manifest = jar.getManifest();
+//			if (bsn != null)
+//				manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
+//			if (version != null)
+//				manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
+//
+//			writable.put(jar);
+//
+//		} else
+//			error("There is no such file or url: " + file);
+//	}
 
 	void repoList(List<RepositoryPlugin> repos, String mask) throws Exception {
 		trace("list repo " + repos + " " + mask);
@@ -2220,18 +2099,6 @@ public class bnd extends Processor {
 
 	}
 
-	private void traverse(List<File> files, File f) {
-		if (f.isFile()) {
-			if (f.getName().endsWith(".jar"))
-				files.add(f);
-		} else if (f.isDirectory()) {
-			File[] subs = f.listFiles();
-			for (File sub : subs) {
-				traverse(files, sub);
-			}
-		}
-	}
-
 	public void global(String args[], int i) throws BackingStoreException {
 		Settings settings = new Settings();
 
@@ -2432,198 +2299,6 @@ public class bnd extends Processor {
 		}
 		addClose(jar);
 		return jar;
-	}
-
-	/**
-	 * Show the history of a set of packages. This command gets a number of JAR
-	 * files as parameters and will compare each one of them for their public
-	 * API.
-	 */
-	interface forensics extends IGetOpt {
-		File output();
-
-		String database();
-
-		Collection<String> packages();
-
-		boolean commit();
-	}
-
-	static Comparator<Jar>	JAR_MODIFIED_COMPARATOR	= new Comparator<Jar>() {
-
-														public int compare(Jar o1, Jar o2) {
-															if (o1.lastModified() > o2
-																	.lastModified())
-																return 1;
-															else if (o1.lastModified() < o2
-																	.lastModified())
-																return -1;
-															else
-																return 0;
-														}
-													};
-
-//	void doForensics(String args[], int first) throws Exception {
-//		forensics cmd = GetOpt.getopt(args, first, forensics.class);
-//
-//		FileRepo fr = new FileRepo();
-//		fr.setReporter(this);
-//		fr.setLocation(cmd.database());
-//
-//		File output = cmd.output();
-//		PrintWriter pw;
-//		if (output == null)
-//			pw = new PrintWriter(out);
-//		else
-//			pw = new PrintWriter(output);
-//
-//		DiffPlugin differ = new DiffPluginImpl();
-//
-//		for (String arg : cmd._()) {
-//			File file = getFile(arg);
-//			if (file.isFile()) {
-//				Jar jar = new Jar(file);
-//				Manifest manifest = jar.getManifest();
-//				Map<String, Map<String, String>> exports = parseHeader(manifest.getMainAttributes()
-//						.getValue(Constants.EXPORT_PACKAGE));
-//
-//				outer: for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
-//						.entrySet()) {
-//
-//					String packageName = entry.getKey();
-//					if (packageName.length() > 0 && Character.isUpperCase(packageName.charAt(0))) {
-//						trace("adding package %s", packageName);
-//
-//						// Create a jar with only our package
-//						Jar sub = new Jar(packageName);
-//						sub.addDirectory(entry.getValue(), true);
-//
-//						// Default versions to use
-//						Version useVersion = new Version(1, 0, 0);
-//						
-//
-//						// Get all existing versions sorted so that the highest
-//						// version is highest
-//						List<Version> versions = fr.versions(packageName);
-//						Collections.sort(versions);
-//
-//						if ( cmd.calculate() ) {
-//							// ignore the version in the jar but set them
-//							calculate(fr,sub,packageName)
-//						} else {
-//							// get the old version set, could be null
-//							Map<String,String> attrs = exports.get(packageName);
-//							if ( attrs == null)
-//								exports.put(packageName, attrs=Create.map());
-//							Version v = Version.parseVersion(attrs.get(Constants.VERSION_ATTRIBUTE));
-//							Version oldVersion =new Version(v.getMajor(), v.getMinor(), v.getMicro());
-//							// verify 
-//						}
-//						
-//						
-//						
-//						versions: for (int i = versions.size() - 1; i >= 0; i--) {
-//							Version version = versions.get(i);
-//							Jar existing = fr.get(packageName, version);
-//							Diff diff = differ.diff(sub, existing).get("<api>").get(packageName);
-//							switch (diff.getDelta()) {
-//							case UNCHANGED:
-//								trace("unchanged %s %s", packageName, version);
-//								// will not save due to existing version
-//								if ( cmd.check()) {
-//									
-//								}
-//								useVersion = version;
-//								
-//								break versions;
-//
-//							case ADDED:
-//							case REMOVED:
-//								throw new IllegalArgumentException(); // Impossible
-//
-//							case CHANGED:
-//							case MICRO:
-//								version = new Version(version.getMajor(), version.getMinor(),
-//										version.getMicro()+10);
-//								break versions;
-//								
-//							case MINOR:
-//								version = new Version(version.getMajor(), version.getMinor() + 10,
-//										0);
-//								break versions;
-//
-//							case MAJOR:
-//								if (version.compareTo(useVersion) > 0)
-//									useVersion = new Version(versions.get(versions.size() - 1)
-//											.getMajor() + 1, 0, 0);
-//								break;
-//							}
-//						}
-//
-//
-//						trace("setting %s version to: %s, was %s", packageName, useVersion, oldVersion);
-//						if ( useVersion.compareTo(oldVersion))
-//							attrs.put(Constants.VERSION_ATTRIBUTE, useVersion.toString());
-//						
-//						if (!versions.contains(useVersion)) {
-//							// annotate the original bundle the package
-//							Builder builder = new Builder();
-//							builder.setJar(sub);
-//							builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, packageName);
-//							builder.setProperty(Constants.BUNDLE_VERSION, useVersion.toString());
-//							builder.setProperty(Constants.EXPORT_CONTENTS, packageName);
-//							jar.putResource(packageName.replace('.', '/') + "/packageinfo",
-//									new EmbeddedResource(useVersion.toString().getBytes(), 0));
-//							
-//							fr.put(sub);
-//						}
-//
-//					}
-//					
-//					jar.getManifest().getMainAttributes().putValue(Constants.EXPORT_PACKAGE, printClauses(exports));
-//				}
-//				// Save the JAR
-//				jar.write(file);
-//			} else
-//				throw new IllegalArgumentException("Not a file: " + file);
-//		}
-//
-//		pw.close();
-//	}
-
-	static Pattern	REPO_PATTERN	= Pattern.compile("(" + Verifier.SYMBOLICNAME_STRING + ")-("
-											+ Verifier.VERSION_STRING + ")");
-
-	private String getName(Jar jar) throws Exception {
-		String bsn = jar.getBsn();
-		if (bsn == null) {
-			bsn = jar.getName();
-			Matcher m = REPO_PATTERN.matcher(bsn);
-			if (m.matches())
-				bsn = m.group(1);
-		}
-		return bsn;
-	}
-
-	private Version getVersion(Jar jar) throws Exception {
-		String version = jar.getVersion();
-		if (version == null) {
-			String name = jar.getName();
-			Matcher m = REPO_PATTERN.matcher(name);
-			if (m.matches())
-				version = m.group(3);
-			else
-				version = "0";
-		}
-		return Version.parseVersion(version);
-	}
-
-	private String notNull(String... strings) {
-		for (String s : strings) {
-			if (s != null)
-				return s;
-		}
-		return "";
 	}
 
 }

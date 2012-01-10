@@ -6,14 +6,12 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import aQute.bnd.differ.Element.Structured;
 import aQute.bnd.service.diff.*;
-import aQute.lib.collections.*;
+import aQute.bnd.service.diff.Tree.Data;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.cryptography.*;
-import aQute.libg.generics.*;
 import aQute.libg.header.*;
 
 
@@ -22,7 +20,7 @@ import aQute.libg.header.*;
  * Bundle Class Path and exported packages), the Manifest, and the resources.
  * The Differences are represented in a {@link Diff} tree.
  */
-public class DiffPluginImpl implements DiffPlugin {
+public class DiffPluginImpl implements Differ {
 	
 	/**
 	 * Headers that are considered major enough to parse according to spec and
@@ -55,29 +53,36 @@ public class DiffPluginImpl implements DiffPlugin {
 
 	/**
 	 * 
-	 * @see aQute.bnd.service.diff.DiffPlugin#diff(aQute.lib.osgi.Jar,
+	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.osgi.Jar,
 	 *      aQute.lib.osgi.Jar)
 	 */
-	public Diff diff(Jar newer, Jar older, Info ...infos ) throws Exception {
+	public Tree tree(File newer) throws Exception {
+		Jar jnewer = new Jar(newer);
+		try {
+			return tree(jnewer);
+		} finally {
+			jnewer.close();
+		}
+	}
+
+	/**
+	 * 
+	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.osgi.Jar,
+	 *      aQute.lib.osgi.Jar)
+	 */
+	public Tree tree(Jar newer) throws Exception {
 		Analyzer anewer = new Analyzer();
 		try {
-			Analyzer aolder = new Analyzer();
-			try {
 				anewer.setJar(newer);
-				aolder.setJar(older);
-				return diff(anewer, aolder, infos);
-			} finally {
-				aolder.setJar((Jar) null);
-				aolder.close();
-			}
+				return tree(anewer);
 		} finally {
 			anewer.setJar((Jar) null);
 			anewer.close();
 		}
 	}
 
-	public Diff diff(Analyzer newer, Analyzer older, Info ...infos ) throws Exception {
-		return new DiffImpl(bundleElement(newer, infos), bundleElement(older,infos));
+	public Tree tree(Analyzer newer) throws Exception {
+		return bundleElement(newer);
 	}
 
 	/**
@@ -89,17 +94,17 @@ public class DiffPluginImpl implements DiffPlugin {
 	 * @return the elements that should be compared
 	 * @throws Exception
 	 */
-	private Element bundleElement(Analyzer analyzer, Info ... infos) throws Exception {
+	private Element bundleElement(Analyzer analyzer) throws Exception {
 		List<Element> result = new ArrayList<Element>();
 
 		Manifest manifest = analyzer.getJar().getManifest();
 
 		if (manifest != null) {
-			result.add(apiElement(analyzer, infos));
+			result.add(JavaElement.getAPI(analyzer));
 			result.add(manifestElement(manifest));
 		}
 		result.add(resourcesElement(analyzer.getJar()));
-		return new Structured(Type.BUNDLE, "<name>", analyzer.getJar().getName(), result, CHANGED, CHANGED,
+		return new Element(Type.BUNDLE, analyzer.getJar().getName(), result, CHANGED, CHANGED,
 				null);
 	}
 
@@ -120,67 +125,16 @@ public class DiffPluginImpl implements DiffPlugin {
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
 				resources
-						.add(new Element(Type.RESOURCE, entry.getKey(), value, CHANGED, CHANGED, null));
+						.add(new Element(Type.RESOURCE, entry.getKey()+"="+value, null, CHANGED, CHANGED, null));
 			} finally {
 				in.close();
 			}
 		}
-		return new Structured(Type.RESOURCES, "<resources>", null, resources, CHANGED, CHANGED, null);
+		return new Element(Type.RESOURCES, "<resources>", resources, CHANGED, CHANGED, null);
 	}
 
 
 
-	/**
-	 * Create an element for the API. We take the exported packages and traverse
-	 * those for their classes. If there is no manifest or it does not describe
-	 * a bundle we assume the whole contents is exported.
-	 * @param infos 
-	 */
-	private Element apiElement(Analyzer analyzer, Info ... infos) throws Exception {
-		analyzer.analyze();
-
-		Map<String, Map<String, String>> exports;
-
-		Manifest manifest = analyzer.getJar().getManifest();
-		if (manifest != null
-				&& manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null)
-			exports = OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(
-					Constants.EXPORT_PACKAGE));
-		else
-			exports = analyzer.getContained();
-
-		// we now need to gather all the packages but without
-		// creating the packages yet because we do not yet know
-		// which classes are accessible
-
-		MultiMap<String, Element> packages = new MultiMap<String, Element>();
-		Set<String> notAccessible = Create.set();
-		Map<Clazz, Structured> cache = Create.map();
-
-		for (Clazz c : analyzer.getClassspace().values()) {
-			if (c.isPublic() || c.isProtected()) {
-				String packageName = c.getPackage();
-
-				if (exports.containsKey(packageName)) {
-					Element cdef = TypedElement.classElement(analyzer, c, notAccessible, cache, infos);
-					packages.add(packageName, cdef);
-				}
-			}
-		}
-
-		List<Element> result = new ArrayList<Element>();
-
-		for (Map.Entry<String, Set<Element>> entry : packages.entrySet()) {
-			Set<Element> set = entry.getValue();
-			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
-				if (notAccessible.contains(i.next().getName()))
-					i.remove();
-			}
-			Element pd = new Structured(Type.PACKAGE, entry.getKey(), null,set, MINOR, MAJOR, null);
-			result.add(pd);
-		}
-		return new Structured(Type.API, "<api>", null, result, CHANGED, CHANGED, null);
-	}
 
 	/**
 	 * Create an element for each manifest header. There are
@@ -206,18 +160,22 @@ public class DiffPluginImpl implements DiffPlugin {
 				for (Map.Entry<String, Map<String, String>> clause : clauses.entrySet()) {
 					Collection<Element> parameterDef = new ArrayList<Element>();
 					for (Map.Entry<String, String> parameter : clause.getValue().entrySet()) {
-						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey(), parameter
-								.getValue(), CHANGED, CHANGED, null));
+						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + parameter
+								.getValue(), null, CHANGED, CHANGED, null));
 					}
-					clausesDef.add(new Structured(Type.CLAUSE, clause.getKey(), null, parameterDef,
+					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef,
 							CHANGED, CHANGED, null));
 				}
-				result.add(new Structured(Type.HEADER, header, null, clausesDef, CHANGED, CHANGED, null));
+				result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
 			} else {
-				result.add(new Element(Type.HEADER, header, value, CHANGED, CHANGED, null));
+				result.add(new Element(Type.HEADER, header +":"+ value, null,CHANGED, CHANGED, null));
 			}
 		}
-		return new Structured(Type.MANIFEST, "<manifest>", null, result, CHANGED, CHANGED, null);
+		return new Element(Type.MANIFEST, "<manifest>", result, CHANGED, CHANGED, null);
+	}
+
+	public Tree deserialize(Data data) throws Exception {
+		return new Element(data);
 	}
 
 }

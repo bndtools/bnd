@@ -4,7 +4,6 @@ import static aQute.bnd.service.diff.Delta.*;
 
 import java.util.*;
 
-import aQute.bnd.differ.Element.*;
 import aQute.bnd.service.diff.*;
 
 /**
@@ -47,62 +46,58 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 *            The newer Element
 	 * @param older
 	 *            The older Element
+	 * @param types
 	 */
 	DiffImpl(Element newer, Element older) {
 		assert newer != null || older != null;
 		this.older = older;
 		this.newer = newer;
 
-		if ((newer == null ? older : newer) instanceof Structured) {
+		// Either newer or older can be null, indicating remove or add
+		// so we have to be very careful.
+		Element[] newerChildren = newer == null ? Element.EMPTY : newer.children;
+		Element[] olderChildren = older == null ? Element.EMPTY : older.children;
 
-			// Either newer or older can be null, indicating remove or add
-			// so we have to be very careful.
-			Element[] newerChildren = newer == null ? Element.EMPTY : ((Structured) newer).children;
-			Element[] olderChildren = older == null ? Element.EMPTY : ((Structured) older).children;
+		int o = 0;
+		int n = 0;
+		List<DiffImpl> children = new ArrayList<DiffImpl>();
+		while (true) {
+			Element nw = n < newerChildren.length ? newerChildren[n] : null;
+			Element ol = o < olderChildren.length ? olderChildren[o] : null;
+			DiffImpl diff;
 
-			int o = 0;
-			int n = 0;
-			List<DiffImpl> children = new ArrayList<DiffImpl>();
-			while (true) {
-				Element nw = n < newerChildren.length ? newerChildren[n] : null;
-				Element ol = o < olderChildren.length ? olderChildren[o] : null;
-				DiffImpl diff;
+			if (nw == null && ol == null)
+				break;
 
-				if (nw == null && ol == null)
-					break;
-
-				if (nw != null && ol != null) {
-					// we have both sides
-					int result = nw.compareTo(ol);
-					if (result == 0) {
-						// we have two equal named elements
-						// use normal diff
-						diff = new DiffImpl(nw, ol);
-						n++;
-						o++;
-					} else if (result > 0) {
-						// we newer > older, so there is no newer == removed
-						diff = new DiffImpl(null, ol);
-						o++;
-					} else {
-						// we newer < older, so there is no older == added
-						diff = new DiffImpl(nw, null);
-						n++;
-					}
-				} else {
-					// we reached the end of one of the list
+			if (nw != null && ol != null) {
+				// we have both sides
+				int result = nw.compareTo(ol);
+				if (result == 0) {
+					// we have two equal named elements
+					// use normal diff
 					diff = new DiffImpl(nw, ol);
 					n++;
 					o++;
+				} else if (result > 0) {
+					// we newer > older, so there is no newer == removed
+					diff = new DiffImpl(null, ol);
+					o++;
+				} else {
+					// we newer < older, so there is no older == added
+					diff = new DiffImpl(nw, null);
+					n++;
 				}
-				children.add(diff);
+			} else {
+				// we reached the end of one of the list
+				diff = new DiffImpl(nw, ol);
+				n++;
+				o++;
 			}
-
-			// make sure they're read only
-			this.children = Collections.unmodifiableCollection(children);
-		} else {
-			children = Collections.emptyList();
+			children.add(diff);
 		}
+
+		// make sure they're read only
+		this.children = Collections.unmodifiableCollection(children);
 		delta = getDelta(null);
 	}
 
@@ -117,7 +112,8 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 
 	/**
 	 * This getDelta calculates the delta but allows the caller to ignore
-	 * certain Diff objects by calling back the ignore call back parameter.
+	 * certain Diff objects by calling back the ignore call back parameter. This
+	 * can be useful to ignore warnings/errors.
 	 */
 
 	public Delta getDelta(Ignore ignore) {
@@ -135,27 +131,24 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 			assert newer != null && older != null;
 			assert newer.getClass() == older.getClass();
 
-			Delta local = newer.getValueDelta(older);
-			
-			if (newer instanceof Structured) {
-				for (DiffImpl child : children) {
-					Delta sub = child.getDelta(ignore);
-					if (sub == REMOVED)
-						sub = child.older.remove;
-					else if (sub == ADDED)
-						sub = child.newer.add;
+			Delta local = Delta.UNCHANGED;
 
-					// The escalate method is used to calculate the default
-					// transition in the
-					// delta based on the children. In general the delta can
-					// only escalate, i.e.
-					// move up in the chain.
+			for (DiffImpl child : children) {
+				Delta sub = child.getDelta(ignore);
+				if (sub == REMOVED)
+					sub = child.older.remove;
+				else if (sub == ADDED)
+					sub = child.newer.add;
 
-					local = TRANSITIONS[sub.ordinal()][local.ordinal()];
-				}
-				return local;
+				// The escalate method is used to calculate the default
+				// transition in the
+				// delta based on the children. In general the delta can
+				// only escalate, i.e.
+				// move up in the chain.
+
+				local = TRANSITIONS[sub.ordinal()][local.ordinal()];
 			}
-			return UNCHANGED;
+			return local;
 		}
 	}
 
@@ -167,38 +160,12 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return (newer == null ? older : newer).getName();
 	}
 
-	public String getOlderValue() {
-		return older == null ? null : older.getValue();
-	}
-
-	public String getNewerValue() {
-		return newer == null ? null : newer.getValue();
-	}
-
 	public Collection<? extends Diff> getChildren() {
 		return children;
 	}
 
 	public String toString() {
-		String value = "";
-		String oldv = older == null ? null : older.getValue();
-		String newv = newer == null ? null : newer.getValue();
-		if (oldv != null || newv != null) {
-			switch (getDelta()) {
-			case REMOVED:
-				value = " = <> /" + oldv;
-				break;
-			case ADDED:
-				value = " = " + newv + " / <>";
-				break;
-			default:
-				if ( newv.equals(oldv))
-					value = " = " + newv ;
-				else
-					value = " = " + newv + " != " + oldv;
-			}
-		}
-		return String.format("%-10s %-10s %s%s", getDelta(), getType(), getName(), value);
+		return String.format("%-10s %-10s %s", getDelta(), getType(), getName());
 	}
 
 	public boolean equals(Object other) {
@@ -230,6 +197,14 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 				return child;
 		}
 		return null;
+	}
+
+	public Tree getOlder() {
+		return older;
+	}
+
+	public Tree getNewer() {
+		return newer;
 	}
 
 }
