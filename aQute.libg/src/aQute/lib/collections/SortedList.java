@@ -2,28 +2,31 @@ package aQute.lib.collections;
 
 import java.util.*;
 
-@SuppressWarnings("unchecked") 
-public class SortedList<T> implements SortedSet<T>, List<T> {
-	static Comparator<Comparable<Object>>	comparator	= new Comparator<Comparable<Object>>() {
-															public int compare(
-																	Comparable<Object> o1,
-																	Comparable<Object> o2) {
-																if (o1 == o2)
-																	return 0;
-
-																if (o1.equals(o2))
-																	return 0;
-
-																return o1.compareTo(o2);
-															}
-														};
+@SuppressWarnings("unchecked") public class SortedList<T> implements SortedSet<T>, List<T> {
 	static SortedList<?>					empty		= new SortedList<Object>();
 
 	final T[]								list;
 	final int								start;
 	final int								end;
 	final Comparator<T>						cmp;
+	Class<?>								type;
+	static Comparator<Object>	comparator	= //
 
+		new Comparator<Object>() {
+			public int compare(
+					Object o1,
+					Object o2) {
+
+				if (o1 == o2)
+					return 0;
+
+				if (o1.equals(o2))
+					return 0;
+
+				return ((Comparable<Object>)o1).compareTo(o2);
+			}
+		};
+	
 	class It implements ListIterator<T> {
 		int	n;
 
@@ -69,19 +72,20 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public SortedList(Collection<? extends Comparable<?>> x) {
-		this((Collection<T>)x, 0, x.size(), (Comparator<T>) comparator);
+		this((Collection<T>) x, 0, x.size(), (Comparator<T>)comparator);
 	}
 
 	public SortedList(Collection<T> x, Comparator<T> cmp) {
 		this(x, 0, x.size(), cmp);
 	}
 
-	public SortedList(T[] x) {
+	public SortedList(T... x) {
 		this((T[]) x.clone(), 0, x.length, (Comparator<T>) comparator);
 	}
 
-	public SortedList(T[] x, Comparator<T> cmp) {
+	public SortedList(Comparator<T> cmp, T... x) {
 		this((T[]) x.clone(), 0, x.length, cmp);
+		assert x != null && x.length > 0;
 	}
 
 	private SortedList(SortedList<T> other, int start, int end) {
@@ -100,7 +104,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		if (start < 0 || start >= x.length)
 			throw new IllegalArgumentException("Start is not in list");
 
-		if (end < 0 || end >= x.length)
+		if (end < 0 || end > x.length)
 			throw new IllegalArgumentException("End is not in list");
 
 		this.list = x.clone();
@@ -145,6 +149,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public boolean contains(Object o) {
+		assert type !=null & type.isInstance(o);
 		return indexOf((T) o) >= 0;
 	}
 
@@ -226,11 +231,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public int indexOf(Object o) {
-		int n = Arrays.binarySearch(list, (T) o, cmp);
-		if ( n >= start && n < end)
-			return n - start;
+		assert type !=null && type.isInstance(o);
 		
-		return -1;		
+		int n = Arrays.binarySearch(list, (T) o, cmp);
+		if (n >= start && n < end)
+			return n - start;
+
+		return -1;
 	}
 
 	public SortedList<T> headSet(T toElement) {
@@ -329,4 +336,36 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
 
+	public boolean equals(SortedList<T> list) {
+		if (size() != list.size())
+			return false;
+
+		for (int as = start, bs = list.start, al = size(), bl = list.size(); as < al && bs < bl; as++, bs++) {
+			if (comparator.compare(this.list[as], this.list[bs]) != 0)
+				return false;
+		}
+		return true;
+	}
+
+	public Class<?> getType() {
+		return type;
+	}
+
+	public void setType(Class<?> type) {
+		this.type = type;
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		String del = "";
+		for ( T s : list) {
+			sb.append(del);
+			sb.append(s);
+			del = ", ";
+		}
+			
+		sb.append("]");
+		return sb.toString();
+	}
 }
