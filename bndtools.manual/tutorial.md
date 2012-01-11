@@ -58,12 +58,13 @@ OSGi offers strong decoupling of producers and consumers of functionality. This 
 
 In the `src` directory of the new project, create a package named `org.example.api`. In the new package create a Java interface named `Greeting`, as follows:
 
+~~~~~~ {.Java}
+package org.example.api;
 
-	package org.example.api;
-
-	public interface Greeting {
-	    String sayHello(String name);
-	}
+public interface Greeting {
+    String sayHello(String name);
+}
+~~~~~~
 
 
 Define the Bundle
@@ -140,14 +141,16 @@ Write an Implementation
 
 We will write a class that implements the `Greeting` interface. When the project was created from the template, Java source for a class named `org.example.ExampleComponent` was generated. Open this source file now and make it implement `Greeting`:
 
-	@Component
-	public class ExampleComponent implements Greeting {
-	
-		public String sayHello(String name) {
-			return "Hello " + name;
-		}
-	
+~~~~~~ {.Java}
+@Component
+public class ExampleComponent implements Greeting {
+
+	public String sayHello(String name) {
+		return "Hello " + name;
 	}
+
+}
+~~~~~~
 
 Note the use of the `@Component` annotation. This enables our bundle to use OSGi Declarative Services to declare the API implementation class. This means that instances of the class will be automatically created and registered with the OSGi service registry. However the annotation is build-time only, and does not pollute our class with runtime dependencies -- in other words, this is a "Plain Old Java Object" or POJO.
 
@@ -156,13 +159,15 @@ Test the Implementation
 
 We should write a test case to ensure the implementation class works as expected. In the `test` folder, a test case class already exists named `org.example.ExampleComponentTest`. Write a test method as follows:
 
-	public class ExampleComponentTest extends TestCase {
-	
-		public void testSaysHello() throws Exception {
-			String result = new ExampleComponent().sayHello("Bob");
-			assertEquals("Hello Bob", result);
-		}
+~~~~~~ {.Java}
+public class ExampleComponentTest extends TestCase {
+
+	public void testSaysHello() throws Exception {
+		String result = new ExampleComponent().sayHello("Bob");
+		assertEquals("Hello Bob", result);
 	}
+}
+~~~~~~
 
 Now right-click on the file and select **Run As > JUnit Test**.
 
@@ -285,44 +290,46 @@ First we need to make the Felix shell API available to compile against. Open `bn
 
 Now create a new Java package under the `src` folder named `org.example.command`. In this package create a class `GreetingCommand` as follows:
 
-	import java.io.PrintStream;
-	import java.util.StringTokenizer;
+~~~~~~~~~~ {.Java}
+import java.io.PrintStream;
+import java.util.StringTokenizer;
+
+import org.apache.felix.shell.Command;
+import org.example.api.Greeting;
+
+import aQute.bnd.annotation.component.*;
+
+@Component
+public class GreetingCommand implements Command {
+
+	private Greeting greetingSvc;
 	
-	import org.apache.felix.shell.Command;
-	import org.example.api.Greeting;
-	
-	import aQute.bnd.annotation.component.*;
-	
-	@Component
-	public class GreetingCommand implements Command {
-	
-		private Greeting greetingSvc;
-		
-		@Reference
-		public void setGreeting(Greeting greetingSvc) {
-			this.greetingSvc = greetingSvc;
-		}
-	
-		public void execute(String line, PrintStream out, PrintStream err) {
-			StringTokenizer tokenizer = new StringTokenizer(line);
-			tokenizer.nextToken(); // discard first token
-			
-			String name = "";
-			if (tokenizer.hasMoreTokens())
-				name = tokenizer.nextToken();
-			
-			System.out.println(greetingSvc.sayHello(name));
-		}
-		public String getName() {
-			return "greet";
-		}
-		public String getShortDescription() {
-			return "Example command";
-		}
-		public String getUsage() {
-			return "greet <name>";
-		}
+	@Reference
+	public void setGreeting(Greeting greetingSvc) {
+		this.greetingSvc = greetingSvc;
 	}
+
+	public void execute(String line, PrintStream out, PrintStream err) {
+		StringTokenizer tokenizer = new StringTokenizer(line);
+		tokenizer.nextToken(); // discard first token
+		
+		String name = "";
+		if (tokenizer.hasMoreTokens())
+			name = tokenizer.nextToken();
+		
+		System.out.println(greetingSvc.sayHello(name));
+	}
+	public String getName() {
+		return "greet";
+	}
+	public String getShortDescription() {
+		return "Example command";
+	}
+	public String getUsage() {
+		return "greet <name>";
+	}
+}
+~~~~~~~~~~
 
 Create a Bundle for the Command Component
 -----------------------------------------

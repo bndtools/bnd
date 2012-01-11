@@ -1,0 +1,21 @@
+/* Loosely based on pygment's tango colors */
+table.sourceCode, tr.sourceCode, td.sourceCode, table.sourceCode pre
+   { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; background-color: #f8f8f8 }
+td.nums { text-align: right; padding-right: 5px; padding-left: 5px; background-color: #f0f0f0; }
+td.sourceCode { padding-left: 5px; }
+code.sourceCode { background-color: #f8f8f8; }
+pre.sourceCode { background-color: #f8f8f8; line-height: 125% }
+td.nums pre { background-color: #f0f0f0; line-height: 125% }
+code.sourceCode span.kw { color: #204a87; font-weight: bold } /* Keyword */
+code.sourceCode span.dt { color: #204a87 } /* Keyword.Type */
+code.sourceCode span.dv { color: #0000cf } /* Literal.Number.Integer */
+code.sourceCode span.bn { color: #0000cf } /* Literal.Number.Hex */
+code.sourceCode span.fl { color: #0000cf } /* Literal.Number.Float */
+code.sourceCode span.ch { color: #4e9a06 } /* Literal.String.Char */
+code.sourceCode span.st { color: #4e9a06 } /* Literal.String */
+code.sourceCode span.co { color: #8f5902; font-style: italic } /* Comment */
+code.sourceCode span.ot { color: #8f5902 } /* Comment.Preproc */
+code.sourceCode span.al { color: #ef2929 } /* Generic.Error */
+code.sourceCode span.fu { color: #000000 } /* Name.Function */
+code.sourceCode span.re { }
+code.sourceCode span.er { color: #a40000; border: 1px solid #ef2929 } /* Error */

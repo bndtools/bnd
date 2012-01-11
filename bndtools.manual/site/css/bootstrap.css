@@ -566,7 +566,8 @@ code, pre {
   border-radius: 3px;
 }
 code {
-  background-color: #fee9cc;
+  /* background-color: #fee9cc; */
+  background-color: #f5f5f5;
   color: rgba(0, 0, 0, 0.75);
   padding: 1px 3px;
 }
