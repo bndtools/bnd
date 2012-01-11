@@ -19,7 +19,7 @@ public class Descriptors {
 	final static TypeRef	DOUBLE			= new ConcreteRef("D", "double");
 	final static TypeRef	FLOAT			= new ConcreteRef("F", "float");
 
-	final static PackageRef	DEFAULT_PACKAGE	= new PackageRef("");
+	final static PackageRef	DEFAULT_PACKAGE	= new PackageRef();
 
 	{
 		packageCache.put("", DEFAULT_PACKAGE);
@@ -43,8 +43,12 @@ public class Descriptors {
 		String getShortName();
 
 		boolean isJava();
-		
+
 		boolean isObject();
+
+		String getSourcePath();
+
+		String getDottedOnly();
 
 	}
 
@@ -55,8 +59,14 @@ public class Descriptors {
 
 		private PackageRef(String binaryName) {
 			this.binaryName = binaryName;
-			this.fqn = binaryName.replace('/', '.');
-			java = this.fqn.startsWith("java.");
+			this.fqn = binaryToFQN(binaryName);
+			this.java = this.fqn.startsWith("java.");
+		}
+
+		private PackageRef() {
+			this.binaryName = "";
+			this.fqn=".";
+			this.java = false;
 		}
 
 		public String getFQN() {
@@ -78,6 +88,10 @@ public class Descriptors {
 		public String toString() {
 			return fqn;
 		}
+		
+		boolean isDefaultPackage() {
+			return this.fqn.equals(".");
+		}
 	}
 
 	// We "intern" the
@@ -88,8 +102,10 @@ public class Descriptors {
 		final PackageRef	packageRef;
 
 		ConcreteRef(PackageRef packageRef, String binaryName) {
+			if ( packageRef.getFQN().length() < 2 )
+				System.out.println("in default pack? " + binaryName);
 			this.binaryName = binaryName;
-			this.fqn = binaryName.replace('/', '.');
+			this.fqn = binaryToFQN(binaryName);
 			this.primitive = false;
 			this.packageRef = packageRef;
 		}
@@ -101,7 +117,6 @@ public class Descriptors {
 			this.packageRef = DEFAULT_PACKAGE;
 		}
 
-
 		public String getBinary() {
 			return binaryName;
 		}
@@ -110,8 +125,16 @@ public class Descriptors {
 			return binaryName + ".class";
 		}
 
+		public String getSourcePath() {
+			return binaryName + ".java";
+		}
+
 		public String getFQN() {
 			return fqn;
+		}
+
+		public String getDottedOnly() {
+			return fqn.replace('$', '.');
 		}
 
 		public boolean isPrimitive() {
@@ -147,6 +170,11 @@ public class Descriptors {
 			return fqn.equals("java.lang.Object");
 		}
 
+		public boolean equals(Object other) {
+			assert other instanceof TypeRef;
+			return this == other;
+		}
+		
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -168,6 +196,10 @@ public class Descriptors {
 			return component.getPath();
 		}
 
+		public String getSourcePath() {
+			return component.getSourcePath();
+		}
+		
 		public boolean isPrimitive() {
 			return false;
 		}
@@ -206,9 +238,14 @@ public class Descriptors {
 		public boolean isObject() {
 			return false;
 		}
+
+		public String getDottedOnly() {
+			return component.getDottedOnly();
+		}
+
 	}
 
-	public TypeRef getTypeRef(String binaryClassName) {
+	public TypeRef getTypeRef(String binaryClassName) {		
 		
 		TypeRef ref = typeRefCache.get(binaryClassName);
 		if (ref != null)
@@ -257,13 +294,14 @@ public class Descriptors {
 		return ref;
 	}
 
-	public PackageRef getPackageRef(String pack) {
-		PackageRef ref = packageCache.get(pack);
+	public PackageRef getPackageRef(String binaryPackName) {
+		assert binaryPackName.indexOf('.') < 0;
+		PackageRef ref = packageCache.get(binaryPackName);
 		if (ref != null)
 			return ref;
 
-		ref = new PackageRef(pack);
-		packageCache.put(pack, ref);
+		ref = new PackageRef(binaryPackName);
+		packageCache.put(binaryPackName, ref);
 		return ref;
 	}
 
@@ -361,4 +399,56 @@ public class Descriptors {
 		}
 	}
 
+	/**
+	 * Return the short name of a FQN
+	 */
+
+	public static String getShortName(String fqn) {
+		assert fqn.indexOf('/') < 0;
+		
+		int n = fqn.lastIndexOf('.');
+		if (n >= 0) {
+			return fqn.substring(n + 1);
+		}
+		return fqn;
+	}
+
+	public static String binaryToFQN(String binary) {
+		StringBuilder sb = new StringBuilder();
+		for ( int i=0, l=binary.length(); i<l; i++) {
+			char c = binary.charAt(i);
+			
+			if ( c == '/')
+				sb.append('.');
+			else
+				sb.append(c);
+		}
+		String result = sb.toString();
+		assert result.length() > 0;
+		return result;
+	}
+
+	public static String fqnToBinary(String binary) {
+		return binary.replace('.', '/');
+	}
+
+	public static String getPackage(String binaryNameOrFqn) {
+		int n = binaryNameOrFqn.lastIndexOf('/');
+		if (n >= 0)
+			return binaryNameOrFqn.substring(0, n).replace('/', '.');
+
+		n = binaryNameOrFqn.lastIndexOf(".");
+		if (n >= 0)
+			return binaryNameOrFqn.substring(0, n);
+
+		return ".";
+	}
+
+	public static String fqnToPath(String s) {
+		return fqnToBinary(s) + ".class";
+	}
+
+	public TypeRef getTypeRefFromFQN(String fqn) {
+		return getTypeRef(fqnToBinary(fqn));
+	}
 }

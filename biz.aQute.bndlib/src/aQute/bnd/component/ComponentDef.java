@@ -6,6 +6,7 @@ import org.osgi.service.component.annotations.*;
 
 import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.lib.tag.*;
 import aQute.libg.version.*;
 
@@ -28,8 +29,8 @@ class ComponentDef {
 	Boolean							immediate;
 	Boolean							servicefactory;
 	ConfigurationPolicy				configurationPolicy;
-	String							implementation;
-	String							service[];
+	TypeRef							implementation;
+	TypeRef							service[];
 	String							activate;
 	String							deactivate;
 	String							modified;
@@ -43,8 +44,9 @@ class ComponentDef {
 	 * 
 	 * @param analyzer
 	 *            the analyzer to report errors and create references
+	 * @throws Exception 
 	 */
-	void prepare(Analyzer analyzer) {
+	void prepare(Analyzer analyzer) throws Exception {
 
 		for (ReferenceDef ref : references.values()) {
 			ref.prepare(analyzer);
@@ -60,10 +62,10 @@ class ComponentDef {
 		analyzer.referTo(implementation);
 
 		if (name == null)
-			name = implementation;
+			name = implementation.getFQN();
 
 		if (service != null && service.length > 0) {
-			for (String interfaceName : service)
+			for (TypeRef interfaceName : service)
 				analyzer.referTo(interfaceName);
 		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
@@ -115,16 +117,16 @@ class ComponentDef {
 			component.addAttribute("configuration-pid", configurationPid);
 
 		Tag impl = new Tag(component, "implementation");
-		impl.addAttribute("class", implementation);
+		impl.addAttribute("class", implementation.getFQN());
 
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
 			if (servicefactory != null && servicefactory)
 				s.addAttribute("servicefactory", true);
 
-			for (String ss : service) {
+			for (TypeRef ss : service) {
 				Tag provide = new Tag(s, "provide");
-				provide.addAttribute("interface", ss);
+				provide.addAttribute("interface", ss.getFQN());
 			}
 		}
 

@@ -5,12 +5,8 @@ import aQute.lib.osgi.*;
 
 public class FilterTest extends TestCase {
 
-    public void testFilter() {
-        Verifier v = new Verifier();
-        v.verifyFilter("(org.osgi.framework.windowing.system=xyz)");
-        System.out.println(v.getErrors());
-        System.out.println(v.getWarnings());
-        assertEquals(0, v.getErrors().size());
-        assertEquals(0, v.getWarnings().size());
+    public void testFilter() throws Exception {
+        String s = Verifier.validateFilter("(org.osgi.framework.windowing.system=xyz)");
+        assertNull(s);
     }
 }

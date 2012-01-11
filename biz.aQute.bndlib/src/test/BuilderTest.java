@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.test.*;
+import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 
@@ -13,45 +14,49 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the name section
 	 */
-	
+
 	public void testNamesection() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File("jar/osgi.jar"));
-		b.setProperty(Constants.NAMESECTION, "org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setProperty(Constants.NAMESECTION,
+				"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
 		b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.service.event");
 		Jar build = b.build();
 		assertOk(b);
-		build.calcChecksums(new String[]{"MD5","SHA1"});
+		build.calcChecksums(new String[] { "MD5", "SHA1" });
 		Manifest m = build.getManifest();
 		m.write(System.out);
-		
+
 		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
 		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("SHA1"));
-		assertEquals( m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5-Digest"),  m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
-		
+		assertEquals(
+				m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5-Digest"),
+				m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
+
 	}
-	
 
 	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-
 	 * directives in the import/export clauses but strips other ones.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testXDirectives() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Export-Package", "org.osgi.framework;x-foo:=true;bar:=false");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
 		String s = m.getMainAttributes().getValue("Export-Package");
-		assertTrue( s.contains("x-foo:"));
-		assertEquals( 1, b.getWarnings().size());
-		assertTrue( b.getWarnings().get(0).contains("bar:"));
+		assertTrue(s.contains("x-foo:"));
+		assertEquals(1, b.getWarnings().size());
+		assertTrue(b.getWarnings().get(0).contains("bar:"));
 	}
 
 	/**
 	 * Check of SNAPSHOT is replaced with the -snapshot instr
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testSnapshot() throws Exception {
 		Builder b = new Builder();
@@ -60,7 +65,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("Bundle-Version", "1.0-SNAPSHOT");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
-		assertEquals("1.0.0.TIMESTAMP",m.getMainAttributes().getValue("Bundle-Version"));
+		assertEquals("1.0.0.TIMESTAMP", m.getMainAttributes().getValue("Bundle-Version"));
 	}
 
 	/**
@@ -87,6 +92,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(names.contains("rox.bnd"));
 		assertTrue(names.contains("WithAnnotations.jclass"));
 	}
+
 	/**
 	 * Check if do not copy works on files
 	 */
@@ -530,15 +536,15 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("Private-Package", "org.osgi.service.*");
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.build();
-		ok(b);
+		checkok(b);
 	}
 
-	static void ok(Processor p) {
-		System.out.println("Errors  " + p.getErrors());
-		System.out.println("Warnings  " + p.getWarnings());
-		assertEquals(0, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
-	}
+
+	/**
+	 * This test checks if
+	 * 
+	 * @throws Exception
+	 */
 
 	public void testMacroBasedExpansion() throws Exception {
 		Processor proc = new Processor();
@@ -556,17 +562,13 @@ public class BuilderTest extends BndTestCase {
 		proc.setProperty("mobile.packages", "${replace;${mobile.specs};.+;$0.*}");
 		builder.addClasspath(new File("jar/osgi.jar"));
 
-		Jar jar = builder.build();
+		builder.build();
+		checkok(builder);
 
-		System.out.println("Warnings: " + builder.getWarnings());
-		System.out.println("Errors  : " + builder.getErrors());
-		assertEquals(1, builder.getErrors().size());
-		assertEquals(0, builder.getWarnings().size());
-		assertTrue(builder.getErrors().get(0).contains("service.cu.*"));
-		Manifest m = jar.getManifest();
-		String exports = m.getMainAttributes().getValue("Export-Package");
-		System.out.println(exports);
-		assertTrue(exports.contains("*"));
+		Map<String, Map<String, String>> h = OSGiHeader.parseHeader( builder.getJar().getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+		SortedList<String> l = new SortedList<String>(h.keySet());
+		assertEquals("[org.osgi.service.cu, org.osgi.service.cu.admin, org.osgi.service.cu.admin.spi, org.osgi.service.cu.admin.spi~, org.osgi.service.cu.admin~, org.osgi.service.cu.diag, org.osgi.service.cu.diag~, org.osgi.service.cu~, org.osgi.service.event, org.osgi.service.log, org.osgi.service.packageadmin, org.osgi.service.permissionadmin, org.osgi.service.wireadmin]",
+				l.toString());
 	}
 
 	/**
@@ -642,6 +644,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("C5", "${classes;named;*Parser*;version;45.*}");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
+		m.write(System.out);
 		Attributes main = m.getMainAttributes();
 		assertList(
 				asl("org.eclipse.equinox.ds.service.ComponentContextImpl,org.eclipse.equinox.ds.service.ComponentFactoryImpl,org.eclipse.equinox.ds.service.ComponentInstanceImpl"),
@@ -731,15 +734,8 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperties(p);
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
+		checkok(bmaker);
 		jar.getManifest().write(System.out);
-		System.out.println("Warnings " + bmaker.getWarnings());
-		System.out.println("Errors   " + bmaker.getErrors());
-		assertEquals(0, bmaker.getWarnings().size());
-		assertEquals(0, bmaker.getErrors().size());
 		Manifest m = jar.getManifest();
 		String ip = m.getMainAttributes().getValue("Export-Package");
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.1\"") >= 0);
@@ -1049,10 +1045,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperties(p);
 		b.setPedantic(true);
 		b.build();
-		System.out.println("Errors     :" + b.getErrors());
-		System.out.println("Warnings   :" + b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		checkok(b,1,0);
 	}
 
 	/**
@@ -1583,46 +1576,19 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperties(p);
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
+		checkok(bmaker);
 		jar.getManifest().write(System.out);
 	}
 
 	public void testSources() throws Exception {
-		File cp[] = { new File("src"), new File("jar/asm.jar") };
 		Builder bmaker = new Builder();
-		bmaker.setClasspath(cp);
+		bmaker.addClasspath(new File("bin"));
 		bmaker.setSourcepath(new File[] { new File("src") });
-		Properties properties = new Properties();
-		properties.put("-sources", "true");
-		properties.put("Export-Package", "*");
-		bmaker.setProperties(properties);
+		bmaker.setProperty("-sources", "true");
+		bmaker.setProperty("Export-Package", "test.activator");
 		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.out);
-	}
-
-	public void testSimple() throws Exception {
-		File cp[] = { new File("src"), new File("jar/asm.jar") };
-		Builder bmaker = new Builder();
-		bmaker.setProperties(new File("src/test/simple.mf"));
-		bmaker.setClasspath(cp);
-		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.out);
-	}
-
-	public void testVerifyResult() throws Exception {
-		System.out.println("Verify what we just built: test.jar");
-		Jar jar = new Jar("test", getClass().getResourceAsStream("test.jar"));
-		Verifier verifier = new Verifier(jar);
-		verifier.verify();
-		System.out.println("Warnings: " + verifier.getWarnings());
-		System.out.println("Errors  : " + verifier.getErrors());
+		checkok(bmaker);
+		assertEquals("[test/activator/Activator.class]", new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
 	}
 
 	public void testVerify() throws Exception {
@@ -1630,9 +1596,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = new Jar("test", getClass().getResourceAsStream("tb1.jar"));
 		Verifier verifier = new Verifier(jar);
 		verifier.verify();
-		System.out.println("Warnings: " + verifier.getWarnings());
-		System.out.println("Errors  : " + verifier.getErrors());
-		verifier.info();
+		checkok(verifier);
 	}
 
 	public void report(String title, Analyzer builder, Jar jar) {
@@ -1641,6 +1605,16 @@ public class BuilderTest extends BndTestCase {
 		System.out.println("Errors      " + builder.getErrors());
 		System.out.println("Exports     " + builder.getExports());
 		System.out.println("Imports     " + builder.getImports());
+	}
+
+	public void checkok(Processor p) {
+		checkok(p,0,0);
+	}
+	public void checkok(Processor p,int errors, int warnings) {
+		System.out.println("Warnings: " + p.getWarnings());
+		System.out.println("Errors  : " + p.getErrors());
+		assertEquals(errors, p.getErrors().size());
+		assertEquals(warnings, p.getWarnings().size());
 	}
 
 }

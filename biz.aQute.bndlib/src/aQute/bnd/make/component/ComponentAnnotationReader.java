@@ -77,8 +77,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	public void annotation(Annotation annotation) {
-
-		if (annotation.getName().equals(Component.RNAME)) {
+		String fqn = annotation.getName().getFQN();
+		
+		if (fqn.equals(Component.class.getName())) {
 			set(COMPONENT_NAME, annotation.get(Component.NAME), "<>");
 			set(COMPONENT_FACTORY, annotation.get(Component.FACTORY), false);
 			setBoolean(COMPONENT_ENABLED, annotation.get(Component.ENABLED), true);
@@ -132,7 +133,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_PROVIDE, Processor.join(Arrays.asList(p)), "<>");
 			}
 
-		} else if (annotation.getName().equals(Activate.RNAME)) {
+		} else if (fqn.equals(Activate.class.getName())) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
@@ -151,7 +152,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_ACTIVATE, method, "<>");
 			}
 
-		} else if (annotation.getName().equals(Deactivate.RNAME)) {
+		} else if (fqn.equals(Deactivate.class.getName())) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
@@ -166,12 +167,12 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				setVersion(V1_1);
 				set(COMPONENT_DEACTIVATE, method, "<>");
 			}
-		} else if (annotation.getName().equals(Modified.RNAME)) {
+		} else if (fqn.equals(Modified.class.getName())) {
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
-		} else if (annotation.getName().equals(Reference.RNAME)) {
+		} else if (fqn.equals(Reference.class.getName())) {
 
-			String name = (String) annotation.get(Reference.NAME);
+			String name = (String) annotation.get(Reference.class.getName());
 			String bind = method.getName();
 			String unbind = null;
 
@@ -201,7 +202,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				// link it to the referenced service.
 				Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());
 				if (m.matches()) {
-					service = Clazz.internalToFqn(m.group(1));
+					service = Descriptors.binaryToFQN(m.group(1));
 				} else
 					throw new IllegalArgumentException(
 							"Cannot detect the type of a Component Reference from the descriptor: "

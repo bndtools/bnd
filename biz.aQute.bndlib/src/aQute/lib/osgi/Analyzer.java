@@ -34,7 +34,6 @@ import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.Clazz.QUERY;
 import aQute.lib.osgi.Descriptors.Descriptor;
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
@@ -44,28 +43,29 @@ import aQute.libg.header.*;
 import aQute.libg.tarjan.*;
 import aQute.libg.version.Version;
 
+import static aQute.libg.generics.Create.*;
+
 public class Analyzer extends Processor {
 
-	static String							version;
 	static Pattern							versionPattern			= Pattern
 																			.compile("(\\d+\\.\\d+)\\.\\d+.*");
-	final Map<String, Map<String, String>>	contained				= newHashMap();							// package
-	final Map<String, Map<String, String>>	referred				= newHashMap();							// refers
-	// package
-	final Map<String, Set<String>>			uses					= newHashMap();							// package
-	Map<String, Clazz>						classspace;
-	Map<String, Clazz>						importedClassesCache	= newMap();
+	final Map<String, Map<String, String>>	contained				= map();
+	final Map<String, Map<String, String>>	referred				= map();
+	final Map<String, Set<String>>			uses					= map();
+	final List<Jar>							classpath				= list();
+	final Map<String, Map<String, String>>	ignored					= map();
+	final SortedSet<Clazz.JAVA>				formats					= new TreeSet<Clazz.JAVA>();
+	final Descriptors						descriptors				= new Descriptors();
+
+	Map<TypeRef, Clazz>						classspace;
+	final Map<TypeRef, Clazz>				importedClassesCache	= map();
 	Map<String, Map<String, String>>		exports;
 	Map<String, Map<String, String>>		imports;
-	Map<String, Map<String, String>>		bundleClasspath;													// Bundle
-	final Map<String, Map<String, String>>	ignored					= newHashMap();							// Ignored
-	// packages
+	Map<String, Map<String, String>>		bundleClasspath;
 	Jar										dot;
 	Map<String, Map<String, String>>		classpathExports;
 
 	String									activator;
-
-	final List<Jar>							classpath				= newList();
 
 	static Properties						bndInfo;
 
@@ -74,9 +74,7 @@ public class Analyzer extends Processor {
 	String									versionPolicyUses;
 	String									versionPolicyImplemented;
 	boolean									diagnostics				= false;
-	SortedSet<Clazz.JAVA>					formats					= new TreeSet<Clazz.JAVA>();
-	private boolean							inited;
-	Descriptors								descriptors				= new Descriptors();
+	boolean									inited;
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -176,7 +174,9 @@ public class Analyzer extends Processor {
 			// Tricky!
 			for (Iterator<String> i = exportInstructions.keySet().iterator(); i.hasNext();) {
 				String instr = i.next();
-				if (!instr.startsWith("!"))
+				if (isDuplicate(instr)) {
+					continue;
+				} else if (!instr.startsWith("!"))
 					superfluous.put(instr, exportInstructions.get(instr));
 			}
 
@@ -185,7 +185,8 @@ public class Analyzer extends Processor {
 
 			// disallow export of default package
 			exports.remove(".");
-
+			
+			
 			for (Iterator<Map.Entry<String, Map<String, String>>> i = superfluous.entrySet()
 					.iterator(); i.hasNext();) {
 				// It is possible to mention metadata directories in the export
@@ -798,40 +799,6 @@ public class Analyzer extends Processor {
 			verifyManifestHeadersCase(getProperties());
 
 		}
-	}
-
-	/**
-	 * Check if the given class or interface name is contained in the jar.
-	 * 
-	 * @param interfaceName
-	 * @return
-	 */
-
-	public boolean checkClass(String interfaceName) {
-		String path = Clazz.fqnToPath(interfaceName);
-		if (classspace.containsKey(path))
-			return true;
-
-		if (interfaceName.startsWith("java."))
-			return true;
-
-		if (imports != null && !imports.isEmpty()) {
-			String pack = interfaceName;
-			int n = pack.lastIndexOf('.');
-			if (n > 0)
-				pack = pack.substring(0, n);
-			else
-				pack = ".";
-
-			if (imports.containsKey(pack))
-				return true;
-		}
-		int n = interfaceName.lastIndexOf('.');
-		if (n > 0 && n + 1 < interfaceName.length()
-				&& Character.isUpperCase(interfaceName.charAt(n + 1))) {
-			return checkClass(interfaceName.substring(0, n) + '$' + interfaceName.substring(n + 1));
-		}
-		return false;
 	}
 
 	/**
@@ -1592,11 +1559,12 @@ public class Analyzer extends Processor {
 		return dot;
 	}
 
-	protected Map<String, Clazz> analyzeBundleClasspath(Jar dot,
+	protected Map<TypeRef, Clazz> analyzeBundleClasspath(Jar dot,
 			Map<String, Map<String, String>> bundleClasspath,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses) throws Exception {
-		Map<String, Clazz> classSpace = new HashMap<String, Clazz>();
+		Map<TypeRef, Clazz> classSpace = Create.map();
+		classSpace = Collections.checkedMap(classSpace, TypeRef.class, Clazz.class);
 
 		Set<String> hide = Create.set();
 		boolean containsDirectory = false;
@@ -1674,7 +1642,7 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @throws IOException
 	 */
-	private void analyzeJar(Jar jar, String prefix, Map<String, Clazz> classSpace,
+	private void analyzeJar(Jar jar, String prefix, Map<TypeRef, Clazz> classSpace,
 			Map<String, Map<String, String>> contained, Map<String, Map<String, String>> referred,
 			Map<String, Set<String>> uses, Set<String> hide, boolean reportWrongPath)
 			throws Exception {
@@ -1697,7 +1665,7 @@ public class Analyzer extends Processor {
 				if (classSpace.containsKey(relativePath))
 					continue;
 
-				String pack = getPackage(relativePath);
+				String pack = Descriptors.getPackage(relativePath);
 
 				if (pack != null && !contained.containsKey(pack)) {
 					// For each package we encounter for the first
@@ -1750,7 +1718,7 @@ public class Analyzer extends Processor {
 						}
 					}
 
-					classSpace.put(relativePath, clazz);
+					classSpace.put(clazz.getClassName(), clazz);
 
 					// Add all the used packages
 					// to this package
@@ -1781,7 +1749,8 @@ public class Analyzer extends Processor {
 			throws Exception {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			@Override public void annotation(Annotation a) {
-				if (a.name.equals(Clazz.toDescriptor(aQute.bnd.annotation.Version.class))) {
+				String name = a.name.getFQN();
+				if (aQute.bnd.annotation.Version.class.getName().equals(name)) {
 
 					// Check version
 					String version = a.get("value");
@@ -1808,7 +1777,7 @@ public class Analyzer extends Processor {
 							// Ignore
 						}
 					}
-				} else if (a.name.equals(Clazz.toDescriptor(Export.class))) {
+				} else if (name.equals(Export.class.getName())) {
 
 					// Check mandatory attributes
 					Map<String, String> attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY),
@@ -1985,13 +1954,6 @@ public class Analyzer extends Processor {
 		return false;
 	}
 
-	public String getPackage(String clazz) {
-		int n = clazz.lastIndexOf('/');
-		if (n < 0)
-			return ".";
-		return clazz.substring(0, n).replace('/', '.');
-	}
-
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
@@ -2072,34 +2034,8 @@ public class Analyzer extends Processor {
 
 			Instruction instr = null;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
-				StringBuilder sb = new StringBuilder();
 				String s = args[++i];
-				if (type == QUERY.ANNOTATION) {
-					// Annotations use the descriptor format ...
-					// But at least they're always an object
-					sb.append("L");
-					for (int ci = 0; ci < s.length(); ci++) {
-						char c = s.charAt(ci);
-						if (c == '.')
-							sb.append("/");
-						else
-							sb.append(c);
-					}
-					sb.append(';');
-				} else {
-					// The argument is declared as a dotted name but the classes
-					// use a slashed named. So convert the name before we make
-					// it a instruction. We also have to take into account
-					// that some classes are nested and use $ for separator
-					for (int ci = 0; ci < s.length(); ci++) {
-						char c = s.charAt(ci);
-						if (c == '.')
-							sb.append("(/|\\$)");
-						else
-							sb.append(c);
-					}
-				}
-				instr = Instruction.getPattern(sb.toString());
+				instr = Instruction.getPattern(s);
 			}
 			for (Iterator<Clazz> c = matched.iterator(); c.hasNext();) {
 				Clazz clazz = c.next();
@@ -2132,7 +2068,7 @@ public class Analyzer extends Processor {
 		return sb.toString();
 	}
 
-	public Map<String, Clazz> getClassspace() {
+	public Map<TypeRef, Clazz> getClassspace() {
 		return classspace;
 	}
 
@@ -2158,30 +2094,26 @@ public class Analyzer extends Processor {
 	 * @param path
 	 * @return
 	 */
-	public Clazz findClass(TypeRef type) throws Exception {
-		return findClass(type.getClassRef().getPath());
-	}
-
-	public Clazz findClass(String path) throws Exception {
-		Clazz c = classspace.get(path);
+	public Clazz findClass(TypeRef typeRef) throws Exception {
+		Clazz c = classspace.get(typeRef);
 		if (c != null)
 			return c;
 
-		c = importedClassesCache.get(path);
+		c = importedClassesCache.get(typeRef);
 		if (c != null)
 			return c;
 
-		Resource r = findResource(path);
+		Resource r = findResource(typeRef.getPath());
 		if (r == null) {
 			getClass().getClassLoader();
-			URL url = ClassLoader.getSystemResource(path);
+			URL url = ClassLoader.getSystemResource(typeRef.getPath());
 			if (url != null)
 				r = new URLResource(url);
 		}
 		if (r != null) {
-			c = new Clazz(this, path, r);
+			c = new Clazz(this, typeRef.getPath(), r);
 			c.parseClassFile();
-			importedClassesCache.put(path, c);
+			importedClassesCache.put(typeRef, c);
 		}
 		return c;
 	}
@@ -2202,10 +2134,16 @@ public class Analyzer extends Processor {
 		return isTrue(getProperty(RESOURCEONLY)) || isTrue(getProperty(NOMANIFEST));
 	}
 
-	public void referTo(String impl) {
-		String pack = Clazz.getPackage(impl);
-		if (!referred.containsKey(pack))
-			referred.put(pack, new LinkedHashMap<String, String>());
+	public void referTo(TypeRef ref) {
+		PackageRef pack = ref.getPackageRef();
+		String pname = pack.getFQN();
+		if (!referred.containsKey(pname))
+			referred.put(pack.getFQN(), new LinkedHashMap<String, String>());
+	}
+
+	public void referToByBinaryName(String binaryClassName) {
+		TypeRef ref = descriptors.getTypeRef(binaryClassName);
+		referTo(ref);
 	}
 
 	/**
@@ -2310,4 +2248,13 @@ public class Analyzer extends Processor {
 	public PackageRef getPackageRef(String binaryName) {
 		return descriptors.getPackageRef(binaryName);
 	}
+
+	public TypeRef getTypeRefFromFQN(String fqn) {
+		return descriptors.getTypeRefFromFQN(fqn);
+	}
+
+	public boolean isImported(PackageRef packageRef) {
+		return imports.containsKey(packageRef.getFQN());
+	}
+
 }

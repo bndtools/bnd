@@ -16,9 +16,8 @@ public class VerifierTest extends TestCase {
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "native/win32/NTEventLogAppender-1.2.dll;literal='abc'");
 		b.setProperty("Bundle-NativeCode", "native/win32/NTEventLogAppender-1.2.dll; osname=Win32; processor=x86");
-		Jar jar = b.build();
-		Verifier v = new Verifier(jar);
-		v.setJar(jar);
+		b.build();
+		Verifier v = new Verifier(b);
 		
 		v.verifyNative();
 		System.out.println( v.getErrors());
@@ -227,6 +226,7 @@ public class VerifierTest extends TestCase {
 
         Jar jar = bmaker.build();
         Manifest m = jar.getManifest();
+        m.write(System.out);
         assertFalse(m.getMainAttributes().getValue("Import-Package").indexOf(
                 "org.slf4j") >= 0);
         assertTrue(m.getMainAttributes().getValue("DynamicImport-Package")

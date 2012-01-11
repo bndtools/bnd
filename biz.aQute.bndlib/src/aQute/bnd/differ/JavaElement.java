@@ -278,7 +278,7 @@ class JavaElement {
 			public String inherit(final Set<Element> members, TypeRef name) throws Exception {
 				if (name.isObject()) {
 					if (OBJECT.isEmpty()) {
-						Clazz c = analyzer.findClass(name.getPath());
+						Clazz c = analyzer.findClass(name);
 						Element s = classElement(c);
 						for (Element child : s.children) {
 							if (INHERITED.contains(child.type)) {
@@ -297,7 +297,7 @@ class JavaElement {
 					members.addAll(OBJECT);
 				} else {
 
-					Clazz c = analyzer.findClass(name.getPath());
+					Clazz c = analyzer.findClass(name);
 					if (c == null) {
 						return "Cannot load " + name;
 					} else {

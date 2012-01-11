@@ -122,7 +122,7 @@ public class Baseline {
 							public boolean contains(Diff diff) {
 								if (diff.getType() == Type.INTERFACE
 										&& diff.getDelta() == Delta.MAJOR) {
-									info.providers.add(Clazz.getShortName(diff.getName()));
+									info.providers.add(Descriptors.getShortName(diff.getName()));
 									return true;
 								}
 								return false;

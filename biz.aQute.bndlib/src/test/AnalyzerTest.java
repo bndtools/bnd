@@ -101,7 +101,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertFalse(exports.contains("uses:=\"org.osgi.framework\""));
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
+		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
 	}

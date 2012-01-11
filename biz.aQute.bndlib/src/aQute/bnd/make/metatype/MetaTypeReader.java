@@ -7,6 +7,7 @@ import java.util.regex.*;
 import aQute.bnd.annotation.metatype.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.MethodDef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 
@@ -96,7 +97,8 @@ public class MetaTypeReader extends WriteResource {
 		String[] optionValues = null;
 		String description = null;
 
-		Clazz c = reporter.findClass(Clazz.fqnToPath(rtype));
+		TypeRef typeRef = reporter.getTypeRefFromFQN(rtype);
+		Clazz c = reporter.findClass(typeRef);
 		if (c != null && c.isEnum()) {
 			optionValues = parseOptionValues(c);
 		}
@@ -258,7 +260,7 @@ public class MetaTypeReader extends WriteResource {
 
 			// defaults
 			String id = clazz.getClassName().getFQN();
-			String name = Clazz.unCamel(Clazz.getShortName(clazz.getClassName().getFQN()));
+			String name = Clazz.unCamel(clazz.getClassName().getShortName());
 			String description = null;
 			String localization = id;
 			boolean factory = this.factory;

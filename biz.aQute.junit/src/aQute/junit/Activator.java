@@ -2,7 +2,6 @@ package aQute.junit;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -366,10 +365,6 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public void error(String msg, Object... objects) {
 		message("! ", msg, objects);
-	}
-
-	static void main() throws URISyntaxException {
-		URI uri = new URI("/abc/def");
 	}
 
 }

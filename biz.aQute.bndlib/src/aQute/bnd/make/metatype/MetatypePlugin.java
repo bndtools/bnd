@@ -21,7 +21,7 @@ public class MetatypePlugin implements AnalyzerPlugin {
 
 		Jar jar = analyzer.getJar();
 		for (String name : map.keySet()) {
-			Collection<Clazz> metatypes = analyzer.getClasses("", QUERY.ANNOTATION.toString(),
+			Collection<Clazz> metatypes = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
 					Meta.OCD.class.getName(), // 
 					QUERY.NAMED.toString(), name //
 					);

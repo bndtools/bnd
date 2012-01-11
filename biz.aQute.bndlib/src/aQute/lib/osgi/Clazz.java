@@ -7,7 +7,6 @@ import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.bnd.annotation.*;
 import aQute.lib.osgi.Descriptors.Descriptor;
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
@@ -72,12 +71,13 @@ public class Clazz {
 	};
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATION, RUNTIMEANNOTATIONS, CLASSANNOTATIONS
+		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS;
+
 	};
 
 	public static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
 															QUERY.IMPORTS, QUERY.NAMED,
-															QUERY.VERSION, QUERY.ANNOTATION);
+															QUERY.VERSION, QUERY.ANNOTATED);
 
 	/**
 	 * <pre>
@@ -136,7 +136,7 @@ public class Clazz {
 
 	public class Def {
 		final int		access;
-		Set<Annotation>	annotations;
+		Set<TypeRef>	annotations;
 
 		public Def(int access) {
 			this.access = access;
@@ -197,10 +197,10 @@ public class Clazz {
 		void addAnnotation(Annotation a) {
 			if (annotations == null)
 				annotations = Create.set();
-			annotations.add(a);
+			annotations.add( analyzer.getTypeRef(a.name.getBinary()));
 		}
 
-		public Collection<Annotation> getAnnotations() {
+		public Collection<TypeRef> getAnnotations() {
 			return annotations;
 		}
 	}
@@ -321,7 +321,7 @@ public class Clazz {
 	Set<String>			xref;
 	Set<Integer>		classes;
 	Set<Integer>		descriptors;
-	Set<String>			annotations;
+	Set<TypeRef>		annotations;
 	int					forName		= 0;
 	int					class$		= 0;
 	TypeRef[]			interfaces;
@@ -1009,7 +1009,7 @@ public class Clazz {
 						&& pool[intPool[lastReference]] instanceof String) {
 					String fqn = (String) pool[intPool[lastReference]];
 
-					TypeRef clazz = analyzer.getTypeRef(fqn.replace('.', '/'));
+					TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
 					packageReference(clazz.getPackageRef());
 				}
 				break;
@@ -1082,9 +1082,9 @@ public class Clazz {
 			boolean collect) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
-			annotations = new HashSet<String>();
+			annotations = new HashSet<TypeRef>();
 
-		annotations.add(pool[type_index].toString());
+		annotations.add(analyzer.getTypeRef(pool[type_index].toString()));
 
 		if (policy == RetentionPolicy.RUNTIME) {
 			descriptors.add(new Integer(type_index));
@@ -1279,15 +1279,6 @@ public class Clazz {
 		return rover + 1;
 	}
 
-	public static String getPackage(String clazz) {
-		int n = clazz.lastIndexOf('/');
-		if (n < 0) {
-			n = clazz.lastIndexOf('.');
-			if (n < 0)
-				return ".";
-		}
-		return clazz.substring(0, n).replace('/', '.');
-	}
 
 	public Set<PackageRef> getReferred() {
 		return imports;
@@ -1331,19 +1322,19 @@ public class Clazz {
 			return true;
 
 		case NAMED:
-			if (instr.matches(getClassName().getBinary()))
+			if (instr.matches(getClassName().getDottedOnly()))
 				return !instr.isNegated();
 			return false;
 
 		case VERSION:
-			String v = major + "/" + minor;
+			String v = major + "." + minor;
 			if (instr.matches(v))
 				return !instr.isNegated();
 			return false;
 
 		case IMPLEMENTS:
 			for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-				if (instr.matches(interfaces[i].getBinary()))
+				if (instr.matches(interfaces[i].getDottedOnly()))
 					return !instr.isNegated();
 			}
 			break;
@@ -1352,7 +1343,7 @@ public class Clazz {
 			if (zuper == null)
 				return false;
 
-			if (instr.matches(zuper.getBinary()))
+			if (instr.matches(zuper.getDottedOnly()))
 				return !instr.isNegated();
 			break;
 
@@ -1362,15 +1353,12 @@ public class Clazz {
 		case CONCRETE:
 			return !Modifier.isAbstract(accessx);
 
-		case ANNOTATION:
+		case ANNOTATED:
 			if (annotations == null)
 				return false;
 
-			if (annotations.contains(instr.getPattern()))
-				return true;
-
-			for (String annotation : annotations) {
-				if (instr.matches(annotation))
+			for (TypeRef annotation : annotations) {
+				if (instr.matches(annotation.getFQN()))
 					return !instr.isNegated();
 			}
 
@@ -1386,7 +1374,7 @@ public class Clazz {
 
 		case IMPORTS:
 			for (PackageRef imp : imports) {
-				if (instr.matches(imp.getBinary()))
+				if (instr.matches(imp.getFQN()))
 					return !instr.isNegated();
 			}
 		}
@@ -1403,64 +1391,6 @@ public class Clazz {
 
 	public String toString() {
 		return className.getFQN();
-	}
-
-	/**
-	 * Return a list of packages implemented by this class.
-	 * 
-	 * @param implemented
-	 * @param classspace
-	 * @param clazz
-	 * @throws Exception
-	 */
-	@SuppressWarnings("deprecation") final static String	USEPOLICY		= toDescriptor(UsePolicy.class);
-	final static String										PROVIDERPOLICY	= toDescriptor(ProviderType.class);
-
-	public static void getImplementedPackages(Set<PackageRef> implemented, Analyzer analyzer,
-			Clazz clazz) throws Exception {
-		if (clazz.interfaces != null) {
-			for (TypeRef interf : clazz.interfaces) {
-				Clazz c = analyzer.findClass(interf.getPath());
-
-				// If not found, actually parse the imported
-				// class file to check for implementation policy.
-				if (c == null)
-					c = analyzer.findClass(interf);
-
-				if (c != null) {
-					boolean consumer = false;
-					Set<String> annotations = c.annotations;
-					if (annotations != null)
-						// Override if we marked the interface as a consumer
-						// interface
-						consumer = annotations.contains(USEPOLICY)
-								|| annotations.contains(PROVIDERPOLICY);
-
-					if (!consumer)
-						implemented.add(interf.getPackageRef());
-					getImplementedPackages(implemented, analyzer, c);
-				} else
-					implemented.add(interf.getPackageRef());
-
-			}
-		}
-		if (clazz.zuper != null) {
-			Clazz c = analyzer.getClassspace().get(clazz.zuper);
-			if (c != null) {
-				getImplementedPackages(implemented, analyzer, c);
-			}
-		}
-
-	}
-
-	// String RNAME = "LaQute/bnd/annotation/UsePolicy;";
-
-	public static String toDescriptor(Class<?> clazz) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('L');
-		sb.append(clazz.getName().replace('.', '/'));
-		sb.append(';');
-		return sb.toString();
 	}
 
 	/**
@@ -1492,25 +1422,6 @@ public class Clazz {
 		} else
 			throw new IllegalArgumentException(
 					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
-	}
-
-	public static String getShortName(String cname) {
-		int n = cname.lastIndexOf('.');
-		if (n < 0)
-			return cname;
-		return cname.substring(n + 1, cname.length());
-	}
-
-	public static String fqnToPath(String dotted) {
-		return dotted.replace('.', '/') + ".class";
-	}
-
-	public static String fqnToBinary(String dotted) {
-		return "L" + dotted.replace('.', '/') + ";";
-	}
-
-	public static String pathToFqn(String path) {
-		return path.replace('/', '.').substring(0, path.length() - 6);
 	}
 
 	public boolean isPublic() {
@@ -1557,10 +1468,6 @@ public class Clazz {
 			return objectDescriptorToFQN(string.substring(1)) + "[]";
 		}
 		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
-	}
-
-	public static String internalToFqn(String string) {
-		return string.replace('/', '.');
 	}
 
 	public static String unCamel(String id) {

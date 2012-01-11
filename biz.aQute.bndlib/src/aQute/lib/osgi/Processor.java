@@ -784,18 +784,18 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 *            the actual found packages
 	 */
 
-	public static Map<String, Map<String, String>> merge(String type,
-			Map<String, Map<String, String>> instructions, Map<String, Map<String, String>> actual,
-			Set<String> superfluous, Map<String, Map<String, String>> ignored) {
-		Map<String, Map<String, String>> toVisit = new HashMap<String, Map<String, String>>(actual); // we
-		// do
-		// not
-		// want
-		// to
-		// ruin
-		// our
-		// original
+	public static Map<String, Map<String, String>> merge( //
+			String type, // for documentation
+			Map<String, Map<String, String>> instructions,  // instructions to match 
+			Map<String, Map<String, String>> actual, //
+			Set<String> superfluous, //
+			Map<String, Map<String, String>> ignored //
+			) {
+		Map<String, Map<String, String>> toVisit = new HashMap<String, Map<String, String>>(actual);
+		
 		Map<String, Map<String, String>> result = newMap();
+		Set<String> duplicates = Create.set();
+		
 		for (Iterator<String> i = instructions.keySet().iterator(); i.hasNext();) {
 			String instruction = i.next();
 			String originalInstruction = instruction;
@@ -813,9 +813,12 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 				superfluous.remove(originalInstruction);
 				continue;
 			}
+			
 			if (isDuplicate(instruction)) {
-				result.put(instruction, instructedAttributes);
-				superfluous.remove(originalInstruction);
+				// We must wait until the full list is processed.
+				// then we can figure out what duplicates have been
+				// been mapped to
+				duplicates.add(originalInstruction);
 				continue;
 			}
 
@@ -839,6 +842,30 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			}
 
 		}
+		
+		// Duplicates have expanded by definition (or they show up as superfluous).
+		// However, when they contain wildcards we only have the instruction
+		// in the result while we need their expansion. So we will
+		// have to reexpand from the result.
+
+		Map<String,Map<String,String>> tmpExpanded = Create.map();
+		for (String duplicate: duplicates) {
+			Instruction instr = Instruction.getPattern( removeDuplicateMarker(duplicate));
+			for ( String pname : result.keySet()) {
+				if ( instr.matches(pname))
+					if ( !instr.isNegated()) {
+						do {
+							pname +=DUPLICATE_MARKER;
+						} while(tmpExpanded.containsKey(pname));
+						tmpExpanded.put(pname, instructions.get(duplicate));
+					}
+			}
+		}
+		
+		result.putAll(tmpExpanded);
+		
+		
+		
 		return result;
 	}
 

@@ -57,8 +57,8 @@ public class CoverageResource extends WriteResource {
             if (!className.equals(currentClass)) {
                 classTag = new Tag("class");
                 classTag.addAttribute("name", className);
-                classTag.addAttribute("package", Clazz.getPackage(className));
-                classTag.addAttribute("short", Clazz.getShortName(className));
+                classTag.addAttribute("package", Descriptors.getPackage(className));
+                classTag.addAttribute("short", Descriptors.getShortName(className));
                 coverage.addContent(classTag);
                 currentClass = className;
             }

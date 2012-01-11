@@ -10,7 +10,6 @@ import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 
 class ConstantValues {
@@ -180,17 +179,17 @@ public class ClassParserTest extends TestCase {
 		assertFalse(b.getImports().containsKey("org.aopalliance.aop"));
 	}
 
-	public void testImplemented() throws Exception {
-		Builder a = new Builder();
-		a.addClasspath(new File("bin"));
-		a.setProperty("Private-Package", "test");
-		a.build();
-		Clazz c = a.getClassspace().get("test/Implemented.class");
-		Set<PackageRef> s = Create.set();
-	
-		Clazz.getImplementedPackages(s, a, c);
-		assertTrue(s.contains( a.getPackageRef("aQute/bnd/service")));
-	}
+//	public void testImplemented() throws Exception {
+//		Builder a = new Builder();
+//		a.addClasspath(new File("bin"));
+//		a.setProperty("Private-Package", "test");
+//		a.build();
+//		Clazz c = a.getClassspace().get("test/Implemented.class");
+//		Set<PackageRef> s = Create.set();
+//	
+//		Clazz.getImplementedPackages(s, a, c);
+//		assertTrue(s.contains( a.getPackageRef("aQute/bnd/service")));
+//	}
 
 	public void testWildcards() throws Exception {
 		Clazz c = new Clazz(a,"genericstest", null);

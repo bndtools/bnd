@@ -8,7 +8,8 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.osgi.Clazz.QUERY;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.version.*;
 
 /**
@@ -115,7 +116,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				// Annotations possible!
 
 				Collection<Clazz> annotatedComponents = analyzer.getClasses("",
-						QUERY.ANNOTATION.toString(), Component.class.getName(), //
+						QUERY.ANNOTATED.toString(), Component.class.getName(), //
 						QUERY.NAMED.toString(), name //
 						);
 
@@ -219,8 +220,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 			if (info.containsKey(COMPONENT_IMPLEMENTATION))
 				impl = info.get(COMPONENT_IMPLEMENTATION);
 
+			TypeRef implRef = analyzer.getTypeRefFromFQN(impl);
 			// Check if such a class exists
-			analyzer.referTo(impl);
+			analyzer.referTo(implRef);
 
 			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false)
 					|| designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
@@ -250,9 +252,10 @@ public class ServiceComponent implements AnalyzerPlugin {
 				return false;
 
 			for (String c : Processor.split(config)) {
-				Clazz clazz = analyzer.getClassspace().get(Clazz.fqnToPath(c));
+				TypeRef ref = analyzer.getTypeRefFromFQN(c);
+				Clazz clazz = analyzer.getClassspace().get(ref);
 				if (clazz != null) {
-					analyzer.referTo(c);
+					analyzer.referTo(ref);
 					MetaTypeReader r = new MetaTypeReader(clazz, analyzer);
 					r.setDesignate(name, factory);
 					String rname = "OSGI-INF/metatype/" + name + ".xml";
@@ -444,8 +447,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 				StringTokenizer st = new StringTokenizer(provides, ",");
 				while (st.hasMoreTokens()) {
 					String interfaceName = st.nextToken();
+					TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
 					pw.println("    <provide interface='" + interfaceName + "'/>");
-					analyzer.referTo(interfaceName);
+					analyzer.referTo(ref);
 
 					// TODO verifies the impl. class extends or implements the
 					// interface
@@ -551,8 +555,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 					interfaceName = m.group(1);
 					target = m.group(2);
 				}
-
-				analyzer.referTo(interfaceName);
+				TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
+				analyzer.referTo(ref);
 
 				pw.printf("  <reference name='%s'", referenceName);
 				pw.printf(" interface='%s'", interfaceName);

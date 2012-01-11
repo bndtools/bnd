@@ -25,7 +25,7 @@ import aQute.libg.version.*;
  * @throws Exception
  */
 public class AnnotationReader extends ClassDataCollector {
-	final static String[]		EMPTY					= new String[0];
+	final static TypeRef[]		EMPTY					= new TypeRef[0];
 	final static Pattern		PROPERTY_PATTERN		= Pattern
 																.compile("([^=]+(:(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 
@@ -74,7 +74,7 @@ public class AnnotationReader extends ClassDataCollector {
 				if (extendsClass.isJava())
 					break;
 
-				Clazz ec = analyzer.findClass(extendsClass.getPath());
+				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
 					analyzer.error("Missing super class for DS annotations: "
 							+ extendsClass + " from " + clazz.getClassName());
@@ -199,7 +199,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// link it to the referenced service.
 			Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());
 			if (m.matches()) {
-				def.service = Clazz.internalToFqn(m.group(3));
+				def.service = Descriptors.binaryToFQN(m.group(3));
 			} else
 				throw new IllegalArgumentException(
 						"Cannot detect the type of a Component Reference from the descriptor: "
@@ -245,7 +245,7 @@ public class AnnotationReader extends ClassDataCollector {
 			return;
 
 		component.version = V1_1;
-		component.implementation = clazz.getFQN();
+		component.implementation = clazz.getClassName();
 		component.name = comp.name();
 		component.factory = comp.factory();
 		component.configurationPolicy = comp.configurationPolicy();
@@ -276,18 +276,20 @@ public class AnnotationReader extends ClassDataCollector {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
 			if (interfaces != null) {
-				List<String> result = new ArrayList<String>();
+				List<TypeRef> result = new ArrayList<TypeRef>();
 				for (int i = 0; i < interfaces.length; i++) {
 					if (!interfaces[i].equals("scala/ScalaObject"))
-						result.add(interfaces[i].getFQN());
+						result.add(interfaces[i]);
 				}
 				component.service = result.toArray(EMPTY);
 			}
 		} else {
 			// We have explicit interfaces set
-			component.service = new String[x.length];
+			component.service = new TypeRef[x.length];
 			for (int i = 0; i < x.length; i++) {
-				component.service[i] = Clazz.objectDescriptorToFQN(x[i].toString());
+				String s = (String) x[i];
+				TypeRef ref = analyzer.getTypeRefFromFQN(s);
+				component.service[i] = ref;
 			}
 		}
 

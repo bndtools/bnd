@@ -52,6 +52,9 @@ public class Instruction {
 			case '*':
 				sb.append(".*");
 				break;
+			case '$':
+				sb.append("\\$");
+				break;				
 			case '?':
 				sb.append(".?");
 				break;
