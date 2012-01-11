@@ -1,4 +1,4 @@
-package test;
+package test.component;
 
 import java.io.*;
 import java.util.*;
@@ -84,9 +84,9 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath( new File( "bin"));
 		b.setProperty("Service-Component", "*TestReferenceOrdering");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
-		Document doc = doc(b, "test.ComponentTest$TestReferenceOrdering");
+		Document doc = doc(b, "test.component.ComponentTest$TestReferenceOrdering");
 		NodeList nodes = (NodeList) xpath.evaluate("//reference", doc, XPathConstants.NODESET);
 		assertEquals("a", nodes.item(0).getAttributes().getNamedItem("name").getTextContent());
 		assertEquals("b", nodes.item(1).getAttributes().getNamedItem("name").getTextContent());
@@ -140,7 +140,7 @@ public class ComponentTest extends TestCase {
 		b.setExceptions(true);
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*MetatypeConfig*");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -170,20 +170,20 @@ public class ComponentTest extends TestCase {
 		// Now with default name
 		{
 			Resource cr2 = b.getJar()
-					.getResource("OSGI-INF/test.ComponentTest$MetatypeConfig2.xml");
+					.getResource("OSGI-INF/test.component.ComponentTest$MetatypeConfig2.xml");
 			cr2.write(System.out);
 			Document d = db.parse(cr2.openInputStream());
-			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate("//scr:component/@name",
+			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate("//scr:component/@name",
 					d, XPathConstants.STRING));
 		}
 		{
 			Resource mr2 = b.getJar().getResource(
-					"OSGI-INF/metatype/test.ComponentTest$MetatypeConfig2.xml");
+					"OSGI-INF/metatype/test.component.ComponentTest$MetatypeConfig2.xml");
 			mr2.write(System.out);
 			Document d = db.parse(mr2.openInputStream());
-			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate(
+			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate(
 					"//Designate/@pid", d, XPathConstants.STRING));
-			assertEquals("test.ComponentTest$MetatypeConfig2", xpath.evaluate("//Object/@ocdref", d,
+			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate("//Object/@ocdref", d,
 					XPathConstants.STRING));
 		}
 	}
@@ -205,7 +205,7 @@ public class ComponentTest extends TestCase {
 		b.setExceptions(true);
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*PropertiesAndConfig");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -264,7 +264,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*Package*ActivateMethod");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -301,7 +301,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*NoUnbind;log=org.osgi.service.log.LogService");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		Jar jar = b.build();
 		Manifest manifest = jar.getManifest();
 		String sc = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
@@ -373,7 +373,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*NoUnbind");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -396,7 +396,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*ExplicitUnbind");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -437,7 +437,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*Version");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -471,7 +471,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.SameRefName");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -494,7 +494,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.ConfigurationPolicyTest");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -543,7 +543,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.ActivateWithWrongArguments");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -571,7 +571,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.ActivateWithMultipleArguments");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -603,7 +603,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.(MultipleArguments|ReferenceArgument)");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -638,7 +638,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.TypeVersusDetailed");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -667,7 +667,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.MyComponent4");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -691,7 +691,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.MyComponent2");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -720,7 +720,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.MyComponent3");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -767,7 +767,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
 		b.setProperty("Service-Component", "*.MyComponent");
-		b.setProperty("Private-Package", "test");
+		b.setProperty("Private-Package", "test.component");
 		b.build();
 		System.out.println(b.getErrors());
 		System.out.println(b.getWarnings());
@@ -776,7 +776,7 @@ public class ComponentTest extends TestCase {
 
 		Document doc = doc(b, "acomp");
 		print(doc, "");
-		assertAttribute(doc, "test.ComponentTest$MyComponent",
+		assertAttribute(doc, "test.component.ComponentTest$MyComponent",
 				"scr:component/implementation/@class");
 		assertAttribute(doc, "acomp", "scr:component/@name");
 		assertAttribute(doc, "abc", "scr:component/@factory");
