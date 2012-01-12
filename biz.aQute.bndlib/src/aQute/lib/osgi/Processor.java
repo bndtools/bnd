@@ -24,7 +24,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	final List<String>				errors			= new ArrayList<String>();
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	final Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
+	private final Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
 	boolean							pedantic;
@@ -179,25 +179,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	}
 
 	public void addClose(Closeable jar) {
+		assert jar != null;
 		toBeClosed.add(jar);
-	}
-
-	/**
-	 * Remove all entries from a map that start with a specific prefix
-	 * 
-	 * @param <T>
-	 * @param source
-	 * @param prefix
-	 * @return
-	 */
-	static <T> Map<String, T> removeKeys(Map<String, T> source, String prefix) {
-		Map<String, T> temp = new TreeMap<String, T>(source);
-		for (Iterator<String> p = temp.keySet().iterator(); p.hasNext();) {
-			String pack = (String) p.next();
-			if (pack.startsWith(prefix))
-				p.remove();
-		}
-		return temp;
 	}
 
 	public void progress(String s, Object... args) {
@@ -755,121 +738,6 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	}
 
 	/**
-	 * Merge the attributes of two maps, where the first map can contain
-	 * wildcarded names. The idea is that the first map contains patterns (for
-	 * example *) with a set of attributes. These patterns are matched against
-	 * the found packages in actual. If they match, the result is set with the
-	 * merged set of attributes. It is expected that the instructions are
-	 * ordered so that the instructor can define which pattern matches first.
-	 * Attributes in the instructions override any attributes from the actual.<br/>
-	 * 
-	 * A pattern is a modified regexp so it looks like globbing. The * becomes a
-	 * .* just like the ? becomes a .?. '.' are replaced with \\. Additionally,
-	 * if the pattern starts with an exclamation mark, it will remove that
-	 * matches for that pattern (- the !) from the working set. So the following
-	 * patterns should work:
-	 * <ul>
-	 * <li>com.foo.bar</li>
-	 * <li>com.foo.*</li>
-	 * <li>com.foo.???</li>
-	 * <li>com.*.[^b][^a][^r]</li>
-	 * <li>!com.foo.* (throws away any match for com.foo.*)</li>
-	 * </ul>
-	 * Enough rope to hang the average developer I would say.
-	 * 
-	 * 
-	 * @param instructions
-	 *            the instructions with patterns. A
-	 * @param actual
-	 *            the actual found packages
-	 */
-
-	public static Map<String, Map<String, String>> merge( //
-			String type, // for documentation
-			Map<String, Map<String, String>> instructions,  // instructions to match 
-			Map<String, Map<String, String>> actual, //
-			Set<String> superfluous, //
-			Map<String, Map<String, String>> ignored //
-			) {
-		Map<String, Map<String, String>> toVisit = new HashMap<String, Map<String, String>>(actual);
-		
-		Map<String, Map<String, String>> result = newMap();
-		Set<String> duplicates = Create.set();
-		
-		for (Iterator<String> i = instructions.keySet().iterator(); i.hasNext();) {
-			String instruction = i.next();
-			String originalInstruction = instruction;
-
-			Map<String, String> instructedAttributes = instructions.get(instruction);
-
-			// Check if we have a fixed (starts with '=') or a
-			// duplicate name. A fixed name is added to the output without
-			// checking against the contents. Duplicates are marked
-			// at the end. In that case we do not pick up any contained
-			// information but just add them to the output including the
-			// marker.
-			if (instruction.startsWith("=")) {
-				result.put(instruction.substring(1), instructedAttributes);
-				superfluous.remove(originalInstruction);
-				continue;
-			}
-			
-			if (isDuplicate(instruction)) {
-				// We must wait until the full list is processed.
-				// then we can figure out what duplicates have been
-				// been mapped to
-				duplicates.add(originalInstruction);
-				continue;
-			}
-
-			Instruction instr = Instruction.getPattern(instruction);
-
-			for (Iterator<String> p = toVisit.keySet().iterator(); p.hasNext();) {
-				String packageName = p.next();
-
-				if (instr.matches(packageName)) {
-					superfluous.remove(originalInstruction);
-					if (!instr.isNegated()) {
-						Map<String, String> newAttributes = new HashMap<String, String>();
-						newAttributes.putAll(actual.get(packageName));
-						newAttributes.putAll(instructedAttributes);
-						result.put(packageName, newAttributes);
-					} else if (ignored != null) {
-						ignored.put(packageName, new HashMap<String, String>());
-					}
-					p.remove(); // Can never match again for another pattern
-				}
-			}
-
-		}
-		
-		// Duplicates have expanded by definition (or they show up as superfluous).
-		// However, when they contain wildcards we only have the instruction
-		// in the result while we need their expansion. So we will
-		// have to reexpand from the result.
-
-		Map<String,Map<String,String>> tmpExpanded = Create.map();
-		for (String duplicate: duplicates) {
-			Instruction instr = Instruction.getPattern( removeDuplicateMarker(duplicate));
-			for ( String pname : result.keySet()) {
-				if ( instr.matches(pname))
-					if ( !instr.isNegated()) {
-						do {
-							pname +=DUPLICATE_MARKER;
-						} while(tmpExpanded.containsKey(pname));
-						tmpExpanded.put(pname, instructions.get(duplicate));
-					}
-			}
-		}
-		
-		result.putAll(tmpExpanded);
-		
-		
-		
-		return result;
-	}
-
-	/**
 	 * Print a standard Map based OSGi header.
 	 * 
 	 * @param exports
@@ -877,16 +745,17 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @return the clauses
 	 * @throws IOException 
 	 */
-	public static String printClauses(Map<String, Map<String, String>> exports) throws IOException {
+	public static String printClauses(Map<?, Map<String, String>> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<String, Map<String, String>> exports,
+	public static String printClauses(Map<?, Map<String, String>> exports,
 			boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
-			String name = i.next();
+		for (Iterator<?> i = exports.keySet().iterator(); i.hasNext();) {
+			Object o = i.next();
+			String name = o.toString();
 			Map<String, String> clause = exports.get(name);
 
 			// We allow names to be duplicated in the input

@@ -3,6 +3,7 @@ package aQute.bnd.main;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.prefs.*;
 import java.util.regex.*;
@@ -23,10 +24,12 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
+import aQute.lib.collections.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
@@ -937,12 +940,12 @@ public class bnd extends Processor {
 				analyzer.analyze();
 				if ((options & USES) != 0) {
 					out.println("[USES]");
-					printMapOfSets(new TreeMap<String, Set<String>>(analyzer.getUses()));
+					printMapOfSets(analyzer.getUses());
 					out.println();
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					printMapOfSets(invertMapOfCollection(analyzer.getUses()));
+					printMapOfSets(analyzer.getUses().transpose());
 				}
 			}
 
@@ -1074,48 +1077,22 @@ public class bnd extends Processor {
 		}
 	}
 
-	Map<String, Set<String>> invertMapOfCollection(Map<String, Set<String>> map) {
-		Map<String, Set<String>> result = new TreeMap<String, Set<String>>();
-		for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
-			String name = entry.getKey();
-			if (name.startsWith("java.") && !name.equals("java.sql"))
-				continue;
-
-			Collection<String> used = entry.getValue();
-			for (String n : used) {
-				if (n.startsWith("java.") && !n.equals("java.sql"))
-					continue;
-				Set<String> set = result.get(n);
-				if (set == null) {
-					set = new TreeSet<String>();
-					result.put(n, set);
-				}
-				set.add(name);
-			}
-		}
-		return result;
-	}
-
-	void printMapOfSets(Map<String, Set<String>> map) {
-		for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
-			String name = entry.getKey();
-			Set<String> used = new TreeSet<String>(entry.getValue());
-
-			for (Iterator<String> k = used.iterator(); k.hasNext();) {
-				String n = (String) k.next();
-				if (n.startsWith("java.") && !n.equals("java.sql"))
-					k.remove();
-			}
-			String list = vertical(40, used);
-			format("%-40s %s", new Object[] { name, list });
+	void printMapOfSets(Map<? extends Comparable<?>, ? extends Collection<? extends Comparable>> map) {
+		SortedList keys = new SortedList<Object>(map.keySet());
+		for (Object key : keys ) {
+			String name = key.toString();
+			
+			SortedList<Object> values = new SortedList<Object>(map.get(key));
+			String list = vertical(40, values);
+			format("%-40s %s", name, list );
 		}
 	}
 
-	String vertical(int padding, Set<String> used) {
+	String vertical(int padding, Collection<?> used) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Iterator<String> u = used.iterator(); u.hasNext();) {
-			String name = (String) u.next();
+		for (Object s : used ) {
+			String name = s.toString();
 			sb.append(del);
 			sb.append(name);
 			sb.append("\r\n");
@@ -2085,9 +2062,9 @@ public class bnd extends Processor {
 			pw.println("digraph bnd {");
 			pw.println("  size=\"6,6\";");
 			pw.println("node [color=lightblue2, style=filled,shape=box];");
-			for (Map.Entry<String, Set<String>> uses : b.getUses().entrySet()) {
-				for (String p : uses.getValue()) {
-					if (!p.startsWith("java."))
+			for (Entry<PackageRef, List<PackageRef>> uses : b.getUses().entrySet()) {
+				for (PackageRef p : uses.getValue()) {
+					if (!p.isJava())
 						pw.printf("\"%s\" -> \"%s\";\n", uses.getKey(), p);
 				}
 			}

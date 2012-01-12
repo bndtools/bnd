@@ -7,6 +7,7 @@ import java.util.jar.*;
 import aQute.bnd.test.*;
 import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.header.*;
 
 public class BuilderTest extends BndTestCase {
@@ -1308,8 +1309,8 @@ public class BuilderTest extends BndTestCase {
 		p.put(Analyzer.IMPORT_PACKAGE, "org.osgi.framework;version=\"" + input + "\"");
 		bmaker.setProperties(p);
 		bmaker.build();
-		Map<String, Map<String, String>> imports = bmaker.getImports();
-		Map<String, String> framework = imports.get("org.osgi.framework");
+		Map<PackageRef, Map<String, String>> imports = bmaker.getImports();
+		Map<String, String> framework = imports.get(bmaker.getPackageRef("org.osgi.framework"));
 		assertEquals(output, framework.get("version"));
 	}
 
@@ -1325,7 +1326,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertEquals(jar.getManifest().getMainAttributes().getValue("Bundle-Version"),
 				"0.9.5.SNAPSHOT");
-		Map<String, String> map = bmaker.getExports().get("org.objectweb.asm");
+		Map<String, String> map = bmaker.getExports().get(bmaker.getPackageRef("org.objectweb.asm"));
 		assertEquals(map.get("version"), "0.9.5.SNAPSHOT");
 		map = bmaker.getImports().get("java.lang.reflect");
 		assertEquals(map.get("version"), "0.9.5.SNAPSHOT");

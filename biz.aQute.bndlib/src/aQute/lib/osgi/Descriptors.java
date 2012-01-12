@@ -25,7 +25,7 @@ public class Descriptors {
 		packageCache.put("", DEFAULT_PACKAGE);
 	}
 
-	public interface TypeRef {
+	public interface TypeRef extends Comparable<TypeRef>{
 		String getBinary();
 
 		String getFQN();
@@ -52,7 +52,7 @@ public class Descriptors {
 
 	}
 
-	public static class PackageRef {
+	public static class PackageRef implements Comparable<PackageRef>{
 		final String	binaryName;
 		final String	fqn;
 		final boolean	java;
@@ -60,7 +60,7 @@ public class Descriptors {
 		private PackageRef(String binaryName) {
 			this.binaryName = binaryName;
 			this.fqn = binaryToFQN(binaryName);
-			this.java = this.fqn.startsWith("java.");
+			this.java = this.fqn.startsWith("java.") && !this.fqn.equals("java.sql");
 		}
 
 		private PackageRef() {
@@ -91,6 +91,15 @@ public class Descriptors {
 		
 		boolean isDefaultPackage() {
 			return this.fqn.equals(".");
+		}
+
+		public int compareTo(PackageRef other) {
+			return fqn.compareTo(other.fqn);
+		}
+		
+		public boolean equals(Object o) {
+			assert o instanceof PackageRef;
+			return o == this;
 		}
 	}
 
@@ -174,6 +183,12 @@ public class Descriptors {
 			assert other instanceof TypeRef;
 			return this == other;
 		}
+
+		public int compareTo(TypeRef other) {
+			if ( this == other)
+				return 0;
+			return fqn.compareTo(other.getFQN());
+		}
 		
 	}
 
@@ -243,6 +258,13 @@ public class Descriptors {
 			return component.getDottedOnly();
 		}
 
+		public int compareTo(TypeRef other) {
+			if ( this == other)
+				return 0;
+			
+			return getFQN().compareTo(other.getFQN());
+		}
+
 	}
 
 	public TypeRef getTypeRef(String binaryClassName) {		
@@ -295,7 +317,9 @@ public class Descriptors {
 	}
 
 	public PackageRef getPackageRef(String binaryPackName) {
-		assert binaryPackName.indexOf('.') < 0;
+		if (binaryPackName.indexOf('.') >= 0 ) {
+			binaryPackName = binaryPackName.replace('.', '/');
+		}
 		PackageRef ref = packageCache.get(binaryPackName);
 		if (ref != null)
 			return ref;

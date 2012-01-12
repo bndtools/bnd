@@ -6,52 +6,43 @@ import java.util.regex.*;
 
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
-import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.qtokens.*;
 
 public class Verifier extends Processor {
 
-	final Jar								dot;
-	final Manifest							manifest;
-	final Attributes						main;
-	final Map<String, Map<String, String>>	ignore	= newHashMap();
+	private final Jar								dot;
+	private final Manifest							manifest;
+	private final Attributes						main;
+	private final Map<String, Map<String, String>>	ignore	= newHashMap();
 
-	// Map<String, Map<String, String>> referred = newHashMap();
-	// Map<String, Map<String, String>> contained = newHashMap();
-	// Map<String, Set<String>> uses = newHashMap();
-	// Map<String, Map<String, String>> mimports;
-	// Map<String, Map<String, String>> mdynimports;
-	// Map<String, Map<String, String>> mexports;
-	// List<Jar> bundleClasspath;
-	// // to
-	// // ignore
-	//
-	// Map<TypeRef, Clazz> classSpace;
-	boolean									r3;
-	boolean									usesRequire;
-	boolean									fragment;
+	private boolean									r3;
+	private boolean									usesRequire;
 
-	final static Pattern					EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0"
-															+ "|CDC-1\\.1/Foundation-1\\.1"
-															+ "|OSGi/Minimum-1\\.[1-9]"
-															+ "|JRE-1\\.1" + "|J2SE-1\\.2"
-															+ "|J2SE-1\\.3" + "|J2SE-1\\.4"
-															+ "|J2SE-1\\.5" + "|JavaSE-1\\.6"
-															+ "|JavaSE-1\\.7"
-															+ "|PersonalJava-1\\.1"
-															+ "|PersonalJava-1\\.2"
-															+ "|CDC-1\\.0/PersonalBasis-1\\.0"
-															+ "|CDC-1\\.0/PersonalJava-1\\.0");
+	final static Pattern							EENAME	= Pattern
+																	.compile("CDC-1\\.0/Foundation-1\\.0"
+																			+ "|CDC-1\\.1/Foundation-1\\.1"
+																			+ "|OSGi/Minimum-1\\.[1-9]"
+																			+ "|JRE-1\\.1"
+																			+ "|J2SE-1\\.2"
+																			+ "|J2SE-1\\.3"
+																			+ "|J2SE-1\\.4"
+																			+ "|J2SE-1\\.5"
+																			+ "|JavaSE-1\\.6"
+																			+ "|JavaSE-1\\.7"
+																			+ "|PersonalJava-1\\.1"
+																			+ "|PersonalJava-1\\.2"
+																			+ "|CDC-1\\.0/PersonalBasis-1\\.0"
+																			+ "|CDC-1\\.0/PersonalJava-1\\.0");
 
-	final static int						V1_1	= 45;
-	final static int						V1_2	= 46;
-	final static int						V1_3	= 47;
-	final static int						V1_4	= 48;
-	final static int						V1_5	= 49;
-	final static int						V1_6	= 50;
-	final static int						V1_7	= 51;
-	final static int						V1_8	= 52;
+	final static int								V1_1	= 45;
+	final static int								V1_2	= 46;
+	final static int								V1_3	= 47;
+	final static int								V1_4	= 48;
+	final static int								V1_5	= 49;
+	final static int								V1_6	= 50;
+	final static int								V1_7	= 51;
+	final static int								V1_8	= 52;
 
 	static class EE {
 		String	name;
@@ -176,6 +167,7 @@ public class Verifier extends Processor {
 
 	public Verifier(Jar jar) throws Exception {
 		this.analyzer = new Analyzer();
+		addClose(analyzer);
 		this.analyzer.setJar(jar);
 		this.manifest = this.analyzer.calcManifest();
 		this.main = manifest.getMainAttributes();
@@ -279,9 +271,9 @@ public class Verifier extends Processor {
 		String bactivator = getLocalHeader("Bundle-Activator");
 		if (bactivator != null) {
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
-			if(analyzer.getClassspace().containsKey(ref))
+			if (analyzer.getClassspace().containsKey(ref))
 				return;
-			
+
 			PackageRef packageRef = ref.getPackageRef();
 			if (packageRef.isDefaultPackage())
 				error("The Bundle Activator is not in the bundle and it is in the default package ");
@@ -314,8 +306,9 @@ public class Verifier extends Processor {
 	 * duplicates are of course no erroneous.
 	 */
 	private void verifyInvalidExports() {
-		
-		Set<String> invalidExport = OSGiHeader.parseHeader( main.getValue(Constants.EXPORT_PACKAGE)).keySet();
+
+		Set<String> invalidExport = OSGiHeader.parseHeader(main.getValue(Constants.EXPORT_PACKAGE))
+				.keySet();
 		invalidExport.removeAll(analyzer.getContained().keySet());
 
 		// We might have duplicate names that are marked for it. These
@@ -340,7 +333,7 @@ public class Verifier extends Processor {
 	 * This leaves packages that the manifest imported but that we never use.
 	 */
 	private void verifyInvalidImports() {
-		Set<String> invalidImport = newSet(analyzer.getImports().keySet());
+		Set<PackageRef> invalidImport = newSet(analyzer.getImports().keySet());
 		invalidImport.removeAll(analyzer.getReferred().keySet());
 		// TODO Added this line but not sure why it worked before ...
 		invalidImport.removeAll(analyzer.getContained().keySet());
@@ -361,14 +354,15 @@ public class Verifier extends Processor {
 	 * referred packages.
 	 */
 	private void verifyUnresolvedReferences() {
-		Set<String> unresolvedReferences = new TreeSet<String>(analyzer.getReferred().keySet());
+		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred()
+				.keySet());
 		unresolvedReferences.removeAll(analyzer.getImports().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
 
 		// Remove any java.** packages.
-		for (Iterator<String> p = unresolvedReferences.iterator(); p.hasNext();) {
-			String pack = p.next();
-			if (pack.startsWith("java.") || ignore.containsKey(pack))
+		for (Iterator<PackageRef> p = unresolvedReferences.iterator(); p.hasNext();) {
+			PackageRef pack = p.next();
+			if (pack.isJava() || ignore.containsKey(pack))
 				p.remove();
 			else {
 				// Remove any dynamic imports
@@ -395,12 +389,12 @@ public class Verifier extends Processor {
 	 * @param p
 	 * @param pack
 	 */
-	private boolean isDynamicImport(String pack) {
+	private boolean isDynamicImport(PackageRef pack) {
 		if (dynamicImports == null)
-			dynamicImports = Instruction.toInstruction(main
-					.getValue(Constants.DYNAMICIMPORT_PACKAGE));
+			dynamicImports = Instruction.toInstructions(
+					parseHeader(main.getValue(Constants.DYNAMICIMPORT_PACKAGE))).keySet();
 
-		return Instruction.matches(dynamicImports, pack);
+		return Instruction.matches(dynamicImports, pack.getFQN());
 	}
 
 	private boolean hasOverlap(Set<?> a, Set<?> b) {
@@ -458,9 +452,9 @@ public class Verifier extends Processor {
 				header));
 		for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
-			
+
 			if (!PACKAGEPATTERN.matcher(pname).matches())
-				if(isPedantic())
+				if (isPedantic())
 					error("Invalid package name: '%s'", pname);
 				else
 					warning("Invalid package name: '%s'", pname);
@@ -484,17 +478,18 @@ public class Verifier extends Processor {
 	 * Verify the use clauses
 	 */
 	private void verifyUses() {
-//		Set<String> uses = Create.set();
-//		for ( Map<String,String> attrs : analyzer.getExports().values()) {
-//			if ( attrs.containsKey(Constants.USES_DIRECTIVE)) {
-//				String s = attrs.get(Constants.USES_DIRECTIVE);
-//				uses.addAll( split(s));
-//			}
-//		}
-//		uses.removeAll(analyzer.getExports().keySet());
-//		uses.removeAll(analyzer.getImports().keySet());
-//		if ( !uses.isEmpty()) 
-//			warning("Export-Package uses: directive contains packages that are not imported nor exported: %s", uses);
+		// Set<String> uses = Create.set();
+		// for ( Map<String,String> attrs : analyzer.getExports().values()) {
+		// if ( attrs.containsKey(Constants.USES_DIRECTIVE)) {
+		// String s = attrs.get(Constants.USES_DIRECTIVE);
+		// uses.addAll( split(s));
+		// }
+		// }
+		// uses.removeAll(analyzer.getExports().keySet());
+		// uses.removeAll(analyzer.getImports().keySet());
+		// if ( !uses.isEmpty())
+		// warning("Export-Package uses: directive contains packages that are not imported nor exported: %s",
+		// uses);
 	}
 
 	public boolean verifyActivationPolicy() {

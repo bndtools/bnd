@@ -9,6 +9,7 @@ import javax.xml.transform.stream.*;
 
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
@@ -80,8 +81,8 @@ public class SpringComponent implements AnalyzerPlugin {
 				Set set = analyze(in);
 				in.close();
 				for (Iterator r = set.iterator(); r.hasNext();) {
-					String pack = (String) r.next();
-					if ( !QN.matcher(pack).matches())
+					PackageRef pack = analyzer.getPackageRef((String) r.next());
+					if ( !QN.matcher(pack.getFQN()).matches())
 					    analyzer.warning("Package does not seem a package in spring resource ("+path+"): " + pack );
 					if (!analyzer.getReferred().containsKey(pack))
 						analyzer.getReferred().put(pack, new LinkedHashMap());

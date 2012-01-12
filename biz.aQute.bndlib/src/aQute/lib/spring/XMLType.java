@@ -9,6 +9,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 
 public class XMLType {
     
@@ -84,8 +85,8 @@ public class XMLType {
             Set<String> set = analyze(in);
             in.close();
             for (Iterator<String> r = set.iterator(); r.hasNext();) {
-                String pack = r.next();
-                if (!QN.matcher(pack).matches())
+                PackageRef pack = analyzer.getPackageRef(r.next());
+                if (!QN.matcher(pack.getFQN()).matches())
                     analyzer
                             .warning("Package does not seem a package in spring resource ("
                                     + path + "): " + pack);

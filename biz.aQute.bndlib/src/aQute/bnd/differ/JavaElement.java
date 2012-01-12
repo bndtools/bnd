@@ -14,7 +14,6 @@ import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Type;
 import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Annotation;
 import aQute.lib.osgi.Clazz.JAVA;
 import aQute.lib.osgi.Clazz.MethodDef;
 import aQute.lib.osgi.Descriptors.PackageRef;
@@ -51,31 +50,31 @@ import aQute.libg.version.Version;
  */
 
 class JavaElement {
-	final static EnumSet<Type>		INHERITED		= EnumSet
-															.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
-	private static final Element	PROTECTED		= new Element(ACCESS, "protected", null, MAJOR,
-															MINOR, null);
-	private static final Element	STATIC			= new Element(ACCESS, "static", null, MAJOR,
-															MAJOR, null);
-	private static final Element	ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR,
-															MINOR, null);
-	private static final Element	FINAL			= new Element(ACCESS, "final", null, MAJOR,
-															MINOR, null);
-//	private static final Element	DEPRECATED		= new Element(ACCESS, "deprecated", null,
-//															CHANGED, CHANGED, null);
+	final static EnumSet<Type>				INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS,
+																	IMPLEMENTS);
+	private static final Element			PROTECTED		= new Element(ACCESS, "protected",
+																	null, MAJOR, MINOR, null);
+	private static final Element			STATIC			= new Element(ACCESS, "static", null,
+																	MAJOR, MAJOR, null);
+	private static final Element			ABSTRACT		= new Element(ACCESS, "abstract", null,
+																	MAJOR, MINOR, null);
+	private static final Element			FINAL			= new Element(ACCESS, "final", null,
+																	MAJOR, MINOR, null);
+	// private static final Element DEPRECATED = new Element(ACCESS,
+	// "deprecated", null,
+	// CHANGED, CHANGED, null);
 
-	final Analyzer					analyzer;
-	final Map<String, //
-	Collection<Instruction>>		providerMatcher	= Create.map();
-	final Set<TypeRef>				notAccessible	= Create.set();
-	final Map<Object, Element>		cache			= Create.map();
+	final Analyzer							analyzer;
+	final Map<PackageRef, //
+	Collection<Instruction>>				providerMatcher	= Create.map();
+	final Set<TypeRef>						notAccessible	= Create.set();
+	final Map<Object, Element>				cache			= Create.map();
 	MultiMap<PackageRef, //
-	Element>						packages;
+	Element>								packages;
 	final MultiMap<TypeRef, //
-	Element>						covariant		= new MultiMap<TypeRef, Element>();
-	final Set<JAVA>					javas			= Create.set();
-	final Map<String, //
-	Map<String, String>>			exports;
+	Element>								covariant		= new MultiMap<TypeRef, Element>();
+	final Set<JAVA>							javas			= Create.set();
+	final Map<PackageRef, Map<String, String>>	exports;
 
 	/**
 	 * Create an element for the API. We take the exported packages and traverse
@@ -89,9 +88,12 @@ class JavaElement {
 
 		Manifest manifest = analyzer.getJar().getManifest();
 		if (manifest != null
-				&& manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null)
-			exports = OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(
-					Constants.EXPORT_PACKAGE));
+				&& manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
+			exports = Create.map();
+			for ( Map.Entry<String,Map<String,String>> entry : OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(
+					Constants.EXPORT_PACKAGE)).entrySet() )
+				exports.put( analyzer.getPackageRef(entry.getKey()), entry.getValue());
+		}
 		else
 			exports = analyzer.getContained();
 		//
@@ -100,7 +102,7 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Map.Entry<String, Map<String, String>> entry : exports.entrySet()) {
+		for (Map.Entry<PackageRef, Map<String, String>> entry : exports.entrySet()) {
 			String value = entry.getValue().get(Constants.PROVIDER_TYPE_DIRECTIVE);
 			if (value != null) {
 				providerMatcher.put(entry.getKey(), Instruction.toInstruction(value));
@@ -117,7 +119,7 @@ class JavaElement {
 			if (c.isPublic() || c.isProtected()) {
 				PackageRef packageName = c.getClassName().getPackageRef();
 
-				if (exports.containsKey(packageName.getFQN())) {
+				if (exports.containsKey(packageName)) {
 					Element cdef = classElement(c);
 					packages.add(packageName, cdef);
 				}
@@ -135,13 +137,13 @@ class JavaElement {
 	private Element getLocalAPI() throws Exception {
 		List<Element> result = new ArrayList<Element>();
 
-		for (Map.Entry<PackageRef, Set<Element>> entry : packages.entrySet()) {
-			Set<Element> set = entry.getValue();
+		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
+			List<Element> set = entry.getValue();
 			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
 				if (notAccessible.contains(i.next().getName()))
 					i.remove();
 			}
-			String version = exports.get(entry.getKey().getFQN()).get(Constants.VERSION_ATTRIBUTE);
+			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
 				set.add(new Element(Type.VERSION, v.getWithoutQualifier().toString(), null,
@@ -436,9 +438,9 @@ class JavaElement {
 		}
 
 		for (MethodDef m : methods) {
-			Set<Element> children = annotations.get(m);
+			List<Element> children = annotations.get(m);
 			if (children == null)
-				children = new HashSet<Element>();
+				children = new ArrayList<Element>();
 
 			access(children, m.getAccess(), m.isDeprecated());
 
@@ -481,9 +483,9 @@ class JavaElement {
 		 * Repeat for the remaining synthetic methods
 		 */
 		for (MethodDef m : synthetic) {
-			Set<Element> children = annotations.get(m);
+			List<Element> children = annotations.get(m);
 			if (children == null)
-				children = new HashSet<Element>();
+				children = new ArrayList<Element>();
 			access(children, m.getAccess(), m.isDeprecated());
 
 			// A final class cannot be extended, ergo,
@@ -513,9 +515,9 @@ class JavaElement {
 		}
 
 		for (Clazz.FieldDef f : fields) {
-			Set<Element> children = annotations.get(f);
+			List<Element> children = annotations.get(f);
 			if (children == null)
-				children = new HashSet<Element>();
+				children = new ArrayList<Element>();
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {
@@ -564,7 +566,7 @@ class JavaElement {
 	static Element	FLOAT_R		= new Element(RETURN, "float");
 	static Element	DOUBLE_R	= new Element(RETURN, "double");
 
-	private void getCovariantReturns(Set<Element> elements, TypeRef type) throws Exception {
+	private void getCovariantReturns(Collection<Element> elements, TypeRef type) throws Exception {
 		if (type == null || type.isObject())
 			return;
 
@@ -607,7 +609,7 @@ class JavaElement {
 			return;
 		}
 
-		Set<Element> set = covariant.get(type);
+		List<Element> set = covariant.get(type);
 		if (set != null) {
 			elements.addAll(set);
 			return;
@@ -620,7 +622,7 @@ class JavaElement {
 			return;
 		}
 
-		set = Create.set();
+		set = Create.list();
 		set.add(current);
 		getCovariantReturns(set, clazz.getSuper());
 
@@ -634,7 +636,7 @@ class JavaElement {
 		elements.addAll(set);
 	}
 
-	private static void access(Set<Element> children, int access, boolean deprecated) {
+	private static void access(Collection<Element> children, int access, boolean deprecated) {
 		if (!isPublic(access))
 			children.add(PROTECTED);
 		if (isAbstract(access))
@@ -645,8 +647,8 @@ class JavaElement {
 			children.add(STATIC);
 
 		// Ignore for now
-//		if (deprecated)
-//			children.add(DEPRECATED);
+		// if (deprecated)
+		// children.add(DEPRECATED);
 
 	}
 

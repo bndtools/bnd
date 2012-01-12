@@ -15,6 +15,7 @@ import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
 import aQute.lib.getopt.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
@@ -186,8 +187,9 @@ public class PackageCommand {
 
 				Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(m
 						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-				
-				// Create a map with versions. Ensure import ranges overwrite the
+
+				// Create a map with versions. Ensure import ranges overwrite
+				// the
 				// exported versions
 				Map<String, Map<String, String>> versions = Create.map();
 				versions.putAll(exports);
@@ -215,11 +217,14 @@ public class PackageCommand {
 					pspec.attrs = attrs;
 					pspec.tree = tree;
 
-					Set<String> uses = analyzer.getUses().get(packageName);
+					Collection<PackageRef> uses = analyzer.getUses().get(packageName);
 					if (uses != null) {
-						for (String imp : uses) {
-							if (imp.startsWith("java."))
+						for (PackageRef x : uses) {
+							if (x.isJava())
 								continue;
+
+							String imp = x.getFQN();
+
 							if (imp.equals(packageName))
 								continue;
 							String v = null;

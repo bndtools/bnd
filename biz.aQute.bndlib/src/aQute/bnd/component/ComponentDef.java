@@ -135,7 +135,7 @@ class ComponentDef {
 			component.addContent(refTag);
 		}
 
-		for (Map.Entry<String, Set<String>> kvs : property.entrySet()) {
+		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
 			Tag property = new Tag(component, "property");
 			String name = kvs.getKey();
 			String type = null;

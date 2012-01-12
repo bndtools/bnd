@@ -8,11 +8,12 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.maven.support.*;
-import aQute.bnd.maven.support.Pom.*;
+import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.settings.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.command.*;
 import aQute.libg.header.*;
 
@@ -593,8 +594,8 @@ public class MavenCommand extends Processor {
 				pw.println(a.getClasspath());
 				a.build();
 
-				TreeSet<String> sorted = new TreeSet<String>( a.getImports().keySet());
-				for ( String p :sorted) {
+				TreeSet<PackageRef> sorted = new TreeSet<PackageRef>( a.getImports().keySet());
+				for ( PackageRef p :sorted) {
 					pw.printf("%-40s\n",p);
 				}
 //				for ( Map.Entry<String, Set<String>> entry : a.getUses().entrySet()) {

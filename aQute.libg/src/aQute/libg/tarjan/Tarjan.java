@@ -101,7 +101,7 @@ public class Tarjan<T> {
 		return node;
 	}
 
-	public static <T> Set<Set<T>> tarjan(Map<T, Set<T>> graph) {
+	public static <T> Collection<? extends Collection<T>> tarjan(Map<T, ? extends Collection<T>> graph) {
 		Tarjan<T> tarjan = new Tarjan<T>();
 		return tarjan.getResult(graph);
 	}

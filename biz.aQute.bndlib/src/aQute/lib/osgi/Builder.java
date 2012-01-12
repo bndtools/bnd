@@ -2,6 +2,7 @@ package aQute.lib.osgi;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 import java.util.zip.*;
@@ -31,17 +32,15 @@ import aQute.libg.generics.*;
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
-	DiffPluginImpl				differ				= new DiffPluginImpl();
-	Pattern						xdoNotCopy			= null;
-	private static final int	SPLIT_MERGE_LAST	= 1;
-	private static final int	SPLIT_MERGE_FIRST	= 2;
-	private static final int	SPLIT_ERROR			= 3;
-	private static final int	SPLIT_FIRST			= 4;
-	private static final int	SPLIT_DEFAULT		= 0;
-
-	List<File>					sourcePath			= new ArrayList<File>();
-
-	Make						make				= new Make(this);
+	private final DiffPluginImpl	differ				= new DiffPluginImpl();
+	private Pattern					xdoNotCopy			= null;
+	private static final int		SPLIT_MERGE_LAST	= 1;
+	private static final int		SPLIT_MERGE_FIRST	= 2;
+	private static final int		SPLIT_ERROR			= 3;
+	private static final int		SPLIT_FIRST			= 4;
+	private static final int		SPLIT_DEFAULT		= 0;
+	private final List<File>		sourcePath			= new ArrayList<File>();
+	private final Make				make				= new Make(this);
 
 	public Builder(Processor parent) {
 		super(parent);
@@ -59,20 +58,20 @@ public class Builder extends Analyzer {
 			error("Specified " + CONDUIT
 					+ " but calls build() instead of builds() (might be a programmer error");
 
-		dot = new Jar("dot");
-		addClose(dot);
+		Jar dot = new Jar("dot");
 		try {
 			long modified = Long.parseLong(getProperty("base.modified"));
 			dot.updateModified(modified, "Base modified");
 		} catch (Exception e) {
+			// Ignore
 		}
+		setJar(dot);
 
 		doExpand(dot);
 		doIncludeResources(dot);
 		doConditional(dot);
 		dot = doWab(dot);
 
-		// NEW!
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
 		// we need to have analyzed the classpath.
@@ -120,8 +119,8 @@ public class Builder extends Analyzer {
 
 		doSaveManifest(dot);
 
-		doDiff(); // check if need to diff this bundle
-		doBaseline(); // check for a baseline
+		doDiff(dot); // check if need to diff this bundle
+		doBaseline(dot); // check for a baseline
 		return dot;
 	}
 
@@ -131,6 +130,13 @@ public class Builder extends Analyzer {
 	public void init() throws Exception {
 		begin();
 		doRequireBnd();
+
+		// Check if we have sensible setup
+
+		if (getClasspath().size() == 0
+				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null))
+			warning("Classpath is empty. Private-Package and Export-Package can only expand from the classpath when there is one");
+
 	}
 
 	/**
@@ -272,38 +278,28 @@ public class Builder extends Analyzer {
 		if (conditionals.isEmpty())
 			return;
 
-		while (true) {
-			analyze();
-			Map<String, Map<String, String>> imports = getImports();
+		analyze();
 
-			// Match the packages specified in conditionals
-			// against the imports. Any match must become a
-			// Private-Package
-			Map<String, Map<String, String>> filtered = merge(CONDITIONAL_PACKAGE, conditionals,
-					imports, new HashSet<String>(), null);
+		Collection<Instruction> filter = Instruction.toInstruction(conditionals.keySet());
+		List<PackageRef> missing = new ArrayList<PackageRef>(getImports().keySet());
 
-			// Imports can also specify a private import. These
-			// packages must also be copied to the bundle
-			for (Map.Entry<String, Map<String, String>> entry : getImports().entrySet()) {
-				String type = entry.getValue().get(IMPORT_DIRECTIVE);
-				if (type != null && type.equals(PRIVATE_DIRECTIVE))
-					filtered.put(entry.getKey(), entry.getValue());
-			}
+		while (!missing.isEmpty()) {
+			PackageRef staticImport = missing.remove(0);
+			if (getContained().containsKey(staticImport))
+				continue;
 
-			// remove existing packages to prevent merge errors
-			filtered.keySet().removeAll(dot.getPackages());
-			if (filtered.size() == 0)
-				break;
+			if (!Instruction.matches(filter, staticImport.toString()))
+				continue;
 
-			int size = dot.getResources().size();
-			doExpand(dot, CONDITIONAL_PACKAGE + " Private imports",
-					Instruction.replaceWithInstruction(filtered), false);
+			// TODO
+			// doExpand(jar, filter, false);
 
-			// Were there any expansions?
-			if (size == dot.getResources().size())
-				break;
+			getImports().remove(staticImport);
 
-			analyzed = false;
+			// TODO question is if we analyze the imports or not?
+			Collection<PackageRef> set = getUses().get(staticImport);
+			if (set != null)
+				missing.addAll(set);
 		}
 	}
 
@@ -314,8 +310,8 @@ public class Builder extends Analyzer {
 
 	public void analyze() throws Exception {
 		super.analyze();
-		cleanupVersion(imports, null);
-		cleanupVersion(exports, getVersion());
+		cleanupVersion(getImports(), null);
+		cleanupVersion(getExports(), getVersion());
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
@@ -326,10 +322,10 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	public void cleanupVersion(Map<String, Map<String, String>> mapOfMap, String defaultVersion) {
-		for (Iterator<Map.Entry<String, Map<String, String>>> e = mapOfMap.entrySet().iterator(); e
-				.hasNext();) {
-			Map.Entry<String, Map<String, String>> entry = e.next();
+	public void cleanupVersion(Map<PackageRef, Map<String, String>> mapOfMap, String defaultVersion) {
+		for (Iterator<Map.Entry<PackageRef, Map<String, String>>> e = mapOfMap.entrySet()
+				.iterator(); e.hasNext();) {
+			Map.Entry<PackageRef, Map<String, String>> entry = e.next();
 			Map<String, String> attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
@@ -356,21 +352,20 @@ public class Builder extends Analyzer {
 
 		Set<PackageRef> packages = Create.set();
 
-		for (Iterator<TypeRef> cpe = classspace.keySet().iterator(); cpe.hasNext();) {
-			TypeRef typeRef = cpe.next();
+		for (TypeRef typeRef : getClassspace().keySet()) {
 			PackageRef packageRef = typeRef.getPackageRef();
 			String sourcePath = typeRef.getSourcePath();
 			String packagePath = packageRef.getPath();
-			
+
 			boolean found = false;
 			String[] fixed = { "packageinfo", "package.html", "module-info.java",
 					"package-info.java" };
-			
+
 			for (Iterator<File> i = getSourcePath().iterator(); i.hasNext();) {
 				File root = i.next();
-				
+
 				// TODO should use bcp?
-				
+
 				File f = getFile(root, sourcePath);
 				if (f.exists()) {
 					found = true;
@@ -391,7 +386,7 @@ public class Builder extends Analyzer {
 				}
 			}
 			if (!found) {
-				for (Jar jar : classpath) {
+				for (Jar jar : getClasspath()) {
 					Resource resource = jar.getResource(sourcePath);
 					if (resource != null) {
 						dot.putResource("OSGI-OPT/src/" + sourcePath, resource);
@@ -437,40 +432,38 @@ public class Builder extends Analyzer {
 
 	private void doVerify(Jar dot) throws Exception {
 		Verifier verifier = new Verifier(this);
-		verifier.setPedantic(isPedantic());
-
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
 		verifier.verify();
 		getInfo(verifier);
 	}
 
-	private void doExpand(Jar jar) throws IOException {
-		if (getClasspath().size() == 0
-				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null))
-			warning("Classpath is empty. Private-Package and Export-Package can only expand from the classpath when there is one");
+	private void doExpand(Jar dot) throws IOException {
 
-		Map<Instruction, Map<String, String>> privateMap = Instruction
-				.replaceWithInstruction(getHeader(PRIVATE_PACKAGE));
-		Map<Instruction, Map<String, String>> exportMap = Instruction
-				.replaceWithInstruction(getHeader(EXPORT_PACKAGE));
+		Map<String, Map<String, String>> contained = getHeader(PRIVATE_PACKAGE);
+		Map<String, Map<String, String>> exported = getHeader(EXPORT_PACKAGE);
+		contained.putAll(exported);
 
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			privateMap.putAll(Instruction.replaceWithInstruction(parseHeader(getProperty(
-					Constants.TESTPACKAGES, "test;presence:=optional"))));
+			String h = getProperty(Constants.TESTPACKAGES, "test;presence:=optional");
+			contained.putAll(parseHeader(h));
 		}
-		if (!privateMap.isEmpty())
-			doExpand(jar, "Private-Package, or -testpackages", privateMap, true);
 
-		if (!exportMap.isEmpty()) {
+		Map<Instruction, Map<String, String>> containedFilter = Instruction.toInstructions(contained).flatten();
+		Map<Instruction, Map<String, String>> exportedFilter = Instruction.toInstructions(exported).flatten();
+		
+		if (!contained.isEmpty())
+			doExpand(dot,containedFilter, true);
+
+		if (!exported.isEmpty()) {
 			Jar exports = new Jar("exports");
-			doExpand(exports, EXPORT_PACKAGE, exportMap, true);
-			jar.addAll(exports);
-			exports.close();
+			doExpand(exports, exportedFilter, true);
+			dot.addAll(exports);
+			addClose(exports);
 		}
 
 		if (!isNoBundle()) {
-			if (privateMap.isEmpty() && exportMap.isEmpty() && !isResourceOnly()
+			if (contained.isEmpty() && exported.isEmpty() && !isResourceOnly()
 					&& getProperty(EXPORT_CONTENTS) == null) {
 				warning("None of Export-Package, Provide-Package, Private-Package, -testpackages, or -exportcontents is set, therefore no packages will be included");
 			}
@@ -483,20 +476,19 @@ public class Builder extends Analyzer {
 	 * @param name
 	 * @param instructions
 	 */
-	private void doExpand(Jar jar, String name, Map<Instruction, Map<String, String>> instructions,
+	private void doExpand(Jar jar, Map<Instruction, Map<String, String>> filter,
 			boolean mandatory) {
-		Set<Instruction> superfluous = removeMarkedDuplicates(instructions.keySet());
-
+		Set<Instruction> unused = Create.set();
+		
 		for (Iterator<Jar> c = getClasspath().iterator(); c.hasNext();) {
 			Jar now = c.next();
-			doExpand(jar, instructions, now, superfluous);
+			doExpand(jar, filter, now, unused);
 		}
 
-		if (mandatory && superfluous.size() > 0) {
+		if (mandatory && unused.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			String del = "Instructions in " + name + " that are never used: ";
-			for (Iterator<Instruction> i = superfluous.iterator(); i.hasNext();) {
-				Instruction p = i.next();
+			String del = "Instructions in that are not found on the classpath used: ";
+			for (Instruction p : unused) {
 				sb.append(del);
 				sb.append(p.toString());
 				del = "\n                ";
@@ -507,7 +499,7 @@ public class Builder extends Analyzer {
 
 			warning("%s", sb.toString());
 			if (isPedantic())
-				diagnostics = true;
+				super.setDiagnostics(true);
 		}
 	}
 
@@ -515,24 +507,25 @@ public class Builder extends Analyzer {
 	 * Iterate over each directory in the class path entry and check if that
 	 * directory is a desired package.
 	 * 
-	 * @param included
+	 * @param instructions
 	 * @param classpathEntry
 	 */
-	private void doExpand(Jar jar, Map<Instruction, Map<String, String>> included,
-			Jar classpathEntry, Set<Instruction> superfluous) {
+	private void doExpand(Jar jar, Map<Instruction, Map<String, String>> filter,
+			Jar classpathEntry, Set<Instruction> unused) {
 
 		loop: for (Map.Entry<String, Map<String, Resource>> directory : classpathEntry
 				.getDirectories().entrySet()) {
+			
 			String path = directory.getKey();
-
 			if (doNotCopy(getName(path)))
 				continue;
 
 			if (directory.getValue() == null)
 				continue;
 
-			String pack = path.replace('/', '.');
-			Instruction instr = matches(included, pack, superfluous, classpathEntry.getName());
+			PackageRef ref = getPackageRef(path);
+
+			Instruction instr = matches(filter, ref.getFQN(), unused, classpathEntry.getName());
 			if (instr != null) {
 				// System.out.println("Pattern match: " + pack + " " +
 				// instr.getPattern() + " " + instr.isNegated());
@@ -544,7 +537,7 @@ public class Builder extends Analyzer {
 					// and react accordingly.
 					boolean overwriteResource = true;
 					if (jar.hasDirectory(path)) {
-						Map<String, String> directives = included.get(instr);
+						Map<String, String> directives = filter.get(instr);
 
 						switch (getSplitStrategy((String) directives.get(SPLIT_PACKAGE_DIRECTIVE))) {
 						case SPLIT_MERGE_LAST:
@@ -556,14 +549,14 @@ public class Builder extends Analyzer {
 							break;
 
 						case SPLIT_ERROR:
-							error(diagnostic(pack, getClasspath(), classpathEntry.source));
+							error(diagnostic(ref, getClasspath(), classpathEntry.source));
 							continue loop;
 
 						case SPLIT_FIRST:
 							continue loop;
 
 						default:
-							warning("%s", diagnostic(pack, getClasspath(), classpathEntry.source));
+							warning("%s", diagnostic(ref, getClasspath(), classpathEntry.source));
 							overwriteResource = false;
 							break;
 						}
@@ -597,22 +590,20 @@ public class Builder extends Analyzer {
 	 * @param source
 	 * @return
 	 */
-	private String diagnostic(String pack, List<Jar> classpath, File source) {
+	private String diagnostic(PackageRef pack, List<Jar> classpath, File source) {
 		// Default is like merge-first, but with a warning
 		// Find the culprits
-		pack = pack.replace('.', '/');
 		List<Jar> culprits = new ArrayList<Jar>();
 		for (Iterator<Jar> i = classpath.iterator(); i.hasNext();) {
 			Jar culprit = (Jar) i.next();
-			if (culprit.getDirectories().containsKey(pack)) {
+			if (culprit.getDirectories().containsKey(pack.getPath())) {
 				culprits.add(culprit);
 			}
 		}
 		return "Split package "
 				+ pack
 				+ "\nUse directive -split-package:=(merge-first|merge-last|error|first) on Export/Private Package instruction to get rid of this warning\n"
-				+ "Package found in   " + culprits + "\n" + "Reference from     " + source + "\n"
-				+ "Classpath          " + classpath;
+				+ "Package found in   " + culprits + "\n" + "Reference from     " + source + "\n";
 	}
 
 	private int getSplitStrategy(String type) {
@@ -651,7 +642,7 @@ public class Builder extends Analyzer {
 	 */
 	private Instruction matches(Map<Instruction, Map<String, String>> instructions, String pack,
 			Set<Instruction> superfluousPatterns, String source) {
-		for (Map.Entry<Instruction, Map<String, String>> entry : instructions.entrySet()) {
+		for (Entry<Instruction, Map<String, String>> entry : instructions.entrySet()) {
 			Instruction pattern = entry.getKey();
 
 			// It is possible to filter on the source of the
@@ -1080,14 +1071,14 @@ public class Builder extends Analyzer {
 
 		for (String arg : args) {
 			if ("packages".equals(arg) || "all".equals(arg)) {
-				for (String imp : getImports().keySet()) {
-					if (!imp.startsWith("java.")) {
+				for (PackageRef imp : getImports().keySet()) {
+					if (!imp.isJava()) {
 						sb.append("(org.osgi.framework.PackagePermission \"");
 						sb.append(imp);
 						sb.append("\" \"import\")\r\n");
 					}
 				}
-				for (String exp : getExports().keySet()) {
+				for (PackageRef exp : getExports().keySet()) {
 					sb.append("(org.osgi.framework.PackagePermission \"");
 					sb.append(exp);
 					sb.append("\" \"export\")\r\n");
@@ -1221,7 +1212,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	public void doDiff() throws Exception {
+	public void doDiff(Jar dot) throws Exception {
 		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;
@@ -1288,7 +1279,7 @@ public class Builder extends Analyzer {
 			warning("%s%s", indent, p);
 		else
 			error("%s%s", indent, p);
-		
+
 		indent = indent + " ";
 		switch (d) {
 		case CHANGED:
@@ -1301,7 +1292,7 @@ public class Builder extends Analyzer {
 			return;
 		}
 		for (Diff c : p.getChildren())
-			show(c, indent,warning);
+			show(c, indent, warning);
 	}
 
 	/**
@@ -1310,7 +1301,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	private void doBaseline() throws Exception {
+	private void doBaseline(Jar dot) throws Exception {
 		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-baseline"));
 		if (diffs.isEmpty())
 			return;

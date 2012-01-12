@@ -12,10 +12,10 @@ public class TestTarjan extends TestCase {
 		MultiMap<String, String> g = mkGraph("A{BC}B{A}C{DE}D{C}E{D}");
 		System.out.println(g);
 		
-		Set<Set<String>> scc = Tarjan.tarjan(g);
+		Collection<? extends Collection<String>> scc = Tarjan.tarjan(g);
 		
 		assertEquals(2, scc.size());
-		for ( Set<String> set : scc) {
+		for ( Collection<String> set : scc) {
 			if ( set.size()==3)
 				assertEquals( new HashSet<String>(Arrays.asList("E","C", "D")), set);
 			else if ( set.size()==2)
@@ -41,7 +41,7 @@ public class TestTarjan extends TestCase {
 			default:
 				if (key == null) {
 					key = c + "";
-					map.put(key, new HashSet<String>());
+					map.put(key, new ArrayList<String>());
 				}
 				else
 					map.add(key, c + "");

@@ -8,9 +8,9 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 -sub: *.bnd
 
 -buildpath:\
+	aQute.libg;version=project,\
 	ee.j2se;version='[1.5,1.6)',\
 	biz.aQute.bndlib;version=project,\
-	aQute.libg;version=project,\
 	com.springsource.junit,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\

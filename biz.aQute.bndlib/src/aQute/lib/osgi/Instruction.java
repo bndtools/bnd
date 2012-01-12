@@ -3,6 +3,7 @@ package aQute.lib.osgi;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.lib.collections.*;
 import aQute.libg.generics.*;
 
 public class Instruction {
@@ -10,14 +11,24 @@ public class Instruction {
 	final boolean		negated;
 	transient Pattern	pattern;
 	transient boolean	optional;
+	final String		literal;
+
+	public Instruction(String literal) {
+		this.literal = literal;
+		this.instruction = null;
+		this.negated = false;
+	}
 
 	public Instruction(String instruction, boolean negated) {
 		this.instruction = instruction;
 		this.negated = negated;
+		this.literal = null;
 	}
 
-
 	public boolean matches(String value) {
+		if (literal != null)
+			return literal.equals(value);
+
 		return getMatcher(value).matches();
 	}
 
@@ -43,6 +54,11 @@ public class Instruction {
 			negated = true;
 			string = string.substring(1);
 		}
+
+		if (string.startsWith("=")) {
+			return new Instruction(string.substring(1));
+		}
+
 		StringBuilder sb = new StringBuilder();
 		for (int c = 0; c < string.length(); c++) {
 			switch (string.charAt(c)) {
@@ -54,7 +70,7 @@ public class Instruction {
 				break;
 			case '$':
 				sb.append("\\$");
-				break;				
+				break;
 			case '?':
 				sb.append(".?");
 				break;
@@ -116,9 +132,9 @@ public class Instruction {
 	}
 
 	public static Collection<Instruction> toInstruction(Collection<String> instructions) {
-		if ( instructions == null || instructions.isEmpty())
+		if (instructions == null || instructions.isEmpty())
 			return Collections.emptySet();
-		
+
 		Set<Instruction> set = Create.set();
 		for (String s : instructions) {
 			Instruction instr = getPattern(s);
@@ -156,13 +172,54 @@ public class Instruction {
 	}
 
 	public static boolean matches(Collection<Instruction> x, String value) {
-		if ( x == null || x.isEmpty())
+		if (x == null || x.isEmpty())
 			return true;
-		
+
 		for (Instruction i : x) {
 			if (i.matches(value))
 				return true;
 		}
 		return false;
+	}
+
+	public boolean isLiteral() {
+		return literal != null;
+	}
+
+	public String getLiteral() {
+		return literal;
+	}
+
+	/**
+	 * Convert to a map of instructions. The original map can contain duplicates
+	 * so we return a multimap
+	 * 
+	 * @param h
+	 *            the map with the defintions
+	 * @return a multi map with instructions and the correspinding attributes
+	 */
+	public static MultiMap<Instruction, Map<String, String>> toInstructions(
+			Map<String, Map<String, String>> h) {
+		MultiMap<Instruction, Map<String, String>> result = new MultiMap<Instruction, Map<String, String>>();
+
+		for (Map.Entry<String, Map<String, String>> entry : h.entrySet()) {
+			String syntax = Processor.removeDuplicateMarker(entry.getKey());
+			Instruction instruction = Instruction.getPattern(syntax);
+			result.add(instruction, entry.getValue());
+		}
+
+		return result;
+	}
+
+	public static void remove(Collection<?> a, Collection<Instruction> filter) {
+		for ( Iterator<?> i = a.iterator(); i.hasNext(); ) {
+			String s = i.next().toString();
+			for ( Instruction instruction : filter) {
+				if ( instruction.matches(s) && !instruction.isNegated()) {
+					i.remove();
+					continue;
+				}
+			}
+		}
 	}
 }

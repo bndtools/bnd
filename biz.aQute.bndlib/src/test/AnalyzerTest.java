@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 
 class T0 {
 }
@@ -399,12 +400,12 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(new File("jar/asm.jar"));
 		h.setProperties(base);
 		h.calcManifest().write(System.out);
-		assertPresent(h.getExports(), "org.objectweb.asm.signature, org.objectweb.asm");
+		assertPresent(h.getExports().keySet(), "org.objectweb.asm.signature, org.objectweb.asm");
 		assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(
 				h.getImports().keySet()) == false);
 		assertEquals("Expected size", 2, h.getExports().size());
-		assertEquals("short", get(h.getExports(), "org.objectweb.asm", "name"));
-		assertEquals("long", get(h.getExports(), "org.objectweb.asm.signature", "name"));
+		assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
+		assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
 	}
 
 	public void testDs() throws Exception {
@@ -416,12 +417,12 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.setJar(tmp);
 		analyzer.setProperties(base);
 		System.out.println(analyzer.calcManifest());
-		assertPresent(analyzer.getImports(), "org.osgi.service.packageadmin, "
+		assertPresent(analyzer.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
 				+ " org.osgi.util.tracker, " + "org.osgi.service.component, "
 				+ "org.osgi.service.cm");
-		assertPresent(analyzer.getExports(), "org.eclipse.equinox.ds.parser, "
+		assertPresent(analyzer.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
 				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
@@ -437,14 +438,14 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		h.calcManifest().write(System.out);
-		assertPresent(h.getImports(), "org.xml.sax, " + " javax.xml.parsers,"
+		assertPresent(h.getImports().keySet(), "org.xml.sax, " + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.eclipse.osgi.util");
 
 		System.out.println("IMports " + h.getImports());
-		assertNotPresent(h.getImports(), "org.osgi.service.packageadmin, "
+		assertNotPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.osgi.service.log," + " org.osgi.framework," + " org.osgi.util.tracker, "
 				+ "org.osgi.service.component, " + "org.osgi.service.cm");
-		assertPresent(h.getExports(), "org.eclipse.equinox.ds.parser, "
+		assertPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
 				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
@@ -459,12 +460,12 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		h.calcManifest().write(System.out);
-		assertPresent(h.getImports(), "org.osgi.service.packageadmin, "
+		assertPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
 				+ " org.osgi.util.tracker, " + "org.osgi.service.component, "
 				+ "org.osgi.service.cm");
-		assertNotPresent(h.getExports(), "org.eclipse.equinox.ds.parser, "
+		assertNotPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
 				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
@@ -483,10 +484,10 @@ public class AnalyzerTest extends BndTestCase {
 		h.setClasspath(new File[] { osgi });
 		h.calcManifest().write(System.out);
 		assertEquals("Version from osgi.jar", "[1.2,2)",
-				get(h.getImports(), "org.osgi.service.packageadmin", "version"));
+				get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
 		assertEquals("Version from osgi.jar", "[1.3,2)",
-				get(h.getImports(), "org.osgi.util.tracker", "version"));
-		assertEquals("Version from osgi.jar", null, get(h.getImports(), "org.xml.sax", "version"));
+				get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
+		assertEquals("Version from osgi.jar", null, get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"));
 
 	}
 
@@ -515,26 +516,34 @@ public class AnalyzerTest extends BndTestCase {
 		assertTrue(h.getImports().containsKey("com.foo"));
 	}
 
-	void assertNotPresent(Map<String, ?> map, String string) {
+	void assertNotPresent(Collection<?> map, String string) {
+		Collection<String> ss = new HashSet<String>();
+		for ( Object o : map)
+			ss.add(o+"");
+		
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
-			String packageName = st.nextToken();
-			assertFalse("Must not contain package " + packageName, map.containsKey(packageName));
+			String member = st.nextToken();
+			assertFalse("Must not contain  " + member, map.contains(member));
 		}
 	}
 
-	void assertPresent(Map<String, ?> map, String string) {
+	void assertPresent(Collection<?> map, String string) {
+		Collection<String> ss = new HashSet<String>();
+		for ( Object o : map)
+			ss.add(o+"");
+		
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
-			String packageName = st.nextToken();
-			assertTrue("Must contain package " + packageName, map.containsKey(packageName));
+			String member = st.nextToken();
+			assertTrue("Must contain  " + member, map.contains(member));
 		}
 	}
 
-	String get(Map<String, Map<String, String>> headers, String packageName, String attr) {
-		Map<String, String> clauses = headers.get(packageName);
+	<K,V> V get(Map<K, Map<String,V>> headers, K key, String attr) {
+		Map<String, V> clauses = headers.get(key);
 		if (clauses == null)
 			return null;
-		return (String) clauses.get(attr);
+		return clauses.get(attr);
 	}
 }
