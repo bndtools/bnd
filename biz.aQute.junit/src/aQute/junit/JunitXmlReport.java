@@ -222,6 +222,8 @@ public class JunitXmlReport implements TestReporter {
 
 		testcase
 				.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		
+		tests++;
 	}
 
 	public void close() {
