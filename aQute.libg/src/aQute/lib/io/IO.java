@@ -6,6 +6,46 @@ import java.nio.*;
 import java.util.*;
 
 public class IO {
+
+	public static void copy(Reader r, Writer w) throws IOException {
+		try {
+			char buffer[] = new char[8000];
+			int size = r.read(buffer);
+			while (size > 0) {
+				w.write(buffer, 0, size);
+				size = r.read(buffer);
+			}
+		} finally {
+			r.close();
+			w.flush();
+		}
+	}
+
+	public static void copy(InputStream r, Writer w) throws IOException {
+		copy(r, w, "UTF-8");
+	}
+
+	public static void copy(InputStream r, Writer w, String charset) throws IOException {
+		try {
+			InputStreamReader isr = new InputStreamReader(r,charset);
+			copy(isr,w);
+		} finally {
+			r.close();
+		}
+	}
+
+	public static void copy(Reader r, OutputStream o) throws IOException {
+		copy(r,o,"UTF-8");
+	}
+	public static void copy(Reader r, OutputStream o, String charset) throws IOException {
+		try {
+			OutputStreamWriter osw = new OutputStreamWriter(o,charset);
+			copy(r,osw);
+		} finally {
+			r.close();
+		}
+	}
+
 	public static void copy(InputStream in, OutputStream out) throws IOException {
 		DataOutputStream dos = new DataOutputStream(out);
 		copy(in, (DataOutput) dos);
@@ -229,7 +269,7 @@ public class IO {
 	public static InputStream stream(String s) {
 		try {
 			return new ByteArrayInputStream(s.getBytes("UTF-8"));
-		} catch(Exception e) {
+		} catch (Exception e) {
 			// Ignore
 			return null;
 		}
@@ -246,7 +286,6 @@ public class IO {
 	public static InputStream stream(URL s) throws IOException {
 		return s.openStream();
 	}
-
 
 	public static Reader reader(String s) {
 		return new StringReader(s);
