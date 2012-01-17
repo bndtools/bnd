@@ -3,9 +3,8 @@ package test;
 import java.io.*;
 import java.lang.reflect.*;
 
-import test.signatures.*;
-
 import junit.framework.*;
+import test.signatures.*;
 import aQute.bnd.compatibility.*;
 
 public class TestSignatures extends TestCase {

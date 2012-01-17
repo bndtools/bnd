@@ -10,6 +10,7 @@ import javax.xml.transform.stream.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.libg.header.*;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
@@ -64,7 +65,6 @@ public class SpringComponent implements AnalyzerPlugin {
 		return refers;
 	}
 
-	@SuppressWarnings("unchecked")
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
 	    Jar jar = analyzer.getJar();
 		Map dir = (Map) jar.getDirectories().get("META-INF/spring");
@@ -85,7 +85,7 @@ public class SpringComponent implements AnalyzerPlugin {
 					if ( !QN.matcher(pack.getFQN()).matches())
 					    analyzer.warning("Package does not seem a package in spring resource ("+path+"): " + pack );
 					if (!analyzer.getReferred().containsKey(pack))
-						analyzer.getReferred().put(pack, new LinkedHashMap());
+						analyzer.getReferred().put(pack, new Attrs());
 				}
 				} catch( Exception e ) {
 					analyzer.error("Unexpected exception in processing spring resources("+path+"): " + e );

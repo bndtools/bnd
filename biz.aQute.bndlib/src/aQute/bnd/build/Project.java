@@ -55,7 +55,7 @@ public class Project extends Processor {
 	File						files[];
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
-
+	
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
@@ -228,7 +228,7 @@ public class Project extends Processor {
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
 					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = parseHeader(dp).keySet();
+					Set<String> requiredProjectNames = new Parameters(dp).keySet();
 					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
 					for (DependencyContributor dc : dcs)
 						dc.addDependencies(this, requiredProjectNames);
@@ -377,12 +377,12 @@ public class Project extends Processor {
 	public List<Container> getBundles(Strategy strategyx, String spec, String source)
 			throws Exception {
 		List<Container> result = new ArrayList<Container>();
-		Map<String, Map<String, String>> bundles = parseHeader(spec);
+		Parameters bundles = new Parameters(spec);
 
 		try {
-			for (Iterator<Map.Entry<String, Map<String, String>>> i = bundles.entrySet().iterator(); i
+			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet().iterator(); i
 					.hasNext();) {
-				Map.Entry<String, Map<String, String>> entry = i.next();
+				Entry<String, Attrs> entry = i.next();
 				String bsn = entry.getKey();
 				Map<String, String> attrs = entry.getValue();
 
@@ -477,11 +477,11 @@ public class Project extends Processor {
 			ResolverMode mode) throws Exception {
 		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
 
-		List<Entry<String, Map<String, String>>> queue = new LinkedList<Map.Entry<String, Map<String, String>>>();
-		queue.addAll(parseHeader(spec).entrySet());
+		List<Entry<String, Attrs>> queue = new LinkedList<Map.Entry<String, Attrs>>();
+		queue.addAll( new Parameters(spec).entrySet());
 
 		while (!queue.isEmpty()) {
-			Entry<String, Map<String, String>> entry = queue.remove(0);
+			Entry<String, Attrs> entry = queue.remove(0);
 
 			String pkgName = entry.getKey();
 			Map<String, String> attrs = entry.getValue();
@@ -512,7 +512,7 @@ public class Project extends Processor {
 
 						String importUses = cc.getAttributes().get("import-uses");
 						if (importUses != null)
-							queue.addAll(0, parseHeader(importUses).entrySet());
+							queue.addAll(0, new Parameters(importUses).entrySet());
 					}
 				}
 			} else {
@@ -1042,7 +1042,8 @@ public class Project extends Processor {
 	 */
 	protected Container toContainer(String bsn, String range, Map<String, String> attrs, File result) {
 		if (result == null) {
-			System.out.println("Huh?");
+			error("Result file for toContainer is unexpectedly null, not sure what to do");
+			result = new File("was null");
 		}
 		if (result.getName().endsWith("lib"))
 			return new Container(this, bsn, range, Container.TYPE.LIBRARY, result, null, attrs);
@@ -1135,7 +1136,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void deploy() throws Exception {
-		Map<String, Map<String, String>> deploy = parseHeader(getProperty(DEPLOY));
+		Parameters deploy = new Parameters(getProperty(DEPLOY));
 		if (deploy.isEmpty()) {
 			warning("Deploying but %s is not set to any repo", DEPLOY);
 			return;
@@ -1488,9 +1489,9 @@ public class Project extends Processor {
 		for (NamedAction a : plugins)
 			all.put(a.getName(), a);
 
-		Map<String, Map<String, String>> actions = parseHeader(getProperty("-actions",
+		Parameters actions = new Parameters(getProperty("-actions",
 				DEFAULT_ACTIONS));
-		for (Map.Entry<String, Map<String, String>> entry : actions.entrySet()) {
+		for (Entry<String, Attrs> entry : actions.entrySet()) {
 			String key = Processor.removeDuplicateMarker(entry.getKey());
 			Action action;
 
@@ -1726,7 +1727,7 @@ public class Project extends Processor {
 	public String _findfile(String args[]) {
 		File f = getFile(args[1]);
 		List<String> files = new ArrayList<String>();
-		tree(files, f, "", Instruction.getPattern(args[2]));
+		tree(files, f, "", new Instruction(args[2]));
 		return join(files);
 	}
 
@@ -1896,7 +1897,7 @@ public class Project extends Processor {
 	}
 
 	public Collection<String> getRunVM() {
-		Map<String, Map<String, String>> hdr = parseHeader(getProperty(RUNVM));
+		Parameters hdr = getParameters(RUNVM);
 		return hdr.keySet();
 	}
 

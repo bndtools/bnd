@@ -1,6 +1,6 @@
 package test.versionpolicy.implmajor;
 
-import test.versionpolicy.api.EventHandler;
+import test.versionpolicy.api.*;
 
 public class MajorImplemented implements EventHandler {
 

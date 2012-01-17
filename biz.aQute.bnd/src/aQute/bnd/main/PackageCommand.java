@@ -17,7 +17,6 @@ import aQute.lib.getopt.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.tag.*;
-import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
 
@@ -132,12 +131,12 @@ public class PackageCommand {
 	}
 
 	class PSpec implements Comparable<PSpec> {
-		String						packageName;
-		Version						version;
-		int							id;
-		public Map<String, String>	attrs;
-		public Tree					tree;
-		public Map<String, String>	uses	= Create.map();	;
+		String			packageName;
+		Version			version;
+		int				id;
+		public Attrs	attrs;
+		public Tree		tree;
+		public Attrs	uses	= new Attrs();
 
 		public int compareTo(PSpec o) {
 			return version.compareTo(o.version);
@@ -185,13 +184,13 @@ public class PackageCommand {
 				specTag.addAttribute("id", n);
 				specTag.addContent(main.getValue(Constants.BUNDLE_DESCRIPTION));
 
-				Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(m
-						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+				Parameters exports = OSGiHeader.parseHeader(m.getMainAttributes().getValue(
+						Constants.EXPORT_PACKAGE));
 
 				// Create a map with versions. Ensure import ranges overwrite
 				// the
 				// exported versions
-				Map<String, Map<String, String>> versions = Create.map();
+				Parameters versions = new Parameters();
 				versions.putAll(exports);
 				versions.putAll(OSGiHeader.parseHeader(m.getMainAttributes().getValue(
 						Constants.IMPORT_PACKAGE)));
@@ -202,11 +201,11 @@ public class PackageCommand {
 
 				Tree tree = differ.tree(analyzer);
 
-				for (Map.Entry<String, Map<String, String>> entry : exports.entrySet()) {
+				for (Entry<String, Attrs> entry : exports.entrySet()) {
 
 					// For each exported package in the specification JAR
 
-					Map<String, String> attrs = entry.getValue();
+					Attrs attrs = entry.getValue();
 					String packageName = entry.getKey();
 					String version = attrs.get(Constants.VERSION_ATTRIBUTE);
 
@@ -256,7 +255,7 @@ public class PackageCommand {
 			SortedList<PSpec> specs = new SortedList<PSpec>(map.get(pname));
 
 			PSpec older = null;
-			Map<String, Map<String, String>> olderExport = null;
+			Parameters olderExport = null;
 
 			for (PSpec newer : specs) {
 
@@ -267,7 +266,7 @@ public class PackageCommand {
 				pack.addAttribute("version", newer.version);
 				pack.addAttribute("spec", newer.id);
 
-				Map<String, Map<String, String>> newerExport = new HashMap<String, Map<String, String>>();
+				Parameters newerExport = new Parameters();
 				newerExport.put(pname, newer.attrs);
 
 				if (older != null) {
@@ -277,7 +276,7 @@ public class PackageCommand {
 					bnd.trace(" newer=%s older=%s", newerExport, olderExport);
 
 					Set<Info> infos = baseline.baseline(newer.tree, newerExport, older.tree,
-							olderExport, Instruction.toInstruction(pname));
+							olderExport, new Instructions(pname));
 
 					for (Info info : infos) {
 						Tag tag = getTag(info);

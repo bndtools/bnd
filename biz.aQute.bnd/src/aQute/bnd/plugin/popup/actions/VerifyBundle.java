@@ -1,21 +1,15 @@
 package aQute.bnd.plugin.popup.actions;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.ui.IActionDelegate;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.core.resources.*;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.ui.*;
 
-import aQute.bnd.plugin.Activator;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Verifier;
+import aQute.bnd.plugin.*;
+import aQute.lib.osgi.*;
 
 public class VerifyBundle implements IObjectActionDelegate {
     IFile[] locations;

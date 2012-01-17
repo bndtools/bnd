@@ -2,9 +2,8 @@ package test;
 
 import java.util.jar.*;
 
-import aQute.lib.osgi.*;
-
 import junit.framework.*;
+import aQute.lib.osgi.*;
 
 public class InlineTest extends TestCase {
 	public void testSimple() throws Exception {

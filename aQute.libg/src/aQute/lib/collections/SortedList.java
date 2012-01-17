@@ -71,6 +71,18 @@ import java.util.*;
 		}
 	}
 
+	public SortedList(Iterator<? extends Comparable<?>> x) {
+		this((Collection<? extends Comparable<?>>) collect(x));
+	}
+
+	private static <T> Collection<T> collect(Iterator<? extends Comparable<?>> x) {
+		Set<T> set = new HashSet<T>();
+		while(x.hasNext())
+			set.add((T) x.next());
+		
+		return set;
+	}
+
 	public SortedList(Collection<? extends Comparable<?>> x) {
 		this((Collection<T>) x, 0, x.size(), (Comparator<T>)comparator);
 	}
@@ -340,7 +352,7 @@ import java.util.*;
 		if (size() != list.size())
 			return false;
 
-		for (int as = start, bs = list.start, al = size(), bl = list.size(); as < al && bs < bl; as++, bs++) {
+		for (int as = start, bs = list.start, al = size(); as < al && bs < al; as++, bs++) {
 			if (comparator.compare(this.list[as], this.list[bs]) != 0)
 				return false;
 		}
@@ -368,4 +380,5 @@ import java.util.*;
 		sb.append("]");
 		return sb.toString();
 	}
+
 }

@@ -5,6 +5,7 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class NoUsesTest extends TestCase {
 
@@ -105,7 +106,7 @@ public class NoUsesTest extends TestCase {
 			assertOk(bmaker);
 			String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 			assertNotNull("exports", exports );
-			Map<String,Map<String,String>> map = Processor.parseHeader(exports, null);
+			Parameters map = Processor.parseHeader(exports, null);
 			if ( map == null )
 				return null;
 			

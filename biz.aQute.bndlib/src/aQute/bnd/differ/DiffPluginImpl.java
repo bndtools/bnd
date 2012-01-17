@@ -53,8 +53,8 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * 
-	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.osgi.Jar,
-	 *      aQute.lib.osgi.Jar)
+	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
+	 *      aQute.lib.resource.Jar)
 	 */
 	public Tree tree(File newer) throws Exception {
 		Jar jnewer = new Jar(newer);
@@ -67,8 +67,8 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * 
-	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.osgi.Jar,
-	 *      aQute.lib.osgi.Jar)
+	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
+	 *      aQute.lib.resource.Jar)
 	 */
 	public Tree tree(Jar newer) throws Exception {
 		Analyzer anewer = new Analyzer();
@@ -155,9 +155,9 @@ public class DiffPluginImpl implements Differ {
 				continue;
 
 			if (MAJOR_HEADERS.contains(header)) {
-				Map<String, Map<String, String>> clauses = OSGiHeader.parseHeader(value);
+				Parameters clauses = OSGiHeader.parseHeader(value);
 				Collection<Element> clausesDef = new ArrayList<Element>();
-				for (Map.Entry<String, Map<String, String>> clause : clauses.entrySet()) {
+				for (Map.Entry<String, Attrs> clause : clauses.entrySet()) {
 					Collection<Element> parameterDef = new ArrayList<Element>();
 					for (Map.Entry<String, String> parameter : clause.getValue().entrySet()) {
 						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + parameter

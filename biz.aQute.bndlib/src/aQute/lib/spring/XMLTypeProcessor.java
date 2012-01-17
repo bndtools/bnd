@@ -4,6 +4,7 @@ import java.util.*;
 
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class XMLTypeProcessor implements AnalyzerPlugin {
     
@@ -23,7 +24,7 @@ public class XMLTypeProcessor implements AnalyzerPlugin {
     protected void process(List<XMLType> types, String resource, String paths,
             String pattern) throws Exception {
         
-        Map<String,Map<String,String>> map = Processor.parseHeader(paths,null);
+        Parameters map = Processor.parseHeader(paths,null);
         for ( String path : map.keySet() ) {
             types.add( new XMLType( getClass().getResource(resource), path, pattern ));
         }

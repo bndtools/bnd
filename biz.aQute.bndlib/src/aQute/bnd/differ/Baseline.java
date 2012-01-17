@@ -52,17 +52,17 @@ public class Baseline {
 	 *         packages (also the ones that were ok).
 	 * @throws Exception
 	 */
-	public Set<Info> baseline(Jar newer, Jar older, Collection<Instruction> packageFilters)
+	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters)
 			throws Exception {
 		Tree n = differ.tree(newer);
-		Map<String, Map<String, String>> nExports = getExports(newer);
+		Parameters nExports = getExports(newer);
 		Tree o = differ.tree(older);
-		Map<String, Map<String, String>> oExports = getExports(older);
+		Parameters oExports = getExports(older);
 		return baseline(n, nExports, o, oExports, packageFilters);
 	}
 
-	public Set<Info> baseline(Tree n, Map<String, Map<String, String>> nExports, Tree o,
-			Map<String, Map<String, String>> oExports, Collection<Instruction> packageFilters)
+	public Set<Info> baseline(Tree n, Parameters nExports, Tree o,
+			Parameters oExports, Instructions packageFilters)
 			throws Exception {
 		Diff diff = n.diff(o).get("<api>");
 		Set<Info> infos = Create.set();
@@ -74,7 +74,7 @@ public class Baseline {
 			if (pdiff.getName().startsWith("java."))
 				continue;
 
-			if (!Instruction.matches(packageFilters, pdiff.getName()))
+			if (!packageFilters.matches(pdiff.getName()))
 				continue;
 
 			final Info info = new Info();
@@ -161,10 +161,10 @@ public class Baseline {
 		return Version.parseVersion(map.get(Constants.VERSION_ATTRIBUTE));
 	}
 
-	private Map<String, Map<String, String>> getExports(Jar jar) throws Exception {
+	private Parameters getExports(Jar jar) throws Exception {
 		Manifest m = jar.getManifest();
 		if (m == null)
-			return Collections.emptyMap();
+			return new Parameters();
 
 		return OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 	}

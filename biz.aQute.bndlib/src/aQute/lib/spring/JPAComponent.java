@@ -1,9 +1,8 @@
 package aQute.lib.spring;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import aQute.lib.osgi.Analyzer;
+import aQute.lib.osgi.*;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml

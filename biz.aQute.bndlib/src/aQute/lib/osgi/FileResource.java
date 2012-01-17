@@ -1,7 +1,7 @@
 package aQute.lib.osgi;
 
 import java.io.*;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 public class FileResource implements Resource {
 	File	file;

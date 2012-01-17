@@ -8,19 +8,36 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class MacroTest extends TestCase {
+
+	/**
+	 * Test the combine macro that groups properties
+	 */
+
+	public void testWildcardKeys() {
+		Processor top = new Processor();
+		top.setProperty("a.3", "a.3");
+		top.setProperty("a.1", "a.1");
+		top.setProperty("a.2", "a.2");
+		top.setProperty("a.4", "a.4");
+		top.setProperty("aa", "${a.*}");
+		assertEquals("a.1,a.2,a.3,a.4", top.getProperty("a.*"));
+		assertEquals("a.1,a.2,a.3,a.4", top.getProperty("aa"));
+
+	}
+
 	public void testEnv() {
 		Processor proc = new Processor();
 		String s = proc.getReplacer().process("${env;USER}");
 		assertNotNull(s);
 	}
-	
+
 	/**
 	 * Test the random macro
 	 */
 	public void testRandom() {
 		Processor top = new Processor();
-		top.setProperty("a","${random}");
-		top.setProperty("a12","${random;12}");
+		top.setProperty("a", "${random}");
+		top.setProperty("a12", "${random;12}");
 		String a = top.getProperty("a");
 		System.out.println(a);
 		assertEquals(8, a.length());
@@ -29,7 +46,7 @@ public class MacroTest extends TestCase {
 		assertEquals(12, a12.length());
 		assertNotSame(a, a12);
 	}
-	
+
 	/**
 	 * Testing an example with nesting that was supposd not to work
 	 */
@@ -38,7 +55,7 @@ public class MacroTest extends TestCase {
 		Processor top = new Processor();
 		Processor middle = new Processor(top);
 		Processor bottom = new Processor(middle);
-		
+
 		top.setProperty("a", "top.a");
 		top.setProperty("b", "top.b");
 		top.setProperty("c", "top.c");
@@ -85,14 +102,15 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
-		assertTrue(macro.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
+		assertTrue(macro.process("${system;wc;Hello World}").matches(
+				"\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
 	public void testSystemFail() throws Exception {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		String cmd = "${system;mostidioticcommandthatwillsurelyfail}";
-		assertEquals(cmd, macro.process(cmd));
+		assertTrue(macro.process(cmd).startsWith("${system;"));
 	}
 
 	/**
@@ -172,7 +190,7 @@ public class MacroTest extends TestCase {
 		macro.process("${range;=+0,=++;0.0.1}");
 		assertEquals(1, proc.getErrors().size());
 		assertEquals(1, proc.getWarnings().size());
-		
+
 		proc.clear();
 		macro.process("${range;[+,=)}");
 		assertEquals(1, proc.getErrors().size());
@@ -275,11 +293,12 @@ public class MacroTest extends TestCase {
 
 	public void testTstamp() {
 		// TODO Timezones
-//		String aug152008 = "1218810097322";
-//		Processor p = new Processor();
-//		Macro m = new Macro(p);
-//		assertEquals("200808151521", m.process("${tstamp;yyyyMMddHHmm;" + aug152008 + "}"));
-//		// assertEquals( "2008", m.process("${tstamp;yyyy}"));
+		// String aug152008 = "1218810097322";
+		// Processor p = new Processor();
+		// Macro m = new Macro(p);
+		// assertEquals("200808151521", m.process("${tstamp;yyyyMMddHHmm;" +
+		// aug152008 + "}"));
+		// // assertEquals( "2008", m.process("${tstamp;yyyy}"));
 	}
 
 	public void testIsfile() {
@@ -343,13 +362,13 @@ public class MacroTest extends TestCase {
 		Macro m = new Macro(p);
 		assertEquals("com.acme.test.Test", m.process("${toclassname;com/acme/test/Test.class}"));
 		assertEquals("Test", m.process("$<toclassname;Test.class>"));
-		assertEquals("Test,com.acme.test.Test", m
-				.process("${toclassname;Test.class, com/acme/test/Test.class}"));
+		assertEquals("Test,com.acme.test.Test",
+				m.process("${toclassname;Test.class, com/acme/test/Test.class}"));
 		assertEquals("", m.process("$(toclassname;Test)"));
 		assertEquals("com/acme/test/Test.class", m.process("$[toclasspath;com.acme.test.Test]"));
 		assertEquals("Test.class", m.process("${toclasspath;Test}"));
-		assertEquals("Test.class,com/acme/test/Test.class", m
-				.process("${toclasspath;Test,com.acme.test.Test}"));
+		assertEquals("Test.class,com/acme/test/Test.class",
+				m.process("${toclasspath;Test,com.acme.test.Test}"));
 	}
 
 	public void testFindPath() throws IOException {
@@ -396,8 +415,8 @@ public class MacroTest extends TestCase {
 		System.out.println(p.getWarnings());
 		assertEquals("xx1.2.3xx", value);
 
-		assertEquals("xx1.222.3xx", m
-				.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
+		assertEquals("xx1.222.3xx",
+				m.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
 
 		p.setProperty("a", "aaaa");
 		assertEquals("[cac]", m.process("$[replace;acaca;a(.*)a;[$1]]"));

@@ -1,25 +1,17 @@
 package aQute.lib.deployer.http;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import java.util.regex.*;
 
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.url.URLConnector;
-import aQute.lib.base64.Base64;
-import aQute.lib.io.IO;
-import aQute.libg.glob.Glob;
-import aQute.libg.reporter.Reporter;
+import aQute.bnd.service.*;
+import aQute.bnd.service.url.*;
+import aQute.lib.base64.*;
+import aQute.lib.io.*;
+import aQute.libg.glob.*;
+import aQute.libg.reporter.*;
 
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	

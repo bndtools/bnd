@@ -1,17 +1,12 @@
 package aQute.bnd.plugin.editors;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.ide.IDEActionFactory;
-import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
-import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.jface.dialogs.*;
+import org.eclipse.ui.*;
+import org.eclipse.ui.actions.*;
+import org.eclipse.ui.ide.*;
+import org.eclipse.ui.part.*;
+import org.eclipse.ui.texteditor.*;
 
 /**
  * Manages the installation/deinstallation of global actions for multi-page editors.

@@ -5,7 +5,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.osgi.Clazz.MethodDef;
 
 /**
  * Create an XML call tree of a set of classes. The structure of the XML is:

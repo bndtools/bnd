@@ -2,9 +2,9 @@ package test;
 
 import java.util.*;
 
+import junit.framework.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
-import junit.framework.*;
 
 public class ParseHeaderTest extends TestCase {
 
@@ -40,7 +40,7 @@ public class ParseHeaderTest extends TestCase {
 	void assertNames(String header, String[] keys, String expectedError, String expectedWarning) {
 		Processor p = new Processor();
 		p.setPedantic(true);
-		Map<String,Map<String,String>> map = Processor.parseHeader(header, p);
+		Parameters map = Processor.parseHeader(header, p);
 		for (String key : keys )
 			assertTrue(map.containsKey(key));
 		
@@ -62,7 +62,7 @@ public class ParseHeaderTest extends TestCase {
 
 	public void testSimple() {
 		String s = "a;a=a1;b=a2;c=a3, b;a=b1;b=b2;c=b3, c;d;e;a=x1";
-		Map<String,Map<String,String>> map = Processor.parseHeader(s, null);
+		Parameters map = Processor.parseHeader(s, null);
 		assertEquals(5, map.size());
 
 		Map<String,String> a = map.get("a");

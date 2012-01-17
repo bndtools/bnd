@@ -1,32 +1,19 @@
 package aQute.lib.deployer.obr;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import org.osgi.service.bindex.BundleIndexer;
-import org.osgi.service.coordinator.Coordination;
-import org.osgi.service.coordinator.Coordinator;
-import org.osgi.service.coordinator.Participant;
+import org.osgi.service.bindex.*;
+import org.osgi.service.coordinator.*;
 
-import aQute.bnd.service.Refreshable;
-import aQute.bnd.service.RepositoryListenerPlugin;
-import aQute.lib.deployer.FileRepo;
-import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
-import aQute.libg.reporter.Reporter;
-import aQute.libg.tuple.Pair;
-import aQute.libg.version.Version;
+import aQute.bnd.service.*;
+import aQute.lib.deployer.*;
+import aQute.lib.io.*;
+import aQute.lib.osgi.*;
+import aQute.libg.reporter.*;
+import aQute.libg.tuple.*;
+import aQute.libg.version.*;
 
 public class LocalOBR extends OBR implements Refreshable, Participant {
 	

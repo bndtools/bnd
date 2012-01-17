@@ -1,22 +1,17 @@
 package test;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.jar.Manifest;
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
 
-import junit.framework.TestCase;
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.service.RepositoryPlugin.*;
-import aQute.lib.deployer.FileRepo;
+import junit.framework.*;
+import aQute.bnd.build.*;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.lib.deployer.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.lib.osgi.eclipse.EclipseClasspath;
-import aQute.libg.version.Version;
+import aQute.lib.osgi.*;
+import aQute.lib.osgi.eclipse.*;
+import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
 

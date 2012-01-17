@@ -3,6 +3,7 @@ package aQute.bnd.maven;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -473,14 +474,14 @@ public class MavenCommand extends Processor {
 	 * @return
 	 */
 	private String license(Attributes attr) {
-		Map<String, Map<String, String>> map = Processor.parseHeader(
+		Parameters map = Processor.parseHeader(
 				attr.getValue(Constants.BUNDLE_LICENSE), null);
 		if (map.isEmpty())
 			return null;
 
 		StringBuilder sb = new StringBuilder();
 		String sep = "Licensed under ";
-		for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
+		for (Entry<String, Attrs> entry : map.entrySet()) {
 			sb.append(sep);
 			String key = entry.getKey();
 			String link = entry.getValue().get("link");

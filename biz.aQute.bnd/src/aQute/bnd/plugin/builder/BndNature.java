@@ -1,10 +1,7 @@
 package aQute.bnd.plugin.builder;
 
-import org.eclipse.core.resources.ICommand;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IProjectNature;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.*;
 
 public class BndNature implements IProjectNature {
 

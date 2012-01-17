@@ -1,6 +1,7 @@
 package aQute.lib.osgi;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
@@ -13,7 +14,7 @@ public class Verifier extends Processor {
 
 	private final Jar								dot;
 	private final Manifest							manifest;
-	private final Attributes						main;
+	private final Domain						main;
 	private final Map<String, Map<String, String>>	ignore	= newHashMap();
 
 	private boolean									r3;
@@ -163,14 +164,14 @@ public class Verifier extends Processor {
 			"x86-64",												};
 
 	final Analyzer					analyzer;
-	private Collection<Instruction>	dynamicImports;
+	private Instructions	dynamicImports;
 
 	public Verifier(Jar jar) throws Exception {
 		this.analyzer = new Analyzer();
 		addClose(analyzer);
 		this.analyzer.setJar(jar);
 		this.manifest = this.analyzer.calcManifest();
-		this.main = manifest.getMainAttributes();
+		this.main = Domain.domain(manifest);
 		this.dot = jar;
 		getInfo(analyzer);
 	}
@@ -179,13 +180,11 @@ public class Verifier extends Processor {
 		this.analyzer = analyzer;
 		this.dot = analyzer.getJar();
 		this.manifest = dot.getManifest();
-		this.main = manifest.getMainAttributes();
+		this.main = Domain.domain(manifest);
 	}
 
 	private void verifyHeaders() {
-		for (Object element : main.keySet()) {
-			Attributes.Name header = (Attributes.Name) element;
-			String h = header.toString();
+		for (String h : main) {
 			if (!HEADER_PATTERN.matcher(h).matches())
 				error("Invalid Manifest header: " + h + ", pattern=" + HEADER_PATTERN);
 		}
@@ -197,7 +196,7 @@ public class Verifier extends Processor {
 	 * optional ::= ’*’
 	 */
 	public void verifyNative() {
-		String nc = getLocalHeader("Bundle-NativeCode");
+		String nc = get("Bundle-NativeCode");
 		doNative(nc);
 	}
 
@@ -268,7 +267,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyActivator() throws Exception {
-		String bactivator = getLocalHeader("Bundle-Activator");
+		String bactivator = main.get("Bundle-Activator");
 		if (bactivator != null) {
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
 			if (analyzer.getClassspace().containsKey(ref))
@@ -285,9 +284,9 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyComponent() {
-		String serviceComponent = getLocalHeader("Service-Component");
+		String serviceComponent = main.get("Service-Component");
 		if (serviceComponent != null) {
-			Map<String, Map<String, String>> map = parseHeader(serviceComponent);
+			Parameters map = parseHeader(serviceComponent);
 			for (String component : map.keySet()) {
 				if (component.indexOf("*") < 0 && !dot.exists(component)) {
 					error("Service-Component entry can not be located in JAR: " + component);
@@ -298,54 +297,6 @@ public class Verifier extends Processor {
 		}
 	}
 
-	/**
-	 * Invalid exports are exports mentioned in the manifest but not found on
-	 * the classpath. This can be calculated with: exports - contains.
-	 * 
-	 * Unfortunately, we also must take duplicate names into account. These
-	 * duplicates are of course no erroneous.
-	 */
-	private void verifyInvalidExports() {
-
-		Set<String> invalidExport = OSGiHeader.parseHeader(main.getValue(Constants.EXPORT_PACKAGE))
-				.keySet();
-		invalidExport.removeAll(analyzer.getContained().keySet());
-
-		// We might have duplicate names that are marked for it. These
-		// should not be counted. Should we test them against the contained
-		// set? Hmm. If someone wants to hang himself by using duplicates than
-		// I guess he can go ahead ... This is not a recommended practice
-		for (Iterator<String> i = invalidExport.iterator(); i.hasNext();) {
-			String pack = i.next();
-			if (isDuplicate(pack)) {
-				i.remove();
-			}
-		}
-
-		if (!invalidExport.isEmpty())
-			error("Exporting package %s that are not on the Bundle-Classpath", invalidExport,
-					analyzer.getBundleClasspath().keySet());
-	}
-
-	/**
-	 * Invalid imports are imports that we never refer to. They can be
-	 * calculated by removing the referred packages from the imported packages.
-	 * This leaves packages that the manifest imported but that we never use.
-	 */
-	private void verifyInvalidImports() {
-		Set<PackageRef> invalidImport = newSet(analyzer.getImports().keySet());
-		invalidImport.removeAll(analyzer.getReferred().keySet());
-		// TODO Added this line but not sure why it worked before ...
-		invalidImport.removeAll(analyzer.getContained().keySet());
-		String bactivator = getLocalHeader(Analyzer.BUNDLE_ACTIVATOR);
-		if (bactivator != null) {
-			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
-			invalidImport.remove(ref.getPackageRef().getFQN());
-		}
-		if (isPedantic() && !invalidImport.isEmpty())
-			warning("Importing packages %s that are never refered to by any class on the Bundle-Classpath: %s",
-					invalidImport, analyzer.getBundleClasspath().keySet());
-	}
 
 	/**
 	 * Check for unresolved imports. These are referrals that are not imported
@@ -377,10 +328,10 @@ public class Verifier extends Processor {
 			Set<String> culprits = new HashSet<String>();
 			for (Clazz clazz : analyzer.getClassspace().values()) {
 				if (hasOverlap(unresolvedReferences, clazz.getReferred()))
-					culprits.add(clazz.getPath());
+					culprits.add(clazz.getAbsolutePath());
 			}
 
-			error("Unresolved references %s by class(es) %s on the Bundle-Classpath: %s",
+			error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
 					unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
 		}
 	}
@@ -391,10 +342,9 @@ public class Verifier extends Processor {
 	 */
 	private boolean isDynamicImport(PackageRef pack) {
 		if (dynamicImports == null)
-			dynamicImports = Instruction.toInstructions(
-					parseHeader(main.getValue(Constants.DYNAMICIMPORT_PACKAGE))).keySet();
+			dynamicImports = new Instructions(main.getDynamicImportPackage());
 
-		return Instruction.matches(dynamicImports, pack.getFQN());
+		return dynamicImports.matches(pack.getFQN());
 	}
 
 	private boolean hasOverlap(Set<?> a, Set<?> b) {
@@ -420,8 +370,6 @@ public class Verifier extends Processor {
 		verifyActivationPolicy();
 		verifyComponent();
 		verifyNative();
-		verifyInvalidExports();
-		verifyInvalidImports();
 		verifyUnresolvedReferences();
 		verifySymbolicName();
 		verifyListHeader("Bundle-RequiredExecutionEnvironment", EENAME, false);
@@ -448,9 +396,9 @@ public class Verifier extends Processor {
 	 */
 	private void verifyDirectives(String header, String directives) {
 		Pattern pattern = Pattern.compile(directives);
-		Map<String, Map<String, String>> map = parseHeader(manifest.getMainAttributes().getValue(
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
 				header));
-		for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
+		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
 			if (!PACKAGEPATTERN.matcher(pname).matches())
@@ -493,7 +441,7 @@ public class Verifier extends Processor {
 	}
 
 	public boolean verifyActivationPolicy() {
-		String policy = getLocalHeader(Constants.BUNDLE_ACTIVATIONPOLICY);
+		String policy = main.get(Constants.BUNDLE_ACTIVATIONPOLICY);
 		if (policy == null)
 			return true;
 
@@ -501,7 +449,7 @@ public class Verifier extends Processor {
 	}
 
 	public boolean verifyActivationPolicy(String policy) {
-		Map<String, Map<String, String>> map = parseHeader(policy);
+		Parameters map = parseHeader(policy);
 		if (map.size() == 0)
 			warning("Bundle-ActivationPolicy is set but has no argument %s", policy);
 		else if (map.size() > 1)
@@ -518,7 +466,7 @@ public class Verifier extends Processor {
 	}
 
 	public void verifyBundleClasspath() {
-		Map<String, Map<String, String>> bcp = parseHeader(getLocalHeader(Analyzer.BUNDLE_CLASSPATH));
+		Parameters bcp = main.getBundleClassPath();
 		if (bcp.isEmpty() || bcp.containsKey("."))
 			return;
 
@@ -554,11 +502,11 @@ public class Verifier extends Processor {
 	 */
 	private void verifyDynamicImportPackage() {
 		verifyListHeader("DynamicImport-Package", WILDCARDPACKAGE, true);
-		String dynamicImportPackage = getLocalHeader("DynamicImport-Package");
+		String dynamicImportPackage = get("DynamicImport-Package");
 		if (dynamicImportPackage == null)
 			return;
 
-		Map<String, Map<String, String>> map = parseHeader(dynamicImportPackage);
+		Parameters map = main.getDynamicImportPackage();
 		for (String name : map.keySet()) {
 			name = name.trim();
 			if (!verify(name, WILDCARDPACKAGE))
@@ -574,13 +522,13 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyManifestFirst() {
-		if (!dot.manifestFirst) {
+		if (!dot.isManifestFirst()) {
 			error("Invalid JAR stream: Manifest should come first to be compatible with JarInputStream, it was not");
 		}
 	}
 
 	private void verifySymbolicName() {
-		Map<String, Map<String, String>> bsn = parseHeader(getLocalHeader(Analyzer.BUNDLE_SYMBOLICNAME));
+		Parameters bsn = parseHeader(main.get(Analyzer.BUNDLE_SYMBOLICNAME));
 		if (!bsn.isEmpty()) {
 			if (bsn.size() > 1)
 				error("More than one BSN specified " + bsn);
@@ -725,10 +673,6 @@ public class Verifier extends Processor {
 		return index;
 	}
 
-	private String getLocalHeader(String string) {
-		return main.getValue(string);
-	}
-
 	private boolean verifyHeader(String name, Pattern regex, boolean error) {
 		String value = manifest.getMainAttributes().getValue(name);
 		if (value == null)
@@ -757,7 +701,7 @@ public class Verifier extends Processor {
 		if (value == null)
 			return false;
 
-		Map<String, Map<String, String>> map = parseHeader(value);
+		Parameters map = parseHeader(value);
 		for (String header : map.keySet()) {
 			if (!regex.matcher(header).matches()) {
 				String msg = "Invalid value for " + name + ", " + value + " does not match "

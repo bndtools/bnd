@@ -91,8 +91,7 @@ public class XMLType {
                             .warning("Package does not seem a package in spring resource ("
                                     + path + "): " + pack);
                 if (!analyzer.getReferred().containsKey(pack))
-                    analyzer.getReferred().put(pack,
-                            new LinkedHashMap<String,String>());
+                    analyzer.getReferred().put(pack);
             }
         } catch (Exception e) {
             analyzer

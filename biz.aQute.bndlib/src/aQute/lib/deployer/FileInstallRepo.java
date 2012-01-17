@@ -7,6 +7,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
@@ -38,7 +39,7 @@ public class FileInstallRepo extends FileRepo {
         if (bsn == null)
             throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-        Map<String, Map<String, String>> b = Processor.parseHeader(bsn, null);
+        Parameters b = Processor.parseHeader(bsn, null);
         if (b.size() != 1)
             throw new IllegalArgumentException("Multiple bsn's specified " + b);
 
@@ -88,7 +89,7 @@ public class FileInstallRepo extends FileRepo {
 	public List<String> list(String regex) {
 	       Instruction pattern = null;
 	        if (regex != null)
-	            pattern = Instruction.getPattern(regex);
+	            pattern = new Instruction(regex);
 
 	        String list[] = getRoot().list();
 	        List<String> result = new ArrayList<String>();

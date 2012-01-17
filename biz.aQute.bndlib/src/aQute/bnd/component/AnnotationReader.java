@@ -278,7 +278,7 @@ public class AnnotationReader extends ClassDataCollector {
 			if (interfaces != null) {
 				List<TypeRef> result = new ArrayList<TypeRef>();
 				for (int i = 0; i < interfaces.length; i++) {
-					if (!interfaces[i].equals("scala/ScalaObject"))
+					if (!interfaces[i].equals(analyzer.getTypeRef("scala/ScalaObject")))
 						result.add(interfaces[i]);
 				}
 				component.service = result.toArray(EMPTY);

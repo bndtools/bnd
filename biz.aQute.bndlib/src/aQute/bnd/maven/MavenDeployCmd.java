@@ -7,6 +7,7 @@ import java.util.jar.*;
 import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class MavenDeployCmd extends Processor {
@@ -75,7 +76,7 @@ public class MavenDeployCmd extends Processor {
 	/**
 	 */
 	public boolean deploy(Project project, Jar original) throws Exception {
-		Map<String, Map<String, String>> deploy = project.parseHeader(project
+		Parameters deploy = project.parseHeader(project
 				.getProperty(Constants.DEPLOY));
 
 		Map<String, String> maven = deploy.get(repository);
@@ -100,7 +101,7 @@ public class MavenDeployCmd extends Processor {
 			Jar src = new Jar("src");
 			try {
 				split(original, main, src);
-				Map<String, Map<String, String>> exports = project.parseHeader(manifest
+				Parameters exports = project.parseHeader(manifest
 						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				jdoc.mkdirs();

@@ -1,11 +1,10 @@
 package biz.aqute.bnd.eclipse.popup;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.*;
 
 public class Refresh implements IObjectActionDelegate {
 

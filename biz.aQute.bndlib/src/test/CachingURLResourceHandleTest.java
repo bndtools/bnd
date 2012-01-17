@@ -1,10 +1,9 @@
 package test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
-import junit.framework.TestCase;
-import aQute.lib.deployer.obr.CachingURLResourceHandle;
+import junit.framework.*;
+import aQute.lib.deployer.obr.*;
 import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 
 public class CachingURLResourceHandleTest extends TestCase {

@@ -1,29 +1,19 @@
 package aQute.bnd.plugin.popup;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.ISelectionService;
-import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.*;
+import org.eclipse.jdt.core.*;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.ui.*;
+import org.eclipse.ui.actions.*;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.plugin.Activator;
+import aQute.bnd.build.*;
+import aQute.bnd.plugin.*;
 
 public class Scripts extends CompoundContributionItem {
 	final List<Project>	projects	= new ArrayList<Project>();

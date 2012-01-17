@@ -5,7 +5,8 @@ import java.util.*;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.osgi.Clazz.QUERY;
+import aQute.libg.header.*;
 
 /**
  * This class is responsible for meta type types. It is a plugin that can 
@@ -16,7 +17,7 @@ public class MetatypePlugin implements AnalyzerPlugin {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
-		Map<String, Map<String, String>> map = analyzer.parseHeader(analyzer
+		Parameters map = analyzer.parseHeader(analyzer
 				.getProperty(Constants.METATYPE));
 
 		Jar jar = analyzer.getJar();

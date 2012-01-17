@@ -1,16 +1,13 @@
 package test.lib.deployer.obr;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.deployer.obr.OBR;
-import aQute.libg.version.Version;
+import aQute.lib.deployer.obr.*;
+import aQute.libg.version.*;
 
 public class OBRTest extends TestCase {
 	

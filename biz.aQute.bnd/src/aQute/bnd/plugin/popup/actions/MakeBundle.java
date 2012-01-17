@@ -1,25 +1,17 @@
 package aQute.bnd.plugin.popup.actions;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.ui.IActionDelegate;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.core.resources.*;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.ui.*;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.plugin.Activator;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.build.*;
+import aQute.bnd.plugin.*;
+import aQute.lib.osgi.*;
+import aQute.lib.osgi.eclipse.*;
 
 public class MakeBundle implements IObjectActionDelegate {
     IFile[] locations;

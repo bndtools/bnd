@@ -136,8 +136,6 @@ public class Command {
 			try {
 				int c = in.read();
 				while (c >= 0) {
-					if (trace)
-						System.out.print((char) c);
 					sb.append((char) c);
 					c = in.read();
 				}

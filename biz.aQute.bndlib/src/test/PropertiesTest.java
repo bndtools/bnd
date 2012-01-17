@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class PropertiesTest extends TestCase {
     static <T> T notNull(T t) { assertNotNull(t); return t; }
@@ -107,7 +108,7 @@ public class PropertiesTest extends TestCase {
 		analyzer.setPedantic(true);
 		analyzer.setProperties(new File("src/test/badproperties.prop"));
 		String  s = analyzer.getProperty(Analyzer.IMPORT_PACKAGE);
-		Map<String,Map<String,String>> map = analyzer.parseHeader(s);
+		Parameters map = analyzer.parseHeader(s);
 		assertEquals(2,map.size());
 		assertTrue(map.containsKey("org.osgi.service.cm"));
 		assertTrue(map.containsKey("org.osgi.util.tracker"));

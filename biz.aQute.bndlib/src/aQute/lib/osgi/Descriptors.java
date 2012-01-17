@@ -58,7 +58,7 @@ public class Descriptors {
 		final boolean	java;
 
 		private PackageRef(String binaryName) {
-			this.binaryName = binaryName;
+			this.binaryName = fqnToBinary(binaryName);
 			this.fqn = binaryToFQN(binaryName);
 			this.java = this.fqn.startsWith("java.") && !this.fqn.equals("java.sql");
 		}
@@ -69,6 +69,9 @@ public class Descriptors {
 			this.java = false;
 		}
 
+		public PackageRef getDuplicate() {
+			return new PackageRef(binaryName+Constants.DUPLICATE_MARKER);
+		}
 		public String getFQN() {
 			return fqn;
 		}
@@ -101,6 +104,23 @@ public class Descriptors {
 			assert o instanceof PackageRef;
 			return o == this;
 		}
+		/**
+		 * Decide if the package is a metadata package.
+		 * 
+		 * @param pack
+		 * @return
+		 */
+		public boolean isMetaData() {
+			if (isDefaultPackage())
+				return true;
+			
+			for (int i = 0; i < Constants.METAPACKAGES.length; i++) {
+				if (fqn.startsWith(Constants.METAPACKAGES[i]))
+					return true;
+			}
+			return false;
+		}
+
 	}
 
 	// We "intern" the
@@ -268,6 +288,7 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRef(String binaryClassName) {		
+		assert !binaryClassName.endsWith(".class");
 		
 		TypeRef ref = typeRefCache.get(binaryClassName);
 		if (ref != null)
@@ -474,5 +495,10 @@ public class Descriptors {
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
 		return getTypeRef(fqnToBinary(fqn));
+	}
+
+	public TypeRef getTypeRefFromPath(String path) {
+		assert path.endsWith(".class");
+		return getTypeRef(path.substring(0,path.length()-6));
 	}
 }

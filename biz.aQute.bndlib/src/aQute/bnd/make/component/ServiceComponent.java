@@ -2,6 +2,7 @@ package aQute.bnd.make.component;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
@@ -10,6 +11,7 @@ import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.QUERY;
 import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 /**
@@ -58,9 +60,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 		Map<String, Map<String, String>> doServiceComponent() throws Exception {
 			Map<String, Map<String, String>> serviceComponents = newMap();
 			String header = getProperty(SERVICE_COMPONENT);
-			Map<String, Map<String, String>> sc = parseHeader(header);
+			Parameters sc = parseHeader(header);
 
-			for (Map.Entry<String, Map<String, String>> entry : sc.entrySet()) {
+			for (Entry<String, Attrs> entry : sc.entrySet()) {
 				String name = entry.getKey();
 				Map<String, String> info = entry.getValue();
 

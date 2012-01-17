@@ -3,17 +3,19 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
-public class Processor implements Reporter, Registry, Constants, Closeable {
+public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
 	static Random					random			= new Random();
@@ -24,7 +26,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	final List<String>				errors			= new ArrayList<String>();
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
+	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
 	boolean							pedantic;
@@ -160,22 +162,18 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return errors;
 	}
 
-	public Map<String, Map<String, String>> parseHeader(String value) {
-		return parseHeader(value, this);
-	}
-
 	/**
 	 * Standard OSGi header parser.
 	 * 
 	 * @param value
 	 * @return
 	 */
-	static public Map<String, Map<String, String>> parseHeader(String value, Processor logger) {
-		return OSGiHeader.parseHeader(value, logger);
+	static public Parameters parseHeader(String value, Processor logger) {
+		return new Parameters(value, logger);
 	}
 
-	Map<String, Map<String, String>> getClauses(String header) {
-		return parseHeader(getProperty(header));
+	public Parameters parseHeader(String value) {
+		return new Parameters(value, this);
 	}
 
 	public void addClose(Closeable jar) {
@@ -279,8 +277,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param spe
 	 */
 	protected void loadPlugins(Set<Object> list, String spe) {
-		Map<String, Map<String, String>> plugins = parseHeader(spe);
-		for (Map.Entry<String, Map<String, String>> entry : plugins.entrySet()) {
+		Parameters plugins = new Parameters(spe);
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String key = (String) entry.getKey();
 
 			try {
@@ -337,7 +335,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param plugin
 	 * @param entry
 	 */
-	protected <T> T customize(T plugin, Map<String, String> map) {
+	protected <T> T customize(T plugin, Attrs map) {
 		if (plugin instanceof Plugin) {
 			if (map != null)
 				((Plugin) plugin).setProperties(map);
@@ -499,7 +497,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		if (includes != null) {
 			includes = getReplacer().process(includes);
 			p.remove(INCLUDE);
-			Collection<String> clauses = parseHeader(includes).keySet();
+			Collection<String> clauses = new Parameters(includes).keySet();
 
 			for (String value : clauses) {
 				boolean fileMustExist = true;
@@ -665,6 +663,31 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 */
 	public String getProperty(String key, String deflt) {
 		String value = null;
+		
+		Instruction ins = new Instruction(key);
+		if ( !ins.isLiteral()) {
+			// Handle a wildcard key, make sure they're sorted
+			// for consistency
+			SortedList<String> sortedList = new SortedList<String>(iterator());
+			StringBuilder sb = new StringBuilder();
+			String del = "";
+			for ( String k : sortedList ) {
+				if ( ins.matches(k)) {
+					String v = getProperty(k,null);
+					if ( v != null) {
+						sb.append(del);
+						del = ",";
+						sb.append(v);
+					}
+				}
+			}
+			if ( sb.length()==0)
+				return deflt;
+			
+			return sb.toString();
+		}
+
+		
 		Processor source = this;
 
 		if (filter != null && filter.contains(key)) {
@@ -743,20 +766,20 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param exports
 	 *            map { name => Map { attribute|directive => value } }
 	 * @return the clauses
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public static String printClauses(Map<?, Map<String, String>> exports) throws IOException {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<?, Map<String, String>> exports,
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
 			boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Iterator<?> i = exports.keySet().iterator(); i.hasNext();) {
 			Object o = i.next();
 			String name = o.toString();
-			Map<String, String> clause = exports.get(name);
+			Map<?, ?> clause = exports.get(o);
 
 			// We allow names to be duplicated in the input
 			// by ending them with '~'. This is necessary to use
@@ -772,11 +795,9 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, StringBuilder sb) throws IOException {
+	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
 
-		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
-			String key = j.next();
-
+		for (Object key : map.keySet()) {
 			// Skip directives we do not recognize
 			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
 					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
@@ -795,7 +816,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param sb
 	 * @param value
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
 		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
@@ -835,7 +856,24 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return getReplacer().getFlattenedProperties();
 
 	}
+	
+	/**
+	 * Return all inherited property keys
+	 * 
+	 * @return
+	 */
+	public Set<String> getPropertyKeys(boolean inherit) {
+		Set<String> result;
+		if ( parent == null || !inherit) {
+			result = Create.set();
+		} else
+			result = parent.getPropertyKeys(inherit);
+		for ( Object o : properties.keySet())
+			result.add(o.toString());
 
+		return result;
+	}
+	
 	public boolean updateModified(long time, String reason) {
 		if (time > lastModified) {
 			lastModified = time;
@@ -1077,6 +1115,54 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return isFailOk() || (getErrors().size() == 0);
 	}
 
+	public boolean check(String... pattern) throws IOException {
+		Set<String> missed = Create.set();
+
+		for (String p : pattern) {
+			boolean match = false;
+			Pattern pat = Pattern.compile(p);
+			for (Iterator<String> i = errors.iterator(); i.hasNext();) {
+				if (pat.matcher(i.next()).find()) {
+					i.remove();
+					match = true;
+				}
+			}
+			for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
+				if (pat.matcher(i.next()).find()) {
+					i.remove();
+					match = true;
+				}
+			}
+			if (!match)
+				missed.add(p);
+
+		}
+		if (missed.isEmpty() && isPerfect())
+			return true;
+
+		if (!missed.isEmpty())
+			System.out
+					.println("Missed the following patterns in the warnings or errors: " + missed);
+
+		report(System.out);
+		return false;
+	}
+
+	protected void report(Appendable out) throws IOException {
+		if (errors.size() > 0) {
+			out.append("-----------------\nErrors\n");
+			for (int i = 0; i < errors.size(); i++) {
+				out.append(String.format("%03d: %s\n", i, errors.get(i)));
+			}
+		}
+		if (warnings.size() > 0) {
+			out.append(String.format("-----------------\nWarnings\n"));
+			for (int i = 0; i < warnings.size(); i++) {
+				out.append(String.format("%03d: %s\n", i, warnings.get(i)));
+			}
+		}
+	}
+
 	public boolean isPerfect() {
 		return getErrors().size() == 0 && getWarnings().size() == 0;
 	}
@@ -1147,11 +1233,12 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param clazz
 	 * @return
 	 */
-	public static Map<String, String> doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
-		if (attrs == null || attrs.length == 0)
-			return Collections.emptyMap();
+	public static Attrs doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
+		Attrs map = new Attrs();
 
-		Map<String, String> map = newMap();
+		if (attrs == null || attrs.length == 0)
+			return map;
+
 		for (Object a : attrs) {
 			String attr = (String) a;
 			int n = attr.indexOf("=");
@@ -1333,14 +1420,66 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return included;
 	}
 
-
 	/**
-	 * Return a header from the properties.
-	 * 
-	 * @param headerName
-	 * @return
+	 * Overrides for the Domain class
 	 */
-	public Map<String, Map<String, String>> getHeader(String headerName) {
-		return parseHeader(getProperty(headerName));
+	@Override public String get(String key) {
+		return getProperty(key);
 	}
+
+	@Override public String get(String key, String deflt) {
+		return getProperty(key, deflt);
+	}
+
+	@Override public void set(String key, String value) {
+		getProperties().setProperty(key, value);
+	}
+
+	@Override public Iterator<String> iterator() {
+		Set<String> keys = keySet();
+		final Iterator<String> it = keys.iterator();
+		
+		return new Iterator<String>() {
+			String	current;
+
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			public String next() {
+				return current = it.next().toString();
+			}
+
+			public void remove() {
+				getProperties().remove(current);
+			}
+		};
+	}
+
+	Set<String> keySet() {
+		Set<String> set;
+		if ( parent == null)
+			set = Create.set();
+		else
+			set = parent.keySet();
+		
+		for ( Object o : properties.keySet())
+			set.add( o.toString());
+		
+		return set;
+	}
+	/**
+	 * Printout of the status of this processor for toString()
+	 */
+
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			report(sb);
+			return sb.toString();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

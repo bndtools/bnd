@@ -9,7 +9,6 @@ import aQute.configurable.*;
 import aQute.lib.getopt.*;
 import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
-import aQute.libg.generics.*;
 
 public class DiffCommand {
 
@@ -44,7 +43,6 @@ public class DiffCommand {
 			return;
 		}
 		if (options._().size() != 2) {
-			System.out.println(options._());
 			throw new IllegalArgumentException("Requires 2 jar files input");
 		}
 		File fout = options.output();
@@ -54,7 +52,7 @@ public class DiffCommand {
 		else
 			pw = new PrintWriter(fout);
 
-		Collection<Instruction> packageFilters = toInstruction(options.pack());
+		Instructions packageFilters = new Instructions(options.pack());
 
 		Iterator<String> it = options._().iterator();
 		Jar newer = new Jar(bnd.getFile(it.next()));
@@ -71,8 +69,7 @@ public class DiffCommand {
 				if (!options.xml()) {
 					if (all || options.api())
 						for (Diff packageDiff : diff.get("<api>").getChildren()) {
-							if (packageFilters.isEmpty()
-									|| Instruction.matches(packageFilters, packageDiff.getName()))
+							if (packageFilters.matches(packageDiff.getName()))
 								show(pw, packageDiff, 0, !options.full());
 						}
 					if (all || options.manifest())
@@ -119,7 +116,7 @@ public class DiffCommand {
 		else
 			pw = new PrintWriter(fout);
 
-		Collection<Instruction> packageFilters = toInstruction(options.pack());
+		Instructions packageFilters = new Instructions(options.pack());
 
 		Jar newer = new Jar(bnd.getFile(options._().get(0)));
 		try {
@@ -131,8 +128,7 @@ public class DiffCommand {
 
 			if (all || options.api())
 				for (Tree packageDiff : n.get("<api>").getChildren()) {
-					if (packageFilters.isEmpty()
-							|| Instruction.matches(packageFilters, packageDiff.getName()))
+					if (packageFilters.matches(packageDiff.getName()))
 						show(pw, packageDiff, 0, !options.full());
 				}
 			if (all || options.manifest())
@@ -203,15 +199,4 @@ public class DiffCommand {
 		}
 	}
 
-	public static Collection<Instruction> toInstruction(Collection<String> instructions) {
-		if (instructions == null || instructions.isEmpty())
-			return Collections.emptySet();
-
-		Set<Instruction> set = Create.set();
-		for (String s : instructions) {
-			Instruction instr = Instruction.getPattern(s);
-			set.add(instr);
-		}
-		return set;
-	}
 }

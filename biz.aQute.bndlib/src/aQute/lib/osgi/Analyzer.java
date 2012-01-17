@@ -45,25 +45,31 @@ import aQute.libg.header.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
-	static Properties									bndInfo;
-	private final Map<PackageRef, Map<String, String>>	contained				= map();
-	private final Map<PackageRef, Map<String, String>>	referred				= map();
-	private final MultiMap<PackageRef,PackageRef>		uses					= new MultiMap<PackageRef,PackageRef>(PackageRef.class,PackageRef.class,true);
-	private final Map<PackageRef, Map<String, String>>	ignored					= map();
-	private final SortedSet<Clazz.JAVA>					formats					= new TreeSet<Clazz.JAVA>();
-	private final Descriptors							descriptors				= new Descriptors();
-	private final List<Jar>								classpath				= list();
-	private Map<TypeRef, Clazz>							classspace;
-	private final Map<TypeRef, Clazz>					importedClassesCache	= map();
-	private Map<PackageRef, Map<String, String>>		exports;
-	private Map<PackageRef, Map<String, String>>		imports;
-	private Jar											dot;
-	private Map<PackageRef, Map<String, String>>		classpathExports;
-	private Map<String, Map<String, String>>			bundleClasspath;
-	private TypeRef										activator;
-	private boolean										analyzed				= false;
-	private boolean										diagnostics				= false;
-	private boolean										inited					= false;
+	private final SortedSet<Clazz.JAVA>				formats					= new TreeSet<Clazz.JAVA>();
+	static Properties								bndInfo;
+
+	// Bundle parameters
+	private Jar										dot;
+	private final Packages							contained				= new Packages();
+	private final Packages							referred				= new Packages();
+	private Packages								exports;
+	private Packages								imports;
+	private TypeRef									activator;
+	private Parameters								bundleClasspath;
+
+	// Global parameters
+	private final MultiMap<PackageRef, PackageRef>	uses					= new MultiMap<PackageRef, PackageRef>(
+																					PackageRef.class,
+																					PackageRef.class,
+																					true);
+	private final Packages							classpathExports		= new Packages();
+	private final Descriptors						descriptors				= new Descriptors();
+	private final List<Jar>							classpath				= list();
+	private final Map<TypeRef, Clazz>				classspace				= map();
+	private final Map<TypeRef, Clazz>				importedClassesCache	= map();
+	private boolean									analyzed				= false;
+	private boolean									diagnostics				= false;
+	private boolean									inited					= false;
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -107,21 +113,127 @@ public class Analyzer extends Processor {
 	public void analyze() throws Exception {
 		if (!analyzed) {
 			analyzed = true;
-			bundleClasspath = parseHeader(getProperty(BUNDLE_CLASSPATH));
+			uses.clear();
+			classspace.clear();
+			classpathExports.clear();
+
+			bundleClasspath = getBundleClassPath();
+
+			// Parse all the class in the
+			// the jar according to the OSGi bcp
+			analyzeBundleClasspath();
+
+			//
+			// calculate class versions in use
+			//
+			for (Clazz c : classspace.values()) {
+				formats.add(c.getFormat());
+			}
+
+			//
+			// Get exported packages from the
+			// entries on the classpath
+			//
+
+			for (Jar current : getClasspath()) {
+				getExternalExports(current, classpathExports);
+				for (String dir : current.getDirectories().keySet()) {
+					PackageRef packageRef = getPackageRef(dir);
+					Resource resource = current.getResource(dir + "/packageinfo");
+					setPackageInfo(packageRef, resource, classpathExports);
+				}
+			}
+
+			// Handle the bundle activator
+
 			String s = getProperty(BUNDLE_ACTIVATOR);
 			if (s != null) {
 				activator = getTypeRefFromFQN(s);
 				referTo(activator);
 			}
 
-			analyzeClasspath();
-
-			classspace = analyzeBundleClasspath(dot, bundleClasspath, contained, referred, uses);
-
+			// Execute any plugins
+			// TODO handle better reanalyze
 			doPlugins();
-
+			
+			Jar extra = getExtra();
+			while ( extra != null) {
+				dot.addAll(extra);
+				analyzeJar(extra, "", true);
+				extra = getExtra();
+			}
+			
 			referred.keySet().removeAll(contained.keySet());
 
+			//
+			// EXPORTS
+			//
+			{
+				Set<Instruction> unused = Create.set();
+
+				Instructions filter = new Instructions(getExportPackage());
+				filter.append(getExportContents());
+
+				exports = filter(filter, contained, unused);
+
+				if (!unused.isEmpty()) {
+					warning("Unused Export-Package instructions: %s ", unused);
+				}
+
+				// See what information we can find to augment the
+				// exports. I.e. look on the classpath
+				augmentExports(exports);
+			}
+
+			//
+			// IMPORTS
+			// Imports MUST come after exports because we use information from
+			// the exports
+			//
+			{
+				// Add all exports that do not have an -noimport: directive
+				// to the imports.
+				Packages referredAndExported = new Packages(referred);
+				referredAndExported.putAll(doExportsToImports(exports));
+				
+				// Remove any matching a dynamic import package instruction
+				Instructions dynamicImports = new Instructions(getDynamicImportPackage());
+				Collection<PackageRef>  dynamic = dynamicImports.select(referredAndExported.keySet());
+				referredAndExported.keySet().removeAll(dynamic);
+
+				// Remove any Java references ... where are the closures???
+				for (Iterator<PackageRef> i = referredAndExported.keySet().iterator(); i.hasNext();) {
+					if (i.next().isJava())
+						i.remove();
+				}
+
+				Set<Instruction> unused = Create.set();
+				String h = getProperty(IMPORT_PACKAGE);
+				if (h == null) // If not set use a default
+					h = "*";
+
+				Instructions filter = new Instructions(h);
+				imports = filter(filter, referredAndExported, unused);
+				if (!unused.isEmpty()) {
+					// We ignore the end wildcard catch
+					if (!(unused.size() == 1 && unused.iterator().next().toString().equals("*")))
+						warning("Unused Import-Package instructions: %s ", unused);
+				}
+
+				// See what information we can find to augment the
+				// imports. I.e. look in the exports
+				augmentImports(imports, exports);
+			}
+
+			//
+			// USES
+			//
+			// Add the uses clause to the exports
+			doUses(exports, uses, imports);
+
+			//
+			// Checks
+			//
 			if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
 				error("The default package '.' is not permitted by the Import-Package syntax. \n"
 						+ " This can be caused by compile errors in Eclipse because Eclipse creates \n"
@@ -130,59 +242,11 @@ public class Analyzer extends Processor {
 						+ uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
-			Map<String, Map<String, String>> //
-			t = parseHeader(getProperty(EXPORT_PACKAGE));
-			t.putAll(parseHeader(getProperty(EXPORT_CONTENTS)));
-
-			MultiMap<Instruction, Map<String, String>> //
-			exportInstructions = Instruction.toInstructions(t);
-
-			MultiMap<Instruction, Map<String, String>> //
-			importInstructions = Instruction.toInstructions(parseHeader(getImportPackages()));
-
-			MultiMap<Instruction, Map<String, String>> dynamicImportInstructions = Instruction
-					.toInstructions(parseHeader(getProperty(DYNAMICIMPORT_PACKAGE)));
-
-			// Remove any dynamic imports from the referred set.
-			Instruction.remove(referred.keySet(), dynamicImportInstructions.keySet());
-
-			Set<Instruction> unused = Create.set();
-
-			exports = merge("export-package", exportInstructions, contained, unused, null);
-
-			// disallow export of default package
-			if (exports.containsKey(Descriptors.DEFAULT_PACKAGE)) {
-				exports.remove(Descriptors.DEFAULT_PACKAGE);
-				warning("The default package was exported");
-			}
-
-			if (!unused.isEmpty()) {
-				warning("There are export-package instructions that are not literal nor in the set of contained packages: "
-						+ unused);
-			}
-
-			// Add all exports that do not have an -noimport: directive
-			// to the imports.
-			Map<PackageRef, Map<String, String>> referredAndExported = newMap(referred);
-			referredAndExported.putAll(doExportsToImports(exports));
-
-			// match the imports to the referred and exported packages,
-			// merge the info for matching packages
-			unused.clear();
-			imports = merge("import-package", importInstructions, referredAndExported, unused,
-					ignored);
-
-			// See what information we can find to augment the
-			// exports. I.e. look on the classpath
-			augmentExports();
-
-			// See what information we can find to augment the
-			// imports. I.e. look on the classpath
-			augmentImports();
-
-			// Add the uses clause to the exports
-			doUses(exports, uses, imports);
 		}
+	}
+
+	protected Jar getExtra() throws Exception {
+		return null;
 	}
 
 	/**
@@ -192,22 +256,14 @@ public class Analyzer extends Processor {
 		for (AnalyzerPlugin plugin : getPlugins(AnalyzerPlugin.class)) {
 			try {
 				boolean reanalyze = plugin.analyzeJar(this);
-				if (reanalyze)
-					classspace = analyzeBundleClasspath(dot, bundleClasspath, contained, referred,
-							uses);
+				if (reanalyze) {
+					classspace.clear();
+					analyzeBundleClasspath();
+				}
 			} catch (Exception e) {
 				error("Analyzer Plugin %s failed %s", plugin, e);
 			}
 		}
-	}
-
-	/**
-	 * Analyzer has an empty default but the builder has a * as default.
-	 * 
-	 * @return
-	 */
-	protected String getImportPackages() {
-		return getProperty(IMPORT_PACKAGE);
 	}
 
 	/**
@@ -217,7 +273,6 @@ public class Analyzer extends Processor {
 	boolean isResourceOnly() {
 		return isTrue(getProperty(RESOURCEONLY));
 	}
-
 
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
@@ -253,31 +308,19 @@ public class Analyzer extends Processor {
 			main.remove(EXPORT_PACKAGE);
 
 		// Remove all the Java packages from the imports
-		Map<PackageRef, Map<String, String>> temp = Create.map();
-		temp.putAll(imports);
-		for (Iterator<PackageRef> i = temp.keySet().iterator(); i.hasNext();)
-			if (i.next().isJava())
-				i.remove();
-
-		if (!temp.isEmpty()) {
-			main.putValue(IMPORT_PACKAGE, printClauses(temp));
+		if (!imports.isEmpty()) {
+			main.putValue(IMPORT_PACKAGE, printClauses(imports));
 		} else {
 			main.remove(IMPORT_PACKAGE);
 		}
 
-		temp = newMap(contained);
+		Packages temp = new Packages(contained);
 		temp.keySet().removeAll(exports.keySet());
 
 		if (!temp.isEmpty())
 			main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 		else
 			main.remove(PRIVATE_PACKAGE);
-
-		if (!ignored.isEmpty()) {
-			main.putValue(IGNORE_PACKAGE, printClauses(ignored));
-		} else {
-			main.remove(IGNORE_PACKAGE);
-		}
 
 		if (bundleClasspath != null && !bundleClasspath.isEmpty())
 			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath));
@@ -354,14 +397,9 @@ public class Analyzer extends Processor {
 		merge(manifest, dot.getManifest());
 
 		// Remove all the headers mentioned in -removeheaders
-		Map<String, Map<String, String>> removes = parseHeader(getProperty(REMOVEHEADERS));
-		Set<Instruction> matchers = Instruction.replaceWithInstruction(removes).keySet();
-
-		Collection<Object> toBeRemoved = Instruction.select(matchers, main.keySet());
-		Iterator<Object> i = main.keySet().iterator();
-		while (i.hasNext())
-			if (toBeRemoved.contains(i.next()))
-				i.remove();
+		Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
+		Collection<Object> result = instructions.select(main.keySet());
+		main.keySet().removeAll(result);
 
 		dot.setManifest(manifest);
 		return manifest;
@@ -385,10 +423,8 @@ public class Analyzer extends Processor {
 
 	private void doNamesection(Jar dot, Manifest manifest) {
 
-		Map<String, Map<String, String>> namesection = parseHeader(getProperties().getProperty(
-				NAMESECTION));
-		Set<Entry<Instruction, Map<String, String>>> instructions = Instruction
-				.replaceWithInstruction(namesection).entrySet();
+		Parameters namesection = parseHeader(getProperties().getProperty(NAMESECTION));
+		Instructions instructions = new Instructions(namesection);
 		Set<Map.Entry<String, Resource>> resources = new HashSet<Map.Entry<String, Resource>>(dot
 				.getResources().entrySet());
 
@@ -399,7 +435,7 @@ public class Analyzer extends Processor {
 		// to the manifest for the given resource name. Then add all
 		// attributes from the instruction to that name section.
 		//
-		for (Map.Entry<Instruction, Map<String, String>> instr : instructions) {
+		for (Map.Entry<Instruction, Attrs> instr : instructions.entrySet()) {
 			boolean matched = false;
 
 			// For each instruction
@@ -443,7 +479,7 @@ public class Analyzer extends Processor {
 				}
 			}
 
-			if (!matched)
+			if (!matched && resources.size() > 0)
 				warning("The instruction %s in %s did not match any resources", instr.getKey(),
 						NAMESECTION);
 		}
@@ -552,19 +588,19 @@ public class Analyzer extends Processor {
 		return sb.toString();
 	}
 
-	public Map<String, Map<String, String>> getBundleClasspath() {
+	public Parameters getBundleClasspath() {
 		return bundleClasspath;
 	}
 
-	public Map<PackageRef, Map<String, String>> getContained() {
+	public Packages getContained() {
 		return contained;
 	}
 
-	public Map<PackageRef, Map<String, String>> getExports() {
+	public Packages getExports() {
 		return exports;
 	}
 
-	public Map<PackageRef, Map<String, String>> getImports() {
+	public Packages getImports() {
 		return imports;
 	}
 
@@ -572,7 +608,7 @@ public class Analyzer extends Processor {
 		return dot;
 	}
 
-	public Map<PackageRef, Map<String, String>> getReferred() {
+	public Packages getReferred() {
 		return referred;
 	}
 
@@ -717,7 +753,7 @@ public class Analyzer extends Processor {
 	 */
 	public Jar setJar(Jar jar) {
 		this.dot = jar;
-		if ( dot != null)
+		if (dot != null)
 			addClose(dot);
 		return jar;
 	}
@@ -777,7 +813,7 @@ public class Analyzer extends Processor {
 			// names instead of the full path.
 			for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
 				Jar entry = cp.next();
-				if (entry.source != null && entry.source.getName().equals(name)) {
+				if (entry.getSource() != null && entry.getSource().getName().equals(name)) {
 					return entry;
 				}
 			}
@@ -798,7 +834,7 @@ public class Analyzer extends Processor {
 	 * @param manifests
 	 * @throws Exception
 	 */
-	void merge(Manifest result, Manifest old) throws IOException {
+	private void merge(Manifest result, Manifest old) throws IOException {
 		if (old != null) {
 			for (Iterator<Map.Entry<Object, Object>> e = old.getMainAttributes().entrySet()
 					.iterator(); e.hasNext();) {
@@ -822,14 +858,6 @@ public class Analyzer extends Processor {
 				}
 			}
 		}
-	}
-
-	String stem(String name) {
-		int n = name.lastIndexOf('.');
-		if (n > 0)
-			return name.substring(0, n);
-		else
-			return name;
 	}
 
 	/**
@@ -878,16 +906,7 @@ public class Analyzer extends Processor {
 	 * the whole of such a group. WHY????? Not clear anymore ...
 	 * 
 	 */
-	/**
-	 * I could no longer argue why the groups are needed :-( See what happens
-	 * ... The getGroups calculated the groups and then removed the imports from
-	 * there. Now we only remove imports that have internal references. Using
-	 * internal code for an exported package means that a bundle cannot import
-	 * that package from elsewhere because its assumptions might be violated if
-	 * it receives a substitution. //
-	 */
-	Map<PackageRef, Map<String, String>> doExportsToImports(
-			Map<PackageRef, Map<String, String>> exports) {
+	Packages doExportsToImports(Packages exports) {
 
 		// private packages = contained - exported.
 		Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
@@ -909,8 +928,7 @@ public class Analyzer extends Processor {
 
 		// Not necessary to import anything that is already
 		// imported in the Import-Package statement.
-		if (imports != null)
-			toBeImported.removeAll(imports.keySet());
+		// TODO toBeImported.removeAll(imports.keySet());
 
 		// Remove exported packages that are referring to
 		// private packages.
@@ -920,7 +938,9 @@ public class Analyzer extends Processor {
 		//
 
 		for (Iterator<PackageRef> i = toBeImported.iterator(); i.hasNext();) {
-			Collection<PackageRef> usedByExportedPackage = this.uses.get(i.next());
+			PackageRef next = i.next();
+			Collection<PackageRef> usedByExportedPackage = this.uses.get(next);
+
 			for (PackageRef privatePackage : privatePackages) {
 				if (usedByExportedPackage.contains(privatePackage)) {
 					i.remove();
@@ -930,10 +950,10 @@ public class Analyzer extends Processor {
 		}
 
 		// Clean up attributes and generate result map
-		Map<PackageRef, Map<String, String>> result = newMap();
+		Packages result = new Packages();
 		for (Iterator<PackageRef> i = toBeImported.iterator(); i.hasNext();) {
 			PackageRef ep = i.next();
-			Map<String, String> parameters = exports.get(ep);
+			Attrs parameters = exports.get(ep);
 
 			String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
 			if (noimport != null && noimport.equalsIgnoreCase("true"))
@@ -949,24 +969,11 @@ public class Analyzer extends Processor {
 			// continue;
 			// }
 
-			parameters = newMap(parameters);
+			parameters = new Attrs();
 			parameters.remove(VERSION_ATTRIBUTE);
 			result.put(ep, parameters);
 		}
 		return result;
-	}
-
-	private <T> boolean intersects(Collection<T> aa, Collection<T> bb) {
-		if (aa.equals(bb))
-			return true;
-
-		if (aa.size() > bb.size())
-			return intersects(bb, aa);
-
-		for (T t : aa)
-			if (bb.contains(t))
-				return true;
-		return false;
 	}
 
 	public boolean referred(PackageRef packageName) {
@@ -981,41 +988,22 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Create the imports/exports by parsing
-	 * 
-	 * @throws IOException
-	 */
-	void analyzeClasspath() throws Exception {
-		classpathExports = newHashMap();
-		for (Iterator<Jar> c = getClasspath().iterator(); c.hasNext();) {
-			Jar current = c.next();
-			checkManifest(current);
-			for (String dir : current.getDirectories().keySet()) {
-				PackageRef packageRef = getPackageRef(dir);
-				Resource resource = current.getResource(dir + "/packageinfo");
-				setPackageInfo(packageRef, resource);
-			}
-		}
-	}
-
-	/**
 	 * 
 	 * @param jar
 	 */
-	private void checkManifest(Jar jar) {
+	private void getExternalExports(Jar jar, Packages classpathExports) {
 		try {
 			Manifest m = jar.getManifest();
 			if (m != null) {
-				String exportHeader = m.getMainAttributes().getValue(EXPORT_PACKAGE);
-				if (exportHeader != null) {
-					Map<String, Map<String, String>> exported = parseHeader(exportHeader);
-					if (exported != null) {
-						for (Map.Entry<String, Map<String, String>> entry : exported.entrySet()) {
-							PackageRef ref = getPackageRef(entry.getKey());
-							if (!classpathExports.containsKey(ref)) {
-								classpathExports.put(ref, entry.getValue());
-							}
-						}
+				Domain domain = Domain.domain(m);
+				Parameters exported = domain.getExportPackage();
+				for (Entry<String, Attrs> e : exported.entrySet()) {
+					PackageRef ref = getPackageRef(e.getKey());
+					if (!classpathExports.containsKey(ref)) {
+						// TODO e.getValue().put(SOURCE_DIRECTIVE,
+						// jar.getBsn()+"-"+jar.getVersion());
+
+						classpathExports.put(ref, e.getValue());
 					}
 				}
 			}
@@ -1025,27 +1013,71 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Find some more information about imports in manifest and other places.
+	 * Find some more information about imports in manifest and other places. It
+	 * is assumed that the augmentsExports has already copied external attrs
+	 * from the classpathExports.
 	 */
-	void augmentImports() {
+	void augmentImports(Packages imports, Packages exports) {
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
 
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
-				Map<String, String> importAttributes = imports.get(packageRef);
-				Map<String, String> exporterAttributes = classpathExports.get(packageRef);
-				if (exporterAttributes == null)
-					exporterAttributes = exports.get(packageName);
+				Attrs importAttributes = imports.get(packageRef);
+				Attrs exportAttributes = exports.get(packageRef,
+						classpathExports.get(packageRef, new Attrs()));
 
-				if (exporterAttributes != null) {
-					augmentVersion(importAttributes, exporterAttributes);
-					augmentMandatory(importAttributes, exporterAttributes);
-					if (exporterAttributes.containsKey(IMPORT_DIRECTIVE))
-						importAttributes.put(IMPORT_DIRECTIVE,
-								exporterAttributes.get(IMPORT_DIRECTIVE));
+				String exportVersion = exportAttributes.getVersion();
+				String importRange = importAttributes.getVersion();
+
+				if (exportVersion == null) {
+					// TODO Should check if the source is from a bundle.
+
+				} else {
+
+					//
+					// Version Policy - Import version substitution. We
+					// calculate the export version and then allow the
+					// import version attribute to use it in a substitution
+					// by using a ${@} macro. The export version can
+					// be defined externally or locally
+					//
+
+					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
+							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE));
+
+					exportVersion = cleanupVersion(exportVersion);
+
+					try {
+						setProperty("@", exportVersion);
+
+						if (importRange != null) {
+							importRange = cleanupVersion(importRange);
+							importRange = getReplacer().process(importRange);
+						} else
+							importRange = getVersionPolicy(provider);
+
+					} finally {
+						unsetProperty("@");
+					}
+					importAttributes.put(VERSION_ATTRIBUTE, importRange);
 				}
+
+				//
+				// Check if exporter has mandatory attributes
+				//
+				String mandatory = exportAttributes.get(MANDATORY_DIRECTIVE);
+				if (mandatory != null) {
+					String[] attrs = mandatory.split("\\s*,\\s*");
+					for (int i = 0; i < attrs.length; i++) {
+						if (!importAttributes.containsKey(attrs[i]))
+							importAttributes.put(attrs[i], exportAttributes.get(attrs[i]));
+					}
+				}
+
+				if (exportAttributes.containsKey(IMPORT_DIRECTIVE))
+					importAttributes.put(IMPORT_DIRECTIVE, exportAttributes.get(IMPORT_DIRECTIVE));
 
 				fixupAttributes(importAttributes);
 				removeAttributes(importAttributes);
@@ -1060,13 +1092,13 @@ public class Analyzer extends Processor {
 	 * Provide any macro substitutions and versions for exported packages.
 	 */
 
-	void augmentExports() {
+	void augmentExports(Packages exports) {
 		for (PackageRef packageRef : exports.keySet()) {
 			String packageName = packageRef.getFQN();
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
-				Map<String, String> attributes = exports.get(packageRef);
-				Map<String, String> exporterAttributes = classpathExports.get(packageRef);
+				Attrs attributes = exports.get(packageRef);
+				Attrs exporterAttributes = classpathExports.get(packageRef);
 				if (exporterAttributes == null)
 					continue;
 
@@ -1074,6 +1106,8 @@ public class Analyzer extends Processor {
 					String key = entry.getKey();
 					if (key.equalsIgnoreCase(SPECIFICATION_VERSION))
 						key = VERSION_ATTRIBUTE;
+
+					// dont overwrite and no directives
 					if (!key.endsWith(":") && !attributes.containsKey(key)) {
 						attributes.put(key, entry.getValue());
 					}
@@ -1094,7 +1128,7 @@ public class Analyzer extends Processor {
 	 * Execute any macros on an export and
 	 */
 
-	void fixupAttributes(Map<String, String> attributes) {
+	void fixupAttributes(Attrs attributes) {
 		// Convert any attribute values that have macros.
 		for (String key : attributes.keySet()) {
 			String value = attributes.get(key);
@@ -1106,86 +1140,28 @@ public class Analyzer extends Processor {
 
 	}
 
-	/*
-	 * Remove the attributes mentioned in the REMOVE_ATTRIBUTE_DIRECTIVE.
+	/**
+	 * Remove the attributes mentioned in the REMOVE_ATTRIBUTE_DIRECTIVE. You
+	 * can add a remove-attribute: directive with a regular expression for
+	 * attributes that need to be removed. We also remove all attributes that
+	 * have a value of !. This allows you to use macros with ${if} to remove
+	 * values.
 	 */
 
-	void removeAttributes(Map<String, String> attributes) {
-		// You can add a remove-attribute: directive with a regular
-		// expression for attributes that need to be removed. We also
-		// remove all attributes that have a value of !. This allows
-		// you to use macros with ${if} to remove values.
+	void removeAttributes(Attrs attributes) {
 		String remove = attributes.remove(REMOVE_ATTRIBUTE_DIRECTIVE);
-		Instruction removeInstr = null;
 
-		if (remove != null)
-			removeInstr = Instruction.getPattern(remove);
-
-		for (Iterator<Map.Entry<String, String>> i = attributes.entrySet().iterator(); i.hasNext();) {
-			Map.Entry<String, String> entry = i.next();
-			if (entry.getValue().equals("!"))
+		if (remove != null) {
+			Instructions removeInstr =  new Instructions(remove);
+			attributes.keySet().removeAll(removeInstr.select( attributes.keySet()));
+		}
+		
+		// Remove any ! valued attributes
+		for ( Iterator<Entry<String, String>> i = attributes.entrySet().iterator(); i.hasNext(); ) {
+			String v = i.next().getValue();
+			if ( v.equals("!"))
 				i.remove();
-			else if (removeInstr != null && removeInstr.matches((String) entry.getKey()))
-				i.remove();
-			else {
-				// Not removed ...
-			}
 		}
-	}
-
-	/**
-	 * If we use an import with mandatory attributes we better all use them
-	 * 
-	 * @param currentAttributes
-	 * @param exporter
-	 */
-	private void augmentMandatory(Map<String, String> currentAttributes,
-			Map<String, String> exporter) {
-		String mandatory = exporter.get("mandatory:");
-		if (mandatory != null) {
-			String[] attrs = mandatory.split("\\s*,\\s*");
-			for (int i = 0; i < attrs.length; i++) {
-				if (!currentAttributes.containsKey(attrs[i]))
-					currentAttributes.put(attrs[i], exporter.get(attrs[i]));
-			}
-		}
-	}
-
-	/**
-	 * Check if we can augment the version from the exporter.
-	 * 
-	 * We allow the version in the import to specify a @ which is replaced with
-	 * the exporter's version.
-	 * 
-	 * @param currentAttributes
-	 * @param exporter
-	 */
-	private void augmentVersion(Map<String, String> currentAttributes, Map<String, String> exporter) {
-
-		String exportVersion = (String) exporter.get(VERSION_ATTRIBUTE);
-		if (exportVersion == null)
-			return;
-
-		exportVersion = cleanupVersion(exportVersion);
-		String importRange = currentAttributes.get(VERSION_ATTRIBUTE);
-		boolean impl = isTrue(currentAttributes.get(PROVIDE_DIRECTIVE));
-		try {
-			setProperty("@", exportVersion);
-
-			if (importRange != null) {
-				importRange = cleanupVersion(importRange);
-				importRange = getReplacer().process(importRange);
-			} else
-				importRange = getVersionPolicy(impl);
-
-		} finally {
-			unsetProperty("@");
-		}
-		// See if we can borrow the version
-		// we must replace the ${@} with the version we
-		// found this can be useful if you want a range to start
-		// with the found version.
-		currentAttributes.put(VERSION_ATTRIBUTE, importRange);
 	}
 
 	/**
@@ -1213,8 +1189,7 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @throws MojoExecutionException
 	 */
-	void doUses(Map<PackageRef, Map<String, String>> exports,
-			MultiMap<PackageRef, PackageRef> uses, Map<PackageRef, Map<String, String>> imports) {
+	void doUses(Packages exports, MultiMap<PackageRef, PackageRef> uses, Packages imports) {
 		if ("true".equalsIgnoreCase(getProperty(NOUSES)))
 			return;
 
@@ -1237,9 +1212,9 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @param imports
 	 */
-	protected void doUses(PackageRef packageRef, Map<PackageRef, Map<String, String>> exports,
-			MultiMap<PackageRef, PackageRef> uses, Map<PackageRef, Map<String, String>> imports) {
-		Map<String, String> clause = exports.get(packageRef);
+	protected void doUses(PackageRef packageRef, Packages exports,
+			MultiMap<PackageRef, PackageRef> uses, Packages imports) {
+		Attrs clause = exports.get(packageRef);
 
 		// Check if someone already set the uses: directive
 		String override = clause.get(USES_DIRECTIVE);
@@ -1257,12 +1232,12 @@ public class Analyzer extends Processor {
 			Set<PackageRef> sharedPackages = new HashSet<PackageRef>();
 			sharedPackages.addAll(imports.keySet());
 			sharedPackages.addAll(exports.keySet());
-			usedPackages.retainAll(sharedPackages);
-			usedPackages.remove(packageRef);
+			sharedPackages.retainAll(usedPackages);
+			sharedPackages.remove(packageRef);
 
 			StringBuilder sb = new StringBuilder();
 			String del = "";
-			for (Iterator<PackageRef> u = usedPackages.iterator(); u.hasNext();) {
+			for (Iterator<PackageRef> u = sharedPackages.iterator(); u.hasNext();) {
 				PackageRef usedPackage = u.next();
 				if (!usedPackage.isJava()) {
 					sb.append(del);
@@ -1318,8 +1293,8 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked") void setPackageInfo(PackageRef packageRef, Resource r)
-			throws Exception {
+	@SuppressWarnings("unchecked") void setPackageInfo(PackageRef packageRef, Resource r,
+			Packages classpathExports) throws Exception {
 		if (r == null)
 			return;
 
@@ -1330,9 +1305,9 @@ public class Analyzer extends Processor {
 		} finally {
 			in.close();
 		}
-		Map<String, String> map = classpathExports.get(packageRef);
+		Attrs map = classpathExports.get(packageRef);
 		if (map == null) {
-			classpathExports.put(packageRef, map = new HashMap<String, String>());
+			classpathExports.put(packageRef, map = new Attrs());
 		}
 		for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 			String key = t.nextElement();
@@ -1496,33 +1471,25 @@ public class Analyzer extends Processor {
 		return dot;
 	}
 
-	protected Map<TypeRef, Clazz> analyzeBundleClasspath(Jar dot,
-			Map<String, Map<String, String>> bundleClasspath,
-			Map<PackageRef, Map<String, String>> contained,
-			Map<PackageRef, Map<String, String>> referred, MultiMap<PackageRef, PackageRef> uses)
-			throws Exception {
-		Map<TypeRef, Clazz> classSpace = Create.map();
-		classSpace = Collections.checkedMap(classSpace, TypeRef.class, Clazz.class);
-
-		Set<String> hide = Create.set();
-		boolean containsDirectory = false;
-
-		for (String path : bundleClasspath.keySet()) {
-			if (dot.getDirectories().containsKey(path)) {
-				containsDirectory = true;
-				break;
-			}
-		}
+	private void analyzeBundleClasspath() throws Exception {
 
 		if (bundleClasspath.isEmpty()) {
-			analyzeJar(dot, "", classSpace, contained, referred, uses, hide, true);
+			analyzeJar(dot, "", true);
 		} else {
+			boolean okToIncludeDirs = true;
+
 			for (String path : bundleClasspath.keySet()) {
-				Map<String, String> info = bundleClasspath.get(path);
+				if (dot.getDirectories().containsKey(path)) {
+					okToIncludeDirs = false;
+					break;
+				}
+			}
+
+			for (String path : bundleClasspath.keySet()) {
+				Attrs info = bundleClasspath.get(path);
 
 				if (path.equals(".")) {
-					analyzeJar(dot, "", classSpace, contained, referred, uses, hide,
-							!containsDirectory);
+					analyzeJar(dot, "", okToIncludeDirs);
 					continue;
 				}
 				//
@@ -1538,7 +1505,7 @@ public class Analyzer extends Processor {
 						Jar jar = new Jar(path);
 						addClose(jar);
 						EmbeddedResource.build(jar, resource);
-						analyzeJar(jar, "", classSpace, contained, referred, uses, hide, true);
+						analyzeJar(jar, "", true);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: " + path + " " + e);
 					}
@@ -1546,15 +1513,11 @@ public class Analyzer extends Processor {
 					if (dot.getDirectories().containsKey(path)) {
 						// if directories are used, we should not have dot as we
 						// would have the classes in these directories on the
-						// class
-						// path twice.
+						// class path twice.
 						if (bundleClasspath.containsKey("."))
-							warning("Bundle-ClassPath uses a directory '%s' as well as '.', this implies the directory is seen \n"
-									+ "twice by the class loader. bnd assumes that the classes are only "
-									+ "loaded from '%s'. It is better to unroll the directory to create a flat bundle.",
+							warning("Bundle-ClassPath uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 									path, path);
-						analyzeJar(dot, Processor.appendPath(path) + "/", classSpace, contained,
-								referred, uses, hide, true);
+						analyzeJar(dot, Processor.appendPath(path) + "/", true);
 					} else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory " + path);
@@ -1562,11 +1525,7 @@ public class Analyzer extends Processor {
 				}
 			}
 
-			for (Clazz c : classSpace.values()) {
-				formats.add(c.getFormat());
-			}
 		}
-		return classSpace;
 	}
 
 	/**
@@ -1580,42 +1539,33 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @throws IOException
 	 */
-	private void analyzeJar(Jar jar, String prefix, Map<TypeRef, Clazz> classSpace,
-			Map<PackageRef, Map<String, String>> contained,
-			Map<PackageRef, Map<String, String>> referred, MultiMap<PackageRef, PackageRef> uses,
-			Set<String> hide, boolean reportWrongPath) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs) throws Exception {
+		Map<String, Clazz> mismatched = new HashMap<String, Clazz>();
 
 		next: for (String path : jar.getResources().keySet()) {
-			if (path.startsWith(prefix) /* && !hide.contains(path) */) {
-				hide.add(path);
+			if (path.startsWith(prefix)) {
+
 				String relativePath = path.substring(prefix.length());
-				TypeRef typeRef = getTypeRef(relativePath);
-				PackageRef packageRef = typeRef.getPackageRef();
 
-				// // TODO this check (and the whole hide) is likely redundant
-				// // it only protects against repeated checks for non-class
-				// // bundle resources, but should not affect results otherwise.
-				// if (!hide.add(relativePath)) {
-				// continue;
-				// }
+				if (okToIncludeDirs) {
+					int n = relativePath.lastIndexOf('/');
+					if (n < 0)
+						n = relativePath.length();
+					String relativeDir = relativePath.substring(0, n);
+					
+					PackageRef packageRef = getPackageRef(relativeDir);
+					if (!packageRef.isMetaData() && !contained.containsKey(packageRef)) {
+						contained.put(packageRef);
 
-				// Check if we'd already had this one.
-				// Notice that we're flattening the space because
-				// this is what class loaders do.
-				if (classSpace.containsKey(typeRef))
-					continue;
-
-				if (!contained.containsKey(packageRef)) {
-					// For each package we encounter for the first
-					// time
-					if (!isMetaData(relativePath)) {
-
-						Map<String, String> info = newMap();
-						contained.put(packageRef, info);
-
-						Resource pinfo = jar.getResource(prefix + packageRef.getPath()
-								+ "/packageinfo");
-						setPackageInfo(packageRef, pinfo);
+						// For each package we encounter for the first
+						// time. Unfortunately we can only do this once
+						// we found a class since the bcp has a tendency
+						// to overlap
+						if (!packageRef.isMetaData()) {
+							Resource pinfo = jar.getResource(prefix + packageRef.getPath()
+									+ "/packageinfo");
+							setPackageInfo(packageRef, pinfo, classpathExports);
+						}
 					}
 				}
 
@@ -1623,15 +1573,16 @@ public class Analyzer extends Processor {
 				if (path.endsWith(".class")) {
 					Resource resource = jar.getResource(path);
 					Clazz clazz;
+					Attrs info = null;
 
 					try {
 						InputStream in = resource.openInputStream();
-						clazz = new Clazz(this, relativePath, resource);
+						clazz = new Clazz(this, path, resource);
 						try {
 							// Check if we have a package-info
 							if (relativePath.endsWith("/package-info.class")) {
 								// package-info can contain an Export annotation
-								Map<String, String> info = contained.get(packageRef);
+								info = new Attrs();
 								parsePackageInfoClass(clazz, info);
 							} else {
 								// Otherwise we just parse it simply
@@ -1642,48 +1593,55 @@ public class Analyzer extends Processor {
 						}
 					} catch (Throwable e) {
 						error("Invalid class file: " + relativePath, e);
-						e.printStackTrace();
 						continue next;
 					}
 
-					String calculatedPath = clazz.getClassName().getBinary() + ".class";
+					String calculatedPath = clazz.getClassName().getPath();
 					if (!calculatedPath.equals(relativePath)) {
-						if (!isNoBundle() && reportWrongPath) {
-							error("Class in different directory than declared. Path from class name is "
-									+ calculatedPath
-									+ " but the path in the jar is "
-									+ relativePath + " from '" + jar + "'");
+						// If there is a mismatch we
+						// warning
+						if (okToIncludeDirs) // assume already reported
+							mismatched.put(clazz.getAbsolutePath(), clazz);
+					} else {
+						classspace.put(clazz.getClassName(), clazz);
+						PackageRef packageRef = clazz.getClassName().getPackageRef();
+
+						if (!contained.containsKey(packageRef)) {
+								contained.put(packageRef);
+							if (!packageRef.isMetaData()) {
+								Resource pinfo = jar.getResource(prefix + packageRef.getPath()
+										+ "/packageinfo");
+								setPackageInfo(packageRef, pinfo, classpathExports);
+							}
 						}
-					}
+						if ( info != null)
+							contained.merge(packageRef, false, info);
 
-					classSpace.put(clazz.getClassName(), clazz);
+						Set<PackageRef> set = Create.set();
 
-					// Add all the used packages
-					// to this package
-
-					Set<PackageRef> set = Create.set();
-					
-					// Look at the referred packages
-					// and copy them to our baseline
-					for (PackageRef p : clazz.getReferred()) {
-						Map<String, String> attrs = referred.get(p);
-						if (attrs == null) {
-							attrs = newMap();
-							referred.put(p, attrs);
+						// Look at the referred packages
+						// and copy them to our baseline
+						for (PackageRef p : clazz.getReferred()) {
+							referred.put(p);
+							set.add(p);
 						}
-						set.add(p);
+						set.remove(packageRef);
+						uses.addAll(packageRef, set);
 					}
-					set.remove(packageRef);
-					uses.addAll(packageRef, set);
 				}
 			}
 		}
+
+		if (mismatched.size() > 0) {
+			error("Classes found in the wrong directory: %s", mismatched);
+			return false;
+		}
+		return true;
 	}
 
 	static Pattern	OBJECT_REFERENCE	= Pattern.compile("L([^/]+/)*([^;]+);");
 
-	private void parsePackageInfoClass(final Clazz clazz, final Map<String, String> info)
-			throws Exception {
+	private void parsePackageInfoClass(final Clazz clazz, final Attrs info) throws Exception {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			@Override public void annotation(Annotation a) {
 				String name = a.name.getFQN();
@@ -1717,8 +1675,8 @@ public class Analyzer extends Processor {
 				} else if (name.equals(Export.class.getName())) {
 
 					// Check mandatory attributes
-					Map<String, String> attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY),
-							clazz, getReplacer());
+					Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz,
+							getReplacer());
 					if (!attrs.isEmpty()) {
 						info.putAll(attrs);
 						info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
@@ -1877,20 +1835,6 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	/**
-	 * Decide if the package is a metadata package.
-	 * 
-	 * @param pack
-	 * @return
-	 */
-	boolean isMetaData(String pack) {
-		for (int i = 0; i < METAPACKAGES.length; i++) {
-			if (pack.startsWith(METAPACKAGES[i]))
-				return true;
-		}
-		return false;
-	}
-
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
@@ -1972,7 +1916,7 @@ public class Analyzer extends Processor {
 			Instruction instr = null;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
 				String s = args[++i];
-				instr = Instruction.getPattern(s);
+				instr = new Instruction(s);
 			}
 			for (Iterator<Clazz> c = matched.iterator(); c.hasNext();) {
 				Clazz clazz = c.next();
@@ -2074,7 +2018,7 @@ public class Analyzer extends Processor {
 	public void referTo(TypeRef ref) {
 		PackageRef pack = ref.getPackageRef();
 		if (!referred.containsKey(pack))
-			referred.put(pack, new LinkedHashMap<String, String>());
+			referred.put(pack, new Attrs());
 	}
 
 	public void referToByBinaryName(String binaryClassName) {
@@ -2083,37 +2027,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calculate the groups inside the bundle. A group consists of packages that
-	 * have a reference to each other.
-	 */
-
-//	public MultiMap<Set<PackageRef>, PackageRef> getGroups() {
-//		MultiMap<PackageRef, PackageRef> map = new MultiMap<PackageRef, PackageRef>();
-//		Set<PackageRef> keys = uses.keySet();
-//
-//		for (Map.Entry<PackageRef, Set<PackageRef>> entry : uses.entrySet()) {
-//			Set<PackageRef> newSet = new HashSet<PackageRef>(entry.getValue());
-//			newSet.retainAll(keys);
-//			map.put(entry.getKey(), newSet);
-//		}
-//
-//		// Calculate strongly connected packages
-//		Set<List<PackageRef>> scc = Tarjan.tarjan(map);
-//
-//		MultiMap<Set<PackageRef>, PackageRef> grouped = new MultiMap<Set<PackageRef>, PackageRef>();
-//		for (Set<PackageRef> group : scc) {
-//			for (PackageRef p : group) {
-//				grouped.addAll(group, uses.get(p));
-//			}
-//		}
-//		return grouped;
-//	}
-
-	/**
 	 * Ensure that we are running on the correct bnd.
 	 */
 	void doRequireBnd() {
-		Map<String, String> require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
+		Attrs require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
 		if (require == null || require.isEmpty())
 			return;
 
@@ -2189,8 +2106,12 @@ public class Analyzer extends Processor {
 		return descriptors.getTypeRefFromFQN(fqn);
 	}
 
+	public TypeRef getTypeRefFromPath(String path) {
+		return descriptors.getTypeRefFromPath(path);
+	}
+
 	public boolean isImported(PackageRef packageRef) {
-		return imports.containsKey(packageRef.getFQN());
+		return imports.containsKey(packageRef);
 	}
 
 	/**
@@ -2220,81 +2141,90 @@ public class Analyzer extends Processor {
 	 * 
 	 * @param instructions
 	 *            the instructions with patterns.
-	 * @param actual
+	 * @param source
 	 *            the actual found packages, contains no duplicates
 	 * 
 	 * @return Only the packages that were filtered by the given instructions
 	 */
 
-	public Map<PackageRef, Map<String, String>> merge( //
-			String type, // for documentation
-			MultiMap<Instruction, Map<String, String>> instructions, //
-			Map<PackageRef, Map<String, String>> actual, //
-			Set<Instruction> unused, //
-			Map<PackageRef, Map<String, String>> ignored //
-	) {
+	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
+		Packages result = new Packages();
+		List<PackageRef> refs = new ArrayList<PackageRef>(source.keySet());
+		List<Instruction> filters = new ArrayList<Instruction>(instructions.keySet());
+		if (nomatch == null)
+			nomatch = Create.set();
 
-		Map<PackageRef, Map<String, String>> toVisit = //
-		new HashMap<PackageRef, Map<String, String>>(actual);
+		for (Instruction instruction : filters) {
+			boolean match = false;
 
-		Map<PackageRef, Map<String, String>> result = Create.map();
+			for (Iterator<PackageRef> i = refs.iterator(); i.hasNext();) {
+				PackageRef packageRef = i.next();
+				
+				if ( packageRef.isMetaData()) {
+					i.remove(); // no use checking it again
+					continue;
+				}
+				
+				String packageName = packageRef.getFQN();
 
-		for (Map.Entry<Instruction, List<Map<String, String>>> entry : instructions.entrySet()) {
-			Instruction instruction = entry.getKey();
-
-			// Check if we have a fixed (starts with '='). A fixed name is added
-			// to the output without checking against the contents.
-			int n = result.size();
-
-			if (instruction.isLiteral()) {
-				// The instruction is a literal so we should
-				// add it regardless if it matches.
-				String packageName = instruction.getLiteral();
-
-				add(result, packageName, entry.getValue(), actual.get(packageName));
-			} else {
-				for (Iterator<PackageRef> p = toVisit.keySet().iterator(); p.hasNext();) {
-					PackageRef packageRef = p.next();
-					String packageName = packageRef.getFQN();
-					// should not be duplicated since this is from the original
-					// contained list
-
-					if (instruction.matches(packageName)) {
-						if (!instruction.isNegated()) {
-							add(result, packageName, entry.getValue(), actual.get(packageRef));
-
-						} else if (ignored != null) {
-							ignored.put(packageRef, new HashMap<String, String>());
-						}
-						p.remove(); // Can never match again for another pattern
+				if (instruction.matches(packageName)) {
+					match = true;
+					if (!instruction.isNegated()) {
+						result.merge(packageRef, instruction.isDuplicate(), source.get(packageRef),
+								instructions.get(instruction));
 					}
+					i.remove(); // Can never match again for another pattern
 				}
 			}
-
-			// Unused instructions
-			if (result.size() == n && !instruction.isNegated())
-				unused.add(instruction);
+			if (!match && !instruction.isAny())
+				nomatch.add(instruction);
 		}
-		return result;
-	}
 
-	// Utility to merge the attributes
-	private void add(Map<PackageRef, Map<String, String>> result, String packageName,
-			Collection<Map<String, String>> set, Map<String, String> oldAttrs) {
-		for (Map<String, String> attrs : set) {
+		/*
+		 * Tricky. If we have umatched instructions they might indicate that we
+		 * want to have multiple decorators for the same package. So we check
+		 * the unmatched against the result list. If then then match and have
+		 * actually interesting properties then we merge them
+		 */
 
-			Map<String, String> newAttributes = new HashMap<String, String>();
-			newAttributes.putAll(oldAttrs);
-			newAttributes.putAll(attrs);
+		for (Iterator<Instruction> i = nomatch.iterator(); i.hasNext();) {
+			Instruction instruction = i.next();
 
-			PackageRef ref = getPackageRef(packageName);
-			while (result.containsKey(ref)) {
-				packageName += DUPLICATE_MARKER;
-				ref = getPackageRef(packageName);
+			// We assume the user knows what he is
+			// doing and inserted a literal. So
+			// we ignore any not matched literals
+			if (instruction.isLiteral()) {
+				result.merge(getPackageRef(instruction.getLiteral()), true,
+						instructions.get(instruction));
+				i.remove();
+				continue;
 			}
 
-			result.put(ref, newAttributes);
+			// Not matching a negated instruction looks
+			// like an error ...
+			if (instruction.isNegated()) {
+				continue;
+			}
+
+			// An optional instruction should not generate
+			// an error
+			if (instruction.isOptional()) {
+				i.remove();
+				continue;
+			}
+
+//			boolean matched = false;
+//			Set<PackageRef> prefs = new HashSet<PackageRef>(result.keySet());
+//			for (PackageRef ref : prefs) {
+//				if (instruction.matches(ref.getFQN())) {
+//					result.merge(ref, true, source.get(ref), instructions.get(instruction));
+//					matched = true;
+//				}
+//			}
+//			if (matched)
+//				i.remove();
 		}
+		return result;
 	}
 
 	public void setDiagnostics(boolean b) {

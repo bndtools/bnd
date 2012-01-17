@@ -327,7 +327,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	 *             The exception
 	 */
 	private void update(byte[] sha1, byte[] compressed, int totalLength) throws IOException {
-		System.out.println("pos: " + store.getFilePointer());
+		//System.out.println("pos: " + store.getFilePointer());
 		store.write(CAFE); // 00-03 Signature
 		store.writeInt(0); // 04-07 Flags for the future
 		store.writeInt(compressed.length); // 08-11 Length deflated data

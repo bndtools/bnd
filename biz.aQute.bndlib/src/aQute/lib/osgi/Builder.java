@@ -19,6 +19,7 @@ import aQute.bnd.service.diff.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 
 /**
  * Include-Resource: ( [name '=' ] file )+
@@ -69,8 +70,7 @@ public class Builder extends Analyzer {
 
 		doExpand(dot);
 		doIncludeResources(dot);
-		doConditional(dot);
-		dot = doWab(dot);
+		doWab(dot);
 
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
@@ -152,27 +152,22 @@ public class Builder extends Analyzer {
 
 		setProperty(BUNDLE_CLASSPATH, append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
-		Jar next = new Jar(dot.getName());
-		addClose(next);
+		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
 
-		for (Map.Entry<String, Resource> entry : dot.getResources().entrySet()) {
-			String path = entry.getKey();
+		for (String path : paths) {
 			if (path.indexOf('/') > 0 && !Character.isUpperCase(path.charAt(0))) {
 				trace("wab: moving: %s", path);
-				next.putResource("WEB-INF/classes/" + path, entry.getValue());
-			} else {
-				trace("wab: not moving: %s", path);
-				next.putResource(path, entry.getValue());
+				dot.rename(path, "WEB-INF/classes/" + path);
 			}
 		}
 
-		Map<String, Map<String, String>> clauses = parseHeader(getProperty(WABLIB));
+		Parameters clauses = parseHeader(getProperty(WABLIB));
 		for (String key : clauses.keySet()) {
 			File f = getFile(key);
-			addWabLib(next, f);
+			addWabLib(dot, f);
 		}
-		doIncludeResource(next, wab);
-		return next;
+		doIncludeResource(dot, wab);
+		return dot;
 	}
 
 	/**
@@ -253,8 +248,8 @@ public class Builder extends Analyzer {
 		trace("Signing %s, with %s", getBsn(), signing);
 		List<SignerPlugin> signers = getPlugins(SignerPlugin.class);
 
-		Map<String, Map<String, String>> infos = parseHeader(signing);
-		for (Map.Entry<String, Map<String, String>> entry : infos.entrySet()) {
+		Parameters infos = parseHeader(signing);
+		for (Entry<String, Attrs> entry : infos.entrySet()) {
 			for (SignerPlugin signer : signers) {
 				signer.sign(this, entry.getKey());
 			}
@@ -265,42 +260,32 @@ public class Builder extends Analyzer {
 		return isTrue(getProperty(SOURCES));
 	}
 
-	protected String getImportPackages() {
-		String ip = super.getImportPackages();
-		if (ip != null)
-			return ip;
-
-		return "*";
-	}
-
-	private void doConditional(Jar dot) throws Exception {
-		Map<String, Map<String, String>> conditionals = getHeader(CONDITIONAL_PACKAGE);
+	/**
+	 * Answer extra packages. In this case we implement conditional package. Any
+	 */
+	protected Jar getExtra() throws Exception {
+		Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
 		if (conditionals.isEmpty())
-			return;
+			return null;
+		Instructions instructions = new Instructions(conditionals);
 
-		analyze();
+		Collection<PackageRef> referred = instructions.select(getReferred().keySet());
+		referred.removeAll(getContained().keySet());
 
-		Collection<Instruction> filter = Instruction.toInstruction(conditionals.keySet());
-		List<PackageRef> missing = new ArrayList<PackageRef>(getImports().keySet());
-
-		while (!missing.isEmpty()) {
-			PackageRef staticImport = missing.remove(0);
-			if (getContained().containsKey(staticImport))
-				continue;
-
-			if (!Instruction.matches(filter, staticImport.toString()))
-				continue;
-
-			// TODO
-			// doExpand(jar, filter, false);
-
-			getImports().remove(staticImport);
-
-			// TODO question is if we analyze the imports or not?
-			Collection<PackageRef> set = getUses().get(staticImport);
-			if (set != null)
-				missing.addAll(set);
+		Jar jar = new Jar("conditional-import");
+		addClose(jar);
+		for (PackageRef pref : referred) {
+			for (Jar cpe : getClasspath()) {
+				Map<String, Resource> map = cpe.getDirectories().get(pref.getPath());
+				if (map != null) {
+					jar.addDirectory(map, false);
+					break;
+				}
+			}
 		}
+		if (jar.getDirectories().size() == 0)
+			return null;
+		return jar;
 	}
 
 	/**
@@ -322,11 +307,9 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	public void cleanupVersion(Map<PackageRef, Map<String, String>> mapOfMap, String defaultVersion) {
-		for (Iterator<Map.Entry<PackageRef, Map<String, String>>> e = mapOfMap.entrySet()
-				.iterator(); e.hasNext();) {
-			Map.Entry<PackageRef, Map<String, String>> entry = e.next();
-			Map<String, String> attributes = entry.getValue();
+	public void cleanupVersion(Packages packages, String defaultVersion) {
+		for (Map.Entry<PackageRef, Attrs> entry : packages.entrySet()) {
+			Attrs attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
 				if (!isTrue(getProperty(Constants.NODEFAULTVERSION))) {
@@ -413,7 +396,7 @@ public class Builder extends Analyzer {
 			firstUse = false;
 			String sp = getProperty(SOURCEPATH);
 			if (sp != null) {
-				Map<String, Map<String, String>> map = parseHeader(sp);
+				Parameters map = parseHeader(sp);
 				for (Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
 					String file = i.next();
 					if (!isDuplicate(file)) {
@@ -440,33 +423,24 @@ public class Builder extends Analyzer {
 
 	private void doExpand(Jar dot) throws IOException {
 
-		Map<String, Map<String, String>> contained = getHeader(PRIVATE_PACKAGE);
-		Map<String, Map<String, String>> exported = getHeader(EXPORT_PACKAGE);
-		contained.putAll(exported);
-
+		Parameters contained = getPrivatePackage();
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
 			String h = getProperty(Constants.TESTPACKAGES, "test;presence:=optional");
 			contained.putAll(parseHeader(h));
 		}
 
-		Map<Instruction, Map<String, String>> containedFilter = Instruction.toInstructions(contained).flatten();
-		Map<Instruction, Map<String, String>> exportedFilter = Instruction.toInstructions(exported).flatten();
-		
-		if (!contained.isEmpty())
-			doExpand(dot,containedFilter, true);
+		if (!contained.isEmpty()) {
+			Instructions containedFilter = new Instructions(contained);
+			doExpand(dot, containedFilter, true);
+		}
 
+		Parameters exported = getExportPackage();
 		if (!exported.isEmpty()) {
+			Instructions exportedFilter = new Instructions(exported);
 			Jar exports = new Jar("exports");
 			doExpand(exports, exportedFilter, true);
 			dot.addAll(exports);
 			addClose(exports);
-		}
-
-		if (!isNoBundle()) {
-			if (contained.isEmpty() && exported.isEmpty() && !isResourceOnly()
-					&& getProperty(EXPORT_CONTENTS) == null) {
-				warning("None of Export-Package, Provide-Package, Private-Package, -testpackages, or -exportcontents is set, therefore no packages will be included");
-			}
 		}
 	}
 
@@ -476,31 +450,31 @@ public class Builder extends Analyzer {
 	 * @param name
 	 * @param instructions
 	 */
-	private void doExpand(Jar jar, Map<Instruction, Map<String, String>> filter,
-			boolean mandatory) {
-		Set<Instruction> unused = Create.set();
-		
-		for (Iterator<Jar> c = getClasspath().iterator(); c.hasNext();) {
-			Jar now = c.next();
-			doExpand(jar, filter, now, unused);
+	private void doExpand(Jar jar, Instructions filter, boolean mandatory) {
+		Set<Instruction> unused = new HashSet<Instruction>(filter.keySet());
+
+		for (Jar classPathEntry : getClasspath()) {
+			doExpand(jar, filter, classPathEntry, unused);
 		}
 
-		if (mandatory && unused.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			String del = "Instructions in that are not found on the classpath used: ";
-			for (Instruction p : unused) {
-				sb.append(del);
-				sb.append(p.toString());
-				del = "\n                ";
-			}
-			sb.append("\nClasspath: ");
-			sb.append(Processor.join(getClasspath()));
-			sb.append("\n");
-
-			warning("%s", sb.toString());
-			if (isPedantic())
-				super.setDiagnostics(true);
-		}
+		// TODO throw away
+		// if (mandatory && unused.size() > 0) {
+		// StringBuilder sb = new StringBuilder();
+		// String del =
+		// "Instructions in that are not found on the classpath used: ";
+		// for (Instruction p : unused) {
+		// sb.append(del);
+		// sb.append(p.toString());
+		// del = "\n                ";
+		// }
+		// sb.append("\nClasspath: ");
+		// sb.append(Processor.join(getClasspath()));
+		// sb.append("\n");
+		//
+		// warning("%s", sb.toString());
+		// if (isPedantic())
+		// super.setDiagnostics(true);
+		// }
 	}
 
 	/**
@@ -510,12 +484,13 @@ public class Builder extends Analyzer {
 	 * @param instructions
 	 * @param classpathEntry
 	 */
-	private void doExpand(Jar jar, Map<Instruction, Map<String, String>> filter,
-			Jar classpathEntry, Set<Instruction> unused) {
+	private void doExpand(Jar jar, Instructions filter, Jar classpathEntry, Set<Instruction> unused) {
+
+		// TODO obey the bcp of this bundle ...
 
 		loop: for (Map.Entry<String, Map<String, Resource>> directory : classpathEntry
 				.getDirectories().entrySet()) {
-			
+
 			String path = directory.getKey();
 			if (doNotCopy(getName(path)))
 				continue;
@@ -523,12 +498,12 @@ public class Builder extends Analyzer {
 			if (directory.getValue() == null)
 				continue;
 
-			PackageRef ref = getPackageRef(path);
+			PackageRef pref = getPackageRef(path);
 
-			Instruction instr = matches(filter, ref.getFQN(), unused, classpathEntry.getName());
+			Instruction instr = matches(filter, pref.getFQN(), unused, classpathEntry.getName());
 			if (instr != null) {
-				// System.out.println("Pattern match: " + pack + " " +
-				// instr.getPattern() + " " + instr.isNegated());
+				trace("matched %s to path %s in %s", filter, path, classpathEntry);
+
 				if (!instr.isNegated()) {
 					Map<String, Resource> contents = directory.getValue();
 
@@ -549,14 +524,14 @@ public class Builder extends Analyzer {
 							break;
 
 						case SPLIT_ERROR:
-							error(diagnostic(ref, getClasspath(), classpathEntry.source));
+							error(diagnostic(path, getClasspath(), classpathEntry.getSource()));
 							continue loop;
 
 						case SPLIT_FIRST:
 							continue loop;
 
 						default:
-							warning("%s", diagnostic(ref, getClasspath(), classpathEntry.source));
+							warning("%s", diagnostic(path, getClasspath(), classpathEntry.getSource()));
 							overwriteResource = false;
 							break;
 						}
@@ -590,13 +565,13 @@ public class Builder extends Analyzer {
 	 * @param source
 	 * @return
 	 */
-	private String diagnostic(PackageRef pack, List<Jar> classpath, File source) {
+	private String diagnostic(String pack, List<Jar> classpath, File source) {
 		// Default is like merge-first, but with a warning
 		// Find the culprits
 		List<Jar> culprits = new ArrayList<Jar>();
 		for (Iterator<Jar> i = classpath.iterator(); i.hasNext();) {
 			Jar culprit = (Jar) i.next();
-			if (culprit.getDirectories().containsKey(pack.getPath())) {
+			if (culprit.getDirectories().containsKey(pack)) {
 				culprits.add(culprit);
 			}
 		}
@@ -640,9 +615,9 @@ public class Builder extends Analyzer {
 	 *            the from: directive.
 	 * @return
 	 */
-	private Instruction matches(Map<Instruction, Map<String, String>> instructions, String pack,
+	private Instruction matches(Instructions instructions, String pack,
 			Set<Instruction> superfluousPatterns, String source) {
-		for (Entry<Instruction, Map<String, String>> entry : instructions.entrySet()) {
+		for (Entry<Instruction, Attrs> entry : instructions.entrySet()) {
 			Instruction pattern = entry.getKey();
 
 			// It is possible to filter on the source of the
@@ -652,7 +627,7 @@ public class Builder extends Analyzer {
 
 			String from = entry.getValue().get(FROM_DIRECTIVE);
 			if (from != null) {
-				Instruction f = Instruction.getPattern(from);
+				Instruction f = new Instruction(from);
 				if (!f.matches(source) || f.isNegated())
 					return null;
 			}
@@ -689,13 +664,13 @@ public class Builder extends Analyzer {
 	}
 
 	private void doIncludeResource(Jar jar, String includes) throws Exception {
-		Map<String, Map<String, String>> clauses = parseHeader(includes);
+		Parameters clauses = parseHeader(includes);
 		doIncludeResource(jar, clauses);
 	}
 
-	private void doIncludeResource(Jar jar, Map<String, Map<String, String>> clauses)
-			throws ZipException, IOException, Exception {
-		for (Map.Entry<String, Map<String, String>> entry : clauses.entrySet()) {
+	private void doIncludeResource(Jar jar, Parameters clauses) throws ZipException, IOException,
+			Exception {
+		for (Entry<String, Attrs> entry : clauses.entrySet()) {
 			doIncludeResource(jar, entry.getKey(), entry.getValue());
 		}
 	}
@@ -764,12 +739,11 @@ public class Builder extends Analyzer {
 			recursive = isTrue(directive);
 		}
 
-		InstructionFilter iFilter = null;
+		Instruction.Filter iFilter = null;
 		if (filter != null) {
-			iFilter = new InstructionFilter(Instruction.getPattern(filter), recursive,
-					getDoNotCopy());
+			iFilter = new Instruction.Filter(new Instruction(filter), recursive, getDoNotCopy());
 		} else {
-			iFilter = new InstructionFilter(null, recursive, getDoNotCopy());
+			iFilter = new Instruction.Filter(null, recursive, getDoNotCopy());
 		}
 
 		Map<String, File> files = newMap();
@@ -846,7 +820,7 @@ public class Builder extends Analyzer {
 		int n = source.lastIndexOf("!/");
 		Instruction instr = null;
 		if (n > 0) {
-			instr = Instruction.getPattern(source.substring(n + 2));
+			instr = new Instruction(source.substring(n + 2));
 			source = source.substring(0, n);
 		}
 
@@ -860,9 +834,45 @@ public class Builder extends Analyzer {
 		if (sub == null)
 			error("Can not find JAR file " + source);
 		else {
-			jar.addAll(sub, instr, destination);
+			addAll(jar, sub, instr, destination);
 		}
 	}
+	
+	
+	
+	/**
+	 * Add all the resources in the given jar that match the given filter.
+	 * 
+	 * @param sub
+	 *            the jar
+	 * @param filter
+	 *            a pattern that should match the resoures in sub to be added
+	 */
+	public boolean addAll(Jar to, Jar sub, Instruction filter) {
+		return addAll(to, sub, filter, "");
+	}
+
+	/**
+	 * Add all the resources in the given jar that match the given filter.
+	 * 
+	 * @param sub
+	 *            the jar
+	 * @param filter
+	 *            a pattern that should match the resoures in sub to be added
+	 */
+	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
+		boolean dupl = false;
+		for (String name : sub.getResources().keySet()) {
+			if ("META-INF/MANIFEST.MF".equals(name))
+				continue;
+
+			if (filter == null || filter.matches(name) != filter.isNegated())
+				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name),
+						true);
+		}
+		return dupl;
+	}
+
 
 	private void copy(Jar jar, String path, File from, boolean preprocess, Map<String, String> extra)
 			throws Exception {
@@ -934,7 +944,7 @@ public class Builder extends Analyzer {
 		// Are we acting as a conduit for another JAR?
 		String conduit = getProperty(CONDUIT);
 		if (conduit != null) {
-			Map<String, Map<String, String>> map = parseHeader(conduit);
+			Parameters map = parseHeader(conduit);
 			Jar[] result = new Jar[map.size()];
 			int n = 0;
 			for (String file : map.keySet()) {
@@ -988,7 +998,7 @@ public class Builder extends Analyzer {
 		if (isTrue(getProperty(NOBUNDLES)))
 			return builders;
 
-		Map<String, Map<String, String>> subsMap = parseHeader(sub);
+		Parameters subsMap = parseHeader(sub);
 		for (Iterator<String> i = subsMap.keySet().iterator(); i.hasNext();) {
 			File file = getFile(i.next());
 			if (file.isFile()) {
@@ -997,7 +1007,7 @@ public class Builder extends Analyzer {
 			}
 		}
 
-		Set<Instruction> subs = Instruction.replaceWithInstruction(subsMap).keySet();
+		Instructions instructions = new Instructions(subsMap);
 
 		List<File> members = new ArrayList<File>(Arrays.asList(getBase().listFiles()));
 
@@ -1013,7 +1023,7 @@ public class Builder extends Analyzer {
 				p = p.getParent();
 			}
 
-			for (Iterator<Instruction> i = subs.iterator(); i.hasNext();) {
+			for (Iterator<Instruction> i = instructions.keySet().iterator(); i.hasNext();) {
 
 				Instruction instruction = i.next();
 				if (instruction.matches(file.getName())) {
@@ -1113,14 +1123,13 @@ public class Builder extends Analyzer {
 	 * @return
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
-		Map<String, Map<String, String>> clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
+		Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
 		clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
 			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES,
 					"test;presence:=optional")));
 		}
-		Map<Instruction, Map<String, String>> instructions = Instruction
-				.replaceWithInstruction(clauses);
+		Instructions instructions = new Instructions(clauses);
 
 		for (File r : resources) {
 			String cpEntry = getClasspathEntrySuffix(r);
@@ -1213,7 +1222,7 @@ public class Builder extends Analyzer {
 	 */
 
 	public void doDiff(Jar dot) throws Exception {
-		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-diff"));
+		Parameters diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;
 
@@ -1222,7 +1231,7 @@ public class Builder extends Analyzer {
 		if (tree == null)
 			tree = differ.tree(this);
 
-		for (Map.Entry<String, Map<String, String>> entry : diffs.entrySet()) {
+		for (Entry<String, Attrs> entry : diffs.entrySet()) {
 			String path = entry.getKey();
 			File file = getFile(path);
 			if (!file.isFile()) {
@@ -1235,13 +1244,12 @@ public class Builder extends Analyzer {
 
 			Tree other = differ.tree(file);
 			Diff api = tree.diff(other).get("<api>");
-			Collection<Instruction> instructions = Instruction.toInstruction(entry.getValue().get(
-					"--pack"));
+			Instructions instructions = new Instructions(entry.getValue().get("--pack"));
 
 			trace("diff against %s --full=%s --pack=%s --warning=%s", file, full, instructions);
 			for (Diff p : api.getChildren()) {
 				String pname = p.getName();
-				if (p.getType() == Type.PACKAGE && Instruction.matches(instructions, pname)) {
+				if (p.getType() == Type.PACKAGE && instructions.matches(pname)) {
 					if (p.getDelta() != Delta.UNCHANGED) {
 
 						if (!full)
@@ -1302,7 +1310,7 @@ public class Builder extends Analyzer {
 	 */
 
 	private void doBaseline(Jar dot) throws Exception {
-		Map<String, Map<String, String>> diffs = parseHeader(getProperty("-baseline"));
+		Parameters diffs = parseHeader(getProperty("-baseline"));
 		if (diffs.isEmpty())
 			return;
 
@@ -1310,7 +1318,7 @@ public class Builder extends Analyzer {
 
 		Baseline baseline = new Baseline(this, differ);
 
-		for (Map.Entry<String, Map<String, String>> entry : diffs.entrySet()) {
+		for (Entry<String, Attrs> entry : diffs.entrySet()) {
 			String path = entry.getKey();
 			File file = getFile(path);
 			if (!file.isFile()) {

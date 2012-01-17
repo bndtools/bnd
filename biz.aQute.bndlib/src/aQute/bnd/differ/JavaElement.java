@@ -6,6 +6,7 @@ import static java.lang.reflect.Modifier.*;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.*;
 import java.util.jar.*;
 
@@ -50,31 +51,30 @@ import aQute.libg.version.Version;
  */
 
 class JavaElement {
-	final static EnumSet<Type>				INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS,
-																	IMPLEMENTS);
-	private static final Element			PROTECTED		= new Element(ACCESS, "protected",
-																	null, MAJOR, MINOR, null);
-	private static final Element			STATIC			= new Element(ACCESS, "static", null,
-																	MAJOR, MAJOR, null);
-	private static final Element			ABSTRACT		= new Element(ACCESS, "abstract", null,
-																	MAJOR, MINOR, null);
-	private static final Element			FINAL			= new Element(ACCESS, "final", null,
-																	MAJOR, MINOR, null);
+	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS,
+																IMPLEMENTS);
+	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null,
+																MAJOR, MINOR, null);
+	private static final Element		STATIC			= new Element(ACCESS, "static", null,
+																MAJOR, MAJOR, null);
+	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null,
+																MAJOR, MINOR, null);
+	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR,
+																MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
 
-	final Analyzer							analyzer;
-	final Map<PackageRef, //
-	Collection<Instruction>>				providerMatcher	= Create.map();
-	final Set<TypeRef>						notAccessible	= Create.set();
-	final Map<Object, Element>				cache			= Create.map();
+	final Analyzer						analyzer;
+	final Map<PackageRef, Instructions>	providerMatcher	= Create.map();
+	final Set<TypeRef>					notAccessible	= Create.set();
+	final Map<Object, Element>			cache			= Create.map();
 	MultiMap<PackageRef, //
-	Element>								packages;
+	Element>							packages;
 	final MultiMap<TypeRef, //
-	Element>								covariant		= new MultiMap<TypeRef, Element>();
-	final Set<JAVA>							javas			= Create.set();
-	final Map<PackageRef, Map<String, String>>	exports;
+	Element>							covariant		= new MultiMap<TypeRef, Element>();
+	final Set<JAVA>						javas			= Create.set();
+	final Packages						exports;
 
 	/**
 	 * Create an element for the API. We take the exported packages and traverse
@@ -89,12 +89,11 @@ class JavaElement {
 		Manifest manifest = analyzer.getJar().getManifest();
 		if (manifest != null
 				&& manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
-			exports = Create.map();
-			for ( Map.Entry<String,Map<String,String>> entry : OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(
-					Constants.EXPORT_PACKAGE)).entrySet() )
-				exports.put( analyzer.getPackageRef(entry.getKey()), entry.getValue());
-		}
-		else
+			exports = new Packages();
+			for (Map.Entry<String, Attrs> entry : OSGiHeader.parseHeader(
+					manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).entrySet())
+				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
+		} else
 			exports = analyzer.getContained();
 		//
 		// We have to gather the -providers and parse them into instructions
@@ -102,10 +101,10 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Map.Entry<PackageRef, Map<String, String>> entry : exports.entrySet()) {
+		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
 			String value = entry.getValue().get(Constants.PROVIDER_TYPE_DIRECTIVE);
 			if (value != null) {
-				providerMatcher.put(entry.getKey(), Instruction.toInstruction(value));
+				providerMatcher.put(entry.getKey(), new Instructions(value));
 			}
 		}
 
@@ -188,13 +187,12 @@ class JavaElement {
 
 		final String fqn = name.getFQN();
 		final String shortName = name.getShortName();
-		final String packageName = name.getPackageRef().getFQN();
 
 		// Check if this clazz is actually a provider or not
 		// providers must be listed in the exported package in the
 		// PROVIDER_TYPE directive.
-		Collection<Instruction> matchers = providerMatcher.get(packageName);
-		boolean p = matchers != null && Instruction.matches(matchers, shortName);
+		Instructions matchers = providerMatcher.get(name.getPackageRef());
+		boolean p = matchers != null && matchers.matches(shortName);
 		final AtomicBoolean provider = new AtomicBoolean(p);
 
 		//

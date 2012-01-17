@@ -1,10 +1,9 @@
 package test;
 
-import java.io.File;
+import java.io.*;
 
-import junit.framework.TestCase;
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
+import junit.framework.*;
+import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
 
 public class TestSelfBuild extends TestCase {

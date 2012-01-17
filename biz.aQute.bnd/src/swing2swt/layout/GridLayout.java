@@ -28,7 +28,7 @@
 
 package swing2swt.layout;
 
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 

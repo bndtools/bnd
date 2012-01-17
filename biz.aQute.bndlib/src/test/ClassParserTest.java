@@ -176,7 +176,7 @@ public class ClassParserTest extends TestCase {
 		b.addClasspath(new File("jar/spring.jar"));
 		b.setProperty("Export-Package", "nl.fuji.log");
 		b.build();
-		assertFalse(b.getImports().containsKey("org.aopalliance.aop"));
+		assertFalse(b.getImports().getByFQN("org.aopalliance.aop")!=null);
 	}
 
 //	public void testImplemented() throws Exception {

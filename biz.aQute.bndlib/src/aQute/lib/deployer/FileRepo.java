@@ -8,6 +8,7 @@ import java.util.regex.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
@@ -131,7 +132,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-		Map<String, Map<String, String>> b = Processor.parseHeader(bsn, null);
+		Parameters b = Processor.parseHeader(bsn, null);
 		if (b.size() != 1)
 			throw new IllegalArgumentException("Multiple bsn's specified " + b);
 
@@ -202,7 +203,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init();
 		Instruction pattern = null;
 		if (regex != null)
-			pattern = Instruction.getPattern(regex);
+			pattern = new Instruction(regex);
 
 		List<String> result = new ArrayList<String>();
 		if (root == null) {

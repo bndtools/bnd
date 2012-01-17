@@ -1,10 +1,10 @@
 package test;
 
-import java.io.File;
-import java.util.Properties;
-import java.util.jar.Manifest;
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class VerifierTest extends TestCase {
@@ -215,26 +215,19 @@ public class VerifierTest extends TestCase {
     }
 
     public void testSimple() throws Exception {
-        File cp[] = { new File("jar/mina.jar") };
-        Properties p = new Properties();
-        p.put("Export-Package", "org.apache.mina.*;version=1");
-        p.put("Import-Package", "*");
-        p.put("DynamicImport-Package", "org.slf4j");
         Builder bmaker = new Builder();
-        bmaker.setProperties(p);
-        bmaker.setClasspath(cp);
-
+        bmaker.addClasspath(new File("jar/mina.jar") );
+        bmaker.set("Export-Package", "org.apache.mina.*;version=1");
+        bmaker.set("DynamicImport-Package", "org.slf4j");
         Jar jar = bmaker.build();
+        assertTrue(bmaker.check());
+        
         Manifest m = jar.getManifest();
         m.write(System.out);
         assertFalse(m.getMainAttributes().getValue("Import-Package").indexOf(
                 "org.slf4j") >= 0);
         assertTrue(m.getMainAttributes().getValue("DynamicImport-Package")
                 .indexOf("org.slf4j") >= 0);
-        System.out.println(Processor.join( bmaker.getErrors(),"\n"));
-        System.out.println(Processor.join( bmaker.getWarnings(),"\n"));
-        assertTrue(bmaker.getErrors().size() == 0);
-        assertTrue(bmaker.getWarnings().size() == 0);
     }
 
 }

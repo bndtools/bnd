@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class AttributesTest extends TestCase {
 
@@ -30,15 +31,17 @@ public class AttributesTest extends TestCase {
 		bmaker.setClasspath(cp);
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
+		assertTrue( bmaker.check());
+		assertNotNull(bmaker.getImports());
+		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io"));
+		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io").get("a2"));
 		jar.getManifest().write(System.out);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
 		assertNotNull("Import package header", imprt );
-		Map<String,Map<String,String>> map = Processor.parseHeader(imprt, null);
+		Parameters map = Processor.parseHeader(imprt, null);
+		System.out.println("** " + map);
 		Map<String,String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
 		assertNull(attrs.get("a1"));
@@ -68,16 +71,14 @@ public class AttributesTest extends TestCase {
 		bmaker.setClasspath(cp);
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
+		assertTrue(bmaker.check());
+		
 		jar.getManifest().write(System.out);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
 		assertNotNull("Import package header", imprt );
-		Map<String,Map<String,String>> map = Processor.parseHeader(imprt, null);
+		Parameters map = Processor.parseHeader(imprt, null);
 		Map<String,String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
 		assertNull(attrs.get("common"));
@@ -105,7 +106,7 @@ public class AttributesTest extends TestCase {
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
 		assertNotNull("Export package header", export );
-		Map<String,Map<String,String>> map = Processor.parseHeader(export, null);
+		Parameters map = Processor.parseHeader(export, null);
 		assertEquals( "1.1", map.get("org.osgi.framework").get("version"));
 	}
 
@@ -132,7 +133,7 @@ public class AttributesTest extends TestCase {
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
 		assertNotNull("Export package header", export );
-		Map<String,Map<String,String>> map = Processor.parseHeader(export, null);
+		Parameters map = Processor.parseHeader(export, null);
 		assertEquals( "1.3", map.get("org.osgi.framework").get("version"));
 	}
 

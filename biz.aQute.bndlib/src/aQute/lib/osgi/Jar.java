@@ -690,4 +690,12 @@ public class Jar implements Closeable {
 		manifest = new Manifest();
 	}
 
+	/**
+	 * Answer if the manifest was the first entry
+	 */
+
+	public boolean isManifestFirst() {
+		return manifestFirst;
+	}
 }
+

@@ -1,7 +1,7 @@
 package aQute.bnd.service;
 
-import java.io.File;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public interface RemoteRepositoryPlugin extends RepositoryPlugin {
 	/**

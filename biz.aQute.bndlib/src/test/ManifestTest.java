@@ -25,9 +25,8 @@ public class ManifestTest extends TestCase {
         
         jar = new Jar(f);
         f.delete();
+        assertTrue(b.check());
         
-        assertEquals(0, b.getErrors().size());
-        assertEquals(0, b.getWarnings().size());
         Resource r = jar.getResource("META-INF/MANIFEST.MF");        
         assertNotNull( r );
 

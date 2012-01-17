@@ -7,6 +7,7 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.sed.*;
 import aQute.libg.version.*;
@@ -18,21 +19,15 @@ import aQute.libg.version.*;
  * as functions in the macro processor (without the _). Macros can nest to any
  * depth but may not contain loops.
  * 
- * Add POSIX macros:
- * ${#parameter}
-    String length.
-
-${parameter%word}
-    Remove smallest suffix pattern.
-
-${parameter%%word}
-    Remove largest suffix pattern.
-
-${parameter#word}
-    Remove smallest prefix pattern.
-
-${parameter##word}
-    Remove largest prefix pattern. 
+ * Add POSIX macros: ${#parameter} String length.
+ * 
+ * ${parameter%word} Remove smallest suffix pattern.
+ * 
+ * ${parameter%%word} Remove largest suffix pattern.
+ * 
+ * ${parameter#word} Remove smallest prefix pattern.
+ * 
+ * ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro implements Replacer {
 	Processor	domain;
@@ -50,7 +45,7 @@ public class Macro implements Replacer {
 	}
 
 	public String process(String line, Processor source) {
-		return process(line, new Link(source,null,line));
+		return process(line, new Link(source, null, line));
 	}
 
 	String process(String line, Link link) {
@@ -120,16 +115,33 @@ public class Macro implements Replacer {
 			if (key.length() > 0) {
 				Processor source = domain;
 				String value = null;
-				while( source != null) {
+
+				if (key.indexOf(';') < 0) {
+					Instruction ins = new Instruction(key);
+					if (!ins.isLiteral()) {
+						SortedList<String> sortedList = new SortedList<String>(domain.iterator());
+						StringBuilder sb = new StringBuilder();
+						String del = "";
+						for (String k : sortedList) {
+							if (ins.matches(k)) {
+								String v = replace(k, new Link(source, link, key));
+								if (v != null) {
+									sb.append(del);
+									del = ",";
+									sb.append(v);
+								}
+							}
+						}
+						return sb.toString();
+					}
+				}
+				while (value == null && source != null) {
 					value = source.getProperties().getProperty(key);
-					if ( value != null )
-						break;
-					
 					source = source.getParent();
 				}
-				
+
 				if (value != null)
-					return process(value, new Link(source,link, key));
+					return process(value, new Link(source, link, key));
 
 				value = doCommands(key, link);
 				if (value != null)
@@ -140,7 +152,7 @@ public class Macro implements Replacer {
 					if (value != null)
 						return value;
 				}
-				if (!flattening)
+				if (!flattening && !key.equals("@"))
 					domain.warning("No translation found for macro: " + key);
 			} else {
 				domain.warning("Found empty macro key");
@@ -169,18 +181,16 @@ public class Macro implements Replacer {
 			if (args[i].indexOf('\\') >= 0)
 				args[i] = args[i].replaceAll("\\\\;", ";");
 
-		
-		if ( args[0].startsWith("^")) {
+		if (args[0].startsWith("^")) {
 			String varname = args[0].substring(1).trim();
-			
+
 			Processor parent = source.start.getParent();
-			if ( parent != null)
+			if (parent != null)
 				return parent.getProperty(varname);
 			else
 				return null;
 		}
-		
-		
+
 		Processor rover = domain;
 		while (rover != null) {
 			String result = doCommand(rover, args[0], args);
@@ -211,8 +221,9 @@ public class Macro implements Replacer {
 			} catch (NoSuchMethodException e) {
 				// Ignore
 			} catch (InvocationTargetException e) {
-				if ( e.getCause() instanceof IllegalArgumentException ) {
-					domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+				if (e.getCause() instanceof IllegalArgumentException) {
+					domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method,
+							Arrays.toString(args));
 				} else {
 					domain.warning("Exception in replace: " + e.getCause());
 					e.getCause().printStackTrace();
@@ -587,7 +598,7 @@ public class Macro implements Replacer {
 			String parts[] = args[i].split("\\s*,\\s*");
 			for (String pattern : parts) {
 				// So make it in to an instruction
-				Instruction instr = Instruction.getPattern(pattern);
+				Instruction instr = new Instruction(pattern);
 
 				// For each project, match it against the instruction
 				for (int f = 0; f < files.length; f++) {
@@ -658,10 +669,9 @@ public class Macro implements Replacer {
 		if (version == null) {
 			String v = domain.getProperty("@");
 			if (v == null) {
-				domain
-						.error(
-								"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
-								mask);
+				domain.error(
+						"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
+						mask);
 				v = "0";
 			}
 			version = new Version(v);
@@ -715,7 +725,8 @@ public class Macro implements Replacer {
 	 * @return
 	 */
 
-	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING +")(\\]|\\))");
+	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),("
+											+ MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
 											+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
 											+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
@@ -779,6 +790,9 @@ public class Macro implements Replacer {
 
 		String s = IO.collect(process.getInputStream(), "UTF-8");
 		int exitValue = process.waitFor();
+		if ( exitValue != 0)
+			return exitValue+"";
+		
 		if (!allowFail && (exitValue != 0)) {
 			domain.error("System command " + command + " failed with " + exitValue);
 		}
@@ -869,9 +883,9 @@ public class Macro implements Replacer {
 	// Helper class to track expansion of variables
 	// on the stack.
 	static class Link {
-		Link	previous;
-		String	key;
-		Processor start;
+		Link		previous;
+		String		key;
+		Processor	start;
 
 		public Link(Processor start, Link previous, String key) {
 			this.previous = previous;
@@ -961,7 +975,7 @@ public class Macro implements Replacer {
 	}
 
 	public String process(String line) {
-		return process(line,domain);
+		return process(line, domain);
 	}
 
 }

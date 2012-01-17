@@ -28,11 +28,10 @@
 
 package swing2swt.layout;
 
-import java.awt.Dimension;
+import java.awt.*;
 
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.*;
 
 /**
  * Superclass for all the AWT layouts ported to SWT.

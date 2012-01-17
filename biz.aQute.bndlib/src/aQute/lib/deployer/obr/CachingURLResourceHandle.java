@@ -1,19 +1,12 @@
 package aQute.lib.deployer.obr;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.*;
 
-import aQute.bnd.service.ResourceHandle;
-import aQute.bnd.service.url.URLConnector;
-import aQute.lib.io.IO;
-import aQute.libg.reporter.Reporter;
+import aQute.bnd.service.*;
+import aQute.bnd.service.url.*;
+import aQute.lib.io.*;
+import aQute.libg.reporter.*;
 
 /**
  * <p>

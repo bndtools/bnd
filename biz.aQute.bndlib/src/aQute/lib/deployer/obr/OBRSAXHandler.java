@@ -1,8 +1,7 @@
 package aQute.lib.deployer.obr;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 
 public class OBRSAXHandler extends DefaultHandler {
 	

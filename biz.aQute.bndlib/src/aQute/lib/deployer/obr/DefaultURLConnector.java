@@ -1,10 +1,9 @@
 package aQute.lib.deployer.obr;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 
-import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.service.url.*;
 
 public class DefaultURLConnector implements URLConnector {
 

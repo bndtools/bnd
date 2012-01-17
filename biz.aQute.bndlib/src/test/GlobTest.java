@@ -1,7 +1,7 @@
 package test;
 
-import aQute.libg.glob.Glob;
-import junit.framework.TestCase;
+import junit.framework.*;
+import aQute.libg.glob.*;
 
 public class GlobTest extends TestCase {
 	public void testSimple() {

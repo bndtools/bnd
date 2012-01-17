@@ -14,6 +14,7 @@ import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 import aQute.libg.map.*;
 
 public class MavenTest extends TestCase {
@@ -261,7 +262,7 @@ public class MavenTest extends TestCase {
 		assertEquals("org.apache.felix.metatype", p.get("pom.artifactId"));
 		assertEquals("bundle", p.get("pom.packaging"));
 
-		Map<String, Map<String, String>> map = parser.parseHeader(p.getProperty("pom.scope.test"));
+		Parameters map = parser.parseHeader(p.getProperty("pom.scope.test"));
 		Map<String, String> junit = map.get("junit.junit");
 		assertNotNull(junit);
 		assertEquals("4.0", junit.get("version"));

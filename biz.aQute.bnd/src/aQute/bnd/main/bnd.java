@@ -33,6 +33,7 @@ import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 /**
@@ -351,7 +352,7 @@ public class bnd extends Processor {
 			} else if (args[i].equals("-skip")) {
 				i++;
 				if (i < args.length) {
-					Instruction instr = Instruction.getPattern(args[i]);
+					Instruction instr = new Instruction(args[i]);
 					skip.add(instr);
 				} else
 					error("No arg for -skip");
@@ -469,11 +470,11 @@ public class bnd extends Processor {
 			containers.addAll(p.getDeliverables());
 		}
 		long duration = System.currentTimeMillis() - start;
-		System.out.println("Took " + duration + " ms");
+		out.println("Took " + duration + " ms");
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			System.out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
+			out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
 					v.getMinor(), v.getMicro(), c.getFile());
 		}
 
@@ -514,7 +515,7 @@ public class bnd extends Processor {
 
 	private void doXref(String[] args, int i) {
 		Analyzer analyzer = new Analyzer();
-		
+
 		for (; i < args.length; i++) {
 			try {
 				File file = new File(args[i]);
@@ -525,11 +526,11 @@ public class bnd extends Processor {
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
 							InputStream in = r.openInputStream();
-							Clazz clazz = new Clazz(analyzer,key, r);
-							
+							Clazz clazz = new Clazz(analyzer, key, r);
+
 							// TODO use the proper bcp instead
 							// of using the default layout
-							
+
 							out.print(key);
 							Set<String> xref = clazz.parseClassFile();
 							in.close();
@@ -913,21 +914,21 @@ public class bnd extends Processor {
 			if ((options & IMPEXP) != 0) {
 				out.println("[IMPEXP]");
 				Manifest m = jar.getManifest();
+				Domain domain = Domain.domain(m);
+				
 				if (m != null) {
-					Map<String, Map<String, String>> imports = parseHeader(m.getMainAttributes()
-							.getValue(Analyzer.IMPORT_PACKAGE));
-					Map<String, Map<String, String>> exports = parseHeader(m.getMainAttributes()
-							.getValue(Analyzer.EXPORT_PACKAGE));
+					Parameters imports = domain.getImportPackage();
+					Parameters exports = domain.getExportPackage();
 					for (String p : exports.keySet()) {
 						if (imports.containsKey(p)) {
-							Map<String, String> attrs = imports.get(p);
-							if (attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
+							Attrs attrs = imports.get(p);
+							if (attrs.containsKey(VERSION_ATTRIBUTE)) {
 								exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
 							}
 						}
 					}
-					print("Import-Package", new TreeMap<String, Map<String, String>>(imports));
-					print("Export-Package", new TreeMap<String, Map<String, String>>(exports));
+					print("Import-Package", new TreeMap<String, Attrs>(imports));
+					print("Export-Package", new TreeMap<String, Attrs>(exports));
 				} else
 					warning("File has no manifest");
 			}
@@ -1030,7 +1031,7 @@ public class bnd extends Processor {
 		}
 
 		String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
-		Map<String, Map<String, String>> clauses = parseHeader(componentHeader);
+		Parameters clauses = new Parameters(componentHeader);
 		for (String path : clauses.keySet()) {
 			out.println(path);
 
@@ -1040,7 +1041,7 @@ public class bnd extends Processor {
 						Constants.DEFAULT_CHARSET);
 				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
-					copy(ir, or);
+					IO.copy(ir, or);
 				} finally {
 					or.flush();
 					ir.close();
@@ -1079,19 +1080,19 @@ public class bnd extends Processor {
 
 	void printMapOfSets(Map<? extends Comparable<?>, ? extends Collection<? extends Comparable>> map) {
 		SortedList keys = new SortedList<Object>(map.keySet());
-		for (Object key : keys ) {
+		for (Object key : keys) {
 			String name = key.toString();
-			
+
 			SortedList<Object> values = new SortedList<Object>(map.get(key));
 			String list = vertical(40, values);
-			format("%-40s %s", name, list );
+			format("%-40s %s", name, list);
 		}
 	}
 
 	String vertical(int padding, Collection<?> used) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Object s : used ) {
+		for (Object s : used) {
 			String name = s.toString();
 			sb.append(del);
 			sb.append(name);
@@ -1161,7 +1162,7 @@ public class bnd extends Processor {
 		if (name == null)
 			name = "META-INF/MANIFEST.MF";
 
-		Instruction instruction = Instruction.getPattern(path.getName());
+		Instruction instruction = new Instruction(path.getName());
 
 		File[] children = dir.listFiles();
 		for (int j = 0; j < children.length; j++) {
@@ -1180,7 +1181,7 @@ public class bnd extends Processor {
 	private void doView(File file, String resource, String charset, int options, File output) {
 		// out.println("doView:" + file.getAbsolutePath() );
 		try {
-			Instruction instruction = Instruction.getPattern(resource);
+			Instruction instruction = new Instruction(resource);
 			FileInputStream fin = new FileInputStream(file);
 			ZipInputStream in = new ZipInputStream(fin);
 			ZipEntry entry = in.getNextEntry();
@@ -1215,7 +1216,7 @@ public class bnd extends Processor {
 			else
 				wrt = new FileWriter(output);
 
-		copy(rds, wrt);
+		IO.copy(rds, wrt);
 		// rds.close(); also closes the stream which closes our zip it
 		// seems
 		if (output != null)
@@ -1224,24 +1225,16 @@ public class bnd extends Processor {
 			wrt.flush();
 	}
 
-	private void copy(Reader rds, Writer wrt) throws IOException {
-		char buffer[] = new char[1024];
-		int size = rds.read(buffer);
-		while (size > 0) {
-			wrt.write(buffer, 0, size);
-			size = rds.read(buffer);
-		}
-	}
-
-	private void print(String msg, Map<String, Map<String, String>> ports) {
+	private void print(String msg, Map<?, ? extends Map<?, ?>> ports) {
 		if (ports.isEmpty())
 			return;
 		out.println(msg);
-		for (Map.Entry<String, Map<String, String>> entry : ports.entrySet()) {
-			String key = entry.getKey();
-			Map<String, String> clause = Create.copy(entry.getValue());
+		for (Entry<?, ? extends Map<?, ?>> entry : ports.entrySet()) {
+			Object key = entry.getKey();
+			Map<?, ?> clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			format("  %-38s %s\r\n", key.trim(), clause.isEmpty() ? "" : clause.toString());
+			format("  %-38s %s\r\n", key.toString().trim(),
+					clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -1340,7 +1333,7 @@ public class bnd extends Processor {
 	}
 
 	public boolean doWrap(File properties, File bundle, File output, File classpath[], int options,
-			Map<String, String> additional) throws Exception {
+			Map<String,String> additional) throws Exception {
 		if (!bundle.exists()) {
 			error("No such file: " + bundle.getAbsolutePath());
 			return false;
@@ -1462,7 +1455,7 @@ public class bnd extends Processor {
 	 */
 	public void debug(String args[], int i) throws Exception {
 		Project project = getProject();
-		System.out.println("Project: " + project);
+		out.println("Project: " + project);
 		Properties p = project.getFlattenedProperties();
 		for (Object k : p.keySet()) {
 			String key = (String) k;
@@ -1476,11 +1469,11 @@ public class bnd extends Processor {
 			if (l != null) {
 				String del = key;
 				for (String ss : l) {
-					System.out.printf("%-40s %s\n", del, ss);
+					out.printf("%-40s %s\n", del, ss);
 					del = "";
 				}
 			} else
-				System.out.printf("%-40s %s\n", key, s);
+				out.printf("%-40s %s\n", key, s);
 		}
 	}
 
@@ -1531,9 +1524,9 @@ public class bnd extends Processor {
 			} else if ("--repo".equals(args[i]) || "-r".equals(args[i])) {
 				String location = args[++i];
 				if (location.equals("maven")) {
-					System.out.println("Maven");
+					out.println("Maven");
 					MavenRemoteRepository maven = new MavenRemoteRepository();
-					maven.setProperties(new HashMap<String, String>());
+					maven.setProperties(new Attrs());
 					maven.setReporter(this);
 					repos = Arrays.asList((RepositoryPlugin) maven);
 				} else {
@@ -1620,31 +1613,33 @@ public class bnd extends Processor {
 		return;
 	}
 
-//	private void repoPut(RepositoryPlugin writable, Project project, String file, String bsn,
-//			String version) throws Exception {
-//		Jar jar = null;
-//		int n = file.indexOf(':');
-//		if (n > 1 && n < 10) {
-//			jar = project.getValidJar(new URL(file));
-//		} else {
-//			File f = getFile(file);
-//			if (f.isFile()) {
-//				jar = project.getValidJar(f);
-//			}
-//		}
-//
-//		if (jar != null) {
-//			Manifest manifest = jar.getManifest();
-//			if (bsn != null)
-//				manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
-//			if (version != null)
-//				manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
-//
-//			writable.put(jar);
-//
-//		} else
-//			error("There is no such file or url: " + file);
-//	}
+	// private void repoPut(RepositoryPlugin writable, Project project, String
+	// file, String bsn,
+	// String version) throws Exception {
+	// Jar jar = null;
+	// int n = file.indexOf(':');
+	// if (n > 1 && n < 10) {
+	// jar = project.getValidJar(new URL(file));
+	// } else {
+	// File f = getFile(file);
+	// if (f.isFile()) {
+	// jar = project.getValidJar(f);
+	// }
+	// }
+	//
+	// if (jar != null) {
+	// Manifest manifest = jar.getManifest();
+	// if (bsn != null)
+	// manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME,
+	// bsn);
+	// if (version != null)
+	// manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
+	//
+	// writable.put(jar);
+	//
+	// } else
+	// error("There is no such file or url: " + file);
+	// }
 
 	void repoList(List<RepositoryPlugin> repos, String mask) throws Exception {
 		trace("list repo " + repos + " " + mask);
@@ -2011,7 +2006,7 @@ public class bnd extends Processor {
 		}
 
 		if (i == args.length) {
-			System.out.println("FILES:");
+			out.println("FILES:");
 			doPrint(f, LIST);
 			return;
 		}
@@ -2026,13 +2021,8 @@ public class bnd extends Processor {
 					error("No such resource: %s in %s", path, f);
 				else {
 					InputStream in = r.openInputStream();
-					try {
-						InputStreamReader rds = new InputStreamReader(in, Constants.DEFAULT_CHARSET);
-						copy(rds, output);
-						output.flush();
-					} finally {
-						in.close();
-					}
+					IO.copy(in, output);
+					output.flush();
 				}
 			}
 		} finally {
@@ -2081,7 +2071,7 @@ public class bnd extends Processor {
 
 		if (args.length == i) {
 			for (String key : settings.getKeys())
-				System.out.printf("%-30s %s\n", key, settings.globalGet(key, "<>"));
+				out.printf("%-30s %s\n", key, settings.globalGet(key, "<>"));
 		} else {
 			while (i < args.length) {
 				boolean remove = false;
@@ -2093,7 +2083,7 @@ public class bnd extends Processor {
 					if (remove)
 						settings.globalRemove(args[i]);
 					else
-						System.out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));
+						out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));
 					i++;
 				} else {
 					settings.globalSet(args[i], args[i + 1]);
@@ -2146,7 +2136,7 @@ public class bnd extends Processor {
 
 			outer: for (Clazz clazz : analyzer.getClassspace().values()) {
 				String sourcename = clazz.getSourceFile();
-				String path = clazz.getPath();
+				String path = clazz.getAbsolutePath();
 				int n = path.lastIndexOf('/');
 				if (n >= 0) {
 					path = path.substring(0, n + 1);
@@ -2207,11 +2197,11 @@ public class bnd extends Processor {
 			out = getFile(files.get(0).getName() + ".lib");
 		}
 
-		System.out.println("Using " + out);
+		this.out.println("Using " + out);
 		Writer w = new FileWriter(out);
 		try {
 			for (File file : files) {
-				System.out.println("And using " + file);
+				this.out.println("And using " + file);
 				if (file.isDirectory())
 					doLib(file, w);
 				else if (file.isFile())
@@ -2239,7 +2229,7 @@ public class bnd extends Processor {
 	void doSingleFileLib(File file, Appendable out) throws IOException, Exception {
 		Jar jar = new Jar(file);
 		String bsn = jar.getBsn();
-		System.out.println(bsn);
+		this.out.println(bsn);
 		String version = jar.getVersion();
 		jar.close();
 		if (bsn == null) {

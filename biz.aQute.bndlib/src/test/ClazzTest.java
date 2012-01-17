@@ -1,7 +1,7 @@
 package test;
 
-import aQute.lib.osgi.*;
 import junit.framework.*;
+import aQute.lib.osgi.*;
 
 public class ClazzTest extends TestCase {
 

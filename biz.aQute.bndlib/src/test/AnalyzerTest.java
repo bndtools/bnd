@@ -6,7 +6,7 @@ import java.util.jar.*;
 
 import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.libg.header.*;
 
 class T0 {
 }
@@ -23,6 +23,42 @@ class T3 extends T2 {
 public class AnalyzerTest extends BndTestCase {
 
 	
+	
+	/**
+	 * Test basic functionality of he BCP
+	 */
+	
+	public void testBundleClasspath() throws Exception {
+		Builder		b = new Builder();
+		b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "foo/test/refer=bin/test/refer");
+		b.setProperty(Constants.EXPORT_CONTENTS, "test.refer");
+		Jar jar = b.build();
+		Manifest m = jar.getManifest();
+		assertTrue(b.check());
+		m.write(System.out);
+	}
+	
+	
+	
+
+	/**
+	 * Very basic sanity test
+	 */
+	
+	public void testSanity() throws Exception {
+		Builder b = new Builder();
+		b.set("Export-Package", "thinlet;version=1.0");
+		b.addClasspath(new File("jar/thinlet.jar"));
+		b.build();
+		assertTrue(b.check());
+		assertEquals( "version=1.0", b.getExports().getByFQN("thinlet").toString());
+		assertTrue( b.getJar().getDirectories().containsKey("thinlet"));
+		assertTrue( b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
+	}
+	
+	
+	
 	/**
 	 * Fastest way to create a manifest
 	 * @throws Exception 
@@ -36,15 +72,16 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.addClasspath( new File("jar/spring.jar"));
 		analyzer.setProperty("Bundle-SymbolicName","org.osgi.core");
 		analyzer.setProperty("Export-Package","org.osgi.framework,org.osgi.service.event");
-		analyzer.setProperty("Bundle-Version","1.0");
+		analyzer.setProperty("Bundle-Version","1.0.0.x");
 		analyzer.setProperty("Import-Package","*");
 		Manifest manifest = analyzer.calcManifest();
+		assertTrue(analyzer.check());
 		manifest.write(System.out);
-		String export = manifest.getMainAttributes().getValue("Export-Package");
-		assertEquals("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"",export);
-		assertEquals("1.0",manifest.getMainAttributes().getValue("Bundle-Version"));
-		assertEquals(analyzer.getErrors().toString(), 0, analyzer.getErrors().size());
-		assertEquals(analyzer.getWarnings().toString(), 0, analyzer.getWarnings().size());
+		Domain main = Domain.domain(manifest);
+		Parameters export = main.getExportPackage();
+		Parameters expected = new Parameters("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
+		assertEquals(expected, export);
+		assertEquals("1.0.0.x",manifest.getMainAttributes().getValue("Bundle-Version"));
 	}
 	
 	/**
@@ -56,20 +93,14 @@ public class AnalyzerTest extends BndTestCase {
 
 	public void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
-		File embedded = new File("bin/aQute/lib").getCanonicalFile();
+		File embedded = new File("bin/test/refer").getCanonicalFile();
 		assertTrue(embedded.isDirectory()); // sanity check
 		b.setProperty("Bundle-ClassPath", ".,jars/some.jar");
-		b.setProperty("-includeresource", "jars/some.jar/aQute/lib=" + embedded.getAbsolutePath());
-		b.setProperty("-exportcontents", "aQute.lib.osgi");
+		b.setProperty("-includeresource", "jars/some.jar/test/refer=" + embedded.getAbsolutePath());
+		b.setProperty("-exportcontents", "test.refer");
 		b.build();
-
-		assertTrue(b.getExports().toString(), b.getExports().containsKey("aQute.lib.osgi"));
-
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(b.getErrors().toString(), 0, b.getErrors().size());
-		assertEquals(b.getWarnings().toString(), 1, b.getWarnings().size());
-
+		assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
+		assertTrue(b.getImports().toString(), b.getImports().getByFQN("org.osgi.service.event")!=null);
 	}
 
 	/**
@@ -80,30 +111,26 @@ public class AnalyzerTest extends BndTestCase {
 
 	public void testUsesFiltering() throws Exception {
 		Builder b = new Builder();
+		b.setTrace(true);
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		Jar jar = b.build();
-
+		assertTrue(b.check());
+		
+		assertNotNull(jar.getResource("org/osgi/service/event/EventAdmin.class"));
+		
 		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 		System.out.println(exports);
 		assertTrue(exports.contains("uses:=\"org.osgi.framework\""));
-
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
 
 		b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "");
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		jar = b.build();
+		assertTrue(b.check("Unresolved references to \\[org.osgi.framework\\]"));
 		exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 		assertFalse(exports.contains("uses:=\"org.osgi.framework\""));
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
 
 	}
 
@@ -237,6 +264,8 @@ public class AnalyzerTest extends BndTestCase {
 		a.setClasspath(new Jar[] { new Jar(new File("jar/mandatorynoversion.jar")) });
 		a.setProperties(p);
 		Jar jar = a.build();
+		assertTrue( a.check());
+		
 		String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
 		System.out.println(imports);
 		assertTrue(imports.indexOf("x=1") >= 0);
@@ -283,14 +312,8 @@ public class AnalyzerTest extends BndTestCase {
 				new Jar(new File("jar/osgi.jar")) });
 		a.setProperties(p);
 		a.build();
-		Manifest manifest = a.getJar().getManifest();
-		System.out.println(a.getErrors());
-		System.out.println(a.getWarnings());
-		assertEquals(1, a.getErrors().size());
-		assertTrue(a.getErrors().get(0).indexOf("Bundle-Activator not found") >= 0);
-		// assertTrue(a.getErrors().get(1).indexOf("Unresolved references to")
-		// >= 0);
-		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("Bundle-Activator not found","Unresolved references to \\[org.osgi.framework\\]"));
+		Manifest manifest = a.getJar().getManifest();		
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		assertNull(imports);
 	}
@@ -346,12 +369,11 @@ public class AnalyzerTest extends BndTestCase {
 		jar.putResource("target/aopalliance.jar", new FileResource(new File("jar/asm.jar")));
 		Analyzer an = new Analyzer();
 		an.setJar(jar);
-		Properties p = new Properties();
-		p.put("Export-Package", "*");
-		an.setProperties(p);
+		an.setProperty("Export-Package", "target");
 		Manifest manifest = an.calcManifest();
+		assertTrue(an.check());
 		String exports = manifest.getMainAttributes().getValue(Analyzer.EXPORT_PACKAGE);
-		Map<String, Map<String, String>> map = Analyzer.parseHeader(exports, null);
+		Parameters map = Analyzer.parseHeader(exports, null);
 		assertEquals(1, map.size());
 		assertEquals("target", map.keySet().iterator().next());
 	}
@@ -379,10 +401,13 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.setJar(new File("jar/asm.jar"));
 		analyzer.setProperties(base);
 		analyzer.calcManifest().write(System.out);
-		assertTrue(analyzer.getExports().containsKey("org.objectweb.asm.signature"));
-		assertTrue(analyzer.getExports().containsKey("org.objectweb.asm"));
-		assertFalse(analyzer.getImports().containsKey("org.objectweb.asm.signature"));
-		assertFalse(analyzer.getImports().containsKey("org.objectweb.asm"));
+		assertTrue(analyzer.check());
+		
+		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm.signature")!=null);
+		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm")!=null);
+		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm.signature")!=null);
+		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm")!=null);
+		
 		assertEquals("Expected size", 2, analyzer.getExports().size());
 	}
 
@@ -400,7 +425,10 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(new File("jar/asm.jar"));
 		h.setProperties(base);
 		h.calcManifest().write(System.out);
-		assertPresent(h.getExports().keySet(), "org.objectweb.asm.signature, org.objectweb.asm");
+		assertTrue(h.check());
+		Packages exports = h.getExports();
+		assertTrue( exports.getByFQN("org.objectweb.asm.signature") != null);
+		assertTrue( exports.getByFQN("org.objectweb.asm")!=null);
 		assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(
 				h.getImports().keySet()) == false);
 		assertEquals("Expected size", 2, h.getExports().size());
@@ -416,7 +444,8 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setJar(tmp);
 		analyzer.setProperties(base);
-		System.out.println(analyzer.calcManifest());
+		analyzer.calcManifest().write(System.out);
+		assertTrue(analyzer.check());
 		assertPresent(analyzer.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
@@ -502,18 +531,19 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 	public void testSuperfluous() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*, com.foo, com.foo.bar.*");
-		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar");
+		base.put(Analyzer.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
+		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar, baz.*");
 		File tmp = new File("jar/ds.jar");
 		Analyzer h = new Analyzer();
 		h.setJar(tmp);
 		h.setProperties(base);
-		h.calcManifest().write(System.out);
-		List<String> warnings = h.getWarnings();
-		assertEquals(warnings.size(), 2);
-		assertEquals("Superfluous export-package instructions: [com.bar]", warnings.get(0));
-		assertEquals("Did not find matching referal for com.foo.bar.*", warnings.get(1));
-		assertTrue(h.getImports().containsKey("com.foo"));
+		Manifest m = h.calcManifest();
+		m.write(System.out);
+		assertTrue(h.check( //
+				"Unused Export-Package instructions: \\[baz.*\\]", // 
+				"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
+		assertTrue(h.getImports().getByFQN("com.foo")!=null);
+		assertTrue(h.getExports().getByFQN("com.bar")!=null);
 	}
 
 	void assertNotPresent(Collection<?> map, String string) {
@@ -536,11 +566,11 @@ public class AnalyzerTest extends BndTestCase {
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
 			String member = st.nextToken();
-			assertTrue("Must contain  " + member, map.contains(member));
+			assertTrue("Must contain  " + member, ss.contains(member));
 		}
 	}
 
-	<K,V> V get(Map<K, Map<String,V>> headers, K key, String attr) {
+	<K,V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
 		Map<String, V> clauses = headers.get(key);
 		if (clauses == null)
 			return null;

@@ -1009,8 +1009,10 @@ public class Clazz {
 						&& pool[intPool[lastReference]] instanceof String) {
 					String fqn = (String) pool[intPool[lastReference]];
 
+					// TODO seems to find class?
 					TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
-					packageReference(clazz.getPackageRef());
+					if (!clazz.getPackageRef().isDefaultPackage())
+						packageReference(clazz.getPackageRef());
 				}
 				break;
 			}
@@ -1284,7 +1286,7 @@ public class Clazz {
 		return imports;
 	}
 
-	public String getPath() {
+	public String getAbsolutePath() {
 		return path;
 	}
 
@@ -1433,7 +1435,7 @@ public class Clazz {
 	}
 
 	public boolean isEnum() {
-		return zuper != null && zuper.equals("java/lang/Enum");
+		return zuper != null && zuper.getBinary().equals("java/lang/Enum");
 	}
 
 	public JAVA getFormat() {

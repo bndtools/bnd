@@ -47,9 +47,7 @@ public class Forker<T> {
 
 					t = Thread.currentThread();
 				}
-				System.out.println("Running " + target);
 				runnable.run();
-				System.out.println("Done running " + target);
 			} catch (Exception e) {
 				exception = e;
 				e.printStackTrace();
