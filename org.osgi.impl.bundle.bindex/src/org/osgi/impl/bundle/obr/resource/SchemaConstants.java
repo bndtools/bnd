@@ -7,6 +7,8 @@ public final class SchemaConstants {
 	public static final String ELEM_REPOSITORY = "repository";
 
 	public static final String ATTR_XML_NAMESPACE = "xmlns";
+	public static final String ATTR_NAME = "name";
+	public static final String ATTR_INCREMENT = "increment";
 
 	private SchemaConstants() {
 	}

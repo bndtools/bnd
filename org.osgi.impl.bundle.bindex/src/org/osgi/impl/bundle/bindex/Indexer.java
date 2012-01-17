@@ -162,8 +162,8 @@ public class Indexer {
 		Tag repository = new Tag(ELEM_REPOSITORY);
 		repository.addAttribute(ATTR_XML_NAMESPACE, NAMESPACE);
 		
-		repository.addAttribute("lastmodified", new Date());
-		repository.addAttribute("name", repositoryName);
+		repository.addAttribute(ATTR_NAME, repositoryName);
+		repository.addAttribute(ATTR_INCREMENT, System.currentTimeMillis());
 
 		for (ResourceImpl resource : resources) {
 			repository.addContent(resource.toXML());

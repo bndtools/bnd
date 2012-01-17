@@ -38,6 +38,22 @@ public class TestRfc112 extends TestCase {
 		assertEquals(NAMESPACE, doc.getDocumentElement().getNamespaceURI());
 	}
 	
+	public void testNameAndIncrement() throws Exception {
+		long time = System.currentTimeMillis();
+		
+		Indexer index = new Indexer();
+		index.setRepositoryFile(indexFile);
+		index.setRepositoryName("splat");
+		index.run(Collections.<File>emptyList());
+		
+		Document doc = loadIndex(indexFile);
+		String name = doc.getDocumentElement().getAttribute("name");
+		long increment = Long.parseLong(doc.getDocumentElement().getAttribute("increment"));
+		
+		assertEquals("splat", name);
+		assertTrue(Math.abs(increment - time) < 500); // allow 0.5s variance
+	}
+	
 	private static Document loadIndex(File file) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
