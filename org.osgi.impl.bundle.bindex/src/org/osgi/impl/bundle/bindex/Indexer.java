@@ -42,6 +42,8 @@ import org.osgi.impl.bundle.obr.resource.ResourceImplComparator;
 import org.osgi.impl.bundle.obr.resource.Tag;
 import org.osgi.service.bindex.BundleIndexer;
 
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.*;
+
 /**
  * Iterate over a set of given bundles and convert them to resources. After
  * this, convert any local urls (file systems, JAR file) to relative URLs and
@@ -157,7 +159,9 @@ public class Indexer {
 	 * @return the repository index
 	 */
 	public Tag doIndex(Collection<ResourceImpl> resources) {
-		Tag repository = new Tag("repository");
+		Tag repository = new Tag(ELEM_REPOSITORY);
+		repository.addAttribute(ATTR_XML_NAMESPACE, NAMESPACE);
+		
 		repository.addAttribute("lastmodified", new Date());
 		repository.addAttribute("name", repositoryName);
 
