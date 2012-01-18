@@ -21,7 +21,7 @@ target					= ${project}/${target-dir}
 build					= ${workspace}/cnf
 repo					= ${build}/repo
 releaserepo				= ${workspace}/../repo/bundles
-target-dir				= tmp
+target-dir				= generated
 p                       = ${basename;${project}}
 project.name            = ${p}
 
