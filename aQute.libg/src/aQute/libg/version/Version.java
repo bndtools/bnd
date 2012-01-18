@@ -43,6 +43,7 @@ public class Version implements Comparable<Version> {
     }
 
     public Version(String version) {
+    	version = version.trim();
         Matcher m = VERSION.matcher(version);
         if (!m.matches())
             throw new IllegalArgumentException("Invalid syntax for version: "
