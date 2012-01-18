@@ -70,11 +70,18 @@ public class Attrs implements Map<String, String> {
 	}
 
 	public String get(String key) {
-		assert key instanceof String;
 		if (map == null)
 			return null;
 
 		return map.get(key);
+	}
+
+	public String get(String key, String deflt) {
+		String s = get(key);
+		if ( s == null)
+			return deflt;
+		else
+			return s;
 	}
 
 	public boolean isEmpty() {
