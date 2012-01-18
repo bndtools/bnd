@@ -1,4 +1,0 @@
-
--buildpath: org.apache.felix.configadmin
-
-Export-Package: *

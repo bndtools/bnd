@@ -1,5 +1,0 @@
-Export-Package: *
-Sub-Header: c
-
-# Test if recursion is handled properly
--sub: c.bnd
