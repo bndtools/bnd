@@ -1,6 +1,7 @@
 *.class
 *.bak
 /*/tmp
+/*/generated
 /*/bin
 /*/bin_test
 .metadata/
