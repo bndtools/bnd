@@ -1,0 +1,1628 @@
+Signature-Version: 1.0
+Created-By: 1.5.0_16 (Apple Inc.)
+SHA1-Digest-Manifest-Main-Attributes: Q7PJRAQxIU7Z9zxsvMVOCHD23Xg=
+SHA1-Digest-Manifest: hpyH1C5MR9wlzZeh7jfCdSZSdSw=
+
+Name: org/osgi/service/cu/admin/spi/ControlUnitFactory.class
+SHA1-Digest: sfbSMsfMtzMQzuPQ3v/aX2FGMSM=
+
+Name: org/osgi/service/application/ApplicationDescriptor$2.class
+SHA1-Digest: aE4psXWIpj/pwsVK+hhRWWOnSko=
+
+Name: org/osgi/service/permissionadmin/PermissionInfo.class
+SHA1-Digest: CE/HJ2SPShlHV4kC6RwO9Um40L0=
+
+Name: org/osgi/service/dmt/AlertItem.class
+SHA1-Digest: HzQeOQ6OeXhjVYTgsWjOPOWi6QE=
+
+Name: org/osgi/service/metatype2/ExtendedAttributeDefinition.class
+SHA1-Digest: Mr29xJHZxvDmrp0nD+UN4MvXyAA=
+
+Name: OSGI-OPT/src/org/osgi/service/device/DriverLocator.java
+SHA1-Digest: ttLvHE4cTVWTh/KyQFEvCe3UZj0=
+
+Name: org/osgi/framework/FrameworkUtil$1.class
+SHA1-Digest: R0vV7c1qQL8kjqDz3borEO7Rht8=
+
+Name: org/osgi/framework/Bundle.class
+SHA1-Digest: mDIGgkLA6KEof7q/TB20YxdWnVI=
+
+Name: OSGI-OPT/src/org/osgi/service/device/Constants.java
+SHA1-Digest: WUJA8fVkTfj2tnOyHQqT0SodD5Q=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/UserAdminListener.java
+SHA1-Digest: KH19dv9EbkDiYqSFKWX6EpZ6oGA=
+
+Name: org/osgi/service/obr/Capability.class
+SHA1-Digest: WwbsushVuYEr0S+avz5NFs2xBzU=
+
+Name: org/osgi/service/application/ApplicationException.class
+SHA1-Digest: QJ95XV1Up4ozKQ6HbnbOrRMvOsI=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/package.html
+SHA1-Digest: 3r5ZLPdqDIkhgcerjrsVSkJZ6Sw=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/MetaDataService.java
+SHA1-Digest: vGFKEpjNq1LBL4NBytDpwnTv4Tk=
+
+Name: org/osgi/service/metatype/ObjectClassDefinition.class
+SHA1-Digest: FMKOntonz30XbkZ4UZK1z7R7VOo=
+
+Name: org/osgi/service/wireadmin/Producer.class
+SHA1-Digest: /sET15Wu40LhJHpL5+ZZj0v8x5s=
+
+Name: OSGI-OPT/src/org/osgi/util/tracker/ServiceTrackerCustomizer.java
+SHA1-Digest: eS0vOHK0N/huQ6DEfC/XEDgewJQ=
+
+Name: org/osgi/service/application/ApplicationHandle$1.class
+SHA1-Digest: iek+GzhRz49K7WZM3u/eiirKzpo=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServiceRegistration.java
+SHA1-Digest: Fw6MuI1QQMs7Ks6G6xRzVrfu5bs=
+
+Name: OSGI-OPT/src/org/osgi/service/component/ComponentFactory.java
+SHA1-Digest: 2O+1IR4l2L+ivdr6bj+dZjx1IpA=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/packageinfo
+SHA1-Digest: t1FGRj/I2RimWmNGmlCbuu4ro2I=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/Envelope.java
+SHA1-Digest: +qKiCzI6C+SeVriEpSMx69O1Fas=
+
+Name: org/osgi/framework/PackagePermission.class
+SHA1-Digest: 04XUZYW/hWuETz15aWXNUzmLMGU=
+
+Name: OSGI-OPT/src/org/osgi/service/device/package.html
+SHA1-Digest: 61mtzAn9PUYAhAUpU5QwRTMqe9M=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/RepositoryPermission.java
+SHA1-Digest: KAhLhBSwpHRpO3r1X3Pd6wE9XMA=
+
+Name: OSGI-OPT/src/org/osgi/util/position/package.html
+SHA1-Digest: wG/VjhMSWfN/095+nBbtldLo/jE=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/DeploymentCust
+ omizerPermission.java
+SHA1-Digest: 0DMQxaE43wz6tpfFawg1Zwa4HZU=
+
+Name: org/osgi/util/tracker/ServiceTrackerCustomizer.class
+SHA1-Digest: Er374Swkpo5AibzELJIepml/8VI=
+
+Name: org/osgi/service/dmt/security/AlertPermission.class
+SHA1-Digest: b8t3uBNgEDn6s2UdDebUcc89rX0=
+
+Name: org/osgi/service/device/DriverLocator.class
+SHA1-Digest: 3VCdvTVaY5p8Ly43hQsOeRJdCuc=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationEvent.java
+SHA1-Digest: DhzUR76HMjRlna9qFE4rbpuWlwU=
+
+Name: org/osgi/service/cu/admin/spi/ManagedControlUnit.class
+SHA1-Digest: zxxXyv/g7Z6GgQVWzfUoxJEhQ6c=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ManagedService.java
+SHA1-Digest: tQbZ4YuuXlZ2Efpe3IJS3bvIcZg=
+
+Name: org/osgi/service/condpermadmin/BooleanCondition.class
+SHA1-Digest: VrtH3O3CisyOFszVZ6CHsqwIA+A=
+
+Name: org/osgi/service/cm/ConfigurationPermission.class
+SHA1-Digest: V6mg0MXlBtL8zSZj0aHz3h+1o3A=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/WireAdminEvent.java
+SHA1-Digest: tzNMhjFoVx0TMTw+I/gxoQdYRVE=
+
+Name: org/osgi/util/tracker/ServiceTracker$AllTracked.class
+SHA1-Digest: Ftj4XhKm3Z6sM5krxBUGXzWflV0=
+
+Name: OSGI-OPT/src/org/osgi/service/prefs/PreferencesService.java
+SHA1-Digest: NNel5+KKWmAFvPHluKrndIT9SME=
+
+Name: org/osgi/service/useradmin/Role.class
+SHA1-Digest: ZBfuxvfgESwsUHTqy5YrnYclR1Q=
+
+Name: about.html
+SHA1-Digest: 6GRCBrgAPCPRoE2KKy3J8k9obV0=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPStateVariable.java
+SHA1-Digest: 3sLYonfPj++NV4TXaIYLYWcXLSk=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/MonitorPermission.java
+SHA1-Digest: 73d9abBm87dkXpyxTVXOc+NEFhA=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/ConditionalPermissio
+ nAdmin.java
+SHA1-Digest: dh5O6y3shhnYsZZQKhBKf8mBn70=
+
+Name: org/osgi/service/dmt/spi/DataPlugin.class
+SHA1-Digest: kE0mBCW1+QcKPRpYFpmSlHN4YQY=
+
+Name: org/osgi/service/component/ComponentContext.class
+SHA1-Digest: qpwZ2+6JS9ukSDof5TTzsuXVdJg=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/security/DmtPrincipalPermissio
+ n.java
+SHA1-Digest: BVmmhZDgTuiT+wh+Dn2woTdCYD0=
+
+Name: org/osgi/service/obr/Resolver.class
+SHA1-Digest: 26YweX1pe1F0iUjPiPSIK4+AVgE=
+
+Name: OSGI-OPT/src/org/osgi/util/measurement/Unit.java
+SHA1-Digest: k/O5kSM9F/SzHPN74ns3oZrn3m0=
+
+Name: OSGI-OPT/src/org/osgi/util/measurement/State.java
+SHA1-Digest: Jr1H07MOt7bxjCcfjhcMfJTTpuU=
+
+Name: OSGI-OPT/src/org/osgi/framework/FrameworkUtil.java
+SHA1-Digest: DDRiclUJinOFB4YmgVfcenoVdoc=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/packageinfo
+SHA1-Digest: KM7HMwim7qnRZaqYw9OKIRCw88g=
+
+Name: OSGI-OPT/src/org/osgi/service/power/packageinfo
+SHA1-Digest: xDjYgopxOjS5taQwbP2ntKAnNzQ=
+
+Name: org/osgi/service/dmt/security/DmtPermission.class
+SHA1-Digest: m5McZb8Te2p7m8KhqXm18NI64aU=
+
+Name: org/osgi/service/wireadmin/WireAdminListener.class
+SHA1-Digest: cSdtBzNcyh99NOQXIZEsEbtBh00=
+
+Name: org/osgi/service/monitor/packageinfo
+SHA1-Digest: FyS36PoKt7mYRTtUX7D4v4fr0as=
+
+Name: org/osgi/service/dmt/security/DmtPrincipalPermission.class
+SHA1-Digest: VQ1QRbxc7ccmEVroR+ddohTJyU8=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPService.java
+SHA1-Digest: pFIw9CDr0WdrF9cqPBt/6JwAE7A=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/RepositoryAdmin.java
+SHA1-Digest: bbhUVG4tav3xRW9snhYDxojsfag=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/StateVariableListener.java
+SHA1-Digest: M8182T6l1gp/IxNRpBJj37c42wU=
+
+Name: org/osgi/service/upnp/UPnPAction.class
+SHA1-Digest: rjL8gokfNTr3zVkRVKTmTZSHHy4=
+
+Name: org/osgi/service/deploymentadmin/DeploymentAdminPermission.class
+SHA1-Digest: fJ6V3cIgeFmlVj4TCbQqLh8Edbc=
+
+Name: OSGI-OPT/src/org/osgi/framework/Constants.java
+SHA1-Digest: 3uSwCgFLubyYjE0GAAM4itYW3lQ=
+
+Name: org/osgi/service/permissionadmin/PermissionAdmin.class
+SHA1-Digest: vWM4+XdOYdJS8uyE86fNVkH1yVk=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/DeploymentExceptio
+ n.java
+SHA1-Digest: ybgf55dCYCR6iQsv1WidJAeOQew=
+
+Name: org/osgi/util/gsm/IMSICondition$1.class
+SHA1-Digest: j02f22884nCpndJovordJzjo95s=
+
+Name: org/osgi/framework/ServiceListener.class
+SHA1-Digest: gxUV7TW3cWUCjImgeu1UVRip7ZU=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServiceEvent.java
+SHA1-Digest: l5hqV26dPSxYNHaDT22jqJ2VfWE=
+
+Name: org/osgi/service/startlevel/packageinfo
+SHA1-Digest: SCTgcEiasy60ZhTlaZpxt+VwFwg=
+
+Name: OSGI-OPT/src/org/osgi/service/permissionadmin/package.html
+SHA1-Digest: FWOxzx0PWfhqS6QYkHMHKjecndg=
+
+Name: org/osgi/service/upnp/UPnPEventListener.class
+SHA1-Digest: v6VDr3vloHQKDksY1stsqZmzEmE=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/BundleSignerConditio
+ n.java
+SHA1-Digest: e2AMBUgiZxJ/dUBIyJX6JR/lK1g=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/spi/ControlUnitFactory.ja
+ va
+SHA1-Digest: FqxuLNNqX/UupPOQbpN70AEYvsE=
+
+Name: org/osgi/service/metatype2/MetaDataService.class
+SHA1-Digest: NGEji4oX5Mh4DfDi8dkj6GKjjRo=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/ReadWriteDataSession.java
+SHA1-Digest: h5s4wza3N7L5lrtQz7U5v/pza/0=
+
+Name: org/osgi/framework/ServiceEvent.class
+SHA1-Digest: I0nks/VMG6Zefx5tojzW4WRPdpQ=
+
+Name: org/osgi/service/cu/packageinfo
+SHA1-Digest: x57SK8qmQ9S59SaWCVOxIAHclbI=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationAdmin.java
+SHA1-Digest: HPfiAneRKjvyInad9oDyZogKQWY=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/packageinfo
+SHA1-Digest: TRuidqI0izFTiZc3YwteXLobRPs=
+
+Name: org/osgi/service/device/Constants.class
+SHA1-Digest: ddKS3wdlMD/YJWvrNi12vTPOU5A=
+
+Name: org/osgi/service/monitor/StatusVariable.class
+SHA1-Digest: zkTLzjYsFgL6doqG2SCvhEEogVc=
+
+Name: org/osgi/service/application/ApplicationHandle$2.class
+SHA1-Digest: heVPWvDMoIRHTB+UbfEM/PktPE8=
+
+Name: org/osgi/service/obr/Resource.class
+SHA1-Digest: 2DvYuk1dW0S9lhKLkMkLaXYkfeM=
+
+Name: org/osgi/service/application/packageinfo
+SHA1-Digest: L7pfZ2QCSp+VLhnMBYTT3dYJbYo=
+
+Name: org/osgi/service/event/EventHandler.class
+SHA1-Digest: 4Wp6XMEOhNpNWAy+m49V3rA0m4M=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/spi/CUAdminCallback.java
+SHA1-Digest: hDOyxu0qP/KRkUJKqN3oFfReSYE=
+
+Name: org/osgi/service/useradmin/User.class
+SHA1-Digest: RZSbT0QdRtnbXChjJqw2kdvQ0QU=
+
+Name: OSGI-OPT/src/org/osgi/framework/Version.java
+SHA1-Digest: DjjQqQozngoDfDbfMe5o4QUWl+o=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/ControlUnitAdmin.java
+SHA1-Digest: hOAwMEx8LM1Ese77mX20BjxDktk=
+
+Name: org/osgi/framework/BundleException.class
+SHA1-Digest: J5llQXVY+tfOeApZJpauhyDllqE=
+
+Name: OSGI-OPT/src/org/osgi/service/provisioning/package.html
+SHA1-Digest: NYtqW4gA3nJQXCUtw1A3e6FqRKg=
+
+Name: org/osgi/service/component/ComponentFactory.class
+SHA1-Digest: t3vlT3RoVSKwLRimlYqbgwVrP7E=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationPlugin.java
+SHA1-Digest: VY3HzXRpxPxrKGiqDbmwY3gh+KA=
+
+Name: org/osgi/service/url/URLStreamHandlerSetter.class
+SHA1-Digest: X7BRQE7kSKSyOqm4jECFpPhi5Eg=
+
+Name: org/osgi/service/component/packageinfo
+SHA1-Digest: /xY1f7+hISH03T2DokxdWi/OUD0=
+
+Name: org/osgi/service/deploymentadmin/DeploymentException.class
+SHA1-Digest: of69BmtH1ik295WsG76dlLT8Cvg=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/DeploymentAdmin.ja
+ va
+SHA1-Digest: vRtt0l8jtHNcU7WDNCan7OMBoDk=
+
+Name: org/osgi/service/deploymentadmin/BundleInfo.class
+SHA1-Digest: QWJbc2GuIl0LWtyUDvwu2mzNaVM=
+
+Name: org/osgi/service/deploymentadmin/spi/DeploymentCustomizerPermiss
+ ion.class
+SHA1-Digest: 2T915E+ooS52hKhGdhLAnMoaNas=
+
+Name: org/osgi/service/obr/Requirement.class
+SHA1-Digest: 7OOfbj5tptsc9//yiQNTO4QUFPA=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/package.html
+SHA1-Digest: Li1ME10z46dsRnF92ml+PlueG0k=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/ExtendedObjectClassDefin
+ ition.java
+SHA1-Digest: qIxdL7SCcFQxR65hMgnGhkzc1ls=
+
+Name: org/osgi/service/metatype2/ExtendedObjectClassDefinition.class
+SHA1-Digest: rmkIiVuooBt8kcQbuC82wWzShJ8=
+
+Name: org/osgi/framework/BundleActivator.class
+SHA1-Digest: g0zeOodlRBFEu3NpPttgyMty+H4=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationListener.java
+SHA1-Digest: AhC1L3JgvDawGCtJBm0NtPnmq1k=
+
+Name: OSGI-OPT/src/org/osgi/framework/Bundle.java
+SHA1-Digest: aWbtgALau4eeIE1Q/lay32K/AvI=
+
+Name: org/osgi/service/useradmin/UserAdminPermission.class
+SHA1-Digest: pR9F4FBHh56pLj/7uNz97V8bfMA=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundleActivator.java
+SHA1-Digest: rK/g1INN1qRkkQmV6VJYoQ9efEc=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/Authorization.java
+SHA1-Digest: tDxp473gPUefCWu+i2BuiShfG+I=
+
+Name: org/osgi/util/measurement/Unit.class
+SHA1-Digest: Rc0VGWrDwWSVE3jurJK+xVZdxZs=
+
+Name: org/osgi/framework/SynchronousBundleListener.class
+SHA1-Digest: 1DR3NKDIeAnuNkuUhoH737IXIyc=
+
+Name: org/osgi/service/packageadmin/PackageAdmin.class
+SHA1-Digest: 3VQBEbW7JTpvsM2MMM8tozEiJ8A=
+
+Name: OSGI-OPT/src/org/osgi/service/application/packageinfo
+SHA1-Digest: aUGgeVyzhS8qAOlJXDtFhcb92Go=
+
+Name: org/osgi/framework/Filter.class
+SHA1-Digest: WgKzS+hS3wri/hjhSyEGrru1xnA=
+
+Name: OSGI-OPT/src/org/osgi/util/gsm/IMSICondition.java
+SHA1-Digest: gbMl+2TzCWoGEGapEOalLN8SqZo=
+
+Name: org/osgi/service/useradmin/UserAdmin.class
+SHA1-Digest: 7DtBWSkC0gfrJhJRVeWFrqJ2l8w=
+
+Name: org/osgi/service/prefs/BackingStoreException.class
+SHA1-Digest: NyTtMBHun/iuJ2VliPfAgbSq6gM=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/BundleLocationCondit
+ ion.java
+SHA1-Digest: iL5Lg2HaPw7XUU21djuIb5VPDnY=
+
+Name: org/osgi/service/power/packageinfo
+SHA1-Digest: KKgPLGnwzPVPq6ipkVKBRRM/4W4=
+
+Name: org/osgi/service/provisioning/packageinfo
+SHA1-Digest: 0xav4aw6lmJApY6McMMmS8p8l5E=
+
+Name: org/osgi/service/dmt/spi/ReadableDataSession.class
+SHA1-Digest: bw9KDLmyGoIiS4ERB3nq4FvVMjQ=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/packageinfo
+SHA1-Digest: nQI1k9rrV/3gpoubhVauPgaVY4I=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/Repository.java
+SHA1-Digest: tz5qCfolNBIBhvybJWjwXVRMrlg=
+
+Name: org/osgi/framework/BundleContext.class
+SHA1-Digest: tnnh9mNI75TIPFNb8H0k/WKUoxA=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/spi/ManagedControlUnit.ja
+ va
+SHA1-Digest: bM3G+wpU4OvL01cqsTrX7VVmSoo=
+
+Name: OSGI-OPT/src/org/osgi/util/tracker/ServiceTracker.java
+SHA1-Digest: P/UDK+C1qajosD3JzqJSJCXjKxA=
+
+Name: org/osgi/service/wireadmin/packageinfo
+SHA1-Digest: F26MO7na/1S6XaQGqxtqpHalSw8=
+
+Name: OSGI-OPT/src/org/osgi/service/power/PowerHandler.java
+SHA1-Digest: WSLcfhI5+OfkLMv+IlqtAXpdm60=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/package.html
+SHA1-Digest: EyExbRUcMUvIgeriUDYWxvIX1iM=
+
+Name: org/osgi/service/dmt/spi/packageinfo
+SHA1-Digest: 9g5jCX/uSxevai+4ZVY0bRxQ8fY=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/package.html
+SHA1-Digest: nritY4o8hsL1msY7vqPa5O41UTo=
+
+Name: org/osgi/service/component/ComponentException.class
+SHA1-Digest: bKNd7rU0xtcArMXlIX9zeBlWbVI=
+
+Name: OSGI-OPT/src/org/osgi/service/http/HttpContext.java
+SHA1-Digest: EZsUSHnvRbkoUqAUaKTIZytO9P0=
+
+Name: org/osgi/service/metatype2/MetaDataListener.class
+SHA1-Digest: pl+3Gw0mfg/Z9YkTeEpwYnuSjOk=
+
+Name: org/osgi/service/wireadmin/WirePermissionCollection.class
+SHA1-Digest: XLHa3jJkeMdQdL18FpyRAczG1BQ=
+
+Name: org/osgi/service/event/packageinfo
+SHA1-Digest: NY8VG6jl8hLofRKbIaWuFKfCkBY=
+
+Name: org/osgi/service/cu/admin/ControlUnitAdmin.class
+SHA1-Digest: oX5/UUtKUrbz1Ii4gMY6/ODtaMU=
+
+Name: org/osgi/service/wireadmin/WireConstants.class
+SHA1-Digest: ye3kpQK/oLYEBYQKo9F3Ui/680Q=
+
+Name: org/osgi/service/condpermadmin/ConditionalPermissionInfo.class
+SHA1-Digest: doqYJzj0aZ1J0fsfVxWz/6pyJgE=
+
+Name: OSGI-OPT/src/org/osgi/service/packageadmin/packageinfo
+SHA1-Digest: VnTA1dpKnxqZaDgh6qoKUevSyVc=
+
+Name: org/osgi/service/cu/diag/DiagnosableControlUnit.class
+SHA1-Digest: FInC6EkF1iwjHxQOdfbGkjFzFRc=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServiceListener.java
+SHA1-Digest: XchWym2JB8TKZnInEEfW0nCCUeE=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationException.java
+SHA1-Digest: QQABK4FoQBHLunSmCDu5Qb54tFs=
+
+Name: org/osgi/service/prefs/PreferencesService.class
+SHA1-Digest: Y02W8rZc/5RaUyUcSIr93t5CIRw=
+
+Name: org/osgi/service/deploymentadmin/DeploymentAdmin.class
+SHA1-Digest: dXKPOZ8duLUxJ8Kzv0TlMcIGjjQ=
+
+Name: org/osgi/service/application/ApplicationHandle.class
+SHA1-Digest: PZaGURIfGrG3QoboK+W8TlUzj0Y=
+
+Name: org/osgi/framework/ServiceFactory.class
+SHA1-Digest: jRLe9oNOVWuFL9qpp67SnjdVBc8=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/DeploymentPackage.
+ java
+SHA1-Digest: epjd52FJJ8rw2JFeLKY4zjoGVjI=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/package.html
+SHA1-Digest: GozY5bKUfsbzX4FVcVzTwV7eeHo=
+
+Name: OSGI-OPT/src/org/osgi/framework/Filter.java
+SHA1-Digest: q7aIjtxN3mLzLhSCggiZWPEc3/g=
+
+Name: org/osgi/application/ApplicationServiceListener.class
+SHA1-Digest: 2gQZKVK21lRr0r6PdhOZXTwWArA=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundleEvent.java
+SHA1-Digest: ry9XXINCQsVIGs2ZgxEmqgjs9Eo=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPLocalStateVariable.java
+SHA1-Digest: n7U+2FKucLbfEIJyxlTRTEdTLyc=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/HierarchyListener.java
+SHA1-Digest: SdPxctxdeOSqgQJe3GoFj6UL0aU=
+
+Name: org/osgi/service/cu/admin/packageinfo
+SHA1-Digest: 0UJOubdVdTfHgtbhgLSSAXH75d8=
+
+Name: OSGI-OPT/src/org/osgi/framework/packageinfo
+SHA1-Digest: O1NwL4L9XrYb7RQaGU/xZ1rPYCM=
+
+Name: OSGI-OPT/src/org/osgi/service/io/ConnectorService.java
+SHA1-Digest: 4ARQXoaU65OoeW3JbVD8iVdd/MM=
+
+Name: OSGI-OPT/src/org/osgi/service/component/ComponentConstants.java
+SHA1-Digest: nhXRhdi1HehPvgVQt2J6kLZ6RfM=
+
+Name: org/osgi/service/upnp/packageinfo
+SHA1-Digest: zfpggI7VR812W0d5Z72p2LGptf0=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/MonitorListener.java
+SHA1-Digest: Y1gnv8rTedv6SsHC+Zv33U+OVP8=
+
+Name: org/osgi/service/dmt/RemoteAlertSender.class
+SHA1-Digest: YeoatqIF51AIrjpgDvI5FEx/VFw=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/ConditionalPermissio
+ nInfo.java
+SHA1-Digest: pa1J0TAgkgGr9vK5Nz5cdlnH8fA=
+
+Name: org/osgi/service/dmt/security/packageinfo
+SHA1-Digest: IbmPRxSSpo6SpaRWUxWmTju0SUI=
+
+Name: OSGI-OPT/src/org/osgi/service/log/LogListener.java
+SHA1-Digest: ELYD3waDLSjkghrRyXm7bb3kWEY=
+
+Name: org/osgi/service/dmt/Acl.class
+SHA1-Digest: lBAeFEE79x9tbJ1Ksg797cMQHL4=
+
+Name: org/osgi/service/cu/diag/Status.class
+SHA1-Digest: MsXwxeusu7Ko1NEGNuGTs5kT7jg=
+
+Name: OSGI-OPT/src/org/osgi/util/xml/packageinfo
+SHA1-Digest: bp1+9Y0kfXN6oSRqcJy+7kyalcI=
+
+Name: OSGI-OPT/src/org/osgi/service/provisioning/packageinfo
+SHA1-Digest: 9ooyDAYiP29KMkn9I/tqZt13JM4=
+
+Name: org/osgi/util/mobile/UserPromptCondition.class
+SHA1-Digest: ydalVGHWNbPwv1XS3Sbx3ap2WBI=
+
+Name: org/osgi/service/useradmin/UserAdminEvent.class
+SHA1-Digest: qxK/mDWlZf4ZQpGj1d48eCMQ4wk=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/Producer.java
+SHA1-Digest: ZMj5T46gUfWbLMX1akZaz71i5J8=
+
+Name: OSGI-OPT/src/org/osgi/application/ApplicationServiceEvent.java
+SHA1-Digest: iEdx7rcgg8T5clpC7b8Ai1vXr0k=
+
+Name: org/osgi/service/power/PowerPermissionCollection.class
+SHA1-Digest: qjhmRh3xHGTt1+DzswUEJaigHro=
+
+Name: OSGI-OPT/src/org/osgi/framework/Configurable.java
+SHA1-Digest: AYa0hYRT7mdVugV77IC6CjHtn1I=
+
+Name: org/osgi/service/deploymentadmin/packageinfo
+SHA1-Digest: UvNF0aGhEWxme6lOnQU68iGq3I8=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/MonitorAdmin.java
+SHA1-Digest: PEdJ4FjterkegMlqvib4w8NQTAs=
+
+Name: org/osgi/service/packageadmin/ExportedPackage.class
+SHA1-Digest: y1jrsmRS6cI/T5cZzxOy2KPBeTI=
+
+Name: LICENSE
+SHA1-Digest: b9HqwNfxSwcCCQCVqrJErLzJgOg=
+
+Name: org/osgi/service/upnp/UPnPException.class
+SHA1-Digest: hat0tytKqGW2pa7AFZUVaixluwc=
+
+Name: OSGI-OPT/src/org/osgi/service/prefs/package.html
+SHA1-Digest: CExINR/268h2UyGBok1tpibJJsg=
+
+Name: org/osgi/service/obr/RepositoryAdmin.class
+SHA1-Digest: 3/LHqb+XS/Uram7spDM2cUy66Bc=
+
+Name: org/osgi/service/upnp/UPnPLocalStateVariable.class
+SHA1-Digest: BaliwtaIp9md48mmURWQm8dtPV0=
+
+Name: org/osgi/service/application/ApplicationDescriptor.class
+SHA1-Digest: Nce8EtVd0rXgP3E4B7R/UJrV7p0=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/AlertItem.java
+SHA1-Digest: g0LRWyf0vzuT05+mjOK0xEkS2gs=
+
+Name: OSGI-OPT/src/org/osgi/service/prefs/packageinfo
+SHA1-Digest: mAl1swYObOrckUER9ZE+mdfyZmw=
+
+Name: org/osgi/service/metatype/MetaTypeProvider.class
+SHA1-Digest: /gO96XK7yFeUEozZwRdBKHGzwlc=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/packageinfo
+SHA1-Digest: wpqOB4C+6cG4aZOz1ksiiXa7Qww=
+
+Name: org/osgi/service/deploymentadmin/DeploymentAdminPermission$1.cla
+ ss
+SHA1-Digest: oT+6wmJfNf3urxX7LNLqZRWouh8=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/RemoteAlertSender.java
+SHA1-Digest: IkwHw3l54oELbcF1J6hyDBvX144=
+
+Name: OSGI-OPT/src/org/osgi/service/packageadmin/RequiredBundle.java
+SHA1-Digest: dBAFCS5n/yxd+YtMTsYiq+0jRMY=
+
+Name: org/osgi/service/useradmin/Group.class
+SHA1-Digest: m7QM0uORsLEFroVYxDcC04zCvzQ=
+
+Name: org/osgi/service/io/packageinfo
+SHA1-Digest: pZsyLGMUOdJnI6v5iqLwZ+BYXOw=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/ControlUnitAdminException
+ .java
+SHA1-Digest: hnh2GpuES+/KOc0ppTuGfm8OXh4=
+
+Name: org/osgi/service/http/HttpContext.class
+SHA1-Digest: Q2fvwp9p5Vyb/tzS0TUJgKp4zlY=
+
+Name: org/osgi/service/dmt/MetaNode.class
+SHA1-Digest: 6lBYlRleYWUGHgkxwnmOs87vUcQ=
+
+Name: OSGI-OPT/src/org/osgi/service/permissionadmin/PermissionInfo.jav
+ a
+SHA1-Digest: 93F2AkIiWSJaG8ILqp/jwB4uHKA=
+
+Name: org/osgi/util/position/Position.class
+SHA1-Digest: QfCUjB/keFET6sR/a1b5RJdilGc=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/diag/DiagnosableControlUnit.jav
+ a
+SHA1-Digest: w/v0lvaa7UAyqEJTdSd9FJAXnf0=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPException.java
+SHA1-Digest: KV9ENXYFuZRySsgkBwpuEfBU/Lg=
+
+Name: OSGI-OPT/src/org/osgi/service/log/LogReaderService.java
+SHA1-Digest: TxgscdaZq8QcVbrpySgOzSHc8mg=
+
+Name: org/osgi/util/gsm/IMEICondition.class
+SHA1-Digest: /m/zvs6W3AVYys8gXUZvtpoPjFc=
+
+Name: org/osgi/service/permissionadmin/packageinfo
+SHA1-Digest: /X9I6BMWshDO1mJEDfdkJXl8vho=
+
+Name: org/osgi/framework/FrameworkListener.class
+SHA1-Digest: Z2K4/t8oNe/NFvRUQ3r9YyFzPDs=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/security/packageinfo
+SHA1-Digest: XGtd1Sc5PwO2zJB5mT0bs65lzyg=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/packageinfo
+SHA1-Digest: 0BmOI9Dr/aMOL86yxro/w71ACEs=
+
+Name: OSGI-OPT/src/org/osgi/service/prefs/BackingStoreException.java
+SHA1-Digest: FJiT873SfpSbhEgj6zTvGQ+EbZo=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/UserAdminEvent.java
+SHA1-Digest: +vHlDUKcqNyKj47HP8abkTze1vE=
+
+Name: org/osgi/service/obr/packageinfo
+SHA1-Digest: kvWJfhxviXOqVnyAZoQrxtO3B+Q=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/Role.java
+SHA1-Digest: EKK2iWS571PYXrYcaaFFut4qCvY=
+
+Name: org/osgi/util/mobile/UserPromptCondition$UserPromptConditionFact
+ ory.class
+SHA1-Digest: UkXouPizN6SV2w//wSK8opi48Dk=
+
+Name: org/osgi/service/power/PowerHandler.class
+SHA1-Digest: BiwuBikLpLyDPa8WTtO8XsJkJZU=
+
+Name: org/osgi/service/metatype/AttributeDefinition.class
+SHA1-Digest: E3JwATJWZnNft3rOmkxgxjELo1c=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/package.html
+SHA1-Digest: FOvz+qmLvnmCbzbIcKGfqhc2dz0=
+
+Name: org/osgi/service/device/Driver.class
+SHA1-Digest: UNP8Wpr9+2xXWE02N/0fS8winPU=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/packageinfo
+SHA1-Digest: Z0ANiYPzpEBL/sc7NCPMynVT2XQ=
+
+Name: org/osgi/service/dmt/spi/ExecPlugin.class
+SHA1-Digest: 7yKNtzokinFIfOLVlAFs0kjaM3o=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/ExecPlugin.java
+SHA1-Digest: MztbaI4607eRZOvEkF+XD5IWpIQ=
+
+Name: OSGI-OPT/src/org/osgi/service/provisioning/ProvisioningService.j
+ ava
+SHA1-Digest: J2ysr94trQJPw1Oyr+AE8iqlEjI=
+
+Name: org/osgi/service/log/LogEntry.class
+SHA1-Digest: PbIvon1WBcXbKIS1bS1sztx8E0M=
+
+Name: org/osgi/util/measurement/packageinfo
+SHA1-Digest: 9UOhYLe+iBSnPRpW0mwl9TRhlUY=
+
+Name: org/osgi/service/metatype2/packageinfo
+SHA1-Digest: YL9MShQfQV7tH3eK7MA3xkY9f9E=
+
+Name: org/osgi/service/http/NamespaceException.class
+SHA1-Digest: zMkGPHixWnJxlOWFhWCFB1H9Shs=
+
+Name: org/osgi/service/obr/Repository.class
+SHA1-Digest: bYBpc12xjSMndlNOIeksbZFmLNE=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/Resource.java
+SHA1-Digest: uOCxhqMNY+ROtLOCrwkipdQd2A4=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/MetaDataListener.java
+SHA1-Digest: 8ijnM9ZLGHH+nZHO0+vNxCd/tVA=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/ResourceProces
+ sorException.java
+SHA1-Digest: sLk9fZi1yT40WzkytuH/5ucDDOE=
+
+Name: OSGI-OPT/src/org/osgi/framework/AllServiceListener.java
+SHA1-Digest: e6SWcFjY/C6JtEFIUxnw1O0gQY0=
+
+Name: org/osgi/service/event/TopicPermissionCollection.class
+SHA1-Digest: v8V76ZXZF4hnzkbzKiQbOIbgybs=
+
+Name: OSGI-OPT/src/org/osgi/service/event/EventConstants.java
+SHA1-Digest: +YQseaRQJ/jvvMSULTG75lc9yRA=
+
+Name: OSGI-OPT/src/org/osgi/service/device/Driver.java
+SHA1-Digest: lMvWU8dVylSPfLsvU8WkTH86/V8=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/package.html
+SHA1-Digest: +Rr5MzfzIaf26R+YXO1pDkOYGC4=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/package.html
+SHA1-Digest: XzOtdTJAsxXjc0LLIYEqVfrL1GI=
+
+Name: org/osgi/service/power/DevicePower.class
+SHA1-Digest: rr6dE+xaTp4uLz+PeYiERjp0IA4=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/Condition.java
+SHA1-Digest: 4SdtX9NEONvEkLDO5T78mn/WhC4=
+
+Name: org/osgi/service/dmt/packageinfo
+SHA1-Digest: B2G5iZAZ+nO5uZ0cLk2GJo6iHbY=
+
+Name: org/osgi/service/url/AbstractURLStreamHandlerService.class
+SHA1-Digest: e8qE6Zzsjn6RE6Jrf0E1oI3Cj3Q=
+
+Name: OSGI-OPT/src/org/osgi/service/application/package.html
+SHA1-Digest: NpmcCg3u4FBpczDrvwPaOOHk2v8=
+
+Name: OSGI-OPT/src/org/osgi/service/event/TopicPermission.java
+SHA1-Digest: HCyl9b0lFPzj7MFpGzEX6CGIPUU=
+
+Name: org/osgi/service/useradmin/Authorization.class
+SHA1-Digest: cmGH7WXm55IEmzpoHFss5Qq3/AU=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/packageinfo
+SHA1-Digest: vpgm6eSOEE6n9FUX5b4KRRftKGU=
+
+Name: org/osgi/framework/packageinfo
+SHA1-Digest: WwDImiydH0ha5vuR+Y9D2ceYTTM=
+
+Name: org/osgi/service/cu/ControlUnit.class
+SHA1-Digest: P/ntHWajxFWQof+lSKt3OIfFF98=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/AttributeDefinition.java
+SHA1-Digest: fN0oYXhL7KdqpBbN8kqYJdR+C0I=
+
+Name: OSGI-OPT/src/org/osgi/service/power/DevicePower.java
+SHA1-Digest: PLdzVv3lunXHWwFWguQkJU+Cx1Y=
+
+Name: org/osgi/service/cm/ConfigurationPermissionCollection$1.class
+SHA1-Digest: yI/JFqFO44QPR0Tw1F7jJTD7yZU=
+
+Name: org/osgi/service/monitor/Monitorable.class
+SHA1-Digest: 9PLiKq3iaP/awRaXyuV0j82Prys=
+
+Name: org/osgi/framework/Version.class
+SHA1-Digest: a7ysntTLVnM/+Fwc6Q5ncBfRZOA=
+
+Name: org/osgi/service/wireadmin/WireAdminEvent.class
+SHA1-Digest: hifz0pym5EOsaPOaedV47RWOe1E=
+
+Name: org/osgi/service/cm/ConfigurationException.class
+SHA1-Digest: fe0kc2XVEUkHXDqAqEkhCVX3/es=
+
+Name: org/osgi/service/cu/admin/ControlUnitAdminException.class
+SHA1-Digest: QATzB4G/xxC31fVNuODcbTTlUlc=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/MetaNode.java
+SHA1-Digest: eO3FqwYH0219iRKOkCcswKGlBtQ=
+
+Name: org/osgi/service/url/packageinfo
+SHA1-Digest: ZsLD3JmMCGe6qadL32tR0BCYzgk=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/package.html
+SHA1-Digest: HRS7B594qaSE0p8IvqaMdIqBBys=
+
+Name: OSGI-OPT/src/org/osgi/service/device/Match.java
+SHA1-Digest: SxsuBJzijpBNO2DAfQ3n4QzaOjo=
+
+Name: OSGI-OPT/src/org/osgi/service/application/ApplicationHandle.java
+SHA1-Digest: 0TPxqYsK/qVAXZxb5pCxdmxdzAs=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/UserAdminPermission.java
+SHA1-Digest: HHcWfDEoNR+RcXB89QEe7C4lDvk=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/ActionDefinition.java
+SHA1-Digest: I9OnAlX3lQr3igUyuJwuu0XQC/s=
+
+Name: org/osgi/service/application/ScheduledApplication.class
+SHA1-Digest: VgSCcsgfZPsA8WEXd6/nXXWpzWA=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/Acl.java
+SHA1-Digest: ABWYp0r3JZRSAX0fFtlqwkDkssg=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPAction.java
+SHA1-Digest: iRBQa5/H/C0d31okvdUJCa50bDQ=
+
+Name: org/osgi/service/dmt/DmtException.class
+SHA1-Digest: GKdA0UTQXgw6eSSReO+B+MMr5MY=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/UserAdmin.java
+SHA1-Digest: Nz6/JGxwGzsngmLCgQHT6Xi++9Q=
+
+Name: OSGI-OPT/src/org/osgi/service/device/Device.java
+SHA1-Digest: r8JXOW62Af72WPl9pGvOwOzPQIE=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/WirePermission.java
+SHA1-Digest: Dy8T3PorA7Sg4nFsBec9zGytghI=
+
+Name: OSGI-OPT/src/org/osgi/util/mobile/UserPromptCondition.java
+SHA1-Digest: 1bDa8wEvznUWgaDZC7JUNTU+IGg=
+
+Name: org/osgi/application/ApplicationServiceEvent.class
+SHA1-Digest: /c26oRC+nspfH/8hPzEXkoWzNVw=
+
+Name: OSGI-OPT/src/org/osgi/service/http/package.html
+SHA1-Digest: G6ohYZp0Ua+dfVXk1JcEsu9RKnM=
+
+Name: org/osgi/service/io/ConnectorService.class
+SHA1-Digest: VavkGpaWLx4EEuXzeKbZTOKgllA=
+
+Name: OSGI-OPT/src/org/osgi/service/startlevel/package.html
+SHA1-Digest: MFQ7fkXPac/yvAFeZIboTxTbT1M=
+
+Name: OSGI-OPT/src/org/osgi/service/application/ScheduledApplication.j
+ ava
+SHA1-Digest: o+zkd1EkbFI7/AFscF7lGi4usMQ=
+
+Name: org/osgi/service/metatype/packageinfo
+SHA1-Digest: 12rYAKCuhPOR8UoeqXmJLChRNho=
+
+Name: org/osgi/service/dmt/spi/ReadWriteDataSession.class
+SHA1-Digest: yKiIP/rZmNSk9qIumF7FAehnU/M=
+
+Name: OSGI-OPT/src/org/osgi/service/event/package.html
+SHA1-Digest: 3sv3hQifkPNk1dbv9kHalClwQbo=
+
+Name: OSGI-OPT/src/org/osgi/framework/PackagePermission.java
+SHA1-Digest: XYhbVi1lS3DHP9aCI+gSZy9ciO0=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/DeploymentAdminPer
+ mission.java
+SHA1-Digest: T3Ls66VqDZFomcjhcdeDx6izC2c=
+
+Name: org/osgi/service/cu/ControlUnitConstants.class
+SHA1-Digest: JnviKeITmy7nGASN3lcSPq7Y52k=
+
+Name: OSGI-OPT/src/org/osgi/service/component/ComponentContext.java
+SHA1-Digest: 9pTnoUKjVtRkS8jA5WXLtpkekAc=
+
+Name: org/osgi/framework/AdminPermission$1.class
+SHA1-Digest: mz7P0Otyu2h0HG3ki2DQui5WlrI=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/Monitorable.java
+SHA1-Digest: yHmA0yNZSGqvuOF/eLG8XOIFstA=
+
+Name: org/osgi/service/useradmin/UserAdminPermissionCollection.class
+SHA1-Digest: XupAJ6cd1uMu8e3tNZM1MJ+tUmk=
+
+Name: OSGI-OPT/src/org/osgi/service/permissionadmin/PermissionAdmin.ja
+ va
+SHA1-Digest: oEjLG1gMLgiA2QU0MTV9H/0DeXM=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/Capability.java
+SHA1-Digest: nyox6Pe5vwcyPxH/Hhi8rRmtwbw=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/package.html
+SHA1-Digest: ZkmZVB21qh+JCpNqy06CiFpMSmY=
+
+Name: org/osgi/service/condpermadmin/BundleSignerCondition$1.class
+SHA1-Digest: /N53rkETeJVKOxfFiODtOabmbT8=
+
+Name: org/osgi/service/cu/admin/spi/CUAdminCallback.class
+SHA1-Digest: EWsEEYP4Kf1ZIq0XFnu6oK+oY9o=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/DataPlugin.java
+SHA1-Digest: SvSzSZAcNvmI7Hy4i3trwCqj0lU=
+
+Name: org/osgi/util/measurement/Measurement.class
+SHA1-Digest: guFlEYeHDiUafhDDZzIeS/+0RjE=
+
+Name: org/osgi/service/component/ComponentConstants.class
+SHA1-Digest: IznMX3uSAMUqSah0qxCO4rBQIX4=
+
+Name: org/osgi/service/event/EventAdmin.class
+SHA1-Digest: Xg8sitJGe08XQJwbwRwbEl+XVCA=
+
+Name: OSGI-OPT/src/org/osgi/util/position/packageinfo
+SHA1-Digest: AdxQwTNb1QuDyPLifIfxi/mNZMc=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ConfigurationPermission.java
+SHA1-Digest: mOGqzL7NlFwgN2XBEwnEzPikgYs=
+
+Name: org/osgi/service/cu/admin/spi/packageinfo
+SHA1-Digest: tAGXmhVqpTL/rAcGy2BpzkTxv28=
+
+Name: OSGI-OPT/src/org/osgi/util/measurement/packageinfo
+SHA1-Digest: LrE+4q8aGkvLK39jZoToYRkxpas=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/DeploymentSess
+ ion.java
+SHA1-Digest: JJopSgTxS+PE3i50HYC0UenjJ9I=
+
+Name: org/osgi/service/component/ComponentInstance.class
+SHA1-Digest: phLMerV1kAbfTzjy5iTEG7BpDhg=
+
+Name: org/osgi/service/power/PowerPermission.class
+SHA1-Digest: gjLlQtIFb/8R3p51AB91V4/N3bY=
+
+Name: org/osgi/framework/ServicePermissionCollection.class
+SHA1-Digest: OQwDkucwQpcRzLF6eeF93TQqkOw=
+
+Name: OSGI-OPT/src/org/osgi/service/prefs/Preferences.java
+SHA1-Digest: RmGY4mi004xeJhua+gFE6g2nQlU=
+
+Name: OSGI-OPT/src/org/osgi/framework/FrameworkListener.java
+SHA1-Digest: 6DJ3xzCHwfv8yH59c9Et4Dfd3vs=
+
+Name: org/osgi/service/wireadmin/Consumer.class
+SHA1-Digest: R2EfPMZ62DW3no7QQXZOudbH8js=
+
+Name: org/osgi/service/condpermadmin/ConditionalPermissionAdmin.class
+SHA1-Digest: nkHpXSx3k7g49g+Acm9uOhiGseQ=
+
+Name: org/osgi/service/deploymentadmin/spi/DeploymentCustomizerPermiss
+ ion$1.class
+SHA1-Digest: /Zbz8KmOlcb2QxQkP04MMKYKuqQ=
+
+Name: org/osgi/framework/FrameworkEvent.class
+SHA1-Digest: xFeOstEiiBFej4mtD8yp85wHJJc=
+
+Name: org/osgi/service/cm/packageinfo
+SHA1-Digest: SSaveRLDphNF2i4reuPQlMtlHBc=
+
+Name: OSGI-OPT/src/org/osgi/framework/FrameworkEvent.java
+SHA1-Digest: fEEvrxpwikrLH1iOi1p5VOUXXlo=
+
+Name: org/osgi/service/device/Device.class
+SHA1-Digest: L4WX7Ne/13WpKrQorD985XDqFJQ=
+
+Name: OSGI-OPT/src/org/osgi/util/measurement/Measurement.java
+SHA1-Digest: R+ka1b07l02w56CUOtAj5yzesRQ=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/security/AlertPermission.java
+SHA1-Digest: JR07+7yRzPk7d+oukFXk86TXrWY=
+
+Name: org/osgi/service/cm/ConfigurationAdmin.class
+SHA1-Digest: yMXsmkbqaU3z1WIpL+WFRPRxzw4=
+
+Name: org/osgi/service/metatype/MetaTypeService.class
+SHA1-Digest: goHau7L6x6qHUEYMwqN2gVqNwIY=
+
+Name: OSGI-OPT/src/org/osgi/service/event/EventHandler.java
+SHA1-Digest: dqhgOCrJuUzFPF2POMNBpb/PIIg=
+
+Name: org/osgi/service/deploymentadmin/spi/packageinfo
+SHA1-Digest: j37sXUKnNExva0aaoDgsamgQBTo=
+
+Name: org/osgi/service/upnp/UPnPDevice.class
+SHA1-Digest: KQeCYy3kJx1u3WzwTC1swF92VLI=
+
+Name: OSGI-OPT/src/org/osgi/application/ApplicationServiceListener.jav
+ a
+SHA1-Digest: l0+C8TifMs7pS2XqDNZr/DSlAaE=
+
+Name: org/osgi/service/cm/ConfigurationEvent.class
+SHA1-Digest: xylPsbmrunCJOYgZaMvDlAwqwNw=
+
+Name: org/osgi/framework/ServiceReference.class
+SHA1-Digest: XM81id3TKH2CC+l2J5pX6zGqHe0=
+
+Name: OSGI-OPT/src/org/osgi/service/power/PowerManager.java
+SHA1-Digest: SfoQwBBXQsSy1PS1zuj6YlGFIRQ=
+
+Name: OSGI-OPT/src/org/osgi/service/power/PowerPermission.java
+SHA1-Digest: qGJt+Qifuji0aazzCmATAqd0yaU=
+
+Name: OSGI-OPT/src/org/osgi/framework/package.html
+SHA1-Digest: 6LjsbUqDCkihDmXnk+Lefo13Ky4=
+
+Name: OSGI-OPT/src/org/osgi/util/measurement/package.html
+SHA1-Digest: 5DKUiSB1o8mFwQye6sL5vcy/rdA=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/BasicEnvelope.java
+SHA1-Digest: mI90KcFFqA3/4P3qThz/nmpfCgQ=
+
+Name: OSGI-OPT/src/org/osgi/service/url/package.html
+SHA1-Digest: O2D1mGYAGpLz2CqcLLfQu3IiHEY=
+
+Name: org/osgi/service/condpermadmin/ConditionInfo.class
+SHA1-Digest: 3I1jjoqCmG8h2xCAoVOqY65nnJg=
+
+Name: OSGI-OPT/src/org/osgi/service/http/HttpService.java
+SHA1-Digest: C8eyhdpsDk50AymILNUEZiRrsfk=
+
+Name: org/osgi/service/condpermadmin/Condition.class
+SHA1-Digest: lwHHRcwvBs2XuidM3KKKa5o95UM=
+
+Name: org/osgi/service/deploymentadmin/spi/ResourceProcessorException.
+ class
+SHA1-Digest: cDjKPrKuMMI/rdc4HwF6mX3mZhY=
+
+Name: org/osgi/service/obr/CapabilityProvider.class
+SHA1-Digest: aoTJEN0jOkw6USeFqHU5koDKkSE=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/diag/package.html
+SHA1-Digest: C3LVOlvIiHr9gQIzyldd2JdQ7X4=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/ControlUnitAdminListener.
+ java
+SHA1-Digest: u+fOUZKh++oFX6i0rYZKnONp06c=
+
+Name: OSGI-OPT/src/org/osgi/service/packageadmin/package.html
+SHA1-Digest: Bj9GXlY07lWgrR3nRmivFopJT4c=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/CapabilityProvider.java
+SHA1-Digest: CKV4bbnEKZIMLyZddvA7JE3CaBA=
+
+Name: org/osgi/application/packageinfo
+SHA1-Digest: pDqN9ClnwLizz545hj3c1EQ2j/s=
+
+Name: OSGI-OPT/src/org/osgi/service/packageadmin/PackageAdmin.java
+SHA1-Digest: jgKV28ixwXXFCtlaJbYIwWnpwIQ=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/Group.java
+SHA1-Digest: FkSKO399q6MqDSiXQp+fWVGG+lU=
+
+Name: OSGI-OPT/src/org/osgi/util/gsm/IMEICondition.java
+SHA1-Digest: oopKje1PqJ1+rcChWbDxynbs0To=
+
+Name: org/osgi/service/wireadmin/Wire.class
+SHA1-Digest: iFZ0p2Z2aZ88LFqGjzFJL5GQjcQ=
+
+Name: OSGI-OPT/src/org/osgi/service/application/ApplicationException.j
+ ava
+SHA1-Digest: RVsoxQ7c7N0pRywFWlP4NG+0vyE=
+
+Name: org/osgi/util/xml/XMLParserActivator.class
+SHA1-Digest: DUM/d7zvY3QIn8Y9AHjXZj9lXJg=
+
+Name: OSGI-OPT/src/org/osgi/service/url/URLStreamHandlerSetter.java
+SHA1-Digest: WoaFh3jFksKnJtowoOcGil1lfc0=
+
+Name: OSGI-OPT/src/org/osgi/service/url/URLConstants.java
+SHA1-Digest: uUkC7ksE30XHYJe98aK4xio7d0k=
+
+Name: org/osgi/service/provisioning/ProvisioningService.class
+SHA1-Digest: 2enwDQ0cdeGu1cEbB6DUlPlyXPM=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundleContext.java
+SHA1-Digest: 4oGUg2gOAI1uDZYom8edrugS+X4=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/Configuration.java
+SHA1-Digest: ZzcjFEfeszinFA5RYTyDBy+/J/w=
+
+Name: org/osgi/framework/BundleListener.class
+SHA1-Digest: i8nGydy6c5gllC1tJommNsg3g2E=
+
+Name: org/osgi/service/wireadmin/Envelope.class
+SHA1-Digest: 8XA42C+2d5zrhH2PiXJifei6Zlk=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundleListener.java
+SHA1-Digest: v3fnfEdX8WQAWy5dq80Pjvkr7Ms=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/MetaTypeProvider.java
+SHA1-Digest: 6sTAm7idvShK7nzOGg0efZYzkwc=
+
+Name: OSGI-OPT/src/org/osgi/service/event/EventAdmin.java
+SHA1-Digest: 3qXULV8Kuy48mUOYBsoiArc76Is=
+
+Name: org/osgi/application/Framework.class
+SHA1-Digest: 8rVlWd6ctJ/vMbwVSbofWErF08k=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/packageinfo
+SHA1-Digest: DDU8JQJkBb31PREu8WJ3V67uA2k=
+
+Name: org/osgi/service/application/ApplicationDescriptor$Delegate.clas
+ s
+SHA1-Digest: WP95tngbuSNWDuH4sNmRw3wkhfA=
+
+Name: org/osgi/framework/ServiceRegistration.class
+SHA1-Digest: WGGc/8cwaDGT3xvg/H2uVmsR3uk=
+
+Name: org/osgi/service/deploymentadmin/spi/ResourceProcessor.class
+SHA1-Digest: hKDwQIEJJwIuUQuqI6Zb39xPYGQ=
+
+Name: org/osgi/service/startlevel/StartLevel.class
+SHA1-Digest: OXOGNIbAY73hufQm8C41jquJaP0=
+
+Name: org/osgi/service/packageadmin/packageinfo
+SHA1-Digest: q2e/6qm6oqzsS8+U/d1SBSePrGc=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServiceFactory.java
+SHA1-Digest: SevWQu5+1ZTqNTg9/QZut/K4GkQ=
+
+Name: org/osgi/service/device/Match.class
+SHA1-Digest: MVluSSzzfjsSZFvs69Fr6E+KDZg=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/DmtAdmin.java
+SHA1-Digest: TGZLegm4o2lqhrz0Zr1DtdU6xsE=
+
+Name: org/osgi/service/application/ApplicationAdminPermission$SignerWr
+ apper.class
+SHA1-Digest: bIyCXzb8nbxQZp5cMupUGR6AgSg=
+
+Name: org/osgi/service/http/packageinfo
+SHA1-Digest: GTsqAoL/9ZrepfbDEkYZwrDdlhE=
+
+Name: OSGI-OPT/src/org/osgi/service/http/NamespaceException.java
+SHA1-Digest: wiZS1BqoAyHyDYQCH3mlfDFqO+s=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/DmtSession.java
+SHA1-Digest: p/W9EgQwOATgpBOfnNOr+2xHcco=
+
+Name: org/osgi/service/deploymentadmin/spi/DeploymentSession.class
+SHA1-Digest: 9ztMVfqvwjY1XhC8/d34zwV3rlg=
+
+Name: OSGI-OPT/src/org/osgi/service/application/ApplicationAdminPermis
+ sion.java
+SHA1-Digest: 14fUfFCitc31jFAroL3v6i/f3qo=
+
+Name: org/osgi/service/wireadmin/WirePermission.class
+SHA1-Digest: WEqqMnYEc/r00Q38Km01pmBmmGE=
+
+Name: org/osgi/framework/BundlePermissionCollection.class
+SHA1-Digest: g9vHhDMJy/zK0pFy8YQ816+9pEY=
+
+Name: org/osgi/service/dmt/spi/TransactionalDataSession.class
+SHA1-Digest: bQ3dZWz2U1L+nY815VYKHrxfq88=
+
+Name: OSGI-OPT/src/org/osgi/service/component/ComponentInstance.java
+SHA1-Digest: hWZT3nei1PmR5TVXzuziajDsdvs=
+
+Name: org/osgi/service/useradmin/packageinfo
+SHA1-Digest: rDwZ7MRtHDj7ssdYe2ua4dS2CnE=
+
+Name: org/osgi/service/cm/ConfigurationPlugin.class
+SHA1-Digest: 3cFVS8/+Wkgi1+vvXweRyHAwnGA=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/WireAdminListener.java
+SHA1-Digest: 6QMDWba+JyuX4QyBU4A9MmmKx+w=
+
+Name: xmlns/scr/scr.xsd
+SHA1-Digest: lcbTBKKglEkFKQA+rST+n5rG4JM=
+
+Name: org/osgi/util/tracker/ServiceTracker.class
+SHA1-Digest: /kTi20d1ULiX/sDElAP/6nOWKNA=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/package.html
+SHA1-Digest: 9VmdJG/Btsu1e+pEruR+I2OkU7o=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/ConditionInfo.java
+SHA1-Digest: wdk6Bh8W1hxcoHWpt8dutdxHpi8=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/diag/packageinfo
+SHA1-Digest: vxGu26whC2hV9Hed7gyKdkZ0Hhc=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/spi/package.html
+SHA1-Digest: mMC4YaOuU4MeeVHHq0/EVB2Xu3M=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/packageinfo
+SHA1-Digest: +OZYM1KMfpGbFKbbTDbz5KnAi+8=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/ControlUnitConstants.java
+SHA1-Digest: sKzHhzRnbr+OKxtlarA5xRpvUhE=
+
+Name: org/osgi/service/log/LogListener.class
+SHA1-Digest: +/b/PIKC0rl0Von4ak1vrlviW7E=
+
+Name: org/osgi/service/upnp/UPnPIcon.class
+SHA1-Digest: q6uTRghnAVVMArMFN1uXuaCbWew=
+
+Name: org/osgi/service/monitor/MonitorPermission.class
+SHA1-Digest: HdYHWMHcNeL08rNNGzxUQu4yGGU=
+
+Name: OSGI-OPT/src/org/osgi/service/io/ConnectionFactory.java
+SHA1-Digest: TTTsymDChPwTHS5AreSlrZ1kfaU=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/packageinfo
+SHA1-Digest: VaFkKNyUSta4dlFZzAFv8p8x+GM=
+
+Name: org/osgi/framework/Constants.class
+SHA1-Digest: FYtBCi6mZX9IlIks5H8VhtZDTw0=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/admin/spi/packageinfo
+SHA1-Digest: 32wRsfMZY5Pg2qliMTrDU1oqV8A=
+
+Name: org/osgi/service/condpermadmin/BundleLocationCondition.class
+SHA1-Digest: WDTfbd01QslgSJDIDOIjhqPsUf0=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/MonitoringJob.java
+SHA1-Digest: N7Ph2xj+E0ZoJ9Xwe7pN3wiP4Gw=
+
+Name: OSGI-OPT/src/org/osgi/util/xml/package.html
+SHA1-Digest: MtmCdy3UvVScIVKYKMvCRqptG70=
+
+Name: org/osgi/service/application/ApplicationAdminPermission.class
+SHA1-Digest: 3qX7d9NZ/KOq1JCdUrwygw+nr/I=
+
+Name: org/osgi/service/cm/ManagedService.class
+SHA1-Digest: FKEJqaxfU5mWlrEkJWq5pXK1VCI=
+
+Name: OSGI-OPT/src/org/osgi/framework/AdminPermission.java
+SHA1-Digest: uO/pQ74d6yeAU7x2Ny9pqiUsoU4=
+
+Name: OSGI-OPT/src/org/osgi/application/package.html
+SHA1-Digest: fROC41D1tr2Bo5dSEN2WiK/zSHk=
+
+Name: OSGI-OPT/src/org/osgi/service/url/AbstractURLStreamHandlerServic
+ e.java
+SHA1-Digest: v0YYUu9Py5CGhygWmA9AwU/LMiY=
+
+Name: OSGI-OPT/src/org/osgi/framework/InvalidSyntaxException.java
+SHA1-Digest: mxYpCmLI7RoDHu2/WeGhLCN6g3Q=
+
+Name: OSGI-OPT/src/org/osgi/application/Framework.java
+SHA1-Digest: I0MrOyx7jmddAQDD38XvWdh4bS0=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/ControlUnitException.java
+SHA1-Digest: nSGm679DX05aJz9hxfFrqHjCwsE=
+
+Name: OSGI-OPT/src/org/osgi/util/tracker/package.html
+SHA1-Digest: CyDeJ4TpFCwFnhHiV5UrMgc5TcU=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/ObjectClassDefinition.jav
+ a
+SHA1-Digest: hS2wfMgUD1pXyGceaGHP6e7UVd8=
+
+Name: OSGI-OPT/src/org/osgi/service/application/ApplicationDescriptor.
+ java
+SHA1-Digest: Lu8/lPf2aXO+BXdLjjX7afBFOKQ=
+
+Name: org/osgi/service/monitor/MonitoringJob.class
+SHA1-Digest: kWmz51DUngfq9R0XrhofymxXaZA=
+
+Name: org/osgi/service/application/ApplicationHandle$Delegate.class
+SHA1-Digest: t+1y5D4tgFLLvDMMFrcJ2bksnz4=
+
+Name: org/osgi/framework/BundleEvent.class
+SHA1-Digest: EGZVOfz48+NXaK0ptmnvVuLt+K0=
+
+Name: OSGI-OPT/src/org/osgi/service/event/Event.java
+SHA1-Digest: VySCXv7lv8vjDNSRz1lw0X9KTwM=
+
+Name: org/osgi/service/monitor/MonitorAdmin.class
+SHA1-Digest: mDhnFj4X+v4fZCMNl2dRM2tP5VM=
+
+Name: OSGI-OPT/src/org/osgi/util/position/Position.java
+SHA1-Digest: O8+ZoWQEUBDFupwWpOVvvSH1byw=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/packageinfo
+SHA1-Digest: Rh3koJMOGykODlDQYP0UjRittzg=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/ManagedServiceFactory.java
+SHA1-Digest: anATJOIuoZbsx3DVgbVcqzgq5MI=
+
+Name: xmlns/metatype/metatype.xsd
+SHA1-Digest: pLakeqsQDGYaHBY5WgD0JzJhKwQ=
+
+Name: org/osgi/service/dmt/DmtAdmin.class
+SHA1-Digest: X9dk2BI9y7LO/B2p0Rr4GJFTTF8=
+
+Name: org/osgi/service/upnp/UPnPStateVariable.class
+SHA1-Digest: k9Xlup9ysmQqWA4aK/Kuv1wWENU=
+
+Name: OSGI-OPT/src/org/osgi/application/ApplicationContext.java
+SHA1-Digest: fdQrIXbFHanUO8JMNefpWWKrEfQ=
+
+Name: org/osgi/service/device/DriverSelector.class
+SHA1-Digest: TrJ7mID5NHqKCQN0lQRBFIj7cgU=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/packageinfo
+SHA1-Digest: V/l67j6XY9B0YweADgKYQsqvR7o=
+
+Name: org/osgi/service/cu/admin/ControlUnitAdminListener.class
+SHA1-Digest: 3RjDxVxQhC/y349e2j2PzpZikIM=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/diag/Status.java
+SHA1-Digest: SaElWrjun2ShYZWqK0gqPSpj+f8=
+
+Name: org/osgi/util/gsm/IMEICondition$1.class
+SHA1-Digest: is3Okyjv30rhAfiD7Ph31Vf0xoc=
+
+Name: org/osgi/service/cm/ConfigurationPermissionCollection.class
+SHA1-Digest: O1hmDkp9Px2gcL2rXsNr7/yKi0Y=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/Resolver.java
+SHA1-Digest: z+U0OS3enkLupaq6Qpv2dZceP/E=
+
+Name: org/osgi/service/url/URLStreamHandlerService.class
+SHA1-Digest: L3Ka+RawluUaRfXbNG4mKxHfkYE=
+
+Name: org/osgi/service/cm/ManagedServiceFactory.class
+SHA1-Digest: Rmv3RC/v+kCEevjKkvwEDkiGXYU=
+
+Name: OSGI-OPT/src/org/osgi/service/component/ComponentException.java
+SHA1-Digest: cuBw8MU/eC1/EIiM1E2jw/moJdc=
+
+Name: org/osgi/util/xml/packageinfo
+SHA1-Digest: /Ht2bRt72LubFMTKzr4JnJMD+Qo=
+
+Name: org/osgi/service/dmt/DmtSession.class
+SHA1-Digest: 35TEUI09mT0eEf0muCgaTKDja+8=
+
+Name: org/osgi/service/obr/RepositoryPermission.class
+SHA1-Digest: 0CU6tJ/6HUnEcfrBvvJgAfX9azA=
+
+Name: OSGI-OPT/src/org/osgi/service/useradmin/User.java
+SHA1-Digest: cCNs+kCceR+2aVHt8D4LZ/hJyvo=
+
+Name: org/osgi/service/upnp/UPnPService.class
+SHA1-Digest: h0ZzY3KVds3j269MIh/cTI8UxVM=
+
+Name: OSGI-OPT/src/org/osgi/service/log/LogService.java
+SHA1-Digest: XlbhnzZeBa1+dgEaguyfS0dW/r8=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServiceReference.java
+SHA1-Digest: fl5dekKBMcSyD/FpYa25wJe2Uwo=
+
+Name: org/osgi/framework/BundlePermission.class
+SHA1-Digest: QHvPmidiN/AsOxPqKvIKy3TCbTk=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPDevice.java
+SHA1-Digest: kaBFG7bcycA6aKjyvCHAQtEyGxs=
+
+Name: org/osgi/service/cu/diag/packageinfo
+SHA1-Digest: SBrzJur+yUG4AJqUayUYpurQ8OA=
+
+Name: OSGI-OPT/src/org/osgi/util/xml/XMLParserActivator.java
+SHA1-Digest: Hm4M9vUY8aoWtcRcHR2j2lg/P64=
+
+Name: org/osgi/framework/Configurable.class
+SHA1-Digest: 18qBACzFINu+0geD6D309P2V8fc=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPEventListener.java
+SHA1-Digest: gcwrDD7/TllNl6YMJs4hJ1oRNTM=
+
+Name: OSGI-OPT/src/org/osgi/service/component/package.html
+SHA1-Digest: FVFzVyTBztjPhks3ZErbap7jONg=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/Wire.java
+SHA1-Digest: GsmRY0oQzmqZxRRGe6bX9Yb8fRQ=
+
+Name: org/osgi/service/cu/admin/HierarchyListener.class
+SHA1-Digest: ixN/p9SW2jrS9xpDQH3cpEtWPI0=
+
+Name: org/osgi/framework/FrameworkUtil.class
+SHA1-Digest: O4Y3fXVSxHA/DH3AVOlXjs9WMPI=
+
+Name: OSGI-OPT/src/org/osgi/service/device/DriverSelector.java
+SHA1-Digest: 4MjbmbjLZ4jI3w9yJZNQnuwvQuQ=
+
+Name: OSGI-OPT/src/org/osgi/service/log/LogEntry.java
+SHA1-Digest: Dk6PD+JzyYQKTorjiQRnv/KQl70=
+
+Name: OSGI-OPT/src/org/osgi/framework/SynchronousBundleListener.java
+SHA1-Digest: GronbetjpoQOJBsTdUk5aGpgO+k=
+
+Name: org/osgi/service/packageadmin/RequiredBundle.class
+SHA1-Digest: hGBAbRrVCxPXttR8Y44dmc/z8tY=
+
+Name: OSGI-OPT/src/org/osgi/service/log/packageinfo
+SHA1-Digest: C/tTETCChTdUBkldeL8+qryXBZk=
+
+Name: org/osgi/service/io/ConnectionFactory.class
+SHA1-Digest: QkjPZFQudSk3QuyvasvZMGwPc/U=
+
+Name: org/osgi/service/metatype/MetaTypeInformation.class
+SHA1-Digest: ls7B5NDiw7jOnDI60Kpba4lkDvY=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/Consumer.java
+SHA1-Digest: 3CZpkRuq+H0rB78969bjlTisdYg=
+
+Name: org/osgi/framework/AllServiceListener.class
+SHA1-Digest: kunjsUR8Az5n9giVGX6gYbrwwt0=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/WireConstants.java
+SHA1-Digest: vaTEJ4ddTYZAG26Rnj1DqykTShw=
+
+Name: OSGI-OPT/src/org/osgi/service/cm/packageinfo
+SHA1-Digest: swJpbMwkcW17hegi+m8yZRfMNbs=
+
+Name: OSGI-OPT/src/org/osgi/service/log/package.html
+SHA1-Digest: TiBGjVA8OJBIMJXJvg/p4NMoDw4=
+
+Name: org/osgi/framework/InvalidSyntaxException.class
+SHA1-Digest: /zd42rwYZhn/pk3WyxEgkZC9GdM=
+
+Name: OSGI-OPT/src/org/osgi/framework/ServicePermission.java
+SHA1-Digest: Mv88hHvFRd11mm5LK6L5ckFbxQA=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundleException.java
+SHA1-Digest: IYVD0TMxSMkZwD69cE9zXIcCH0M=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/package.html
+SHA1-Digest: RznCGhpQn8A/x4icHmSBthZhtUw=
+
+Name: OSGI-OPT/src/org/osgi/service/url/packageinfo
+SHA1-Digest: 2aVYRfrBEJKl/MTFf+l3lNTomno=
+
+Name: org/osgi/service/prefs/Preferences.class
+SHA1-Digest: MOVdjuMvZJ+t+7apBqJ9LQp8mE8=
+
+Name: OSGI-OPT/src/org/osgi/service/monitor/StatusVariable.java
+SHA1-Digest: tG4cC1tYIU3iGPwyTlDCo3dCeQc=
+
+Name: org/osgi/service/cm/ConfigurationListener.class
+SHA1-Digest: lQw2EkJTROwX0e6GW4CvEALxSiU=
+
+Name: OSGI-OPT/src/org/osgi/service/io/package.html
+SHA1-Digest: l9OPf1+194HkSd+XgZVEBH4M9GU=
+
+Name: org/osgi/framework/ServicePermission.class
+SHA1-Digest: jKVa1SWXBnnERDA9iYwrDsX7c40=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/security/package.html
+SHA1-Digest: whoP8/d7jgzZNzoaHXuhxHCbTz8=
+
+Name: org/osgi/service/device/packageinfo
+SHA1-Digest: xjp+SemDrxc/cFDhJJuM4HbIwtM=
+
+Name: org/osgi/util/measurement/State.class
+SHA1-Digest: 9FG1LLRwkaM6b5rPCkItcWwPRvA=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype2/ExtendedAttributeDefinit
+ ion.java
+SHA1-Digest: xmHPTtybcejGwrJU9QNIahHY97I=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/DmtException.java
+SHA1-Digest: SK1HtdP5zAwlc6jwluOhIaTwblA=
+
+Name: org/osgi/util/gsm/IMSICondition.class
+SHA1-Digest: Z10wVPlxgZFmKsI3OyFtlnOvmBo=
+
+Name: org/osgi/service/deploymentadmin/DeploymentPackage.class
+SHA1-Digest: ozPSt9nZkN+/+wauFXWMlLEJZXA=
+
+Name: org/osgi/service/cu/ControlUnitException.class
+SHA1-Digest: unA4Q2AuLlI3gu+W/H3YmGonxK8=
+
+Name: org/osgi/service/url/URLConstants.class
+SHA1-Digest: 8QXjuK0scEr7CqSm85NWfekrUcI=
+
+Name: org/osgi/service/condpermadmin/BundleLocationCondition$1.class
+SHA1-Digest: y1/479NLdddu5BOaMNv35cMAwtw=
+
+Name: OSGI-OPT/src/org/osgi/service/obr/Requirement.java
+SHA1-Digest: FJaAlIC2mR543zWVI64F8a0LABE=
+
+Name: OSGI-OPT/src/org/osgi/service/component/packageinfo
+SHA1-Digest: 0hwHEtU5kg9gCJWcs96xkNyu3YM=
+
+Name: org/osgi/service/cm/Configuration.class
+SHA1-Digest: JNEiNov4hbxT16jDJJOuu8PlJX0=
+
+Name: org/osgi/application/ApplicationContext.class
+SHA1-Digest: Bj5kveptf1sqGYgjmvlvtWDrFiY=
+
+Name: org/osgi/service/event/Event.class
+SHA1-Digest: hZf/IsSprdeWA/b/rtgxfgkKp08=
+
+Name: org/osgi/service/useradmin/UserAdminListener.class
+SHA1-Digest: ecv3/d4I/yvOORq7tjHqoocGyLA=
+
+Name: org/osgi/service/condpermadmin/packageinfo
+SHA1-Digest: ET8wMtOgd8NVfSYfz6MsDw2VSqg=
+
+Name: OSGI-OPT/src/org/osgi/service/wireadmin/WireAdmin.java
+SHA1-Digest: KoNYbhGurbwGsS7jIbHpWJAQ4OU=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/BundleInfo.java
+SHA1-Digest: +ccZ6r7VnWgxhqIHhDcbrO42GPM=
+
+Name: OSGI-OPT/src/org/osgi/service/io/packageinfo
+SHA1-Digest: JhqNy4UqEDEoBh+4+NkGiioi8DE=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/spi/ResourceProces
+ sor.java
+SHA1-Digest: Gt17M7sJWLpDXefsoLEPUyGKyIk=
+
+Name: OSGI-OPT/src/org/osgi/service/cu/ControlUnit.java
+SHA1-Digest: oFxMtfIkRcZKBcZs9ehzr+IdD+I=
+
+Name: org/osgi/util/position/packageinfo
+SHA1-Digest: PbtLlLbYEWE1O2wXjTc4nCrq+28=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/ReadableDataSession.java
+SHA1-Digest: 2HrkfztxoAG7XhEWx/h4H7IMHXU=
+
+Name: OSGI-OPT/src/org/osgi/service/upnp/UPnPIcon.java
+SHA1-Digest: 5gLYKaLXvB9rZuVny5PivyLzChw=
+
+Name: OSGI-OPT/src/org/osgi/service/device/packageinfo
+SHA1-Digest: X7+h/C2aoEYpOu9Cr5EuPlpQapM=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/DmtData.java
+SHA1-Digest: F7OTBRKzlm8miPw0uu6HMvaNHIs=
+
+Name: org/osgi/service/log/packageinfo
+SHA1-Digest: jXICWyjXCCq72ZS6u+28DfBdV4Y=
+
+Name: org/osgi/service/http/HttpService.class
+SHA1-Digest: dwgIi9/mo+fjRq8Bj1dAnl12v9Q=
+
+Name: org/osgi/util/tracker/packageinfo
+SHA1-Digest: ++DQ3F6VKGd/ZYzeeF++C+Ugglk=
+
+Name: OSGI-OPT/src/org/osgi/service/condpermadmin/package.html
+SHA1-Digest: SwyyIqDL/0w/jFyUPg89gI3hHnM=
+
+Name: OSGI-OPT/src/org/osgi/service/packageadmin/ExportedPackage.java
+SHA1-Digest: lLpyQR7jUrl+9sFR4HrUAfKIvgo=
+
+Name: org/osgi/service/cu/StateVariableListener.class
+SHA1-Digest: H4GcoenoPIjwME7RfW+7NH3BZHA=
+
+Name: org/osgi/service/event/EventConstants.class
+SHA1-Digest: qHtQYR4PAHoUU4pIGJQlzpll3Vs=
+
+Name: org/osgi/service/power/PowerManager.class
+SHA1-Digest: znEPIP204IMvjlnhC5BckGq5GEM=
+
+Name: org/osgi/framework/AdminPermission.class
+SHA1-Digest: QSHxDZl8ck7ONdGwwYyZ7xblkrk=
+
+Name: org/osgi/service/dmt/security/DmtPrincipalPermissionCollection.c
+ lass
+SHA1-Digest: fl5WO6H3vXo3A2nMJyseqBJ6Gj4=
+
+Name: OSGI-OPT/src/org/osgi/service/startlevel/StartLevel.java
+SHA1-Digest: PnrNPYmAK9D1m+5n3TOFlmt4ZFI=
+
+Name: org/osgi/service/log/LogReaderService.class
+SHA1-Digest: mQGpcQL435FFxMidZo1KHVerEvA=
+
+Name: OSGI-OPT/src/org/osgi/service/permissionadmin/packageinfo
+SHA1-Digest: lVo17PxbmNHUFsB4AkhWwquroU4=
+
+Name: OSGI-OPT/src/org/osgi/util/tracker/packageinfo
+SHA1-Digest: lBRPVvQYfrZPBkoHiQz7XvJEDXM=
+
+Name: OSGI-OPT/src/org/osgi/service/http/packageinfo
+SHA1-Digest: ezMsVTV7Bq/uEd6jzZecHXT/TWs=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/MetaTypeService.java
+SHA1-Digest: syvU3Du28E6aVDpByV8IuebtZfA=
+
+Name: org/osgi/service/condpermadmin/BundleSignerCondition.class
+SHA1-Digest: S2p7dtxvYf8InlXleS94xL2yzMc=
+
+Name: OSGI-OPT/src/org/osgi/application/packageinfo
+SHA1-Digest: 8w6jT9w+Qbw3WatJKUvk8RBmRrY=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/spi/TransactionalDataSession.j
+ ava
+SHA1-Digest: o4ziOKuyVQUj8WTaBCG0G6/bhcc=
+
+Name: org/osgi/framework/PackagePermissionCollection.class
+SHA1-Digest: A+SE4xQ0MUIR0FdsVUb5sfh43to=
+
+Name: org/osgi/service/event/TopicPermission.class
+SHA1-Digest: ceU+SoJpJxvVe6COcubZF9Ouk9A=
+
+Name: org/osgi/service/wireadmin/WireAdmin.class
+SHA1-Digest: 3FDHgXnYzgty1GLYBSCnZj6xOwo=
+
+Name: OSGI-OPT/src/org/osgi/service/metatype/MetaTypeInformation.java
+SHA1-Digest: Sa2Pbp7dmu201yK0D5ctrKBTWDs=
+
+Name: org/osgi/service/dmt/security/DmtAlertPermissionCollection.class
+SHA1-Digest: I7DhtiDc4xKgLfhMFNdBYzzuIE4=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/packageinfo
+SHA1-Digest: BdNv3qU6clGeQ08Q/hEwQ5W2b5s=
+
+Name: OSGI-OPT/src/org/osgi/service/dmt/security/DmtPermission.java
+SHA1-Digest: LfHlLy17Qt5WHhYOwY+ZIWK+bFs=
+
+Name: OSGI-OPT/src/org/osgi/framework/BundlePermission.java
+SHA1-Digest: 7w2L+6vGpanXZbtQycuuRvjojdg=
+
+Name: OSGI-OPT/src/org/osgi/service/startlevel/packageinfo
+SHA1-Digest: ZtI4LPts+ej3ZKhkwzKl7k88X3Y=
+
+Name: org/osgi/service/prefs/packageinfo
+SHA1-Digest: NuBwiqg/aZ/iU0o/MUoquvFe1fY=
+
+Name: org/osgi/service/log/LogService.class
+SHA1-Digest: DtRCmfolGZ+xf3iRkZeKR17BV54=
+
+Name: org/osgi/service/metatype2/ActionDefinition.class
+SHA1-Digest: H2v0tkPQnLRs1O4zB7skwtVCKVU=
+
+Name: org/osgi/service/wireadmin/BasicEnvelope.class
+SHA1-Digest: nSosrAjvhFAvNPWc5tf0bPIvpHo=
+
+Name: org/osgi/service/application/ApplicationDescriptor$1.class
+SHA1-Digest: 5GP1mrViQ6evFo96tdcn6IV6auk=
+
+Name: OSGI-OPT/src/org/osgi/service/power/package.html
+SHA1-Digest: IiHn0SFlu3FXx6B5zvaR1MrELXo=
+
+Name: OSGI-OPT/src/org/osgi/service/deploymentadmin/package.html
+SHA1-Digest: jTT4VA+HdSHdVoB4+hOzIVPUH34=
+
+Name: org/osgi/service/dmt/security/DmtPermissionCollection.class
+SHA1-Digest: Q2uf4w3wM4EyhCwqwBiXrY5VWhA=
+
+Name: org/osgi/service/dmt/DmtData.class
+SHA1-Digest: wHi+2JSkwIExyDlljUpuvQFdZ3M=
+
+Name: org/osgi/service/monitor/MonitorListener.class
+SHA1-Digest: XITDc+NQ4PBKhl9mlYfy7131Sy4=
+
+Name: OSGI-OPT/src/org/osgi/service/event/packageinfo
+SHA1-Digest: 3djsz28O3PA4KQvnAoq/7U2WAE0=
+
+Name: OSGI-OPT/src/org/osgi/service/url/URLStreamHandlerService.java
+SHA1-Digest: Ba+UPH5X54xGSycPomy4gXtaN68=
+
+Name: org/osgi/util/tracker/ServiceTracker$Tracked.class
+SHA1-Digest: gbIKMJ4IygI4kQ0Emv/mrxZoOEU=
+

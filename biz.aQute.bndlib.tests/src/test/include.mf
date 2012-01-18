@@ -1,0 +1,4 @@
+Export-Package=aQute.bean;special=true, org.objectweb.asm.util, *xml2mif
+Import-Package=*
+Bundle-Includes=../../jar, simple.mf, @../../jar/thinlet.jar
+Private-Package=aQute.lib.aim

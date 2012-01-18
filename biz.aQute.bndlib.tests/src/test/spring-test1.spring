@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+         http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
+
+
+
+    <bean id="one" class="com.foo.one.Class">
+        <description>
+            Simple implementation that uses fortunes supplied to it as a straight Set.
+            A more realistic implementation would of course load the fortunes from 
+            file, a database, query a fortune web service, etc.
+        </description>
+
+        <property name="fortunes">
+            <set>
+                <bean class="com.foo.one.one.Class"/>
+                <xyz default-impl="default_impl.Class">
+                    <property name="fortune" value="Some people dream of success; others stay awake to achieve it."/>
+                    <property name="source" value="Benjamin Franklin"/>
+                </xyz>
+                <xyz value-type="value_type.Class">
+                    <property name="fortune" value="Some people dream of success; others stay awake to achieve it."/>
+                    <property name="source" value="Benjamin Franklin"/>
+                </xyz>
+
+                <xyz value-type="a.b.Class              ,            c.d.Class,e.f.Class ">
+                    <property name="fortune" value="Some people dream of success; others stay awake to achieve it."/>
+                    <property name="source" value="Benjamin Franklin"/>
+                </xyz>
+
+                <bean class="org.springframework.osgi.service.exporter.support.OsgiServiceFactoryBean">
+                    <property name="interfaces" value="interfaces_1.Class"/>
+                    <property name="source" value="Rob Harrop"/>
+                </bean>
+                
+                <bean class="org.springframework.osgi.service.importer.support.OsgiServiceProxyFactoryBean">
+                    <property name="interfaces" value="interfaces_2.Class"/>
+                    <property name="source" value="Rob Harrop"/>
+                </bean>
+                
+                <bean class="com.foo.one.two.Class">
+                    <property name="interfaces" value="interfaces_3.Class"/>
+                    <property name="source" value="Rob Harrop"/>
+                </bean>
+                
+                <xyz class="I-am-not-here"/>
+            </set>
+        </property>
+    </bean>
+</beans>

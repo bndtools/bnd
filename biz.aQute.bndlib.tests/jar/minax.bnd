@@ -1,0 +1,4 @@
+-classpath: mina.jar
+Import-Package: org.apache.commons.collections.map,*
+Export-Package: !META-INF.*,*
+

@@ -1,0 +1,9 @@
+build = sometime
+
+-plugin	            	= \
+						aQute.lib.deployer.FileRepo; \
+                                location=${workspace}/cnf/releaserepo; \
+                                readonly=false, \
+                        aQute.lib.deployer.FileRepo; \
+                                location=${workspace}/cnf/repo; \
+                                readonly=true

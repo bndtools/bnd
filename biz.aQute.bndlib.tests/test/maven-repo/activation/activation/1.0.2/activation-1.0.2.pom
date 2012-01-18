@@ -1,0 +1,13 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>activation</groupId>
+  <artifactId>activation</artifactId>
+  <version>1.0.2</version>
+
+  <distributionManagement>
+    <relocation>
+      <groupId>javax.activation</groupId>
+    </relocation>
+  </distributionManagement>
+
+</project>

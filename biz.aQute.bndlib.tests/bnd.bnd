@@ -1,0 +1,6 @@
+-nobundles: true
+
+-buildpath: biz.aQute.bndlib;version=project,\
+	osgi.cmpn;version=4.3.0,\
+	osgi.core;version=4.2.1,\
+	junit.osgi;version=3.8.2

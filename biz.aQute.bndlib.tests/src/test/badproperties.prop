@@ -1,0 +1,3 @@
+Import-Package:   org.osgi.service.cm;version="[1.0.0, 2.0.0)", \
+                  org.osgi.util.tracker;version="[1.0.0, 2.0.0)", \   
+                  my.package
