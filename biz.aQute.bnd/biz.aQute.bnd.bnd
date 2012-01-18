@@ -1,17 +1,8 @@
--sources: 						true
--include: 						~META-INF/MANIFEST.MF
+Include-Resource: 				LICENSE, embedded-repo.jar
+Private-Package: 				aQute.bnd.*, aQute.configurable.*
 
-Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
+Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
+Import-Package: 				org.apache.tools.ant;resolution:=optional,*
 
-Private-Package: 				aQute.bnd.*, aQute.lib.*, aQute.configurable.*
-
-#, org.osgi.service.component.annotations
-Conditional-Package: 			aQute.libg.*
-Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex, org.osgi.service.coordinator
-Import-Package: 				!org.eclipse.*,org.apache.tools.ant;resolution:=optional,org.osgi.service.bindex,*
-Bundle-ClassPath:				.
 Main-Class: 					aQute.bnd.main.bnd
 Bundle-Version:					${^Bundle-Version}
-
-
-

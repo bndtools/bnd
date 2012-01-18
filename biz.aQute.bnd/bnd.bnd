@@ -1,39 +1,16 @@
--dependson: biz.aQute.junit, biz.aQute.launcher, demo
-
-Bundle-Version: 				1.51.1
+Bundle-Version: 				1.52.3
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="${Bundle-Copyright}"; \
 									link=LICENSE
 						
+Conditional-Package: 			aQute.libg.*, aQute.lib.*
+
 -sub: *.bnd
 
 -buildpath:\
 	aQute.libg;version=project,\
 	ee.j2se;version='[1.5,1.6)',\
 	biz.aQute.bndlib;version=project,\
-	com.springsource.junit,\
-	org.eclipse.core.runtime,\
-	org.eclipse.core.resources,\
-	org.eclipse.core.commands,\
-	org.eclipse.debug.ui,\
-	org.eclipse.debug.core,\
-	org.eclipse.jdt.core,\
-	org.eclipse.jdt.debug.ui,\
-	org.eclipse.jdt.junit,\
-	org.eclipse.jdt.launching,\
-	org.eclipse.jdt.ui,\
-	org.eclipse.jface,\
-	org.eclipse.jface.text,\
-	org.eclipse.text,\
-	org.eclipse.ui,\
-	org.eclipse.ui.workbench,\
-	org.eclipse.ui.editors,\
-	org.eclipse.ui.ide,\
-	org.eclipse.ui.workbench.texteditor,\
-	org.eclipse.swt.carbon.macosx,\
-	org.eclipse.core.jobs,\
-	org.eclipse.equinox.common,\
-	org.eclipse.equinox.registry,\
 	org.apache.tools.ant,\
 	osgi.cmpn;version=4.3,\
 	osgi.core;version=4.1,\
