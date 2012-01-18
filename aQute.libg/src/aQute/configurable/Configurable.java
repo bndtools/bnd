@@ -215,8 +215,30 @@ public class Configurable<T> {
 			} else if (pType.getRawType() == Class.class) {
 				return loader.loadClass(o.toString());
 			}
+			if (Map.class.isAssignableFrom(resultType)){
+				Map<?,?> input = toMap(o);
+				if (resultType.isInterface()) {
+					if (resultType == SortedMap.class)
+						resultType = TreeMap.class;
+					else if (resultType == Map.class)
+						resultType = LinkedHashMap.class;
+					else
+						throw new IllegalArgumentException(
+								"Unknown interface for a collection, no concrete class found: "
+										+ resultType);
+				}
+				@SuppressWarnings("unchecked") Map<Object,Object> result = (Map<Object,Object>) resultType
+						.newInstance();
+				Type keyType = pType.getActualTypeArguments()[0];
+				Type valueType = pType.getActualTypeArguments()[1];
+
+				for ( Map.Entry<?, ?> entry : input.entrySet()) {
+					result.put(convert(keyType,entry.getKey()), convert(valueType,entry.getValue()));
+				}
+				return result;
+			}
 			throw new IllegalArgumentException("cannot convert to " + pType
-					+ " because it uses generics and is not a Collection");
+					+ " because it uses generics and is not a Collection or a map");
 		}
 
 		Object convertArray(Type componentType, Object o) throws Exception {
@@ -264,6 +286,14 @@ public class Configurable<T> {
 					return Arrays.asList(s.split("\\|"));
 			}
 			return Arrays.asList(o);
+		}
+		
+		private Map<?, ?> toMap(Object o) {
+			if ( o instanceof Map) 
+				return (Map) o;
+			
+			throw new IllegalArgumentException(
+					"Cannot convert " + o + " to a map as requested");
 		}
 
 	}
