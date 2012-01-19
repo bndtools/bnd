@@ -12,8 +12,11 @@ javac.target = jsr14
 Private-Package: aQute.junit.*,\
 	junit.framework
 Export-Package: junit.framework; version=3.8
-Import-Package: !aQute.*,\
-	*
+
+# The dependency on aQute packages is only for the 
+# master side. When launched, those dependencies
+# are not necessary
+Import-Package: aQute.*;resolution:=optional,*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
 Bundle-Version: 1.0.0
