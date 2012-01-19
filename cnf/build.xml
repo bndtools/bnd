@@ -85,7 +85,7 @@
 		<junit printsummary="true">			
 			<classpath path="${project.buildpath}" />
 			<formatter type="xml"/>
-			<batchtest todir="tmp" >
+			<batchtest todir="${target}" >
 			    <fileset dir="${src}">
 			      <include name="test/**.java"/>
 			    </fileset>
