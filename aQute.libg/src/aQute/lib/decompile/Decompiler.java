@@ -189,12 +189,12 @@ public class Decompiler {
          } else if ((access & ACC_ENUM)!=0) {
         	ps.printf("enum %s ", pool[this_class]);
             for (int i = 0; i < interfaces_count; i++) {
-                int interface_index = in.readUnsignedShort();
+                /*int interface_index =*/ in.readUnsignedShort();
             }
         } else if ((access & ACC_ANNOTATION)!=0) {
            	ps.printf("interface @%s ", pool[this_class]);
             for (int i = 0; i < interfaces_count; i++) {
-                int interface_index = in.readUnsignedShort();
+                /*int interface_index = */in.readUnsignedShort();
             }
         } else {
         	String zuper = super_class == 0 ? null : (String)pool[super_class];

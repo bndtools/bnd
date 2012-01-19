@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.test.*;
-import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 

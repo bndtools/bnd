@@ -279,7 +279,7 @@ public class bnd extends Processor {
 			if ( options.version() != null)
 				w.setBundleVersion(options.version().toString());
 			
-			File out = w.getOutputFile(options.file());
+			//File out = w.getOutputFile(options.file());
 			// TODO
 		}
 
