@@ -11,6 +11,8 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 	aQute.libg;version=project,\
 	ee.j2se;version='[1.5,1.6)',\
 	biz.aQute.bndlib;version=project,\
+	biz.aQute.junit;version=project,\
+	biz.aQute.launcher;version=project,\
 	org.apache.tools.ant,\
 	osgi.cmpn;version=4.3,\
 	osgi.core;version=4.1,\
