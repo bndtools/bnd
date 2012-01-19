@@ -131,6 +131,7 @@ public interface Constants {
 
 	// Deprecated
 	String								CLASSPATH									= "-classpath";
+	String								OUTPUT										= "-output";
 
 	String								options[]									= { BUILDPATH,
 			BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,

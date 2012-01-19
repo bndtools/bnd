@@ -38,7 +38,7 @@ public class PackageCommand {
 		this.baseline = new Baseline(bnd, differ);
 	}
 
-	interface BaseLineOptions extends IGetOpt {
+	interface BaseLineOptions extends Options {
 		String fixup();
 	}
 
@@ -122,7 +122,7 @@ public class PackageCommand {
 	 * </pre>
 	 * 
 	 */
-	interface overview extends IGetOpt {
+	interface overview extends Options {
 		Collection<Instruction> filter();
 
 		String output(String deflt);

@@ -11,8 +11,9 @@ import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 
 public class DiffCommand {
-
-	interface diff extends IGetOpt {
+	bnd bnd;
+	
+	interface diff extends Options {
 		@Config(description = "Print the API") boolean api();
 
 		@Config(description = "Print the Resources") boolean resources();
@@ -28,14 +29,7 @@ public class DiffCommand {
 		@Config(description = "Limit to these packages") Collection<String> pack();
 	}
 
-	public static void diff(bnd bnd, String[] args, int first, PrintStream out) throws Exception {
-
-		diff options = GetOpt.getopt(args, first, diff.class);
-
-		if (options.help() != null) {
-			System.out.println(GetOpt.getHelp(diff.class));
-			return;
-		}
+	public void diff(diff options) throws Exception {
 
 		if (options._().size() == 1) {
 			bnd.trace("Show tree");

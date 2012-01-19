@@ -192,6 +192,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
 	}
+	
+	public void use(Processor reporter) {
+		setPedantic(reporter.isPedantic());
+		setTrace(reporter.isTrace());
+		setBase(reporter.getBase());
+		setFailOk(reporter.isFailOk());
+	}
 
 	public static File getFile(File base, String file) {
 		return IO.getFile(base, file);
@@ -474,6 +481,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(p);
 	}
 
+	public void addProperties(Map<?,?> properties) {
+		for ( Entry<?, ?> entry : properties.entrySet()) {
+			setProperty( entry.getKey().toString(), entry.getValue()+"");
+		}
+	}
+	
 	public synchronized void addIncluded(File file) {
 		if (included == null)
 			included = new ArrayList<File>();
@@ -663,31 +676,30 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public String getProperty(String key, String deflt) {
 		String value = null;
-		
+
 		Instruction ins = new Instruction(key);
-		if ( !ins.isLiteral()) {
+		if (!ins.isLiteral()) {
 			// Handle a wildcard key, make sure they're sorted
 			// for consistency
 			SortedList<String> sortedList = new SortedList<String>(iterator());
 			StringBuilder sb = new StringBuilder();
 			String del = "";
-			for ( String k : sortedList ) {
-				if ( ins.matches(k)) {
-					String v = getProperty(k,null);
-					if ( v != null) {
+			for (String k : sortedList) {
+				if (ins.matches(k)) {
+					String v = getProperty(k, null);
+					if (v != null) {
 						sb.append(del);
 						del = ",";
 						sb.append(v);
 					}
 				}
 			}
-			if ( sb.length()==0)
+			if (sb.length() == 0)
 				return deflt;
-			
+
 			return sb.toString();
 		}
 
-		
 		Processor source = this;
 
 		if (filter != null && filter.contains(key)) {
@@ -856,7 +868,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getReplacer().getFlattenedProperties();
 
 	}
-	
+
 	/**
 	 * Return all inherited property keys
 	 * 
@@ -864,16 +876,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
-		if ( parent == null || !inherit) {
+		if (parent == null || !inherit) {
 			result = Create.set();
 		} else
 			result = parent.getPropertyKeys(inherit);
-		for ( Object o : properties.keySet())
+		for (Object o : properties.keySet())
 			result.add(o.toString());
 
 		return result;
 	}
-	
+
 	public boolean updateModified(long time, String reason) {
 		if (time > lastModified) {
 			lastModified = time;
@@ -1118,24 +1130,26 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public boolean check(String... pattern) throws IOException {
 		Set<String> missed = Create.set();
 
-		for (String p : pattern) {
-			boolean match = false;
-			Pattern pat = Pattern.compile(p);
-			for (Iterator<String> i = errors.iterator(); i.hasNext();) {
-				if (pat.matcher(i.next()).find()) {
-					i.remove();
-					match = true;
+		if (pattern != null) {
+			for (String p : pattern) {
+				boolean match = false;
+				Pattern pat = Pattern.compile(p);
+				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
+					if (pat.matcher(i.next()).find()) {
+						i.remove();
+						match = true;
+					}
 				}
-			}
-			for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
-				if (pat.matcher(i.next()).find()) {
-					i.remove();
-					match = true;
+				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
+					if (pat.matcher(i.next()).find()) {
+						i.remove();
+						match = true;
+					}
 				}
-			}
-			if (!match)
-				missed.add(p);
+				if (!match)
+					missed.add(p);
 
+			}
 		}
 		if (missed.isEmpty() && isPerfect())
 			return true;
@@ -1438,7 +1452,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	@Override public Iterator<String> iterator() {
 		Set<String> keys = keySet();
 		final Iterator<String> it = keys.iterator();
-		
+
 		return new Iterator<String>() {
 			String	current;
 
@@ -1456,18 +1470,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		};
 	}
 
-	Set<String> keySet() {
+	public Set<String> keySet() {
 		Set<String> set;
-		if ( parent == null)
+		if (parent == null)
 			set = Create.set();
 		else
 			set = parent.keySet();
-		
-		for ( Object o : properties.keySet())
-			set.add( o.toString());
-		
+
+		for (Object o : properties.keySet())
+			set.add(o.toString());
+
 		return set;
 	}
+
 	/**
 	 * Printout of the status of this processor for toString()
 	 */
@@ -1482,4 +1497,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	/**
+	 * Utiltity to replace an extension
+	 * @param s
+	 * @param extension
+	 * @param newExtension
+	 * @return
+	 */
+	public String replaceExtension(String s, String extension, String newExtension) {
+		if ( s.endsWith(extension)) 
+			s = s.substring(0, s.length()-extension.length());
+		
+		return s+newExtension;
+	}
 }

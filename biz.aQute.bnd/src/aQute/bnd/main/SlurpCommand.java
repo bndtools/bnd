@@ -12,7 +12,7 @@ import aQute.lib.osgi.*;
 public class SlurpCommand {
 	bnd	bnd;
 
-	interface slurp extends IGetOpt {
+	interface slurp extends Options {
 		@Config(description = "Output file") String output();
 	}
 
@@ -20,8 +20,7 @@ public class SlurpCommand {
 
 	}
 
-	public static void slurp(bnd bnd, String[] args, int i, PrintStream out) throws Exception {
-		slurp cmd = GetOpt.getopt(args, i, slurp.class);
+	public void slurp(slurp cmd) throws Exception {
 		if (cmd._().size() != 1) {
 			bnd.error("Requires 1 file name");
 			return;

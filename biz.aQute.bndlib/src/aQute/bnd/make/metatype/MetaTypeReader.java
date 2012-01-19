@@ -114,8 +114,8 @@ public class MetaTypeReader extends WriteResource {
 				cardinality = ad.cardinality();
 			if (ad.type() != null)
 				type = ad.type();
-			if (ad.required() || ad.deflt() == null)
-				required = true;
+//			if (ad.required() || ad.deflt() == null)
+//				required = true;
 
 			if (ad.description() != null)
 				description = ad.description();

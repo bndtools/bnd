@@ -45,7 +45,7 @@ import aQute.libg.header.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
-	private final SortedSet<Clazz.JAVA>				formats					= new TreeSet<Clazz.JAVA>();
+	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
 	static Properties								bndInfo;
 
 	// Bundle parameters
@@ -127,7 +127,7 @@ public class Analyzer extends Processor {
 			// calculate class versions in use
 			//
 			for (Clazz c : classspace.values()) {
-				formats.add(c.getFormat());
+				ees.add(c.getFormat());
 			}
 
 			//
@@ -155,14 +155,14 @@ public class Analyzer extends Processor {
 			// Execute any plugins
 			// TODO handle better reanalyze
 			doPlugins();
-			
+
 			Jar extra = getExtra();
-			while ( extra != null) {
+			while (extra != null) {
 				dot.addAll(extra);
 				analyzeJar(extra, "", true);
 				extra = getExtra();
 			}
-			
+
 			referred.keySet().removeAll(contained.keySet());
 
 			//
@@ -195,10 +195,11 @@ public class Analyzer extends Processor {
 				// to the imports.
 				Packages referredAndExported = new Packages(referred);
 				referredAndExported.putAll(doExportsToImports(exports));
-				
+
 				// Remove any matching a dynamic import package instruction
 				Instructions dynamicImports = new Instructions(getDynamicImportPackage());
-				Collection<PackageRef>  dynamic = dynamicImports.select(referredAndExported.keySet());
+				Collection<PackageRef> dynamic = dynamicImports
+						.select(referredAndExported.keySet());
 				referredAndExported.keySet().removeAll(dynamic);
 
 				// Remove any Java references ... where are the closures???
@@ -669,7 +670,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Merge the existing manifest with the instructions.
+	 * Merge the existing manifest with the instructions but do not override
+	 * existing properties.
 	 * 
 	 * @param manifest
 	 *            The manifest to merge with
@@ -1152,14 +1154,14 @@ public class Analyzer extends Processor {
 		String remove = attributes.remove(REMOVE_ATTRIBUTE_DIRECTIVE);
 
 		if (remove != null) {
-			Instructions removeInstr =  new Instructions(remove);
-			attributes.keySet().removeAll(removeInstr.select( attributes.keySet()));
+			Instructions removeInstr = new Instructions(remove);
+			attributes.keySet().removeAll(removeInstr.select(attributes.keySet()));
 		}
-		
+
 		// Remove any ! valued attributes
-		for ( Iterator<Entry<String, String>> i = attributes.entrySet().iterator(); i.hasNext(); ) {
+		for (Iterator<Entry<String, String>> i = attributes.entrySet().iterator(); i.hasNext();) {
 			String v = i.next().getValue();
-			if ( v.equals("!"))
+			if (v.equals("!"))
 				i.remove();
 		}
 	}
@@ -1455,6 +1457,20 @@ public class Analyzer extends Processor {
 		classpath.add(jar);
 	}
 
+	public void addClasspath(Collection<?> jars) throws IOException {
+		for (Object jar : jars) {
+			if (jar instanceof Jar)
+				addClasspath((Jar) jar);
+			else if (jar instanceof File)
+				addClasspath((File) jar);
+			else if (jar instanceof String)
+				addClasspath(getFile((String) jar));
+			else
+				error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String",
+						jar);
+		}
+	}
+
 	public void addClasspath(File cp) throws IOException {
 		if (!cp.exists())
 			warning("File on classpath that does not exist: " + cp);
@@ -1552,7 +1568,7 @@ public class Analyzer extends Processor {
 					if (n < 0)
 						n = relativePath.length();
 					String relativeDir = relativePath.substring(0, n);
-					
+
 					PackageRef packageRef = getPackageRef(relativeDir);
 					if (!packageRef.isMetaData() && !contained.containsKey(packageRef)) {
 						contained.put(packageRef);
@@ -1607,14 +1623,14 @@ public class Analyzer extends Processor {
 						PackageRef packageRef = clazz.getClassName().getPackageRef();
 
 						if (!contained.containsKey(packageRef)) {
-								contained.put(packageRef);
+							contained.put(packageRef);
 							if (!packageRef.isMetaData()) {
 								Resource pinfo = jar.getResource(prefix + packageRef.getPath()
 										+ "/packageinfo");
 								setPackageInfo(packageRef, pinfo, classpathExports);
 							}
 						}
-						if ( info != null)
+						if (info != null)
 							contained.merge(packageRef, false, info);
 
 						Set<PackageRef> set = Create.set();
@@ -2159,12 +2175,12 @@ public class Analyzer extends Processor {
 
 			for (Iterator<PackageRef> i = refs.iterator(); i.hasNext();) {
 				PackageRef packageRef = i.next();
-				
-				if ( packageRef.isMetaData()) {
+
+				if (packageRef.isMetaData()) {
 					i.remove(); // no use checking it again
 					continue;
 				}
-				
+
 				String packageName = packageRef.getFQN();
 
 				if (instruction.matches(packageName)) {
@@ -2213,22 +2229,124 @@ public class Analyzer extends Processor {
 				continue;
 			}
 
-//			boolean matched = false;
-//			Set<PackageRef> prefs = new HashSet<PackageRef>(result.keySet());
-//			for (PackageRef ref : prefs) {
-//				if (instruction.matches(ref.getFQN())) {
-//					result.merge(ref, true, source.get(ref), instructions.get(instruction));
-//					matched = true;
-//				}
-//			}
-//			if (matched)
-//				i.remove();
+			// boolean matched = false;
+			// Set<PackageRef> prefs = new HashSet<PackageRef>(result.keySet());
+			// for (PackageRef ref : prefs) {
+			// if (instruction.matches(ref.getFQN())) {
+			// result.merge(ref, true, source.get(ref),
+			// instructions.get(instruction));
+			// matched = true;
+			// }
+			// }
+			// if (matched)
+			// i.remove();
 		}
 		return result;
 	}
 
 	public void setDiagnostics(boolean b) {
 		diagnostics = b;
+	}
+
+	public Clazz.JAVA getLowestEE() {
+		if (ees.isEmpty())
+			return Clazz.JAVA.JDK1_4;
+
+		return ees.first();
+	}
+
+	public String _ee(String args[]) {
+		return getLowestEE().getEE();
+	}
+
+	/**
+	 * Calculate the output file for the given target. The strategy is:
+	 * 
+	 * <pre>
+	 * parameter given if not null and not directory
+	 * if directory, this will be the output directory
+	 * based on bsn-version.jar
+	 * name of the source file if exists
+	 * Untitled-[n]
+	 * </pre>
+	 * 
+	 * @param output
+	 *            may be null, otherwise a file path relative to base
+	 */
+	public File getOutputFile(String output) {
+
+		if (output == null)
+			output = get(Constants.OUTPUT);
+
+		File outputDir;
+
+		if (output != null) {
+			File outputFile = getFile(output);
+			if (outputFile.isDirectory())
+				outputDir = outputFile;
+			else
+				return outputFile;
+		} else
+			outputDir = getBase();
+
+		if (getBundleSymbolicName() != null) {
+			String bsn = getBundleSymbolicName();
+			String version = getBundleVersion();
+			Version v = Version.parseVersion(version);
+			String outputName = bsn + "-" + v.getWithoutQualifier()
+					+ Constants.DEFAULT_JAR_EXTENSION;
+			return new File(outputDir, outputName);
+		}
+
+		File source = getJar().getSource();
+		if (source != null) {
+			String outputName = source.getName();
+			return new File(outputDir, outputName);
+		}
+
+		error("Cannot establish an output name from %s, nor bsn, nor source file name, using Untitled");
+		int n = 0;
+		File f = getFile(outputDir, "Untitled");
+		while (f.isFile()) {
+			f = getFile(outputDir, "Untitled-" + n++);
+		}
+		return f;
+	}
+
+	/**
+	 * Utility function to carefully save the file. Will create a backup if the
+	 * source file has the same path as the output. It will also only save if
+	 * the file was modified or the force flag is true
+	 * 
+	 * @param output the output file, if null {@link #getOutputFile(String)} is used. 
+	 * @param force if it needs to be overwritten
+	 * @throws Exception
+	 */
+
+	public boolean save(File output, boolean force) throws Exception {
+		if ( output == null)
+			output= getOutputFile(null);
+		
+		Jar jar = getJar();
+		File source = jar.getSource();
+
+		if (!output.exists() || output.lastModified() <= jar.lastModified() || force) {
+			output.getParentFile().mkdirs();
+			if (source != null && output.getCanonicalPath().equals(source.getCanonicalPath())) {
+				File bak = new File(source.getParentFile(), source.getName() + ".bak");
+				if (!source.renameTo(bak)) {
+					error("Could not create backup file %s", bak);
+				} else
+					source.delete();
+			}
+			try {
+				getJar().write(output);
+			} catch (Exception e) {
+				error("Cannot write JAR file to %s due to %s", e, output, e.getMessage());
+			}
+			return true;
+		} else
+			return false;
 	}
 
 }

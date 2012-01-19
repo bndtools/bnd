@@ -123,7 +123,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		File files[] = get( bsn, null);
 		List<Version> versions = new ArrayList<Version>();
 		for ( File f : files ) {
-			Version v = new Version( f.getParentFile().getName());
+			String version = f.getParentFile().getName();
+			version = Builder.cleanupVersion(version);
+			Version v = new Version( version );
 			versions.add(v);
 		}
 		return versions;

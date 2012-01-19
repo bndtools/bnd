@@ -152,12 +152,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 			put( new Instruction(e.getKey()), e.getValue());
 		}
 	}
-
 	public <T> Collection<T> select(Collection<T> set) {
+		return select(set,null);
+	}
+	
+	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused) {
 		List<T> input = new ArrayList<T>(set);
 		List<T> result = new ArrayList<T>();
 
 		for (Instruction instruction : keySet()) {
+			boolean used = false;
 			for (Iterator<T> o = input.iterator(); o.hasNext();) {
 				T oo = o.next();
 				String s = oo.toString();
@@ -165,11 +169,15 @@ public class Instructions implements Map<Instruction, Attrs> {
 					if (!instruction.isNegated())
 						result.add(oo);
 					o.remove();
+					used = true;
 				}
 			}
+			if ( !used && unused != null)
+				unused.add(instruction);
 		}
 		return result;
 	}
+
 
 	public <T> Collection<T> reject(Collection<T> set) {
 		List<T> input = new ArrayList<T>(set);

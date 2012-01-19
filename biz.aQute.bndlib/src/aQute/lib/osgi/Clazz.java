@@ -29,13 +29,21 @@ public class Clazz {
 	}
 
 	public static enum JAVA {
-		UNKNOWN(Integer.MAX_VALUE), OpenJDK7(51), J2S6(50), J2SE5(49), JDK1_4(48), JDK1_3(47), JDK1_2(
-				46), JDK1_1(45);
+		JDK1_1(45, "JRE-1.1"), JDK1_2(46, "J2SE-1.2"), //
+		JDK1_3(47, "J2SE-1.3"), //
+		JDK1_4(48, "J2SE-1.4"), //
+		J2SE5(49, "J2SE-1.5"), //
+		J2SE6(50, "JavaSE-1.6"), //
+		OpenJDK7(51, "JavaSE-1.7"), //
+		UNKNOWN(Integer.MAX_VALUE, "<>")//
+		;
 
-		final int	major;
+		final int		major;
+		final String	ee;
 
-		JAVA(int major) {
+		JAVA(int major, String ee) {
 			this.major = major;
+			this.ee = ee;
 		}
 
 		static JAVA format(int n) {
@@ -67,6 +75,10 @@ public class Clazz {
 					return j;
 			}
 			return UNKNOWN;
+		}
+
+		public String getEE() {
+			return ee;
 		}
 	};
 
@@ -197,7 +209,7 @@ public class Clazz {
 		void addAnnotation(Annotation a) {
 			if (annotations == null)
 				annotations = Create.set();
-			annotations.add( analyzer.getTypeRef(a.name.getBinary()));
+			annotations.add(analyzer.getTypeRef(a.name.getBinary()));
 		}
 
 		public Collection<TypeRef> getAnnotations() {
@@ -318,7 +330,7 @@ public class Clazz {
 	int					innerAccess	= -1;
 	int					accessx		= 0;
 	String				sourceFile;
-	Set<String>			xref;
+	Set<TypeRef>		xref;
 	Set<Integer>		classes;
 	Set<Integer>		descriptors;
 	Set<TypeRef>		annotations;
@@ -339,15 +351,15 @@ public class Clazz {
 		this.analyzer = analyzer;
 	}
 
-	public Set<String> parseClassFile() throws Exception {
+	public Set<TypeRef> parseClassFile() throws Exception {
 		return parseClassFileWithCollector(null);
 	}
 
-	public Set<String> parseClassFile(InputStream in) throws Exception {
+	public Set<TypeRef> parseClassFile(InputStream in) throws Exception {
 		return parseClassFile(in, null);
 	}
 
-	public Set<String> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
+	public Set<TypeRef> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			return parseClassFile(in, cd);
@@ -356,7 +368,7 @@ public class Clazz {
 		}
 	}
 
-	public Set<String> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
+	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
 		DataInputStream din = new DataInputStream(in);
 		try {
 			this.cd = cd;
@@ -367,8 +379,8 @@ public class Clazz {
 		}
 	}
 
-	Set<String> parseClassFile(DataInputStream in) throws Exception {
-		xref = new HashSet<String>();
+	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
+		xref = new HashSet<TypeRef>();
 		classes = new HashSet<Integer>();
 		descriptors = new HashSet<Integer>();
 
@@ -470,7 +482,7 @@ public class Clazz {
 			}
 
 			if (zuper != null) {
-				packageReference(zuper.getPackageRef());
+				referTo(zuper);
 				if (cd != null)
 					cd.extendsClass(zuper);
 			}
@@ -570,7 +582,7 @@ public class Clazz {
 				String descr = (String) pool[n];
 
 				TypeRef clazz = analyzer.getTypeRef(descr);
-				packageReference(clazz.getPackageRef());
+				referTo(clazz);
 			}
 
 			//
@@ -585,7 +597,7 @@ public class Clazz {
 				else
 					System.err.println("Unrecognized descriptor: " + index);
 			}
-			Set<String> xref = this.xref;
+			Set<TypeRef> xref = this.xref;
 			reset();
 			return xref;
 		} finally {
@@ -689,7 +701,6 @@ public class Clazz {
 		// CONSTANT_Utf8
 
 		String name = in.readUTF();
-		xref.add(name);
 		pool[poolIndex] = name;
 	}
 
@@ -1012,7 +1023,7 @@ public class Clazz {
 					// TODO seems to find class?
 					TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
 					if (!clazz.getPackageRef().isDefaultPackage())
-						packageReference(clazz.getPackageRef());
+						referTo(clazz);
 				}
 				break;
 			}
@@ -1172,8 +1183,10 @@ public class Clazz {
 	 * @param packageRef
 	 *            A '.' delimited package name
 	 */
-	void packageReference(PackageRef packageRef) {
-
+	void referTo(TypeRef typeRef) {
+		if ( xref != null)
+			xref.add(typeRef);
+		PackageRef packageRef = typeRef.getPackageRef();
 		if (packageRef != null) {
 			if (packageRef.getFQN().length() != 0)
 				imports.add(packageRef);
@@ -1269,7 +1282,7 @@ public class Clazz {
 			if (cd != null)
 				cd.addReference(ref);
 
-			packageReference(ref.getPackageRef());
+			referTo(ref);
 		} else {
 			if ("+-*BCDFIJSZV".indexOf(c) < 0)
 				;// System.out.println("Should not skip: " + c);
@@ -1280,7 +1293,6 @@ public class Clazz {
 
 		return rover + 1;
 	}
-
 
 	public Set<PackageRef> getReferred() {
 		return imports;
@@ -1567,8 +1579,8 @@ public class Clazz {
 	public boolean isDeprecated() {
 		return deprecated;
 	}
-	
+
 	public boolean isAnnotation() {
-		return (accessx & ACC_ANNOTATION)!=0;
+		return (accessx & ACC_ANNOTATION) != 0;
 	}
 }
