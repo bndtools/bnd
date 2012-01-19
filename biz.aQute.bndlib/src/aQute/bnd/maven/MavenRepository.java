@@ -193,4 +193,8 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	public void setRoot( File f  ) {
 		root = f;
 	}
+
+	public String getLocation() {
+		return root.toString();
+	}
 }

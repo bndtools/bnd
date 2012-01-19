@@ -13,7 +13,8 @@ public class BaseTask extends Task implements Reporter {
     List<String>    progress = new ArrayList<String>();
     boolean pedantic;
     boolean trace;
-
+    String onfail;
+    
     public void error(String s, Object... args ) {
         errors.add(String.format(s, args));
     }

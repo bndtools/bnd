@@ -45,18 +45,18 @@ public class WrapTask extends BaseTask implements Reporter {
 
 		try {
 			if (jars == null)
-				throw new BuildException("No files set");
+				throw new BuildException("No files set", getLocation());
 
 			if (output != null && jars.size() > 1 && !output.isDirectory()) {
 				throw new BuildException(
 						"Multiple jars must be wrapped but the output given is not a directory "
-								+ output);
+								+ output, getLocation());
 			}
 
 			if (definitions != null && jars.size() > 1 && !definitions.isDirectory()) {
 				throw new BuildException(
 						"Multiple jars must be wrapped but the definitions parameters is not a directory "
-								+ definitions);
+								+ definitions, getLocation());
 			}
 
 			for (File file : jars) {
@@ -72,20 +72,14 @@ public class WrapTask extends BaseTask implements Reporter {
 				wrapper.setTrace(isTrace());
 				wrapper.setExceptions(exceptions);
 				wrapper.setBase(getProject().getBaseDir());
-				
-				wrapper.setJar(file);
 				wrapper.addClasspath(classpath);
-
-				wrapper.addProperties(getProject().getProperties());
-
-				if (bsn != null)
-					wrapper.setBundleSymbolicName(bsn);
-
-				if (version != null)
-					wrapper.setBundleVersion(version);
-
+				
 				if (failok)
 					wrapper.setFailOk(true);
+				
+				wrapper.setJar(file);
+				wrapper.addProperties(getProject().getProperties());
+				wrapper.setDefaults(bsn, version);
 
 				File outputFile = wrapper.getOutputFile(output == null ? null : output
 						.getAbsolutePath());
@@ -103,8 +97,9 @@ public class WrapTask extends BaseTask implements Reporter {
 				}
 
 				wrapper.calcManifest();
-				if (wrapper.check()) {
-					wrapper.save(outputFile, force);
+				if (wrapper.isOk()) {
+					boolean saved = wrapper.save(outputFile, force);
+					 log( String.format("%30s %6d %s\n", wrapper.getJar().getBsn()+"-"+wrapper.getJar().getVersion(), outputFile.length(), saved ? "":"(not modified)"));
 				}
 
 				failed |= report(wrapper);
@@ -115,10 +110,10 @@ public class WrapTask extends BaseTask implements Reporter {
 				e.printStackTrace();
 
 			if (!failok)
-				throw new BuildException("Failed to build jar file: " + e, e);
+				throw new BuildException("Failed to build jar file: " + e, getLocation());
 		}
 		if (failed && !failok)
-			throw new BuildException("Failed to wrap jar file");
+			throw new BuildException("Failed to wrap jar file", getLocation());
 	}
 
 	public void setJars(String files) {

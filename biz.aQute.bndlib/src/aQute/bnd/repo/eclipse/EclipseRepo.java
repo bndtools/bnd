@@ -197,4 +197,8 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 		}
 		return null;
 	}
+
+	public String getLocation() {
+		return root.toString();
+	}
 }

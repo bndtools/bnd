@@ -9,7 +9,7 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
 -buildpath:\
 	aQute.libg;version=project,\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version="[1.5,1.6)",\
 	biz.aQute.bndlib;version=project,\
 	biz.aQute.junit;version=project,\
 	biz.aQute.launcher;version=project,\

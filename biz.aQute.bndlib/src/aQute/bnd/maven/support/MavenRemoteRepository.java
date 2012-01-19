@@ -127,4 +127,11 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	public void setMaven(Maven maven) {
 		this.maven = maven;
 	}
+
+	public String getLocation() {
+		if ( repositories == null || repositories.length==0)
+			return "maven central";
+		
+		return Arrays.toString(repositories); 
+	}
 }

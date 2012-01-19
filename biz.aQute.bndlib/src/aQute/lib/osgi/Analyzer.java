@@ -2318,15 +2318,18 @@ public class Analyzer extends Processor {
 	 * source file has the same path as the output. It will also only save if
 	 * the file was modified or the force flag is true
 	 * 
-	 * @param output the output file, if null {@link #getOutputFile(String)} is used. 
-	 * @param force if it needs to be overwritten
+	 * @param output
+	 *            the output file, if null {@link #getOutputFile(String)} is
+	 *            used.
+	 * @param force
+	 *            if it needs to be overwritten
 	 * @throws Exception
 	 */
 
 	public boolean save(File output, boolean force) throws Exception {
-		if ( output == null)
-			output= getOutputFile(null);
-		
+		if (output == null)
+			output = getOutputFile(null);
+
 		Jar jar = getJar();
 		File source = jar.getSource();
 
@@ -2349,4 +2352,17 @@ public class Analyzer extends Processor {
 			return false;
 	}
 
+	/**
+	 * Set default import and export instructions if none are set
+	 */
+	public void setDefaults(String bsn, Version version) {
+		if (getExportPackage() == null)
+			setExportPackage("*");
+		if (getImportPackage() == null)
+			setExportPackage("*");
+		if ( bsn!=null && getBundleSymbolicName()==null)
+			setBundleSymbolicName(bsn);
+		if ( version != null && getBundleVersion()==null)
+			setBundleVersion(version);		
+	}
 }
