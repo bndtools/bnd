@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,6 @@ import java.util.jar.Manifest;
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Repository;
-import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
@@ -63,6 +64,7 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.VersionedClause;
 
 public class ResolveOperation implements IRunnableWithProgress {
@@ -172,10 +174,15 @@ public class ResolveOperation implements IRunnableWithProgress {
             resolver.addGlobalCapability(helper.capability(ObrConstants.REQUIREMENT_SERVICE, props));
         }
 
+        // Add system packages-extra capabilities (from -runsystempackages)
+        List<ExportedPackage> systemPackages = model.getSystemPackages();
+        if (systemPackages != null)
+            addSystemPackagesExtraCapabilities(resolver, systemPackages);
+
         // Add requirements
-        List<Requirement> requirements = model.getRunRequire();
-        if (requirements != null) for (Requirement req : requirements) {
-            resolver.add(req);
+        List<bndtools.api.Requirement> requirements = model.getRunRequire();
+        if (requirements != null) for (bndtools.api.Requirement req : requirements) {
+            resolver.add(helper.requirement(req.getName(), req.getFilter()));
         }
 
         boolean resolved = resolver.resolve();
@@ -260,6 +267,20 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
     }
 
+    private void addSystemPackagesExtraCapabilities(Resolver resolver, Collection<? extends ExportedPackage> systemPackages) {
+        for (ExportedPackage clause : systemPackages) {
+            String pkgName = clause.getName();
+            String version = clause.getVersionString();
+
+            Map<String, String> capabilityProps = new HashMap<String, String>();
+            capabilityProps.put(ObrConstants.FILTER_PACKAGE, pkgName);
+            if (version != null)
+                capabilityProps.put(ObrConstants.FILTER_VERSION, version);
+            Capability capability = helper.capability(ObrConstants.REQUIREMENT_PACKAGE, capabilityProps);
+            resolver.addGlobalCapability(capability);
+        }
+    }
+
     private Set<Resource> addProjectBuildBundles(Resolver resolver) {
         if (!Project.BNDFILE.equals(runFile.getName()))
             return Collections.emptySet();
@@ -271,8 +292,9 @@ public class ResolveOperation implements IRunnableWithProgress {
             for (Builder builder : model.getSubBuilders()) {
                 File file = new File(model.getTarget(), builder.getBsn() + ".jar");
                 if (file.isFile()) {
+                    JarInputStream stream = null;
                     try {
-                        JarInputStream stream = new JarInputStream(new FileInputStream(file));
+                        stream = new JarInputStream(new FileInputStream(file));
                         Manifest manifest = stream.getManifest();
 
                         Resource resource = helper.createResource(manifest.getMainAttributes());
@@ -280,6 +302,8 @@ public class ResolveOperation implements IRunnableWithProgress {
                         resolver.add(resource);
                     } catch (IOException e) {
                         Plugin.logError("Error reading project bundle " + file, e);
+                    } finally {
+                        if (stream != null) stream.close();
                     }
                 }
             }
@@ -305,19 +329,32 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private List<OBRIndexProvider> loadIndexProviders() throws Exception {
-        List<OBRIndexProvider> plugins = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
-        List<OBRIndexProvider> repos = new ArrayList<OBRIndexProvider>(plugins.size());
-
-        List<String> includedRepos = model.getRunRepos();
-        for (OBRIndexProvider plugin : plugins) {
-            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) {
+        // Load the OBR providers into a map keyed on repo name
+        Map<String, OBRIndexProvider> repoMap = new LinkedHashMap<String, OBRIndexProvider>();
+        for (OBRIndexProvider plugin : Central.getWorkspace().getPlugins(OBRIndexProvider.class)) {
+            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) { // filter out non-runtime repos nice and early
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
-                if (includedRepos == null || includedRepos.contains(name))
-                    repos.add(plugin);
+                repoMap.put(name, plugin);
             }
         }
 
-        return repos;
+        List<OBRIndexProvider> result = new ArrayList<OBRIndexProvider>(repoMap.size());
+        List<String> includedRepoNames = model.getRunRepos();
+
+        if (includedRepoNames != null) {
+            // Use the specified providers in the order that they are specified
+            for (String name : includedRepoNames) {
+                OBRIndexProvider repo = repoMap.get(name);
+                if (repo != null) result.add(repo);
+            }
+        } else {
+            // Take all the providers in the natural order offered by the Workspace plugins
+            for (OBRIndexProvider repo : repoMap.values()) {
+                result.add(repo);
+            }
+        }
+
+        return result;
     }
 
     private File findFramework(MultiStatus status) {

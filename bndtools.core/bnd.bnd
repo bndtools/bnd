@@ -1,7 +1,6 @@
 -dependson: bndtools.bndplugins
 
-baseversion: 0.0.1
-version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
+version: ${master-version}
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: ${version}
@@ -9,6 +8,7 @@ Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Localization: plugin
+Bundle-Vendor: Bndtools
 
 # 1. JUNit and Felix Shell are optional dependencies.
 # 2. Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
@@ -26,7 +26,8 @@ felix.obr.packages: \
 	org.kxml2.io;-split-package:=first,\
 	org.xmlpull.v1;-split-package:=first
 
-Private-Package: bndtools,\
+Private-Package:\
+	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
@@ -35,6 +36,7 @@ Private-Package: bndtools,\
 	${felix.obr.packages},\
 	aQute.libg.generics,\
 	aQute.libg.sax.filters,\
+	aQute.libg.tuple,\
 	aQute.lib.io,\
 	aQute.lib.filter,\
 	aQute.lib.deployer,\
@@ -85,13 +87,16 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: biz.aQute.bndlib;version=1.49.0,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bndlib;version=1.51,\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
 	woodstox-core-asl,\
+	javax.xml,\
 	javax.xml.stream,\
 	org.osgi.impl.bundle.bindex;version=project,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\

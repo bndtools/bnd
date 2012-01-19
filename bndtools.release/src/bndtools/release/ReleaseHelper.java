@@ -16,7 +16,9 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -29,9 +31,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
 import aQute.libg.reporter.Reporter;
 import bndtools.diff.JarDiff;
@@ -139,6 +143,10 @@ public class ReleaseHelper {
 		IProject proj = ReleaseUtils.getProject(context.getProject());
 		proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
 
+		if (context.isUpdateOnly()) {
+			return true;
+		}
+		
 		if (!preRelease(context, participants)) {
 			postRelease(context, participants, false);
 			displayErrors(context, Scope.PRE_RELEASE);
@@ -225,10 +233,10 @@ public class ReleaseHelper {
 			return false;
 		}
 
-		context.getProject().release(context.getRepository().getName(), jar);
+		context.getProject().release(context.getReleaseRepository().getName(), jar);
 		context.getProject().refresh();
 
-		File file = context.getRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);
+		File file = context.getReleaseRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);
 		Jar releasedJar = null;
 		if (file != null && file.exists()) {
 			IResource resource = ReleaseUtils.toResource(file);
@@ -348,5 +356,51 @@ public class ReleaseHelper {
 		for (IReleaseParticipant participant : participants) {
 			participant.postRelease(context, success);
 		}
+	}
+	public static String[] getReleaseRepositories() {
+		List<RepositoryPlugin> repos = Activator.getRepositories();
+		List<String> ret = new ArrayList<String>();
+		for (RepositoryPlugin repo : repos) {
+			if (repo.canWrite()) {
+				if (repo.getName() != null) {
+					ret.add(repo.getName());
+				} else {
+					ret.add(repo.toString());
+				}
+			}
+		}
+		Collections.reverse(ret);
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	public static RepositoryPlugin getBaselineRepository(Project project, String bsn, String version) {
+		
+		String baseline = project.getProperty("-release-baseline");//TODO: Constants.RELEASE_BASELINE from bnd
+		if (baseline != null) {
+			return Activator.getRepositoryPlugin(baseline);
+		}
+		String release = project.getProperty(Constants.RELEASEREPO);
+		if (release != null) {
+			return Activator.getRepositoryPlugin(release);
+		}
+		
+		List<RepositoryPlugin> repos = Activator.getRepositories();
+		for (RepositoryPlugin repo : repos) {
+			try {
+				File file;
+				if (version == null) {
+					file = repo.get(bsn, null, Strategy.HIGHEST, null);
+				} else {
+					file =  repo.get(bsn, version, Strategy.EXACT, null);
+				}
+				if (file != null) {
+					return repo;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+		}
+		return null;
 	}
 }

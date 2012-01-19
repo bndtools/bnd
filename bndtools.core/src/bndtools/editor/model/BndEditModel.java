@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
-import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
@@ -40,11 +39,15 @@ import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.api.EE;
 import bndtools.api.IPersistableBndModel;
+import bndtools.api.Requirement;
+import bndtools.api.ResolveMode;
 import bndtools.editor.model.conversions.ClauseListConverter;
 import bndtools.editor.model.conversions.CollectionFormatter;
 import bndtools.editor.model.conversions.Converter;
 import bndtools.editor.model.conversions.DefaultBooleanFormatter;
 import bndtools.editor.model.conversions.DefaultFormatter;
+import bndtools.editor.model.conversions.EnumConverter;
+import bndtools.editor.model.conversions.EnumFormatter;
 import bndtools.editor.model.conversions.HeaderClauseFormatter;
 import bndtools.editor.model.conversions.HeaderClauseListConverter;
 import bndtools.editor.model.conversions.MapFormatter;
@@ -100,7 +103,8 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.PLUGIN,
 		BndConstants.RUNREQUIRE,
 		BndConstants.RUNEE,
-		BndConstants.RUNREPOS
+		BndConstants.RUNREPOS,
+		BndConstants.RESOLVE_MODE
 	};
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -128,7 +132,7 @@ public class BndEditModel implements IPersistableBndModel {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
-    private Converter<List<VersionedClause>, String> runBundlesConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
+    private Converter<List<VersionedClause>, String> clauseListConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
     private Converter<String, String> stringConverter = new NoopConverter<String>();
     private Converter<Boolean, String> includedSourcesConverter = new Converter<Boolean,String>() {
         public Boolean convert(String string) throws IllegalArgumentException {
@@ -169,7 +173,7 @@ public class BndEditModel implements IPersistableBndModel {
             String name = input.substring(0, index);
             String filter = input.substring(index + 1);
 
-            return obrModelHelper.requirement(name, filter);
+            return new Requirement(name, filter);
         }
     });
     Converter<EE, String> eeConverter = new Converter<EE, String>() {
@@ -177,6 +181,8 @@ public class BndEditModel implements IPersistableBndModel {
             return EE.parse(input);
         }
     };
+
+    Converter<ResolveMode, String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
     // FORMATTERS
     Converter<String, Object> defaultFormatter = new DefaultFormatter();
@@ -196,13 +202,14 @@ public class BndEditModel implements IPersistableBndModel {
         }
     };
     Converter<String,Collection<? extends String>> runReposFormatter = new CollectionFormatter<String>(LIST_SEPARATOR, aQute.lib.osgi.Constants.EMPTY_HEADER);
+    Converter<String, ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
 	@SuppressWarnings("deprecation")
     public BndEditModel() {
 	    // register converters
         converters.put(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
         converters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
-        converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
+        converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
         converters.put(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
         converters.put(Constants.BUNDLE_VERSION, stringConverter);
         converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
@@ -225,6 +232,7 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
         converters.put(BndConstants.RUNREPOS, listConverter);
+        converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
         formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
         formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -251,6 +259,7 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
         formatters.put(BndConstants.RUNREPOS, runReposFormatter);
+        formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -437,12 +446,12 @@ public class BndEditModel implements IPersistableBndModel {
 		List<String> oldPackages = getPrivatePackages();
 		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
-    public List<String> getSystemPackages() {
-        return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, listConverter);
+    public List<ExportedPackage> getSystemPackages() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, exportPackageConverter);
     }
-    public void setSystemPackages(List<? extends String> packages) {
-        List<String> oldPackages = getSystemPackages();
-        doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, stringListFormatter);
+    public void setSystemPackages(List<? extends ExportedPackage> packages) {
+        List<ExportedPackage> oldPackages = getSystemPackages();
+        doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, headerClauseListFormatter);
     }
 	public List<String> getClassPath() {
 		return doGetObject(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
@@ -519,7 +528,7 @@ public class BndEditModel implements IPersistableBndModel {
     }
 
 	public List<VersionedClause> getRunBundles() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, runBundlesConverter);
+		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
 	}
 	public void setRunBundles(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
@@ -527,7 +536,7 @@ public class BndEditModel implements IPersistableBndModel {
 	}
 
     public List<VersionedClause> getBackupRunBundles() {
-        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, runBundlesConverter);
+        return doGetObject(BndConstants.BACKUP_RUNBUNDLES, clauseListConverter);
     }
     public void setBackupRunBundles(List<? extends VersionedClause> paths) {
         List<VersionedClause> oldValue = getBuildPath();
@@ -596,6 +605,7 @@ public class BndEditModel implements IPersistableBndModel {
         doSetObject(aQute.lib.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
     }
 
+    @SuppressWarnings("deprecation")
     public List<String> getTestSuites() {
         List<String> testCases = doGetObject(aQute.lib.osgi.Constants.TESTCASES, listConverter);
         testCases = testCases != null ? testCases : Collections.<String>emptyList();
@@ -609,6 +619,7 @@ public class BndEditModel implements IPersistableBndModel {
         return result;
     }
 
+    @SuppressWarnings("deprecation")
     public void setTestSuites(List<String> suites) {
         List<String> old = getTestSuites();
         doSetObject(aQute.lib.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
@@ -631,6 +642,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setRunRequire(List<Requirement> requires) {
         List<Requirement> old = getRunRequire();
         doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
+    }
+
+    public ResolveMode getResolveMode() {
+        return doGetObject(BndConstants.RESOLVE_MODE, resolveModeConverter);
+    }
+
+    public void setResolveMode(ResolveMode mode) {
+        ResolveMode old = getResolveMode();
+        doSetObject(BndConstants.RESOLVE_MODE, old, mode, resolveModeFormatter);
     }
 
     public EE getEE() {

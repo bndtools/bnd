@@ -34,7 +34,6 @@ help.bundles: \
 	org.eclipse.help.appserver,\
 	org.apache.lucene,\
 	org.apache.lucene.analysis,\
-	org.apache.lucene.core,\
 	org.eclipse.platform.doc.user,\
 	org.eclipse.ant.core,\
 	org.apache.jasper,\
@@ -51,15 +50,13 @@ help.bundles: \
 	org.mortbay.jetty.util,\
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
-	org.eclipse.core.externaltools,\
-	org.eclipse.ui.externaltools,\
 	org.eclipse.ui.intro,\
 	org.eclipse.ui.intro.universal,\
 	org.eclipse.ui.net
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles:\
-	biz.aQute.bndlib;version=1.49.0,\
+	biz.aQute.bndlib;version=1.51.0,\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	stax2-api,\
@@ -112,7 +109,6 @@ crossplatform.bundles:\
 	org.eclipse.equinox.security,\
 	org.eclipse.compare.core,\
 	org.eclipse.ui.editors,\
-	org.eclipse.core.filebuffers,\
 	org.eclipse.jdt.core,\
 	org.eclipse.ui.forms,\
 	org.eclipse.jdt.debug.ui,\
@@ -134,7 +130,6 @@ crossplatform.bundles:\
 	org.eclipse.ui.views.log,\
 	org.eclipse.jdt.junit.runtime,\
 	org.eclipse.jdt.junit,\
-	org.eclipse.jdt.junit.core,\
 	org.junit;version='[3.8,4)',\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.frameworkadmin,\

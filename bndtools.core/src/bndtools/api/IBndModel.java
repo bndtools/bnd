@@ -3,8 +3,7 @@ package bndtools.api;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.felix.bundlerepository.Requirement;
-
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
@@ -56,9 +55,9 @@ public interface IBndModel {
 
     List<String> getPrivatePackages();
 
-    void setSystemPackages(List<? extends String> packages);
+    void setSystemPackages(List<? extends ExportedPackage> packages);
 
-    List<String> getSystemPackages();
+    List<ExportedPackage> getSystemPackages();
 
     EE getEE();
 
@@ -71,5 +70,9 @@ public interface IBndModel {
     List<String> getRunRepos();
 
     void setRunRepos(List<String> repos);
+
+    ResolveMode getResolveMode();
+
+    void setResolveMode(ResolveMode mode);
 
 }

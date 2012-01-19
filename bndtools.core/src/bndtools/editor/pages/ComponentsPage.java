@@ -21,6 +21,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.components.ComponentsBlock;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ServiceComponent;
@@ -33,7 +34,7 @@ public class ComponentsPage extends FormPage {
 	private final BndEditModel model;
 
     public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ComponentsPage(editor, model, id, "Components");
         }
     };

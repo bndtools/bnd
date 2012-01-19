@@ -1,6 +1,7 @@
 package bndtools.builder;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,15 +21,20 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -36,7 +42,9 @@ import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
+import bndtools.preferences.CompileErrorAction;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
@@ -50,15 +58,18 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private Project model;
 
     private List<String> classpathErrors;
+    private MultiStatus validationResults;
 
     private List<String> buildLog;
-    private int logLevel = LOG_FULL; // TODO: load this from some config??
+    private int logLevel = LOG_NONE;
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, "Building bundles", 0);
+        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
         classpathErrors = new LinkedList<String>();
+        validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
         buildLog = new ArrayList<String>(5);
 
         // Initialise workspace OBR index (should only happen once)
@@ -136,12 +147,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
             }
 
-            if (!buildLog.isEmpty()) {
-                System.err.println(String.format("==> BUILD LOG for project %s follows (%d entries):", getProject(), buildLog.size()));
+            if (!buildLog.isEmpty() && logLevel > 0) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(String.format("BUILD LOG for project %s (%d entries):", getProject(), buildLog.size()));
                 for (String message : buildLog) {
-                    StringBuilder builder = new StringBuilder().append("    ").append(message);
-                    System.err.println(builder.toString());
+                    builder.append("\n -> ").append(message);
                 }
+                Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
             }
         }
     }
@@ -298,10 +310,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private boolean rebuildIfLocalChanges() throws Exception {
         log(LOG_FULL, "calculating local changes...");
 
-        final Set<File> removedFiles = new HashSet<File>();
         final Set<File> changedFiles = new HashSet<File>();
 
         final IPath targetDirPath = calculateTargetDirPath(model);
+        final Set<File> targetJars = findJarsInTarget();
 
         boolean force = false;
 
@@ -324,18 +336,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
                     if (resource.getType() == IResource.FILE) {
                         File file = resource.getLocation().toFile();
-                        if ((delta.getKind() & IResourceDelta.REMOVED) != 0) {
-                            removedFiles.add(file);
-                        } else {
-                            changedFiles.add(file);
-                        }
+                        changedFiles.add(file);
                     }
 
                     return false;
                 }
             });
-            log(LOG_FULL, "%d local files (outside target) removed: %s", removedFiles.size(), removedFiles);
-            log(LOG_FULL, "%d local files (outside target) changed: %s", changedFiles.size(), changedFiles);
+            log(LOG_FULL, "%d local files (outside target) changed or removed: %s", changedFiles.size(), changedFiles);
         } else {
             log(LOG_BASIC, "no info on local changes available");
         }
@@ -351,12 +358,29 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 break;
             }
 
-            // Finally if any removed files are in scope for the bundle, we must force it to rebuild
-            // because bnd will not notice the deletion
-            if (!removedFiles.isEmpty() && builder.isInScope(removedFiles)) {
-                log(LOG_FULL, "some removed files were in scope for builder %s, will force a rebuild", builder.getBsn());
-                force = true;
-                break;
+            // Account for this builder's target JAR
+            targetJars.remove(targetFile);
+
+            // Finally if any removed or changed files are in scope for the bundle, we simply force rebuild
+            if (!changedFiles.isEmpty()) {
+                if (changedFiles.contains(builder.getPropertiesFile())) {
+                    log(LOG_FULL, "the properties file for builder %s was changes, will force a rebuild", builder.getBsn());
+                    force = true;
+                    break;
+                } else if (builder.isInScope(changedFiles)) {
+                    log(LOG_FULL, "some removed files were in scope for builder %s, will force a rebuild", builder.getBsn());
+                    force = true;
+                    break;
+                }
+            }
+        }
+
+        // Delete any unaccounted-for Jars from target dir
+        for (File jar : targetJars) {
+            try {
+                jar.delete();
+            } catch (Exception e) {
+                Plugin.logError("Error deleting target JAR: " + jar, e);
             }
         }
 
@@ -370,11 +394,27 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return builtAny;
     }
 
+    private Set<File> findJarsInTarget() throws Exception {
+        File targetDir = model.getTarget();
+        File[] targetJars = targetDir.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.getName().toLowerCase().endsWith(".jar");
+            }
+        });
+        Set<File> result = new HashSet<File>();
+        if (targetJars != null) for (File jar : targetJars) {
+            result.add(jar);
+        }
+        return result;
+    }
+
     private static IPath calculateTargetDirPath(Project model) throws Exception {
         IPath basePath = Path.fromOSString(model.getBase().getAbsolutePath());
         final IPath targetDirPath = Path.fromOSString(model.getTarget().getAbsolutePath()).makeRelativeTo(basePath);
         return targetDirPath;
     }
+
+    private enum Action { build, delete };
 
     /**
      * @param force Whether to force bnd to build
@@ -383,37 +423,79 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
-        // Abort build if compilation errors exist
+        // Check if compilation errors exist, and if so check the project settings for what to do about that...
+        Action buildAction = Action.build;
         if (hasBlockingErrors()) {
-            addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
-            log(LOG_BASIC, "SKIPPING due to Java problem markers");
-            return false;
+            ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
+            switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
+            case skip:
+                addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
+                log(LOG_BASIC, "SKIPPING due to Java problem markers");
+                return false;
+            case build:
+                buildAction = Action.build;
+                break;
+            case delete:
+                buildAction = Action.delete;
+                break;
+            }
         } else if (!classpathErrors.isEmpty()) {
-            addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
-            log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
-            return false;
+            ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
+            switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
+            case skip:
+                addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
+                log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
+                return false;
+            case build:
+                buildAction = Action.build;
+                break;
+            case delete:
+                buildAction = Action.delete;
+                break;
+            }
         }
-
-        log(LOG_BASIC, "REBUILDING, force=%b", force);
+        log(LOG_BASIC, "REBUILDING, force=%b, action=%s", force, buildAction);
 
         File[] built;
 
-        // Build!
-        model.clear();
-        model.setTrace(true);
-        if (force)
-            built = model.buildLocal(false);
-        else
-            built = model.build();
-        if (built == null) built = new File[0];
-
-        // Log rebuilt files
-        log(LOG_BASIC, "requested rebuild of %d files", built.length);
-        if (logLevel >= LOG_FULL) {
-            for (File builtFile : built) {
-                log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
+        // Validate
+        List<IValidator> validators = loadValidators();
+        if (validators != null) {
+            Collection<? extends Builder> builders = model.getSubBuilders();
+            for (Builder builder : builders) {
+                validate(builder, validators);
             }
         }
+
+        // Clear errors & warnings before build
+        model.clear();
+
+        if (buildAction == Action.build) {
+            // Build!
+            model.setTrace(true);
+            if (force)
+                built = model.buildLocal(false);
+            else
+                built = model.build();
+            if (built == null) built = new File[0];
+
+            // Log rebuilt files
+            log(LOG_BASIC, "requested rebuild of %d files", built.length);
+            if (logLevel >= LOG_FULL) {
+                for (File builtFile : built) {
+                    log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
+                }
+            }
+        } else {
+            // Delete target files since the project has compile errors and the delete action was selected.
+            for (Builder builder : model.getSubBuilders()) {
+                File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
+                boolean deleted = targetFile.delete();
+                log(LOG_FULL, "deleted target file %s (%b)", targetFile, deleted);
+            }
+            built = new File[0];
+        }
+
 
         // Make sure Eclipse knows about the changed files (should already have been done?)
         IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));
@@ -436,11 +518,37 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return built.length > 0;
     }
 
+    List<IValidator> loadValidators() {
+        List<IValidator> validators = null;
+        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "validators");
+        if (validatorElems != null && validatorElems.length > 0) {
+            validators = new ArrayList<IValidator>(validatorElems.length);
+            for (IConfigurationElement elem : validatorElems) {
+                try {
+                    validators.add((IValidator) elem.createExecutableExtension("class"));
+                } catch (Exception e) {
+                    Plugin.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
+                }
+            }
+        }
+        return validators;
+    }
+
+    void validate(Builder builder, List<IValidator> validators) {
+        for (IValidator validator : validators) {
+            IStatus status = validator.validate(builder);
+            if (!status.isOK())
+                validationResults.add(status);
+        }
+    }
+
     private IProject[] calculateDependsOn() throws Exception {
         Collection<Project> dependsOn = model.getDependson();
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
-        result.add(WorkspaceUtils.findCnfProject());
+        IProject cnfProject = WorkspaceUtils.findCnfProject();
+        if (cnfProject != null)
+            result.add(cnfProject);
 
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         for (Project project : dependsOn) {
@@ -494,6 +602,12 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (String error : classpathErrors) {
             addClasspathMarker(error, IMarker.SEVERITY_ERROR);
         }
+
+        if (!validationResults.isOK()) {
+            for (IStatus status : validationResults.getChildren()) {
+                addClasspathMarker(status);
+            }
+        }
     }
 
     private void clearBuildMarkers() throws CoreException {
@@ -528,6 +642,22 @@ public class NewBuilder extends IncrementalProjectBuilder {
         marker.setAttribute(IMarker.SEVERITY, severity);
         marker.setAttribute(IMarker.MESSAGE, message);
         // marker.setAttribute(IMarker.LINE_NUMBER, 1);
+    }
+
+    private void addClasspathMarker(IStatus status) throws CoreException {
+        int severity;
+        switch (status.getSeverity()) {
+        case IStatus.CANCEL:
+        case IStatus.ERROR:
+            severity = IMarker.SEVERITY_ERROR;
+            break;
+        case IStatus.WARNING:
+            severity = IMarker.SEVERITY_WARNING;
+            break;
+        default:
+            severity = IMarker.SEVERITY_INFO;
+        }
+        addClasspathMarker(status.getMessage(), severity);
     }
 
     private void log(int level, String message, Object... args) {

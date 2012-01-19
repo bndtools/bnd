@@ -10,9 +10,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.felix.bundlerepository.DataModelHelper;
-import org.apache.felix.bundlerepository.Requirement;
-import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.bndtools.core.obr.ObrResolutionJob;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
@@ -62,10 +59,13 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.Requirement;
+import bndtools.api.ResolveMode;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.obr.RequirementLabelProvider;
@@ -77,17 +77,22 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
 
-    private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
     private Table table;
     private TableViewer viewer;
+    private Button btnAutoResolve;
     private BndEditModel model;
+
     private List<Requirement> requires;
+    private ResolveMode resolveMode;
 
     private final Image addBundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick_add.png").createImage();
     private final Image resolveIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/wand.png").createImage();
 
     private ToolItem addBundleTool;
     private ToolItem removeTool;
+    private Button btnResolveNow;
+
+    private boolean committing = false;
 
     public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -104,7 +109,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         fillToolBar(toolbar);
 
         // Create main panel
-
         Composite composite = tk.createComposite(section);
         section.setClient(composite);
 
@@ -113,8 +117,10 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new RequirementLabelProvider());
 
-        Button resolveButton = tk.createButton(composite, "Resolve", SWT.PUSH);
-        resolveButton.setImage(resolveIcon);
+        btnAutoResolve = tk.createButton(composite, "Auto-resolve on save", SWT.CHECK);
+
+        btnResolveNow = tk.createButton(composite, "Resolve", SWT.PUSH);
+        btnResolveNow.setImage(resolveIcon);
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -134,7 +140,18 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         });
         RequirementViewerDropAdapter dropper = new RequirementViewerDropAdapter();
         dropper.install(viewer);
-        resolveButton.addSelectionListener(new SelectionAdapter() {
+        btnAutoResolve.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ResolveMode old = resolveMode;
+                resolveMode = btnAutoResolve.getSelection() ? ResolveMode.auto : ResolveMode.manual;
+                updateButtonStates();
+
+                if (old != resolveMode)
+                    markDirty();
+            }
+        });
+        btnResolveNow.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 doResolve();
@@ -145,20 +162,20 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         GridLayout layout;
         GridData gd;
 
-        layout = new GridLayout(1, false);
+        layout = new GridLayout(2, false);
         layout.horizontalSpacing = 0;
         layout.verticalSpacing = 5;
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         composite.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 50;
         gd.heightHint = 50;
         table.setLayoutData(gd);
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
-        resolveButton.setLayoutData(gd);
+        btnResolveNow.setLayoutData(gd);
     }
 
     private void fillToolBar(ToolBar toolbar) {
@@ -189,11 +206,14 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private Requirement createRequirement(Object elem) {
         String bsn = null;
+        Version version = null;
 
         if (elem instanceof RepositoryBundle) {
             bsn = ((RepositoryBundle) elem).getBsn();
         } else if (elem instanceof RepositoryBundleVersion) {
-            bsn = ((RepositoryBundleVersion) elem).getBundle().getBsn();
+            RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
+            bsn = rbv.getBundle().getBsn();
+            version = rbv.getVersion();
         } else if (elem instanceof ProjectBundle) {
             bsn = ((ProjectBundle) elem).getBsn();
         }
@@ -201,7 +221,12 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         if (bsn != null) {
             StringBuilder filterBuilder = new StringBuilder();
             ObrFilterUtil.appendBsnFilter(filterBuilder, bsn);
-            Requirement requirement = obrModelHelper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+            if (version != null) {
+                filterBuilder.insert(0, "(&");
+                filterBuilder.append("(version>=").append(version).append(")");
+                filterBuilder.append(")");
+            }
+            Requirement requirement = new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
             return requirement;
         }
         return null;
@@ -231,7 +256,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                     } else {
                         ObrFilterUtil.appendBsnFilter(filterBuilder, bundle.getName());
                     }
-                    Requirement req = obrModelHelper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+                    Requirement req = new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
                     adding.add(req);
                 }
                 if (!adding.isEmpty()) {
@@ -319,13 +344,18 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         super.initialize(form);
 
         model = (BndEditModel) form.getInput();
+
         model.addPropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
     }
 
     @Override
     public void dispose() {
         model.removePropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.removePropertyChangeListener(BndConstants.RESOLVE_MODE, this);
+
         super.dispose();
+
         addBundleIcon.dispose();
         resolveIcon.dispose();
     }
@@ -333,23 +363,41 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
-        model.setRunRequire(requires);
+        try {
+            committing = true;
+            model.setRunRequire(requires);
+            model.setResolveMode(resolveMode);
+        } finally {
+            committing = false;
+        }
     }
 
     @Override
     public void refresh() {
         List<Requirement> tmp = model.getRunRequire();
+
         requires = new ArrayList<Requirement>(tmp != null ? tmp : Collections.<Requirement> emptyList());
         viewer.setInput(requires);
+
+        resolveMode = model.getResolveMode();
+        btnAutoResolve.setSelection(resolveMode == ResolveMode.auto);
+        updateButtonStates();
+
         super.refresh();
     }
 
+    private void updateButtonStates() {
+        // btnResolveNow.setEnabled(resolveMode != ResolveMode.auto);
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
-        IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if (page.isActive()) {
-            refresh();
-        } else {
-            markStale();
+        if (!committing) {
+            IFormPage page = (IFormPage) getManagedForm().getContainer();
+            if (page.isActive()) {
+                refresh();
+            } else {
+                markStale();
+            }
         }
     }
 

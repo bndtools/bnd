@@ -28,7 +28,6 @@ import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.RepositoryPlugin;
 
 public class ReleaseAction implements IObjectActionDelegate {
 
@@ -46,18 +45,16 @@ public class ReleaseAction implements IObjectActionDelegate {
 			for (Map.Entry<Project, List<File>> me : bndFiles.entrySet()) {
 				
 				Project project;
-				List<RepositoryPlugin> repos;
 				try {
 					project = me.getKey();
-					repos = project.getWorkspace().getPlugins(RepositoryPlugin.class);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 				ReleaseDialogJob job;
 				if (isBndBndSelected(me.getValue())) {
-					job = new ReleaseDialogJob(project, repos, null);
+					job = new ReleaseDialogJob(project, null);
 				} else {
-					job = new ReleaseDialogJob(project, repos, me.getValue());
+					job = new ReleaseDialogJob(project, me.getValue());
 				}
 				job.schedule();
 			}

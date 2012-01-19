@@ -16,6 +16,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.TestSuitesPart;
@@ -28,7 +29,7 @@ public class TestSuitesPage extends FormPage {
     private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
 
     public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
         }
     };

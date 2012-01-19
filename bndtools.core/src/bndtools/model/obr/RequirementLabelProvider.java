@@ -70,7 +70,13 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
 
     @Override
     public void update(ViewerCell cell) {
-        Requirement requirement = (Requirement) cell.getElement();
+        Object element = cell.getElement();
+        Requirement requirement;
+        if (element instanceof Requirement)
+            requirement = (Requirement) element;
+        else if (element instanceof bndtools.api.Requirement)
+            requirement = new RequirementWrapper((bndtools.api.Requirement) element);
+        else return;
 
         cell.setImage(getIcon(requirement));
 

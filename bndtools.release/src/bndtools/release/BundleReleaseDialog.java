@@ -11,10 +11,9 @@
 package bndtools.release;
 
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
@@ -27,15 +26,21 @@ import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.osgi.Constants;
 import bndtools.diff.JarDiff;
+import bndtools.release.api.ReleaseContext;
 import bndtools.release.nl.Messages;
 
 public class BundleReleaseDialog extends Dialog {
 
+	private static final int UPDATE_RELEASE_BUTTON = IDialogConstants.CLIENT_ID + 1;
+	private static final int UPDATE_BUTTON = IDialogConstants.CLIENT_ID + 3;
+	private static final int CANCEL_BUTTON = IDialogConstants.CLIENT_ID + 2;
+
 	private BundleRelease release;
 	private Project project;
 	private List<JarDiff> diffs;
-	private Combo combo;
+	private Combo releaseRepoCombo;
 	
 	public BundleReleaseDialog(Shell parentShell, Project project, List<JarDiff> compare) {
 		super(parentShell);
@@ -49,21 +54,30 @@ public class BundleReleaseDialog extends Dialog {
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 
-		Composite c2 = new Composite(composite, SWT.NONE);
 		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 1;
+		gridLayout.horizontalSpacing = 0;
+		gridLayout.verticalSpacing = 5;
+		gridLayout.marginWidth = 0;
+		gridLayout.marginHeight = 0;
+		composite.setLayout(gridLayout);
+		
+		Composite repoPart = new Composite(composite, SWT.NONE);
+		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridLayout.horizontalSpacing = 0;
 		gridLayout.verticalSpacing = 5;
 		gridLayout.marginWidth = 0;
-		gridLayout.marginHeight = 10;
-		c2.setLayout(gridLayout);
-		c2.setLayoutData(new GridData(SWT.HORIZONTAL, SWT.VERTICAL, true, true));
-		
-		Label label = new Label(c2, SWT.NONE);
+		gridLayout.marginHeight = 5;
+		repoPart.setLayout(gridLayout);
+		GridData gd = new GridData();
+		repoPart.setLayoutData(gd);
+
+		Label label = new Label(repoPart, SWT.NONE);
 		label.setText(Messages.releaseToRepo);
-		
-		String[] items = getRepositories();
-		String defaultRepo = project.getProperty("-releaserepo");
+
+		String[] items = ReleaseHelper.getReleaseRepositories();
+		String defaultRepo = project.getProperty(Constants.RELEASEREPO);
 		int idx = 0;
 		for (int i = 0; i < items.length; i++) {
 			if (defaultRepo != null) {
@@ -74,18 +88,27 @@ public class BundleReleaseDialog extends Dialog {
 			}
 		}
 		
-		combo = new Combo (c2, SWT.READ_ONLY);
+		releaseRepoCombo = new Combo (repoPart, SWT.READ_ONLY);
 		//combo.setLayout(gridLayout);
-		combo.setItems (items);
-		combo.setSize (200, 200);
+		releaseRepoCombo.setItems (items);
+		releaseRepoCombo.setSize (200, 200);
 		if (items.length > 0) {
-			combo.setText(items[idx]);
+			releaseRepoCombo.setText(items[idx]);
 		} else {
-			combo.setText("");
+			releaseRepoCombo.setText("");
 		}
 		
-		ScrolledComposite scrolled = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL);
+		Composite diffPart = new Composite(composite, SWT.NONE);
+		gridLayout = new GridLayout();
+		gridLayout.numColumns = 1;
+		gridLayout.horizontalSpacing = 0;
+		gridLayout.verticalSpacing = 5;
+		gridLayout.marginWidth = 0;
+		gridLayout.marginHeight = 0;
+		diffPart.setLayout(gridLayout);
+		diffPart.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 
+		ScrolledComposite scrolled = new ScrolledComposite(diffPart, SWT.H_SCROLL | SWT.V_SCROLL);
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridLayout.horizontalSpacing = 0;
@@ -101,40 +124,49 @@ public class BundleReleaseDialog extends Dialog {
 		scrolled.setExpandHorizontal(true);
 		scrolled.setExpandVertical(true);
 		scrolled.setContent(release.getControl());
-		scrolled.setMinSize(500, 500);
+		scrolled.setMinSize(300, 300);
 		scrolled.layout(true);
 
 		return composite;
 	}
 	
-	private String[] getRepositories() {
-		List<RepositoryPlugin> repos = Activator.getRepositories();
-		Set<String> ret = new TreeSet<String>();
-		for (RepositoryPlugin repo : repos) {
-			if (repo.canWrite()) {
-				if (repo.getName() != null) {
-					ret.add(repo.getName());
-				} else {
-					ret.add(repo.toString());
-				}
-			}
+	protected void buttonPressed(int buttonId) {
+		if (CANCEL_BUTTON == buttonId) {
+			cancelPressed();
+			return;
 		}
-		return ret.toArray(new String[ret.size()]);
-	}
-
-	@Override
-	protected void okPressed() {
-		String repository = combo.getText();
 		
-		ReleaseJob job = new ReleaseJob(project, diffs, repository);
+		boolean updateOnly = false;
+		if (UPDATE_BUTTON == buttonId) {
+			updateOnly = true;
+		}
+
+		String releaseRepo = releaseRepoCombo.getText();
+
+		RepositoryPlugin release = null;
+		if (releaseRepo != null) {
+			release = Activator.getRepositoryPlugin(releaseRepo);
+		}
+
+		ReleaseContext context = new ReleaseContext(project, diffs, release, updateOnly);
+		
+		ReleaseJob job = new ReleaseJob(context);
 		job.schedule();
 		
 		super.okPressed();
+		
 	}
 
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText(Messages.releaseDialogTitle);
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		createButton(parent, UPDATE_RELEASE_BUTTON, Messages.updateVersionsAndRelease, true);
+		createButton(parent, UPDATE_BUTTON, Messages.updateVersions, false);
+		createButton(parent, CANCEL_BUTTON, IDialogConstants.CANCEL_LABEL, false);
 	}
 }

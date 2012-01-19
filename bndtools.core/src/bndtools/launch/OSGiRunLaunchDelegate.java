@@ -1,7 +1,11 @@
 package bndtools.launch;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,9 +24,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.lib.osgi.Jar;
 import bndtools.Central;
 import bndtools.Plugin;
 
@@ -41,7 +47,40 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     @Override
     protected IStatus getLauncherStatus() {
-        return createStatus("Problem(s) preparing the runtime environment.", bndLauncher.getErrors(), bndLauncher.getWarnings());
+        List<String> launcherErrors = bndLauncher.getErrors();
+        List<String> projectErrors = bndLauncher.getProject().getErrors();
+        List<String> errors = new ArrayList<String>(projectErrors.size() + launcherErrors.size());
+        errors.addAll(launcherErrors);
+        errors.addAll(projectErrors);
+
+        List<String> launcherWarnings = bndLauncher.getWarnings();
+        List<String> projectWarnings = bndLauncher.getProject().getWarnings();
+        List<String> warnings = new ArrayList<String>(launcherWarnings.size() + projectWarnings.size());
+        warnings.addAll(launcherWarnings);
+        warnings.addAll(projectWarnings);
+
+        String frameworkPath = validateClasspath(bndLauncher.getClasspath());
+        if (frameworkPath == null)
+            errors.add("No OSGi framework has been added to the run path.");
+
+        return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
+    }
+
+    private String validateClasspath(Collection<String> classpath) {
+        for (String fileName : classpath) {
+            Jar jar = null;
+            try {
+                jar = new Jar(new File(fileName));
+                boolean frameworkExists = jar.exists("META-INF/services/" + FrameworkFactory.class.getName());
+                if (frameworkExists)
+                    return fileName;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                jar.close();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -51,7 +90,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         try {
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
             if (dynamic)
-                registerLaunchPropertiesRegenerator(LaunchUtils.getBndProject(configuration), launch);
+                registerLaunchPropertiesRegenerator(model, launch);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }
@@ -61,14 +100,14 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
         boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
-        
+
         if (clean) {
             File storage = bndLauncher.getStorageDir();
             if (storage.exists()) {
                 deleteRecursively(storage);
             }
         }
-        
+
         bndLauncher.setKeep(!clean);
 
         bndLauncher.setTrace(enableTraceOption(configuration));
@@ -82,7 +121,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             f.delete();
         }
     }
-    
+
     /**
      * Registers a resource listener with the project model file to update the
      * launcher when the model or any of the run-bundles changes. The resource
@@ -150,7 +189,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     update.compareAndSet(false, targetPathChanged);
 
                     if(update.get()) {
-                        project.refresh();
+                        project.forceRefresh();
+                        project.setChanged();
                         bndLauncher.update();
                     }
                 } catch (Exception e) {

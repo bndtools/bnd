@@ -14,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +59,9 @@ public class JarDiff {
 
 	private final Jar projectJar;
 	private final Jar previousJar;
+	
+	private RepositoryPlugin baselineRepository;
+	private RepositoryPlugin releaseRepository;
 
 	public JarDiff(Jar projectJar, Jar previousJar) {
 		suggestedVersions = new TreeSet<String>();
@@ -535,84 +537,59 @@ public class JarDiff {
 		return ret;
 	}
 
-	public static List<JarDiff> createJarDiffs(Project project, List<RepositoryPlugin> repos, List<File> subBundles) {
-
-		List<JarDiff> diffs = new ArrayList<JarDiff>();
-
+	public static JarDiff createJarDiff(Project project, RepositoryPlugin baselineRepository, String bsn) {
 		try {
-			project.refresh();
-			List<Builder> builders = project.getBuilder(null).getSubBuilders();
-			for (Builder b : builders) {
-
-				if (subBundles != null) {
-					if (!subBundles.contains(b.getPropertiesFile())) {
-						continue;
-					}
-				}
-				
-				Jar jar = b.build();
-
-				//List<String> errors = b.getErrors();
-
-				String bundleVersion = b.getProperty(Constants.BUNDLE_VERSION);
-				if (bundleVersion == null) {
-				    b.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
-					bundleVersion = "0.0.0";
-				}
-
-				String unqualifiedVersion = removeVersionQualifier(bundleVersion);
-				Version projectVersion = Version.parseVersion(unqualifiedVersion);
-
-				String symbolicName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-				if (symbolicName == null) {
-					symbolicName = jar.getName().substring(0, jar.getName().lastIndexOf('-'));
-				}
-				File[] bundleJars = new File[0];
-				for (RepositoryPlugin repo : repos) {
-					try {
-						File[] files =  repo.get(symbolicName, null);
-						if (files != null && files.length > 0) {
-							File[] tmp = new File[bundleJars.length + files.length];
-							System.arraycopy(bundleJars, 0, tmp, 0, bundleJars.length);
-							System.arraycopy(files, 0, tmp, bundleJars.length, files.length);
-							bundleJars = tmp;
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
-
-				Jar currentJar = null;
-				for (RepositoryPlugin repo : repos) {
-					VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
-					try {
-						File[] files =  repo.get(symbolicName, range.toString());
-						if (files != null && files.length > 0) {
-							currentJar = new Jar(files[0]);
-							break;
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						continue;
-					}
-				}
-
-				JarDiff diff = new JarDiff(jar, currentJar);
-				diff.compare();
-				diff.calculateVersions();
-
-				diffs.add(diff);
+		List<Builder> builders = project.getBuilder(null).getSubBuilders();
+		Builder builder = null;
+		for (Builder b : builders) {
+			if (bsn.equals(b.getBsn())) {
+				builder = b;
+				break;
 			}
+		}
+		if (builder != null) {
+			Jar jar = builder.build();
+
+			String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION);
+			if (bundleVersion == null) {
+				builder.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
+				bundleVersion = "0.0.0";
+			}
+
+			String unqualifiedVersion = removeVersionQualifier(bundleVersion);
+			Version projectVersion = Version.parseVersion(unqualifiedVersion);
+
+			String symbolicName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			if (symbolicName == null) {
+				symbolicName = jar.getName().substring(0, jar.getName().lastIndexOf('-'));
+			}
+
+			Jar currentJar = null;
+			VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
+			try {
+				if (baselineRepository != null) {
+					File[] files =  baselineRepository.get(symbolicName, range.toString());
+					if (files != null && files.length > 0) {
+						currentJar = new Jar(files[0]);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			JarDiff diff = new JarDiff(jar, currentJar);
+			diff.setBaselineRepository(baselineRepository);
+			diff.compare();
+			diff.calculatePackageVersions();
+			return diff;
+		}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-
-
-		return diffs;
+		return null;
 	}
-
-	public void calculateVersions() {
+	
+	public void calculatePackageVersions() {
 
 
 		int highestSeverity = PKG_SEVERITY_NONE;
@@ -808,6 +785,8 @@ public class JarDiff {
 		}
 	}
 
+	
+	
 	public static void printDiff(JarDiff diff, PrintStream out) {
 		out.println();
 		out.println("Bundle " + diff.getSymbolicName() + ":");
@@ -902,4 +881,21 @@ public class JarDiff {
 	public void setSelectedVersion(String selectedVersion) {
 		this.selectedVersion = selectedVersion;
 	}
+	
+	public RepositoryPlugin getBaselineRepository() {
+		return baselineRepository;
+	}
+
+	public void setBaselineRepository(RepositoryPlugin baselineRepository) {
+		this.baselineRepository = baselineRepository;
+	}
+
+	public RepositoryPlugin getReleaseRepository() {
+		return releaseRepository;
+	}
+
+	public void setReleaseRepository(RepositoryPlugin releaseRepository) {
+		this.releaseRepository = releaseRepository;
+	}
+
 }

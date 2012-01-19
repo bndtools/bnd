@@ -54,18 +54,16 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.WorkspaceObrProvider;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.WrappingObrRepository;
+import bndtools.model.repo.RepositoryUtils;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
@@ -255,11 +253,11 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 while(iterator.hasNext()) {
                     Object item = iterator.next();
                     if(item instanceof RepositoryBundle) {
-                        VersionedClause newClause = convertDroppedRepoBundle((RepositoryBundle) item);
+                        VersionedClause newClause = RepositoryUtils.convertRepoBundle((RepositoryBundle) item);
                         adding.add(newClause);
                     } else if(item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-                        VersionedClause newClause = convertDroppedRepoBundleVersion(bundleVersion);
+                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion);
                         adding.add(newClause);
                     }
                 }
@@ -295,35 +293,10 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		composite.setLayout(layout);
 
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.heightHint = getTableHeightHint();
 		gd.widthHint = 50;
+		gd.heightHint = getTableHeightHint();
 		table.setLayoutData(gd);
 	}
-
-    protected VersionedClause convertDroppedRepoBundle(RepositoryBundle bundle) {
-        Map<String, String> attribs = new HashMap<String, String>();
-        if (isWorkspaceRepo(bundle.getRepo())) {
-            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
-        }
-        return new VersionedClause(bundle.getBsn(), attribs);
-    }
-
-    protected VersionedClause convertDroppedRepoBundleVersion(RepositoryBundleVersion bundleVersion) {
-        Map<String, String> attribs = new HashMap<String, String>();
-        if (isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
-            attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
-        else
-            attribs.put(Constants.VERSION_ATTRIBUTE, bundleVersion.getVersion().toString());
-        return new VersionedClause(bundleVersion.getBundle().getBsn(), attribs);
-    }
-
-    private boolean isWorkspaceRepo(RepositoryPlugin repo) {
-        if (repo instanceof WrappingObrRepository) {
-            if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
-                return true;
-        }
-        return false;
-    }
 
     private boolean isRemovable(ISelection selection) {
         if (selection.isEmpty())

@@ -8,11 +8,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.Reason;
-import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resource;
-import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.bndtools.core.obr.ObrResolutionResult;
 import org.bndtools.core.obr.ResolveOperation;
 import org.bndtools.core.utils.filters.ObrConstants;
@@ -55,6 +52,7 @@ import org.osgi.framework.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
+import bndtools.api.Requirement;
 import bndtools.model.obr.UnresolvedReasonLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
@@ -64,7 +62,6 @@ public class ObrResultsWizardPage extends WizardPage {
 
     private final IBndModel model;
     private final IFile file;
-    private final DataModelHelper helper = new DataModelHelperImpl();
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
@@ -317,7 +314,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
         filterBuilder.append(")");
 
-        return helper.requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+        return new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
     }
 
     private void updateUi() {

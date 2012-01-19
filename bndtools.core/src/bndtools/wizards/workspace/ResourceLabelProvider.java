@@ -28,11 +28,11 @@ public class ResourceLabelProvider extends StyledCellLabelProvider {
 
         Version version = resource.getVersion();
         if (version != null)
-            string.append(" (" + resource.getVersion() + ")", StyledString.COUNTER_STYLER);
+            string.append(" " + resource.getVersion(), StyledString.COUNTER_STYLER);
 
-//        String uri = resource.getURI();
-//        if (uri != null)
-//            string.append(" " + uri, StyledString.DECORATIONS_STYLER);
+        String uri = resource.getURI();
+        if (uri != null)
+            string.append(" [" + uri + "]", StyledString.QUALIFIER_STYLER);
 
         cell.setText(string.getString());
         cell.setStyleRanges(string.getStyleRanges());

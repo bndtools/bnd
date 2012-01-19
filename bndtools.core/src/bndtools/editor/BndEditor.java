@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.core.obr.ObrResolutionJob;
+import org.bndtools.core.obr.ObrResolutionResult;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -29,19 +31,26 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -49,6 +58,9 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
+import bndtools.api.ResolveMode;
+import bndtools.editor.common.AbstractBaseFormEditor;
+import bndtools.editor.common.IPriority;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
@@ -60,8 +72,9 @@ import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
 import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
+import bndtools.wizards.obr.ObrResolutionWizard;
 
-public class BndEditor extends FormEditor implements IResourceChangeListener {
+public class BndEditor extends AbstractBaseFormEditor implements IResourceChangeListener {
 
     public static final String WORKSPACE_EDITOR  = "bndtools.bndWorkspaceConfigEditor";
 
@@ -202,12 +215,77 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        final Shell shell = getEditorSite().getShell();
+
+        // Commit dirty pages
         if (sourcePage.isActive() && sourcePage.isDirty()) {
             sourcePage.commit(true);
         } else {
             commitPages(true);
             sourcePage.refresh();
         }
+        ResolveMode resolveMode = model.getResolveMode();
+
+        // If auto resolve, then resolve and save in background thread.
+        if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
+            final IFile file = ResourceUtil.getFile(getEditorInput());
+            if (file == null) {
+                MessageDialog.openError(shell, "Resolution Error", "Unable to run OBR resolution because the file is not in the workspace. NB.: the file will still be saved.");
+                reallySave(monitor);
+                return;
+            }
+
+            // Create resolver job and pre-validate
+            final ObrResolutionJob job = new ObrResolutionJob(file, model);
+            IStatus validation = job.validateBeforeRun();
+            if (!validation.isOK()) {
+                String message = "Unable to run the OBR resolver. NB.: the file will still be saved.";
+                ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
+                reallySave(monitor);
+                return;
+            }
+
+            // Add operation to perform at the end of resolution (i.e. display results and actually save the file)
+            final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
+                @Override
+                public IStatus runInUIThread(IProgressMonitor monitor) {
+                    ObrResolutionResult result = job.getResolutionResult();
+                    ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, result);
+                    if (!result.isResolved() || !result.getOptional().isEmpty()) {
+                        WizardDialog dialog = new WizardDialog(shell, wizard);
+                        if (dialog.open() != Window.OK) {
+                            if (!wizard.performFinish()) {
+                                MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
+                            }
+                        }
+                    } else {
+                        if (!wizard.performFinish()) {
+                            MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
+                        }
+                    }
+                    reallySave(monitor);
+                    return Status.OK_STATUS;
+                }
+            };
+            job.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    completionJob.schedule();
+                }
+            });
+
+
+            // Start job
+            job.setUser(true);
+            job.schedule();
+        } else {
+            // Not auto-resolving, just save
+            reallySave(monitor);
+        }
+    }
+
+    private void reallySave(IProgressMonitor monitor) {
+        // Actually save, via the source editor
         try {
             boolean saveLocked = this.saving.compareAndSet(false, true);
             if (!saveLocked) {
@@ -257,6 +335,27 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
     @Override
     protected void addPages() {
         updatePages();
+
+        showHighestPriorityPage();
+    }
+
+    void showHighestPriorityPage() {
+        int selectedPrio = Integer.MIN_VALUE;
+        String selected = null;
+
+        for (Object pageObj : pages) {
+            IFormPage page = (IFormPage) pageObj;
+            int priority = 0;
+            if (page instanceof IPriority)
+                priority = ((IPriority) page).getPriority();
+            if (priority > selectedPrio) {
+                selected = page.getId();
+                selectedPrio = priority;
+            }
+        }
+
+        if (selected != null)
+            setActivePage(selected);
     }
 
     private List<String> getPagesBnd(String fileName) {
@@ -379,6 +478,14 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
         if (delta == null)
             return;
 
+        // Delegate to any interested pages
+        for (Object page : pages) {
+            if (page instanceof IResourceChangeListener) {
+                ((IResourceChangeListener) page).resourceChanged(event);
+            }
+        }
+
+        // Close editor if file removed or switch to new location if file moved
         if (delta.getKind() == IResourceDelta.REMOVED) {
             if ((delta.getFlags() & IResourceDelta.MOVED_TO) > 0) {
                 IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
@@ -397,7 +504,10 @@ public class BndEditor extends FormEditor implements IResourceChangeListener {
             } else {
                 close(false);
             }
-        } else if ( (delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.CONTENT) > 0) {
+
+        }
+        // File content updated externally => reload all pages
+        else if ((delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.CONTENT) > 0) {
             if (!saving.get()) {
                 final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
                 final IDocument document = docProvider.getDocument(getEditorInput());

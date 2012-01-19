@@ -13,21 +13,22 @@
 <feature
       id="bndtools.feature"
       label="Bndtools"
-      version="0.0.1.qualifier"
-      provider-name="Neil Bartlett and Peter Kriens">
+      version="1.0.1.DEV-qualifier"
+      provider-name="Bndtools"
+      plugin="bndtools.core">
 
    <description url="http://bndtools-updates.s3.amazonaws.com/">
-      OSGi Development Tools for Eclipse by Neil Bartlett, based on Bnd by Peter Kriens
+      OSGi Development Tools for Eclipse based on bnd.
    </description>
 
    <copyright>
-      Copyright Neil Bartlett 2010
+      Copyright Neil Bartlett and others, 2011
 
 This software uses icons from the FamFamFam &quot;Silk&quot; icon set by Mark James (http://www.famfamfam.com/lab/icons/silk/)
    </copyright>
 
    <license url="http://www.eclipse.org/legal/epl-v10.html">
-Eclipse Public License -v 1.0
+      Eclipse Public License -v 1.0
 
 THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC LICENSE (&quot;AGREEMENT&quot;). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT&apos;S ACCEPTANCE OF THIS AGREEMENT.
 
@@ -104,10 +105,9 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <url>
-      <!-- <update label="Bndtools Release Site" url="http://bndtools-updates.s3.amazonaws.com/"/> -->
       <update label="Bndtools ALPHA Site" url="http://bndtools-alpha-updates.s3.amazonaws.com/"/>
    </url>
-   
+
    <plugin
          id="biz.aQute.bndlib"
          download-size="0"
@@ -148,7 +148,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>       
+         unpack="false"/>
 
    <plugin
          id="bndtools.release"
@@ -156,7 +156,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-   
+
    <plugin
          id="org.bndtools.embeddedrepo"
          download-size="0"
@@ -167,6 +167,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    <plugin
          id="org.osgi.impl.bundle.bindex"
          download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
@@ -176,41 +177,40 @@ This Agreement is governed by the laws of the State of New York and the intellec
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="com.springsource.org.objectweb.asm.tree"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="javax.xml"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="javax.xml.stream"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="stax2-api"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="woodstox-core-asl"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
 
 </feature>

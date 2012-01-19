@@ -3,8 +3,12 @@ package bndtools.editor.contents;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
+import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -16,7 +20,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -29,6 +36,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
@@ -47,6 +55,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
@@ -61,8 +70,10 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.editor.components.Messages;
 import bndtools.editor.model.BndEditModel;
+import bndtools.internal.testcaseselection.ITestCaseFilter;
+import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
+import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
 
@@ -71,6 +82,9 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     private TableViewer viewer;
 
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+
     public TestSuitesPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
 
@@ -78,23 +92,24 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 
     private void createSection(Section section, FormToolkit toolkit) {
-        section.setText("Test Suites");
+        section.setText(Messages.TestSuitesPart_section_junit_tests);
+
+        Composite composite = toolkit.createComposite(section);
+        section.setClient(composite);
 
         // Section toolbar buttons
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
+        
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
         addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
-        addItem.setToolTipText("Add");
+        addItem.setToolTipText(Messages.TestSuitesPart_add);
 
         final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
         removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
-        removeItem.setToolTipText("Remove");
+        removeItem.setToolTipText(Messages.TestSuitesPart_remove);
         removeItem.setEnabled(false);
-
-        Composite composite = toolkit.createComposite(section);
-        section.setClient(composite);
 
         Table table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 
@@ -102,11 +117,26 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setLabelProvider(new TestSuiteLabelProvider());
 
+        toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+
+        final ToolItem btnMoveUp = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveUp.setText("Up");
+        btnMoveUp.setImage(imgUp);
+        btnMoveUp.setEnabled(false);
+
+        final ToolItem btnMoveDown = new ToolItem(toolbar, SWT.PUSH);
+        btnMoveDown.setText("Down");
+        btnMoveDown.setImage(imgDown);
+        btnMoveDown.setEnabled(false);
+
         // LISTENERS
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection selection = event.getSelection();
-                removeItem.setEnabled(selection != null && !selection.isEmpty());
+                boolean enabled = selection != null && !selection.isEmpty();
+                removeItem.setEnabled(enabled);
+                btnMoveUp.setEnabled(enabled);
+                btnMoveDown.setEnabled(enabled);
                 getManagedForm().fireSelectionChanged(TestSuitesPart.this, selection);
             }
         });
@@ -141,15 +171,35 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         });
 
+        btnMoveUp.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveUp();
+            }
+        });
+        btnMoveDown.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doMoveDown();
+            }
+        });
 
-        // LAYOUT
+        // Layout
         GridLayout layout;
 
-        layout = new GridLayout();
+        layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         composite.setLayout(layout);
-        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        //gd.widthHint = 75;
+        gd.heightHint = 75;
+        table.setLayoutData(gd);
+        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
     }
 
     void doOpenSource(String name) {
@@ -168,7 +218,52 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 
     void doAdd() {
-    }
+        
+        // Prepare the exclusion list based on existing test cases
+        final Set<String> testSuitesSet = new HashSet<String>(testSuites);
+
+        // Create a filter from the exclusion list
+        ITestCaseFilter filter = new ITestCaseFilter() {
+            public boolean select(String testCaseName) {
+                return !testSuitesSet.contains(testCaseName);
+            }
+        };
+        IFormPage page = (IFormPage) getManagedForm().getContainer();
+        IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
+        
+       // Prepare the package lister from the Java project
+        IJavaProject javaProject = getJavaProject();
+        if(javaProject == null) {
+            MessageDialog.openError(getSection().getShell(), "Error", "Cannot add test cases: unable to find a Java project associated with the editor input.");
+            return;
+        }
+
+        IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+        JavaSearchScopeTestCaseLister testCaseLister = new JavaSearchScopeTestCaseLister(searchScope, window);
+
+        // Create and open the dialog
+        TestCaseSelectionDialog dialog =  new TestCaseSelectionDialog(getSection().getShell(), testCaseLister, filter, Messages.TestSuitesPart_title);
+        dialog.setSourceOnly(true);
+        dialog.setMultipleSelection(true);
+        if(dialog.open() == Window.OK) {
+            Object[] results = dialog.getResult();
+            List<String> added = new LinkedList<String>();
+
+            // Select the results
+            for (Object result : results) {
+                String newTestSuites = (String) result;
+                if(testSuites.add(newTestSuites)) {
+                    added.add(newTestSuites);
+                }
+            }
+
+            // Update the model and view
+            if(!added.isEmpty()) {
+                viewer.add(added.toArray(new String[added.size()]));
+                markDirty();
+            }
+        }
+   }
 
     void doRemove() {
         IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
@@ -178,6 +273,34 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             markDirty();
             validate();
         }
+    }
+    
+    void doMoveUp() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveUp(testSuites, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
+    void doMoveDown() {
+        int[] selectedIndexes = findSelectedIndexes();
+        if (CollectionUtils.moveDown(testSuites, selectedIndexes)) {
+            viewer.refresh();
+            validate();
+            markDirty();
+        }
+    }
+
+    int[] findSelectedIndexes() {
+        Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
+        int[] selectionIndexes = new int[selection.length];
+
+        for(int i=0; i<selection.length; i++) {
+            selectionIndexes[i] = testSuites.indexOf(selection[i]);
+        }
+        return selectionIndexes;
     }
 
     @Override
@@ -288,7 +411,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                                 }
                             }
                         } catch (JavaModelException e) {
-                            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ComponentListPart_errorJavaType, e));
+                            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.TestSuitesPart_errorJavaType, e));
                         }
                     }
                 }
@@ -314,6 +437,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
     private Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
+    private Image testImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/test.gif").createImage();
+    
     @Override
     public void update(ViewerCell cell) {
         String fqName = (String) cell.getElement();

@@ -84,8 +84,8 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             displayList = bundles;
         else {
             displayList = new ArrayList<Object>(projectBuilders.size() + bundles.size());
-            displayList.addAll(projectBuilders);
             displayList.addAll(bundles);
+            displayList.addAll(projectBuilders);
         }
         viewer.setInput(displayList);
     }
@@ -140,7 +140,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
     @Override
     protected int getTableHeightHint() {
-        return -1;
+        return 50;
     }
 
     @Override

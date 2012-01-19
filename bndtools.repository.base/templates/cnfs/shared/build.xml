@@ -9,18 +9,18 @@
 	-->
 
 	<target name="init" unless="initialized">
-		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
-		</tstamp>
-		
+		<tstamp><format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/></tstamp>
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties">
-			<classpath>
-				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-1.45.0.jar"/>
-			</classpath>
+		
+		<taskdef resource="net/sf/antcontrib/antlib.xml">
+			<classpath location="${workspacedir}/cnf/ant-contrib-1.0b3.jar" />
 		</taskdef>
-
+		<timestampselector property="bndlatest">
+			<path><fileset dir="${workspacedir}/cnf/repo/biz.aQute.bnd" includes="biz.aQute.bnd-*.jar"/></path>
+		</timestampselector>
+		
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${bndlatest}"/>
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
 		<!-- mark init has been run -->

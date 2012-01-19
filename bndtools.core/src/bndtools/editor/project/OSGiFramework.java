@@ -4,7 +4,7 @@ import java.net.URL;
 
 import aQute.libg.version.Version;
 
-public class OSGiFramework {
+class OSGiFramework {
 
     private final String name;
     private final String bsn;
@@ -72,8 +72,9 @@ public class OSGiFramework {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(bsn);
-        if (version != null)
-            b.append(";version=").append(version.toString());
+        if (version != null) {
+            b.append(";version='[").append(version.toString()).append(',').append(version).append("]'");
+        }
         return b.toString();
     }
 

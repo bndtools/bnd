@@ -32,6 +32,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
@@ -62,7 +63,7 @@ public class BundleContentPage extends FormPage {
     private ImportPatternsDetailsPage importDetailsPage;
 
     public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(FormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new BundleContentPage(editor, model, id, "Contents");
         }
     };
@@ -113,7 +114,7 @@ public class BundleContentPage extends FormPage {
     void createLeftPanel(IManagedForm mform, Composite parent) {
         FormToolkit toolkit = mform.getToolkit();
 
-        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE);
+        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         mform.addPart(infoPart);
 
         privPkgsPart = new PrivatePackagesPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);

@@ -69,8 +69,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     @Override
     public File verifyWorkingDirectory(ILaunchConfiguration configuration) throws CoreException {
         try {
-            Project project = LaunchUtils.getBndProject(configuration);
-            return (project != null) ? project.getBase() : null;
+            return (model != null) ? model.getBase() : null;
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting working directory for Bnd project.", e));
         }
@@ -140,14 +139,14 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
     protected MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, message, null);
-    
+
         for (String error : errors) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
         }
         for (String warning : warnings) {
             status.add(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
         }
-    
+
         return status;
     }
 }

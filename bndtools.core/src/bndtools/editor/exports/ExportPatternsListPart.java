@@ -66,7 +66,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 	private static final String PACKAGEINFO = "packageinfo";
 
     public ExportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Patterns", new ExportedPackageLabelProvider());
+		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Packages", new ExportedPackageLabelProvider());
 	}
 
 	@Override

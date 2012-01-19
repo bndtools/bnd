@@ -31,7 +31,7 @@ public class TestJarDiff extends TestCase {
 		diff.compare();
 		JarDiff.printDiff(diff, System.out);
 		
-		diff.calculateVersions();
+		diff.calculatePackageVersions();
 		
 		JarDiff.printDiff(diff, System.out);
 		

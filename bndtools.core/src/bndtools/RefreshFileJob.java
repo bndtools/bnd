@@ -3,54 +3,55 @@ package bndtools;
 import java.io.File;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
 public class RefreshFileJob extends WorkspaceJob {
 
     private final File file;
-    private final Path changedPath;
+    private final boolean derived;
 
-    public RefreshFileJob(File file) {
-        super("update");
+    private final IResource resource;
+    private final int depth;
+
+    public RefreshFileJob(File file, boolean derived) throws Exception {
+        super("Refreshing " + file);
         this.file = file;
+        this.derived = derived;
 
-        changedPath = new Path(file.toString());
+        IPath wsPath = Central.toPath(file);
+        IResource target;
+        if (wsPath == null) {
+            target = null;
+            this.depth = 0;
+        } else if (file.isFile()) {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFile(wsPath);
+            this.depth = 0;
+        } else if (file.isDirectory()) {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath);
+            this.depth = IResource.DEPTH_INFINITE;
+        } else {
+            target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath.removeLastSegments(1));
+            this.depth = IResource.DEPTH_INFINITE;
+        }
+
+        this.resource = target;
     }
 
-    public boolean isFileInWorkspace() {
-        return ResourcesPlugin.getWorkspace().getRoot().getLocation().isPrefixOf(changedPath);
+    public boolean needsToSchedule() {
+        return resource != null && !resource.isSynchronized(depth);
     }
 
     @Override
     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-        IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
-        IPath workspaceLocation = wsRoot.getLocation();
-        IPath relativeChangedPath = changedPath.removeFirstSegments(workspaceLocation.segmentCount());
-
-        IResource resource;
-        int depth;
-        if (file.isDirectory()) {
-            resource = wsRoot.getFolder(relativeChangedPath);
-            depth = 0;
-        } else if (file.isFile()) {
-            resource = wsRoot.getFile(relativeChangedPath);
-            depth = 0;
-        } else {
-            // File has been deleted or is something else, e.g a pipe.
-            // Check the parent folder
-            resource = wsRoot.getFolder(relativeChangedPath.removeLastSegments(1));
-            depth = 1;
-        }
         resource.refreshLocal(depth, monitor);
-        resource.setDerived(true);
+        resource.setDerived(derived);
+
         return Status.OK_STATUS;
     }
 }

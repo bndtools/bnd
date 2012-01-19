@@ -1,10 +1,9 @@
-baseversion: 0.0.1
-version: ${baseversion}.${tstamp;yyyyMMdd-HHmm}
 bndlibver: 1.0.0
 
 Test: true
 Bundle-SymbolicName: bndtools.diff
-Bundle-Version: ${version}
+Bundle-Vendor: Bndtools
+Bundle-Version: ${master-version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 Export-Package: bndtools.diff

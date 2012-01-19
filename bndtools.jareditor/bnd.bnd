@@ -1,5 +1,6 @@
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
-Bundle-Version: 1.0.0.${tstamp;yyyyMMdd-HHmm}
+Bundle-Vendor: Bndtools
+Bundle-Version: ${master-version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource: resources
 

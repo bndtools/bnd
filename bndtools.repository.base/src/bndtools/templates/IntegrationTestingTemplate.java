@@ -11,6 +11,7 @@ import org.osgi.framework.Constants;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.VersionedClause;
 
 public class IntegrationTestingTemplate implements IProjectTemplate {
@@ -34,7 +35,8 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         model.setRunFramework("org.apache.felix.framework");
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example.tests" }));
         model.setRunBundles(Arrays.asList(new VersionedClause[] { createBundleRef("org.mockito.mockito-all", null) }));
-        model.setSystemPackages(Arrays.asList(new String[] { "sun.reflect" }));
+
+        model.setSystemPackages(Arrays.asList(new ExportedPackage[] { new ExportedPackage("sun.reflect", new HashMap<String, String>()) }));
         model.setRunVMArgs("-ea");
     }
 

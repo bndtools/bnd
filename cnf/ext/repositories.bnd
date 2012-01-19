@@ -1,0 +1,46 @@
+repo:         ${workspace}/../repo
+
+# Eclipse Repo
+eclipse-version:  3.5.2
+eclipse-repo:     ${build}/eclipse-${eclipse-version}
+#eclipse-version:  3.7.1
+#eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
+
+common-plugins: bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;location=${eclipse-repo};name=Eclipse-${eclipse-version}
+
+# Local OBR
+#-plugin:\
+#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=BndRepoBuild,\
+#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd,\
+#	${common-plugins}
+
+# Remote OBR
+-plugin:\
+	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bndtools/repo/master/jars/repository.xml';name='Bnd Build Repository',\
+	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bndtools/repo/master/bundles/repository.xml';name='Bnd Repository',\
+	${common-plugins}
+
+# Remote OBR / GIT plugin
+#-plugin:		bndtools.bndplugins.repo.git.GitOBRRepo;name='Bnd Build Repository';path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;\
+#               git-uri=git://github.com/bndtools/repo.git;\
+#               git-push-uri=git@github.com:bndtools/repo.git;\
+#               git-branch=master;\
+#				sub=jars,\
+#				bndtools.bndplugins.repo.git.GitOBRRepo;name='Bnd Repository';path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;\
+#               git-uri=git://github.com/bndtools/repo.git;\
+#               git-push-uri=git@github.com:bndtools/repo.git;\
+#               git-branch=master;\
+#				sub=bundles,\
+#				${common-plugins}
+
+
+# Local FileRepo
+#-plugin:\
+#	aQute.lib.deployer.FileRepo;location=${repo}/bundles;name=Bundles,\
+#	aQute.lib.deployer.FileRepo;location=${repo}/jars;name=Jars,\
+#	${common-plugins}
+
+# Original embedded repo
+#-plugin:\
+#	aQute.lib.deployer.FileRepo;name=Local;location=${repo},\
+#	${common-plugins}

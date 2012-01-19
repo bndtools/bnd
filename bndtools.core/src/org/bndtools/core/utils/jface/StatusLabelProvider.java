@@ -35,6 +35,8 @@ public class StatusLabelProvider extends StyledCellLabelProvider {
         }
 
         StyledString label = new StyledString(status.getMessage());
+        if (status.getException() != null)
+            label.append(": " + status.getException().toString(), StyledString.QUALIFIER_STYLER);
 
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());

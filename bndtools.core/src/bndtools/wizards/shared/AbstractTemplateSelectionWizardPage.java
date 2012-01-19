@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -212,22 +215,41 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
 class TemplateLabelProvider extends StyledCellLabelProvider {
 
-    private final Image img;
+    private final Image defaultImg;
+    private final Map<ImageDescriptor, Image> imgCache = new HashMap<ImageDescriptor, Image>();
 
     public TemplateLabelProvider(Device device) {
-        img = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/template.gif").createImage(device);
+        defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/template.gif").createImage(device);
     }
 
     @Override
     public void update(ViewerCell cell) {
         IConfigurationElement element = (IConfigurationElement) cell.getElement();
         cell.setText(element.getAttribute("name"));
-        cell.setImage(img);
+
+        Image icon = defaultImg;
+
+        String iconPath = element.getAttribute("icon");
+        if (iconPath != null) {
+            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
+            if (descriptor != null) {
+                icon = imgCache.get(descriptor);
+                if (icon == null) {
+                    icon = descriptor.createImage();
+                    imgCache.put(descriptor, icon);
+                }
+            }
+        }
+
+        cell.setImage(icon);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        img.dispose();
+        defaultImg.dispose();
+        for (Image cached: imgCache.values()) {
+            cached.dispose();
+        }
     }
 }

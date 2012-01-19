@@ -2,12 +2,14 @@ package bndtools.templates;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
+import bndtools.api.Requirement;
 import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
@@ -28,19 +30,29 @@ public class ComponentTemplate implements IProjectTemplate {
         model.setBuildPath(buildPath);
 
         List<VersionedClause> runPath = new ArrayList<VersionedClause>();
+        List<Requirement> requires = new ArrayList<Requirement>();
+
         tmp = model.getRunBundles();
         if (tmp != null)
             runPath.addAll(tmp);
-        runPath.add(new VersionedClause("osgi.cmpn", new HashMap<String, String>()));
-        runPath.add(new VersionedClause("org.apache.felix.scr", new HashMap<String, String>()));
-        runPath.add(new VersionedClause("org.apache.felix.shell", new HashMap<String, String>()));
-        runPath.add(new VersionedClause("org.apache.felix.shell.tui", new HashMap<String, String>()));
-        model.setRunBundles(runPath);
 
+        addRunBundle("osgi.cmpn", runPath, requires, true);
+        addRunBundle("org.apache.felix.scr", runPath, requires, false);
+        addRunBundle("org.apache.felix.shell", runPath, requires, true);
+        addRunBundle("org.apache.felix.shell.tui", runPath, requires, false);
+
+        model.setRunRequire(requires);
+        model.setRunBundles(runPath);
         model.setRunFramework("org.apache.felix.framework");
 
         model.setServiceComponents(Arrays.asList(new ServiceComponent[] { new ServiceComponent("*", null) }));
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
+    }
+
+    private void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
+        runPath.add(new VersionedClause(bsn, new HashMap<String, String>()));
+        if (!inferred)
+            requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
     }
 
     @Override

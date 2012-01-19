@@ -4,14 +4,14 @@
 	osgi.core
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
-Bundle-Version: 0.1.0.BETA-${tstamp;yyyyMMdd-HHmm}
+Bundle-Vendor: Bndtools
+Bundle-Version: ${master-version}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
-	templates/=templates,\
-	templates/=${target}/templates
+	templates/=templates
 
 Private-Package: bndtools.templates
 

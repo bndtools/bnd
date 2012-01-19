@@ -1,2 +1,4 @@
--buildpath: biz.aQute.bndlib
+-buildpath: biz.aQute.bndlib;version="[1.50.4,2)",\
+	com.jcraft.jsch,\
+	org.eclipse.jgit
 -sub: *.bnd

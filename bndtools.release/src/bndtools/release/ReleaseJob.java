@@ -11,7 +11,6 @@
 package bndtools.release;
 
 import java.io.File;
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -21,63 +20,64 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
-import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 
 public class ReleaseJob  extends Job {
 	
-	private Project project;
-	private List<JarDiff> diffs;
-	private String repository;
+	private ReleaseContext context;
 
-	public ReleaseJob(Project project, List<JarDiff> diffs, String repository) {
+	public ReleaseJob(ReleaseContext context) {
 		super(Messages.bundleReleaseJob);
-		this.project = project;
-		this.diffs = diffs;
-		this.repository = repository;
+		this.context = context;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		try {
-						
-			IProject proj = ReleaseUtils.getProject(project);
+			
+			context.setProgressMonitor(monitor);
+			
+			IProject proj = ReleaseUtils.getProject(context.getProject());
 			proj.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 			
-			RepositoryPlugin repo = Activator.getRepositoryPlugin(repository);
-			ReleaseContext context = new ReleaseContext(project, diffs, repo, monitor);
 			
-			boolean ok = ReleaseHelper.release(context, diffs);
+			boolean ok = ReleaseHelper.release(context, context.getJarDiffs());
 			
-			ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName()).refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
+			ResourcesPlugin.getWorkspace().getRoot().getProject(context.getProject().getName()).refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
 			
-			if (repo != null) {
-				File f = Activator.getLocalRepoLocation(repo);
-				Activator.refreshFile(f);
+			if (context.getReleaseRepository() != null) {
+				File f = Activator.getLocalRepoLocation(context.getReleaseRepository());
+				if (f != null && f.exists()) {
+					Activator.refreshFile(f);
+				}
 			}
 			if (ok) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(Messages.project);
 				sb.append(" : ");
-				sb.append(project.getName());
+				sb.append(context.getProject().getName());
 				sb.append("\n\n");
-				sb.append(Messages.released);
-				sb.append(" :\n");
+				if (context.isUpdateOnly()) {
+					sb.append(Messages.updatedVersionInfo);
+				} else {
+					sb.append(Messages.released);
+					sb.append(" :\n");
+				}
 
 				for (Jar jar : context.getReleasedJars()) {
 					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n");
 				}
 				
-				sb.append("\n\n");
-				sb.append(Messages.releasedTo);
-				sb.append(" : ");
-				sb.append(repository);
+				if (!context.isUpdateOnly()) {
+					sb.append("\n\n");
+					sb.append(Messages.releasedTo);
+					sb.append(" : ");
+					sb.append(context.getReleaseRepository().getName());
+				}
 				
 				Activator.getDefault().message(sb.toString());
 			}

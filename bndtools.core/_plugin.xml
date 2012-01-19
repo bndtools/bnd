@@ -6,6 +6,10 @@
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
+   <extension-point id="launchTemplates"
+      name="Launch Templates"
+      schema="schema/launchTemplates.exsd"
+   />
    <extension-point id="projectTemplates"
       name="Project Templates"
       schema="schema/projectTemplates.exsd"
@@ -22,27 +26,12 @@
       name="Bnd Plug-ins"
       schema="schema/bndPlugins.exsd"
    />
+   <extension-point id="validators"
+      name="Build Validators"
+      schema="schema/validators.exsd"
+   />
    
    <!-- Popup Menus -->
-   <!--
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            adaptable="false"
-            id="bndtools.makeBundleContribution"
-            nameFilter="*.bnd"
-            objectClass="org.eclipse.core.resources.IFile">
-         <action
-               class="bndtools.MakeBundleWithRefreshAction"
-               enablesFor="+"
-               id="bndtools.makeBundle"
-               label="Make Bundle"
-               menubarPath="additions"
-               tooltip="Create a bundle from this definition file">
-         </action>
-      </objectContribution>
-   </extension>
-   -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -82,7 +71,7 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="bndtools.wizardCategory"
-            name="OSGi">
+            name="Bndtools">
       </category>
       <wizard
             id="bndtools.newBndFile"
@@ -106,7 +95,7 @@
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
             icon="icons/bricks.png"
-            name="Bnd OSGi Project"
+            name="Bndtools OSGi Project"
             project="true">
       </wizard>
       <wizard
@@ -124,7 +113,7 @@
          point="org.eclipse.ui.views">
       <category
             id="bndtools.viewCategory"
-            name="Bnd OSGi">
+            name="Bndtools">
       </category>
       <view
             category="bndtools.viewCategory"
@@ -221,13 +210,13 @@
       point="org.eclipse.ui.actionSets">
       <actionSet
          id="bndtools.actions"
-         label="OSGi"
+         label="Bndtools"
          visible="false">
          
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/browser.gif"
             tooltip="Open Web Browser"
             class="org.bndtools.core.actions.OpenBrowserActionDelegate"
@@ -235,7 +224,7 @@
          <action
             id="bndtools.actions.newRunDescriptor"
             label="New OSGi Run Descriptor"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/brick_run_new.gif"
             tooltip="New OSGi Run Descriptor"
             class="bndtools.wizards.bndfile.NewRunDescriptorActionDelegate"
@@ -243,20 +232,11 @@
          <action
             id="bndtools.actions.newBundle"
             label="New Bundle Descriptor"
-            toolbarPath="Normal/OSGi"
+            toolbarPath="Normal/Bndtools"
             icon="icons/brick_new.png"
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />
-         <!--
-         <action
-            id="bndtools.actions.workspace.openMainConfig"
-            label="Open main bnd config"
-            menubarPath="bndtools/config"
-            icon="icons/bndtools-logo-16x16.png"
-            class="bndtools."
-         />
-         -->
       </actionSet>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -269,7 +249,7 @@
    </extension>
    <extension
          id="bndnature"
-         name="Bnd OSGi Nature"
+         name="Bndtools Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
@@ -285,7 +265,7 @@
    </extension>
    <extension
          id="bndbuilder"
-         name="Bnd OSGi Builder"
+         name="Bndtools Builder"
          point="org.eclipse.core.resources.builders">
       <builder
             callOnEmptyDelta="true"
@@ -306,7 +286,7 @@
                enablesFor="+"
                icon="icons/bnd_nature_add.png"
                id="bndtools.addBndNatureAction"
-               label="Add Bnd OSGi Project Nature"
+               label="Add Bndtools Project Nature"
                menubarPath="additions"
                style="push">
          </action>
@@ -334,7 +314,7 @@
                enablesFor="1"
                icon="icons/bnd_nature_remove.png"
                id="bndtools.removeBndNatureAction"
-               label="Remove Bnd OSGi Project Nature"
+               label="Remove Bndtools Project Nature"
                menubarPath="additions"
                style="push">
          </action>
@@ -346,26 +326,11 @@
          </visibility>
       </objectContribution>
       
-      <objectContribution
-         adaptable="true"
-         id="bndtools.mavenPomContribution"
-         objectClass="org.eclipse.core.resources.IFile"
-         nameFilter="pom.xml">
-         <action
-            class="org.bndtools.core.refactor.ui.AdoptPomAction"
-            enablesFor="1"
-            icon="icons/bnd_nature_add.png"
-            id="org.bndtools.adoptPomAction"
-            label="Add OSGi/Bnd Support"
-            menubarPath="additions"
-            style="push">
-         </action>
-      </objectContribution>
    </extension>
    <extension
          point="org.eclipse.core.resources.markers"
          id="bndproblem"
-         name="Bnd OSGi Problem Marker">
+         name="Bndtools Problem Marker">
       <persistent
             value="true">
       </persistent>
@@ -374,7 +339,7 @@
       </super>
    </extension>
    <extension point="org.eclipse.ui.perspectiveExtensions">
-      <!-- Add lots of lovely OSGi stuff to the Java perspective -->
+      <!-- Add lots of lovely Bndtools stuff to the Java perspective -->
       <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
          <newWizardShortcut id="bndtools.newProjWiz"/>
          <newWizardShortcut id="bndtools.newWrapProjWiz"/>
@@ -383,7 +348,7 @@
          <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
       
-      <!-- Add a way back to the OSGi perspective from the Debug perspective -->
+      <!-- Add a way back to the Bndtools perspective from the Debug perspective -->
       <perspectiveExtension targetID="org.eclipse.debug.ui.DebugPerspective">
          <viewShortcut id="bndtools.impExpView"/>
          <perspectiveShortcut id="bndtools.perspective"/>
@@ -489,7 +454,7 @@
    <extension point="org.eclipse.debug.core.sourceLocators">
       <sourceLocator
          id="org.bndtools.core.launch.BndDependencySourceLookupDirector"
-         name="OSGi Source Lookup Director"
+         name="Bndtools Source Lookup Director"
          class="bndtools.launch.BndDependencySourceLookupDirector"
       />
    </extension>
@@ -505,6 +470,53 @@
    <!-- LAUNCH SHORTCUTS -->
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="OSGi JUnit Test"
+            icon="icons/bricks_junit.png"
+            class="bndtools.launch.JUnitShortcut"
+            modes="run, debug"
+            id="bndtools.launch.junitShortcut">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+                        <!-- Java/Bnd Project -->
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                        </and>
+
+                        <!--  Java element (src-folder, package or JUnit class) -->
+                        <adapt type="org.eclipse.jdt.core.IJavaElement">
+                           <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+                           <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
+                           <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
+                        </adapt>
+                        
+                        <!-- bnd.bnd or *.bndrun file -->
+                        <test property="org.eclipse.core.resources.name" value="bnd.bnd"/>
+                        <test property="org.eclipse.core.resources.extension" value="bndrun"/>
+                        
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="org.eclipse.jdt.junit.launchconfig">
+         </configurationType>
+         <description
+               description="Debug a JUnit Test in an OSGi Framework"
+               mode="debug">
+         </description>
+         <description
+               description="Run an OSGi JUnit Test in an OSGi framework"
+               mode="run">
+         </description>
+      </shortcut>
       
       <shortcut
             class="bndtools.launch.RunShortcut"
@@ -536,39 +548,7 @@
             </enablement>
          </contextualLaunch>
       </shortcut>
-      
-      <shortcut
-            label="OSGi JUnit Test"
-            icon="icons/bricks_junit.png"
-            class="bndtools.launch.JUnitShortcut"
-            modes="run, debug"
-            id="bndtools.launch.junitClassShortcut">
-         <contextualLaunch>
-            <enablement>
-               <with variable="selection">
-                  <count value="1"/>
-                  <iterate>
-                     <adapt type="org.eclipse.jdt.core.IJavaElement">
-                        <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
-                        <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
-                        <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
-                     </adapt>
-                  </iterate>
-               </with>
-            </enablement>
-         </contextualLaunch>
-         <configurationType
-               id="org.eclipse.jdt.junit.launchconfig">
-         </configurationType>
-         <description
-               description="Debug a JUnit Test in an OSGi Framework"
-               mode="debug">
-         </description>
-         <description
-               description="Run an OSGi JUnit Test in an OSGi framework"
-               mode="run">
-         </description>
-      </shortcut>
+
    </extension>
    
     <extension
@@ -576,7 +556,7 @@
        <page
              class="bndtools.preferences.ui.BndPreferencePage"
              id="bndtools.prefPages.basic"
-             name="Bnd OSGi Tools">
+             name="Bndtools OSGi">
        </page>
     </extension>
     <extension
@@ -617,6 +597,38 @@
          priority="-2147483648"
          class="bndtools.api.EmptyTemplate"
          doc="html/emptyTemplate.html"/>
+   </extension>
+   
+   <extension point="bndtools.core.launchTemplates">
+      <template
+         name="Apache Felix 4 with Shell"
+         path="launchTemplates/felix4+shell.bndrun"
+         doc="html/felix4+shell.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 with Web Console"
+         path="launchTemplates/felix4+webconsole.bndrun"
+         doc="html/felix4+webconsole.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 (Empty)"
+         path="launchTemplates/felix4.bndrun"
+         doc="html/felix4.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Console"
+         path="launchTemplates/equinox37+console.bndrun"
+         doc="html/equinox37+console.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
+         name="Knopflerfish 5.1 with Felix Shell"
+         path="launchTemplates/knopflerfish.bndrun"
+         doc="html/knopflerfish.form.xml"
+         icon="icons/knopflerfish_16x16_inverted.gif"/>
+      <template
+         name="«Empty»"
+         path="launchTempaltes/empty.bndrun"
+         doc="html/empty.form.xml"/>
    </extension>
    
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
@@ -721,6 +733,25 @@
          plugin="bndtools.core"
          code="0"
       />
+   </extension>
+   
+   <extension point="bndtools.core.validators">
+      <validator name="BSN check" class="org.bndtools.core.build.validate.BsnValidator"/>
+   </extension>
+   
+   <extension point="org.eclipse.ui.propertyPages">
+      <page
+         id="org.bndtools.core.propPages.project"
+         name="Bndtools"
+         adaptable="true"
+         objectClass="org.eclipse.core.resources.IProject"
+         class="bndtools.preferences.ui.BndProjectPropertyPage">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test property="org.eclipse.core.resources.projectNature" value="bndtools.core.bndnature"/>
+            </adapt>
+         </enabledWhen>
+      </page>
    </extension>
 
  </plugin>
