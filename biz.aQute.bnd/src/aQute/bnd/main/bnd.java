@@ -24,20 +24,23 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
+import aQute.configurable.*;
 import aQute.lib.collections.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
+import aQute.libg.classdump.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 /**
- * Utility to make bundles.
+ * Utility to make bundles. Should be areplace for jar and much more.
  * 
  * TODO Add Javadoc comment for this type.
  * 
@@ -46,115 +49,158 @@ import aQute.libg.version.*;
 public class bnd extends Processor {
 	Settings		settings	= new Settings();
 	PrintStream		out			= System.out;
-	static boolean	exceptions	= false;
 
-	static boolean	failok		= false;
-	private Project	project;
+	static Pattern	JARCOMMANDS	= Pattern
+										.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	public static void main(String args[]) {
-		bnd main = new bnd();
+	static Pattern	COMMAND		= Pattern.compile("\\w[\\w\\d]+");
 
-		try {
-			main.run(args);
-			if (bnd.failok)
-				return;
+	interface bndoptions extends Options {
+		@Config(description = "Turns errors into warnings so command always succeeds") boolean failok();
 
-			System.exit(main.getErrors().size());
+		@Config(description = "Report errors pedantically") boolean pedantic();
 
-		} catch (Exception e) {
-			System.err.println("Software error occurred " + e);
-			if (exceptions)
-				e.printStackTrace();
-		}
-		System.exit(-1);
+		@Config(description = "Print out stack traces when there is an unexpected exception") boolean exceptions();
+
+		@Config(description = "Redirect output") File output();
+
+		@Config(description = "Use as base directory") String base();
+
+		@Config(description = "Trace progress") boolean trace();
+
+		@Config(description = "Error/Warning ignore patterns") String[] ignore();
+
 	}
 
-	void run(String[] args) throws Exception {
-		int i = 0;
+	public static void main(String args[]) throws Exception {
+		Command getopt = new Command(System.out);
+		bnd main = new bnd();
+		ExtList<String> args2 = new ExtList<String>(args);
+		getopt.execute(main, "run", args2);
+	}
 
+	/**
+	 * Rewrite the command line to mimic the jar command
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	private void rewrite(List<String> args) throws Exception {
+		if (args.isEmpty())
+			return;
+
+		String arg = args.get(0);
+		Matcher m = JARCOMMANDS.matcher(arg);
+		if (m.matches()) {
+			rewriteJarCmd(args);
+			return;
+		}
+
+		Project project = getProject();
+		if (project != null) {
+			Action a = project.getActions().get(arg);
+			if (a != null) {
+				args.add(0, "project");
+			}
+		}
+
+		m = COMMAND.matcher(args.get(0));
+		if (!m.matches()) {
+			args.add(0, "do");
+		}
+
+	}
+
+	private void rewriteJarCmd(List<String> args) {
+		String jarcmd = args.remove(0);
+
+		char cmd = jarcmd.charAt(0);
+		switch (cmd) {
+		case 'c':
+			args.add(0, "create");
+			break;
+
+		case 'u':
+			args.add(0, "update");
+			break;
+
+		case 'x':
+			args.add(0, "extract");
+			break;
+
+		case 't':
+			args.add(0, "type");
+			break;
+
+		case 'i':
+			args.add(0, "index");
+			break;
+		}
+		int start = 1;
+		for (int i = 1; i < jarcmd.length(); i++) {
+			switch (jarcmd.charAt(i)) {
+			case 'v':
+				args.add(start++, "--verbose");
+				break;
+
+			case '0':
+				args.add(start++, "--nocompression");
+				break;
+
+			case 'm':
+				args.add(start++, "--manifest");
+				start++; // make the manifest file the parameter
+				break;
+
+			case 'M':
+				args.add(start++, "--nomanifest");
+				break;
+
+			case 'f':
+				args.add(start++, "--file");
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Main command. This has options the bnd base options and will then run
+	 * another command.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
+	void _run(bndoptions options) throws Exception {
 		try {
-			for (; i < args.length; i++) {
-				if ("-failok".equals(args[i])) {
-					failok = true;
-				} else if ("-exceptions".equals(args[i])) {
-					exceptions = true;
-				} else if ("-trace".equals(args[i])) {
-					setTrace(true);
-				} else if ("-pedantic".equals(args[i])) {
-					setPedantic(true);
-				} else if (args[i].indexOf('=') > 0) {
-					String parts[] = args[i].split("\\s*(?!\\\\)=\\s*");
-					if (parts.length == 2)
-						setProperty(parts[0], parts[1]);
-					else
-						error("invalid property def: %s", args[i]);
-				} else if ("-base".equals(args[i])) {
-					setBase(new File(args[++i]).getAbsoluteFile());
-					if (!getBase().isDirectory()) {
-						out.println("-base must be a valid directory");
-					} else if (args[i].startsWith("-"))
-						error("Invalid option: ", args[i]);
-				} else
-					break;
+			set(FAIL_OK, options.failok() + "");
+			setExceptions(options.exceptions());
+			setTrace(options.trace());
+			setPedantic(options.pedantic());
+			if (options.base() != null)
+				setBase(getFile(getBase(), options.base()));
+
+			// And the properties
+			for (Entry<String, String> entry : options._properties().entrySet()) {
+				setProperty(entry.getKey(), entry.getValue());
 			}
 
-			project = getProject();
-			if (project != null) {
-				setParent(project);
-				project.setPedantic(isPedantic());
-				project.setTrace(isTrace());
-			}
-			trace("project = %s", project);
+			Command getopt = options._command();
+			List<String> args = options._();
+			rewrite(args);
+			System.out.println(" subcmds " + args);
 
-			if (i >= args.length) {
-				if (project != null && project.isValid()) {
-					trace("default build of current project");
-					project.build();
-				} else
-					doHelp();
+			if (args.isEmpty()) {
+				getopt.help(this, null);
 			} else {
-				if (!doProject(project, args, i)) {
-					if (!doCommand(args, i)) {
-						doFiles(args, i);
-					}
-				}
+				String arg = args.remove(0);
+				getopt.execute(this, arg, args);
+
 			}
 		} catch (Throwable t) {
-			if (exceptions)
-				t.printStackTrace();
-			error("exception %s", t, t);
+			error("Failed %s", t, t.getMessage());
 		}
 
-		int n = 1;
-		switch (getErrors().size()) {
-		case 0:
-			// System.err.println("No errors");
-			break;
-		case 1:
-			System.err.println("One error");
-			break;
-		default:
-			System.err.println(getErrors().size() + " errors");
-		}
-		for (String msg : getErrors()) {
-			System.err.println(n++ + " : " + msg);
-		}
-		n = 1;
-		switch (getWarnings().size()) {
-		case 0:
-			// System.err.println("No warnings");
-			break;
-		case 1:
-			System.err.println("One warning");
-			break;
-		default:
-			System.err.println(getWarnings().size() + " warnings");
-		}
-		for (String msg : getWarnings()) {
-			System.err.println(n++ + " : " + msg);
-		}
-
-		if (getErrors().size() != 0) {
+		if (!check(options.ignore())) {
 			System.err.flush();
 			System.out.flush();
 			Thread.sleep(1000);
@@ -162,106 +208,212 @@ public class bnd extends Processor {
 		}
 	}
 
-	boolean doProject(Project project, String[] args, int i) throws Exception {
-		if (project != null) {
-			trace("project command %s", args[i]);
-			Action a = project.getActions().get(args[i]);
-			if (a != null) {
-				a.execute(project, args[i++]);
-				getInfo(project);
-				return true;
-			}
-		}
-		return false;
+	/**
+	 * Options for the jar create command.
+	 * 
+	 */
+	interface create extends Options {
+		boolean verbose();
+
+		boolean nocompression();
+
+		boolean nomanifest();
+
+		String manifest();
+
+		String file();
+
+		String Cdir();
+
+		String bsn();
+
+		Version version();
 	}
 
-	boolean doCommand(String args[], int i) throws Exception {
-		try {
-			String cmd = args[i];
-			trace("command %s", cmd);
-			if ("wrap".equals(args[i])) {
-				doWrap(args, ++i);
-			} else if ("maven".equals(args[i])) {
-				MavenCommand maven = new MavenCommand(this);
-				maven.setTrace(isTrace());
-				maven.setPedantic(isPedantic());
-				maven.run(args, ++i);
-				getInfo(maven);
-			} else if ("global".equals(args[i])) {
-				global(args, ++i);
-			} else if ("exec".equals(args[i])) {
-				doRun(args[++i]);
-			} else if ("print".equals(args[i])) {
-				doPrint(args, ++i);
-			} else if ("lib".equals(args[i])) {
-				doLib(args, ++i);
-			} else if ("graph".equals(args[i])) {
-				doDot(args, ++i);
-			} else if ("create-repo".equals(args[i])) {
-				createRepo(args, ++i);
-			} else if ("release".equals(args[i])) {
-				doRelease(args, ++i);
-			} else if ("debug".equals(args[i])) {
-				debug(args, ++i);
-			} else if ("bump".equals(args[i])) {
-				bump(args, ++i);
-			} else if ("deliverables".equals(args[i])) {
-				deliverables(args, ++i);
-			} else if ("view".equals(args[i])) {
-				doView(args, ++i);
-			} else if ("buildx".equals(args[i])) {
-				doBuild(args, ++i);
-			} else if ("extract".equals(args[i])) {
-				doExtract(args, ++i);
-			} else if ("patch".equals(args[i])) {
-				patch(args, ++i);
-			} else if ("runtests".equals(args[i])) {
-				runtests(args, ++i);
-			} else if ("xref".equals(args[i])) {
-				doXref(args, ++i);
-			} else if ("eclipse".equals(args[i])) {
-				doEclipse(args, ++i);
-			} else if ("repo".equals(args[i])) {
-				repo(args, ++i);
-			} else if ("package".equals(args[i])) {
-				GetOpt.subcmd(new PackageCommand(this), args, ++i, out);
-			} else if ("slurp".equals(args[i])) {
-				SlurpCommand.slurp(this, args, ++i, out);
-			} else if ("diff".equals(args[i])) {
-				DiffCommand.diff(this, args, ++i, out);
-			} else if ("help".equals(args[i])) {
-				doHelp(args, ++i);
-			} else if ("macro".equals(args[i])) {
-				doMacro(args, ++i);
-			} else if ("merge".equals(args[i])) {
-				doMerge(args, ++i);
-			} else {
-				trace("command %s not found", cmd);
-				return false;
+	/**
+	 * Create jar file
+	 * 
+	 * <pre>
+	 *     jar c[v0M]f jarfile [-C dir] inputfiles [-Joption] 
+	 *     jar c[v0]mf manifest jarfile [-C dir] inputfiles [-Joption] 
+	 *     jar c[v0M] [-C dir] inputfiles [-Joption] 
+	 *     jar c[v0]m manifest [-C dir] inputfiles [-Joption]
+	 * </pre>
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
+	public void _create(create options) throws Exception {
+		Jar jar = new Jar("dot");
+
+		File dir = getBase().getAbsoluteFile();
+		String sdir = options.Cdir();
+		if (sdir != null)
+			dir = getFile(sdir);
+
+		if (options._().isEmpty())
+			add(jar, dir, ".", options.verbose());
+		else
+			for (String f : options._()) {
+				f = f.replace(File.separatorChar, '/');
+				add(jar, dir, f, options.verbose());
 			}
-			trace("command %s executed", cmd);
-		} catch (GetOptException e) {
-			error(e.getMessage());
+
+		String manifest = options.manifest();
+		if (manifest != null) {
+			if (options.verbose())
+				out.printf("Adding manifest from %s\n", manifest);
+
+			jar.setManifest(getFile(manifest));
 		}
-		return true;
+
+		if (options.nomanifest()) {
+			jar.setManifest((Manifest) null);
+		} else {
+			Analyzer w = new Analyzer(this);
+			w.setBase(getBase());
+			w.use(this);
+
+			if ( options.bsn() != null)
+				w.setBundleSymbolicName(options.bsn());
+			if ( options.version() != null)
+				w.setBundleVersion(options.version().toString());
+			
+			File out = w.getOutputFile(options.file());
+			// TODO
+		}
+
+		String jarFile = options.file();
+		if (jarFile == null)
+			jar.write(System.out);
+		else
+			jar.write(jarFile);
+
+		jar.close();
+
 	}
 
-	boolean doFiles(String args[], int i) throws Exception {
-		while (i < args.length) {
-			String path = args[i];
-			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION))
-				doBuild(getFile(path), new File[0], new File[0], null, "",
-						new File(path).getParentFile(), 0, new HashSet<File>());
-			else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
-					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION))
-				doPrint(path, -1);
-			else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
+	private void add(Jar jar, File base, String path, boolean report) {
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+
+		File f;
+		if (path.equals("."))
+			f = base;
+		else
+			f = getFile(base, path);
+
+		out.printf("Adding: %s\n", path);
+
+		if (f.isFile()) {
+			jar.putResource(path, new FileResource(f));
+		} else if (f.isDirectory()) {
+			if (path.equals("."))
+				path = "";
+			else
+				path += "/";
+
+			String[] subs = f.list();
+			for (String sub : subs) {
+
+				add(jar, base, path + sub, report);
+			}
+		}
+	}
+
+	/**
+	 * The do command interprets files and does a default action for each file
+	 * 
+	 * @param project
+	 * @param args
+	 * @param i
+	 * @return
+	 * @throws Exception
+	 */
+
+	interface dooptions extends Options {
+		String output();
+
+		boolean force();
+	}
+
+	public void _do(dooptions options) throws Exception {
+		for (String path : options._()) {
+			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
+				Builder b = new Builder();
+				File f = getFile(path);
+				b.setProperties(f);
+				b.build();
+				
+				File out = b.getOutputFile(options.output());
+				getInfo(b, f.getName());
+				if ( isOk()) {
+					b.save(out,options.force());
+				}
+				b.close();
+			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
+					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
+				File file = getFile(path);
+				doPrint(file, MANIFEST);
+			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
 				doRun(path);
 			else
-				error("Unknown file %s", path);
-			i++;
+				error("Unrecognized file type %s", path);
 		}
-		return true;
+	}
+
+	/**
+	 * Project command, executes actions.
+	 */
+
+	interface projectoptions extends Options {
+		String project();
+
+		boolean info();
+	}
+
+	public void _project(projectoptions options) throws Exception {
+		Project project = getProject(options.project());
+		System.out.println("project " + project + " " + options.info());
+		if (project == null) {
+			error("No project available");
+			return;
+		}
+
+		if (options.info()) {
+			out.printf("Nam          %s\n", project.getName());
+			out.printf("Actions      %s\n", project.getActions().keySet());
+			out.printf("Directory    %s\n", project.getBase());
+			out.printf("Depends on   %s\n", project.getDependson());
+			out.printf("Sub builders %s\n", project.getSubBuilders());
+			return;
+		}
+
+		List<String> l = new ArrayList<String>(options._());
+		String cmd = null;
+		String arg = null;
+
+		if (!l.isEmpty())
+			cmd = l.remove(0);
+		if (!l.isEmpty())
+			arg = l.remove(0);
+
+		if (!l.isEmpty()) {
+			error("Extra arguments %s", options._());
+			return;
+		}
+
+		if (cmd == null) {
+			error("No cmd for project");
+			return;
+		}
+
+		Action a = project.getActions().get(cmd);
+		if (a != null) {
+			a.execute(project, arg);
+			getInfo(project);
+			return;
+		}
 	}
 
 	private void doRun(String path) throws Exception {
@@ -295,15 +447,28 @@ public class bnd extends Processor {
 		getInfo(project);
 	}
 
-	private void bump(String[] args, int i) throws Exception {
-		if (getProject() == null) {
+	/**
+	 * Bump a version number
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
+	 */
+	interface bumpoptions extends Options {
+		String project();
+	}
+
+	public void _bump(bumpoptions options) throws Exception {
+		Project project = getProject(options.project());
+
+		if (project == null) {
 			error("No project found, use -base <dir> bump");
 			return;
 		}
 
 		String mask = null;
-		if (args.length > i) {
-			mask = args[i];
+		if (!options._().isEmpty()) {
+			mask = options._().get(0);
 			if (mask.equalsIgnoreCase("major"))
 				mask = "+00";
 			else if (mask.equalsIgnoreCase("minor"))
@@ -316,156 +481,42 @@ public class bnd extends Processor {
 				return;
 			}
 		}
-		if (mask == null)
-			getProject().bump();
-		else
-			getProject().bump(mask);
 
-		out.println(getProject().getProperty(BUNDLE_VERSION, "No version found"));
+		if (mask == null)
+			project.bump();
+		else
+			project.bump(mask);
+
+		getInfo(project);
+		out.println(project.getProperty(BUNDLE_VERSION, "No version found"));
 	}
 
 	/**
-	 * Take the current project, calculate its dependencies from the repo and
-	 * create a mini-repo from it that can easily be unzipped.
+	 * List all deliverables for this workspace.
 	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
 	 */
-	private void createRepo(String[] args, int i) throws Exception {
-		Project project = getProject();
+	interface deliverableOptions extends Options {
+		String project();
+
+		boolean limit();
+	}
+
+	public void _deliverables(deliverableOptions options) throws Exception {
+		Project project = getProject(options.project());
 		if (project == null) {
-			error("not in a proper bnd project ... " + getBase());
+			error("No project");
 			return;
 		}
 
-		File out = getFile(project.getName() + ".repo.jar");
-		List<Instruction> skip = Create.list();
-
-		while (i < args.length) {
-			if (args[i].equals("-o")) {
-				i++;
-				if (i < args.length)
-					out = getFile(args[i]);
-				else
-					error("No arg for -out");
-			} else if (args[i].equals("-skip")) {
-				i++;
-				if (i < args.length) {
-					Instruction instr = new Instruction(args[i]);
-					skip.add(instr);
-				} else
-					error("No arg for -skip");
-			} else
-				error("invalid arg for create-repo %s", args[i]);
-			i++;
-		}
-
-		Jar output = new Jar(project.getName());
-		output.setDoNotTouchManifest();
-		addClose(output);
-		getInfo(project);
-		if (isOk()) {
-			for (Container c : project.getBuildpath()) {
-				addContainer(skip, output, c);
-			}
-			for (Container c : project.getRunbundles()) {
-				addContainer(skip, output, c);
-			}
-			if (isOk()) {
-				try {
-					output.write(out);
-				} catch (Exception e) {
-					error("Could not write mini repo %s", e);
-				}
-			}
-		}
-	}
-
-	private void addContainer(Collection<Instruction> skip, Jar output, Container c)
-			throws Exception {
-		trace("add container " + c);
-		String prefix = "cnf/repo/";
-
-		switch (c.getType()) {
-		case ERROR:
-			error("Dependencies include %s", c.getError());
-			return;
-
-		case REPO:
-		case EXTERNAL: {
-			String name = getName(skip, prefix, c, ".jar");
-			if (name != null)
-				output.putResource(name, new FileResource(c.getFile()));
-			trace("storing %s in %s", c, name);
-			break;
-		}
-
-		case PROJECT:
-			trace("not storing project " + c);
-			break;
-
-		case LIBRARY: {
-			String name = getName(skip, prefix, c, ".lib");
-			if (name != null) {
-				output.putResource(name, new FileResource(c.getFile()));
-				trace("store library %s", name);
-				for (Container child : c.getMembers()) {
-					trace("store member %s", child);
-					addContainer(skip, output, child);
-				}
-			}
-		}
-		}
-	}
-
-	String getName(Collection<Instruction> skip, String prefix, Container c, String extension)
-			throws Exception {
-		Manifest m = c.getManifest();
-		try {
-			if (m == null) {
-				error("No manifest found for %s", c);
-				return null;
-			}
-			String bsn = m.getMainAttributes().getValue(BUNDLE_SYMBOLICNAME);
-			if (bsn == null) {
-				error("No bsn in manifest: %s", c);
-				return null;
-			}
-			for (Instruction instr : skip) {
-				if (instr.matches(bsn)) {
-					if (instr.isNegated()) // - * - = +!
-						break;
-					else
-						return null; // skip it
-				}
-			}
-
-			int n = bsn.indexOf(';');
-			if (n > 0) {
-				bsn = bsn.substring(0, n).trim();
-			}
-			String version = m.getMainAttributes().getValue(BUNDLE_VERSION);
-			if (version == null)
-				version = "0";
-
-			Version v = new Version(version);
-			version = v.getMajor() + "." + v.getMinor() + "." + v.getMicro();
-			if (c.getFile() != null && c.getFile().getName().endsWith("-latest.jar"))
-				version = "latest";
-			return prefix + bsn + "/" + bsn + "-" + version + extension;
-
-		} catch (Exception e) {
-			error("Could not store repo file %s", c);
-		}
-		return null;
-	}
-
-	private void deliverables(String[] args, int i) throws Exception {
-		Project project = getProject();
 		long start = System.currentTimeMillis();
-		Collection<Project> projects = project.getWorkspace().getAllProjects();
+		Collection<Project> projects;
+		if (options.limit())
+			projects = Arrays.asList(project);
+		else
+			projects = project.getWorkspace().getAllProjects();
+
 		List<Container> containers = new ArrayList<Container>();
+
 		for (Project p : projects) {
 			containers.addAll(p.getDeliverables());
 		}
@@ -474,35 +525,72 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			out.printf("%-40s %d.%d.%d %s\n", c.getBundleSymbolicName(), v.getMajor(),
-					v.getMinor(), v.getMicro(), c.getFile());
+			out.printf("%-40s %8s  %s\n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
+					c.getFile());
 		}
-
+		getInfo(project);
 	}
 
-	private int doMacro(String[] args, int i) throws Exception {
-		String result;
-		for (; i < args.length; i++) {
-			String cmd = args[i];
-			cmd = cmd.replaceAll("@\\{([^}])\\}", "\\${$1}");
-			cmd = cmd.replaceAll(":", ";");
-			cmd = cmd.replaceAll("[^$](.*)", "\\${$0}");
-			result = getReplacer().process(cmd);
-			if (result != null && result.length() != 0) {
-				Collection<String> parts = split(result);
-				for (String s : parts) {
-					out.println(s);
-				}
-			} else
-				out.println("No result for " + cmd);
-
-		}
-		return i;
+	/**
+	 * Show the value of a macro
+	 * 
+	 * @param args
+	 * @param i
+	 * @return
+	 * @throws Exception
+	 */
+	interface macroOptions extends Options {
+		String project();
 	}
 
-	private void doRelease(String[] args, int i) throws Exception {
-		Project project = getProject();
-		project.release(false);
+	public void _macro(macroOptions options) throws Exception {
+		Project project = getProject(options.project());
+
+		if (project == null) {
+
+		}
+
+		StringBuilder sb = new StringBuilder();
+		Macro r = project.getReplacer();
+		getInfo(project);
+
+		String del = "";
+		for (String s : options._()) {
+			if (!s.startsWith("${")) {
+				s = "${" + s;
+			}
+			if (!s.endsWith("}")) {
+				s += "}";
+			}
+			s = s.replace(':', ';');
+			String p = r.process(s);
+			sb.append(del);
+			sb.append(p);
+			del = " ";
+		}
+		getInfo(project);
+		out.println(sb);
+	}
+
+	/**
+	 * Release the project
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
+	 */
+	interface releaseOptions extends Options {
+		String project();
+
+		boolean test();
+	}
+
+	public void _release(releaseOptions options) throws Exception {
+		Project project = getProject(options.project());
+		if (project == null)
+			return;
+
+		project.release(options.test());
 		getInfo(project);
 	}
 
@@ -513,32 +601,35 @@ public class bnd extends Processor {
 	 * @param i
 	 */
 
-	private void doXref(String[] args, int i) {
-		Analyzer analyzer = new Analyzer();
+	interface xrefOptions extends Options {
+	}
 
-		for (; i < args.length; i++) {
+	public void _xref(xrefOptions options) {
+		Analyzer analyzer = new Analyzer();
+		MultiMap<TypeRef, TypeRef> table = new MultiMap<TypeRef, TypeRef>();
+		Set<TypeRef> set = Create.set();
+
+		for (String arg : options._()) {
 			try {
-				File file = new File(args[i]);
+				File file = new File(arg);
 				Jar jar = new Jar(file.getName(), file);
 				try {
 					for (Map.Entry<String, Resource> entry : jar.getResources().entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
+							TypeRef ref = analyzer.getTypeRefFromPath(key);
+							set.add(ref);
+
 							InputStream in = r.openInputStream();
 							Clazz clazz = new Clazz(analyzer, key, r);
 
 							// TODO use the proper bcp instead
 							// of using the default layout
-
-							out.print(key);
-							Set<String> xref = clazz.parseClassFile();
+							Set<TypeRef> s = clazz.parseClassFile();
+							table.addAll(ref, s);
+							set.addAll(s);
 							in.close();
-							for (String element : xref) {
-								out.print("\t");
-								out.print(element);
-							}
-							out.println();
 						}
 					}
 				} finally {
@@ -549,161 +640,121 @@ public class bnd extends Processor {
 			}
 		}
 
-	}
-
-	private void doEclipse(String[] args, int i) throws Exception {
-		File dir = new File("").getAbsoluteFile();
-		if (args.length == i)
-			doEclipse(dir);
-		else {
-			for (; i < args.length; i++) {
-				doEclipse(new File(dir, args[i]));
+		SortedList<TypeRef> labels = new SortedList<TypeRef>(table.keySet());
+		for (TypeRef element : labels) {
+			Iterator<TypeRef> row = table.get(element).iterator();
+			String first = "";
+			if (row.hasNext())
+				first = row.next().getFQN();
+			out.printf("%40s > %s\n", element.getFQN(), first);
+			while (row.hasNext()) {
+				out.printf("%40s   %s\n", "", row.next().getFQN());
 			}
 		}
 	}
 
-	private void doEclipse(File file) throws Exception {
-		if (!file.isDirectory())
-			error("Eclipse requires a path to a directory: " + file.getAbsolutePath());
-		else {
-			File cp = new File(file, ".classpath");
-			if (!cp.exists()) {
-				error("Cannot find .classpath in project directory: " + file.getAbsolutePath());
-			} else {
-				EclipseClasspath eclipse = new EclipseClasspath(this, file.getParentFile(), file);
-				out.println("Classpath    " + eclipse.getClasspath());
-				out.println("Dependents   " + eclipse.getDependents());
-				out.println("Sourcepath   " + eclipse.getSourcepath());
-				out.println("Output       " + eclipse.getOutput());
-				out.println();
-			}
-		}
-
+	interface eclipseOptions extends Options {
+		String dir();
 	}
 
+	public void _eclipse(eclipseOptions options) throws Exception {
+
+		File dir = getBase();
+		if (options.dir() != null)
+			dir = getFile(options.dir());
+
+		if (!dir.isDirectory())
+			error("Eclipse requires a path to a directory: " + dir.getAbsolutePath());
+
+		if (options._().size() != 0)
+			error("Unnecessary arguments %s", options._());
+
+		if (!isOk())
+			return;
+
+		File cp = new File(dir, ".classpath");
+		if (!cp.exists()) {
+			error("Cannot find .classpath in project directory: " + dir.getAbsolutePath());
+		} else {
+			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
+			out.println("Classpath    " + eclipse.getClasspath());
+			out.println("Dependents   " + eclipse.getDependents());
+			out.println("Sourcepath   " + eclipse.getSourcepath());
+			out.println("Output       " + eclipse.getOutput());
+			out.println();
+		}
+	}
+
+	/**
+	 * Buildx
+	 */
 	final static int	BUILD_SOURCES	= 1;
 	final static int	BUILD_POM		= 2;
 	final static int	BUILD_FORCE		= 4;
 
-	private void doBuild(String[] args, int i) throws Exception {
-		File classpath[] = new File[0];
-		File workspace = null;
-		File sourcepath[] = new File[0];
+	interface buildxOptions extends Options {
+		String output();
+
+		List<String> classpath();
+
+		List<String> sourcepath();
+
+		boolean eclipse();
+
+		boolean noeclipse();
+
+		boolean sources();
+
+		boolean pom();
+
+		boolean force();
+	}
+
+	public void _buildx(buildxOptions options) throws Exception {
 		File output = null;
-		String eclipse = "";
-		int options = 0;
+		if (options.output() == null)
+			output = getFile(options.output());
 
-		for (; i < args.length; i++) {
-			if ("-workspace".startsWith(args[i])) {
-				workspace = new File(args[++i]);
-			} else if ("-classpath".startsWith(args[i])) {
-				classpath = getClasspath(args[++i]);
-			} else if ("-sourcepath".startsWith(args[i])) {
-				String arg = args[++i];
-				String spaces[] = arg.split("\\s*,\\s*");
-				sourcepath = new File[spaces.length];
-				for (int j = 0; j < spaces.length; j++) {
-					File f = new File(spaces[j]);
-					if (!f.exists())
-						error("No such sourcepath entry: " + f.getAbsolutePath());
-					sourcepath[j] = f;
-				}
-			} else if ("-eclipse".startsWith(args[i])) {
-				eclipse = args[++i];
-			} else if ("-noeclipse".startsWith(args[i])) {
-				eclipse = null;
-			} else if ("-output".startsWith(args[i])) {
-				output = new File(args[++i]);
-			} else if ("-sources".startsWith(args[i])) {
-				options |= BUILD_SOURCES;
-			} else if ("-pom".startsWith(args[i])) {
-				options |= BUILD_POM;
-			} else if ("-force".startsWith(args[i])) {
-				options |= BUILD_FORCE;
-			} else {
-				if (args[i].startsWith("-"))
-					error("Invalid option for bnd: " + args[i]);
-				else {
-					File properties = new File(args[i]);
+		// Create a build order
 
-					if (!properties.exists())
-						error("Cannot find bnd file: " + args[i]);
-					else {
-						if (workspace == null)
-							workspace = properties.getParentFile();
+		List<Builder> builders = new ArrayList<Builder>();
+		List<String> order = new ArrayList<String>();
+		List<String> active = new ArrayList<String>();
 
-						doBuild(properties, classpath, sourcepath, output, eclipse, workspace,
-								options, new HashSet<File>());
-					}
-					output = null;
+		for (String s : options._()) {
+			prebuild(active, order, builders, s);
+		}
+
+		for (Builder b : builders) {
+			if (options.classpath() != null) {
+				for (String f : options.classpath()) {
+					b.addClasspath(getFile(f));
 				}
 			}
-		}
 
-	}
-
-	private File[] getClasspath(String string) {
-		String spaces[] = string.split("\\s*,\\s*");
-		File classpath[] = new File[spaces.length];
-		for (int j = 0; j < spaces.length; j++) {
-			File f = new File(spaces[j]);
-			if (!f.exists())
-				error("No such classpath entry: " + f.getAbsolutePath());
-			classpath[j] = f;
-		}
-		return classpath;
-	}
-
-	private void doBuild(File properties, File classpath[], File sourcepath[], File output,
-			String eclipse, File workspace, int options, Set<File> building) throws Exception {
-
-		properties = properties.getAbsoluteFile();
-		if (building.contains(properties)) {
-			error("Circular dependency in pre build " + properties);
-			return;
-		}
-		building.add(properties);
-
-		Builder builder = new Builder();
-		try {
-			builder.setPedantic(isPedantic());
-			builder.setProperties(properties);
-
-			if (output == null) {
-				String out = builder.getProperty("-output");
-				if (out != null) {
-					output = getFile(properties.getParentFile(), out);
-					if (!output.getName().endsWith(".jar"))
-						output.mkdirs();
-				} else
-					output = properties.getAbsoluteFile().getParentFile();
+			if (options.sourcepath() != null) {
+				for (String f : options.sourcepath()) {
+					b.addSourcepath(getFile(f));
+				}
 			}
 
-			String prebuild = builder.getProperty("-prebuild");
-			if (prebuild != null)
-				prebuild(prebuild, properties.getParentFile(), classpath, sourcepath, output,
-						eclipse, workspace, options, building);
+			if (options.sources())
+				b.setSources(true);
 
-			doEclipse(builder, properties, classpath, sourcepath, eclipse, workspace);
+			if (options.eclipse()) {
+				EclipseClasspath ep = new EclipseClasspath(this, getBase().getParentFile(),
+						getBase());
 
-			if ((options & BUILD_SOURCES) != 0)
-				builder.getProperties().setProperty("-sources", "true");
+				b.addClasspath(ep.getClasspath());
+				b.addClasspath(ep.getBootclasspath());
+				b.addSourcepath(ep.getSourcepath());
+			}
 
-			if (failok)
-				builder.setProperty(Analyzer.FAIL_OK, "true");
-			Jar jar = builder.build();
-			getInfo(builder);
-			if (getErrors().size() > 0 && !failok)
-				return;
+			Jar jar = b.build();
 
-			String name = builder.getBsn() + DEFAULT_JAR_EXTENSION;
-
-			if (output.isDirectory())
-				output = new File(output, name);
-
-			output.getParentFile().mkdirs();
-
-			if ((options & BUILD_POM) != 0) {
+			File outputFile = b.getOutputFile(options.output());
+			
+			if (options.pom()) {
 				Resource r = new PomFromManifest(jar.getManifest());
 				jar.putResource("pom.xml", r);
 				String path = output.getName().replaceAll("\\.jar$", ".pom");
@@ -717,113 +768,173 @@ public class bnd extends Processor {
 					out.close();
 				}
 			}
-			jar.setName(output.getName());
 
-			String msg = "";
-			if (!output.exists() || output.lastModified() <= jar.lastModified()
-					|| (options & BUILD_FORCE) != 0) {
-				jar.write(output);
-			} else {
-				msg = "(not modified)";
+			getInfo(b, b.getPropertiesFile().getName());
+			if ( isOk() ) {
+				b.save(outputFile,options.force());
 			}
-			statistics(jar, output, msg);
-		} finally {
-			builder.close();
+			b.close();
 		}
 	}
 
-	private void prebuild(String prebuild, File base, File[] classpath, File[] sourcepath,
-			File output, String eclipse2, File workspace, int options, Set<File> building)
-			throws Exception {
+	// Find the build order
+	// by recursively passing
+	// through the builders.
+	private void prebuild(List<String> set, List<String> order, List<Builder> builders, String s)
+			throws IOException {
+		if (order.contains(s)) // Already done
+			return;
 
-		// Force the output a directory
-		if (output.isFile())
-			output = output.getParentFile();
+		if (set.contains(s))
+			error("Cyclic -prebuild dependency %s from %s", s, set);
 
-		Collection<String> parts = Processor.split(prebuild);
-		for (String part : parts) {
-			File f = new File(part);
-			if (!f.exists())
-				f = new File(base, part);
-			if (!f.exists()) {
-				error("Trying to build a non-existent file: " + parts);
-				continue;
-			}
+		Builder b = new Builder(this);
+		b.setProperties(getFile(s));
+
+		String prebuild = b.get("prebuild");
+		if (prebuild != null) {
+			set.add(s);
 			try {
-				doBuild(f, classpath, sourcepath, output, eclipse2, workspace, options, building);
-			} catch (Exception e) {
-				error("Trying to build: " + part + " " + e);
+				Collection<String> parts = split(prebuild);
+				for (String p : parts) {
+					prebuild(set, order, builders, p);
+				}
+			} finally {
+				set.remove(s);
 			}
 		}
+		order.add(s);
+		builders.add(b);
 	}
 
-	private void statistics(Jar jar, File output, String msg) {
-		out.println(jar.getName() + " " + jar.getResources().size() + " " + output.length() + msg);
+
+	/**
+	 * View files from JARs
+	 * 
+	 * We parse the commandline and print each file on it.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
+	 */
+	interface viewOptions extends Options {
+		String charset();
+	}
+
+	public void _view(viewOptions options) throws Exception {
+		String charset = "UTF-8";
+		if (options.charset() != null)
+			charset = options.charset();
+
+		if (options._().isEmpty()) {
+			error("Need a jarfile as source");
+			return;
+		}
+		List<String> args = options._();
+		File file = getFile(args.remove(0));
+		if (!file.isFile()) {
+			error("File does not exist %s", file);
+			return;
+		}
+
+		Jar jar = new Jar(file);
+
+		if (args.isEmpty())
+			args.add("*");
+
+		Instructions instructions = new Instructions(args);
+		Collection<String> selected = instructions.select(jar.getResources().keySet());
+		for (String selection : selected) {
+			Resource r = jar.getResource(selection);
+
+			if (selection.endsWith(".MF")) {
+				Manifest m = new Manifest(r.openInputStream());
+				printManifest(m);
+			} else if (selection.endsWith(".class")) {
+				ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
+				clsd.dump(out);
+			} else {
+				InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
+				IO.copy(isr, out);
+			}
+		}
 	}
 
 	/**
-	 * @param properties
-	 * @param classpath
-	 * @param eclipse
-	 * @return
-	 * @throws IOException
+	 * Wrap a jar to a bundle.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
-	void doEclipse(Builder builder, File properties, File[] classpath, File sourcepath[],
-			String eclipse, File workspace) throws IOException {
-		if (eclipse != null) {
-			File project = new File(workspace, eclipse).getAbsoluteFile();
-			if (project.exists() && project.isDirectory()) {
-				try {
+	interface wrapOptions extends Options {
+		String output();
 
-					EclipseClasspath path = new EclipseClasspath(this, project.getParentFile(),
-							project);
-					List<File> newClasspath = Create.copy(Arrays.asList(classpath));
-					newClasspath.addAll(path.getClasspath());
-					classpath = (File[]) newClasspath.toArray(classpath);
+		String properties();
 
-					List<File> newSourcepath = Create.copy(Arrays.asList(sourcepath));
-					newSourcepath.addAll(path.getSourcepath());
-					sourcepath = (File[]) newSourcepath.toArray(sourcepath);
-				} catch (Exception e) {
-					if (eclipse.length() > 0)
-						error("Eclipse specified (" + eclipse + ") but getting error processing: "
-								+ e);
+		List<String> classpath();
+
+		boolean force();
+
+		String bsn();
+
+		Version version();
+	}
+
+	public void _wrap(wrapOptions options) throws Exception {
+		List<File> classpath = Create.list();
+		File properties = getBase();
+
+		if (options.properties() != null) {
+			properties = getFile(options.properties());
+		}
+
+		for (String cp : options.classpath()) {
+			classpath.add(getFile(cp));
+		}
+
+		for (String j : options._()) {
+			File file = getFile(j);
+			if (!file.isFile()) {
+				error("File does not exist %s", file);
+				continue;
+			}
+			
+			Analyzer wrapper = new Analyzer(this);
+			try {
+				wrapper.use(this);
+				addClose(wrapper);
+
+				wrapper.setJar(file);
+				if (options.bsn() != null)
+					wrapper.setBundleSymbolicName(options.bsn());
+
+				if (options.version() != null)
+					wrapper.setBundleVersion(options.version());
+
+				File outputFile = wrapper.getOutputFile(options.output());
+
+				File p = properties;
+				if (p.isDirectory()) {
+					p = getFile(p, file.getName());
 				}
-			} else {
-				if (eclipse.length() > 0)
-					error("Eclipse specified (" + eclipse + ") but no project directory found");
+				if (p.isFile())
+					wrapper.setProperties(p);
+
+				wrapper.calcManifest();
+
+				if (wrapper.isOk()) {
+					wrapper.save(outputFile, options.force());
+				}
+			} finally {
+				wrapper.close();
 			}
 		}
-		builder.setClasspath(classpath);
-		builder.setSourcepath(sourcepath);
 	}
 
-	private void doHelp() {
-		doHelp(new String[0], 0);
-	}
-
-	private void doHelp(String[] args, int i) {
-		if (args.length <= i) {
-			out.println("bnd -failok? -exceptions? ( wrap | print | build | eclipse | xref | view )?");
-			out.println("See http://www.aQute.biz/Code/Bnd");
-		} else {
-			while (args.length > i) {
-				if ("wrap".equals(args[i])) {
-					out.println("bnd wrap (-output <file|dir>)? (-properties <file>)? <jar-file>");
-				} else if ("print".equals(args[i])) {
-					out.println("bnd wrap -verify? -manifest? -list? -eclipse <jar-file>");
-				} else if ("build".equals(args[i])) {
-					out.println("bnd build (-output <file|dir>)? (-classpath <list>)? (-sourcepath <list>)? ");
-					out.println("    -eclipse? -noeclipse? -sources? <bnd-file>");
-				} else if ("eclipse".equals(args[i])) {
-					out.println("bnd eclipse");
-				} else if ("view".equals(args[i])) {
-					out.println("bnd view <file> <resource-names>+");
-				}
-				i++;
-			}
-		}
-	}
+	/**
+	 * Print out a JAR
+	 */
 
 	final static int	VERIFY		= 1;
 
@@ -840,47 +951,67 @@ public class bnd extends Processor {
 
 	static final int	HEX			= 0;
 
-	private void doPrint(String[] args, int i) throws Exception {
-		int options = 0;
+	interface printOptions extends Options {
+		boolean verify();
 
-		for (; i < args.length; i++) {
-			if ("-verify".startsWith(args[i]))
-				options |= VERIFY;
-			else if ("-manifest".startsWith(args[i]))
-				options |= MANIFEST;
-			else if ("-list".startsWith(args[i]))
-				options |= LIST;
-			else if ("-eclipse".startsWith(args[i]))
-				options |= ECLIPSE;
-			else if ("-impexp".startsWith(args[i]))
-				options |= IMPEXP;
-			else if ("-uses".startsWith(args[i]))
-				options |= USES;
-			else if ("-usedby".startsWith(args[i]))
-				options |= USEDBY;
-			else if ("-component".startsWith(args[i]))
-				options |= COMPONENT;
-			else if ("-metatype".startsWith(args[i]))
-				options |= METATYPE;
-			else if ("-all".startsWith(args[i]))
-				options = -1;
-			else {
-				if (args[i].startsWith("-"))
-					error("Invalid option for print: " + args[i]);
-				else
-					doPrint(args[i], options);
-			}
-		}
+		boolean manifest();
+
+		boolean list();
+
+		boolean eclipse();
+
+		boolean impexp();
+
+		boolean uses();
+
+		boolean by();
+
+		boolean component();
+
+		boolean typemeta();
+
+		boolean hex();
 	}
 
-	public void doPrint(String string, int options) throws Exception {
-		File file = new File(string);
-		if (!file.exists())
-			error("File to print not found: " + string);
-		else {
-			if (options == 0)
-				options = VERIFY | MANIFEST | IMPEXP | USES;
-			doPrint(file, options);
+	public void _print(printOptions options) throws Exception {
+		for (String s : options._()) {
+			File file = getFile(s);
+			if (!file.isFile()) {
+				error("File %s does not exist", file);
+				continue;
+			}
+			int opts = 0;
+			if (options.verify())
+				opts |= VERIFY;
+
+			if (options.manifest())
+				opts |= MANIFEST;
+
+			if (options.list())
+				opts |= LIST;
+
+			if (options.eclipse())
+				opts |= ECLIPSE;
+
+			if (options.impexp())
+				opts |= IMPEXP;
+
+			if (options.uses())
+				opts |= USES;
+
+			if (options.by())
+				opts |= USEDBY;
+
+			if (options.component())
+				opts |= COMPONENT;
+
+			if (options.typemeta())
+				opts |= METATYPE;
+
+			if (opts == 0)
+				opts = MANIFEST;
+
+			doPrint(file, opts);
 		}
 	}
 
@@ -900,14 +1031,7 @@ public class bnd extends Processor {
 					warning("JAR has no manifest " + file);
 				else {
 					out.println("[MANIFEST " + jar.getName() + "]");
-					SortedSet<String> sorted = new TreeSet<String>();
-					for (Object element : manifest.getMainAttributes().keySet()) {
-						sorted.add(element.toString());
-					}
-					for (String key : sorted) {
-						Object value = manifest.getMainAttributes().getValue(key);
-						format("%-40s %-40s\r\n", new Object[] { key, value });
-					}
+					printManifest(manifest);
 				}
 				out.println();
 			}
@@ -915,7 +1039,7 @@ public class bnd extends Processor {
 				out.println("[IMPEXP]");
 				Manifest m = jar.getManifest();
 				Domain domain = Domain.domain(m);
-				
+
 				if (m != null) {
 					Parameters imports = domain.getImportPackage();
 					Parameters exports = domain.getExportPackage();
@@ -941,12 +1065,12 @@ public class bnd extends Processor {
 				analyzer.analyze();
 				if ((options & USES) != 0) {
 					out.println("[USES]");
-					printMapOfSets(analyzer.getUses());
+					printMultiMap(analyzer.getUses());
 					out.println();
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					printMapOfSets(analyzer.getUses().transpose());
+					printMultiMap(analyzer.getUses().transpose());
 				}
 			}
 
@@ -993,6 +1117,20 @@ public class bnd extends Processor {
 			}
 		} finally {
 			jar.close();
+		}
+	}
+
+	/**
+	 * @param manifest
+	 */
+	void printManifest(Manifest manifest) {
+		SortedSet<String> sorted = new TreeSet<String>();
+		for (Object element : manifest.getMainAttributes().keySet()) {
+			sorted.add(element.toString());
+		}
+		for (String key : sorted) {
+			Object value = manifest.getMainAttributes().getValue(key);
+			format("%-40s %-40s\r\n", new Object[] { key, value });
 		}
 	}
 
@@ -1078,7 +1216,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	void printMapOfSets(Map<? extends Comparable<?>, ? extends Collection<? extends Comparable>> map) {
+	<T extends Comparable<?>> void printMultiMap(Map<T, ? extends Collection<T>> map) {
 		SortedList keys = new SortedList<Object>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
@@ -1112,118 +1250,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * View files from JARs
 	 * 
-	 * We parse the commandline and print each file on it.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * @param msg
+	 * @param ports
 	 */
-	private void doView(String[] args, int i) throws Exception {
-		int options = 0;
-		String charset = "UTF-8";
-		File output = null;
-
-		for (; i < args.length; i++) {
-			if ("-charset".startsWith(args[i]))
-				charset = args[++i];
-			else if ("-output".startsWith(args[i])) {
-				output = new File(args[++i]);
-			} else
-				break;
-		}
-
-		if (i >= args.length) {
-			error("Insufficient arguments for view, no JAR");
-			return;
-		}
-		String jar = args[i++];
-		if (i >= args.length) {
-			error("No Files to view");
-			return;
-		}
-
-		doView(jar, args, i, charset, options, output);
-	}
-
-	private void doView(String jar, String[] args, int i, String charset, int options, File output) {
-		File path = new File(jar).getAbsoluteFile();
-		File dir = path.getParentFile();
-		if (dir == null) {
-			dir = new File("");
-		}
-		if (!dir.exists()) {
-			error("No such file: " + dir.getAbsolutePath());
-			return;
-		}
-
-		String name = path.getName();
-		if (name == null)
-			name = "META-INF/MANIFEST.MF";
-
-		Instruction instruction = new Instruction(path.getName());
-
-		File[] children = dir.listFiles();
-		for (int j = 0; j < children.length; j++) {
-			String base = children[j].getName();
-			// out.println("Considering: " +
-			// children[j].getAbsolutePath() + " " +
-			// instruction.getPattern());
-			if (instruction.matches(base) ^ instruction.isNegated()) {
-				for (; i < args.length; i++) {
-					doView(children[j], args[i], charset, options, output);
-				}
-			}
-		}
-	}
-
-	private void doView(File file, String resource, String charset, int options, File output) {
-		// out.println("doView:" + file.getAbsolutePath() );
-		try {
-			Instruction instruction = new Instruction(resource);
-			FileInputStream fin = new FileInputStream(file);
-			ZipInputStream in = new ZipInputStream(fin);
-			ZipEntry entry = in.getNextEntry();
-			while (entry != null) {
-				// out.println("view " + file + ": "
-				// + instruction.getPattern() + ": " + entry.getName()
-				// + ": " + output + ": "
-				// + instruction.matches(entry.getName()));
-				if (instruction.matches(entry.getName()) ^ instruction.isNegated())
-					doView(entry.getName(), in, charset, options, output);
-				in.closeEntry();
-				entry = in.getNextEntry();
-			}
-			in.close();
-			fin.close();
-		} catch (Exception e) {
-			out.println("Can not process: " + file.getAbsolutePath());
-			e.printStackTrace();
-		}
-	}
-
-	private void doView(String name, ZipInputStream in, String charset, int options, File output)
-			throws Exception {
-		int n = name.lastIndexOf('/');
-		name = name.substring(n + 1);
-
-		InputStreamReader rds = new InputStreamReader(in, charset);
-		OutputStreamWriter wrt = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
-		if (output != null)
-			if (output.isDirectory())
-				wrt = new FileWriter(new File(output, name));
-			else
-				wrt = new FileWriter(output);
-
-		IO.copy(rds, wrt);
-		// rds.close(); also closes the stream which closes our zip it
-		// seems
-		if (output != null)
-			wrt.close();
-		else
-			wrt.flush();
-	}
 
 	private void print(String msg, Map<?, ? extends Map<?, ?>> ports) {
 		if (ports.isEmpty())
@@ -1313,137 +1343,38 @@ public class bnd extends Processor {
 		out.print(sb);
 	}
 
-	private void doWrap(String[] args, int i) throws Exception {
-		int options = 0;
-		File properties = null;
-		File output = null;
-		File classpath[] = null;
-		for (; i < args.length; i++) {
-			if ("-output".startsWith(args[i]))
-				output = new File(args[++i]);
-			else if ("-properties".startsWith(args[i]))
-				properties = new File(args[++i]);
-			else if ("-classpath".startsWith(args[i])) {
-				classpath = getClasspath(args[++i]);
-			} else {
-				File bundle = new File(args[i]);
-				doWrap(properties, bundle, output, classpath, options, null);
-			}
-		}
-	}
-
-	public boolean doWrap(File properties, File bundle, File output, File classpath[], int options,
-			Map<String,String> additional) throws Exception {
-		if (!bundle.exists()) {
-			error("No such file: " + bundle.getAbsolutePath());
-			return false;
-		} else {
-			Analyzer analyzer = new Analyzer();
-			try {
-				analyzer.setPedantic(isPedantic());
-				analyzer.setJar(bundle);
-				Jar dot = analyzer.getJar();
-
-				if (properties != null) {
-					analyzer.setProperties(properties);
-				}
-				if (additional != null)
-					analyzer.putAll(additional, false);
-
-				if (analyzer.getProperty(Analyzer.IMPORT_PACKAGE) == null)
-					analyzer.setProperty(Analyzer.IMPORT_PACKAGE, "*;resolution:=optional");
-
-				if (analyzer.getProperty(Analyzer.BUNDLE_SYMBOLICNAME) == null) {
-					Pattern p = Pattern.compile("(" + Verifier.SYMBOLICNAME.pattern()
-							+ ")(-[0-9])?.*\\.jar");
-					String base = bundle.getName();
-					Matcher m = p.matcher(base);
-					base = "Untitled";
-					if (m.matches()) {
-						base = m.group(1);
-					} else {
-						error("Can not calculate name of output bundle, rename jar or use -properties");
-					}
-					analyzer.setProperty(Analyzer.BUNDLE_SYMBOLICNAME, base);
-				}
-
-				if (analyzer.getProperty(Analyzer.EXPORT_PACKAGE) == null) {
-					String export = analyzer.calculateExportsFromContents(dot);
-					analyzer.setProperty(Analyzer.EXPORT_PACKAGE, export);
-				}
-
-				if (classpath != null)
-					analyzer.setClasspath(classpath);
-
-				analyzer.mergeManifest(dot.getManifest());
-
-				//
-				// Cleanup the version ..
-				//
-				String version = analyzer.getProperty(Analyzer.BUNDLE_VERSION);
-				if (version != null) {
-					version = Builder.cleanupVersion(version);
-					analyzer.setProperty(Analyzer.BUNDLE_VERSION, version);
-				}
-
-				if (output == null)
-					if (properties != null)
-						output = properties.getAbsoluteFile().getParentFile();
-					else
-						output = bundle.getAbsoluteFile().getParentFile();
-
-				String path = bundle.getName();
-				if (path.endsWith(DEFAULT_JAR_EXTENSION))
-					path = path.substring(0, path.length() - DEFAULT_JAR_EXTENSION.length())
-							+ DEFAULT_BAR_EXTENSION;
-				else
-					path = bundle.getName() + DEFAULT_BAR_EXTENSION;
-
-				if (output.isDirectory())
-					output = new File(output, path);
-
-				analyzer.calcManifest();
-				Jar jar = analyzer.getJar();
-				getInfo(analyzer);
-				statistics(jar, output, "");
-				File f = File.createTempFile("tmpbnd", ".jar");
-				f.deleteOnExit();
-				try {
-					jar.write(f);
-					jar.close();
-					if (!f.renameTo(output)) {
-						IO.copy(f, output);
-					}
-				} finally {
-					f.delete();
-				}
-				return getErrors().size() == 0;
-			} finally {
-				analyzer.close();
-			}
-		}
-	}
-
 	public void setOut(PrintStream out) {
 		this.out = out;
 	}
 
 	public Project getProject() throws Exception {
-		if (project != null)
-			return project;
+		return getProject(null);
+	}
 
-		try {
-			project = Workspace.getProject(getBase());
-			if (project == null)
-				return null;
+	public Project getProject(String where) throws Exception {
+		if (where == null || where.equals("."))
+			where = Project.BNDFILE;
 
-			if (!project.isValid())
-				return null;
-
-			return project;
-		} catch (IllegalArgumentException e) {
-			return null;
+		File f = getFile(where);
+		if (f.isDirectory()) {
+			f = new File(f, Project.BNDFILE);
 		}
+
+		if (f.isFile()) {
+			File projectDir = f.getParentFile();
+			File workspaceDir = projectDir.getParentFile();
+			Workspace ws = Workspace.getWorkspace(workspaceDir);
+			Project project = ws.getProject(projectDir.getName());
+			if (project.isValid()) {
+				return project;
+			}
+		}
+		if (where.equals(Project.BNDFILE))
+			error("The current directory is not a project directory: %s", getBase());
+		else
+			error("Project not found: " + f);
+
+		return null;
 	}
 
 	/**
@@ -1453,28 +1384,24 @@ public class bnd extends Processor {
 	 * @param i
 	 * @throws Exception
 	 */
-	public void debug(String args[], int i) throws Exception {
-		Project project = getProject();
-		out.println("Project: " + project);
-		Properties p = project.getFlattenedProperties();
-		for (Object k : p.keySet()) {
-			String key = (String) k;
-			String s = p.getProperty(key);
-			Collection<String> l = null;
+	interface debugOptions extends Options {
+		String project();
+	}
 
-			if (s.indexOf(',') > 0)
-				l = split(s);
-			else if (s.indexOf(':') > 0)
-				l = split(s, "\\s*:\\s*");
-			if (l != null) {
-				String del = key;
-				for (String ss : l) {
-					out.printf("%-40s %s\n", del, ss);
-					del = "";
-				}
-			} else
-				out.printf("%-40s %s\n", key, s);
+	public void _debug(debugOptions options) throws Exception {
+		Processor project = getProject(options.project());
+		if (project == null)
+			project = this;
+
+		MultiMap<String, String> table = new MultiMap<String, String>();
+
+		for (Iterator<String> i = project.iterator(); i.hasNext();) {
+			String key = i.next();
+			String s = project.get(key);
+			Collection<String> set = split(s);
+			table.addAll(key, set);
 		}
+		printMultiMap(table);
 	}
 
 	/**
