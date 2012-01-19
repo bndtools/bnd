@@ -330,8 +330,10 @@ public class ClassDumper {
             throws IOException {
         int class_index = in.readUnsignedShort();
         int method_index = in.readUnsignedShort();
-        ps.printf("%-30s %s(#%d/c) %s(#%d)\n", indent + "enclosing method",
-                pool[((Integer) pool[class_index]).intValue()], class_index,
+        ps.printf("%-30s %s(#%d/c) %s\n", //
+        		indent + "enclosing method", //
+                pool[((Integer) pool[class_index]).intValue()], //
+                class_index, //
                 (method_index == 0 ? "<>" : pool[method_index]));
     }
 
