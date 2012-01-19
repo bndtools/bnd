@@ -111,7 +111,9 @@ public class BaseTask extends Task implements Reporter {
     public void setTrace(boolean trace) {
         this.trace = trace;
     }
-
+    public boolean isTrace() {
+    	return trace;
+    }
     public void trace(String s, Object... args) {
         System.out.printf("# "+s+"\n", args);
     }
