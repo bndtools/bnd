@@ -71,18 +71,7 @@ import java.util.*;
 		}
 	}
 
-	public SortedList(Iterator<? extends Comparable<?>> x) {
-		this((Collection<? extends Comparable<?>>) collect(x));
-	}
-
-	private static <T> Collection<T> collect(Iterator<? extends Comparable<?>> x) {
-		Set<T> set = new HashSet<T>();
-		while(x.hasNext())
-			set.add((T) x.next());
-		
-		return set;
-	}
-
+	
 	public SortedList(Collection<? extends Comparable<?>> x) {
 		this((Collection<T>) x, 0, x.size(), (Comparator<T>)comparator);
 	}
@@ -381,4 +370,13 @@ import java.util.*;
 		return sb.toString();
 	}
 
+
+	public static <T extends Comparable<?>> SortedList<T> fromIterator( Iterator<T> it) {
+		IteratorList<T> l = new IteratorList<T>(it);
+		return new SortedList<T>(l);
+	}
+	public static <T> SortedList<T> fromIterator( Iterator<T> it, Comparator<T> cmp) {
+		IteratorList<T> l = new IteratorList<T>(it);
+		return new SortedList<T>(l,cmp);
+	}
 }

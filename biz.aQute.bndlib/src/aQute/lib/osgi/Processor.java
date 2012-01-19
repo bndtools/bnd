@@ -681,7 +681,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (!ins.isLiteral()) {
 			// Handle a wildcard key, make sure they're sorted
 			// for consistency
-			SortedList<String> sortedList = new SortedList<String>(iterator());
+			SortedList<String> sortedList = SortedList.fromIterator(iterator());
 			StringBuilder sb = new StringBuilder();
 			String del = "";
 			for (String k : sortedList) {

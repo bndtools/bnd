@@ -119,7 +119,7 @@ public class Macro implements Replacer {
 				if (key.indexOf(';') < 0) {
 					Instruction ins = new Instruction(key);
 					if (!ins.isLiteral()) {
-						SortedList<String> sortedList = new SortedList<String>(domain.iterator());
+						SortedList<String> sortedList = SortedList.fromIterator(domain.iterator());
 						StringBuilder sb = new StringBuilder();
 						String del = "";
 						for (String k : sortedList) {
