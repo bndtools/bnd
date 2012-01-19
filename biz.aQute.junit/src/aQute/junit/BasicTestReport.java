@@ -79,7 +79,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 	}
 
 	public void endTest(Test test) {
-		activator.trace("  << %s, fails=%s", test, fails);
+		activator.trace("  << %s, fails=%s, errors=%s", test, fails, errors);
 		systemOut.capture(false);
 		systemErr.capture(false);
 		if (fails > 0) {

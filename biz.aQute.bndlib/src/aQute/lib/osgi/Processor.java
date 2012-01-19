@@ -3,17 +3,19 @@ package aQute.lib.osgi;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
-public class Processor implements Reporter, Registry, Constants, Closeable {
+public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
 	static Random					random			= new Random();
@@ -24,7 +26,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	final List<String>				errors			= new ArrayList<String>();
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	final Set<Closeable>			toBeClosed		= new HashSet<Closeable>();
+	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
 	boolean							pedantic;
@@ -78,18 +80,18 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			return parent.getTop();
 	}
 
-	public void getInfo(Processor processor, String prefix) {
+	public void getInfo(Reporter processor, String prefix) {
 		if (isFailOk())
 			addAll(warnings, processor.getErrors(), prefix);
 		else
 			addAll(errors, processor.getErrors(), prefix);
 		addAll(warnings, processor.getWarnings(), prefix);
 
-		processor.errors.clear();
-		processor.warnings.clear();
+		processor.getErrors().clear();
+		processor.getWarnings().clear();
 	}
 
-	public void getInfo(Processor processor) {
+	public void getInfo(Reporter processor) {
 		getInfo(processor, "");
 	}
 
@@ -160,44 +162,23 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return errors;
 	}
 
-	public Map<String, Map<String, String>> parseHeader(String value) {
-		return parseHeader(value, this);
-	}
-
 	/**
 	 * Standard OSGi header parser.
 	 * 
 	 * @param value
 	 * @return
 	 */
-	static public Map<String, Map<String, String>> parseHeader(String value, Processor logger) {
-		return OSGiHeader.parseHeader(value, logger);
+	static public Parameters parseHeader(String value, Processor logger) {
+		return new Parameters(value, logger);
 	}
 
-	Map<String, Map<String, String>> getClauses(String header) {
-		return parseHeader(getProperty(header));
+	public Parameters parseHeader(String value) {
+		return new Parameters(value, this);
 	}
 
 	public void addClose(Closeable jar) {
+		assert jar != null;
 		toBeClosed.add(jar);
-	}
-
-	/**
-	 * Remove all entries from a map that start with a specific prefix
-	 * 
-	 * @param <T>
-	 * @param source
-	 * @param prefix
-	 * @return
-	 */
-	static <T> Map<String, T> removeKeys(Map<String, T> source, String prefix) {
-		Map<String, T> temp = new TreeMap<String, T>(source);
-		for (Iterator<String> p = temp.keySet().iterator(); p.hasNext();) {
-			String pack = (String) p.next();
-			if (pack.startsWith(prefix))
-				p.remove();
-		}
-		return temp;
 	}
 
 	public void progress(String s, Object... args) {
@@ -210,6 +191,13 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
+	}
+	
+	public void use(Processor reporter) {
+		setPedantic(reporter.isPedantic());
+		setTrace(reporter.isTrace());
+		setBase(reporter.getBase());
+		setFailOk(reporter.isFailOk());
 	}
 
 	public static File getFile(File base, String file) {
@@ -296,8 +284,8 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param spe
 	 */
 	protected void loadPlugins(Set<Object> list, String spe) {
-		Map<String, Map<String, String>> plugins = parseHeader(spe);
-		for (Map.Entry<String, Map<String, String>> entry : plugins.entrySet()) {
+		Parameters plugins = new Parameters(spe);
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String key = (String) entry.getKey();
 
 			try {
@@ -354,7 +342,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param plugin
 	 * @param entry
 	 */
-	protected <T> T customize(T plugin, Map<String, String> map) {
+	protected <T> T customize(T plugin, Attrs map) {
 		if (plugin instanceof Plugin) {
 			if (map != null)
 				((Plugin) plugin).setProperties(map);
@@ -493,6 +481,12 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		setProperties(p);
 	}
 
+	public void addProperties(Map<?,?> properties) {
+		for ( Entry<?, ?> entry : properties.entrySet()) {
+			setProperty( entry.getKey().toString(), entry.getValue()+"");
+		}
+	}
+	
 	public synchronized void addIncluded(File file) {
 		if (included == null)
 			included = new ArrayList<File>();
@@ -516,7 +510,7 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		if (includes != null) {
 			includes = getReplacer().process(includes);
 			p.remove(INCLUDE);
-			Collection<String> clauses = parseHeader(includes).keySet();
+			Collection<String> clauses = new Parameters(includes).keySet();
 
 			for (String value : clauses) {
 				boolean fileMustExist = true;
@@ -682,6 +676,30 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 */
 	public String getProperty(String key, String deflt) {
 		String value = null;
+
+		Instruction ins = new Instruction(key);
+		if (!ins.isLiteral()) {
+			// Handle a wildcard key, make sure they're sorted
+			// for consistency
+			SortedList<String> sortedList = new SortedList<String>(iterator());
+			StringBuilder sb = new StringBuilder();
+			String del = "";
+			for (String k : sortedList) {
+				if (ins.matches(k)) {
+					String v = getProperty(k, null);
+					if (v != null) {
+						sb.append(del);
+						del = ",";
+						sb.append(v);
+					}
+				}
+			}
+			if (sb.length() == 0)
+				return deflt;
+
+			return sb.toString();
+		}
+
 		Processor source = this;
 
 		if (filter != null && filter.contains(key)) {
@@ -755,111 +773,25 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	}
 
 	/**
-	 * Merge the attributes of two maps, where the first map can contain
-	 * wildcarded names. The idea is that the first map contains patterns (for
-	 * example *) with a set of attributes. These patterns are matched against
-	 * the found packages in actual. If they match, the result is set with the
-	 * merged set of attributes. It is expected that the instructions are
-	 * ordered so that the instructor can define which pattern matches first.
-	 * Attributes in the instructions override any attributes from the actual.<br/>
-	 * 
-	 * A pattern is a modified regexp so it looks like globbing. The * becomes a
-	 * .* just like the ? becomes a .?. '.' are replaced with \\. Additionally,
-	 * if the pattern starts with an exclamation mark, it will remove that
-	 * matches for that pattern (- the !) from the working set. So the following
-	 * patterns should work:
-	 * <ul>
-	 * <li>com.foo.bar</li>
-	 * <li>com.foo.*</li>
-	 * <li>com.foo.???</li>
-	 * <li>com.*.[^b][^a][^r]</li>
-	 * <li>!com.foo.* (throws away any match for com.foo.*)</li>
-	 * </ul>
-	 * Enough rope to hang the average developer I would say.
-	 * 
-	 * 
-	 * @param instructions
-	 *            the instructions with patterns. A
-	 * @param actual
-	 *            the actual found packages
-	 */
-
-	public static Map<String, Map<String, String>> merge(String type,
-			Map<String, Map<String, String>> instructions, Map<String, Map<String, String>> actual,
-			Set<String> superfluous, Map<String, Map<String, String>> ignored) {
-		Map<String, Map<String, String>> toVisit = new HashMap<String, Map<String, String>>(actual); // we
-		// do
-		// not
-		// want
-		// to
-		// ruin
-		// our
-		// original
-		Map<String, Map<String, String>> result = newMap();
-		for (Iterator<String> i = instructions.keySet().iterator(); i.hasNext();) {
-			String instruction = i.next();
-			String originalInstruction = instruction;
-
-			Map<String, String> instructedAttributes = instructions.get(instruction);
-
-			// Check if we have a fixed (starts with '=') or a
-			// duplicate name. A fixed name is added to the output without
-			// checking against the contents. Duplicates are marked
-			// at the end. In that case we do not pick up any contained
-			// information but just add them to the output including the
-			// marker.
-			if (instruction.startsWith("=")) {
-				result.put(instruction.substring(1), instructedAttributes);
-				superfluous.remove(originalInstruction);
-				continue;
-			}
-			if (isDuplicate(instruction)) {
-				result.put(instruction, instructedAttributes);
-				superfluous.remove(originalInstruction);
-				continue;
-			}
-
-			Instruction instr = Instruction.getPattern(instruction);
-
-			for (Iterator<String> p = toVisit.keySet().iterator(); p.hasNext();) {
-				String packageName = p.next();
-
-				if (instr.matches(packageName)) {
-					superfluous.remove(originalInstruction);
-					if (!instr.isNegated()) {
-						Map<String, String> newAttributes = new HashMap<String, String>();
-						newAttributes.putAll(actual.get(packageName));
-						newAttributes.putAll(instructedAttributes);
-						result.put(packageName, newAttributes);
-					} else if (ignored != null) {
-						ignored.put(packageName, new HashMap<String, String>());
-					}
-					p.remove(); // Can never match again for another pattern
-				}
-			}
-
-		}
-		return result;
-	}
-
-	/**
 	 * Print a standard Map based OSGi header.
 	 * 
 	 * @param exports
 	 *            map { name => Map { attribute|directive => value } }
 	 * @return the clauses
+	 * @throws IOException
 	 */
-	public static String printClauses(Map<String, Map<String, String>> exports) {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<String, Map<String, String>> exports,
-			boolean checkMultipleVersions) {
-		StringBuffer sb = new StringBuffer();
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
+			boolean checkMultipleVersions) throws IOException {
+		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Iterator<String> i = exports.keySet().iterator(); i.hasNext();) {
-			String name = i.next();
-			Map<String, String> clause = exports.get(name);
+		for (Iterator<?> i = exports.keySet().iterator(); i.hasNext();) {
+			Object o = i.next();
+			String name = o.toString();
+			Map<?, ?> clause = exports.get(o);
 
 			// We allow names to be duplicated in the input
 			// by ending them with '~'. This is necessary to use
@@ -875,11 +807,9 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return sb.toString();
 	}
 
-	public static void printClause(Map<String, String> map, StringBuffer sb) {
+	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
 
-		for (Iterator<String> j = map.keySet().iterator(); j.hasNext();) {
-			String key = j.next();
-
+		for (Object key : map.keySet()) {
 			// Skip directives we do not recognize
 			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
 					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
@@ -890,14 +820,25 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 			sb.append(key);
 			sb.append("=");
 
-			boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
-					.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
-			if (!clean)
-				sb.append("\"");
-			sb.append(value);
-			if (!clean)
-				sb.append("\"");
+			quote(sb, value);
 		}
+	}
+
+	/**
+	 * @param sb
+	 * @param value
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean quote(Appendable sb, String value) throws IOException {
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
+				.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
+		if (!clean)
+			sb.append("\"");
+		sb.append(value);
+		if (!clean)
+			sb.append("\"");
+		return clean;
 	}
 
 	public Macro getReplacer() {
@@ -926,6 +867,23 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	public Properties getFlattenedProperties() {
 		return getReplacer().getFlattenedProperties();
 
+	}
+
+	/**
+	 * Return all inherited property keys
+	 * 
+	 * @return
+	 */
+	public Set<String> getPropertyKeys(boolean inherit) {
+		Set<String> result;
+		if (parent == null || !inherit) {
+			result = Create.set();
+		} else
+			result = parent.getPropertyKeys(inherit);
+		for (Object o : properties.keySet())
+			result.add(o.toString());
+
+		return result;
 	}
 
 	public boolean updateModified(long time, String reason) {
@@ -1169,6 +1127,56 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return isFailOk() || (getErrors().size() == 0);
 	}
 
+	public boolean check(String... pattern) throws IOException {
+		Set<String> missed = Create.set();
+
+		if (pattern != null) {
+			for (String p : pattern) {
+				boolean match = false;
+				Pattern pat = Pattern.compile(p);
+				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
+					if (pat.matcher(i.next()).find()) {
+						i.remove();
+						match = true;
+					}
+				}
+				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
+					if (pat.matcher(i.next()).find()) {
+						i.remove();
+						match = true;
+					}
+				}
+				if (!match)
+					missed.add(p);
+
+			}
+		}
+		if (missed.isEmpty() && isPerfect())
+			return true;
+
+		if (!missed.isEmpty())
+			System.out
+					.println("Missed the following patterns in the warnings or errors: " + missed);
+
+		report(System.out);
+		return false;
+	}
+
+	protected void report(Appendable out) throws IOException {
+		if (errors.size() > 0) {
+			out.append("-----------------\nErrors\n");
+			for (int i = 0; i < errors.size(); i++) {
+				out.append(String.format("%03d: %s\n", i, errors.get(i)));
+			}
+		}
+		if (warnings.size() > 0) {
+			out.append(String.format("-----------------\nWarnings\n"));
+			for (int i = 0; i < warnings.size(); i++) {
+				out.append(String.format("%03d: %s\n", i, warnings.get(i)));
+			}
+		}
+	}
+
 	public boolean isPerfect() {
 		return getErrors().size() == 0 && getWarnings().size() == 0;
 	}
@@ -1239,11 +1247,12 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 	 * @param clazz
 	 * @return
 	 */
-	public static Map<String, String> doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
-		if (attrs == null || attrs.length == 0)
-			return Collections.emptyMap();
+	public static Attrs doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
+		Attrs map = new Attrs();
 
-		Map<String, String> map = newMap();
+		if (attrs == null || attrs.length == 0)
+			return map;
+
 		for (Object a : attrs) {
 			String attr = (String) a;
 			int n = attr.indexOf("=");
@@ -1423,5 +1432,82 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 
 	public List<File> getIncluded() {
 		return included;
+	}
+
+	/**
+	 * Overrides for the Domain class
+	 */
+	@Override public String get(String key) {
+		return getProperty(key);
+	}
+
+	@Override public String get(String key, String deflt) {
+		return getProperty(key, deflt);
+	}
+
+	@Override public void set(String key, String value) {
+		getProperties().setProperty(key, value);
+	}
+
+	@Override public Iterator<String> iterator() {
+		Set<String> keys = keySet();
+		final Iterator<String> it = keys.iterator();
+
+		return new Iterator<String>() {
+			String	current;
+
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			public String next() {
+				return current = it.next().toString();
+			}
+
+			public void remove() {
+				getProperties().remove(current);
+			}
+		};
+	}
+
+	public Set<String> keySet() {
+		Set<String> set;
+		if (parent == null)
+			set = Create.set();
+		else
+			set = parent.keySet();
+
+		for (Object o : properties.keySet())
+			set.add(o.toString());
+
+		return set;
+	}
+
+	/**
+	 * Printout of the status of this processor for toString()
+	 */
+
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			report(sb);
+			return sb.toString();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Utiltity to replace an extension
+	 * @param s
+	 * @param extension
+	 * @param newExtension
+	 * @return
+	 */
+	public String replaceExtension(String s, String extension, String newExtension) {
+		if ( s.endsWith(extension)) 
+			s = s.substring(0, s.length()-extension.length());
+		
+		return s+newExtension;
 	}
 }

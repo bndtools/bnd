@@ -150,7 +150,7 @@ public class Filter {
         abstract Object getProp(String key);
 
         private String getValue() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int len = tail.length();
             int ix = 0;
             label: for (; ix < len; ix++) {
@@ -309,7 +309,7 @@ public class Filter {
     }
 
     String fixupString(String s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int len = s.length();
         boolean isStart = true;
         boolean isWhite = false;

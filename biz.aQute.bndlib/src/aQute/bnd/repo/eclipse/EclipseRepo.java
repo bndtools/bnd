@@ -7,6 +7,7 @@ import java.util.jar.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
@@ -14,7 +15,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     File                             root;
     Reporter                         reporter;
     String                           name;
-    Map<String, Map<String, String>> index;
+    Parameters index;
 
     public static String             LOCATION = "location";
     public static String             NAME     = "name";
@@ -45,7 +46,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         }
     }
 
-    Map<String, Map<String, String>> buildIndex() throws Exception {
+    Parameters buildIndex() throws Exception {
         File index = new File(root, "bnd.index").getAbsoluteFile();
         File[] plugins = new File(root, "plugins").listFiles();
 
@@ -54,7 +55,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             if (f.isFile()) {
                 if (f.lastModified() > index.lastModified()) {
 
-                    Map<String, Map<String, String>> map = buildIndex(plugins);
+                    Parameters map = buildIndex(plugins);
                     write(index, map);
                     return map;
                 }
@@ -83,7 +84,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         return null;
     }
 
-    private void write(File index, Map<String, Map<String, String>> map)
+    private void write(File index, Map<String, ? extends Map<String, String>> map)
             throws Exception {
         String s = Processor.printClauses(map);
         index.getParentFile().mkdirs();
@@ -95,8 +96,8 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
         }
     }
 
-    private Map<String, Map<String, String>> buildIndex(File[] plugins) {
-        Map<String, Map<String, String>> map = Create.map();
+    private Parameters buildIndex(File[] plugins) {
+        Parameters map = new Parameters();
         for (File plugin : plugins) {
             try {
                 Jar jar = new Jar(plugin);
@@ -158,7 +159,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     public List<String> list(String regex) {
         Instruction pattern = null;
         if (regex != null)
-            pattern = Instruction.getPattern(regex);
+            pattern = new Instruction(regex);
 
         List<String> result = new ArrayList<String>();
         for (String f : index.keySet()) {

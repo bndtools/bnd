@@ -8,4 +8,5 @@ public interface Resource {
 	long lastModified();
 	void setExtra(String extra);
 	String getExtra();
+	long size() throws Exception;
 }

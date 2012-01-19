@@ -68,7 +68,6 @@ public class EclipseTask extends BaseTask {
     }
 
     protected void addProperty(String n, String v) {
-        // System.out.println(" Adding property: " + n + " = " + v);
         if (v != null)
             getProject().setProperty(n, v);
     }

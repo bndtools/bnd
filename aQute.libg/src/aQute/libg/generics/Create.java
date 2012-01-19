@@ -8,12 +8,24 @@ public class Create {
         return new LinkedHashMap<K,V>();
     }
 
+    public static <K,V>  Map<K, V> map(Class<K> key, Class<V> value) {
+        return Collections.checkedMap(new LinkedHashMap<K,V>(), key,value);
+    }
+
     public static <T>  List<T> list() {
         return new ArrayList<T>();
     }
 
+    public static <T>  List<T> list(Class<T> c) {
+        return Collections.checkedList(new ArrayList<T>(),c) ;
+    }
+
     public static <T>  Set<T> set() {
         return new HashSet<T>();
+    }
+
+    public static <T>  Set<T> set(Class<T> c) {
+        return Collections.checkedSet(new HashSet<T>(),c);
     }
 
     public static <T>  List<T> list(T[] source) {

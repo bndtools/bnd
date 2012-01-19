@@ -122,7 +122,7 @@ public class Signatures {
 	 * @throws Exception 
 	 */
 	public String getSignature(Class< ? > c) throws Exception {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
 		reference(sb, call(c, "getGenericSuperclass"));
 		for (Object type : (Object[]) call(c,"getGenericInterfaces")) {
@@ -143,7 +143,7 @@ public class Signatures {
 	 * @throws Exception 
 	 */
 	public String getSignature(Method m) throws Exception {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		declaration(sb, m);
 		sb.append('(');
 		for (Object type : (Object[]) call(m,"getGenericParameterTypes")) {
@@ -167,7 +167,7 @@ public class Signatures {
 	 * @throws Exception 
 	 */
 	public String getSignature(Constructor< ? > c) throws Exception {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
 		sb.append('(');
 		for (Object type : (Object[]) call(c,"getGenericParameterTypes")) {
@@ -190,7 +190,7 @@ public class Signatures {
 	 * @throws Exception 
 	 */
 	public String getSignature(Field f) throws Exception {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Object t = call(f,"getGenericType");
 		reference(sb, t);
 		return sb.toString();
@@ -214,7 +214,7 @@ public class Signatures {
 	 * @param gd
  * @throws Exception 
 	 */
-	private void declaration(StringBuffer sb, Object gd) throws Exception {
+	private void declaration(StringBuilder sb, Object gd) throws Exception {
 		Object[] typeParameters = (Object[]) call(gd,"getTypeParameters");
 		if (typeParameters.length > 0) {
 			sb.append('<');
@@ -269,7 +269,7 @@ public class Signatures {
 	 * @param t
  * @throws Exception 
 	 */
-	private void reference(StringBuffer sb, Object t) throws Exception {
+	private void reference(StringBuilder sb, Object t) throws Exception {
 
 		if ( isInstance(t.getClass(),"java.lang.reflect.ParameterizedType")) {
 			sb.append('L');
@@ -339,7 +339,7 @@ public class Signatures {
 	 * @param pt
 	 * @throws Exception 
 	 */
-	private void parameterizedType(StringBuffer sb, Object pt) throws Exception {
+	private void parameterizedType(StringBuilder sb, Object pt) throws Exception {
 		Object owner = call(pt,"getOwnerType");
 		String name = ((Class< ? >) call(pt,"getRawType")).getName()
 				.replace('.', '/');
@@ -411,7 +411,7 @@ public class Signatures {
 	 */
 
 	public String normalize(String signature) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Map<String, String> map = new HashMap<String, String>();
 		Rover rover = new Rover(signature);
 		declare(sb, map, rover);
@@ -444,7 +444,7 @@ public class Signatures {
 	 * @param rover
 	 * @param primitivesAllowed
 	 */
-	private void reference(StringBuffer sb, Map<String, String> map,
+	private void reference(StringBuilder sb, Map<String, String> map,
 			Rover rover, boolean primitivesAllowed) {
 
 		char type = rover.take();
@@ -487,7 +487,7 @@ public class Signatures {
 	 * @param map
 	 * @param rover
 	 */
-	private void body(StringBuffer sb, Map<String, String> map, Rover rover) {
+	private void body(StringBuilder sb, Map<String, String> map, Rover rover) {
 		if (rover.peek() == '<') {
 			sb.append(rover.take('<'));
 			while (rover.peek() != '>') {
@@ -528,7 +528,7 @@ public class Signatures {
 	 * @param map
 	 * @param rover
 	 */
-	private void declare(StringBuffer sb, Map<String, String> map, Rover rover) {
+	private void declare(StringBuilder sb, Map<String, String> map, Rover rover) {
 		char c = rover.peek();
 		if (c == '<') {
 			sb.append(rover.take('<'));

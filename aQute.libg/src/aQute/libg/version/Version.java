@@ -17,6 +17,7 @@ public class Version implements Comparable<Version> {
                                                        "\uFFFF");
 
     public static final Version	emptyVersion	= LOWEST;
+    public static final Version	ONE	= new Version(1,0,0);
 
     public Version() {
         this(0);
@@ -42,6 +43,7 @@ public class Version implements Comparable<Version> {
     }
 
     public Version(String version) {
+    	version = version.trim();
         Matcher m = VERSION.matcher(version);
         if (!m.matches())
             throw new IllegalArgumentException("Invalid syntax for version: "
@@ -113,7 +115,7 @@ public class Version implements Comparable<Version> {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(major);
         sb.append(".");
         sb.append(minor);
@@ -160,5 +162,9 @@ public class Version implements Comparable<Version> {
 
 		return new Version(version);
 
+    }
+    
+    public Version getWithoutQualifier() {
+    	return new Version(major,minor,micro);
     }
 }

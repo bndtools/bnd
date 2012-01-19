@@ -10,6 +10,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import aQute.lib.base64.*;
+import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 
 public class Jar implements Closeable {
@@ -132,6 +133,8 @@ public class Jar implements Closeable {
 	}
 
 	public Resource getResource(String path) {
+		if ( resources == null)
+			return null;
 		return resources.get(path);
 	}
 
@@ -186,6 +189,16 @@ public class Jar implements Closeable {
 		this.manifest = manifest;
 	}
 
+	public void setManifest(File file) throws IOException {
+		FileInputStream fin = new FileInputStream(file);
+		try {
+			Manifest m = new Manifest(fin);
+			setManifest(m);
+		} finally {
+			fin.close();
+		}
+	}
+	
 	public void write(File file) throws Exception {
 		try {
 			OutputStream out = new FileOutputStream(file);
@@ -418,7 +431,7 @@ public class Jar implements Closeable {
 		if (s.indexOf('\n') < 0)
 			return s;
 
-		StringBuffer sb = new StringBuffer(s);
+		StringBuilder sb = new StringBuilder(s);
 		for (int i = 0; i < sb.length(); i++) {
 			if (sb.charAt(i) == '\n')
 				sb.insert(++i, ' ');
@@ -636,6 +649,9 @@ public class Jar implements Closeable {
 			return null;
 
 		String s = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+		if ( s == null)
+			return null;
+		
 		Matcher matcher = BSN.matcher(s);
 		if (matcher.matches()) {
 			return matcher.group(1);
@@ -673,7 +689,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 			File f = getFile(dir, entry.getKey());
 			f.getParentFile().mkdirs();
-			copy(entry.getValue().openInputStream(), f);
+			IO.copy(entry.getValue().openInputStream(), f);
 		}
 	}
 
@@ -687,4 +703,17 @@ public class Jar implements Closeable {
 		manifest = new Manifest();
 	}
 
+	/**
+	 * Answer if the manifest was the first entry
+	 */
+
+	public boolean isManifestFirst() {
+		return manifestFirst;
+	}
+
+	public void copy(Jar srce, String path, boolean overwrite) {
+		addDirectory( srce.getDirectories().get(path), overwrite);
+	}
+
 }
+

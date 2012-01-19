@@ -8,6 +8,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class MavenDeploy implements Deploy, Plugin {
@@ -40,7 +41,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	/**
 	 */
 	public boolean deploy(Project project, Jar original) throws Exception {
-		Map<String, Map<String, String>> deploy = project.parseHeader(project
+		Parameters deploy = project.parseHeader(project
 				.getProperty(Constants.DEPLOY));
 
 		Map<String, String> maven = deploy.get(repository);
@@ -65,7 +66,7 @@ public class MavenDeploy implements Deploy, Plugin {
 			Jar src = new Jar("src");
 			try {
 				split(original, main, src);
-				Map<String, Map<String, String>> exports = project.parseHeader(manifest
+				Parameters exports = project.parseHeader(manifest
 						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				jdoc.mkdirs();
@@ -128,8 +129,8 @@ public class MavenDeploy implements Deploy, Plugin {
 		optional(command, "classifier", classifier);
 		optional(command, "pomFile", pomFile == null ? null : pomFile.getAbsolutePath());
 
-		StringBuffer stdout = new StringBuffer();
-		StringBuffer stderr = new StringBuffer();
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
 
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
@@ -158,8 +159,8 @@ public class MavenDeploy implements Deploy, Plugin {
 			command.add(packageName);
 		}
 
-		StringBuffer out = new StringBuffer();
-		StringBuffer err = new StringBuffer();
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
 		Command c = new Command();
 		c.setTrace();
 		int result = c.execute(out, err);

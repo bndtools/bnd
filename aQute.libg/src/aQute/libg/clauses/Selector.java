@@ -62,7 +62,7 @@ public class Selector {
 			negated = true;
 			string = string.substring(1);
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int c = 0; c < string.length(); c++) {
 			switch (string.charAt(c)) {
 			case '.':

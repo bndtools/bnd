@@ -4,14 +4,15 @@ import java.lang.annotation.*;
 import java.util.*;
 
 import aQute.bnd.annotation.metatype.*;
+import aQute.lib.osgi.Descriptors.TypeRef;
 
 public class Annotation {
-	String				name;
+	TypeRef				name;
 	Map<String, Object>	elements;
 	ElementType			member;
 	RetentionPolicy		policy;
 
-	public Annotation(String name, Map<String, Object> elements, ElementType member,
+	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member,
 			RetentionPolicy policy) {
 		this.name = name;
 		if ( elements == null)
@@ -22,7 +23,7 @@ public class Annotation {
 		this.policy = policy;
 	}
 
-	public String getName() {
+	public TypeRef getName() {
 		return name;
 	}
 
@@ -59,13 +60,13 @@ public class Annotation {
 		return elements.keySet();
 	}
 	@SuppressWarnings("unchecked") public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
-		String cname = Clazz.objectDescriptorToFQN(name);
+		String cname = name.getFQN();
 		Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
 		return getAnnotation(c);
 	}
 	public <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T> c)
 			throws Exception {
-		String cname = Clazz.objectDescriptorToFQN(name);
+		String cname = name.getFQN();
 		if ( ! c.getName().equals(cname))
 			return null;
 		return Configurable.createConfigurable(c, elements );

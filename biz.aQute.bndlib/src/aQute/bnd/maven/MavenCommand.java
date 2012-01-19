@@ -3,16 +3,18 @@ package aQute.bnd.maven;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.maven.support.*;
-import aQute.bnd.maven.support.Pom.*;
+import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.settings.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.command.*;
 import aQute.libg.header.*;
 
@@ -388,8 +390,8 @@ public class MavenCommand extends Processor {
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
 		System.out.println(command);
-		StringBuffer stdout = new StringBuffer();
-		StringBuffer stderr = new StringBuffer();
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
 			error("gpg signing %s failed because %s", file, "" + stdout + stderr);
@@ -450,8 +452,8 @@ public class MavenCommand extends Processor {
 			command.add(packageName);
 		}
 
-		StringBuffer out = new StringBuffer();
-		StringBuffer err = new StringBuffer();
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
 
 		System.out.println(command);
 
@@ -472,14 +474,14 @@ public class MavenCommand extends Processor {
 	 * @return
 	 */
 	private String license(Attributes attr) {
-		Map<String, Map<String, String>> map = Processor.parseHeader(
+		Parameters map = Processor.parseHeader(
 				attr.getValue(Constants.BUNDLE_LICENSE), null);
 		if (map.isEmpty())
 			return null;
 
 		StringBuilder sb = new StringBuilder();
 		String sep = "Licensed under ";
-		for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
+		for (Entry<String, Attrs> entry : map.entrySet()) {
 			sb.append(sep);
 			String key = entry.getKey();
 			String link = entry.getValue().get("link");
@@ -593,8 +595,8 @@ public class MavenCommand extends Processor {
 				pw.println(a.getClasspath());
 				a.build();
 
-				TreeSet<String> sorted = new TreeSet<String>( a.getImports().keySet());
-				for ( String p :sorted) {
+				TreeSet<PackageRef> sorted = new TreeSet<PackageRef>( a.getImports().keySet());
+				for ( PackageRef p :sorted) {
 					pw.printf("%-40s\n",p);
 				}
 //				for ( Map.Entry<String, Set<String>> entry : a.getUses().entrySet()) {

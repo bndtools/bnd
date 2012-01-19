@@ -1,130 +1,181 @@
 package aQute.lib.osgi;
 
-import java.util.*;
+import java.io.*;
 import java.util.regex.*;
 
-import aQute.libg.generics.*;
-
 public class Instruction {
-    Pattern pattern;
-    String  instruction;
-    boolean negated;
-    boolean optional;
+	
+	public static class Filter implements FileFilter {
 
-    public Instruction(String instruction, boolean negated) {
-        this.instruction = instruction;
-        this.negated = negated;
-    }
+		private Instruction instruction;
+		private boolean recursive;
+		private Pattern doNotCopy;
+		
+		public Filter (Instruction instruction, boolean recursive, Pattern doNotCopy) {
+			this.instruction = instruction;
+			this.recursive = recursive;
+			this.doNotCopy = doNotCopy;
+		}
+		public Filter (Instruction instruction, boolean recursive) {
+			this(instruction, recursive, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
+		}
+		public boolean isRecursive() {
+			return recursive;
+		}
+		public boolean accept(File pathname) {
+			if (doNotCopy != null && doNotCopy.matcher(pathname.getName()).matches()) {
+				return false;
+			}
 
-    public boolean matches(String value) {
-        return getMatcher(value).matches();
-    }
+			if (pathname.isDirectory() && isRecursive()) {
+				return true;
+			}
+			
+			if (instruction == null) {
+				return true;
+			}
+			return !instruction.isNegated() == instruction.matches(pathname.getName());
+		}
+	}
 
-    public boolean isNegated() {
-        return negated;
-    }
+	transient Pattern	pattern;
+	transient boolean	optional;
 
-    public String getPattern() {
-        return instruction;
-    }
+	final String		input;
+	final String		match;
+	final boolean		negated;
+	final boolean		duplicate;
+	final boolean		literal;
+	final boolean		any;
+	
+	public Instruction(String input) {
+		this.input = input;
+			
+		String s = Processor.removeDuplicateMarker(input);
+		duplicate = !s.equals(input);
+		
+		if (s.startsWith("!")) {
+			negated = true;
+			s = s.substring(1);
+		} else
+			negated = false;
 
-    /**
-     * Convert a string based pattern to a regular expression based pattern.
-     * This is called an instruction, this object makes it easier to handle the
-     * different cases
-     * 
-     * @param string
-     * @return
-     */
-    public static Instruction getPattern(String string) {
-        boolean negated = false;
-        if (string.startsWith("!")) {
-            negated = true;
-            string = string.substring(1);
-        }
-        StringBuffer sb = new StringBuffer();
-        for (int c = 0; c < string.length(); c++) {
-            switch (string.charAt(c)) {
-            case '.':
-                sb.append("\\.");
-                break;
-            case '*':
-                sb.append(".*");
-                break;
-            case '?':
-                sb.append(".?");
-                break;
-            default:
-                sb.append(string.charAt(c));
-                break;
-            }
-        }
-        string = sb.toString();
-        if (string.endsWith("\\..*")) {
-            sb.append("|");
-            sb.append(string.substring(0, string.length() - 4));
-        }
-        return new Instruction(sb.toString(), negated);
-    }
+		if ( input.equals("*")) {
+			any = true;
+			literal= false;
+			match= null;
+			return;
+		}
+		
+		any = false;
+		if (s.startsWith("=")) {
+			match = s.substring(1);
+			literal = true;
+		} else  {
+			boolean wildcards = false;
+			
+			StringBuilder sb = new StringBuilder();
+			loop: for (int c = 0; c < s.length(); c++) {
+				switch (s.charAt(c)) {
+				case '.':
+					// If we end in a wildcard .* then we need to
+					// also include the last full package. I.e.
+					// com.foo.* includes com.foo (unlike OSGi)
+					if ( c == s.length()-2 && '*'==s.charAt(c+1)) {
+						sb.append("(\\..*)?");
+						wildcards=true;
+						break loop;
+					}
+					else
+						sb.append("\\.");
+						
+					break;
+				case '*':
+					sb.append(".*");
+					wildcards=true;
+					break;
+				case '$':
+					sb.append("\\$");
+					break;
+				case '?':
+					sb.append(".?");
+					wildcards=true;
+					break;
+				default:
+					sb.append(s.charAt(c));
+					break;
+				}
+			}
+			
+			if ( !wildcards ) {
+				literal = true;
+				match = s;
+			} else {
+				literal = false;
+				match = sb.toString();
+			}
+		}
 
-    public String toString() {
-        return getPattern();
-    }
+		
+	}
 
-    public Matcher getMatcher(String value) {
-        if (pattern == null) {
-            pattern = Pattern.compile(instruction);
-        }
-        return pattern.matcher(value);
-    }
+	public boolean matches(String value) {
+		if (any)
+			return true;
+		
+		if (literal )
+			return match.equals(value);
+		else
+			return getMatcher(value).matches();
+	}
 
-    public int hashCode() {
-        return instruction.hashCode();
-    }
+	public boolean isNegated() {
+		return negated;
+	}
 
-    public boolean equals(Object other) {
-        return other != null && (other instanceof Instruction)
-                && instruction.equals(((Instruction) other).instruction);
-    }
+	public String getPattern() {
+		return match;
+	}
 
-    public void setOptional() {
-        optional = true;
-    }
+	public String getInput() {
+		return input;
+	}
 
-    public boolean isOptional() {
-        return optional;
-    }
+	public String toString() {
+		return input;
+	}
 
-    public static Map<Instruction, Map<String, String>> replaceWithInstruction(
-            Map<String, Map<String, String>> header) {
-        Map<Instruction, Map<String, String>> map = Processor.newMap();
-        for (Iterator<Map.Entry<String, Map<String, String>>> e = header
-                .entrySet().iterator(); e.hasNext();) {
-            Map.Entry<String, Map<String, String>> entry = e.next();
-            String pattern = entry.getKey();
-            Instruction instr = getPattern(pattern);
-            String presence = entry.getValue()
-                    .get(Constants.PRESENCE_DIRECTIVE);
-            if ("optional".equals(presence))
-                instr.setOptional();
-            map.put(instr, entry.getValue());
-        }
-        return map;
-    }
+	public Matcher getMatcher(String value) {
+		if (pattern == null) {
+			pattern = Pattern.compile(match);
+		}
+		return pattern.matcher(value);
+	}
 
-    public static <T> Collection<T> select(Collection<Instruction> matchers,
-            Collection<T> targets) {
-        Collection<T> result = Create.list();
-        outer: for (T t : targets) {
-            String s = t.toString();
-            for (Instruction i : matchers) {
-                if (i.matches(s)) {
-                    if (!i.isNegated())
-                        result.add(t);
-                    continue outer;
-                }
-            }
-        }
-        return result;
-    }
+	public void setOptional() {
+		optional = true;
+	}
+
+	public boolean isOptional() {
+		return optional;
+	}
+
+
+	public boolean isLiteral() {
+		return literal;
+	}
+
+	public String getLiteral() {
+		assert literal;
+		return match;
+	}
+
+	public boolean isDuplicate() {
+		return duplicate;
+	}
+
+	public boolean isAny() {
+		return any;
+	}
+
 }

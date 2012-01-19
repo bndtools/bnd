@@ -47,9 +47,7 @@ public class Forker<T> {
 
 					t = Thread.currentThread();
 				}
-				System.out.println("Running " + target);
 				runnable.run();
-				System.out.println("Done running " + target);
 			} catch (Exception e) {
 				exception = e;
 				e.printStackTrace();
@@ -182,7 +180,8 @@ public class Forker<T> {
 			}
 
 			for (Job job : waiting.values()) {
-				boolean x = job.dependencies.remove(done.target);
+				// boolean x =
+					job.dependencies.remove(done.target);
 				//System.out.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
 			}
 		}

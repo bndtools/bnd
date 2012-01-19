@@ -98,7 +98,7 @@ public class Base64 {
 	}
 
 	public static String encodeBase64(byte data[]) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int buf = 0;
 		int bits = 0;
 		int n = 0;

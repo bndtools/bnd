@@ -2,14 +2,19 @@ package aQute.lib.osgi;
 
 import java.io.*;
 import java.lang.annotation.*;
+import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.bnd.annotation.*;
+import aQute.lib.osgi.Descriptors.Descriptor;
+import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.generics.*;
 
 public class Clazz {
+
+	static Pattern	METHOD_DESCRIPTOR	= Pattern.compile("\\((.*)\\)(.+)");
 
 	public class ClassConstant {
 		int	cname;
@@ -24,13 +29,21 @@ public class Clazz {
 	}
 
 	public static enum JAVA {
-		UNKNOWN(Integer.MAX_VALUE), OpenJDK7(51), J2S6(50), J2SE5(49), JDK1_4(48), JDK1_3(47), JDK1_2(
-				46), JDK1_1(45);
+		JDK1_1(45, "JRE-1.1"), JDK1_2(46, "J2SE-1.2"), //
+		JDK1_3(47, "J2SE-1.3"), //
+		JDK1_4(48, "J2SE-1.4"), //
+		J2SE5(49, "J2SE-1.5"), //
+		J2SE6(50, "JavaSE-1.6"), //
+		OpenJDK7(51, "JavaSE-1.7"), //
+		UNKNOWN(Integer.MAX_VALUE, "<>")//
+		;
 
-		final int	major;
+		final int		major;
+		final String	ee;
 
-		JAVA(int major) {
+		JAVA(int major, String ee) {
 			this.major = major;
+			this.ee = ee;
 		}
 
 		static JAVA format(int n) {
@@ -55,15 +68,28 @@ public class Clazz {
 		public boolean hasEnums() {
 			return major >= J2SE5.major;
 		}
+
+		public static JAVA getJava(int major, int minor) {
+			for (JAVA j : JAVA.values()) {
+				if (j.major == major)
+					return j;
+			}
+			return UNKNOWN;
+		}
+
+		public String getEE() {
+			return ee;
+		}
 	};
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATION, RUNTIMEANNOTATIONS, CLASSANNOTATIONS
+		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS;
+
 	};
 
 	public static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
 															QUERY.IMPORTS, QUERY.NAMED,
-															QUERY.VERSION, QUERY.ANNOTATION);
+															QUERY.VERSION, QUERY.ANNOTATED);
 
 	/**
 	 * <pre>
@@ -103,14 +129,10 @@ public class Clazz {
 	// classs
 	final static int				ACC_ABSTRACT	= 0x0400;									// Declared
 
-	// abstract;
-	// may
-	// not
-	// be
-
-	// instantiated.
-
-	final static int				ACC_ENUM		= 0x04000;
+	// a thing not in the source code
+	final static int				ACC_SYNTHETIC	= 0x1000;
+	final static int				ACC_ANNOTATION	= 0x2000;
+	final static int				ACC_ENUM		= 0x4000;
 
 	static protected class Assoc {
 		Assoc(byte tag, int a, int b) {
@@ -124,70 +146,129 @@ public class Clazz {
 		int		b;
 	}
 
-	static public class FieldDef implements Comparable<FieldDef> {
-		public FieldDef(int access, String clazz, String name, String descriptor) {
+	public class Def {
+		final int		access;
+		Set<TypeRef>	annotations;
+
+		public Def(int access) {
 			this.access = access;
-			this.clazz = clazz.replace('/', '.');
-			this.name = name;
-			this.descriptor = descriptor;
 		}
 
-		final public int	access;
-		final public String	clazz;
-		final public String	name;
-		final public String	descriptor;
-		public String		signature;
-		public Object		constant;
-
-		public boolean equals(Object other) {
-			if (!(other instanceof MethodDef))
-				return false;
-
-			FieldDef m = (FieldDef) other;
-			return clazz.equals(m.clazz) && name.equals(m.name) && descriptor.equals(m.descriptor);
-		}
-
-		public int hashCode() {
-			return clazz.hashCode() ^ name.hashCode() ^ descriptor.hashCode();
-		}
-
-		public int compareTo(FieldDef o) {
-			int result = clazz.compareTo(o.clazz);
-			if (result == 0) {
-				result = name.compareTo(o.name);
-				if (result == 0) {
-					result = descriptor.compareTo(o.descriptor);
-				}
-			}
-			return result;
-		}
-
-		public String getPretty() {
-			return name;
-		}
-
-		public String toString() {
-			return getPretty();
+		public int getAccess() {
+			return access;
 		}
 
 		public boolean isEnum() {
 			return (access & ACC_ENUM) != 0;
 		}
+
+		public boolean isPublic() {
+			return Modifier.isPublic(access);
+		}
+
+		public boolean isAbstract() {
+			return Modifier.isAbstract(access);
+		}
+
+		public boolean isProtected() {
+			return Modifier.isProtected(access);
+		}
+
+		public boolean isFinal() {
+			return Modifier.isFinal(access) || Clazz.this.isFinal();
+		}
+
+		public boolean isStatic() {
+			return Modifier.isStatic(access);
+		}
+
+		public boolean isPrivate() {
+			return Modifier.isPrivate(access);
+		}
+
+		public boolean isNative() {
+			return Modifier.isNative(access);
+		}
+
+		public boolean isTransient() {
+			return Modifier.isTransient(access);
+		}
+
+		public boolean isVolatile() {
+			return Modifier.isVolatile(access);
+		}
+
+		public boolean isInterface() {
+			return Modifier.isInterface(access);
+		}
+
+		public boolean isSynthetic() {
+			return (access & ACC_SYNTHETIC) != 0;
+		}
+
+		void addAnnotation(Annotation a) {
+			if (annotations == null)
+				annotations = Create.set();
+			annotations.add(analyzer.getTypeRef(a.name.getBinary()));
+		}
+
+		public Collection<TypeRef> getAnnotations() {
+			return annotations;
+		}
 	}
 
-	static public class MethodDef extends FieldDef {
-		Pattern	METHOD_DESCRIPTOR	= Pattern.compile("\\((.*)\\)(.+)");
+	public class FieldDef extends Def {
+		final String		name;
+		final Descriptor	descriptor;
+		String				signature;
+		Object				constant;
+		boolean				deprecated;
 
-		public MethodDef(int access, String clazz, String method, String descriptor) {
-			super(access, clazz, method, descriptor);
+		public boolean isDeprecated() {
+			return deprecated;
 		}
 
-		public boolean isConstructor() {
-			return name.equals("<init>") || name.equals("<clinit>");
+		public void setDeprecated(boolean deprecated) {
+			this.deprecated = deprecated;
 		}
 
-		public String getReturnType() {
-			String use = descriptor;
+		public FieldDef(int access, String name, String descriptor) {
+			super(access);
+			this.name = name;
+			this.descriptor = analyzer.getDescriptor(descriptor);
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String toString() {
+			return getName();
+		}
+
+		public TypeRef getType() {
+			return descriptor.getType();
+		}
+
+		public TypeRef getContainingClass() {
+			return getClassName();
+		}
+
+		public Descriptor getDescriptor() {
+			return descriptor;
+		}
+
+		public void setConstant(Object o) {
+			this.constant = o;
+		}
+
+		public Object getConstant() {
+			return this.constant;
+		}
+
+		// TODO change to use proper generics
+		public String getGenericReturnType() {
+			String use = descriptor.toString();
 			if (signature != null)
 				use = signature;
 
@@ -199,102 +280,25 @@ public class Clazz {
 			return objectDescriptorToFQN(returnType);
 		}
 
-		public String getPretty() {
-
-			StringBuilder sb = new StringBuilder();
-			sb.append(descriptor.charAt(0));
-			int index = 1;
-			String del = "";
-			while (index < descriptor.length() && descriptor.charAt(index) != ')') {
-				sb.append(del);
-				index = printParameter(sb, descriptor, index);
-				del = ",";
-			}
-			sb.append(descriptor.charAt(index++));
-			StringBuilder sb2 = new StringBuilder();
-			if (isConstructor()) {
-				sb2.append(getShortName(clazz));
-				index++; // skip the V
-			} else {
-				printParameter(sb2, descriptor, index);
-				sb2.append(" ");
-				sb2.append(getShortName(clazz));
-				sb2.append(".");
-				sb2.append(name);
-			}
-			sb2.append(sb);
-			return sb2.toString();
+		public String getSignature() {
+			return signature;
 		}
 
-		private int printParameter(StringBuilder sb, CharSequence descriptor, int index) {
-			char c = descriptor.charAt(index++);
-			switch (c) {
-			case 'B':
-				sb.append("byte");
-				break;
-			case 'C':
-				sb.append("char");
-				break;
-			case 'D':
-				sb.append("double");
-				break;
-			case 'F':
-				sb.append("float");
-				break;
-			case 'I':
-				sb.append("int");
-				break;
-			case 'J':
-				sb.append("long");
-				break;
-			case 'S':
-				sb.append("short");
-				break;
-			case 'Z':
-				sb.append("boolean");
-				break;
-			case 'V':
-				sb.append("void");
-				break;
-			case 'L':
-				index = reference(sb, descriptor, index);
-				break;
+	}
 
-			case '[':
-				index = array(sb, descriptor, index);
-				break;
-			}
-			return index;
+	public class MethodDef extends FieldDef {
+		public MethodDef(int access, String method, String descriptor) {
+			super(access, method, descriptor);
 		}
 
-		private int reference(StringBuilder sb, CharSequence descriptor, int index) {
-			int n = sb.length();
-			int lastSlash = n;
-			while (index < descriptor.length() && descriptor.charAt(index) != ';') {
-				char c = descriptor.charAt(index++);
-				if (c == '/') {
-					c = '.';
-					lastSlash = sb.length() + 1;
-				}
-				sb.append(c);
-			}
-			if (lastSlash != n) {
-				sb.delete(n, lastSlash);
-			}
-			return ++index;
+		public boolean isConstructor() {
+			return name.equals("<init>") || name.equals("<clinit>");
 		}
 
-		private int array(StringBuilder sb, CharSequence descriptor, int index) {
-			int n = 1;
-			while (index < descriptor.length() && descriptor.charAt(index) == '[') {
-				index++;
-			}
-			index = printParameter(sb, descriptor, index);
-			while (n-- > 0) {
-				sb.append("[]");
-			}
-			return index;
+		public TypeRef[] getPrototype() {
+			return descriptor.getPrototype();
 		}
+
 	}
 
 	final static byte	SkipTable[]	= { 0, // 0 non existent
@@ -313,47 +317,49 @@ public class Clazz {
 			4, // 12 CONSTANT_NameAndType
 									};
 
-	boolean				isAbstract;
-	boolean				isPublic;
-	boolean				isEnum;
 	boolean				hasRuntimeAnnotations;
 	boolean				hasClassAnnotations;
 
-	String				className;
+	TypeRef				className;
 	Object				pool[];
 	int					intPool[];
-	Set<String>			imports		= Create.set();
+	Set<PackageRef>		imports		= Create.set();
 	String				path;
 	int					minor		= 0;
 	int					major		= 0;
-	int					access		= 0;
+	int					innerAccess	= -1;
+	int					accessx		= 0;
 	String				sourceFile;
-	Set<String>			xref;
+	Set<TypeRef>		xref;
 	Set<Integer>		classes;
 	Set<Integer>		descriptors;
-	Set<String>			annotations;
+	Set<TypeRef>		annotations;
 	int					forName		= 0;
 	int					class$		= 0;
-	String[]			interfaces;
-	String				zuper;
+	TypeRef[]			interfaces;
+	TypeRef				zuper;
 	ClassDataCollector	cd			= null;
 	Resource			resource;
 	FieldDef			last		= null;
+	boolean				deprecated;
 
-	public Clazz(String path, Resource resource) {
+	final Analyzer		analyzer;
+
+	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
 		this.resource = resource;
+		this.analyzer = analyzer;
 	}
 
-	public Set<String> parseClassFile() throws Exception {
+	public Set<TypeRef> parseClassFile() throws Exception {
 		return parseClassFileWithCollector(null);
 	}
 
-	public Set<String> parseClassFile(InputStream in) throws IOException {
+	public Set<TypeRef> parseClassFile(InputStream in) throws Exception {
 		return parseClassFile(in, null);
 	}
 
-	public Set<String> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
+	public Set<TypeRef> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			return parseClassFile(in, cd);
@@ -362,7 +368,7 @@ public class Clazz {
 		}
 	}
 
-	public Set<String> parseClassFile(InputStream in, ClassDataCollector cd) throws IOException {
+	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
 		DataInputStream din = new DataInputStream(in);
 		try {
 			this.cd = cd;
@@ -373,9 +379,8 @@ public class Clazz {
 		}
 	}
 
-	Set<String> parseClassFile(DataInputStream in) throws IOException {
-
-		xref = new HashSet<String>();
+	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
+		xref = new HashSet<TypeRef>();
 		classes = new HashSet<Integer>();
 		descriptors = new HashSet<Integer>();
 
@@ -387,6 +392,8 @@ public class Clazz {
 
 		minor = in.readUnsignedShort(); // minor version
 		major = in.readUnsignedShort(); // major version
+		if (cd != null)
+			cd.version(minor, major);
 		int count = in.readUnsignedShort();
 		pool = new Object[count];
 		intPool = new int[count];
@@ -456,42 +463,43 @@ public class Clazz {
 		 * Falkenberg
 		 */
 
-		int access_flags = in.readUnsignedShort(); // access
-		isAbstract = (access_flags & ACC_ABSTRACT) != 0;
-		isPublic = (access_flags & ACC_PUBLIC) != 0;
-		isEnum = (access_flags & ACC_ENUM) != 0;
+		accessx = in.readUnsignedShort(); // access
 
 		int this_class = in.readUnsignedShort();
-		className = (String) pool[intPool[this_class]];
+		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
 
 		try {
 
 			if (cd != null) {
-				if (!cd.classStart(access_flags, className))
+				if (!cd.classStart(accessx, className))
 					return null;
 			}
 
 			int super_class = in.readUnsignedShort();
-			zuper = (String) pool[intPool[super_class]];
+			String superName = (String) pool[intPool[super_class]];
+			if (superName != null) {
+				zuper = analyzer.getTypeRef(superName);
+			}
+
 			if (zuper != null) {
-				String pack = getPackage(zuper);
-				packageReference(pack);
+				referTo(zuper);
 				if (cd != null)
 					cd.extendsClass(zuper);
 			}
 
 			int interfacesCount = in.readUnsignedShort();
 			if (interfacesCount > 0) {
-				interfaces = new String[interfacesCount];
+				interfaces = new TypeRef[interfacesCount];
 				for (int i = 0; i < interfacesCount; i++)
-					interfaces[i] = (String) pool[intPool[in.readUnsignedShort()]];
+					interfaces[i] = analyzer.getTypeRef((String) pool[intPool[in
+							.readUnsignedShort()]]);
 				if (cd != null)
 					cd.implementsInterfaces(interfaces);
 			}
 
 			int fieldsCount = in.readUnsignedShort();
 			for (int i = 0; i < fieldsCount; i++) {
-				access_flags = in.readUnsignedShort(); // skip access flags
+				int access_flags = in.readUnsignedShort(); // skip access flags
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
 
@@ -510,8 +518,8 @@ public class Clazz {
 					crawl = true;
 				}
 				if (cd != null)
-					cd.field(last = new FieldDef(access_flags, className, name,
-							pool[descriptor_index].toString()));
+					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index]
+							.toString()));
 				descriptors.add(new Integer(descriptor_index));
 				doAttributes(in, ElementType.FIELD, false);
 			}
@@ -525,14 +533,14 @@ public class Clazz {
 			if (crawl) {
 				forName = findMethodReference("java/lang/Class", "forName",
 						"(Ljava/lang/String;)Ljava/lang/Class;");
-				class$ = findMethodReference(className, "class$",
+				class$ = findMethodReference(className.getBinary(), "class$",
 						"(Ljava/lang/String;)Ljava/lang/Class;");
 			} else if (major == 48) {
 				forName = findMethodReference("java/lang/Class", "forName",
 						"(Ljava/lang/String;)Ljava/lang/Class;");
 				if (forName > 0) {
 					crawl = true;
-					class$ = findMethodReference(className, "class$",
+					class$ = findMethodReference(className.getBinary(), "class$",
 							"(Ljava/lang/String;)Ljava/lang/Class;");
 				}
 			}
@@ -542,14 +550,14 @@ public class Clazz {
 			//
 			int methodCount = in.readUnsignedShort();
 			for (int i = 0; i < methodCount; i++) {
-				access_flags = in.readUnsignedShort();
+				int access_flags = in.readUnsignedShort();
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
 				descriptors.add(new Integer(descriptor_index));
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
 				if (cd != null) {
-					MethodDef mdef = new MethodDef(access_flags, className, name, descriptor);
+					MethodDef mdef = new MethodDef(access_flags, name, descriptor);
 					last = mdef;
 					cd.method(mdef);
 				}
@@ -560,6 +568,8 @@ public class Clazz {
 					doAttributes(in, ElementType.METHOD, crawl);
 				}
 			}
+			if (cd != null)
+				cd.memberEnd();
 
 			doAttributes(in, ElementType.TYPE, false);
 
@@ -569,14 +579,10 @@ public class Clazz {
 			//
 
 			for (int n : classes) {
-				String clazz = (String) pool[n];
-				if (clazz.endsWith(";") || clazz.startsWith("["))
-					parseReference(clazz, 0);
-				else {
+				String descr = (String) pool[n];
 
-					String pack = getPackage(clazz);
-					packageReference(pack);
-				}
+				TypeRef clazz = analyzer.getTypeRef(descr);
+				referTo(clazz);
 			}
 
 			//
@@ -591,7 +597,7 @@ public class Clazz {
 				else
 					System.err.println("Unrecognized descriptor: " + index);
 			}
-			Set<String> xref = this.xref;
+			Set<TypeRef> xref = this.xref;
 			reset();
 			return xref;
 		} finally {
@@ -695,7 +701,6 @@ public class Clazz {
 		// CONSTANT_Utf8
 
 		String name = in.readUTF();
-		xref.add(name);
 		pool[poolIndex] = name;
 	}
 
@@ -741,10 +746,10 @@ public class Clazz {
 	 * 
 	 * @param in
 	 *            The stream
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	private void doAttributes(DataInputStream in, ElementType member, boolean crawl)
-			throws IOException {
+			throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
@@ -757,15 +762,18 @@ public class Clazz {
 	 * 
 	 * @param in
 	 *            the data stream
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	private void doAttribute(DataInputStream in, ElementType member, boolean crawl)
-			throws IOException {
+			throws Exception {
 		int attribute_name_index = in.readUnsignedShort();
 		String attributeName = (String) pool[attribute_name_index];
 		long attribute_length = in.readInt();
 		attribute_length &= 0xFFFFFFFF;
-		if ("RuntimeVisibleAnnotations".equals(attributeName))
+		if ("Deprecated".equals(attributeName)) {
+			if (cd != null)
+				cd.deprecated();
+		} else if ("RuntimeVisibleAnnotations".equals(attributeName))
 			doAnnotations(in, member, RetentionPolicy.RUNTIME);
 		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
 			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME);
@@ -813,7 +821,7 @@ public class Clazz {
 
 		if (cd != null) {
 			int nameIndex = intPool[cIndex];
-			String cName = (String) pool[nameIndex];
+			TypeRef cName = analyzer.getTypeRef((String) pool[nameIndex]);
 
 			String mName = null;
 			String mDescriptor = null;
@@ -842,9 +850,9 @@ public class Clazz {
 	 * </pre>
 	 * 
 	 * @param in
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	private void doInnerClasses(DataInputStream in) throws IOException {
+	private void doInnerClasses(DataInputStream in) throws Exception {
 		int number_of_classes = in.readShort();
 		for (int i = 0; i < number_of_classes; i++) {
 			int inner_class_info_index = in.readShort();
@@ -853,18 +861,18 @@ public class Clazz {
 			int inner_class_access_flags = in.readShort() & 0xFFFF;
 
 			if (cd != null) {
-				String innerClass = null;
-				String outerClass = null;
+				TypeRef innerClass = null;
+				TypeRef outerClass = null;
 				String innerName = null;
 
 				if (inner_class_info_index != 0) {
 					int nameIndex = intPool[inner_class_info_index];
-					innerClass = (String) pool[nameIndex];
+					innerClass = analyzer.getTypeRef((String) pool[nameIndex]);
 				}
 
 				if (outer_class_info_index != 0) {
 					int nameIndex = intPool[outer_class_info_index];
-					outerClass = (String) pool[nameIndex];
+					outerClass = analyzer.getTypeRef((String) pool[nameIndex]);
 				}
 
 				if (inner_name_index != 0)
@@ -893,7 +901,7 @@ public class Clazz {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 
-		// System.out.println("Signature " + signature );
+		// s.println("Signature " + signature );
 
 		// The type signature is kind of weird,
 		// lets skip it for now. Seems to be some kind of
@@ -947,9 +955,9 @@ public class Clazz {
 	 * 
 	 * @param in
 	 * @param pool
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	private void doCode(DataInputStream in) throws IOException {
+	private void doCode(DataInputStream in) throws Exception {
 		/* int max_stack = */in.readUnsignedShort();
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
@@ -985,39 +993,37 @@ public class Clazz {
 			case OpCodes.invokespecial: {
 				int mref = 0xFFFF & bb.getShort();
 				if (cd != null)
-					cd.reference(getMethodDef(0, mref));
+					getMethodDef(0, mref);
 				break;
 			}
 
 			case OpCodes.invokevirtual: {
 				int mref = 0xFFFF & bb.getShort();
 				if (cd != null)
-					cd.reference(getMethodDef(0, mref));
+					getMethodDef(0, mref);
 				break;
 			}
 
 			case OpCodes.invokeinterface: {
 				int mref = 0xFFFF & bb.getShort();
 				if (cd != null)
-					cd.reference(getMethodDef(0, mref));
+					getMethodDef(0, mref);
 				break;
 			}
 
 			case OpCodes.invokestatic: {
 				int methodref = 0xFFFF & bb.getShort();
 				if (cd != null)
-					cd.reference(getMethodDef(0, methodref));
+					getMethodDef(0, methodref);
 
 				if ((methodref == forName || methodref == class$) && lastReference != -1
 						&& pool[intPool[lastReference]] instanceof String) {
-					String clazz = (String) pool[intPool[lastReference]];
-					if (clazz.startsWith("[") || clazz.endsWith(";"))
-						parseReference(clazz, 0);
-					else {
-						int n = clazz.lastIndexOf('.');
-						if (n > 0)
-							packageReference(clazz.substring(0, n));
-					}
+					String fqn = (String) pool[intPool[lastReference]];
+
+					// TODO seems to find class?
+					TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
+					if (!clazz.getPackageRef().isDefaultPackage())
+						referTo(clazz);
 				}
 				break;
 			}
@@ -1089,9 +1095,9 @@ public class Clazz {
 			boolean collect) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
-			annotations = new HashSet<String>();
+			annotations = new HashSet<TypeRef>();
 
-		annotations.add(pool[type_index].toString());
+		annotations.add(analyzer.getTypeRef(pool[type_index].toString()));
 
 		if (policy == RetentionPolicy.RUNTIME) {
 			descriptors.add(new Integer(type_index));
@@ -1099,7 +1105,7 @@ public class Clazz {
 		} else {
 			hasClassAnnotations = true;
 		}
-		String name = (String) pool[type_index];
+		TypeRef name = analyzer.getTypeRef((String) pool[type_index]);
 		int num_element_value_pairs = in.readUnsignedShort();
 		Map<String, Object> elements = null;
 		for (int v = 0; v < num_element_value_pairs; v++) {
@@ -1138,7 +1144,8 @@ public class Clazz {
 
 		case 'Z': // Boolean
 			const_value_index = in.readUnsignedShort();
-			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false : true;
+			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false
+					: true;
 
 		case 'e': // enum constant
 			int type_name_index = in.readUnsignedShort();
@@ -1173,11 +1180,17 @@ public class Clazz {
 	/**
 	 * Add a new package reference.
 	 * 
-	 * @param pack
+	 * @param packageRef
 	 *            A '.' delimited package name
 	 */
-	void packageReference(String pack) {
-		imports.add(pack);
+	void referTo(TypeRef typeRef) {
+		if ( xref != null)
+			xref.add(typeRef);
+		PackageRef packageRef = typeRef.getPackageRef();
+		if (packageRef != null) {
+			if (packageRef.getFQN().length() != 0)
+				imports.add(packageRef);
+		}
 	}
 
 	/**
@@ -1258,22 +1271,18 @@ public class Clazz {
 		} else if (c == 'L') {
 			StringBuilder sb = new StringBuilder();
 			rover++;
-			int lastSlash = -1;
 			while ((c = descriptor.charAt(rover)) != ';') {
 				if (c == '<') {
 					rover = parseReferences(descriptor, rover + 1, '>');
-				} else if (c == '/') {
-					lastSlash = sb.length();
-					sb.append('.');
 				} else
 					sb.append(c);
 				rover++;
 			}
+			TypeRef ref = analyzer.getTypeRef(sb.toString());
 			if (cd != null)
-				cd.addReference(sb.toString());
+				cd.addReference(ref);
 
-			if (lastSlash > 0)
-				packageReference(sb.substring(0, lastSlash));
+			referTo(ref);
 		} else {
 			if ("+-*BCDFIJSZV".indexOf(c) < 0)
 				;// System.out.println("Should not skip: " + c);
@@ -1285,27 +1294,11 @@ public class Clazz {
 		return rover + 1;
 	}
 
-	public static String getPackage(String clazz) {
-		int n = clazz.lastIndexOf('/');
-		if (n < 0) {
-			n = clazz.lastIndexOf('.');
-			if (n < 0)
-				return ".";
-		}
-		return clazz.substring(0, n).replace('/', '.');
-	}
-
-	public Set<String> getReferred() {
+	public Set<PackageRef> getReferred() {
 		return imports;
 	}
 
-	String getClassName() {
-		if (className == null)
-			return "NOCLASSNAME";
-		return className;
-	}
-
-	public String getPath() {
+	public String getAbsolutePath() {
 		return path;
 	}
 
@@ -1343,19 +1336,19 @@ public class Clazz {
 			return true;
 
 		case NAMED:
-			if (instr.matches(getClassName()))
+			if (instr.matches(getClassName().getDottedOnly()))
 				return !instr.isNegated();
 			return false;
 
 		case VERSION:
-			String v = major + "/" + minor;
+			String v = major + "." + minor;
 			if (instr.matches(v))
 				return !instr.isNegated();
 			return false;
 
 		case IMPLEMENTS:
 			for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-				if (instr.matches(interfaces[i]))
+				if (instr.matches(interfaces[i].getDottedOnly()))
 					return !instr.isNegated();
 			}
 			break;
@@ -1364,25 +1357,22 @@ public class Clazz {
 			if (zuper == null)
 				return false;
 
-			if (instr.matches(zuper))
+			if (instr.matches(zuper.getDottedOnly()))
 				return !instr.isNegated();
 			break;
 
 		case PUBLIC:
-			return !isPublic;
+			return Modifier.isPublic(accessx);
 
 		case CONCRETE:
-			return !isAbstract;
+			return !Modifier.isAbstract(accessx);
 
-		case ANNOTATION:
+		case ANNOTATED:
 			if (annotations == null)
 				return false;
 
-			if (annotations.contains(instr.getPattern()))
-				return true;
-
-			for (String annotation : annotations) {
-				if (instr.matches(annotation))
+			for (TypeRef annotation : annotations) {
+				if (instr.matches(annotation.getFQN()))
 					return !instr.isNegated();
 			}
 
@@ -1394,11 +1384,11 @@ public class Clazz {
 			return hasClassAnnotations;
 
 		case ABSTRACT:
-			return isAbstract;
+			return Modifier.isAbstract(accessx);
 
 		case IMPORTS:
-			for (String imp : imports) {
-				if (instr.matches(imp.replace('.', '/')))
+			for (PackageRef imp : imports) {
+				if (instr.matches(imp.getFQN()))
 					return !instr.isNegated();
 			}
 		}
@@ -1406,7 +1396,7 @@ public class Clazz {
 		if (zuper == null)
 			return false;
 
-		Clazz clazz = analyzer.findClass(zuper + ".class");
+		Clazz clazz = analyzer.findClass(zuper);
 		if (clazz == null)
 			return false;
 
@@ -1414,80 +1404,20 @@ public class Clazz {
 	}
 
 	public String toString() {
-		return getFQN();
-	}
-
-	public String getFQN() {
-		String s = getClassName().replace('/', '.');
-		return s;
+		return className.getFQN();
 	}
 
 	/**
-	 * Return a list of packages implemented by this class.
+	 * Called when crawling the byte code and a method reference is found
 	 * 
-	 * @param implemented
-	 * @param classspace
-	 * @param clazz
-	 * @throws Exception
 	 */
-	@SuppressWarnings("deprecation") final static String	USEPOLICY		= toDescriptor(UsePolicy.class);
-	final static String										PROVIDERPOLICY	= toDescriptor(ProviderType.class);
-
-	public static void getImplementedPackages(Set<String> implemented, Analyzer analyzer,
-			Clazz clazz) throws Exception {
-		if (clazz.interfaces != null) {
-			for (String interf : clazz.interfaces) {
-				interf = interf + ".class";
-				Clazz c = analyzer.getClassspace().get(interf);
-
-				// If not found, actually parse the imported
-				// class file to check for implementation policy.
-				if (c == null)
-					c = analyzer.findClass(interf);
-
-				if (c != null) {
-					boolean consumer = false;
-					Set<String> annotations = c.annotations;
-					if (annotations != null)
-						// Override if we marked the interface as a consumer
-						// interface
-						consumer = annotations.contains(USEPOLICY)
-								|| annotations.contains(PROVIDERPOLICY);
-
-					if (!consumer)
-						implemented.add(getPackage(interf));
-					getImplementedPackages(implemented, analyzer, c);
-				} else
-					implemented.add(getPackage(interf));
-
-			}
-		}
-		if (clazz.zuper != null) {
-			Clazz c = analyzer.getClassspace().get(clazz.zuper);
-			if (c != null) {
-				getImplementedPackages(implemented, analyzer, c);
-			}
-		}
-
-	}
-
-	// String RNAME = "LaQute/bnd/annotation/UsePolicy;";
-
-	public static String toDescriptor(Class<?> clazz) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('L');
-		sb.append(clazz.getName().replace('.', '/'));
-		sb.append(';');
-		return sb.toString();
-	}
-
-	MethodDef getMethodDef(int access, int methodRefPoolIndex) {
+	void getMethodDef(int access, int methodRefPoolIndex) {
 		Object o = pool[methodRefPoolIndex];
 		if (o != null && o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
 			if (assoc.tag == 10) {
 				int string_index = intPool[assoc.a];
-				String className = (String) pool[string_index];
+				TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
 				int name_and_type_index = assoc.b;
 				Assoc name_and_type = (Assoc) pool[name_and_type_index];
 				if (name_and_type.tag == 12) {
@@ -1496,7 +1426,7 @@ public class Clazz {
 					int type_index = name_and_type.b;
 					String method = (String) pool[name_index];
 					String descriptor = (String) pool[type_index];
-					return new MethodDef(access, className, method, descriptor);
+					cd.referenceMethod(access, className, method, descriptor);
 				} else
 					throw new IllegalArgumentException(
 							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
@@ -1508,31 +1438,16 @@ public class Clazz {
 					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
 	}
 
-	public static String getShortName(String cname) {
-		int n = cname.lastIndexOf('.');
-		if (n < 0)
-			return cname;
-		return cname.substring(n + 1, cname.length());
-	}
-
-	public static String fqnToPath(String dotted) {
-		return dotted.replace('.', '/') + ".class";
-	}
-
-	public static String fqnToBinary(String dotted) {
-		return "L" + dotted.replace('.', '/') + ";";
-	}
-
-	public static String pathToFqn(String path) {
-		return path.replace('/', '.').substring(0, path.length() - 6);
-	}
-
 	public boolean isPublic() {
-		return isPublic;
+		return Modifier.isPublic(accessx);
+	}
+
+	public boolean isProtected() {
+		return Modifier.isProtected(accessx);
 	}
 
 	public boolean isEnum() {
-		return isEnum;
+		return zuper != null && zuper.getBinary().equals("java/lang/Enum");
 	}
 
 	public JAVA getFormat() {
@@ -1567,10 +1482,6 @@ public class Clazz {
 			return objectDescriptorToFQN(string.substring(1)) + "[]";
 		}
 		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
-	}
-
-	public static String internalToFqn(String string) {
-		return string.replace('/', '.');
 	}
 
 	public static String unCamel(String id) {
@@ -1610,4 +1521,66 @@ public class Clazz {
 		return out.toString();
 	}
 
+	public boolean isInterface() {
+		return Modifier.isInterface(accessx);
+	}
+
+	public boolean isAbstract() {
+		return Modifier.isAbstract(accessx);
+	}
+
+	public int getAccess() {
+		if (innerAccess == -1)
+			return accessx;
+		else
+			return innerAccess;
+	}
+
+	public TypeRef getClassName() {
+		return className;
+	}
+
+	/**
+	 * To provide an enclosing instance
+	 * 
+	 * @param access
+	 * @param name
+	 * @param descriptor
+	 * @return
+	 */
+	public MethodDef getMethodDef(int access, String name, String descriptor) {
+		return new MethodDef(access, name, descriptor);
+	}
+
+	public TypeRef getSuper() {
+		return zuper;
+	}
+
+	public String getFQN() {
+		return className.getFQN();
+	}
+
+	public TypeRef[] getInterfaces() {
+		return interfaces;
+	}
+
+	public void setInnerAccess(int access) {
+		innerAccess = access;
+	}
+
+	public boolean isFinal() {
+		return Modifier.isFinal(accessx);
+	}
+
+	public void setDeprecated(boolean b) {
+		deprecated = b;
+	}
+
+	public boolean isDeprecated() {
+		return deprecated;
+	}
+
+	public boolean isAnnotation() {
+		return (accessx & ACC_ANNOTATION) != 0;
+	}
 }

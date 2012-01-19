@@ -2,11 +2,13 @@ package aQute.bnd.maven;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
+import aQute.libg.header.*;
 
 public class PomResource extends WriteResource {
 	final Manifest				manifest;
@@ -99,8 +101,8 @@ public class PomResource extends WriteResource {
 		if (licenses != null) {
 			Tag ls = new Tag(project, "licenses");
 
-			Map<String, Map<String, String>> map = Processor.parseHeader(licenses, null);
-			for (Iterator<Map.Entry<String, Map<String, String>>> e = map.entrySet().iterator(); e
+			Parameters map = Processor.parseHeader(licenses, null);
+			for (Iterator<Entry<String, Attrs>> e = map.entrySet().iterator(); e
 					.hasNext();) {
 
 				// Bundle-License:
@@ -115,7 +117,7 @@ public class PomResource extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Map.Entry<String, Map<String, String>> entry = e.next();
+				Entry<String, Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
 				Map<String, String> values = entry.getValue();
 				String url = entry.getKey();

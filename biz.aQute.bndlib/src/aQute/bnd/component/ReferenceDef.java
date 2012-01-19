@@ -26,22 +26,24 @@ class ReferenceDef {
 	 * Prepare the reference, will check for any errors.
 	 * 
 	 * @param analyzer the analyzer to report errors to.
+	 * @throws Exception 
 	 */
-	public void prepare(Analyzer analyzer) {
-		Verifier v = new Verifier();
+	public void prepare(Analyzer analyzer) throws Exception {
 		if (name == null)
 			analyzer.error("No name for a reference");
 		
 		if ((updated != null && !updated.equals("-")) || policyOption!= null)
 			version = max(version, AnnotationReader.V1_2);
 
-		if (target != null)
-			v.verifyFilter(target);
+		if (target != null) {
+			String error = Verifier.validateFilter(target);
+			if ( error != null)
+				analyzer.error("Invalid target filter %s for %s", target, name);
+		}
 
 		if ( service == null)
 			analyzer.error("No interface specified on %s", name);
 		
-		analyzer.getInfo(v);
 	}
 
 	/**

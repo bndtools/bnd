@@ -1,12 +1,8 @@
 package test;
 
 import java.io.*;
-import java.security.*;
 
 import junit.framework.*;
-import aQute.lib.io.*;
-import aQute.libg.cafs.*;
-import aQute.libg.cryptography.*;
 
 public class TestCAFS extends TestCase {
 	File	tmp;

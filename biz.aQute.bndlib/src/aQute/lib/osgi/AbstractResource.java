@@ -47,4 +47,8 @@ public abstract class AbstractResource implements Resource {
     }
 
     abstract protected byte[] getBytes() throws Exception;
+    
+    public long size() throws IOException {
+    	return getLocalBytes().length;
+    }
 }

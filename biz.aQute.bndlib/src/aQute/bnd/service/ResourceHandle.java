@@ -1,7 +1,6 @@
 package aQute.bnd.service;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public interface ResourceHandle {
 	

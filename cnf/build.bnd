@@ -1,6 +1,6 @@
 # We use git
-Git-Descriptor: ${system;git describe --dirty --always}
-Git-SHA: ${system;git rev-list -1 HEAD}
+Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
+Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
 
 Bundle-SCM				= git://github.com/bndtools/bnd.git
 
@@ -21,7 +21,7 @@ target					= ${project}/${target-dir}
 build					= ${workspace}/cnf
 repo					= ${build}/repo
 releaserepo				= ${workspace}/../repo/bundles
-target-dir				= tmp
+target-dir				= generated
 p                       = ${basename;${project}}
 project.name            = ${p}
 

@@ -1,11 +1,11 @@
 package aQute.bnd.make.coverage;
 
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.*;
+import aQute.lib.osgi.Clazz.MethodDef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 
 /**
  * This class can create a coverage table between two classspaces. The
@@ -39,17 +39,17 @@ public class Coverage {
             clazz.parseClassFileWithCollector(new ClassDataCollector() {
                 MethodDef source;
 
-                public void implementsInterfaces(String names[]) {
-                    MethodDef def = new MethodDef(0, clazz.getFQN(),
+                public void implementsInterfaces(TypeRef names[]) {
+                    MethodDef def = clazz.getMethodDef(0,
                             "<implements>", "()V");
-                    for (String interfaceName : names) {
-                        interfaceName = Clazz.internalToFqn(interfaceName);
+                    // TODO
+                    for (TypeRef interfaceName : names) {
                         for (Map.Entry<MethodDef, List<MethodDef>> entry : catalog
                                 .entrySet()) {
-                            String catalogClass = entry.getKey().clazz;
+                            String catalogClass = entry.getKey().getContainingClass().getFQN();
                             List<MethodDef> references = entry.getValue();
 
-                            if (catalogClass.equals(interfaceName)) {
+                            if (catalogClass.equals(interfaceName.getFQN())) {
                                 references.add(def);
                             }
                         }
@@ -77,13 +77,13 @@ public class Coverage {
         for (final Clazz clazz : sources) {
             clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
-                public boolean classStart(int access, String name) {
+                public boolean classStart(int access, TypeRef name) {
                     return clazz.isPublic();
                 }
 
                 public void method(MethodDef source) {
-                    if (java.lang.reflect.Modifier.isPublic(source.access)
-                            || Modifier.isProtected(source.access))
+                    if (source.isPublic()
+                            || source.isProtected())
                         catalog.put(source, new ArrayList<MethodDef>());
                 }
 

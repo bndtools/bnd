@@ -35,7 +35,7 @@ public class QuotedTokenizer {
 		if ( index == string.length())
 			return null;
 		
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		while (index < string.length()) {
 			char c = string.charAt(index++);
@@ -77,7 +77,7 @@ public class QuotedTokenizer {
 		return nextToken(separators);
 	}
 
-	private void quotedString(StringBuffer sb, char c) {
+	private void quotedString(StringBuilder sb, char c) {
 		char quote = c;
 		while (index < string.length()) {
 			c = string.charAt(index++);

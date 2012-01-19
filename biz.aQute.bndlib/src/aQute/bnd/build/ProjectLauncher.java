@@ -2,6 +2,7 @@ package aQute.bnd.build;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
@@ -9,6 +10,7 @@ import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
+import aQute.libg.header.*;
 
 /**
  * A Project Launcher is a base class to be extended by launchers. Launchers are
@@ -27,7 +29,7 @@ public abstract class ProjectLauncher {
 	private final List<String>					runvm				= new ArrayList<String>();
 	private Map<String, String>					runproperties;
 	private Command								java;
-	private Map<String, Map<String, String>>	runsystempackages;
+	private Parameters	runsystempackages;
 	private final List<String>					activators			= Create.list();
 	private File								storageDir;
 	private final List<String>					warnings			= Create.list();
@@ -89,7 +91,7 @@ public abstract class ProjectLauncher {
 		}
 
 		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
+		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
@@ -134,10 +136,11 @@ public abstract class ProjectLauncher {
 					classpath.add(path);
 
 					Manifest manifest = m.getManifest();
+
 					if (manifest != null) {
-						Map<String, Map<String, String>> exports = project.parseHeader(manifest
+						Parameters exports = project.parseHeader(manifest
 								.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-						for (Map.Entry<String, Map<String, String>> e : exports.entrySet()) {
+						for (Entry<String, Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());
 						}
@@ -251,8 +254,8 @@ public abstract class ProjectLauncher {
 		java.cancel();
 	}
 
-	public Map<String, Map<String, String>> getSystemPackages() {
-		return runsystempackages;
+	public Map<String,? extends Map<String,String>> getSystemPackages() {
+		return runsystempackages.asMapMap();
 	}
 
 	public void setKeep(boolean keep) {

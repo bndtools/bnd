@@ -13,12 +13,12 @@ import aQute.libg.header.*;
 public class DSAnnotations implements AnalyzerPlugin {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(analyzer
+		Parameters header = OSGiHeader.parseHeader(analyzer
 				.getProperty("-dsannotations"));
 		if ( header.size()==0)
 			return false;
 		
-		Set<Instruction> instructions = Instruction.replaceWithInstruction(header).keySet();
+		Instructions instructions = new Instructions(header);
 		Set<Clazz> list = new HashSet<Clazz>(analyzer.getClassspace().values());
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
 		List<String> names = new ArrayList<String>();
@@ -26,7 +26,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			names.add(sc);
 		
 		for (Iterator<Clazz> i = list.iterator(); i.hasNext();) {
-			for (Instruction instruction : instructions) {
+			for (Instruction instruction : instructions.keySet()) {
 				Clazz c = i.next();
 				System.out.println("fqn " + c.getFQN() + " " + instruction);
 				if (instruction.matches(c.getFQN())) {

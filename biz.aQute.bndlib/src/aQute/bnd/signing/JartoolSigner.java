@@ -96,8 +96,8 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         command.add(alias);
         builder.trace("Jarsigner command: %s", command);
         command.setTimeout(20, TimeUnit.SECONDS);
-        StringBuffer out = new StringBuffer();
-        StringBuffer err = new StringBuffer();
+        StringBuilder out = new StringBuilder();
+        StringBuilder err = new StringBuilder();
         int exitValue = command.execute(System.in, out, err);
         if (exitValue != 0) {
             builder.error("Signing Jar out: %s\nerr: %s", out, err);
@@ -117,8 +117,8 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         jar.setDoNotTouchManifest();
     }
 
-    StringBuffer collect(final InputStream in) throws Exception {
-        final StringBuffer sb = new StringBuffer();
+    StringBuilder collect(final InputStream in) throws Exception {
+        final StringBuilder sb = new StringBuilder();
         
         Thread tin = new Thread() {
             public void run() {

@@ -2,7 +2,7 @@ package aQute.bnd.signing;
 
 import java.io.*;
 import java.security.*;
-import java.security.KeyStore.*;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;

@@ -1,55 +1,25 @@
 package aQute.lib.deployer.obr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.*;
 
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
 
-import aQute.bnd.build.ResolverMode;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.RemoteRepositoryPlugin;
-import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.build.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.service.url.*;
 import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
-import aQute.lib.filter.Filter;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.URLResource;
-import aQute.libg.generics.Create;
-import aQute.libg.reporter.Reporter;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.lib.filter.*;
+import aQute.lib.osgi.*;
+import aQute.libg.generics.*;
+import aQute.libg.reporter.*;
+import aQute.libg.version.*;
 
 /**
  * Abstract base class for OBR-based repositories.

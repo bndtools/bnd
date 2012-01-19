@@ -83,4 +83,5 @@ public class EmbeddedResource implements Resource {
 	public long size() {
 	    return data.length;
 	}
+
 }

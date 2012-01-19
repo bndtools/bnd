@@ -5,7 +5,8 @@ import java.io.*;
 public abstract class WriteResource implements Resource {
 	long 	lastModified;
 	String	extra;
-
+	volatile long size = -1;
+	
 	public InputStream openInputStream() throws Exception {
 	    PipedInputStream pin = new PipedInputStream();
 	    final PipedOutputStream pout = new PipedOutputStream(pin);
@@ -38,5 +39,30 @@ public abstract class WriteResource implements Resource {
 
 	public void setExtra(String extra) {
 		this.extra = extra;
+	}
+	
+	static class CountingOutputStream extends OutputStream {
+		long size;
+
+		@Override public void write(int var0) throws IOException {
+			size++;
+		}
+		
+		@Override public void write(byte[] buffer) throws IOException {
+			size+=buffer.length;
+		}
+		
+		@Override public void write(byte [] buffer, int start, int length) throws IOException {
+			size+=length;
+		}
+	}
+	
+	public long size() throws IOException, Exception {
+		if ( size == -1 ) {
+			CountingOutputStream cout = new CountingOutputStream();
+			write(cout);
+			size = cout.size;
+		}
+		return size;
 	}
 }

@@ -6,6 +6,46 @@ import java.nio.*;
 import java.util.*;
 
 public class IO {
+
+	public static void copy(Reader r, Writer w) throws IOException {
+		try {
+			char buffer[] = new char[8000];
+			int size = r.read(buffer);
+			while (size > 0) {
+				w.write(buffer, 0, size);
+				size = r.read(buffer);
+			}
+		} finally {
+			r.close();
+			w.flush();
+		}
+	}
+
+	public static void copy(InputStream r, Writer w) throws IOException {
+		copy(r, w, "UTF-8");
+	}
+
+	public static void copy(InputStream r, Writer w, String charset) throws IOException {
+		try {
+			InputStreamReader isr = new InputStreamReader(r,charset);
+			copy(isr,w);
+		} finally {
+			r.close();
+		}
+	}
+
+	public static void copy(Reader r, OutputStream o) throws IOException {
+		copy(r,o,"UTF-8");
+	}
+	public static void copy(Reader r, OutputStream o, String charset) throws IOException {
+		try {
+			OutputStreamWriter osw = new OutputStreamWriter(o,charset);
+			copy(r,osw);
+		} finally {
+			r.close();
+		}
+	}
+
 	public static void copy(InputStream in, OutputStream out) throws IOException {
 		DataOutputStream dos = new DataOutputStream(out);
 		copy(in, (DataOutput) dos);
@@ -83,8 +123,16 @@ public class IO {
 		return new String(out.toByteArray(), encoding);
 	}
 
+	public static String collect(URL a) throws IOException {
+		return collect(a, "UTF-8");
+	}
+
 	public static String collect(File a) throws IOException {
 		return collect(a, "UTF-8");
+	}
+
+	public static String collect(String a) throws IOException {
+		return collect(new File(a), "UTF-8");
 	}
 
 	public static String collect(InputStream a, String encoding) throws IOException {
@@ -143,16 +191,19 @@ public class IO {
 		f.delete();
 	}
 
-	public static void drain(InputStream in) throws IOException {
+	public static long drain(InputStream in) throws IOException {
+		long result = 0;
 		byte[] buffer = new byte[10000];
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
+				result += size;
 				size = in.read(buffer);
 			}
 		} finally {
 			in.close();
 		}
+		return result;
 	}
 
 	public void copy(Collection<?> c, OutputStream out) {
@@ -194,7 +245,8 @@ public class IO {
 		}
 	}
 
-	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException, IOException {
+	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException,
+			IOException {
 		store(o, fout, "UTF-8");
 	}
 
@@ -212,6 +264,31 @@ public class IO {
 		} finally {
 			fout.close();
 		}
+	}
+
+	public static InputStream stream(String s) {
+		try {
+			return new ByteArrayInputStream(s.getBytes("UTF-8"));
+		} catch (Exception e) {
+			// Ignore
+			return null;
+		}
+	}
+
+	public static InputStream stream(String s, String encoding) throws UnsupportedEncodingException {
+		return new ByteArrayInputStream(s.getBytes(encoding));
+	}
+
+	public static InputStream stream(File s) throws FileNotFoundException {
+		return new FileInputStream(s);
+	}
+
+	public static InputStream stream(URL s) throws IOException {
+		return s.openStream();
+	}
+
+	public static Reader reader(String s) {
+		return new StringReader(s);
 	}
 
 }

@@ -10,7 +10,7 @@ public class PreprocessResource extends AbstractResource {
         super(r.lastModified());
         this.processor = processor;
         this.resource = r;
-        extra = resource.getExtra();
+        setExtra(resource.getExtra());
     }
 
     protected byte[] getBytes() throws Exception {

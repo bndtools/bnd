@@ -123,8 +123,8 @@ public class Scope {
 		this.kind = kind;
 	}
 
-	static public String classIdentity(String name) {
-		return name.replace('.', '/');
+	static public String classIdentity(String name2) {
+		return name2.replace('.','/');
 	}
 
 	static public String methodIdentity(String name, String descriptor) {

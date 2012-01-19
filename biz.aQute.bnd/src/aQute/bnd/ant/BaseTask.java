@@ -91,7 +91,7 @@ public class BaseTask extends Task implements Reporter {
     }
 
     protected String join(Collection<?> classpath, String string) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String del = "";
         for (Object name : classpath) {
             sb.append(del);
@@ -111,7 +111,9 @@ public class BaseTask extends Task implements Reporter {
     public void setTrace(boolean trace) {
         this.trace = trace;
     }
-
+    public boolean isTrace() {
+    	return trace;
+    }
     public void trace(String s, Object... args) {
         System.out.printf("# "+s+"\n", args);
     }

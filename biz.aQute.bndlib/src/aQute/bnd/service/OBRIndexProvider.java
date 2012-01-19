@@ -1,9 +1,8 @@
 package aQute.bnd.service;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public interface OBRIndexProvider {
 	Collection<URL> getOBRIndexes() throws IOException;

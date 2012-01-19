@@ -10,9 +10,7 @@
  ******************************************************************************/
 package aQute.junit.runtime;
 
-import java.lang.reflect.*;
 import java.text.*;
-import java.util.*;
 
 import junit.framework.*;
 

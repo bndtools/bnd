@@ -2,17 +2,16 @@ package aQute.bnd.make.metatype;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.metatype.*;
-import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.MethodDef;
+import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 
-public class MetaTypeReader extends ClassDataCollector implements Resource {
+public class MetaTypeReader extends WriteResource {
 	final Analyzer				reporter;
 	Clazz						clazz;
 	String						interfaces[];
@@ -46,23 +45,6 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		this.reporter = reporter;
 	}
 
-	public void annotation(Annotation annotation) {
-		try {
-			Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
-			Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
-			if (ocd != null) {
-				this.ocdAnnotation = annotation;
-			}
-			if (ad != null) {
-				assert method != null;
-				methods.put(method, ad);
-			}
-		} catch (Exception e) {
-			reporter.error("Error during annotation parsing %s : %s", clazz, e);
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * @param id
 	 * @param name
@@ -82,8 +64,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
 		// Set all the defaults.
-		String rtype = method.getReturnType();
-		String id = Configurable.mangleMethodName(method.name);
+		
+		String rtype = method.getGenericReturnType();
+		String id = Configurable.mangleMethodName(method.getName());
 		String name = Clazz.unCamel(id);
 
 		int cardinality = 0;
@@ -96,7 +79,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			if (cardinality != 0)
 				reporter.error(
 						"AD for %s.%s uses an array of collections in return type (%s), Metatype allows either Vector or array",
-						clazz.getFQN(), method.name, method.getReturnType());
+						clazz.getClassName().getFQN(), method.getName(), method.getType().getFQN());
 			Matcher m = COLLECTION.matcher(rtype);
 			if (m.matches()) {
 				rtype = Clazz.objectDescriptorToFQN(m.group(3));
@@ -114,7 +97,8 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		String[] optionValues = null;
 		String description = null;
 
-		Clazz c = reporter.findClass(Clazz.fqnToPath(rtype));
+		TypeRef typeRef = reporter.getTypeRefFromFQN(rtype);
+		Clazz c = reporter.findClass(typeRef);
 		if (c != null && c.isEnum()) {
 			optionValues = parseOptionValues(c);
 		}
@@ -130,8 +114,8 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 				cardinality = ad.cardinality();
 			if (ad.type() != null)
 				type = ad.type();
-			if (ad.required() || ad.deflt() == null)
-				required = true;
+//			if (ad.required() || ad.deflt() == null)
+//				required = true;
 
 			if (ad.description() != null)
 				description = ad.description();
@@ -189,7 +173,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		c.parseClassFileWithCollector(new ClassDataCollector() {
 			public void field(Clazz.FieldDef def) {
 				if (def.isEnum()) {
-					values.add(def.name);
+					values.add(def.getName());
 				}
 			}
 		});
@@ -223,43 +207,33 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 			return Meta.Type.String;
 	}
 
-	@Override public void method(MethodDef mdef) {
-		method = mdef;
-		methods.put(mdef, null);
-	}
-
-	public String getExtra() {
-		return extra;
-	}
-
-	public long lastModified() {
-		return 0;
-	}
-
-	public InputStream openInputStream() throws IOException {
-		final PipedInputStream pin = new PipedInputStream();
-		final PipedOutputStream pout = new PipedOutputStream(pin);
-		getExecutor().execute(new Runnable() {
-			public void run() {
-				try {
-					write(pout);
-				} catch (IOException e) {
-					// Cause an exception in the other end
-					IO.close(pin);
+	class Find extends ClassDataCollector {
+		
+		@Override public void method(MethodDef mdef) {
+			method = mdef;
+			methods.put(mdef, null);
+		}
+		
+		@Override public void annotation(Annotation annotation) {
+			try {
+				Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
+				Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
+				if (ocd != null) {
+					MetaTypeReader.this.ocdAnnotation = annotation;
 				}
-				IO.close(pout);
+				if (ad != null) {
+					assert method != null;
+					methods.put(method, ad);
+				}
+			} catch (Exception e) {
+				reporter.error("Error during annotation parsing %s : %s", clazz, e);
+				e.printStackTrace();
 			}
-		});
-		return pin;
-	}
+		}
 
-	private Executor getExecutor() {
-		return reporter.getPlugin(Executor.class);
 	}
+	
 
-	public void setExtra(String extra) {
-		this.extra = extra;
-	}
 
 	public void write(OutputStream out) throws IOException {
 		try {
@@ -276,7 +250,7 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 	void finish() throws Exception {
 		if (!finished) {
 			finished = true;
-			clazz.parseClassFileWithCollector(this);
+			clazz.parseClassFileWithCollector(new Find());
 			Meta.OCD ocd = null;
 			if (this.ocdAnnotation != null)
 				ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
@@ -285,8 +259,8 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 						new HashMap<String, Object>());
 
 			// defaults
-			String id = clazz.getFQN();
-			String name = Clazz.unCamel(Clazz.getShortName(clazz.getFQN()));
+			String id = clazz.getClassName().getFQN();
+			String name = Clazz.unCamel(clazz.getClassName().getShortName());
 			String description = null;
 			String localization = id;
 			boolean factory = this.factory;
@@ -337,5 +311,9 @@ public class MetaTypeReader extends ClassDataCollector implements Resource {
 		this.override = true;
 		this.factory = factory;
 		this.designatePid = pid;
+	}
+
+	@Override public long lastModified() {
+		return 0;
 	}
 }

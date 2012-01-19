@@ -1,5 +1,5 @@
 -buildpath: com.springsource.junit,\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.minimum;version=1.2.1,\
 	osgi.cmpn;version=4.2.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
@@ -7,6 +7,8 @@
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
+javac.source = 1.5
+javac.target = jsr14
 Private-Package: aQute.junit.*,\
 	junit.framework
 Export-Package: junit.framework; version=3.8

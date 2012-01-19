@@ -8,6 +8,7 @@ import java.util.regex.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
@@ -131,7 +132,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-		Map<String, Map<String, String>> b = Processor.parseHeader(bsn, null);
+		Parameters b = Processor.parseHeader(bsn, null);
 		if (b.size() != 1)
 			throw new IllegalArgumentException("Multiple bsn's specified " + b);
 
@@ -202,7 +203,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init();
 		Instruction pattern = null;
 		if (regex != null)
-			pattern = Instruction.getPattern(regex);
+			pattern = new Instruction(regex);
 
 		List<String> result = new ArrayList<String>();
 		if (root == null) {
@@ -238,7 +239,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (m.matches()) {
 					String version = m.group(2);
 					if (version.equals("latest"))
-						version = Integer.MAX_VALUE+"";
+						version = Integer.MAX_VALUE + "";
 					list.add(new Version(version));
 				}
 			}
@@ -270,6 +271,17 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return name;
 	}
 
+	public Jar get(String bsn, Version v) throws Exception {
+		init();
+		File bsns = new File(root, bsn);
+		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "."
+				+ v.getMicro() + ".jar");
+		if ( version.exists())
+			return new Jar(version);
+		else
+			return null;
+	}
+
 	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties)
 			throws Exception {
 		if (version == null)
@@ -280,9 +292,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (vr.isRange())
 				return null;
 
-			if ( vr.getHigh().getMajor() == Integer.MAX_VALUE)
+			if (vr.getHigh().getMajor() == Integer.MAX_VALUE)
 				version = "latest";
-			
+
 			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
 			if (file.isFile())
 				return file;

@@ -1,14 +1,10 @@
 package aQute.lib.deployer.obr;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import aQute.lib.deployer.FileRepo;
+import aQute.lib.deployer.*;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations

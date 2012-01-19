@@ -1,8 +1,8 @@
 package aQute.bnd.service;
 
-import java.io.File;
+import java.io.*;
 
-import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.*;
 
 public interface RepositoryListenerPlugin {
 	
