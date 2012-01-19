@@ -79,7 +79,7 @@
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
 			<classpath path="${project.buildpath}" />
 			<formatter type="xml" />
-			<batchtest todir="tmp">
+			<batchtest todir="${target}">
 				<fileset dir="${src}">
 					<include name="test/**.java" />
 				</fileset>
