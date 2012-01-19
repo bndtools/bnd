@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-	The is main OSGi build file. It is included from projects
-	as is.
-	
-	It is described in http://www2.osgi.org/members/Build/HomePage 
--->
 <project name="master" default="none">
 
 	<!-- 
@@ -15,15 +9,23 @@
 	-->
 
 	<target name="init" unless="initialized">
+		<tstamp>
+			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
+		</tstamp>
+		
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${workspacedir}/aQute.libg/bin;${workspacedir}/biz.aQute.bndlib/bin:${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
+		<taskdef resource="aQute/bnd/ant/taskdef.properties">
+			<classpath>
+				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar"/>
+			</classpath>
+		</taskdef>
 
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
-		<echo>Enter project ${project.name}</echo>
+		<echo message="Enter project ${project.name}"/>
 	</target>
 
 	<!-- 
@@ -48,7 +50,7 @@
 	     Compile the sources. 
 	-->
 	<target name="compile" depends="dependencies" if="project.sourcepath">
-		<mkdir dir="${project.output}" />
+		<mkdir dir="${project.output}"/>
 		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
 		<!-- 
 		  The eclipse compiler copies resources but the Javac compiler does not
@@ -63,50 +65,32 @@
 		</copy>
 	</target>
 
-	<target name="deploy" depends="build">
-		<bnd command="deploy" exceptions="true" basedir="${project}" />
-	</target>
 	<!-- 
 		JARS
 		Iterate of the jars to build.
 	-->
 	<target name="build" depends="compile">
-		<bnd command="build" trace="true" exceptions="true" basedir="${project}" />
+		<mkdir dir="${target}"/>
+		<bnd command="build" exceptions="true" basedir="${project}" />
+	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true" />
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
 	</target>
 
 	<target name="junit" depends="build">
-		
-		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
+		<junit printsummary="true">			
 			<classpath path="${project.buildpath}" />
-			<formatter type="xml" />
-			<batchtest todir="${target}">
-				<fileset dir="${src}">
-					<include name="test/**.java" />
-				</fileset>
+			<formatter type="xml"/>
+			<batchtest todir="tmp" >
+			    <fileset dir="${src}">
+			      <include name="test/**.java"/>
+			    </fileset>
 			</batchtest>
 		</junit>
-
-		<fail if="stop" />
-	</target>
-
-	<target name="release" depends="build">
-		<subant target="release" inheritall="false" buildpath="${project.dependson}">
-			<property name="donotrecurse" value="true" />
-		</subant>
-		<bnd command="release" exceptions="true" basedir="${project}" />
-	</target>
-
-	<target name="release.bindex" depends="release">
-		<echo message="bindex classpath: ${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar" />
-		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
-			<classpath>
-				<fileset dir="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex" includes="org.osgi.impl.bundle.bindex-2.2.0.jar" />
-			</classpath>
-		</taskdef>
-
-		<bindex root="${releaserepo}" repositoryfile="${releaserepo}/repository.xml" quiet="yes">
-			<fileset dir="${releaserepo}" includes="**/*.jar" />
-		</bindex>
 	</target>
 
 	<!--
@@ -117,8 +101,13 @@
 	</target>
 
 	<target name="clean" depends="init">
-		<delete dir="${project.output}" />
 		<bnd command="clean" exceptions="true" basedir="${project}" />
+		<delete dir="bin"/>
+		<delete dir="bin_test"/>
+		<delete dir="${target}"/>
+		
+		<delete dir="${workspacedir}/cnf/tmp"/>
+		<delete dir="${workspacedir}/cnf/p2target"/>
 	</target>
 
 	<!--
@@ -127,6 +116,7 @@
 	<target name="echo" depends="init">
 		<echo>verbose:                ${verbose}</echo>
 		<echo>project.name:           ${project.name}</echo>
+		<echo>Bundle-Version:         ${Bundle-Version}</echo>
 		<echo>project.output:         ${project.output}</echo>
 		<echo>project.sourcepath:     ${project.sourcepath}</echo>
 		<echo>project.allsourcepath:  ${project.allsourcepath}</echo>
@@ -135,6 +125,9 @@
 		<echo>project.dependson:      ${project.dependson}</echo>
 		<echo>project.bootclasspath:  ${project.bootclasspath}</echo>
 		<echo>javac:                  ${javac}</echo>
+		<echo>javac.debug:            ${javac.debug}</echo>
+		<echo>javac.source:           ${javac.source}</echo>
+		<echo>javac.target:           ${javac.target}</echo>
 		<echo>p:                      ${p}</echo>
 		<echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
 		<echo>btool.analyse:          ${btool.analyse}</echo>
@@ -149,13 +142,12 @@
 		<echo>release.target:         ${release.target}</echo>
 		<echo>licensed repo:          ${licensed-repo}</echo>
 		<echo>repo:                   ${repo}</echo>
-		<echo>releaserepo:            ${releaserepo}</echo>
 		<echo>use.bnd:                ${use.bnd}</echo>
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>
 
 	</target>
-
+	
 	<!--
 	     Default Target
 	-->
