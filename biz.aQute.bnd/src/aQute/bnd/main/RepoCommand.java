@@ -193,7 +193,8 @@ public class RepoCommand {
 					if ( r.includes(v)) {
 						String out = opts.output();
 						if ( out == null) 
-							out = ;
+							;
+//							out = ;
 					}
 				}
 			}
@@ -212,36 +213,6 @@ public class RepoCommand {
 		if (to == null)
 			to = new Instruction("*");
 		
-		List<String> args =opts._(); 
-		if ( args.isEmpty()) {
-			bnd.error("Get needs at least a bsn");
-			return;
-		}
-
-		String bsn = args.remove(0);
-		String range = null;
-		
-		if ( !args.isEmpty()) {
-			range = args.remove(0);
-			if ( !args.isEmpty()) {
-				bnd.error("Extra args %s", args);
-			}
-		}
-		
-		VersionRange r = new VersionRange( range == null ? "0" : range);
-		
-		for (RepositoryPlugin repo : repos) {
-			if (from.matches(repo.getName())) {
-				List<Version> versions = repo.versions(bsn);
-				for ( Version v : versions ) {
-					if ( r.includes(v)) {
-						String out = opts.output();
-						if ( out == null) 
-							out = ;
-					}
-				}
-			}
-		}
 	}
 	
 	/*
