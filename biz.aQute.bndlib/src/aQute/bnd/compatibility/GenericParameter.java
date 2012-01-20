@@ -8,7 +8,7 @@ public class GenericParameter {
 		this.name = name;
 		this.bounds = bounds;
 		if (bounds == null || bounds.length == 0)
-			bounds = new GenericType[] { new GenericType( Object.class) };
+			this.bounds = new GenericType[] { new GenericType( Object.class) };
 	}
 
 	public String toString() {

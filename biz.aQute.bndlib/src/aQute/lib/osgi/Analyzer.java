@@ -426,8 +426,7 @@ public class Analyzer extends Processor {
 
 		Parameters namesection = parseHeader(getProperties().getProperty(NAMESECTION));
 		Instructions instructions = new Instructions(namesection);
-		Set<Map.Entry<String, Resource>> resources = new HashSet<Map.Entry<String, Resource>>(dot
-				.getResources().entrySet());
+		Set<String> resources = new HashSet<String>(dot.getResources().keySet());
 
 		//
 		// For each instruction, iterator over the resources and filter
@@ -441,12 +440,11 @@ public class Analyzer extends Processor {
 
 			// For each instruction
 
-			for (Iterator<Map.Entry<String, Resource>> it = resources.iterator(); it.hasNext();) {
+			for (String path : resources) {
 
 				// For each resource
 
-				Map.Entry<String, Resource> next = it.next();
-				if (instr.getKey().matches(next.getKey())) {
+				if (instr.getKey().matches(path)) {
 
 					// Instruction matches the resource
 
@@ -455,10 +453,10 @@ public class Analyzer extends Processor {
 
 						// Positive match, add the attributes
 
-						Attributes attrs = manifest.getAttributes(next.getKey());
+						Attributes attrs = manifest.getAttributes(path);
 						if (attrs == null) {
 							attrs = new Attributes();
-							manifest.getEntries().put(next.getKey(), attrs);
+							manifest.getEntries().put(path, attrs);
 						}
 
 						//
@@ -467,7 +465,7 @@ public class Analyzer extends Processor {
 						//
 
 						for (Map.Entry<String, String> property : instr.getValue().entrySet()) {
-							setProperty("@", next.getKey());
+							setProperty("@", path);
 							try {
 								String processed = getReplacer().process(property.getValue());
 								attrs.putValue(property.getKey(), processed);
@@ -476,7 +474,7 @@ public class Analyzer extends Processor {
 							}
 						}
 					}
-					it.remove();
+					resources.remove(path);
 				}
 			}
 
@@ -2360,9 +2358,9 @@ public class Analyzer extends Processor {
 			setExportPackage("*");
 		if (getImportPackage() == null)
 			setExportPackage("*");
-		if ( bsn!=null && getBundleSymbolicName()==null)
+		if (bsn != null && getBundleSymbolicName() == null)
 			setBundleSymbolicName(bsn);
-		if ( version != null && getBundleVersion()==null)
-			setBundleVersion(version);		
+		if (version != null && getBundleVersion() == null)
+			setBundleVersion(version);
 	}
 }

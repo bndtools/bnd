@@ -255,7 +255,7 @@ public class Tag {
 			try {
 				String line = rdr.readLine();
 				if (line != null) {
-					while (line.trim().startsWith("<?"))
+					while (line !=null && line.trim().startsWith("<?"))
 						line = rdr.readLine();
 
 					while (line != null) {

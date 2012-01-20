@@ -144,7 +144,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 						className, method.getDescriptor());
 
-			if (method.equals("activate")
+			if (method.getName().equals("activate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// this is the default!
 			} else {
@@ -160,7 +160,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				reporter.error(
 						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 						className, method.getDescriptor());
-			if (method.equals("deactivate")
+			if (method.getName().equals("deactivate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// This is the default!
 			} else {

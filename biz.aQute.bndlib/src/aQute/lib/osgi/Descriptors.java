@@ -104,6 +104,11 @@ public class Descriptors {
 			assert o instanceof PackageRef;
 			return o == this;
 		}
+		
+		public int hashCode() {
+			return super.hashCode();
+		}
+		
 		/**
 		 * Decide if the package is a metadata package.
 		 * 

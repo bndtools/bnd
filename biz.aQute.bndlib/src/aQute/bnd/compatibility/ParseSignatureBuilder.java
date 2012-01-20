@@ -108,7 +108,7 @@ public class ParseSignatureBuilder {
 			@Override
 			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
 					int innerClassAccessFlags) {
-				if (outerClass != null && innerClass != null && innerClass.equals(s.name))
+				if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
 					declaring = root.getScope(outerClass.getBinary());
 			}
 		});
