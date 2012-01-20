@@ -10,18 +10,18 @@ import junit.framework.*;
 import org.osgi.framework.*;
 
 public class JunitXmlReport implements TestReporter {
-	Tag					testsuite	= new Tag("testsuite");
-	Tag					testcase;
-	static String		hostname;
-	static DateFormat	df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	long				startTime;
-	long				testStartTime;
-	int					tests		= 0;
-	PrintWriter			out;
-	boolean				finished;
-	boolean				progress;
-	Bundle				bundle;
-	BasicTestReport		basic;
+	Tag				testsuite	= new Tag("testsuite");
+	Tag				testcase;
+	static String	hostname;
+	DateFormat		df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	long			startTime;
+	long			testStartTime;
+	int				tests		= 0;
+	PrintWriter		out;
+	boolean			finished;
+	boolean			progress;
+	Bundle			bundle;
+	BasicTestReport	basic;
 
 	public class LogEntry {
 		String	clazz;
@@ -220,8 +220,8 @@ public class JunitXmlReport implements TestReporter {
 			sysout.addContent(outs[1]);
 		}
 
-		testcase
-				.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		tests++;
 	}
 
 	public void close() {
