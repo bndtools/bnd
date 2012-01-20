@@ -6,9 +6,11 @@ import java.util.*;
 import aQute.bnd.build.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.collections.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
@@ -185,20 +187,44 @@ public class RepoCommand {
 		}
 		
 		VersionRange r = new VersionRange( range == null ? "0" : range);
+		Map<Version,RepositoryPlugin> index = new HashMap<Version, RepositoryPlugin>();
 		
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
 				List<Version> versions = repo.versions(bsn);
-				for ( Version v : versions ) {
-					if ( r.includes(v)) {
-						String out = opts.output();
-						if ( out == null) 
-							;
-//							out = ;
+				if ( versions != null)
+					for ( Version v : versions ) {
+						if ( r.includes(v)) 
+							index.put(v, repo);
 					}
-				}
 			}
 		}
+
+		SortedList<Version> l = new SortedList<Version>(index.keySet());
+		Version v;
+		if ( opts.lowest())
+			v = l.first();
+		else
+			v = l.last();
+		
+		RepositoryPlugin repo = index.get(v);
+		File file = repo.get(bsn,v.toString(),Strategy.EXACT,null);
+		
+		File dir = bnd.getBase();
+		String name = file.getName();
+		
+		if ( opts.output() != null) {
+			File f = bnd.getFile(opts.output());
+			if ( f.isDirectory())
+				dir = f;
+			else {
+				dir = f.getParentFile();
+				name = f.getName();
+			}
+		}
+
+		dir.mkdirs();
+		IO.copy(file, new File(dir,name));
 	}
 	
 	/**
