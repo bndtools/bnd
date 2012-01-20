@@ -1,4 +1,4 @@
-Private-Package: com.example.demo
+Private-Package: com.example.demo, test
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
@@ -19,7 +19,6 @@ Bundle-SymbolicName: demo
 	
 
 Bundle-Activator: test.TestActivator
-Private-Package: test
 
 Import-Package: \
 	junit.framework;resolution:=optional,\
