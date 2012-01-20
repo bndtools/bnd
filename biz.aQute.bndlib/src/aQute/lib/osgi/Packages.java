@@ -219,4 +219,14 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 
+	@Deprecated
+	public boolean equals(Object other) {
+		return super.equals(other);
+	}
+	
+	@Deprecated
+	public int hashCode() {
+		return super.hashCode();
+	}
+	
 }

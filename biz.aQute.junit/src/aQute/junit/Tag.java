@@ -12,13 +12,21 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag parent; // Parent element
-	String name; // Name of the tag
-	Hashtable<String,String> attributes = new Hashtable<String,String>(); // Attributes name -> value
-	Vector<Object> content = new Vector<Object>(); // Content elements
-	boolean cdata;
+	Tag							parent;													// Parent
+																							// element
+	String						name;														// Name
+																							// of
+																							// the
+																							// tag
+	Hashtable<String, String>	attributes	= new Hashtable<String, String>();				// Attributes
+																							// name
+																							// ->
+																							// value
+	Vector<Object>				content		= new Vector<Object>();						// Content
+																							// elements
+	boolean						cdata;
 
-	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	SimpleDateFormat			format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -30,7 +38,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Hashtable<String,String> attributes) {
+	public Tag(String name, Hashtable<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -129,7 +137,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Dictionary<String,String> getAttributes() {
+	public Dictionary<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -220,14 +228,14 @@ public class Tag {
 						pw.print("<![CDATA[");
 						StringBuffer sb = new StringBuffer();
 						sb.append(content);
-						
+
 						// Unbelievable but Richard had cases
 						// where the contents matched the end ]]>
 						// specifier, so clean it up
 						int l = sb.indexOf("]]>");
-						while ( l >=0) {
-							sb.insert(l+2, '\\');
-							l = sb.indexOf("]]>", l+2);
+						while (l >= 0) {
+							sb.insert(l + 2, '\\');
+							l = sb.indexOf("]]>", l + 2);
 						}
 						pw.print(sb);
 						pw.print("]]>");
@@ -255,7 +263,7 @@ public class Tag {
 			try {
 				String line = rdr.readLine();
 				if (line != null) {
-					while (line !=null && line.trim().startsWith("<?"))
+					while (line != null && line.trim().startsWith("<?"))
 						line = rdr.readLine();
 
 					while (line != null) {
@@ -391,8 +399,7 @@ public class Tag {
 			Object o = e.nextElement();
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName)
-						|| elementName.equals("*"))
+				if (child.getName().equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -425,10 +432,9 @@ public class Tag {
 		} else {
 			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
 					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
-					: child.findRecursiveAttribute("xmlns:" + tn);
-			return turi == suri
-					|| (turi != null && suri != null && turi.equals(suri));
+			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child
+					.findRecursiveAttribute("xmlns:" + tn);
+			return turi == suri || (turi != null && suri != null && turi.equals(suri));
 		}
 	}
 

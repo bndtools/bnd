@@ -139,8 +139,10 @@ class JavaElement {
 		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
 			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
-				if (notAccessible.contains(i.next().getName()))
+				
+				if (notAccessible.contains( analyzer.getTypeRef(i.next().getName())))
 					i.remove();
+				
 			}
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {

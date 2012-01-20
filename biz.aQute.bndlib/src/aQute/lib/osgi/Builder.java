@@ -151,7 +151,7 @@ public class Builder extends Analyzer {
 		if (wab == null && wablib == null)
 			return dot;
 
-		setProperty(BUNDLE_CLASSPATH, append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
+		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
 		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
 

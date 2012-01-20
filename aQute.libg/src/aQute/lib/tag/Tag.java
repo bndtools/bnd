@@ -15,7 +15,7 @@ public class Tag {
 	String						name;														// Name
 	final Map<String, String>	attributes	= new LinkedHashMap<String, String>();
 	final List<Object>			content		= new ArrayList<Object>();						// Content
-	static SimpleDateFormat		format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	SimpleDateFormat			format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean						cdata;
 
 	/**
@@ -220,7 +220,7 @@ public class Tag {
 				if (c instanceof String) {
 					if (cdata) {
 						pw.print("<![CDATA[");
-						String s = (String)c;
+						String s = (String) c;
 						s = s.replaceAll("]]>", "] ]>");
 						pw.print(s);
 						pw.print("]]>");

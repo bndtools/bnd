@@ -499,6 +499,7 @@ import aQute.lib.codec.*;
 		while (c == '"' || Character.isDigit(c) || c == '-' || c == '[' || c == '{') {
 			Object member = decode(type, isr);
 			result.add(member);
+			c = isr.peek();
 		}
 		Object array = Array.newInstance(rawClass, result.size());
 

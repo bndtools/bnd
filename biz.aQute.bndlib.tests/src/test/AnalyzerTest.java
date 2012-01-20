@@ -82,7 +82,7 @@ public class AnalyzerTest extends BndTestCase {
 		Domain main = Domain.domain(manifest);
 		Parameters export = main.getExportPackage();
 		Parameters expected = new Parameters("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
-		assertEquals(expected, export);
+		assertTrue(expected.isEqual(export));
 		assertEquals("1.0.0.x",manifest.getMainAttributes().getValue("Bundle-Version"));
 	}
 	

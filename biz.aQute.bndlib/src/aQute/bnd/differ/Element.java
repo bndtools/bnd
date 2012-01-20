@@ -57,7 +57,7 @@ class Element implements Comparable<Element>, Tree {
 		this.comment = data.comment;
 		this.add = data.add;
 		this.remove = data.rem;
-		if (data.children != null)
+		if (data.children == null)
 			children = EMPTY;
 		else {
 			this.children = new Element[data.children.length];
@@ -102,7 +102,7 @@ class Element implements Comparable<Element>, Tree {
 	}
 
 	public boolean equals(Object other) {
-		if (getClass() != other.getClass())
+		if (other == null || getClass() != other.getClass())
 			return false;
 
 		return compareTo((Element) other) == 0;

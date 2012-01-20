@@ -160,7 +160,17 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
-	public boolean equals(Object o) {
+	@Deprecated
+	public boolean equals(Object other) {
+		return super.equals(other);
+	}
+	
+	@Deprecated
+	public int hashCode() {
+		return super.hashCode();
+	}
+	
+	public boolean isEqual(Attrs o) {
 		if ( this == o)
 			return true;
 		
@@ -176,7 +186,7 @@ public class Attrs implements Map<String, String> {
 		
 		SortedList<String> l = new SortedList<String>(keySet());
 		SortedList<String> lo = new SortedList<String>(other.keySet());
-		if ( !l.equals(lo) )
+		if ( !l.isEqual(lo) )
 			return false;
 		
 		for ( String key : keySet()) {
@@ -186,4 +196,5 @@ public class Attrs implements Map<String, String> {
 		return true;
 	
 	}
+	
 }

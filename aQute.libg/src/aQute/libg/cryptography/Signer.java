@@ -15,6 +15,7 @@ public class Signer<D extends Digest> extends OutputStream {
 	@Override public void write(byte[] buffer, int offset, int length) throws IOException {
 		try {
 			signature.update(buffer, offset, length);
+			digester.write(buffer, offset, length);
 		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
@@ -23,13 +24,18 @@ public class Signer<D extends Digest> extends OutputStream {
 	@Override public void write(int b) throws IOException {
 		try {
 			signature.update((byte) b);
+			digester.write(b);
 		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}
 	
 
-	public D signature() throws Exception {
-		return digester.digest(signature().digest());
+	public Signature signature() throws Exception {
+		return signature;
+	}
+	
+	public D digest() throws Exception {
+		return digester.digest();
 	}
 }

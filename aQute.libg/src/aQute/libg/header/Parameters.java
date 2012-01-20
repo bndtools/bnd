@@ -162,13 +162,20 @@ public class Parameters implements Map<String, Attrs> {
 		}
 	}
 
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
+	@Deprecated
+	public boolean equals(Object other) {
+		return super.equals(other);
+	}
+	
+	@Deprecated
+	public int hashCode() {
+		return super.hashCode();
+	}
+	
 
-		if (!(o instanceof Parameters))
-			return false;
-		Parameters other = (Parameters) o;
+	public boolean isEqual(Parameters other) {
+		if (this == other)
+			return true;
 
 		if (size() != other.size())
 			return false;
@@ -178,11 +185,11 @@ public class Parameters implements Map<String, Attrs> {
 
 		SortedList<String> l = new SortedList<String>(keySet());
 		SortedList<String> lo = new SortedList<String>(other.keySet());
-		if (!l.equals(lo))
+		if (!l.isEqual(lo))
 			return false;
 
 		for (String key : keySet()) {
-			if (!get(key).equals(other.get(key)))
+			if (!get(key).isEqual(other.get(key)))
 				return false;
 		}
 		return true;

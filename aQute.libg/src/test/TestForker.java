@@ -8,7 +8,8 @@ import aQute.libg.forker.*;
 public class TestForker extends TestCase {
 
 	final Collection<Integer>	EMPTY	= Collections.emptyList();
-
+	final int TIMEOUT = 1000000;
+	
 	static class R implements Runnable {
 		final Collection<Integer>	result;
 		final int					n;
@@ -70,7 +71,7 @@ public class TestForker extends TestCase {
 				synchronized (result) {
 					try {
 						System.out.println("starting to wait");
-						result.wait();
+						result.wait(TIMEOUT);
 						System.out.println("finished wait");
 					} catch (Exception e) {
 						System.out.println("exception");

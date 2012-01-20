@@ -206,8 +206,11 @@ public class Project extends Processor {
 					}
 					if (!output.isDirectory())
 						error("Can not find output directory: " + output);
-					else if (!buildpath.contains(output))
-						buildpath.add(new Container(this, output));
+					else {
+						Container c = new Container(this, output);
+						if ( !buildpath.contains(c))
+							buildpath.add(c);
+					}
 
 					// Where we store all our generated stuff.
 					target = getFile(getProperty("target", "generated"));

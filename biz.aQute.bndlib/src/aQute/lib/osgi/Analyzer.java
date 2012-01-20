@@ -55,7 +55,6 @@ public class Analyzer extends Processor {
 	private Packages								exports;
 	private Packages								imports;
 	private TypeRef									activator;
-	private Parameters								bundleClasspath;
 
 	// Global parameters
 	private final MultiMap<PackageRef, PackageRef>	uses					= new MultiMap<PackageRef, PackageRef>(
@@ -117,7 +116,6 @@ public class Analyzer extends Processor {
 			classspace.clear();
 			classpathExports.clear();
 
-			bundleClasspath = getBundleClassPath();
 
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
@@ -323,10 +321,11 @@ public class Analyzer extends Processor {
 		else
 			main.remove(PRIVATE_PACKAGE);
 
-		if (bundleClasspath != null && !bundleClasspath.isEmpty())
-			main.putValue(BUNDLE_CLASSPATH, printClauses(bundleClasspath));
-		else
+		Parameters bcp = getBundleClasspath();
+		if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size()==1)) 
 			main.remove(BUNDLE_CLASSPATH);
+		else
+			main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
 
 		doNamesection(dot, manifest);
 
@@ -440,8 +439,8 @@ public class Analyzer extends Processor {
 
 			// For each instruction
 
-			for (String path : resources) {
-
+			for (Iterator<String> i = resources.iterator(); i.hasNext();) {
+				String path = i.next();
 				// For each resource
 
 				if (instr.getKey().matches(path)) {
@@ -474,7 +473,7 @@ public class Analyzer extends Processor {
 							}
 						}
 					}
-					resources.remove(path);
+					i.remove();
 				}
 			}
 
@@ -587,10 +586,6 @@ public class Analyzer extends Processor {
 		return sb.toString();
 	}
 
-	public Parameters getBundleClasspath() {
-		return bundleClasspath;
-	}
-
 	public Packages getContained() {
 		return contained;
 	}
@@ -652,16 +647,18 @@ public class Analyzer extends Processor {
 	}
 
 	public String getBndInfo(String key, String defaultValue) {
-		if (bndInfo == null) {
-			bndInfo = new Properties();
-			try {
-				InputStream in = Analyzer.class.getResourceAsStream("bnd.info");
-				if (in != null) {
-					bndInfo.load(in);
-					in.close();
+		synchronized (Analyzer.class) {
+			if (bndInfo == null) {
+				bndInfo = new Properties();
+				try {
+					InputStream in = Analyzer.class.getResourceAsStream("bnd.info");
+					if (in != null) {
+						bndInfo.load(in);
+						in.close();
+					}
+				} catch (IOException ioe) {
+					warning("Could not read bnd.info in " + Analyzer.class.getPackage() + ioe);
 				}
-			} catch (IOException ioe) {
-				warning("Could not read bnd.info in " + Analyzer.class.getPackage() + ioe);
 			}
 		}
 		return bndInfo.getProperty(key, defaultValue);
@@ -1486,21 +1483,22 @@ public class Analyzer extends Processor {
 	}
 
 	private void analyzeBundleClasspath() throws Exception {
-
-		if (bundleClasspath.isEmpty()) {
+		Parameters bcp = getBundleClasspath();
+		
+		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true);
 		} else {
 			boolean okToIncludeDirs = true;
 
-			for (String path : bundleClasspath.keySet()) {
+			for (String path : bcp.keySet()) {
 				if (dot.getDirectories().containsKey(path)) {
 					okToIncludeDirs = false;
 					break;
 				}
 			}
 
-			for (String path : bundleClasspath.keySet()) {
-				Attrs info = bundleClasspath.get(path);
+			for (String path : bcp.keySet()) {
+				Attrs info = bcp.get(path);
 
 				if (path.equals(".")) {
 					analyzeJar(dot, "", okToIncludeDirs);
@@ -1528,7 +1526,7 @@ public class Analyzer extends Processor {
 						// if directories are used, we should not have dot as we
 						// would have the classes in these directories on the
 						// class path twice.
-						if (bundleClasspath.containsKey("."))
+						if (bcp.containsKey("."))
 							warning("Bundle-ClassPath uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", true);

@@ -13,6 +13,12 @@ import aQute.lib.tag.*;
 public class DiffCommand {
 	bnd bnd;
 	
+	
+	DiffCommand(bnd bnd) {
+		this.bnd=bnd;
+	}
+	
+	
 	interface diff extends Options {
 		@Config(description = "Print the API") boolean api();
 

@@ -217,7 +217,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				index.close();
 				File indexFile = new File(home, INDEXFILE);
 				ixf.renameTo(indexFile);
-				index = new Index(indexFile, KEYLENGTH);
+				this.index = new Index(indexFile, KEYLENGTH);
 			}
 		} finally {
 			in.close();

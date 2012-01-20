@@ -74,12 +74,13 @@ public class Signer extends Processor {
             try {
                 java.io.FileInputStream keystoreInputStream = new java.io.FileInputStream(
                         keystoreFile);
-                keystore.load(keystoreInputStream, password == null ? null
-                        : password.toCharArray());
+                char[] pw = password == null ? new char[0]
+                        : password.toCharArray();
+                
+                keystore.load(keystoreInputStream, pw);
                 keystoreInputStream.close();
                 privateKeyEntry =  (PrivateKeyEntry) keystore.getEntry(
-                        alias, new KeyStore.PasswordProtection(password
-                                .toCharArray()));
+                        alias, new KeyStore.PasswordProtection(pw));
             } catch (Exception e) {
                 error("No able to load the private key from the give keystore("+keystoreFile.getAbsolutePath()+") with alias "+alias+" : "
                         + e);

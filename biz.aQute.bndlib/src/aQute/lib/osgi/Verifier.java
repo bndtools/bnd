@@ -15,7 +15,6 @@ public class Verifier extends Processor {
 	private final Jar								dot;
 	private final Manifest							manifest;
 	private final Domain						main;
-	private final Map<String, Map<String, String>>	ignore	= newHashMap();
 
 	private boolean									r3;
 	private boolean									usesRequire;
@@ -313,7 +312,7 @@ public class Verifier extends Processor {
 		// Remove any java.** packages.
 		for (Iterator<PackageRef> p = unresolvedReferences.iterator(); p.hasNext();) {
 			PackageRef pack = p.next();
-			if (pack.isJava() || ignore.containsKey(pack))
+			if (pack.isJava())
 				p.remove();
 			else {
 				// Remove any dynamic imports

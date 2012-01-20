@@ -483,7 +483,7 @@ public class bnd extends Processor {
 				mask = "=+0";
 			else if (mask.equalsIgnoreCase("micro"))
 				mask = "==+";
-			else if (!mask.matches("(+=0){1,3}")) {
+			else if (!mask.matches("[+=0]{1,3}")) {
 				error("Invalid mask for version bump %s, is (minor|major|micro|<mask>), see $version for mask",
 						mask);
 				return;

@@ -86,7 +86,6 @@ import java.util.*;
 
 	public SortedList(Comparator<T> cmp, T... x) {
 		this((T[]) x.clone(), 0, x.length, cmp);
-		assert x != null && x.length > 0;
 	}
 
 	private SortedList(SortedList<T> other, int start, int end) {
@@ -336,8 +335,20 @@ import java.util.*;
 
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
+	
+	@Deprecated
+	public boolean equals(Object other) {
+		return super.equals(other);
+	}
+	
+	@Deprecated
+	public int hashCode() {
+		return super.hashCode();
+	}
+	
 
-	public boolean equals(SortedList<T> list) {
+
+	public boolean isEqual(SortedList<T> list) {
 		if (size() != list.size())
 			return false;
 

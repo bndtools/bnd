@@ -86,9 +86,8 @@ public class LocalOBR extends OBR implements Refreshable, Participant {
 		Set<File> allFiles = new HashSet<File>();
 		gatherFiles(allFiles);
 		
-		FileOutputStream out = null;
+		FileOutputStream out = new FileOutputStream(localIndex);
 		try {
-			out = new FileOutputStream(localIndex);
 			if (!allFiles.isEmpty()) {
 				Map<String, String> config = new HashMap<String, String>();
 				config.put(BundleIndexer.REPOSITORY_NAME, this.getName());

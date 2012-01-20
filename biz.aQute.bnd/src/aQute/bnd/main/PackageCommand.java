@@ -207,6 +207,8 @@ public class PackageCommand {
 
 					Attrs attrs = entry.getValue();
 					String packageName = entry.getKey();
+					PackageRef packageRef = analyzer.getPackageRef(packageName);
+					
 					String version = attrs.get(Constants.VERSION_ATTRIBUTE);
 
 					PSpec pspec = new PSpec();
@@ -216,7 +218,7 @@ public class PackageCommand {
 					pspec.attrs = attrs;
 					pspec.tree = tree;
 
-					Collection<PackageRef> uses = analyzer.getUses().get(packageName);
+					Collection<PackageRef> uses = analyzer.getUses().get(packageRef);
 					if (uses != null) {
 						for (PackageRef x : uses) {
 							if (x.isJava())

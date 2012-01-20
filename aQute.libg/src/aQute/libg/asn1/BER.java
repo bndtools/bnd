@@ -5,6 +5,8 @@ import java.text.*;
 import java.util.*;
 
 public class BER implements Types {
+    DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss\\Z");
+    
     final DataInputStream xin;
     long                  position;
 
@@ -460,7 +462,6 @@ public class BER implements Types {
             
         }
     }
-    static DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss\\Z");
     
 
     private void putOid(OutputStream out, int i) throws IOException {

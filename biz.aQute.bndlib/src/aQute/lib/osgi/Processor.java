@@ -192,7 +192,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
 	}
-	
+
 	public void use(Processor reporter) {
 		setPedantic(reporter.isPedantic());
 		setTrace(reporter.isTrace());
@@ -481,12 +481,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(p);
 	}
 
-	public void addProperties(Map<?,?> properties) {
-		for ( Entry<?, ?> entry : properties.entrySet()) {
-			setProperty( entry.getKey().toString(), entry.getValue()+"");
+	public void addProperties(Map<?, ?> properties) {
+		for (Entry<?, ?> entry : properties.entrySet()) {
+			setProperty(entry.getKey().toString(), entry.getValue() + "");
 		}
 	}
-	
+
 	public synchronized void addIncluded(File file) {
 		if (included == null)
 			included = new ArrayList<File>();
@@ -970,8 +970,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public static String join(String delimeter, Collection<?>... list) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Collection<?> l : list) {
-			if (list != null) {
+		if (list != null) {
+			for (Collection<?> l : list) {
 				for (Object item : l) {
 					sb.append(del);
 					sb.append(item);
@@ -1229,7 +1229,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					lastSlash = false;
 				}
 			}
-			if (!lastSlash & sb.length() > 0) {
+			
+			if (!lastSlash && sb.length() > 0) {
 				sb.append('/');
 				lastSlash = true;
 			}
@@ -1362,8 +1363,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 
-		if (random == null)
-			random = new Random();
+		synchronized (Processor.class) {
+			if (random == null)
+				random = new Random();
+		}
 
 		char[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -1499,15 +1502,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Utiltity to replace an extension
+	 * 
 	 * @param s
 	 * @param extension
 	 * @param newExtension
 	 * @return
 	 */
 	public String replaceExtension(String s, String extension, String newExtension) {
-		if ( s.endsWith(extension)) 
-			s = s.substring(0, s.length()-extension.length());
-		
-		return s+newExtension;
+		if (s.endsWith(extension))
+			s = s.substring(0, s.length() - extension.length());
+
+		return s + newExtension;
 	}
 }

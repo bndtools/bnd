@@ -250,38 +250,79 @@ public class ComponentTest extends TestCase {
 	 * Test if a package private method gives us 1.1 + namespace in the XML
 	 */
 
-	@Component(name = "packageprotected") static class PackageProtectedActivateMethod {
-		@Activate protected void activate(ComponentContext c) {
+	@Component(name = "protected") static class PackageProtectedActivateMethod {
+		@Activate protected void activatex(ComponentContext c) {
 		}
 	}
 
 	@Component(name = "packageprivate") static class PackagePrivateActivateMethod {
-		@Activate void activate(ComponentContext c) {
+		@Activate void activatex(ComponentContext c) {
+		}
+	}
+
+	@Component(name = "private") static class PrivateActivateMethod {
+		@SuppressWarnings("unused") @Activate private void activatex(ComponentContext c) {
+		}
+	}
+
+	@Component(name = "default-private") static class DefaultPrivateActivateMethod {
+		@SuppressWarnings("unused") @Activate private void activate(ComponentContext c) {
+		}
+	}
+
+	@Component(name = "default-protected") static class DefaultProtectedActivateMethod {
+		@Activate protected void activate(ComponentContext c) {
+		}
+	}
+
+	@Component(name = "public") static class PublicActivateMethod {
+		@Activate public void activatex(ComponentContext c) {
 		}
 	}
 
 	public void testPackagePrivateActivateMethod() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] { new File("bin") });
-		b.setProperty("Service-Component", "*Package*ActivateMethod");
+		b.setProperty("Service-Component", "*ActivateMethod");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertTrue(b.check());
 
 		{
-			Document doc = doc(b, "packageprotected");
+			Document doc = doc(b, "default-private");
 			Object o = xpath.evaluate("scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
+			assertEquals( "",xpath.evaluate("component/@activate", doc));
 		}
 		{
-			Resource r = b.getJar().getResource("OSGI-INF/packageprivate.xml");
-			r.write(System.out);
-			assertNotNull(r);
-			Document doc = db.parse(r.openInputStream());
-			assertNotNull(xpath.evaluate("//scr:component/@name", doc, XPathConstants.STRING));
+			Document doc = doc(b, "default-protected");
+			Object o = xpath.evaluate("component", doc, XPathConstants.NODE);
+			assertNotNull(o);
+			assertEquals( "",xpath.evaluate("component/@activate", doc));
+		}
+		{
+			Document doc = doc(b, "public");
+			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
+			assertNotNull(o);
+			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+		}
+		{
+			Document doc = doc(b, "private");
+			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
+			assertNotNull(o);
+			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+		}
+		{
+			Document doc = doc(b, "protected");
+			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
+			assertNotNull(o);
+			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+		}
+		{
+			Document doc = doc(b, "packageprivate");
+			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
+			assertNotNull(o);
+			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
 		}
 
 	}
@@ -439,14 +480,13 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*Version");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertTrue(b.check());
 
 		{
 			Document doc = doc(b, "ncomp");
 			Node o = (Node) xpath.evaluate("scr:component", doc, XPathConstants.NODE);
+			assertNull("Expected ncomp to have old namespace", o);
+			o = (Node) xpath.evaluate("component", doc, XPathConstants.NODE);
 			assertNotNull("Expected ncomp to have old namespace", o);
 		}
 

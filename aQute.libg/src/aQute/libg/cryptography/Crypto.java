@@ -53,10 +53,10 @@ public class Crypto {
 	}
 
 
-	public static <T extends Digest> Signer<T> signer(PrivateKey key, Digester<T> digester) throws NoSuchAlgorithmException {
-		Signature s = Signature.getInstance(key.getAlgorithm() + "with" + digester.getAlgorithm());
-		return new Signer<T>(s,digester);
-	}
+//	public static <T extends Digest> Signer<T> signer(PrivateKey key, Digester<T> digester) throws NoSuchAlgorithmException {
+//		Signature s = Signature.getInstance(key.getAlgorithm() + "with" + digester.getAlgorithm());
+//		return new Signer<T>(s,digester);
+//	}
 
 	public static Verifier verifier(PublicKey key, Digest digest) throws NoSuchAlgorithmException {
 		Signature s = Signature.getInstance(key.getAlgorithm() + "with" + digest.getAlgorithm());

@@ -15,11 +15,11 @@ public class HCodec implements Codec {
 	}
 
 	public <T> T decode(InputStream in, Class<T> t) throws Exception {
-		return t.cast(decode(in, t));
+		return t.cast(decode(in, (Type)t));
 	}
 
 	public <T> T decode(Reader in, Class<T> t) throws Exception {
-		return t.cast(decode(in, t));
+		return t.cast(decode(in, (Type) t));
 	}
 
 	public Object decode(InputStream in, Type t) throws Exception {
@@ -45,7 +45,7 @@ public class HCodec implements Codec {
 		try {
 			InputStreamReader rdr = new InputStreamReader(fin, "UTF-8");
 			try {
-				return t.cast(decode(in, t));
+				return t.cast(decode(rdr, t));
 			} finally {
 				rdr.close();
 			}
