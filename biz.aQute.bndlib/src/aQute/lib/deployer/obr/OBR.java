@@ -95,7 +95,7 @@ public class OBR extends AbstractBaseOBR {
 	
 	@Override
 	public String getName() {
-		if (name != null && name != this.getClass().getName())
+		if (name != null && !name.equals(this.getClass().getName()))
 			return name;
 		
 		StringBuilder builder = new StringBuilder();
