@@ -9,89 +9,50 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.bindex.ResourceIndexer;
-
 import junit.framework.TestCase;
 
-public class TestIndexer extends TestCase {
+import org.osgi.service.bindex.ResourceIndexer;
 
+public class TestIndexer extends TestCase {
+	
 	public void testFragmentBsnVersion() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/01-bsn+version.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-01.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-01.txt", "testdata/01-bsn+version.jar");
 	}
 	
 	public void testFragmentLocalization() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/02-localization.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-02.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-02.txt", "testdata/02-localization.jar");
 	}
 	
 	public void testFragmentExport() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/03-export.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-03.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-03.txt", "testdata/03-export.jar");
 	}
 	
 	public void testFragmentExportWithUses() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/04-export+uses.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-04.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-04.txt", "testdata/04-export+uses.jar");
 	}
 	
 	public void testFragmentImport() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/05-import.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-05.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-05.txt", "testdata/05-import.jar");
 	}
 	
 	public void testFragmentRequireBundle() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/06-requirebundle.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-06.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-06.txt", "testdata/06-requirebundle.jar");
 	}
 	
 	public void testFragmentOptionalImport() throws Exception {
-		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
-		
-		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/07-optionalimport.jar")), writer, null);
-		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-07.txt"));
-		assertEquals(expected, writer.toString().trim());
+		assertFragmentMatch("testdata/fragment-07.txt", "testdata/07-optionalimport.jar");
 	}
 	
 	public void testFragmentFragmentHost() throws Exception {
+		assertFragmentMatch("testdata/fragment-08.txt", "testdata/08-fragmenthost.jar");
+	}
+	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/08-fragmenthost.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File(jarPath)), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-08.txt"));
+		String expected = Utils.readStream(new FileInputStream(expectedPath));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
