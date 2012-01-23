@@ -19,9 +19,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.a.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/01-bsn+version.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-a.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-01.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -29,9 +29,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.b.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/02-localization.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-b.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-02.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -39,9 +39,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.c.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/03-export.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-c.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-03.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -49,9 +49,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.d.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/04-export+uses.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-d.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-04.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -59,9 +59,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.e.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/05-import.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-e.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-05.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -69,9 +69,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.f.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/06-requirebundle.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-f.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-06.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -79,9 +79,9 @@ public class TestIndexer extends TestCase {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
-		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.g.jar")), writer, null);
+		indexer.indexFragment(Collections.singleton(new File("testdata/07-optionalimport.jar")), writer, null);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/fragment-g.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-07.txt"));
 		assertEquals(expected, writer.toString().trim());
 	}
 	
@@ -90,15 +90,15 @@ public class TestIndexer extends TestCase {
 		
 		StringWriter writer = new StringWriter();
 		Set<File> files = new LinkedHashSet<File>();
-		files.add(new File("testdata/org.example.c.jar"));
-		files.add(new File("testdata/org.example.f.jar"));
+		files.add(new File("testdata/03-export.jar"));
+		files.add(new File("testdata/06-requirebundle.jar"));
 		
 		Map<String, String> config = new HashMap<String, String>();
 		config.put(ResourceIndexerImpl.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, writer, config);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/full-c+f.txt"));
+		String expected = Utils.readStream(new FileInputStream("testdata/full-03+06.txt"));
 		assertEquals(expected, writer.toString());
 	}
 	

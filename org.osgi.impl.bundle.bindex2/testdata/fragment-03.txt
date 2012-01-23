@@ -5,7 +5,7 @@
     <attribute name='version' type='Version' value='0.0.0'/>
   </capability>
   <capability namespace='osgi.content'>
-    <attribute name='osgi.content' value='testdata/org.example.c.jar'/>
+    <attribute name='osgi.content' value='testdata/03-export.jar'/>
     <attribute name='description' value='org.example.c'/>
     <attribute name='size' value='1100'/>
   </capability>
