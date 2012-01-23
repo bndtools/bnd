@@ -1,9 +1,6 @@
 package org.osgi.service.bindex.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.jar.Manifest;
 
@@ -41,7 +38,7 @@ public class TestJarResource extends TestCase {
 		JarResource resource = new JarResource(new File("testdata/org.example.a.jar"));
 		Resource pkgInfoResource = resource.getChild("org/example/a/packageinfo");
 		
-		assertEquals("version 1.0", readStream(pkgInfoResource.getStream()));
+		assertEquals("version 1.0", Utils.readStream(pkgInfoResource.getStream()));
 	}
 	
 	public void testJarManifest() throws Exception {
@@ -50,17 +47,4 @@ public class TestJarResource extends TestCase {
 		assertEquals("org.example.a", manifest.getMainAttributes().getValue("Bundle-SymbolicName"));
 	}
 	
-	static final String readStream(InputStream stream) throws IOException {
-		InputStreamReader reader = new InputStreamReader(stream);
-		StringBuilder result = new StringBuilder();
-		
-		char[] buf = new char[1024];
-		int charsRead = reader.read(buf, 0, buf.length);
-		while (charsRead > -1) {
-			result.append(buf, 0, charsRead);
-			charsRead = reader.read(buf, 0, buf.length);
-		}
-		
-		return result.toString();
-	}
 }

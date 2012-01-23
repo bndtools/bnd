@@ -1,0 +1,12 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.b'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/org.example.b.jar'/>
+    <attribute name='description' value='Example Bundle B'/>
+    <attribute name='size' value='1544'/>
+  </capability>
+</resource>
