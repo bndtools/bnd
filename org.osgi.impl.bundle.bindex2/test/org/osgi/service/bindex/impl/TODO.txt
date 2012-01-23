@@ -1,5 +1,5 @@
 * Import attributes and mandatory attributes
-* Fragments
+* Visibility: re-export on require-bundle
 * Import/Export service
 * DynamicImport-Package
 * DS

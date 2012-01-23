@@ -106,7 +106,7 @@ public class TestBundleAnalyzer extends TestCase {
 		
 		List<Requirement> requires = findReqs("osgi.wiring.bundle", reqs);
 		assertEquals(1, requires.size());
-		assertEquals("(&(osgi.wiring.bundle=org.example.a)(version>=3.0.0)(!(version>=4.0.0)))", requires.get(0).getDirectives().get("filter"));
+		assertEquals("(&(osgi.wiring.bundle=org.example.a)(bundle-version>=3.0.0)(!(bundle-version>=4.0.0)))", requires.get(0).getDirectives().get("filter"));
 	}
 	
 	public void testPackageImportOptional() throws Exception {
@@ -119,6 +119,17 @@ public class TestBundleAnalyzer extends TestCase {
 		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
 		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
 		assertEquals("optional", pkgImport.getDirectives().get("resolution"));
+	}
+	
+	public void testFragmentHost() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		LinkedList<Capability> caps = new LinkedList<Capability>();
+		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		
+		a.analyseResource(new JarResource(new File("testdata/08-fragmenthost.jar")), caps, reqs);
+		
+		Requirement req = findReqs("osgi.wiring.host", reqs).get(0);
+		assertEquals("(&(osgi.wiring.host=org.example.a)(bundle-version>=0.0.0))", req.getDirectives().get("filter"));
 	}
 	
 	private static List<Capability> findCaps(String namespace, Collection<Capability> caps) {

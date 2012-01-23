@@ -85,6 +85,16 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
+	public void testFragmentFragmentHost() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("testdata/08-fragmenthost.jar")), writer, null);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-08.txt"));
+		assertEquals(expected, writer.toString().trim());
+	}
+	
 	public void testFullIndex() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		

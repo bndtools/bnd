@@ -24,6 +24,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		doExports(resource, capabilities);
 		doImports(resource, requirements);
 		doRequireBundles(resource, requirements);
+		doFragment(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -32,6 +33,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			throw new IllegalArgumentException("Missing bundle manifest.");
 		
 		Attributes attribs = manifest.getMainAttributes();
+		String fragmentHost = attribs.getValue(Constants.FRAGMENT_HOST);
+		String identity = (fragmentHost == null) ? Namespaces.RESOURCE_TYPE_BUNDLE : Namespaces.RESOURCE_TYPE_FRAGMENT;
+		
 		String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
 		if (bsn == null)
 			throw new IllegalArgumentException("Not an OSGi R4 bundle: missing Bundle-SymbolicName manifest entry.");
@@ -39,12 +43,12 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
 		Version version = (versionStr != null) ? new Version(versionStr) : new Version(0, 0, 0);
 		
-		caps.add(new Builder()
-				.addAttribute(Namespaces.ATTR_TYPE, Namespaces.RESOURCE_TYPE_BUNDLE)
+		Builder builder = new Builder()
+				.addAttribute(Namespaces.ATTR_TYPE, identity)
 				.addAttribute(Namespaces.NS_IDENTITY, bsn)
 				.addAttribute(Namespaces.ATTR_VERSION, version)
-				.setNamespace(Namespaces.NS_IDENTITY)
-				.buildCapability());
+				.setNamespace(Namespaces.NS_IDENTITY);
+		caps.add(builder.buildCapability());
 	}
 
 	private void doContent(Resource resource, List<? super Capability> caps) throws Exception {
@@ -110,7 +114,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			if (versionStr != null) {
 				VersionRange version = new VersionRange(versionStr);
 				filter.insert(0, "(&");
-				addVersionFilter(filter, version);
+				addVersionFilter(filter, version, VersionKey.PackageVersion);
 				filter.append(")");
 			}
 			
@@ -153,7 +157,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			if (versionStr != null) {
 				VersionRange version = new VersionRange(versionStr);
 				filter.insert(0, "(&");
-				addVersionFilter(filter, version);
+				addVersionFilter(filter, version, VersionKey.BundleVersion);
 				filter.append(")");
 			}
 			
@@ -164,34 +168,61 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			reqs.add(builder.buildRequirement());
 		}
 	}
+	
+	private void doFragment(Resource resource, List<? super Requirement> reqs) throws Exception {
+		Manifest manifest = resource.getManifest();
+		String fragmentHost = manifest.getMainAttributes().getValue(Constants.FRAGMENT_HOST);
+		
+		if (fragmentHost != null) {
+			StringBuilder filter = new StringBuilder();
+			Map<String, Map<String, String>> fragmentList = OSGiHeader.parseHeader(fragmentHost);
+			if (fragmentList.size() != 1)
+				throw new IllegalArgumentException("Invalid Fragment-Host header: cannot contain multiple entries");
+			Entry<String, Map<String, String>> entry = fragmentList.entrySet().iterator().next();
+			
+			String bsn = entry.getKey();
+			filter.append("(&(osgi.wiring.host=").append(bsn).append(")");
+			
+			String versionStr = entry.getValue().get(Constants.BUNDLE_VERSION_ATTRIBUTE);
+			VersionRange version = versionStr != null ? new VersionRange(versionStr) : new VersionRange(Version.emptyVersion.toString());
+			addVersionFilter(filter, version, VersionKey.BundleVersion);
+			filter.append(")");
+			
+			Builder builder = new Builder()
+				.setNamespace(Namespaces.NS_WIRING_HOST)
+				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			
+			reqs.add(builder.buildRequirement());
+		}
+	}
 
-	private void addVersionFilter(StringBuilder filter, VersionRange version) {
+	private void addVersionFilter(StringBuilder filter, VersionRange version, VersionKey key) {
 		if (version.isRange()) {
 			if (version.includeLow()) {
-				filter.append("(version");
+				filter.append("(").append(key.getKey());
 				filter.append(">=");
 				filter.append(version.low);
 				filter.append(")");
 			} else {
-				filter.append("(!(version");
+				filter.append("(!(").append(key.getKey());
 				filter.append("<=");
 				filter.append(version.low);
 				filter.append("))");
 			}
 
 			if (version.includeHigh()) {
-				filter.append("(version");
+				filter.append("(").append(key.getKey());
 				filter.append("<=");
 				filter.append(version.high);
 				filter.append(")");
 			} else {
-				filter.append("(!(version");
+				filter.append("(!(").append(key.getKey());
 				filter.append(">=");
 				filter.append(version.high);
 				filter.append("))");
 			}
 		} else {
-			filter.append("(version>=");
+			filter.append("(").append(key.getKey()).append(">=");
 			filter.append(version);
 			filter.append(")");
 		}

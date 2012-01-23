@@ -1,0 +1,15 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.h'/>
+    <attribute name='type' value='osgi.fragment'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/08-fragmenthost.jar'/>
+    <attribute name='description' value='org.example.h'/>
+    <attribute name='size' value='1117'/>
+  </capability>
+  <requirement namespace='osgi.wiring.host'>
+    <directive name='filter' value='(&amp;(osgi.wiring.host=org.example.a)(bundle-version&gt;=0.0.0))'/>
+  </requirement>
+</resource>
