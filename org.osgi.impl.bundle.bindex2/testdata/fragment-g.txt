@@ -1,0 +1,16 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.g'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/org.example.g.jar'/>
+    <attribute name='description' value='org.example.g'/>
+    <attribute name='size' value='978'/>
+  </capability>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='resolution' value='optional'/>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.example.a)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+</resource>

@@ -113,10 +113,24 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				addVersionFilter(filter, version);
 				filter.append(")");
 			}
-
+			
 			Builder builder = new Builder()
 				.setNamespace(Namespaces.NS_WIRING_PACKAGE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			
+			for (Entry<String, String> attribEntry : entry.getValue().entrySet()) {
+				String key = attribEntry.getKey();
+				
+				if (!Constants.VERSION_ATTRIBUTE.equalsIgnoreCase(key) && !"specification-version".equals(key)) {
+					if (key.endsWith(":")) {
+						String directive = key.substring(0, key.length() - 1);
+						builder.addDirective(directive, attribEntry.getValue());
+					} else {
+						builder.addAttribute(key, attribEntry.getValue());
+					}
+				}
+			}
+
 			reqs.add(builder.buildRequirement());
 		}
 	}

@@ -1,4 +1,3 @@
-* Optional imports
 * Import attributes and mandatory attributes
 * Fragments
 * Import/Export service

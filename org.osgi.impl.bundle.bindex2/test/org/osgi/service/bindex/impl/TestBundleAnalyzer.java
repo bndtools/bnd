@@ -109,6 +109,18 @@ public class TestBundleAnalyzer extends TestCase {
 		assertEquals("(&(osgi.wiring.bundle=org.example.a)(version>=3.0.0)(!(version>=4.0.0)))", requires.get(0).getDirectives().get("filter"));
 	}
 	
+	public void testPackageImportOptional() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		LinkedList<Capability> caps = new LinkedList<Capability>();
+		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		
+		a.analyseResource(new JarResource(new File("testdata/07-optionalimport.jar")), caps, reqs);
+		
+		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
+		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
+		assertEquals("optional", pkgImport.getDirectives().get("resolution"));
+	}
+	
 	private static List<Capability> findCaps(String namespace, Collection<Capability> caps) {
 		List<Capability> result = new ArrayList<Capability>();
 		
