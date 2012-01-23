@@ -26,6 +26,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		doImports(resource, requirements);
 		doRequireBundles(resource, requirements);
 		doFragment(resource, requirements);
+		doExportService(resource, capabilities);
+		doImportService(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -230,6 +232,38 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				.setNamespace(Namespaces.NS_WIRING_HOST)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
 			
+			reqs.add(builder.buildRequirement());
+		}
+	}
+	
+	private void doExportService(Resource resource, List<? super Capability> caps) throws Exception {
+		@SuppressWarnings("deprecation")
+		String exportsStr = resource.getManifest().getMainAttributes().getValue(Constants.EXPORT_SERVICE);
+		Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(exportsStr);
+		
+		for (Entry<String, Map<String, String>> export : exports.entrySet()) {
+			String service = OSGiHeader.removeDuplicateMarker(export.getKey());
+			Builder builder = new Builder()
+					.setNamespace(Namespaces.NS_WIRING_SERVICE)
+					.addAttribute(Namespaces.NS_WIRING_SERVICE, service);
+			caps.add(builder.buildCapability());
+		}
+	}
+	
+	private void doImportService(Resource resource, List<? super Requirement> reqs) throws Exception {
+		@SuppressWarnings("deprecation")
+		String importsStr = resource.getManifest().getMainAttributes().getValue(Constants.IMPORT_SERVICE);
+		Map<String, Map<String, String>> imports = OSGiHeader.parseHeader(importsStr);
+		
+		for (Entry<String, Map<String, String>> imp : imports.entrySet()) {
+			String service = OSGiHeader.removeDuplicateMarker(imp.getKey());
+			StringBuilder filter = new StringBuilder();
+			filter.append('(').append(Namespaces.NS_WIRING_SERVICE).append('=').append(service).append(')');
+			
+			Builder builder = new Builder()
+				.setNamespace(Namespaces.NS_WIRING_SERVICE)
+				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
+				.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Namespaces.RESOLUTION_DYNAMIC);
 			reqs.add(builder.buildRequirement());
 		}
 	}

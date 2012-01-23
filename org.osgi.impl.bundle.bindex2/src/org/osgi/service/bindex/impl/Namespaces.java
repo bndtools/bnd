@@ -8,6 +8,7 @@ public class Namespaces {
 	public static final String NS_WIRING_PACKAGE = "osgi.wiring.package";
 	public static final String NS_WIRING_BUNDLE = "osgi.wiring.bundle";
 	public static final String NS_WIRING_HOST = "osgi.wiring.host";
+	public static final String NS_WIRING_SERVICE = "osgi.wiring.service";
 	
 	public static final String RESOURCE_TYPE_BUNDLE = "osgi.bundle";
 	public static final String RESOURCE_TYPE_FRAGMENT = "osgi.fragment";
@@ -19,5 +20,8 @@ public class Namespaces {
 	
 	public static final String DIRECTIVE_FILTER = "filter";
 	public static final String DIRECTIVE_SINGLETON = "singleton";
+	public static final String DIRECTIVE_RESOLUTION = "resolution";
+	
+	public static final String RESOLUTION_DYNAMIC = "dynamic";
 	
 }

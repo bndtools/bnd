@@ -1,7 +1,6 @@
 * fragment-attachment:=never on BSN
 * Import attributes and mandatory attributes
 * Visibility: re-export on require-bundle
-* Import/Export service
 * DynamicImport-Package
 * DS
 * Blueprint
