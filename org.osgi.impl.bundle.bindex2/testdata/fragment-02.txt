@@ -9,4 +9,8 @@
     <attribute name='description' value='Example Bundle B'/>
     <attribute name='size' value='1544'/>
   </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.b'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
 </resource>

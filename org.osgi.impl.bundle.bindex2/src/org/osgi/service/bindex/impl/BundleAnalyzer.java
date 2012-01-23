@@ -21,6 +21,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	public void analyseResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
 		doIdentity(resource, capabilities);
 		doContent(resource, capabilities);
+		doBundle(resource, capabilities);
 		doExports(resource, capabilities);
 		doImports(resource, requirements);
 		doRequireBundles(resource, requirements);
@@ -41,7 +42,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			throw new IllegalArgumentException("Not an OSGi R4 bundle: missing Bundle-SymbolicName manifest entry.");
 		
 		String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
-		Version version = (versionStr != null) ? new Version(versionStr) : new Version(0, 0, 0);
+		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
 		
 		Builder builder = new Builder()
 				.addAttribute(Namespaces.ATTR_TYPE, identity)
@@ -67,6 +68,35 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		if (bundleName != null)
 			builder.addAttribute(Namespaces.ATTR_DESCRIPTION, bundleName);
 
+		caps.add(builder.buildCapability());
+	}
+	
+	private void doBundle(Resource resource, List<? super Capability> caps) throws Exception {
+		Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
+		
+		Attributes attribs = resource.getManifest().getMainAttributes();
+		if (attribs.getValue(Constants.FRAGMENT_HOST) != null)
+			return;
+		
+		Entry<String, Map<String, String>> bsn = parseBsn(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME));
+		String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
+		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
+		
+		builder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getKey())
+			.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
+		
+		for (Entry<String, String> attribEntry : bsn.getValue().entrySet()) {
+			String key = attribEntry.getKey();
+			if (key.endsWith(":")) {
+				String directiveName = key.substring(0, key.length() - 1);
+				if (!Constants.SINGLETON_DIRECTIVE.equalsIgnoreCase(directiveName) && !Constants.FRAGMENT_ATTACHMENT_DIRECTIVE.equalsIgnoreCase(directiveName)) {
+					builder.addDirective(directiveName, attribEntry.getValue());
+				}
+			} else {
+				builder.addAttribute(key, attribEntry.getValue());
+			}
+		}
+		
 		caps.add(builder.buildCapability());
 	}
 	
@@ -194,6 +224,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			
 			reqs.add(builder.buildRequirement());
 		}
+	}
+	
+	private Entry<String, Map<String, String>> parseBsn(String bsn) {
+		Map<String, Map<String, String>> map = OSGiHeader.parseHeader(bsn);
+		if (map.size() != 1)
+			throw new IllegalArgumentException("Invalid format for Bundle-SymbolicName");
+		return map.entrySet().iterator().next();
 	}
 
 	private void addVersionFilter(StringBuilder filter, VersionRange version, VersionKey key) {

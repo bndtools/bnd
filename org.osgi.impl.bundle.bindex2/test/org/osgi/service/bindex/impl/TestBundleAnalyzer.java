@@ -21,7 +21,7 @@ public class TestBundleAnalyzer extends TestCase {
 		
 		a.analyseResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
 		
-		assertEquals(2, caps.size());
+		assertEquals(3, caps.size());
 		
 		Capability idcap = caps.get(0);
 		assertEquals("osgi.identity", idcap.getNamespace());
