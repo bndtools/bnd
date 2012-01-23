@@ -1,5 +1,3 @@
-* osgi.wiring.host capabilities
-* singleton bundles -> use identity cap (IDENTITY_SINGLETON_DIRECTIVE)
 * fragment-attachment:=never on BSN
 * Import attributes and mandatory attributes
 * Visibility: re-export on require-bundle

@@ -37,18 +37,22 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		String fragmentHost = attribs.getValue(Constants.FRAGMENT_HOST);
 		String identity = (fragmentHost == null) ? Namespaces.RESOURCE_TYPE_BUNDLE : Namespaces.RESOURCE_TYPE_FRAGMENT;
 		
-		String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
+		Entry<String, Map<String, String>> bsn = parseBsn(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME));
 		if (bsn == null)
 			throw new IllegalArgumentException("Not an OSGi R4 bundle: missing Bundle-SymbolicName manifest entry.");
+		
+		boolean singleton = Boolean.TRUE.toString().equalsIgnoreCase(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
 		
 		String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
 		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
 		
 		Builder builder = new Builder()
 				.addAttribute(Namespaces.ATTR_TYPE, identity)
-				.addAttribute(Namespaces.NS_IDENTITY, bsn)
+				.addAttribute(Namespaces.NS_IDENTITY, bsn.getKey())
 				.addAttribute(Namespaces.ATTR_VERSION, version)
 				.setNamespace(Namespaces.NS_IDENTITY);
+		if (singleton)
+			builder.addDirective(Namespaces.DIRECTIVE_SINGLETON, Boolean.TRUE.toString());
 		caps.add(builder.buildCapability());
 	}
 
@@ -231,6 +235,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	}
 	
 	private Entry<String, Map<String, String>> parseBsn(String bsn) {
+		if (bsn == null)
+			return null;
+		
 		Map<String, Map<String, String>> map = OSGiHeader.parseHeader(bsn);
 		if (map.size() != 1)
 			throw new IllegalArgumentException("Invalid format for Bundle-SymbolicName");

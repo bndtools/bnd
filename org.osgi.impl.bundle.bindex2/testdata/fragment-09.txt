@@ -1,0 +1,21 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.i'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+    <directive name='singleton' value='true'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/09-singleton.jar'/>
+    <attribute name='description' value='org.example.i'/>
+    <attribute name='size' value='1111'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.i'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.i'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+</resource>

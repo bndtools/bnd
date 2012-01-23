@@ -18,5 +18,6 @@ public class Namespaces {
 	public static final String ATTR_DESCRIPTION = "description";
 	
 	public static final String DIRECTIVE_FILTER = "filter";
+	public static final String DIRECTIVE_SINGLETON = "singleton";
 	
 }

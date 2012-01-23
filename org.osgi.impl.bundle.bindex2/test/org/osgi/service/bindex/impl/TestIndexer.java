@@ -46,6 +46,11 @@ public class TestIndexer extends TestCase {
 	public void testFragmentFragmentHost() throws Exception {
 		assertFragmentMatch("testdata/fragment-08.txt", "testdata/08-fragmenthost.jar");
 	}
+	
+	public void testFragmentSingletonBundle() throws Exception {
+		assertFragmentMatch("testdata/fragment-09.txt", "testdata/09-singleton.jar");
+	}
+
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
