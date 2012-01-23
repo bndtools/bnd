@@ -23,6 +23,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		doContent(resource, capabilities);
 		doExports(resource, capabilities);
 		doImports(resource, requirements);
+		doRequireBundles(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -116,6 +117,36 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			Builder builder = new Builder()
 				.setNamespace(Namespaces.NS_WIRING_PACKAGE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			reqs.add(builder.buildRequirement());
+		}
+	}
+	
+	private void doRequireBundles(Resource resource, List<? super Requirement> reqs) throws Exception {
+		Manifest manifest = resource.getManifest();
+		
+		String requiresStr = manifest.getMainAttributes().getValue(Constants.REQUIRE_BUNDLE);
+		if (requiresStr == null)
+			return;
+		
+		Map<String, Map<String, String>> requires = OSGiHeader.parseHeader(requiresStr);
+		for (Entry<String, Map<String, String>> entry : requires.entrySet()) {
+			StringBuilder filter = new StringBuilder();
+			
+			String bsn = OSGiHeader.removeDuplicateMarker(entry.getKey());
+			filter.append("(osgi.wiring.bundle=").append(bsn).append(")");
+			
+			String versionStr = entry.getValue().get(Constants.BUNDLE_VERSION_ATTRIBUTE);
+			if (versionStr != null) {
+				VersionRange version = new VersionRange(versionStr);
+				filter.insert(0, "(&");
+				addVersionFilter(filter, version);
+				filter.append(")");
+			}
+			
+			Builder builder = new Builder()
+				.setNamespace(Namespaces.NS_WIRING_BUNDLE)
+				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			
 			reqs.add(builder.buildRequirement());
 		}
 	}

@@ -59,4 +59,14 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
+	public void testFragmentF() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.f.jar")), writer, null);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-f.txt"));
+		assertEquals(expected, writer.toString().trim());
+	}
+	
 }

@@ -5,6 +5,7 @@ public class Namespaces {
 	public static final String NS_IDENTITY = "osgi.identity";
 	public static final String NS_CONTENT = "osgi.content";
 	public static final String NS_WIRING_PACKAGE = "osgi.wiring.package";
+	public static final String NS_WIRING_BUNDLE = "osgi.wiring.bundle";
 	
 	public static final String RESOURCE_TYPE_BUNDLE = "osgi.bundle";
 	
