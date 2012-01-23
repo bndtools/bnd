@@ -4,6 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.osgi.service.bindex.ResourceIndexer;
 
 import junit.framework.TestCase;
 
@@ -67,6 +73,23 @@ public class TestIndexer extends TestCase {
 		
 		String expected = Utils.readStream(new FileInputStream("testdata/fragment-f.txt"));
 		assertEquals(expected, writer.toString().trim());
+	}
+	
+	public void testFullIndexCandF() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		Set<File> files = new LinkedHashSet<File>();
+		files.add(new File("testdata/org.example.c.jar"));
+		files.add(new File("testdata/org.example.f.jar"));
+		
+		Map<String, String> config = new HashMap<String, String>();
+		config.put(ResourceIndexerImpl.REPOSITORY_INCREMENT_OVERRIDE, "0");
+		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
+		indexer.index(files, writer, config);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/full-c+f.txt"));
+		assertEquals(expected, writer.toString());
 	}
 	
 }

@@ -1,0 +1,34 @@
+
+<repository increment='0' name='full-c+f'>
+  <resource>
+    <capability namespace='osgi.identity'>
+      <attribute name='osgi.identity' value='org.example.c'/>
+      <attribute name='type' value='osgi.bundle'/>
+      <attribute name='version' type='Version' value='0.0.0'/>
+    </capability>
+    <capability namespace='osgi.content'>
+      <attribute name='osgi.content' value='testdata/org.example.c.jar'/>
+      <attribute name='description' value='org.example.c'/>
+      <attribute name='size' value='1100'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.example.a'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+    </capability>
+  </resource>
+  <resource>
+    <capability namespace='osgi.identity'>
+      <attribute name='osgi.identity' value='org.example.f'/>
+      <attribute name='type' value='osgi.bundle'/>
+      <attribute name='version' type='Version' value='0.0.0'/>
+    </capability>
+    <capability namespace='osgi.content'>
+      <attribute name='osgi.content' value='testdata/org.example.f.jar'/>
+      <attribute name='description' value='org.example.f'/>
+      <attribute name='size' value='1128'/>
+    </capability>
+    <requirement namespace='osgi.wiring.bundle'>
+      <directive name='filter' value='(&amp;(osgi.wiring.bundle=org.example.a)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+    </requirement>
+  </resource>
+</repository>

@@ -201,6 +201,16 @@ public class Tag {
 	 * Print the tag formatted to a PrintWriter.
 	 */
 	public void print(int indent, PrintWriter pw) {
+		boolean empty = content.size() == 0;
+		
+		printOpen(indent, pw, empty);
+		if (!empty) {
+			printContents(indent, pw);
+			printClose(indent, pw);
+		}
+	}
+	
+	public void printOpen(int indent, PrintWriter pw, boolean andClose) {
 		pw.print("\n");
 		spaces(pw, indent);
 		pw.print('<');
@@ -219,24 +229,29 @@ public class Tag {
 			pw.print(value);
 			pw.print(quote);
 		}
-
-		if (content.size() == 0)
-			pw.print('/');
-		else {
+		
+		if (andClose)
+			pw.print("/>");
+		else
 			pw.print('>');
-			for (Object content : this.content) {
-				if (content instanceof String) {
-					formatted(pw, indent + 2, 60, escape((String) content));
-				} else if (content instanceof Tag) {
-					Tag tag = (Tag) content;
-					tag.print(indent + 2, pw);
-				}
+	}
+	
+	public void printContents(int indent, PrintWriter pw) {
+		for (Object content : this.content) {
+			if (content instanceof String) {
+				formatted(pw, indent + 2, 60, escape((String) content));
+			} else if (content instanceof Tag) {
+				Tag tag = (Tag) content;
+				tag.print(indent + 2, pw);
 			}
-			pw.print("\n");
-			spaces(pw, indent);
-			pw.print("</");
-			pw.print(name);
 		}
+	}
+	
+	public void printClose(int indent, PrintWriter pw) {
+		pw.print("\n");
+		spaces(pw, indent);
+		pw.print("</");
+		pw.print(name);
 		pw.print('>');
 	}
 
