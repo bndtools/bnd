@@ -15,7 +15,7 @@ import junit.framework.TestCase;
 
 public class TestIndexer extends TestCase {
 
-	public void testFragmentA() throws Exception {
+	public void testFragmentBsnVersion() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -25,7 +25,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentB() throws Exception {
+	public void testFragmentLocalization() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -35,7 +35,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentC() throws Exception {
+	public void testFragmentExport() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -45,7 +45,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentD() throws Exception {
+	public void testFragmentExportWithUses() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -55,7 +55,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentE() throws Exception {
+	public void testFragmentImport() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -65,7 +65,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentF() throws Exception {
+	public void testFragmentRequireBundle() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -75,7 +75,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFragmentG() throws Exception {
+	public void testFragmentOptionalImport() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
@@ -85,7 +85,7 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
-	public void testFullIndexCandF() throws Exception {
+	public void testFullIndex() throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
 		
 		StringWriter writer = new StringWriter();
