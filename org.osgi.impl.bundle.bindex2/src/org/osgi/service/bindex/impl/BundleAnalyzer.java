@@ -21,7 +21,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	public void analyseResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
 		doIdentity(resource, capabilities);
 		doContent(resource, capabilities);
-		doBundle(resource, capabilities);
+		doBundleAndHost(resource, capabilities);
 		doExports(resource, capabilities);
 		doImports(resource, requirements);
 		doRequireBundles(resource, requirements);
@@ -71,8 +71,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		caps.add(builder.buildCapability());
 	}
 	
-	private void doBundle(Resource resource, List<? super Capability> caps) throws Exception {
-		Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
+	private void doBundleAndHost(Resource resource, List<? super Capability> caps) throws Exception {
+		Builder bundleBuilder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
+		Builder hostBuilder   = new Builder().setNamespace(Namespaces.NS_WIRING_HOST);
 		
 		Attributes attribs = resource.getManifest().getMainAttributes();
 		if (attribs.getValue(Constants.FRAGMENT_HOST) != null)
@@ -82,7 +83,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		String versionStr = attribs.getValue(Constants.BUNDLE_VERSION);
 		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
 		
-		builder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getKey())
+		bundleBuilder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getKey())
+			.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
+		hostBuilder.addAttribute(Namespaces.NS_WIRING_HOST, bsn.getKey())
 			.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
 		
 		for (Entry<String, String> attribEntry : bsn.getValue().entrySet()) {
@@ -90,14 +93,15 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			if (key.endsWith(":")) {
 				String directiveName = key.substring(0, key.length() - 1);
 				if (!Constants.SINGLETON_DIRECTIVE.equalsIgnoreCase(directiveName) && !Constants.FRAGMENT_ATTACHMENT_DIRECTIVE.equalsIgnoreCase(directiveName)) {
-					builder.addDirective(directiveName, attribEntry.getValue());
+					bundleBuilder.addDirective(directiveName, attribEntry.getValue());
 				}
 			} else {
-				builder.addAttribute(key, attribEntry.getValue());
+				bundleBuilder.addAttribute(key, attribEntry.getValue());
 			}
 		}
 		
-		caps.add(builder.buildCapability());
+		caps.add(bundleBuilder.buildCapability());
+		caps.add(hostBuilder.buildCapability());
 	}
 	
 	private void doExports(Resource resource, List<? super Capability> caps) throws Exception {
