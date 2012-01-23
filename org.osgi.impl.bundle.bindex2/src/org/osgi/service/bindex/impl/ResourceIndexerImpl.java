@@ -37,25 +37,46 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 				Tag capTag = new Tag(Schema.ELEM_CAPABILITY);
 				capTag.addAttribute(Schema.ATTR_NAMESPACE, cap.getNamespace());
 				
-				for (Entry<String, Object> attribEntry : cap.getAttributes().entrySet()) {
-					Tag attribTag = new Tag(Schema.ELEM_ATTRIBUTE);
-					attribTag.addAttribute(Schema.ATTR_NAME, attribEntry.getKey());
-					
-					Object value = attribEntry.getValue();
-					String v = value.toString();
-					
-					if (value instanceof Version) {
-						attribTag.addAttribute(Schema.ATTR_TYPE, Schema.TYPE_VERSION);
-					}
-					attribTag.addAttribute(Schema.ATTR_VALUE, v);
-					capTag.addContent(attribTag);
-				}
+				appendAttributeAndDirectiveTags(capTag, cap.getAttributes(), cap.getDirectives());
 				
 				resourceTag.addContent(capTag);
 			}
 			
+			for (Requirement req : reqs) {
+				Tag reqTag = new Tag(Schema.ELEM_REQUIREMENT);
+				reqTag.addAttribute(Schema.ATTR_NAMESPACE, req.getNamespace());
+				
+				appendAttributeAndDirectiveTags(reqTag, req.getAttributes(), req.getDirectives());
+				
+				resourceTag.addContent(reqTag);
+			}
+			
 			resourceTag.print(0 , pw);
 		}
+	}
+	
+	static void appendAttributeAndDirectiveTags(Tag parentTag, Map<String, Object> attribs, Map<String, String> directives) {
+		for (Entry<String, Object> attribEntry : attribs.entrySet()) {
+			Tag attribTag = new Tag(Schema.ELEM_ATTRIBUTE);
+			attribTag.addAttribute(Schema.ATTR_NAME, attribEntry.getKey());
+			
+			Object value = attribEntry.getValue();
+			String v = value.toString();
+			
+			if (value instanceof Version) {
+				attribTag.addAttribute(Schema.ATTR_TYPE, Schema.TYPE_VERSION);
+			}
+			attribTag.addAttribute(Schema.ATTR_VALUE, v);
+			parentTag.addContent(attribTag);
+		}
+		
+		for (Entry<String, String> directiveEntry : directives.entrySet()) {
+			Tag directiveTag = new Tag(Schema.ELEM_DIRECTIVE);
+			directiveTag.addAttribute(Schema.ATTR_NAME, directiveEntry.getKey());
+			directiveTag.addAttribute(Schema.ATTR_VALUE, directiveEntry.getValue());
+			parentTag.addContent(directiveTag);
+		}
+		
 	}
 
 }

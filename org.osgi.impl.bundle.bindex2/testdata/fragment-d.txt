@@ -1,0 +1,21 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.d'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/org.example.d.jar'/>
+    <attribute name='description' value='org.example.d'/>
+    <attribute name='size' value='1494'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.example.b'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+    <directive name='uses' value='org.example.a'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.example.a'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+  </capability>
+</resource>

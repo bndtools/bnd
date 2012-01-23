@@ -29,4 +29,34 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString().trim());
 	}
 	
+	public void testFragmentC() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.c.jar")), writer, null);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-c.txt"));
+		assertEquals(expected, writer.toString().trim());
+	}
+	
+	public void testFragmentD() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.d.jar")), writer, null);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-d.txt"));
+		assertEquals(expected, writer.toString().trim());
+	}
+	
+	public void testFragmentE() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("testdata/org.example.e.jar")), writer, null);
+		
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-e.txt"));
+		assertEquals(expected, writer.toString().trim());
+	}
+	
 }
