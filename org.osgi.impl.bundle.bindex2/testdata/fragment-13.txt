@@ -1,0 +1,26 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.m'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/13-bree.jar'/>
+    <attribute name='description' value='org.example.m'/>
+    <attribute name='size' value='1144'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.m'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.m'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <requirement namespace='osgi.wiring.ee'>
+    <directive name='filter' value='(ee=J2SE-1.4)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.ee'>
+    <directive name='filter' value='(ee=OSGi/Minimum-1.1)'/>
+  </requirement>
+</resource>

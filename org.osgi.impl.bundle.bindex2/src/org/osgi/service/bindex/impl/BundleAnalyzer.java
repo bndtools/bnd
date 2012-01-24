@@ -28,6 +28,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		doFragment(resource, requirements);
 		doExportService(resource, capabilities);
 		doImportService(resource, requirements);
+		doBREE(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -269,6 +270,24 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				.setNamespace(Namespaces.NS_WIRING_SERVICE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
 				.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Namespaces.RESOLUTION_DYNAMIC);
+			reqs.add(builder.buildRequirement());
+		}
+	}
+	
+	private void doBREE(Resource resource, List<? super Requirement> reqs) throws Exception {
+		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
+		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
+		
+		for (String bree : brees.keySet()) {
+			StringBuilder filter = new StringBuilder();
+			filter.append("(ee=");
+			filter.append(OSGiHeader.removeDuplicateMarker(bree));
+			filter.append(')');
+			
+			Builder builder = new Builder()
+				.setNamespace(Namespaces.NS_WIRING_EE)
+				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			
 			reqs.add(builder.buildRequirement());
 		}
 	}
