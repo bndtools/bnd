@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.service.bindex.Capability;
 import org.osgi.service.bindex.Requirement;
@@ -21,33 +23,27 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
-	private final Map<Filter, List<ResourceAnalyzer>> analyzers = new HashMap<Filter, List<ResourceAnalyzer>>();
+	private List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
 	public ResourceIndexerImpl() {
-		LinkedList<ResourceAnalyzer> basicAnalyzers = new LinkedList<ResourceAnalyzer>();
-		basicAnalyzers.add(new BundleAnalyzer());
-		analyzers.put(null, basicAnalyzers);
-	}
-	
-	public void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
-		synchronized (analyzers) {
-			List<ResourceAnalyzer> list = analyzers.get(filter);
-			if (list == null) {
-				list = new LinkedList<ResourceAnalyzer>();
-				analyzers.put(filter, list);
-			}
-			list.add(analyzer);
+		try {
+			Filter bundleFilter = FrameworkUtil.createFilter("(name=*.jar)");
+			addAnalyzer(new BundleAnalyzer(), bundleFilter);
+		} catch (InvalidSyntaxException e) {
+			// Can't happen...?
+			throw new RuntimeException("Unexpected internal error compiling filter");
 		}
 	}
 	
-	public void removeAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
+	public final void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
 		synchronized (analyzers) {
-			List<ResourceAnalyzer> list = analyzers.get(filter);
-			if (list != null) {
-				list.remove(analyzer);
-				if (list.isEmpty())
-					analyzers.remove(filter);
-			}
+			analyzers.add(Pair.create(analyzer, filter));
+		}
+	}
+	
+	public final void removeAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
+		synchronized (analyzers) {
+			analyzers.remove(Pair.create(analyzer, filter));
 		}
 	}
 
@@ -92,11 +88,12 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 		
 		// Iterate over the analyzers
 		synchronized (analyzers) {
-			for (Entry<Filter, List<ResourceAnalyzer>> entry : analyzers.entrySet()) {
-				Filter filter = entry.getKey();
+			for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+				ResourceAnalyzer analyzer = entry.getFirst();
+				Filter filter = entry.getSecond();
+				
 				if (filter == null || filter.match(resource.getProperties())) {
-					for (ResourceAnalyzer analyzer : entry.getValue())
-						analyzer.analyseResource(resource, caps, reqs);
+					analyzer.analyseResource(resource, caps, reqs);
 				}
 			}
 		}

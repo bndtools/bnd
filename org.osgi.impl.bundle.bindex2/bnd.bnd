@@ -1,8 +1,8 @@
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Export-Package: org.osgi.service.bindex
 -buildpath: ee.j2se;version='[1.5,1.6)',\
 	junit.osgi,\
 	osgi.core,\
-	lib/kxml2-min.jar;version=file
-Private-Package: org.osgi.service.bindex.impl
-Conditional-Package: aQute.lib.*
+	lib/kxml2-min.jar;version=file,\
+	osgi.cmpn
+
+-sub: *.bnd
