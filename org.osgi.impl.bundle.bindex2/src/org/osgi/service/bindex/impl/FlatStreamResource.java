@@ -2,6 +2,8 @@ package org.osgi.service.bindex.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.jar.Manifest;
 
@@ -12,13 +14,22 @@ public class FlatStreamResource implements Resource {
 	private final String location;
 	private final InputStream stream;
 
-	FlatStreamResource(String location, InputStream stream) {
+	private final Dictionary<String, Object>properties = new Hashtable<String, Object>();
+
+	FlatStreamResource(String name, String location, InputStream stream) {
 		this.location = location;
 		this.stream = stream;
+		
+		properties.put(NAME, name);
+		properties.put(LOCATION, location);
 	}
-
+	
 	public String getLocation() {
 		return location;
+	}
+	
+	public Dictionary<String, Object> getProperties() {
+		return properties;
 	}
 	
 	public long getSize() {

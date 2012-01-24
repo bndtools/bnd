@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,8 @@ public class JarResource implements Resource {
 	private final JarFile jarFile;
 	private final String location;
 	
+	private final Dictionary<String, Object>properties = new Hashtable<String, Object>();
+	
 	private final Map<String, List<JarEntry>> prefixMap = new HashMap<String, List<JarEntry>>();
 	private final Map<String, JarEntry> paths = new HashMap<String, JarEntry>();
 	
@@ -30,6 +34,11 @@ public class JarResource implements Resource {
 		this.file = file;
 		this.location = file.getPath();
 		this.jarFile = new JarFile(file);
+		
+		properties.put(NAME, file.getName());
+		properties.put(LOCATION, location);
+		properties.put(SIZE, file.length());
+		properties.put(LAST_MODIFIED, file.lastModified());
 		
 		Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
@@ -69,9 +78,13 @@ public class JarResource implements Resource {
 		}
 		return list;
 	}
-
+	
 	public String getLocation() {
 		return location;
+	}
+	
+	public Dictionary<String, Object> getProperties() {
+		return properties;
 	}
 	
 	public long getSize() {
@@ -121,7 +134,7 @@ public class JarResource implements Resource {
 		JarEntry entry = paths.get(path);
 		if (entry == null)
 			return null;
-		return new FlatStreamResource(childLocation, jarFile.getInputStream(entry));
+		return new FlatStreamResource(path, childLocation, jarFile.getInputStream(entry));
 	}
 
 	public void close() {

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.osgi.framework.Filter;
 import org.osgi.framework.Version;
 import org.osgi.service.bindex.Capability;
 import org.osgi.service.bindex.Requirement;
@@ -20,14 +21,34 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
-	private final List<ResourceAnalyzer> analyzers = new LinkedList<ResourceAnalyzer>();
+	private final Map<Filter, List<ResourceAnalyzer>> analyzers = new HashMap<Filter, List<ResourceAnalyzer>>();
 	
 	public ResourceIndexerImpl() {
-		analyzers.add(new BundleAnalyzer());
+		LinkedList<ResourceAnalyzer> basicAnalyzers = new LinkedList<ResourceAnalyzer>();
+		basicAnalyzers.add(new BundleAnalyzer());
+		analyzers.put(null, basicAnalyzers);
 	}
 	
-	public void addAnalyzer(ResourceAnalyzer analyzer, String filter) {
-		analyzers.add(analyzer);
+	public void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
+		synchronized (analyzers) {
+			List<ResourceAnalyzer> list = analyzers.get(filter);
+			if (list == null) {
+				list = new LinkedList<ResourceAnalyzer>();
+				analyzers.put(filter, list);
+			}
+			list.add(analyzer);
+		}
+	}
+	
+	public void removeAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
+		synchronized (analyzers) {
+			List<ResourceAnalyzer> list = analyzers.get(filter);
+			if (list != null) {
+				list.remove(analyzer);
+				if (list.isEmpty())
+					analyzers.remove(filter);
+			}
+		}
 	}
 
 	public void index(Set<File> files, Writer out, Map<String, String> config) throws Exception {
@@ -69,8 +90,16 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 		List<Capability> caps = new LinkedList<Capability>();
 		List<Requirement> reqs = new LinkedList<Requirement>();
 		
-		for (ResourceAnalyzer analyzer : analyzers)
-			analyzer.analyseResource(resource, caps, reqs);
+		// Iterate over the analyzers
+		synchronized (analyzers) {
+			for (Entry<Filter, List<ResourceAnalyzer>> entry : analyzers.entrySet()) {
+				Filter filter = entry.getKey();
+				if (filter == null || filter.match(resource.getProperties())) {
+					for (ResourceAnalyzer analyzer : entry.getValue())
+						analyzer.analyseResource(resource, caps, reqs);
+				}
+			}
+		}
 		
 		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
 		for (Capability cap : caps) {

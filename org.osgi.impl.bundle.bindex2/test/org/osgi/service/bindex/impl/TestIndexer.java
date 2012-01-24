@@ -11,6 +11,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.bindex.ResourceIndexer;
 
 public class TestIndexer extends TestCase {
@@ -106,6 +107,21 @@ public class TestIndexer extends TestCase {
 		
 		indexer.indexFragment(files, writer, null);
 		String expected = Utils.readStream(new FileInputStream("testdata/fragment-wibble.txt"));
+
+		assertEquals(expected, writer.toString().trim());
+	}
+	
+	public void testAddAnalyzerWithFilter() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		indexer.addAnalyzer(new WibbleAnalyzer(), FrameworkUtil.createFilter("(location=*sion.jar)"));
+		
+		StringWriter writer = new StringWriter();
+		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		files.add(new File("testdata/01-bsn+version.jar"));
+		files.add(new File("testdata/02-localization.jar"));
+		
+		indexer.indexFragment(files, writer, null);
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-wibble-filtered.txt"));
 
 		assertEquals(expected, writer.toString().trim());
 	}
