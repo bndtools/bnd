@@ -94,4 +94,20 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, writer.toString());
 	}
 	
+	
+	public void testAddAnalyzer() throws Exception {
+		ResourceIndexerImpl indexer = new ResourceIndexerImpl();
+		indexer.addAnalyzer(new WibbleAnalyzer(), null);
+		
+		StringWriter writer = new StringWriter();
+		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		files.add(new File("testdata/01-bsn+version.jar"));
+		files.add(new File("testdata/02-localization.jar"));
+		
+		indexer.indexFragment(files, writer, null);
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-wibble.txt"));
+
+		assertEquals(expected, writer.toString().trim());
+	}
+	
 }

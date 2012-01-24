@@ -13,13 +13,22 @@ import java.util.Set;
 import org.osgi.framework.Version;
 import org.osgi.service.bindex.Capability;
 import org.osgi.service.bindex.Requirement;
+import org.osgi.service.bindex.ResourceAnalyzer;
 import org.osgi.service.bindex.ResourceIndexer;
 
 public class ResourceIndexerImpl implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
-	private final BundleAnalyzer analyzer = new BundleAnalyzer();
+	private final List<ResourceAnalyzer> analyzers = new LinkedList<ResourceAnalyzer>();
+	
+	public ResourceIndexerImpl() {
+		analyzers.add(new BundleAnalyzer());
+	}
+	
+	public void addAnalyzer(ResourceAnalyzer analyzer, String filter) {
+		analyzers.add(analyzer);
+	}
 
 	public void index(Set<File> files, Writer out, Map<String, String> config) throws Exception {
 		PrintWriter pw = (out instanceof PrintWriter) ? (PrintWriter) out : new PrintWriter(out);
@@ -59,7 +68,9 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 		JarResource resource = new JarResource(file);
 		List<Capability> caps = new LinkedList<Capability>();
 		List<Requirement> reqs = new LinkedList<Requirement>();
-		analyzer.analyseResource(resource, caps, reqs);
+		
+		for (ResourceAnalyzer analyzer : analyzers)
+			analyzer.analyseResource(resource, caps, reqs);
 		
 		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
 		for (Capability cap : caps) {

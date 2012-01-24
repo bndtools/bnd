@@ -1,0 +1,42 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.a'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/01-bsn+version.jar'/>
+    <attribute name='description' value='Example Bundle A'/>
+    <attribute name='size' value='1104'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.a'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.a'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='wibble'/>
+</resource>
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.b'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/02-localization.jar'/>
+    <attribute name='description' value='Example Bundle B'/>
+    <attribute name='size' value='1544'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.b'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.b'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='wibble'/>
+</resource>
