@@ -1,0 +1,16 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.l'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/12-nofragments.jar'/>
+    <attribute name='description' value='org.example.l'/>
+    <attribute name='size' value='1119'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.l'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+</resource>

@@ -80,6 +80,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	private void doBundleAndHost(Resource resource, List<? super Capability> caps) throws Exception {
 		Builder bundleBuilder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
 		Builder hostBuilder   = new Builder().setNamespace(Namespaces.NS_WIRING_HOST);
+		boolean allowFragments = true;
 		
 		Attributes attribs = resource.getManifest().getMainAttributes();
 		if (attribs.getValue(Constants.FRAGMENT_HOST) != null)
@@ -98,7 +99,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			String key = attribEntry.getKey();
 			if (key.endsWith(":")) {
 				String directiveName = key.substring(0, key.length() - 1);
-				if (!Constants.SINGLETON_DIRECTIVE.equalsIgnoreCase(directiveName) && !Constants.FRAGMENT_ATTACHMENT_DIRECTIVE.equalsIgnoreCase(directiveName)) {
+				if (Constants.FRAGMENT_ATTACHMENT_DIRECTIVE.equalsIgnoreCase(directiveName)) {
+					if (Constants.FRAGMENT_ATTACHMENT_NEVER.equalsIgnoreCase(attribEntry.getValue()))
+						allowFragments = false;
+				} else if (!Constants.SINGLETON_DIRECTIVE.equalsIgnoreCase(directiveName)) {
 					bundleBuilder.addDirective(directiveName, attribEntry.getValue());
 				}
 			} else {
@@ -107,7 +111,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 		
 		caps.add(bundleBuilder.buildCapability());
-		caps.add(hostBuilder.buildCapability());
+		if (allowFragments)
+			caps.add(hostBuilder.buildCapability());
 	}
 	
 	private void doExports(Resource resource, List<? super Capability> caps) throws Exception {
