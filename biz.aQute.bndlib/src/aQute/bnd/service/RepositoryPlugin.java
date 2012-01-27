@@ -83,4 +83,9 @@ public interface RepositoryPlugin {
 	 */
 	String getName();
 
+	/**
+	 * Return a location identifier of this repository
+	 */
+
+	String getLocation();
 }

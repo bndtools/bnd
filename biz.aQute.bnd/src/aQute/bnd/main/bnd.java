@@ -18,15 +18,12 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
-import aQute.bnd.maven.support.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.configurable.*;
 import aQute.lib.collections.*;
-import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
@@ -41,8 +38,6 @@ import aQute.libg.version.*;
 
 /**
  * Utility to make bundles. Should be areplace for jar and much more.
- * 
- * TODO Add Javadoc comment for this type.
  * 
  * @version $Revision: 1.14 $
  */
@@ -228,6 +223,8 @@ public class bnd extends Processor {
 		String bsn();
 
 		Version version();
+
+		boolean force();
 	}
 
 	/**
@@ -273,14 +270,17 @@ public class bnd extends Processor {
 			Analyzer w = new Analyzer(this);
 			w.setBase(getBase());
 			w.use(this);
+			w.setDefaults(options.bsn(), options.version());
+			File out = w.getOutputFile(options.file());
 
-			if ( options.bsn() != null)
-				w.setBundleSymbolicName(options.bsn());
-			if ( options.version() != null)
-				w.setBundleVersion(options.version().toString());
-			
-			//File out = w.getOutputFile(options.file());
-			// TODO
+			w.calcManifest();
+			getInfo(w);
+
+			if (isOk()) {
+				boolean saved = w.save(out, options.force());
+				this.out.printf("%30s %6d %s\n", jar.getBsn() + "-" + jar.getVersion(),
+						out.length(), saved ? "" : "(not modified)");
+			}
 		}
 
 		String jarFile = options.file();
@@ -293,6 +293,14 @@ public class bnd extends Processor {
 
 	}
 
+	/**
+	 * Helper for the jar create function, adds files to the jar
+	 * 
+	 * @param jar
+	 * @param base
+	 * @param path
+	 * @param report
+	 */
 	private void add(Jar jar, File base, String path, boolean report) {
 		if (path.endsWith("/"))
 			path = path.substring(0, path.length() - 1);
@@ -344,11 +352,11 @@ public class bnd extends Processor {
 				File f = getFile(path);
 				b.setProperties(f);
 				b.build();
-				
+
 				File out = b.getOutputFile(options.output());
 				getInfo(b, f.getName());
-				if ( isOk()) {
-					b.save(out,options.force());
+				if (isOk()) {
+					b.save(out, options.force());
 				}
 				b.close();
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
@@ -753,7 +761,7 @@ public class bnd extends Processor {
 			Jar jar = b.build();
 
 			File outputFile = b.getOutputFile(options.output());
-			
+
 			if (options.pom()) {
 				Resource r = new PomFromManifest(jar.getManifest());
 				jar.putResource("pom.xml", r);
@@ -770,8 +778,8 @@ public class bnd extends Processor {
 			}
 
 			getInfo(b, b.getPropertiesFile().getName());
-			if ( isOk() ) {
-				b.save(outputFile,options.force());
+			if (isOk()) {
+				b.save(outputFile, options.force());
 			}
 			b.close();
 		}
@@ -806,7 +814,6 @@ public class bnd extends Processor {
 		order.add(s);
 		builders.add(b);
 	}
-
 
 	/**
 	 * View files from JARs
@@ -899,7 +906,7 @@ public class bnd extends Processor {
 				error("File does not exist %s", file);
 				continue;
 			}
-			
+
 			Analyzer wrapper = new Analyzer(this);
 			try {
 				wrapper.use(this);
@@ -930,6 +937,50 @@ public class bnd extends Processor {
 				wrapper.close();
 			}
 		}
+	}
+
+	/**
+	 * Printout all the variables in scope.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
+	 */
+	interface debugOptions extends Options {
+		String project();
+	}
+
+	public void _debug(debugOptions options) throws Exception {
+		Processor project = getProject(options.project());
+		if (project == null)
+			project = this;
+
+		MultiMap<String, String> table = new MultiMap<String, String>();
+
+		for (Iterator<String> i = project.iterator(); i.hasNext();) {
+			String key = i.next();
+			String s = project.get(key);
+			Collection<String> set = split(s);
+			table.addAll(key, set);
+		}
+		printMultiMap(table);
+	}
+
+	/**
+	 * Manage the repo.
+	 * 
+	 * <pre>
+	 * out.println(&quot; bnd repo [--repo|-r ('maven'| &lt;dir&gt;)]*&quot;);
+	 * out.println(&quot;        repos                          # list the repositories&quot;);
+	 * out.println(&quot;        list                           # list all content (not always possible)&quot;);
+	 * out.println(&quot;        get &lt;bsn&gt; &lt;version&gt; &lt;file&gt;?    # get an artifact&quot;);
+	 * out.println(&quot;        put &lt;file&gt;+                    # put in artifacts&quot;);
+	 * out.println(&quot;        help&quot;);
+	 * </pre>
+	 */
+
+	public void _repo(repoOptions opts) throws Exception {
+		new RepoCommand(this,opts);
 	}
 
 	/**
@@ -1375,215 +1426,6 @@ public class bnd extends Processor {
 			error("Project not found: " + f);
 
 		return null;
-	}
-
-	/**
-	 * Printout all the variables.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
-	interface debugOptions extends Options {
-		String project();
-	}
-
-	public void _debug(debugOptions options) throws Exception {
-		Processor project = getProject(options.project());
-		if (project == null)
-			project = this;
-
-		MultiMap<String, String> table = new MultiMap<String, String>();
-
-		for (Iterator<String> i = project.iterator(); i.hasNext();) {
-			String key = i.next();
-			String s = project.get(key);
-			Collection<String> set = split(s);
-			table.addAll(key, set);
-		}
-		printMultiMap(table);
-	}
-
-	/**
-	 * Manage the repo.
-	 * 
-	 * <pre>
-	 *  repo
-	 *      list
-	 *      put &lt;file|url&gt;
-	 *      get &lt;bsn&gt; (&lt;version&gt;)?
-	 *      fetch &lt;file|url&gt;
-	 * </pre>
-	 */
-
-	public void repo(String args[], int i) throws Exception {
-		String bsn = null;
-		String version = null;
-		List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>();
-		RepositoryPlugin writable = null;
-
-		Project p = Workspace.getProject(getBase());
-		if (p != null) {
-			repos.addAll(p.getWorkspace().getRepositories());
-			for (Iterator<RepositoryPlugin> rp = repos.iterator(); rp.hasNext();) {
-				RepositoryPlugin rpp = rp.next();
-				if (rpp.canWrite()) {
-					writable = rpp;
-					break;
-				}
-			}
-		}
-
-		for (; i < args.length; i++) {
-			if ("repos".equals(args[i])) {
-				int n = 0;
-				for (RepositoryPlugin repo : repos) {
-					out.printf("%3d. %s\n", n++, repo);
-				}
-				return;
-			} else if ("list".equals(args[i])) {
-				String mask = null;
-				if (i < args.length - 1) {
-					mask = args[++i];
-				}
-				repoList(repos, mask);
-				return;
-			} else if ("--repo".equals(args[i]) || "-r".equals(args[i])) {
-				String location = args[++i];
-				if (location.equals("maven")) {
-					out.println("Maven");
-					MavenRemoteRepository maven = new MavenRemoteRepository();
-					maven.setProperties(new Attrs());
-					maven.setReporter(this);
-					repos = Arrays.asList((RepositoryPlugin) maven);
-				} else {
-					FileRepo repo = new FileRepo();
-					repo.setReporter(this);
-					repo.setLocation(location);
-					repos = Arrays.asList((RepositoryPlugin) repo);
-					writable = repo;
-				}
-			} else if ("spring".equals(args[i])) {
-				// if (bsn == null || version == null) {
-				// error("--bsn and --version must be set before spring command is used");
-				// } else {
-				// String url = String
-				// .format("http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary",
-				// bsn, version);
-				// repoPut(writable, p, url, bsn, version);
-				// }
-				error("not supported anymore");
-				return;
-			} else if ("put".equals(args[i])) {
-				while (i < args.length - 1) {
-					String source = args[++i];
-					try {
-
-						URL url = IO.toURL(source, getBase());
-						trace("put from %s", url);
-						InputStream in = url.openStream();
-						try {
-							Jar jar = new Jar(url.toString(), in);
-							Verifier verifier = new Verifier(jar);
-							verifier.verify();
-							getInfo(verifier);
-							if (isOk()) {
-								File put = writable.put(jar);
-								trace("stored in %s", put);
-							}
-						} finally {
-							in.close();
-						}
-					} catch (Exception e) {
-						error("putting %s into %s, exception: %s", source, writable, e);
-					}
-				}
-				return;
-			} else if ("get".equals(args[i])) {
-				if (i < args.length) {
-					error("repo get requires a bsn, see repo help");
-					return;
-				}
-				bsn = args[i++];
-				if (i < args.length) {
-					error("repo get requires a version, see repo help");
-					return;
-				}
-				version = args[i++];
-
-				for (RepositoryPlugin repo : repos) {
-					File f = repo.get(bsn, version, Strategy.LOWEST, null);
-					if (f != null) {
-						if (i < args.length) {
-							File out = getFile(args[i++]);
-							IO.copy(f, out);
-						} else
-							out.println(f);
-
-						return;
-					}
-				}
-				error("cannot find %s-%s in %s", bsn, version, repos);
-				return;
-			}
-		}
-
-		if (i < args.length && !"help".equals(args[i]))
-			out.println("Unknown repo command: " + args[i]);
-
-		out.println(" bnd repo [--repo|-r ('maven'| <dir>)]*");
-		out.println("        repos                          # list the repositories");
-		out.println("        list                           # list all content (not always possible)");
-		out.println("        get <bsn> <version> <file>?    # get an artifact");
-		out.println("        put <file>+                    # put in artifacts");
-		out.println("        help");
-		return;
-	}
-
-	// private void repoPut(RepositoryPlugin writable, Project project, String
-	// file, String bsn,
-	// String version) throws Exception {
-	// Jar jar = null;
-	// int n = file.indexOf(':');
-	// if (n > 1 && n < 10) {
-	// jar = project.getValidJar(new URL(file));
-	// } else {
-	// File f = getFile(file);
-	// if (f.isFile()) {
-	// jar = project.getValidJar(f);
-	// }
-	// }
-	//
-	// if (jar != null) {
-	// Manifest manifest = jar.getManifest();
-	// if (bsn != null)
-	// manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME,
-	// bsn);
-	// if (version != null)
-	// manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, version);
-	//
-	// writable.put(jar);
-	//
-	// } else
-	// error("There is no such file or url: " + file);
-	// }
-
-	void repoList(List<RepositoryPlugin> repos, String mask) throws Exception {
-		trace("list repo " + repos + " " + mask);
-		Set<String> bsns = new TreeSet<String>();
-		for (RepositoryPlugin repo : repos) {
-			bsns.addAll(repo.list(mask));
-		}
-
-		for (String bsn : bsns) {
-			Set<Version> versions = new TreeSet<Version>();
-			for (RepositoryPlugin repo : repos) {
-				List<Version> result = repo.versions(bsn);
-				if (result != null)
-					versions.addAll(result);
-			}
-			out.printf("%-40s %s\n", bsn, versions);
-		}
 	}
 
 	/**

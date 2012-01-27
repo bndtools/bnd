@@ -112,4 +112,11 @@ public class OBR extends AbstractBaseOBR {
 		this.locations = Arrays.asList(urls);
 	}
 
+	public String getLocation() {
+		if ( locations == null)
+			return "[]";
+		else
+			return locations.toString();
+	}
+
 }

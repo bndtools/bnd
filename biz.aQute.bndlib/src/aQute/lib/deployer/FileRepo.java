@@ -324,4 +324,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
+
+	public String getLocation() {
+		return root.toString();
+	}
+
 }
