@@ -308,6 +308,31 @@ public class Workspace extends Processor {
 		return getPlugins(RepositoryPlugin.class);
 	}
 
+	public Collection<Project> getBuildOrder() throws Exception {
+		List<Project> result = new ArrayList<Project>();
+		for (Project project : getAllProjects()) {
+			Collection<Project> dependsOn = project.getDependson();
+			getBuildOrder(dependsOn, result);
+			if (!result.contains(project)) {
+				result.add(project);
+			}
+		}
+		return result;
+	}
+
+	private void getBuildOrder(Collection<Project> dependsOn, List<Project> result) throws Exception {
+		for (Project project : dependsOn) {
+			if (!result.contains(project)) {
+				Collection<Project> subProjects = project.getDependson();
+				for (Project subProject : subProjects) {
+					if (!result.contains(subProject)) {
+						result.add(subProject);
+					}
+				}
+			}
+		}
+	}
+
 	public static Workspace getWorkspace(String path) throws Exception {
 		File file = IO.getFile(new File(""), path);
 		return getWorkspace(file);
