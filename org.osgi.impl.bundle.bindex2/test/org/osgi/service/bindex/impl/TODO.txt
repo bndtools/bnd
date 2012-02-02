@@ -1,3 +1,4 @@
+* Provide- and Require-Capability
 * Import attributes and mandatory attributes
 * Visibility: re-export on require-bundle
 * DynamicImport-Package

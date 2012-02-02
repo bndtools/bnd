@@ -1,7 +1,8 @@
 Export-Package: org.osgi.service.bindex
 
 Private-Package: org.osgi.service.bindex.impl,\
-	org.osgi.service.bindex.osgi
+	org.osgi.service.bindex.osgi,\
+	org.osgi.framework
 Conditional-Package: aQute.lib.*
 
 Bundle-Activator: org.osgi.service.bindex.osgi.Activator
