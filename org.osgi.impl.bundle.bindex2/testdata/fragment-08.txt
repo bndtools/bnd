@@ -7,7 +7,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/08-fragmenthost.jar'/>
     <attribute name='description' value='org.example.h'/>
-    <attribute name='size' value='1117'/>
+    <attribute name='size' type='Long' value='1117'/>
   </capability>
   <requirement namespace='osgi.wiring.host'>
     <directive name='filter' value='(&amp;(osgi.wiring.host=org.example.a)(bundle-version&gt;=0.0.0))'/>

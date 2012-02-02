@@ -1,7 +1,7 @@
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 -buildpath: ee.j2se;version='[1.5,1.6)',\
 	junit.osgi,\
-	osgi.core,\
+	osgi.core;version=4.3,\
 	lib/kxml2-min.jar;version=file,\
 	osgi.cmpn
 

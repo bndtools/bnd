@@ -1,0 +1,27 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.n'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='testdata/14-provide-require-cap.jar'/>
+    <attribute name='description' value='org.example.n'/>
+    <attribute name='size' type='Long' value='1181'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.n'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.n'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='foo'>
+    <attribute name='arg1' value='ValueOfArg1'/>
+    <attribute name='version' type='List&lt;Version&gt;' value='1.0.0,1.1.0,1.2.0'/>
+  </capability>
+  <requirement namespace='bar'>
+    <directive name='filter' value='(&amp;(version&gt;=1.4)(!(version&gt;=1.5))'/>
+  </requirement>
+</resource>

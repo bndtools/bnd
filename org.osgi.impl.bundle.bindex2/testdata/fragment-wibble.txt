@@ -7,7 +7,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/01-bsn+version.jar'/>
     <attribute name='description' value='Example Bundle A'/>
-    <attribute name='size' value='1104'/>
+    <attribute name='size' type='Long' value='1104'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.a'/>
@@ -28,7 +28,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/02-localization.jar'/>
     <attribute name='description' value='Example Bundle B'/>
-    <attribute name='size' value='1544'/>
+    <attribute name='size' type='Long' value='1544'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.b'/>

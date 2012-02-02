@@ -7,7 +7,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/04-export+uses.jar'/>
     <attribute name='description' value='org.example.d'/>
-    <attribute name='size' value='1494'/>
+    <attribute name='size' type='Long' value='1494'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.d'/>

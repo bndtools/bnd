@@ -7,7 +7,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/11-importservice.jar'/>
     <attribute name='description' value='org.example.k'/>
-    <attribute name='size' value='1118'/>
+    <attribute name='size' type='Long' value='1118'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.k'/>

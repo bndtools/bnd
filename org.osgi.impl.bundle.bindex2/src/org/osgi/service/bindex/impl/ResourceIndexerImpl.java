@@ -13,7 +13,6 @@ import java.util.Set;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.Version;
 import org.osgi.service.bindex.Capability;
 import org.osgi.service.bindex.Requirement;
 import org.osgi.service.bindex.ResourceAnalyzer;
@@ -124,15 +123,9 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 		for (Entry<String, Object> attribEntry : attribs.entrySet()) {
 			Tag attribTag = new Tag(Schema.ELEM_ATTRIBUTE);
 			attribTag.addAttribute(Schema.ATTR_NAME, attribEntry.getKey());
-			
-			Object value = attribEntry.getValue();
-			String v = value.toString();
-			
-			if (value instanceof Version) {
-				attribTag.addAttribute(Schema.ATTR_TYPE, Schema.TYPE_VERSION);
-			}
-			attribTag.addAttribute(Schema.ATTR_VALUE, v);
-			parentTag.addContent(attribTag);
+
+			TypedAttribute typedAttrib = TypedAttribute.create(attribEntry.getKey(), attribEntry.getValue());
+			parentTag.addContent(typedAttrib.toXML());
 		}
 		
 		for (Entry<String, String> directiveEntry : directives.entrySet()) {
@@ -141,7 +134,6 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 			directiveTag.addAttribute(Schema.ATTR_VALUE, directiveEntry.getValue());
 			parentTag.addContent(directiveTag);
 		}
-		
 	}
 
 }

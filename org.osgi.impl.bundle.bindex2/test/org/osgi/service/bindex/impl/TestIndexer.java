@@ -67,6 +67,10 @@ public class TestIndexer extends TestCase {
 	public void testFragmentBREE() throws Exception {
 		assertFragmentMatch("testdata/fragment-13.txt", "testdata/13-bree.jar");
 	}
+	
+	public void testFragmentProvideRequireCap() throws Exception {
+		assertFragmentMatch("testdata/fragment-14.txt", "testdata/14-provide-require-cap.jar");
+	}
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		ResourceIndexerImpl indexer = new ResourceIndexerImpl();

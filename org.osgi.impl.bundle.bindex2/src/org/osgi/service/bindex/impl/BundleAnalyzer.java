@@ -1,6 +1,7 @@
 package org.osgi.service.bindex.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +30,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		doExportService(resource, capabilities);
 		doImportService(resource, requirements);
 		doBREE(resource, requirements);
+		doCapabilities(resource, capabilities);
+		doRequirements(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -275,6 +278,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	}
 	
 	private void doBREE(Resource resource, List<? super Requirement> reqs) throws Exception {
+		@SuppressWarnings("deprecation")
 		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
 		
@@ -292,6 +296,99 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 	
+	private void doCapabilities(Resource resource, final List<? super Capability> caps) throws Exception {
+		String capsStr = resource.getManifest().getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY);
+		buildFromHeader(capsStr, new Yield<Builder>() {
+			public void yield(Builder builder) {
+				caps.add(builder.buildCapability());
+			}
+		});
+	}
+	
+	private void doRequirements(Resource resource, final List<? super Requirement> reqs) throws IOException {
+		String reqsStr = resource.getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY);
+		buildFromHeader(reqsStr, new Yield<Builder>() {
+			public void yield(Builder builder) {
+				reqs.add(builder.buildRequirement());
+			}
+		});
+	}
+
+	private static void buildFromHeader(String headerStr, Yield<Builder> output) {
+		if (headerStr == null) return;
+		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(headerStr);
+		
+		for (Entry<String, Map<String, String>> entry : header.entrySet()) {
+			String namespace = OSGiHeader.removeDuplicateMarker(entry.getKey());
+			Builder builder = new Builder().setNamespace(namespace);
+			
+			for (Entry<String, String> attrib : entry.getValue().entrySet()) {
+				String key = attrib.getKey();
+				
+				if (key.endsWith(":")) {
+					String directiveName = key.substring(0, key.length() - 1);
+					builder.addDirective(directiveName, attrib.getValue());
+				} else {
+					int colonIndex = key.lastIndexOf(":");
+					
+					String name;
+					String typeStr;
+					if (colonIndex > -1) {
+						name = key.substring(0, colonIndex);
+						typeStr = key.substring(colonIndex + 1);
+					} else {
+						name = key;
+						typeStr = ScalarType.String.name();
+					}
+					
+					Object value = parseValue(attrib.getValue(), typeStr);
+					builder.addAttribute(name, value);
+				}
+			}
+			output.yield(builder);
+		}
+	}
+	
+	static Object parseValue(String value, String typeStr) {
+		Object result;
+		
+		if (typeStr.startsWith("List<")) {
+			typeStr = typeStr.substring("List<".length(), typeStr.length() - 1);
+			result = parseListValue(value, typeStr);
+		} else {
+			result = parseScalarValue(value, typeStr);
+		}
+		
+		return result;
+	}
+
+	static List<?> parseListValue(String value, String typeStr) throws IllegalArgumentException {
+		
+		QuotedTokenizer tokenizer = new QuotedTokenizer(value, ",");
+		String[] tokens = tokenizer.getTokens();
+		List<Object> result = new ArrayList<Object>(tokens.length);
+		for (String token : tokens)
+			result.add(parseScalarValue(token, typeStr));
+		
+		return result;
+	}
+
+	static Object parseScalarValue(String value, String typeStr) throws IllegalArgumentException {
+		ScalarType type = Enum.valueOf(ScalarType.class, typeStr);
+		switch (type) {
+		case String:
+			return value;
+		case Long:
+			return Long.valueOf(value);
+		case Double:
+			return Double.valueOf(value);
+		case Version:
+			return new Version(value);
+		default:
+			throw new IllegalArgumentException(typeStr);
+		}
+	}
+
 	private Entry<String, Map<String, String>> parseBsn(String bsn) {
 		if (bsn == null)
 			return null;

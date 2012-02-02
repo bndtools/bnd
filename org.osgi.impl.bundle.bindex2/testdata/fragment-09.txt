@@ -8,7 +8,7 @@
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='testdata/09-singleton.jar'/>
     <attribute name='description' value='org.example.i'/>
-    <attribute name='size' value='1111'/>
+    <attribute name='size' type='Long' value='1111'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.i'/>
