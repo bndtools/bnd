@@ -18,13 +18,13 @@ import org.osgi.service.bindex.Requirement;
 import org.osgi.service.bindex.ResourceAnalyzer;
 import org.osgi.service.bindex.ResourceIndexer;
 
-public class ResourceIndexerImpl implements ResourceIndexer {
+public class BIndex implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
 	private List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
-	public ResourceIndexerImpl() {
+	public BIndex() {
 		try {
 			Filter bundleFilter = FrameworkUtil.createFilter("(name=*.jar)");
 			addAnalyzer(new BundleAnalyzer(), bundleFilter);

@@ -6,16 +6,16 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.bindex.ResourceAnalyzer;
-import org.osgi.service.bindex.impl.ResourceIndexerImpl;
+import org.osgi.service.bindex.impl.BIndex;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 
 public class AnalyzerTracker extends ServiceTracker {
 
-	private final ResourceIndexerImpl indexer;
+	private final BIndex indexer;
 	private final LogService log;
 
-	public AnalyzerTracker(BundleContext context, ResourceIndexerImpl indexer, LogService log) {
+	public AnalyzerTracker(BundleContext context, BIndex indexer, LogService log) {
 		super(context, ResourceAnalyzer.class.getName(), null);
 		this.indexer = indexer;
 		this.log = log;
