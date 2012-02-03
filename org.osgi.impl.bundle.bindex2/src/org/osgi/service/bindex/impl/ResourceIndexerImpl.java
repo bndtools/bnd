@@ -48,6 +48,9 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 
 	public void index(Set<File> files, Writer out, Map<String, String> config) throws Exception {
 		PrintWriter pw = (out instanceof PrintWriter) ? (PrintWriter) out : new PrintWriter(out);
+		
+		pw.print(Schema.XML_PROCESSING_INSTRUCTION);
+		
 		if (config == null)
 			config = new HashMap<String, String>(0);
 		
@@ -62,6 +65,8 @@ public class ResourceIndexerImpl implements ResourceIndexer {
 		if (increment == null)
 			increment = Long.toString(System.currentTimeMillis());
 		repoTag.addAttribute(Schema.ATTR_INCREMENT, increment);
+		
+		repoTag.addAttribute(Schema.ATTR_XML_NAMESPACE, Schema.NAMESPACE);
 		
 		repoTag.printOpen(0, pw, false);
 		for (File file : files) {

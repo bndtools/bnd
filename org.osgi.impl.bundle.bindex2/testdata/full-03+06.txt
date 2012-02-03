@@ -1,5 +1,5 @@
-
-<repository increment='0' name='full-c+f'>
+<?xml version='1.0' encoding='utf-8'?>
+<repository increment='0' name='full-c+f' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
   <resource>
     <capability namespace='osgi.identity'>
       <attribute name='osgi.identity' value='org.example.c'/>
