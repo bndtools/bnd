@@ -22,7 +22,8 @@ Bundle-ActivationPolicy: lazy
 	jar/ant.jar;version=file,\
 	jar/kxml2-min.jar;version=file,\
 	jar/org.osgi.service.obr.jar;version=file,\
-	junit.osgi
+	junit.osgi,\
+	ee.j2se;version='[1.5,1.6)'
 	
 Export-Package: org.osgi.service.bindex
 Import-Package: org.apache.tools.ant;resolution:=optional,\
