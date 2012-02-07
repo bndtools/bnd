@@ -15,6 +15,12 @@
  */
 package org.osgi.impl.bundle.bindex;
 
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.ATTR_INCREMENT;
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.ATTR_NAME;
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.ATTR_XML_NAMESPACE;
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.ELEM_REPOSITORY;
+import static org.osgi.impl.bundle.obr.resource.SchemaConstants.NAMESPACE;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,8 +46,6 @@ import org.osgi.impl.bundle.obr.resource.ResourceImpl;
 import org.osgi.impl.bundle.obr.resource.ResourceImplComparator;
 import org.osgi.impl.bundle.obr.resource.Tag;
 import org.osgi.service.bindex.BundleIndexer;
-
-import static org.osgi.impl.bundle.obr.resource.SchemaConstants.*;
 
 /**
  * Iterate over a set of given bundles and convert them to resources. After
