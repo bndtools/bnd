@@ -3,7 +3,8 @@ Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
 -buildpath: osgi.core,\
-	ee.minimum;version=1.2.1
+	ee.minimum;version=1.2.1,\
+	ee.j2se;version='[1.5,1.6)'
 	
 	
 -testpath: \
