@@ -1,9 +1,9 @@
 -buildpath: com.springsource.junit,\
-	ee.minimum;version=1.2.1,\
 	osgi.cmpn;version=4.2.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
-	osgi.core;version=4.2.1
+	osgi.core;version=4.2.1,\
+	ee.j2se;version='[1.5,1.6)'
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
