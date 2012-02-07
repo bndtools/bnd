@@ -26,7 +26,6 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.osgi.impl.bundle.bindex.Indexer;
-import org.osgi.impl.bundle.obr.resource.RepositoryImpl;
 
 public class BindexTask extends Task {
 	private Indexer indexer = new Indexer();
