@@ -5,4 +5,5 @@
 	aQute.libg;version=project,\
 	osgi.cmpn;version=4.3.0,\
 	osgi.core;version=4.2.1,\
-	junit.osgi;version=3.8.2
+	junit.osgi;version=3.8.2,\
+	ee.j2se;version='[1.5,1.6)'
