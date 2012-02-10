@@ -1,8 +1,43 @@
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
 -buildpath: ee.j2se;version='[1.5,1.6)',\
+	lib/de.kalpatec.pojosr.framework-0.1.8.jar;version=file,\
 	junit.osgi,\
-	osgi.core;version=4.3,\
 	lib/kxml2-min.jar;version=file,\
 	osgi.cmpn
 
--sub: *.bnd
+Main-Class: org.osgi.impl.bundle.bindex.cli.Index
+
+Bundle-Activator: org.osgi.service.bindex.osgi.Activator
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+
+Export-Package:\
+	org.osgi.service.bindex,\
+	org.osgi.service.log
+
+Import-Package:\
+	org.osgi.framework,\
+	org.osgi.util.tracker,\
+	*
+
+Private-Package:\
+	org.osgi.service.bindex.impl,\
+	org.osgi.service.bindex.osgi,\
+	org.osgi.impl.bundle.bindex.cli,\
+	${pojosr-pkgs},\
+	${osgi-pkgs}
+Conditional-Package: aQute.lib.*
+
+pojosr-pkgs: de.kalpatec.pojosr.*
+
+osgi-pkgs:\
+	org.osgi.framework,\
+	org.osgi.framework.hooks.bundle,\
+	org.osgi.framework.hooks.resolver,\
+	org.osgi.framework.hooks.service,\
+	org.osgi.framework.hooks.weaving,\
+	org.osgi.framework.launch,\
+	org.osgi.framework.startlevel,\
+	org.osgi.framework.wiring,\
+	org.osgi.service.packageadmin,\
+	org.osgi.service.startlevel,\
+	org.osgi.service.url,\
+	org.osgi.util.tracker;-split-package:=first

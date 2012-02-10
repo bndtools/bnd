@@ -74,6 +74,7 @@ public class BIndex implements ResourceIndexer {
 			resourceTag.print(2, pw);
 		}
 		repoTag.printClose(0, pw);
+		pw.flush(); pw.close();
 	}
 
 	public void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception {
@@ -140,5 +141,5 @@ public class BIndex implements ResourceIndexer {
 			parentTag.addContent(directiveTag);
 		}
 	}
-
+	
 }

@@ -26,6 +26,7 @@ import java.util.Set;
  * indexing bundle capabilities and requirements.
  */
 public interface ResourceIndexer {
+
 	/** the default repository name */
 	public static final String REPOSITORYNAME_DEFAULT = "Untitled";
 
@@ -56,6 +57,8 @@ public interface ResourceIndexer {
 	/** the license URL of the OBR XML representation */
 	public static final String LICENSE_URL = "license.url";
 
+	public static final String VERBOSE = "verbose";
+
 	/**
 	 * Index a set of input files (bundles/jars) and/or directories, and write
 	 * the OBR XML representation to the given OutputStream
@@ -63,14 +66,12 @@ public interface ResourceIndexer {
 	 * @param files
 	 *            a set of input files (bundles/jars) and/or directories
 	 * @param out
-	 *            the OutputStream to write the OBR XML representation to
+	 *            the Writer to write the OBR XML representation to
 	 * @param config
 	 *            a set of optional parameters (use the interface constants as
 	 *            keys)
 	 */
-	public void index(Set<File> files, Writer out,
-			Map<String, String> config) throws Exception;
-	
-	public void indexFragment(Set<File> files, Writer out,
-			Map<String, String> config) throws Exception;
+	void index(Set<File> files, Writer out, Map<String, String> config) throws Exception;
+
+	void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception;
 }

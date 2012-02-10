@@ -1,14 +1,16 @@
-Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
--runbundles: org.mockito.mockito-all,\
-	org.osgi.impl.bundle.bindex2.lib;version=latest,\
-	osgi.cmpn
-Private-Package: org.example.tests
--runvm: -ea
--runfw: org.apache.felix.framework
 -buildpath: osgi.core;version='[4.1,5)',\
 	osgi.cmpn,\
 	junit.osgi,\
 	org.mockito.mockito-all,\
-	org.osgi.impl.bundle.bindex2.lib;version=latest,\
+	org.osgi.impl.bundle.bindex2;version=latest,\
 	ee.j2se;version='[1.5,1.6)'
+
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+Private-Package: org.example.tests
+
+-runbundles: org.mockito.mockito-all,\
+	org.osgi.impl.bundle.bindex2;version=latest,\
+	osgi.cmpn
+-runvm: -ea
+-runfw: org.apache.felix.framework
 -runsystempackages: sun.reflect
