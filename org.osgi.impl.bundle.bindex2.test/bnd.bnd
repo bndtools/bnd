@@ -2,11 +2,9 @@
 	osgi.cmpn,\
 	junit.osgi,\
 	org.mockito.mockito-all,\
-	org.osgi.impl.bundle.bindex2;version=latest,\
+	org.osgi.impl.bundle.bindex2;version=project,\
 	ee.j2se;version='[1.5,1.6)'
-
-Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
-Private-Package: org.example.tests
+Conditional-Package: org.example.tests.utils
 
 -runbundles: org.mockito.mockito-all,\
 	org.osgi.impl.bundle.bindex2;version=latest,\
@@ -14,3 +12,4 @@ Private-Package: org.example.tests
 -runvm: -ea
 -runfw: org.apache.felix.framework
 -runsystempackages: sun.reflect
+-sub: *.bnd

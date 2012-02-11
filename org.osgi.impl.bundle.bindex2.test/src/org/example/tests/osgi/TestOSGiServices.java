@@ -1,4 +1,4 @@
-package org.example.tests;
+package org.example.tests.osgi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +10,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.example.tests.utils.Utils;
+import org.example.tests.utils.WibbleAnalyzer;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
@@ -17,7 +19,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.bindex.ResourceAnalyzer;
 import org.osgi.service.bindex.ResourceIndexer;
 
-public class TestBindex2 extends TestCase {
+public class TestOSGiServices extends TestCase {
 
 	private final BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
 

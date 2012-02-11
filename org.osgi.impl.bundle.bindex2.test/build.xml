@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="project" default="build"> 
 	<import file="../cnf/build.xml"/>
+	
+	<target name="test" depends="compile">
+		<!-- OSGi Tests -->
+		<bnd command="test" exceptions="true" basedir="${project}" failok="false"/>
+		
+		<!-- Standlone Library Tests -->
+		<junit fork="true" printsummary="true">
+			<classpath>
+				<path location="${workspacedir}/cnf/buildrepo/junit.osgi/junit.osgi-3.8.2.jar"/>
+				<pathelement location="${project.output}"/>
+				<path location="${workspacedir}/org.osgi.impl.bundle.bindex2/generated/org.osgi.impl.bundle.bindex2.jar"/>
+			</classpath>
+			<formatter type="xml"/>
+			<batchtest todir="${target}/test-reports">
+				<fileset dir="${project.sourcepath}" includes="org/example/tests/standalone/Test*.java"/>
+			</batchtest>
+		</junit>
+		
+		<!-- Generate combined report -->
+		<junitreport todir="${target}">
+			<fileset dir="${target}/test-reports" includes="TEST-*.xml"/>
+			<report format="noframes" todir="${target}" styledir="${workspacedir}/cnf/xsl"/>
+		</junitreport>
+	</target>
+
 </project>
