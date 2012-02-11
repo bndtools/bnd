@@ -19,7 +19,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
 		
 		assertEquals(4, caps.size());
 		
@@ -40,7 +40,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
 		
 		
 		String desc = (String) findCaps("osgi.content", caps).get(0).getAttributes().get("description");
@@ -53,7 +53,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/02-localization.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/02-localization.jar")), caps, reqs);
 		
 		String desc = (String) findCaps("osgi.content", caps).get(0).getAttributes().get("description");
 		assertEquals("Example Bundle B", desc);
@@ -64,7 +64,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/03-export.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/03-export.jar")), caps, reqs);
 		
 		Capability export = findCaps("osgi.wiring.package", caps).get(0);
 		assertEquals("org.example.a", export.getAttributes().get("osgi.wiring.package"));
@@ -76,7 +76,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/04-export+uses.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/04-export+uses.jar")), caps, reqs);
 		
 		List<Capability> exports = findCaps("osgi.wiring.package", caps);
 		assertEquals(2, exports.size());
@@ -91,7 +91,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/05-import.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/05-import.jar")), caps, reqs);
 		
 		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
 		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
@@ -102,7 +102,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/06-requirebundle.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/06-requirebundle.jar")), caps, reqs);
 		
 		List<Requirement> requires = findReqs("osgi.wiring.bundle", reqs);
 		assertEquals(1, requires.size());
@@ -114,7 +114,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/07-optionalimport.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/07-optionalimport.jar")), caps, reqs);
 		
 		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
 		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
@@ -126,7 +126,7 @@ public class TestBundleAnalyzer extends TestCase {
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
-		a.analyseResource(new JarResource(new File("testdata/08-fragmenthost.jar")), caps, reqs);
+		a.analyzeResource(new JarResource(new File("testdata/08-fragmenthost.jar")), caps, reqs);
 		
 		Requirement req = findReqs("osgi.wiring.host", reqs).get(0);
 		assertEquals("(&(osgi.wiring.host=org.example.a)(bundle-version>=0.0.0))", req.getDirectives().get("filter"));

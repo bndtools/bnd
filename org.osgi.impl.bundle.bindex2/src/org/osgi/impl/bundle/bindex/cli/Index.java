@@ -115,7 +115,7 @@ public class Index {
 						+ "  [-r repository.(xml|zip)]                                        --> Output file.\n" //
 						+ "  [-n Untitled]                                                    --> Repository name.\n"
 						+ "  [-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ] --> Resource URL template.\n" //
-						+ "  [-d rootFile]                                                    --> Root directory.\n" //
+						+ "  [-d rootdir]                                                     --> Root directory.\n" //
 						+ "  [-h]                                                             --> Show help.\n" //
 						+ "  [-l file:license.html]                                           --> Licence file.\n" //
 						+ "  [-v]                                                             --> Verbose reporting.\n" //

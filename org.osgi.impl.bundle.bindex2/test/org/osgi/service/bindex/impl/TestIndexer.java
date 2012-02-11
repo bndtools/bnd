@@ -73,7 +73,7 @@ public class TestIndexer extends TestCase {
 	}
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
-		BIndex indexer = new BIndex();
+		BIndex2 indexer = new BIndex2();
 		
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File(jarPath)), writer, null);
@@ -83,7 +83,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testFullIndex() throws Exception {
-		BIndex indexer = new BIndex();
+		BIndex2 indexer = new BIndex2();
 		
 		StringWriter writer = new StringWriter();
 		Set<File> files = new LinkedHashSet<File>();
@@ -91,7 +91,7 @@ public class TestIndexer extends TestCase {
 		files.add(new File("testdata/06-requirebundle.jar"));
 		
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(BIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
+		config.put(BIndex2.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, writer, config);
 		
@@ -101,7 +101,7 @@ public class TestIndexer extends TestCase {
 	
 	
 	public void testAddAnalyzer() throws Exception {
-		BIndex indexer = new BIndex();
+		BIndex2 indexer = new BIndex2();
 		indexer.addAnalyzer(new WibbleAnalyzer(), null);
 		
 		StringWriter writer = new StringWriter();
@@ -116,7 +116,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testAddAnalyzerWithFilter() throws Exception {
-		BIndex indexer = new BIndex();
+		BIndex2 indexer = new BIndex2();
 		indexer.addAnalyzer(new WibbleAnalyzer(), FrameworkUtil.createFilter("(location=*sion.jar)"));
 		
 		StringWriter writer = new StringWriter();

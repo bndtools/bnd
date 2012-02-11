@@ -11,22 +11,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
+import static org.osgi.framework.FrameworkUtil.createFilter;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.bindex.Capability;
 import org.osgi.service.bindex.Requirement;
 import org.osgi.service.bindex.ResourceAnalyzer;
 import org.osgi.service.bindex.ResourceIndexer;
 
-public class BIndex implements ResourceIndexer {
+public class BIndex2 implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
 	private List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
-	public BIndex() {
+	public BIndex2() {
 		try {
-			Filter bundleFilter = FrameworkUtil.createFilter("(name=*.jar)");
+			Filter bundleFilter = createFilter("(name=*.jar)");
 			addAnalyzer(new BundleAnalyzer(), bundleFilter);
 		} catch (InvalidSyntaxException e) {
 			// Can't happen...?
@@ -98,7 +98,7 @@ public class BIndex implements ResourceIndexer {
 				Filter filter = entry.getSecond();
 				
 				if (filter == null || filter.match(resource.getProperties())) {
-					analyzer.analyseResource(resource, caps, reqs);
+					analyzer.analyzeResource(resource, caps, reqs);
 				}
 			}
 		}

@@ -4,7 +4,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.bindex.ResourceIndexer;
-import org.osgi.service.bindex.impl.BIndex;
+import org.osgi.service.bindex.impl.BIndex2;
 
 public class Activator implements BundleActivator {
 
@@ -16,7 +16,7 @@ public class Activator implements BundleActivator {
 		logTracker = new LogTracker(context);
 		logTracker.open();
 		
-		BIndex indexer = new BIndex();
+		BIndex2 indexer = new BIndex2();
 		analyzerTracker = new AnalyzerTracker(context, indexer, logTracker);
 		analyzerTracker.open();
 		

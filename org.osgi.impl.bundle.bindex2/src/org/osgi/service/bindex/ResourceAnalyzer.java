@@ -6,7 +6,7 @@ public interface ResourceAnalyzer {
 	
 	static final String FILTER = "filter";
 
-	void analyseResource(Resource resource,
+	void analyzeResource(Resource resource,
 			List<? super Capability> capabilities,
 			List<? super Requirement> requirements) throws Exception;
 

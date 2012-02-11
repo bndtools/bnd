@@ -19,7 +19,7 @@ import org.osgi.service.bindex.ResourceAnalyzer;
 
 public class BundleAnalyzer implements ResourceAnalyzer {
 
-	public void analyseResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
 		doIdentity(resource, capabilities);
 		doContent(resource, capabilities);
 		doBundleAndHost(resource, capabilities);

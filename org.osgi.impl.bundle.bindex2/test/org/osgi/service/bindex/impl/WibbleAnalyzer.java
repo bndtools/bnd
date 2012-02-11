@@ -10,7 +10,7 @@ import org.osgi.service.bindex.ResourceAnalyzer;
 
 public class WibbleAnalyzer implements ResourceAnalyzer {
 
-	public void analyseResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<? super Capability> capabilities, List<? super Requirement> requirements) throws Exception {
 		capabilities.add(new Builder().setNamespace("wibble").buildCapability());
 	}
 

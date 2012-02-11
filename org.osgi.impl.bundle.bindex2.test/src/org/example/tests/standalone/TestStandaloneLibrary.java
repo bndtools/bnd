@@ -8,14 +8,14 @@ import java.util.Collections;
 import org.example.tests.utils.Utils;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.bindex.ResourceIndexer;
-import org.osgi.service.bindex.impl.BIndex;
+import org.osgi.service.bindex.impl.BIndex2;
 
 import junit.framework.TestCase;
 
 public class TestStandaloneLibrary extends TestCase {
 
 	public void testBasicServiceInvocation() throws Exception {
-		ResourceIndexer indexer = new BIndex();
+		ResourceIndexer indexer = new BIndex2();
 		
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File("testdata/01-bsn+version.jar")), writer, null);
