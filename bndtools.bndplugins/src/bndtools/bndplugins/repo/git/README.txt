@@ -1,4 +1,4 @@
-A repository plugin for deploying in a git repository
+A repository plugin for deploying to a git repository
 
 Example:
 

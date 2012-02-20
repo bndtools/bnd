@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
+import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
@@ -82,7 +83,9 @@ public class GitUtils {
 				git.fetch().call();
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			if (!(e.getCause() instanceof TransportException)) {
+				throw new RuntimeException(e);
+			}
 		} finally {
 			if (repository != null) {
 				repository.close();
