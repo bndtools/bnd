@@ -221,7 +221,7 @@ public class JunitXmlReport implements TestReporter {
 	public void endTest(Test test) {
 		String[] outs = basic.getCaptured();
 		if (outs[0] != null) {
-			Tag sysout = new Tag(testcase, "sysem-out");
+			Tag sysout = new Tag(testcase, "system-out");
 			sysout.addContent(outs[0]);
 		}
 
