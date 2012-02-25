@@ -10,15 +10,38 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
+import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.corext.util.Messages;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
+import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.IDialogFieldListener;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.LayoutUtil;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringDialogField;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,10 +62,46 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private IProjectTemplate projectTemplate;
 
-	NewBndProjectWizardPageOne() {
-		setTitle("Create a Bnd OSGi Project");
-		setDescription("Create a Bnd OSGi Project in the workspace or an external location.");
-	}
+    private final ProjectNameGroup nameGroup = new ProjectNameGroup();
+    private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
+    private final Validator fValidator;
+
+    NewBndProjectWizardPageOne() {
+        setTitle("Create a Bnd OSGi Project");
+
+        fValidator = new Validator();
+
+        nameGroup.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                locationGroup.setProjectName(nameGroup.getProjectName());
+            }
+        });
+
+        locationGroup.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                IStatus status = locationGroup.getStatus();
+                setPageComplete(status.isOK());
+                if (status.isOK()) {
+                    setErrorMessage(null);
+                } else {
+                    setErrorMessage(status.getMessage());
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public String getProjectName() {
+        return nameGroup.getProjectName();
+    }
+
+    @Override
+    public URI getProjectLocationURI() {
+        if (locationGroup.isLocationInWorkspace())
+            return null;
+        return URIUtil.toURI(locationGroup.getLocation());
+    }
 
 	@Override
 	/*
@@ -57,18 +116,14 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		composite.setLayout(new GridLayout(1, false));
 		composite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
-		// create UI elements
-		Control nameControl= createNameControl(composite);
+		Control nameControl= nameGroup.createControl(composite);
 		nameControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		Control locationControl= createLocationControl(composite);
+		Control locationControl= locationGroup.createControl(composite);
 		locationControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Control jreControl= createJRESelectionControl(composite);
 		jreControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-//		Control layoutControl= createProjectLayoutControl(composite);
-//		layoutControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Control workingSetControl= createWorkingSetControl(composite);
 		workingSetControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -114,4 +169,192 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     public void setProjectTemplate(IProjectTemplate projectTemplate) {
         this.projectTemplate = projectTemplate;
     }
+
+    private GridLayout initGridLayout(GridLayout layout, boolean margins) {
+        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+        if (margins) {
+            layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+            layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        } else {
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+        }
+        return layout;
+    }
+
+    private final class NameGroup extends Observable implements IDialogFieldListener {
+
+        protected final StringDialogField fNameField;
+
+        public NameGroup() {
+            // text field for project name
+            fNameField= new StringDialogField();
+            fNameField.setLabelText(NewWizardMessages.NewJavaProjectWizardPageOne_NameGroup_label_text);
+            fNameField.setDialogFieldListener(this);
+        }
+
+        public Control createControl(Composite composite) {
+            Composite nameComposite= new Composite(composite, SWT.NONE);
+            nameComposite.setFont(composite.getFont());
+            nameComposite.setLayout(initGridLayout(new GridLayout(2, false), false));
+
+            fNameField.doFillIntoGrid(nameComposite, 2);
+            LayoutUtil.setHorizontalGrabbing(fNameField.getTextControl(null));
+
+            return nameComposite;
+        }
+
+        protected void fireEvent() {
+            setChanged();
+            notifyObservers();
+        }
+
+        public String getName() {
+            return fNameField.getText().trim();
+        }
+
+        public void postSetFocus() {
+            fNameField.postSetFocusOnDialogField(getShell().getDisplay());
+        }
+
+        public void setName(String name) {
+            fNameField.setText(name);
+        }
+
+        /* (non-Javadoc)
+         * @see org.eclipse.jdt.internal.ui.wizards.dialogfields.IDialogFieldListener#dialogFieldChanged(org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField)
+         */
+        public void dialogFieldChanged(DialogField field) {
+            fireEvent();
+        }
+    }
+
+
+    /**
+     * Validate this page and show appropriate warnings and error NewWizardMessages.
+     */
+    private final class Validator implements Observer {
+
+        public void update(Observable o, Object arg) {
+
+            final IWorkspace workspace= JavaPlugin.getWorkspace();
+
+            final String name= null;//fNameGroup.getName();
+
+            // check whether the project name field is empty
+            if (name.length() == 0) {
+                setErrorMessage(null);
+                setMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_enterProjectName);
+                setPageComplete(false);
+                return;
+            }
+
+            // check whether the project name is valid
+            final IStatus nameStatus= workspace.validateName(name, IResource.PROJECT);
+            if (!nameStatus.isOK()) {
+                setErrorMessage(nameStatus.getMessage());
+                setPageComplete(false);
+                return;
+            }
+
+            // check whether project already exists
+            final IProject handle= workspace.getRoot().getProject(name);
+            if (handle.exists()) {
+                setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_projectAlreadyExists);
+                setPageComplete(false);
+                return;
+            }
+
+            IPath projectLocation= ResourcesPlugin.getWorkspace().getRoot().getLocation().append(name);
+            if (projectLocation.toFile().exists()) {
+                try {
+                    //correct casing
+                    String canonicalPath= projectLocation.toFile().getCanonicalPath();
+                    projectLocation= new Path(canonicalPath);
+                } catch (IOException e) {
+                    JavaPlugin.log(e);
+                }
+
+                String existingName= projectLocation.lastSegment();
+                String newName = null; //fNameGroup.getName();
+                if (!existingName.equals(newName)) {
+                    setErrorMessage(Messages.format(NewWizardMessages.NewJavaProjectWizardPageOne_Message_invalidProjectNameForWorkspaceRoot, BasicElementLabels.getResourceName(existingName)));
+                    setPageComplete(false);
+                    return;
+                }
+
+            }
+
+            final String location= null;//fLocationGroup.getLocation().toOSString();
+
+            // check whether location is empty
+            if (location.length() == 0) {
+                setErrorMessage(null);
+                setMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_enterLocation);
+                setPageComplete(false);
+                return;
+            }
+
+            // check whether the location is a syntactically correct path
+            if (!Path.EMPTY.isValidPath(location)) {
+                setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_invalidDirectory);
+                setPageComplete(false);
+                return;
+            }
+
+            IPath projectPath= Path.fromOSString(location);
+
+//            if (fLocationGroup.isWorkspaceRadioSelected())
+//                projectPath= projectPath.append(fNameGroup.getName());
+
+            if (projectPath.toFile().exists()) {//create from existing source
+                if (Platform.getLocation().isPrefixOf(projectPath)) { //create from existing source in workspace
+                    if (!Platform.getLocation().equals(projectPath.removeLastSegments(1))) {
+                        setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_notOnWorkspaceRoot);
+                        setPageComplete(false);
+                        return;
+                    }
+
+                    if (!projectPath.toFile().exists()) {
+                        setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_notExisingProjectOnWorkspaceRoot);
+                        setPageComplete(false);
+                        return;
+                    }
+                }
+//            } else if (!fLocationGroup.isWorkspaceRadioSelected()) {//create at non existing external location
+//                if (!canCreate(projectPath.toFile())) {
+//                    setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_cannotCreateAtExternalLocation);
+//                    setPageComplete(false);
+//                    return;
+//                }
+//
+//                // If we do not place the contents in the workspace validate the
+//                // location.
+//                final IStatus locationStatus= workspace.validateProjectLocation(handle, projectPath);
+//                if (!locationStatus.isOK()) {
+//                    setErrorMessage(locationStatus.getMessage());
+//                    setPageComplete(false);
+//                    return;
+//                }
+            }
+
+            setPageComplete(true);
+
+            setErrorMessage(null);
+            setMessage(null);
+        }
+
+        private boolean canCreate(File file) {
+            while (!file.exists()) {
+                file= file.getParentFile();
+                if (file == null)
+                    return false;
+            }
+
+            return file.canWrite();
+        }
+    }
+
+
 }
