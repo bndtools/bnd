@@ -15,9 +15,8 @@ common-plugins: bndtools.bndplugins.repo.eclipse.EclipseRepo;path:=${build}/repo
 #	${common-plugins}
 
 # Remote OBR
--plugin:\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bndtools/repo/master/jars/repository.xml';name='Bnd Build Repository',\
-	aQute.lib.deployer.obr.OBR;locations='https://raw.github.com/bndtools/repo/master/bundles/repository.xml';name='Bnd Repository',\
+-plugin: aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/jars/repository.xml;name=Bnd Build Repository,\
+	aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/bundles/repository.xml;name=Bnd Repository,\
 	${common-plugins}
 
 # Remote OBR / GIT plugin
