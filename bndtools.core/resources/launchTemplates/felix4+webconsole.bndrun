@@ -1,22 +1,23 @@
 -runfw: org.apache.felix.framework;version='[4,5)'
 
 -runbundles:\
-	org.apache.felix.shell,\
-	org.apache.felix.shell.tui,\
-	org.apache.felix.scr,\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command,\
+	org.apache.felix.scr;version=1.6,\
 	org.apache.felix.http.jetty,\
 	org.apache.felix.configadmin,\
 	org.apache.felix.metatype,\
 	org.apache.felix.log,\
 	org.apache.felix.webconsole,\
-	osgi.cmpn
+	osgi.cmpn;version=4.2
 
 ## Uncomment if you need to change the HTTP port
 #-runproperties: org.osgi.service.http.port=8080
 
 -runrequire:\
-	bundle:(symbolicname=org.apache.felix.shell),\
-	bundle:(symbolicname=org.apache.felix.shell.tui),\
+	bundle:(symbolicname=org.apache.felix.gogo.shell),\
+	bundle:(symbolicname=org.apache.felix.gogo.command),\
 	bundle:(symbolicname=org.apache.felix.webconsole),\
 	bundle:(symbolicname=org.apache.felix.configadmin),\
 	bundle:(symbolicname=org.apache.felix.metatype),\

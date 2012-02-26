@@ -601,12 +601,12 @@
    
    <extension point="bndtools.core.launchTemplates">
       <template
-         name="Apache Felix 4 with Shell"
+         name="Apache Felix 4 with Gogo Shell"
          path="launchTemplates/felix4+shell.bndrun"
          doc="html/felix4+shell.form.xml"
          icon="icons/felix.gif"/>
       <template
-         name="Apache Felix 4 with Web Console"
+         name="Apache Felix 4 with Web Console and Gogo"
          path="launchTemplates/felix4+webconsole.bndrun"
          doc="html/felix4+webconsole.form.xml"
          icon="icons/felix.gif"/>
@@ -616,18 +616,18 @@
          doc="html/felix4.form.xml"
          icon="icons/felix.gif"/>
       <template
-         name="Eclipse Equinox 3.7 with Console"
+         name="Eclipse Equinox 3.7 with Built-in Console"
          path="launchTemplates/equinox37+console.bndrun"
          doc="html/equinox37+console.form.xml"
          icon="icons/equinox.gif"/>
       <template
-         name="Knopflerfish 5.1 with Felix Shell"
+         name="Knopflerfish 5.1 with Gogo Shell"
          path="launchTemplates/knopflerfish.bndrun"
          doc="html/knopflerfish.form.xml"
          icon="icons/knopflerfish_16x16_inverted.gif"/>
       <template
          name="«Empty»"
-         path="launchTempaltes/empty.bndrun"
+         path="launchTemplates/empty.bndrun"
          doc="html/empty.form.xml"/>
    </extension>
    
