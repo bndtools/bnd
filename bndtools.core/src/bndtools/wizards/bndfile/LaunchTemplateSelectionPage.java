@@ -10,7 +10,7 @@ public class LaunchTemplateSelectionPage extends AbstractTemplateSelectionWizard
 
     protected LaunchTemplateSelectionPage() {
         super("templateSelection");
-        setTitle("Configuration Template");
+        setTitle("Run Configuration Template");
     }
 
     @Override
