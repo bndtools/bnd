@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -64,6 +63,7 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryUtils;
+import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
@@ -208,15 +208,15 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             }
             private boolean handleFileDrop(File[] files) {
                 if(files.length > 0) {
-                    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-                    boolean hideWarning = store.getBoolean(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE);
+                    BndPreferences prefs = new BndPreferences();
+                    boolean hideWarning = prefs.getHideWarningExternalFile();
                     if(!hideWarning) {
                         MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(getSection().getShell(), "Add External Files",
                                 "External files cannot be directly added to a project, they must be added to a local repository first.",
                                 "Do not show this warning again.", false, null, null);
                         if(Window.CANCEL == dialog.getReturnCode()) return false;
                         if(dialog.getToggleState()) {
-                            store.setValue(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE, true);
+                            prefs.setHideWarningExternalFile(true);
                         }
                     }
 

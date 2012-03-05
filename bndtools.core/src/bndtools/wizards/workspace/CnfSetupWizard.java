@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -17,6 +16,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 
 import bndtools.Plugin;
+import bndtools.preferences.BndPreferences;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
 
 public class CnfSetupWizard extends Wizard {
@@ -135,15 +135,13 @@ public class CnfSetupWizard extends Wizard {
         return true;
     }
 
-	private static boolean isDisabled() {
-		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-		return store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
-	}
+    private static boolean isDisabled() {
+        return new BndPreferences().getHideInitCnfWizard();
+    }
 
-	private void setDisabled(boolean disabled) {
-		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, disabled);
-	}
+    private void setDisabled(boolean disabled) {
+        new BndPreferences().setHideInitCnfWizard(disabled);
+    }
 
     private static CnfSetupOperation determineNecessaryOperation(boolean overridePreference) {
         if (!overridePreference && isDisabled())
@@ -196,20 +194,19 @@ public class CnfSetupWizard extends Wizard {
         return false;
     }
 
-	private boolean confirmNever() {
-		IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-		boolean hideWarning = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_ADVICE);
-		if (hideWarning)
-			return true;
+    private boolean confirmNever() {
+        BndPreferences prefs = new BndPreferences();
+        boolean hideWarning = prefs.getHideInitCnfAdvice();
+        if (hideWarning)
+            return true;
 
-		MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(getShell(),
-				Messages.CnfSetupNeverWarningTitle, Messages.CnfSetupNeverWarning, Messages.DontShowMessageAgain,
-				false, null, null);
+        MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(getShell(), Messages.CnfSetupNeverWarningTitle,
+                Messages.CnfSetupNeverWarning, Messages.DontShowMessageAgain, false, null, null);
 
-		if (dialog.getToggleState()) {
-			store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_ADVICE, true);
-		}
-		return dialog.getReturnCode() == MessageDialogWithToggle.OK;
-	}
+        if (dialog.getToggleState()) {
+            prefs.setHideInitCnfAdvice(true);
+        }
+        return dialog.getReturnCode() == MessageDialogWithToggle.OK;
+    }
 
 }

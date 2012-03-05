@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import aQute.bnd.build.Project;
-import bndtools.Plugin;
+import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
 import bndtools.wizards.workspace.CnfSetupWizard;
 
@@ -38,6 +38,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	private String enableSubs;
 	private boolean noAskPackageInfo = false;
 	private boolean noCheckCnf = false;
+	private boolean warnExistingLaunch = true;
 	private int buildLogging = 0;
 
 	@Override
@@ -69,6 +70,14 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
 		btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
 
+        Group grpLaunching = new Group(composite, SWT.NONE);
+        grpLaunching.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        grpLaunching.setText(Messages.BndPreferencePage_grpLaunching_text);
+        grpLaunching.setLayout(new GridLayout(1, false));
+
+        final Button btnWarnExistingLaunch = new Button(grpLaunching, SWT.CHECK);
+        btnWarnExistingLaunch.setText(Messages.BndPreferencePage_btnWarnExistingLaunch);
+
         Group grpDebugging = new Group(composite, SWT.NONE);
         grpDebugging.setText(Messages.BndPreferencePage_grpDebugging_text);
 
@@ -95,6 +104,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		btnNoAskPackageInfo.setSelection(noAskPackageInfo);
 		btnNoCheckCnf.setSelection(noCheckCnf);
 		btnCheckCnfNow.setEnabled(!noCheckCnf);
+		btnWarnExistingLaunch.setSelection(warnExistingLaunch);
 		cmbBuildLogging.select(buildLogging);
 
 		// Listeners
@@ -123,26 +133,32 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 				noAskPackageInfo = btnNoAskPackageInfo.getSelection();
 			}
 		});
-		btnNoCheckCnf.addSelectionListener(new SelectionAdapter() {
-		    @Override
-		    public void widgetSelected(SelectionEvent e) {
-		        noCheckCnf = btnNoCheckCnf.getSelection();
-		        btnCheckCnfNow.setEnabled(!noCheckCnf);
-		    }
+        btnNoCheckCnf.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                noCheckCnf = btnNoCheckCnf.getSelection();
+                btnCheckCnfNow.setEnabled(!noCheckCnf);
+            }
         });
-		btnCheckCnfNow.addSelectionListener(new SelectionAdapter() {
-		    @Override
-		    public void widgetSelected(SelectionEvent e) {
-		        if (!CnfSetupWizard.showIfNeeded(true)) {
-		            MessageDialog.openInformation(getShell(), "Bnd Configuration", "The configuration project exists and does not need to be updated.");
-		        }
-		    }
+        btnCheckCnfNow.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (!CnfSetupWizard.showIfNeeded(true)) {
+                    MessageDialog.openInformation(getShell(), "Bnd Configuration", "The configuration project exists and does not need to be updated.");
+                }
+            }
         });
-		cmbBuildLogging.addSelectionListener(new SelectionAdapter() {
-		    @Override
-		    public void widgetSelected(SelectionEvent e) {
-		        buildLogging = cmbBuildLogging.getSelectionIndex();
-		    }
+        btnWarnExistingLaunch.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                warnExistingLaunch = btnWarnExistingLaunch.getSelection();
+            }
+        });
+        cmbBuildLogging.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                buildLogging = cmbBuildLogging.getSelectionIndex();
+            }
         });
 
 		// Layout
@@ -181,21 +197,25 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		return composite;
 	}
 
-	@Override
-	public boolean performOk() {
-		store.setValue(Plugin.PREF_ENABLE_SUB_BUNDLES, enableSubs);
-		store.setValue(Plugin.PREF_NOASK_PACKAGEINFO, noAskPackageInfo);
-		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, noCheckCnf);
-		store.setValue(Plugin.PREF_BUILD_LOGGING, buildLogging);
-		return true;
-	}
+    @Override
+    public boolean performOk() {
+        BndPreferences prefs = new BndPreferences();
+        prefs.setEnableSubBundles(enableSubs);
+        prefs.setNoAskPackageInfo(noAskPackageInfo);
+        prefs.setHideInitCnfWizard(noCheckCnf);
+        prefs.setWarnExistingLaunch(warnExistingLaunch);
+        prefs.setBuildLogging(buildLogging);
 
-	public void init(IWorkbench workbench) {
-		store = Plugin.getDefault().getPreferenceStore();
+        return true;
+    }
 
-		enableSubs = store.getString(Plugin.PREF_ENABLE_SUB_BUNDLES);
-		noAskPackageInfo = store.getBoolean(Plugin.PREF_NOASK_PACKAGEINFO);
-		noCheckCnf = store.getBoolean(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD);
-		buildLogging = store.getInt(Plugin.PREF_BUILD_LOGGING);
-	}
+    public void init(IWorkbench workbench) {
+        BndPreferences prefs = new BndPreferences();
+
+        enableSubs = prefs.getEnableSubBundles();
+        noAskPackageInfo = prefs.getNoAskPackageInfo();
+        noCheckCnf = prefs.getHideInitCnfWizard();
+        warnExistingLaunch = prefs.getWarnExistingLaunches();
+        buildLogging = prefs.getBuildLogging();
+    }
 }

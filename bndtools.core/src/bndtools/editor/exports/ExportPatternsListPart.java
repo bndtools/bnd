@@ -40,7 +40,6 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -60,6 +59,7 @@ import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.model.clauses.ExportedPackage;
+import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
 
@@ -127,8 +127,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         }
 	    Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
 
-	    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-	    boolean noAskPackageInfo = store.getBoolean(Plugin.PREF_NOASK_PACKAGEINFO);
+	    BndPreferences prefs = new BndPreferences();
+	    boolean noAskPackageInfo = prefs.getNoAskPackageInfo();
 
 	    if(noAskPackageInfo || missingPkgInfoDirs.isEmpty()) {
 	        generatePkgInfoDirs.addAll(missingPkgInfoDirs.values());
@@ -136,7 +136,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 	        PackageInfoDialog dlg = new PackageInfoDialog(getSection().getShell(), missingPkgInfoDirs);
 	        if (dlg.open() == Window.CANCEL)
 	            return;
-	        store.setValue(Plugin.PREF_NOASK_PACKAGEINFO, dlg.isDontAsk());
+	        prefs.setNoAskPackageInfo(dlg.isDontAsk());
 	        generatePkgInfoDirs.addAll(dlg.getSelectedPackageDirs());
 	    }
 

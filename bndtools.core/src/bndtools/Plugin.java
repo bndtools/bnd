@@ -45,16 +45,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
 
-	public static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
-    public static final String PREF_NOASK_PACKAGEINFO = "noAskPackageInfo";
-
-	public static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
-	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
-
-	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
-
-    public static final String PREF_BUILD_LOGGING = "buildLogging";
-
 	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
 	private static volatile Plugin plugin;

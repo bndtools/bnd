@@ -34,7 +34,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaModelMarker;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
@@ -45,6 +44,7 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
+import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
 
 public class NewBuilder extends IncrementalProjectBuilder {
@@ -66,8 +66,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
-        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
-        logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
+        BndPreferences prefs = new BndPreferences();
+        logLevel = prefs.getBuildLogging();
 
         // Prepare build listeners
         BuildListeners listeners = new BuildListeners();
