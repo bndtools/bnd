@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
         IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
         logLevel = prefs.getInt(Plugin.PREF_BUILD_LOGGING);
 
+        // Prepare build listeners
+        BuildListeners listeners = new BuildListeners();
+
+        // Prepare validations
         classpathErrors = new LinkedList<String>();
         validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
         buildLog = new ArrayList<String>(5);
@@ -75,14 +80,24 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Initialise workspace OBR index (should only happen once)
         boolean builtAny = false;
 
+        // Get the initial project
+        IProject myProject = getProject();
+        listeners.fireBuildStarting(myProject);
+        Project model = null;
         try {
-            IProject myProject = getProject();
-            Project model = Workspace.getProject(myProject.getLocation().toFile());
-            if (model == null)
-                return null;
-            this.model = model;
+            model = Workspace.getProject(myProject.getLocation().toFile());
+        } catch (Exception e) {
+            clearBuildMarkers();
+            createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String>emptyList());
+        }
+        if (model == null)
+            return null;
+        this.model = model;
 
-            model.clear(); // Clear errors and warnings
+        // Main build section
+        try {
+            // Clear errors and warnings
+            model.clear();
 
             // CASE 1: CNF changed
             if (isCnfChanged()) {

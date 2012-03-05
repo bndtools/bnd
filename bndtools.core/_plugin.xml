@@ -30,6 +30,10 @@
       name="Build Validators"
       schema="schema/validators.exsd"
    />
+   <extension-point id="buildListeners"
+      name="Build Listeners"
+      schema="schema/buildListeners.exsd"
+   />
    
    <!-- Popup Menus -->
    <extension
@@ -588,8 +592,11 @@
     </extension>
 
    <extension point="bndtoolsStartupParticipant">
-      <startupParticipant class="bndtools.wizards.workspace.CnfSetupStartupParticipant" />
-      <startipParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+      <startupParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+   </extension>
+   
+   <extension point="buildListeners">
+      <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
    </extension>
 
    <extension point="bndtools.core.projectTemplates">

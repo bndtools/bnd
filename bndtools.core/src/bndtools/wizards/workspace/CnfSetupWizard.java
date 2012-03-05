@@ -15,12 +15,8 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import bndtools.Plugin;
-import bndtools.types.Pair;
-import bndtools.utils.SWTConcurrencyUtil;
-import bndtools.wizards.workspace.CnfSetupTask.CnfStatus;
 import bndtools.wizards.workspace.CnfSetupUserConfirmation.Decision;
 
 public class CnfSetupWizard extends Wizard {
@@ -31,29 +27,19 @@ public class CnfSetupWizard extends Wizard {
     private final CnfImportOrOpenWizardPage importPage;
     private final CnfTemplateSelectionWizardPage templatePage = new CnfTemplateSelectionWizardPage();
 
-    private RequiredOperation operation;
-    private final IPath cnfPath;
+    private CnfSetupOperation operation;
 
-    public enum RequiredOperation {
-        Nothing, Open, Import, Create
-    }
-
-    public CnfSetupWizard(CnfSetupUserConfirmation confirmation, RequiredOperation operation, IPath cnfPath) {
+    public CnfSetupWizard(CnfSetupUserConfirmation confirmation, CnfSetupOperation operation) {
         this.confirmation = confirmation;
-        this.cnfPath = cnfPath;
-        importPage = new CnfImportOrOpenWizardPage(cnfPath);
-        this.confirmPage = new CnfSetupUserConfirmationWizardPage(confirmation);
-
         this.operation = operation;
-
         setNeedsProgressMonitor(true);
 
-        addPage(confirmPage);
-        if (operation == RequiredOperation.Import) {
-            importPage.setOperation(operation);
-            addPage(importPage);
-        }
+        confirmPage = new CnfSetupUserConfirmationWizardPage(confirmation);
+        importPage = new CnfImportOrOpenWizardPage(operation);
 
+        addPage(confirmPage);
+        if (operation.getType() == CnfSetupOperation.Type.Import)
+            addPage(importPage);
         addPage(templatePage);
 
         confirmation.addPropertyChangeListener("decision", new PropertyChangeListener() {
@@ -88,12 +74,12 @@ public class CnfSetupWizard extends Wizard {
 
         if (confirmPage == page) {
             if (confirmation.getDecision() == Decision.SETUP)
-                next = operation == RequiredOperation.Import ? importPage : templatePage;
+                next = operation.getType() == CnfSetupOperation.Type.Import ? importPage : templatePage;
             else
                 next = null;
         }
         else if (importPage == page)
-            next = operation == RequiredOperation.Create ? templatePage : null;
+            next = operation.getType() == CnfSetupOperation.Type.Create ? templatePage : null;
 
         return next;
     }
@@ -103,10 +89,10 @@ public class CnfSetupWizard extends Wizard {
         if (confirmation.getDecision() != Decision.SETUP)
             return true;
 
-        if (operation == RequiredOperation.Import)
+        if (operation.getType() == CnfSetupOperation.Type.Import)
             return importPage.isPageComplete();
 
-        if (operation == RequiredOperation.Create)
+        if (operation.getType() == CnfSetupOperation.Type.Create)
             return templatePage.isPageComplete();
 
         return false;
@@ -125,12 +111,11 @@ public class CnfSetupWizard extends Wizard {
      *         used to decide whether to give the user alternative feedback.
      */
     public static boolean showIfNeeded(boolean overridePreference) {
-        final Pair<RequiredOperation,IPath> cnf = determineNecessaryOperation(overridePreference);
-        RequiredOperation operation = cnf.getFirst();
-        if (operation == RequiredOperation.Nothing)
+        // Determine whether anything needs to be done...
+        CnfSetupOperation operation = determineNecessaryOperation(overridePreference);
+        if (operation.getType() == CnfSetupOperation.Type.Nothing)
             return false;
-
-        if (operation == RequiredOperation.Open) {
+        if (operation.getType() == CnfSetupOperation.Type.Open) {
             try {
                 new CnfSetupTask(operation, null).run(null);
             } catch (InvocationTargetException e) {
@@ -141,14 +126,12 @@ public class CnfSetupWizard extends Wizard {
             return false;
         }
 
-        SWTConcurrencyUtil.execForDisplay(PlatformUI.getWorkbench().getDisplay(), true, new Runnable() {
-            public void run() {
-                final CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation(), cnf.getFirst(), cnf.getSecond());
-                // Modified wizard dialog -- change "Finish" to "OK"
-                WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard);
-                dialog.open();
-            }
-        });
+        // Open wizard
+        CnfSetupWizard wizard = new CnfSetupWizard(new CnfSetupUserConfirmation(), operation);
+        // Modified wizard dialog -- change "Finish" to "OK"
+        WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard);
+        dialog.open();
+
         return true;
     }
 
@@ -162,29 +145,29 @@ public class CnfSetupWizard extends Wizard {
 		store.setValue(Plugin.PREF_HIDE_INITIALISE_CNF_WIZARD, disabled);
 	}
 
-    private static Pair<RequiredOperation, IPath> determineNecessaryOperation(boolean overridePreference) {
+    private static CnfSetupOperation determineNecessaryOperation(boolean overridePreference) {
         if (!overridePreference && isDisabled())
-            return Pair.newInstance(RequiredOperation.Nothing, null);
+            return CnfSetupOperation.NOTHING;
 
-        Pair<CnfStatus, IPath> cnf = CnfSetupTask.getWorkspaceCnfStatus();
-        RequiredOperation operation = RequiredOperation.Nothing;
+        CnfInfo info = CnfSetupTask.getWorkspaceCnfInfo();
+        IPath location = info.getLocation();
 
-        switch (cnf.getFirst()) {
+        CnfSetupOperation operation = CnfSetupOperation.NOTHING;
+        switch (info.getExistence()) {
         case ImportedOpen:
-            operation = RequiredOperation.Nothing;
+            operation = new CnfSetupOperation(CnfSetupOperation.Type.Nothing, location);
             break;
         case ImportedClosed:
-            operation = RequiredOperation.Open;
+            operation = new CnfSetupOperation(CnfSetupOperation.Type.Open, location);
             break;
-        case DirExists:
-            operation = RequiredOperation.Import;
+        case Exists:
+            operation = new CnfSetupOperation(CnfSetupOperation.Type.Import, location);
             break;
-        case NotExists:
-            operation = RequiredOperation.Create;
+        case None:
+            operation = new CnfSetupOperation(CnfSetupOperation.Type.Create, location);
             break;
         }
-
-        return Pair.newInstance(operation, cnf.getSecond());
+        return operation;
     }
 
     @Override

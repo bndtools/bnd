@@ -125,18 +125,25 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 
     private void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
+        IClasspathEntry[] entries = new IClasspathEntry[0];
+        Project model;
         try {
-            Project model = Workspace.getProject(project.getProject().getLocation().toFile());
-            IClasspathEntry[] entries = null;
+            model = Workspace.getProject(project.getProject().getLocation().toFile());
+        } catch (Exception e) {
+            // Abort quickly if there is no Bnd workspace
+            setClasspathEntries(project, entries);
+            return;
+        }
+
+        try {
             if (model != null) {
                 List<IClasspathEntry> classpath = calculateProjectClasspath(model, project, errors);
                 if (classpath != null)
                     entries = classpath.toArray(new IClasspathEntry[classpath.size()]);
             }
-
             setClasspathEntries(project, entries);
         } catch (Exception e) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error requesting bnd classpath update.", e));
+            Plugin.logError("Error requesting bnd classpath update.", e);
         }
     }
 

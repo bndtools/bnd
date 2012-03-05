@@ -17,10 +17,13 @@ import bndtools.builder.BndProjectNature;
 public class NewProjectResourceListener implements IResourceChangeListener {
 
     public void resourceChanged(IResourceChangeEvent event) {
-        final List<IProject> newProjects = new LinkedList<IProject>();
+        IResourceDelta delta = event.getDelta();
+        if (delta == null)
+            return;
 
+        final List<IProject> newProjects = new LinkedList<IProject>();
         try {
-            event.getDelta().accept(new IResourceDeltaVisitor() {
+            delta.accept(new IResourceDeltaVisitor() {
                 public boolean visit(IResourceDelta delta) throws CoreException {
                     if (delta.getFlags() == IResourceDelta.MARKERS)
                         return false; // ignore marker-only deltas.
@@ -41,8 +44,12 @@ public class NewProjectResourceListener implements IResourceChangeListener {
             });
 
             for (IProject project : newProjects) {
-                new RequiredObrCheckingJob(project).schedule();
-                new AdjustClasspathsForNewProjectJob(project).schedule();
+                RequiredObrCheckingJob requiredObrJob = new RequiredObrCheckingJob(project);
+                requiredObrJob.schedule();
+
+                AdjustClasspathsForNewProjectJob adjustClasspathsJob = new AdjustClasspathsForNewProjectJob(project);
+                adjustClasspathsJob.setSystem(true);
+                adjustClasspathsJob.schedule();
             }
 
         } catch (CoreException e) {

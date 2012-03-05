@@ -66,13 +66,16 @@ public class ProjectLocationGroup {
 
     private IPath findWorkspaceLocation() {
         IPath p = Platform.getLocation();
+
+        Workspace ws;
         try {
-            Workspace ws = Central.getWorkspace();
-            if (ws != null)
-                p = Path.fromOSString(ws.getBase().getAbsolutePath());
+            ws = Central.getWorkspace();
         } catch (Exception e) {
-            Plugin.logError("Error looking up cnf location", e);
+            ws = null;
         }
+
+        if (ws != null)
+            p = Path.fromOSString(ws.getBase().getAbsolutePath());
         return p;
     }
 

@@ -112,6 +112,8 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
                 if (file.exists()) jars.add(file.getCanonicalFile());
             }
         }
+        if (jars.isEmpty())
+            return;
 
         // Needed because bindex relativizes the URIs to the repository root even if we don't want it to!
         AbsoluteizeContentFilter absoluteizeFilter = new AbsoluteizeContentFilter(workspace.getBase().getCanonicalFile().toURI().toURL().toString());

@@ -41,10 +41,12 @@ Private-Package:\
 	aQute.lib.filter,\
 	aQute.lib.deployer,\
 	aQute.lib.deployer.obr
+
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
 	bndtools.editor.model,\
-	bndtools.model.clauses
+	bndtools.model.clauses,\
+	org.bndtools.build.api
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources,\
