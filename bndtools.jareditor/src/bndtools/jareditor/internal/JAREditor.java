@@ -61,7 +61,6 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         if (resource != null) {
             resource.getWorkspace().addResourceChangeListener(this);
         }
-
     }
 
     @Override
@@ -76,8 +75,12 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     protected void updateContent(final IEditorInput input) {
         Runnable update = new Runnable() {
             public void run() {
-                if(contentPage != null && !contentPage.getPartControl().isDisposed()) {
+                if (contentPage != null && !contentPage.getPartControl().isDisposed()) {
                     contentPage.getManagedForm().refresh();
+                }
+
+                if (printPage != null && !printPage.getPartControl().isDisposed()) {
+                    printPage.refresh();
                 }
             }
         };

@@ -42,16 +42,20 @@ public class JARPrintPage extends FormPage {
     public void setActive(boolean active) {
         super.setActive(active);
         if (active && !loaded) {
-            try {
-                IFile wsFile = ((IFileEditorInput) getEditorInput()).getFile();
-                File file = wsFile.getLocation().toFile();
+            refresh();
+        }
+    }
 
-                text.setText(print(file));
-            } catch (Exception e) {
-                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
-            } finally {
-                loaded = true;
-            }
+    public void refresh() {
+        try {
+            IFile wsFile = ((IFileEditorInput) getEditorInput()).getFile();
+            File file = wsFile.getLocation().toFile();
+
+            text.setText(print(file));
+        } catch (Exception e) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
+        } finally {
+            loaded = true;
         }
     }
 
