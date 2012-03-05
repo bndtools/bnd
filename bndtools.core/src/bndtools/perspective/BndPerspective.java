@@ -11,7 +11,13 @@ import org.eclipse.ui.texteditor.templates.TemplatesView;
 import bndtools.PartConstants;
 
 public class BndPerspective implements IPerspectiveFactory {
+
     public static final String ID_PROJECT_EXPLORER= "org.eclipse.ui.navigator.ProjectExplorer"; //$NON-NLS-1$
+
+    public static final String VIEW_ID_JUNIT_RESULTS = "org.eclipse.jdt.junit.ResultView";
+    private static final String VIEW_ID_CONSOLE = "org.eclipse.ui.console.ConsoleView";
+    private static final String VIEW_ID_SEARCH = "org.eclipse.search.ui.views.SearchView";
+
     public void createInitialLayout(IPageLayout layout) {
         String editorArea = layout.getEditorArea();
 
@@ -25,10 +31,11 @@ public class BndPerspective implements IPerspectiveFactory {
         outputFolder.addView(IPageLayout.ID_PROBLEM_VIEW);
         outputFolder.addView(JavaUI.ID_JAVADOC_VIEW);
         outputFolder.addView(PartConstants.VIEW_ID_IMPORTSEXPORTS);
-        outputFolder.addPlaceholder("org.eclipse.search.ui.views.SearchView");
-        outputFolder.addPlaceholder("org.eclipse.ui.console.ConsoleView");
+        outputFolder.addPlaceholder(VIEW_ID_SEARCH);
+        outputFolder.addPlaceholder(VIEW_ID_CONSOLE);
         outputFolder.addPlaceholder(IPageLayout.ID_BOOKMARKS);
         outputFolder.addPlaceholder(IProgressConstants.PROGRESS_VIEW_ID);
+        outputFolder.addPlaceholder(VIEW_ID_JUNIT_RESULTS);
 
         IFolderLayout outlineFolder = layout.createFolder("right", IPageLayout.RIGHT, (float)0.75, editorArea); //$NON-NLS-1$
         outlineFolder.addView(IPageLayout.ID_OUTLINE);
@@ -41,16 +48,17 @@ public class BndPerspective implements IPerspectiveFactory {
         layout.addActionSet(IPageLayout.ID_NAVIGATE_ACTION_SET);
 
         // views - java
+        layout.addShowViewShortcut(VIEW_ID_JUNIT_RESULTS);
         layout.addShowViewShortcut(JavaUI.ID_PACKAGES);
         layout.addShowViewShortcut(JavaUI.ID_TYPE_HIERARCHY);
         layout.addShowViewShortcut(JavaUI.ID_SOURCE_VIEW);
         layout.addShowViewShortcut(JavaUI.ID_JAVADOC_VIEW);
 
         // views - search
-        layout.addShowViewShortcut("org.eclipse.search.ui.views.SearchView");
+        layout.addShowViewShortcut(VIEW_ID_SEARCH);
 
         // views - debugging
-        layout.addShowViewShortcut("org.eclipse.ui.console.ConsoleView");
+        layout.addShowViewShortcut(VIEW_ID_CONSOLE);
 
         // views - standard workbench
         layout.addShowViewShortcut(PartConstants.VIEW_ID_IMPORTSEXPORTS);

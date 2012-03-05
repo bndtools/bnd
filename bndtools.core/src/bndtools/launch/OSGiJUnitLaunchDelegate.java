@@ -8,9 +8,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.SocketUtil;
@@ -43,6 +45,19 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
             bndEclipseTester = (EclipseJUnitTester) bndTester;
         junitPort = configureTester(configuration);
         bndTester.prepare();
+    }
+
+    @Override
+    public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        boolean result = super.finalLaunchCheck(configuration, mode, monitor);
+
+        // Trigger opening of the JUnit view
+        Status junitStatus = new Status(IStatus.INFO, Plugin.PLUGIN_ID, LaunchConstants.LAUNCH_STATUS_JUNIT, "", null);
+        IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(junitStatus);
+        if (handler != null)
+            handler.handleStatus(junitStatus, null);
+
+        return result;
     }
 
     @Override

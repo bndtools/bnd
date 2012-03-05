@@ -71,17 +71,20 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             if (processCount > 0) {
                 Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
                 IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
-
-                boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
-                if (!okay)
-                    return okay;
+                if (prompter != null) {
+                    boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
+                    if (!okay)
+                        return okay;
+                }
             }
         }
 
         IStatus launchStatus = getLauncherStatus();
 
         IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(launchStatus);
-        return (Boolean) prompter.handleStatus(launchStatus, model);
+        if (prompter != null)
+            return (Boolean) prompter.handleStatus(launchStatus, model);
+        return true;
     }
 
     @Override

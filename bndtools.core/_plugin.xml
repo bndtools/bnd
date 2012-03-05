@@ -740,6 +740,12 @@
          plugin="bndtools.core"
          code="0"
       />
+      <statusHandler
+         id="bndtools.core.debug.junitStatusHandler"
+         class="bndtools.launch.ui.JUnitViewOpenerStatusHandler"
+         plugin="bndtools.core"
+         code="999"
+      />
    </extension>
    
    <extension point="bndtools.core.validators">
