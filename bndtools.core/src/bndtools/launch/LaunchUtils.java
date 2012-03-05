@@ -34,6 +34,21 @@ final class LaunchUtils {
         return targetResource;
     }
 
+    static String getLaunchProjectName(IResource launchResource) {
+        String result;
+
+        IProject project = launchResource.getProject();
+        Project bnd;
+        try {
+            bnd = Central.getWorkspace().getProject(project.getName());
+        } catch (Exception e) {
+            bnd = null;
+        }
+
+        result = (bnd != null) ? bnd.getName() : Project.BNDCNF;
+        return result;
+    }
+
     static Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
         Project result;
 

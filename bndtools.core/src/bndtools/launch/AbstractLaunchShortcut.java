@@ -157,8 +157,9 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         wc.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetPath);
-        if (targetResource != null && targetResource.exists())
-            wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetResource.getProject().getName());
+        if (targetResource != null && targetResource.exists()) {
+            wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(targetResource));
+        }
 
         return wc;
     }

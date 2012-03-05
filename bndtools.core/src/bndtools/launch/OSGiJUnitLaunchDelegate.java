@@ -2,9 +2,7 @@ package bndtools.launch;
 
 import java.text.MessageFormat;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -67,11 +65,10 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
 
         // JUnit plugin ignores the launch unless attribute "org.eclipse.jdt.launching.PROJECT_ATTR" is set.
         ILaunchConfigurationWorkingCopy modifiedConfig = configuration.getWorkingCopy();
-        String launchTarget = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if(launchTarget != null) {
-            IResource launchResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTarget);
-            IProject launchProject = launchResource.getProject();
-            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, launchProject.getName());
+
+        IResource launchResource = LaunchUtils.getTargetResource(configuration);
+        if(launchResource != null) {
+            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(launchResource));
         }
 
         return super.getLaunch(modifiedConfig.doSave(), mode);
