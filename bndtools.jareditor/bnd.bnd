@@ -25,11 +25,21 @@ Include-Resource: resources
 	osgi.core,\
 	org.eclipse.core.jobs,\
 	org.eclipse.text
+
 Private-Package: bndtools.jareditor.internal,\
 	bndtools.utils
-Conditional-Package: aQute.lib.io,\
-	aQute.libg.generics
+	
+Conditional-Package: \
+	aQute.libg.*,\
+	aQute.lib.*,\
+	aQute.bnd.*
 
-Import-Package: org.eclipse.ui*;ui.workbench=!;texteditor=!,\
+Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
+	javax.naming;resolution:=optional,\
+	javax.xml.namespace;resolution:=optional,\
+	javax.xml.parsers;resolution:=optional,\
+	javax.xml.xpath;resolution:=optional,\
+	!org.osgi.service.component.annotations,\
 	*
+
 Bundle-Activator: bndtools.jareditor.internal.Plugin
