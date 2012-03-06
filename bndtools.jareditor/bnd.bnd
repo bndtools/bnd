@@ -4,7 +4,9 @@ Bundle-Version: ${master-version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource: resources
 
--buildpath: biz.aQute.bndlib,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bndlib,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.ui.editors,\

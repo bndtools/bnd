@@ -17,7 +17,9 @@ Conditional-Package: aQute.lib.io
 Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
--buildpath: bndtools.diff;version=latest, \
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	bndtools.diff;version=latest, \
 	bndtools.core;version=latest, \
 	biz.aQute.bndlib;version=latest, \
 	org.eclipse.core.runtime,\
