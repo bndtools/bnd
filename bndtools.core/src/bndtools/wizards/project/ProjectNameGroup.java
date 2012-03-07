@@ -2,6 +2,7 @@ package bndtools.wizards.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -22,7 +23,7 @@ public class ProjectNameGroup {
 
     private Text txtProjectName;
 
-    private boolean programmaticChange = false;
+    private AtomicBoolean programmaticChange = new AtomicBoolean(false);
 
     /**
      * @wbp.parser.entryPoint
@@ -41,9 +42,14 @@ public class ProjectNameGroup {
         txtProjectName.setText(projectName);
         txtProjectName.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                if (!programmaticChange) {
-                    programmaticChange = true;
-                    setProjectName(txtProjectName.getText());
+                if (programmaticChange.compareAndSet(false, true)) {
+                    try {
+                        String old = projectName;
+                        projectName = txtProjectName.getText().trim();
+                        propSupport.firePropertyChange(PROP_PROJECT_NAME, old, projectName);
+                    } finally {
+                        programmaticChange.set(false);
+                    }
                 }
             }
         });
@@ -55,21 +61,9 @@ public class ProjectNameGroup {
         return projectName;
     }
 
-    public void setProjectName(String projectName) {
-        String old = this.projectName;
-        this.projectName = projectName;
-        updateUI();
-        propSupport.firePropertyChange(PROP_PROJECT_NAME, old, projectName);
-    }
-
     private void updateUI() {
-        try {
-            programmaticChange = true;
-            if (txtProjectName != null && !txtProjectName.isDisposed())
-                txtProjectName.setText(projectName);
-        } finally {
-            programmaticChange = false;
-        }
+        if (txtProjectName != null && !txtProjectName.isDisposed())
+            txtProjectName.setText(projectName);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener var0) {

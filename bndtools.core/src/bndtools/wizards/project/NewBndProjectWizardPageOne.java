@@ -35,13 +35,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
-import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
-import org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField;
-import org.eclipse.jdt.internal.ui.wizards.dialogfields.IDialogFieldListener;
-import org.eclipse.jdt.internal.ui.wizards.dialogfields.LayoutUtil;
-import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringDialogField;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -170,67 +164,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         this.projectTemplate = projectTemplate;
     }
 
-    private GridLayout initGridLayout(GridLayout layout, boolean margins) {
-        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
-        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
-        if (margins) {
-            layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-            layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
-        } else {
-            layout.marginWidth = 0;
-            layout.marginHeight = 0;
-        }
-        return layout;
-    }
-
-    private final class NameGroup extends Observable implements IDialogFieldListener {
-
-        protected final StringDialogField fNameField;
-
-        public NameGroup() {
-            // text field for project name
-            fNameField= new StringDialogField();
-            fNameField.setLabelText(NewWizardMessages.NewJavaProjectWizardPageOne_NameGroup_label_text);
-            fNameField.setDialogFieldListener(this);
-        }
-
-        public Control createControl(Composite composite) {
-            Composite nameComposite= new Composite(composite, SWT.NONE);
-            nameComposite.setFont(composite.getFont());
-            nameComposite.setLayout(initGridLayout(new GridLayout(2, false), false));
-
-            fNameField.doFillIntoGrid(nameComposite, 2);
-            LayoutUtil.setHorizontalGrabbing(fNameField.getTextControl(null));
-
-            return nameComposite;
-        }
-
-        protected void fireEvent() {
-            setChanged();
-            notifyObservers();
-        }
-
-        public String getName() {
-            return fNameField.getText().trim();
-        }
-
-        public void postSetFocus() {
-            fNameField.postSetFocusOnDialogField(getShell().getDisplay());
-        }
-
-        public void setName(String name) {
-            fNameField.setText(name);
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jdt.internal.ui.wizards.dialogfields.IDialogFieldListener#dialogFieldChanged(org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField)
-         */
-        public void dialogFieldChanged(DialogField field) {
-            fireEvent();
-        }
-    }
-
-
     /**
      * Validate this page and show appropriate warnings and error NewWizardMessages.
      */
@@ -245,7 +178,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             // check whether the project name field is empty
             if (name.length() == 0) {
                 setErrorMessage(null);
-                setMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_enterProjectName);
+                setMessage("Enter a project name.");
                 setPageComplete(false);
                 return;
             }
@@ -261,7 +194,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             // check whether project already exists
             final IProject handle= workspace.getRoot().getProject(name);
             if (handle.exists()) {
-                setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_projectAlreadyExists);
+                setErrorMessage("A project with this name already exists.");
                 setPageComplete(false);
                 return;
             }
@@ -279,7 +212,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
                 String existingName= projectLocation.lastSegment();
                 String newName = null; //fNameGroup.getName();
                 if (!existingName.equals(newName)) {
-                    setErrorMessage(Messages.format(NewWizardMessages.NewJavaProjectWizardPageOne_Message_invalidProjectNameForWorkspaceRoot, BasicElementLabels.getResourceName(existingName)));
+                    setErrorMessage(Messages.format("The name of the new project must be ''{0}''", BasicElementLabels.getResourceName(existingName)));
                     setPageComplete(false);
                     return;
                 }
@@ -291,14 +224,14 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             // check whether location is empty
             if (location.length() == 0) {
                 setErrorMessage(null);
-                setMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_enterLocation);
+                setMessage("Enter a location for the project.");
                 setPageComplete(false);
                 return;
             }
 
             // check whether the location is a syntactically correct path
             if (!Path.EMPTY.isValidPath(location)) {
-                setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_invalidDirectory);
+                setErrorMessage("Invalid project contents directory");
                 setPageComplete(false);
                 return;
             }
@@ -311,13 +244,13 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             if (projectPath.toFile().exists()) {//create from existing source
                 if (Platform.getLocation().isPrefixOf(projectPath)) { //create from existing source in workspace
                     if (!Platform.getLocation().equals(projectPath.removeLastSegments(1))) {
-                        setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_notOnWorkspaceRoot);
+                        setErrorMessage("Projects located in the workspace folder must be direct sub folders of the workspace folder");
                         setPageComplete(false);
                         return;
                     }
 
                     if (!projectPath.toFile().exists()) {
-                        setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_notExisingProjectOnWorkspaceRoot);
+                        setErrorMessage("The selected existing source location in the workspace root does not exist");
                         setPageComplete(false);
                         return;
                     }
