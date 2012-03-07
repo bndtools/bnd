@@ -21,7 +21,7 @@ public class UnresolvedReasonLabelProvider extends RequirementLabelProvider {
     }
 
     public String getLabel(Resource resource) {
-        String resourceName = (resource != null && resource.getId() != null) ? resource.getId() : "«initial»";
+        String resourceName = (resource != null && resource.getId() != null) ? resource.getId() : "<<initial>>";
         return resourceName;
     }
 
