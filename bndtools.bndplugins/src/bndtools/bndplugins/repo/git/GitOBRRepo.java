@@ -260,6 +260,10 @@ public class GitOBRRepo extends AbstractBaseOBR {
 	public boolean canWrite() {
 		return storageRepo.canWrite();
 	}
+	
+	public String getLocation() {
+		return gitUri;
+	}
 
 	private static String getRelativePath(File base, File file) throws IOException {
 		return base.toURI().relativize(file.toURI()).getPath();
