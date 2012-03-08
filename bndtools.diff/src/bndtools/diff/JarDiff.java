@@ -37,7 +37,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Resource;
-import aQute.libg.header.OSGiHeader;
+import aQute.libg.header.Parameters;
 import aQute.libg.version.VersionRange;
 
 public class JarDiff {
@@ -72,27 +72,27 @@ public class JarDiff {
 	public void compare() throws Exception {
 
 		Manifest projectManifest = projectJar.getManifest();
-		Map<String, Map<String, String>> projectExportedPackages = OSGiHeader.parseHeader(getAttribute(projectManifest, Constants.EXPORT_PACKAGE), null);
-		Map<String, Map<String, String>> projectImportedPackages = OSGiHeader.parseHeader(getAttribute(projectManifest, Constants.IMPORT_PACKAGE), null);
+		Parameters projectExportedPackages = new Parameters(getAttribute(projectManifest, Constants.EXPORT_PACKAGE));
+		Parameters projectImportedPackages = new Parameters(getAttribute(projectManifest, Constants.IMPORT_PACKAGE));
 
 		bundleSymbolicName = stripInstructions(getAttribute(projectManifest, Constants.BUNDLE_SYMBOLICNAME));
 		currentVersion = removeVersionQualifier(getAttribute(projectManifest, Constants.BUNDLE_VERSION)); // This is the version from the .bnd file
 
-		Map<String, Map<String, String>> previousPackages;
-		Map<String, Map<String, String>> previousImportedPackages;
+		Parameters previousPackages;
+		Parameters previousImportedPackages;
 		Manifest previousManifest = null;
 		if (previousJar != null) {
 			previousManifest = previousJar.getManifest();
-			previousPackages = OSGiHeader.parseHeader(getAttribute(previousManifest, Constants.EXPORT_PACKAGE), null);
-			previousImportedPackages = OSGiHeader.parseHeader(getAttribute(previousManifest, Constants.IMPORT_PACKAGE), null);
+			previousPackages = new Parameters(getAttribute(previousManifest, Constants.EXPORT_PACKAGE));
+			previousImportedPackages = new Parameters(getAttribute(previousManifest, Constants.IMPORT_PACKAGE));
 
 			// If no version in projectJar use previous version
 			if (currentVersion == null) {
 				currentVersion = removeVersionQualifier(getAttribute(previousManifest, Constants.BUNDLE_VERSION));
 			}
 		} else {
-			previousPackages = Collections.emptyMap();
-			previousImportedPackages = Collections.emptyMap();
+			previousPackages = new Parameters(); // empty
+			previousImportedPackages = new Parameters(); // empty
 		}
 
 		String prevName = stripInstructions(getAttribute(previousManifest, Constants.BUNDLE_SYMBOLICNAME));

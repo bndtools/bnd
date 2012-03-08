@@ -46,5 +46,9 @@ public class ByteArrayResource implements Resource {
 	public String getExtra() {
 		return extra;
 	}
+	
+	public long size() throws Exception {
+		return bytes.length;
+	}
 
 }
