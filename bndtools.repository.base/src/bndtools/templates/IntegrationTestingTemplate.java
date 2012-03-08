@@ -19,7 +19,6 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 
     private static final String ALL_TEST_CASES_MACRO = "${classes;CONCRETE;EXTENDS;junit.framework.TestCase}"; //$NON-NLS-1$
 
-    @Override
     public void modifyInitialBndModel(IBndModel model) {
         List<VersionedClause> newBuildPath = new ArrayList<VersionedClause>();
 
@@ -48,13 +47,11 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 		return new VersionedClause(bsn, attribs);
 	}
 
-    @Override
     public void modifyInitialBndProject(IBndProject project) {
         URL testSrc = IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt");
         project.addResource("src/org/example/tests/ExampleTest.java", testSrc);
     }
 
-    @Override
     public boolean enableTestSourceFolder() {
         return false;
     }

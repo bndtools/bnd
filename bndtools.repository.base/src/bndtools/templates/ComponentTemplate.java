@@ -55,13 +55,11 @@ public class ComponentTemplate implements IProjectTemplate {
             requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
     }
 
-    @Override
     public void modifyInitialBndProject(IBndProject project) {
         project.addResource("src/org/example/ExampleComponent.java", ComponentTemplate.class.getResource("ExampleComponent.java.txt"));
         project.addResource("test/org/example/ExampleComponentTest.java", ComponentTemplate.class.getResource("ExampleComponentTest.java.txt"));
     }
 
-    @Override
     public boolean enableTestSourceFolder() {
         return true;
     }
