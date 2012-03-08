@@ -1,7 +1,10 @@
 # Master Version Settings
 base-version: 1.0.1.DEV
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
-bndlib: biz.aQute.bndlib;version='[1.51,1.52)'
+
+bndlib-version-base:    1.51
+bndlib-version-ceiling: 1.52
+bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
 # We use git
 Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
