@@ -3,9 +3,9 @@ package bndtools.templates;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
+import aQute.libg.header.Attrs;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
@@ -22,10 +22,10 @@ public class ComponentTemplate implements IProjectTemplate {
         tmp = model.getBuildPath();
         if (tmp != null)
             buildPath.addAll(tmp);
-        buildPath.add(new VersionedClause("osgi.core", new HashMap<String, String>()));
-        buildPath.add(new VersionedClause("osgi.cmpn", new HashMap<String, String>()));
-        buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new HashMap<String, String>()));
-        buildPath.add(new VersionedClause("junit.osgi", new HashMap<String, String>()));
+        buildPath.add(new VersionedClause("osgi.core", new Attrs()));
+        buildPath.add(new VersionedClause("osgi.cmpn", new Attrs()));
+        buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new Attrs()));
+        buildPath.add(new VersionedClause("junit.osgi", new Attrs()));
 
         model.setBuildPath(buildPath);
 
@@ -50,7 +50,7 @@ public class ComponentTemplate implements IProjectTemplate {
     }
 
     private void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
-        runPath.add(new VersionedClause(bsn, new HashMap<String, String>()));
+        runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred)
             requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
     }

@@ -3,7 +3,8 @@
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
 	bndtools.core;version=snapshot,\
-	osgi.core
+	osgi.core,\
+	${bndlib}
 
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
