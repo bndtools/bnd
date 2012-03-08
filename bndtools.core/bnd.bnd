@@ -91,7 +91,7 @@ eclipse.deps: \
 
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
-	biz.aQute.bndlib;version=1.51,\
+	${bndlib},\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\

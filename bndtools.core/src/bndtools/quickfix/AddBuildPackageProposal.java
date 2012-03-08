@@ -2,7 +2,6 @@ package bndtools.quickfix;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -18,11 +17,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import aQute.bnd.build.Project;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.VersionedClause;
-
-import aQute.bnd.build.Project;
 
 public class AddBuildPackageProposal implements IJavaCompletionProposal {
 
@@ -57,7 +56,7 @@ public class AddBuildPackageProposal implements IJavaCompletionProposal {
             if (packages == null) {
                 packages = new ArrayList<VersionedClause>(1);
             }
-            packages.add(new VersionedClause(iPackage, Collections.<String, String>emptyMap()));
+            packages.add(new VersionedClause(iPackage, new Attrs()));
             model.setBuildPackages(packages);
 
             model.saveChangesTo(document);

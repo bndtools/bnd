@@ -1,15 +1,15 @@
 package bndtools.editor.workspace;
 
-import java.util.Map;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.Wizard;
+
+import aQute.libg.header.Attrs;
 
 public class PluginEditWizard extends Wizard {
 
     private final PluginPropertiesPage propertiesPage = new PluginPropertiesPage();
 
-    public PluginEditWizard(IConfigurationElement configElement, Map<String, String> properties) {
+    public PluginEditWizard(IConfigurationElement configElement, Attrs properties) {
         propertiesPage.setConfigElement(configElement);
         propertiesPage.setProperties(properties);
 

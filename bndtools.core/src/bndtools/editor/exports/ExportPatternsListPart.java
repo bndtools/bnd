@@ -51,6 +51,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.contents.PackageInfoDialog;
 import bndtools.editor.model.BndEditModel;
@@ -108,7 +109,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
-				ExportedPackage newPackage = new ExportedPackage(newPackageName, new HashMap<String, String>());
+				ExportedPackage newPackage = new ExportedPackage(newPackageName, new Attrs());
 				added.add(newPackage);
 			}
 		}
@@ -213,7 +214,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 
 	@Override
 	protected ExportedPackage newHeaderClause(String text) {
-		return new ExportedPackage(text, new HashMap<String, String>());
+		return new ExportedPackage(text, new Attrs());
 	}
 	@Override
 	protected List<ExportedPackage> loadFromModel(BndEditModel model) {

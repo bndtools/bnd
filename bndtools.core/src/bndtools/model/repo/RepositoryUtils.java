@@ -2,14 +2,13 @@ package bndtools.model.repo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
@@ -32,7 +31,7 @@ public class RepositoryUtils {
             List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
             List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
-            repos.add(new WrappingObrRepository(Central.getWorkspaceObrProvider(), null, workspace));
+            repos.add(new WrappingObrRepository("Workspace", Central.getWorkspaceObrProvider(), null, workspace));
 
             for (RepositoryPlugin plugin : plugins) {
                 if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
@@ -46,7 +45,7 @@ public class RepositoryUtils {
     }
 
     public static VersionedClause convertRepoBundle(RepositoryBundle bundle) {
-        Map<String, String> attribs = new HashMap<String, String>();
+        Attrs attribs = new Attrs();
         if (isWorkspaceRepo(bundle.getRepo())) {
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         }
@@ -54,7 +53,7 @@ public class RepositoryUtils {
     }
 
     public static VersionedClause convertRepoBundleVersion(RepositoryBundleVersion bundleVersion) {
-        Map<String, String> attribs = new HashMap<String, String>();
+        Attrs attribs = new Attrs();
         if (isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         else

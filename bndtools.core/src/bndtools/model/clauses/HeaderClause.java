@@ -13,7 +13,6 @@ package bndtools.model.clauses;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +21,17 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import aQute.libg.header.Attrs;
+
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 	private static final String INTERNAL_LIST_SEPARATOR = ";";
 	private static final String INTERNAL_LIST_SEPARATOR_NEWLINES = INTERNAL_LIST_SEPARATOR + "\\\n\t\t";
 
 	protected String name;
-	protected final Map<String,String> attribs;
+	protected final Attrs attribs;
 
-	public HeaderClause(String name, Map<String, String> attribs) {
+	public HeaderClause(String name, Attrs attribs) {
 		assert name != null;
 		assert attribs != null;
 
@@ -43,7 +44,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	public String getName() {
 		return name;
 	}
-	public Map<String, String> getAttribs() {
+	public Attrs getAttribs() {
 		return attribs;
 	}
 	public List<String> getListAttrib(String attrib) {
@@ -111,12 +112,13 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
     }
 
     protected boolean newlinesBetweenAttributes() {
-		return false;
-	}
-	@Override
-	public HeaderClause clone() {
-		return new HeaderClause(this.name, new HashMap<String, String>(this.attribs));
-	}
+        return false;
+    }
+
+    @Override
+    public HeaderClause clone() {
+        return new HeaderClause(this.name, new Attrs(this.attribs));
+    }
 
 	public int compareTo(HeaderClause other) {
 		return this.name.compareTo(other.name);

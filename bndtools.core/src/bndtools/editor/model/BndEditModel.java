@@ -35,6 +35,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
+import aQute.libg.header.Attrs;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.api.EE;
@@ -122,13 +123,13 @@ public class BndEditModel implements IPersistableBndModel {
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 
 	// CONVERTERS
-    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String,Map<String,String>>>() {
-        public VersionedClause convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
+        public VersionedClause convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
-    private Converter<List<VersionedClause>, String> buildPackagesConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String,Map<String,String>>>() {
-        public VersionedClause convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+    private Converter<List<VersionedClause>, String> buildPackagesConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
+        public VersionedClause convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
@@ -146,18 +147,18 @@ public class BndEditModel implements IPersistableBndModel {
     };
     Converter<List<String>, String> listConverter = SimpleListConverter.create();
     Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
-    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String,Map<String,String>>>() {
-        public ExportedPackage convert(Pair<String, Map<String, String>> input) {
+    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String, Attrs>>() {
+        public ExportedPackage convert(Pair<String, Attrs> input) {
             return new ExportedPackage(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Pair<String,Map<String,String>>>() {
-        public ServiceComponent convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Pair<String, Attrs>>() {
+        public ServiceComponent convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new ServiceComponent(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Pair<String,Map<String,String>>>() {
-        public ImportPattern convert(Pair<String, Map<String, String>> input) throws IllegalArgumentException {
+    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Pair<String, Attrs>>() {
+        public ImportPattern convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });

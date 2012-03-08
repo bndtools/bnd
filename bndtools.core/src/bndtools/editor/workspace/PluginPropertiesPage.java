@@ -1,8 +1,6 @@
 package bndtools.editor.workspace;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -26,11 +24,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 
 public class PluginPropertiesPage extends WizardPage {
 
     private IConfigurationElement configElement;
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Attrs properties = new Attrs();
     private boolean changed = false;
 
     private Composite mainComposite;
@@ -198,14 +197,14 @@ public class PluginPropertiesPage extends WizardPage {
         }
     }
 
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Attrs properties) {
         this.properties = properties;
         if (Display.getCurrent() != null && fieldContainer != null && !fieldContainer.isDisposed()) {
             resetPropertyFields();
         }
     }
 
-    public Map<String, String> getProperties() {
+    public Attrs getProperties() {
         return properties;
     }
 

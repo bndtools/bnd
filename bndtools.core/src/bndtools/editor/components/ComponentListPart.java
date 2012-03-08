@@ -74,6 +74,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ExportedPackage;
@@ -178,7 +179,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 		    else
 		        name = String.format("%d", i); //$NON-NLS-1$
 			if(!componentMap.containsKey(name)) {
-				component = new ServiceComponent(name, new HashMap<String, String>());
+				component = new ServiceComponent(name, new Attrs());
 				componentMap.put(name, component);
 				componentNames.add(name);
 				break;
@@ -402,7 +403,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 								IType type = (IType) javaElement;
 								if(type.isClass() && Flags.isPublic(type.getFlags())) {
 									String compName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
-									ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
+									ServiceComponent component = new ServiceComponent(compName, new Attrs());
 									addedNames.add(compName);
 									addedMap.put(compName, component);
 								}
@@ -411,7 +412,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 								for (IType type : allTypes) {
 									if(type.isClass() && Flags.isPublic(type.getFlags())) {
 										String compName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
-										ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
+										ServiceComponent component = new ServiceComponent(compName, new Attrs());
 										addedNames.add(compName);
 										addedMap.put(compName, component);
 									}
@@ -427,7 +428,7 @@ public class ComponentListPart extends SectionPart implements PropertyChangeList
 						IPath relativePath = PathUtils.makeRelativeTo(resource.getFullPath(), bndFile.getFullPath());
 
 						String compName = relativePath.toString();
-						ServiceComponent component = new ServiceComponent(compName, new HashMap<String, String>());
+						ServiceComponent component = new ServiceComponent(compName, new Attrs());
 						addedNames.add(compName);
 						addedMap.put(compName, component);
 					}

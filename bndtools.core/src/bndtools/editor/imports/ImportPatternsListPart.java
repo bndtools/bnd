@@ -12,7 +12,6 @@ package bndtools.editor.imports;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.model.clauses.ImportPattern;
@@ -52,7 +52,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 			// Add a "*" at the end, if not already present
 			List<ImportPattern> patterns = getClauses();
 			if(patterns.size() != 0 && !patterns.get(patterns.size() - 1).getName().equals("*")) {
-				ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>());
+				ImportPattern starPattern = new ImportPattern("*", new Attrs());
 				ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
 			}
 		}
@@ -67,7 +67,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 		super.doAddClauses(clauses, index, select);
 
 		if(appendStar) {
-			ImportPattern starPattern = new ImportPattern("*", new HashMap<String, String>()); //$NON-NLS-1$
+			ImportPattern starPattern = new ImportPattern("*", new Attrs()); //$NON-NLS-1$
 			super.doAddClauses(Arrays.asList(starPattern), -1, false);
 		}
 	}
@@ -105,7 +105,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 	}
 	@Override
 	protected ImportPattern newHeaderClause(String text) {
-		return new ImportPattern(text, new HashMap<String, String>());
+		return new ImportPattern(text, new Attrs());
 	}
 	@Override
 	protected List<ImportPattern> loadFromModel(BndEditModel model) {

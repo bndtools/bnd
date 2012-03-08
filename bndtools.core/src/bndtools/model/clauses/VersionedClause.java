@@ -1,12 +1,11 @@
 package bndtools.model.clauses;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.osgi.framework.Constants;
 
+import aQute.libg.header.Attrs;
+
 public class VersionedClause extends HeaderClause implements Cloneable {
-	public VersionedClause(String name, Map<String, String> attribs) {
+	public VersionedClause(String name, Attrs attribs) {
 		super(name, attribs);
 	}
 	public String getVersionRange() {
@@ -17,6 +16,6 @@ public class VersionedClause extends HeaderClause implements Cloneable {
 	}
 	@Override
 	public VersionedClause clone() {
-		return new VersionedClause(this.name, new HashMap<String, String>(this.attribs));
+		return new VersionedClause(this.name, new Attrs(this.attribs));
 	}
 }

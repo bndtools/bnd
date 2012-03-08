@@ -116,7 +116,7 @@ public class RepositoryModel {
             if(clazzes != null) {
                 Map<String, List<Clazz>> classMap = new HashMap<String, List<Clazz>>();
                 for (Clazz clazz : clazzes) {
-                    String shortName = Clazz.getShortName(clazz.getFQN());
+                    String shortName = clazz.getClassName().getShortName();
 
                     List<Clazz> list = classMap.get(shortName);
                     if(list == null) {

@@ -10,14 +10,13 @@
  *******************************************************************************/
 package bndtools.model.clauses;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.osgi.framework.Constants;
+
+import aQute.libg.header.Attrs;
 
 public class ExportedPackage extends HeaderClause {
 
-    public ExportedPackage(String packageName, Map<String, String> attribs) {
+    public ExportedPackage(String packageName, Attrs attribs) {
         super(packageName, attribs);
     }
 
@@ -47,6 +46,6 @@ public class ExportedPackage extends HeaderClause {
 
     @Override
     public ExportedPackage clone() {
-        return new ExportedPackage(this.name, new HashMap<String, String>(this.attribs));
+        return new ExportedPackage(this.name, new Attrs(this.attribs));
     }
 }

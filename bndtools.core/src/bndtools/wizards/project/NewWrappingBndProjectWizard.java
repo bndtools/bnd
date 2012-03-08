@@ -7,9 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -25,6 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.osgi.framework.Constants;
 
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ExportedPackage;
@@ -90,7 +89,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
             for (IPath path : paths) {
                 File file = FileUtils.toFile(wsroot, path);
                 if (file != null && file.isFile() && file.getName().toLowerCase().endsWith(".jar")) {
-                    VersionedClause buildPathEntry = new VersionedClause("lib/" + file.getName(), new HashMap<String, String>());
+                    VersionedClause buildPathEntry = new VersionedClause("lib/" + file.getName(), new Attrs());
                     buildPathEntry.setVersionRange("file");
                     buildPath.add(buildPathEntry);
                 }
@@ -101,7 +100,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
         // Add package exports
         List<IPath> selectedPackages = packageListPage.getSelectedPackages();
         for (IPath pkg : selectedPackages) {
-            Map<String, String> props = new HashMap<String, String>();
+            Attrs props = new Attrs();
             props.put(Constants.VERSION_ATTRIBUTE, BndEditModel.BUNDLE_VERSION_MACRO);
             ExportedPackage export = new ExportedPackage(pkg.toString().replace('/', '.'), props);
 

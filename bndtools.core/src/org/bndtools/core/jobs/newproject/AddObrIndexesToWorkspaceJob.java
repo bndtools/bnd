@@ -2,10 +2,8 @@ package org.bndtools.core.jobs.newproject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -22,6 +20,7 @@ import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.build.Workspace;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.conversions.CollectionFormatter;
@@ -53,7 +52,7 @@ public class AddObrIndexesToWorkspaceJob extends WorkspaceJob {
             List<HeaderClause> plugins = model.getPlugins();
             List<HeaderClause> newPlugins = plugins == null ? new LinkedList<HeaderClause>() : new ArrayList<HeaderClause>(plugins);
 
-            Map<String,String> attribs = new HashMap<String, String>();
+            Attrs attribs = new Attrs();
             attribs.put("locations", new CollectionFormatter<String>(",").convert(urls));
 
             newPlugins.add(new HeaderClause("aQute.lib.deployer.obr.OBR", attribs));

@@ -36,11 +36,15 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Clazz;
 import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Processor;
+import aQute.libg.header.Attrs;
+import aQute.libg.header.Parameters;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
@@ -70,7 +74,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
 		// Setup builders and merge together all the capabilities
 		Map<String, List<ExportPackage>> exports = new HashMap<String, List<ExportPackage>>();
-		Map<String, Set<String>> usedBy = new HashMap<String, Set<String>>();
+		MultiMap<String, String> usedBy = new MultiMap<String, String>();
 		Map<String, Set<Version>> bundleVersions = new HashMap<String, Set<Version>>();
 		for (File inputFile : files) {
 		    if(inputFile.exists()) {
@@ -168,7 +172,7 @@ public class AnalyseBundleResolutionJob extends Job {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
 	}
-	void mergeCapabilities(Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
+	void mergeCapabilities(Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
 		if (jar == null)
 		    return;
@@ -178,12 +182,13 @@ public class AnalyseBundleResolutionJob extends Job {
 
 		Attributes attribs = manifest.getMainAttributes();
 		String exportPkgStr = attribs.getValue(Constants.EXPORT_PACKAGE);
-        Map<String, Map<String, String>> exportsMap = Processor.parseHeader(exportPkgStr, null);
+		Parameters exportsMap = new Parameters(exportPkgStr);
 
 		// Merge the exports
-		Map<String, Set<String>> uses = builder.getUses();
-		for(Entry<String, Map<String, String>> entry : exportsMap.entrySet()) {
-			ExportPackage export = new ExportPackage(entry.getKey(), entry.getValue(), uses.get(entry.getKey()));
+		MultiMap<PackageRef, PackageRef> uses = builder.getUses();
+		for(Entry<String, Attrs> entry : exportsMap.entrySet()) {
+		    String pkgName = Processor.removeDuplicateMarker(entry.getKey());
+			ExportPackage export = new ExportPackage(pkgName, entry.getValue(), uses.get(pkgName));
 			List<ExportPackage> exportList = exports.get(export.getName());
 			if(exportList == null) {
 				exportList = new LinkedList<ExportPackage>();
@@ -192,17 +197,19 @@ public class AnalyseBundleResolutionJob extends Job {
 			exportList.add(export);
 		}
 
-		// Merge the used-by package mappings
-		Map<String, Set<String>> myUsedBy = CollectionUtils.invertMapOfCollection(uses);
-		for (Entry<String, Set<String>> entry : myUsedBy.entrySet()) {
-			String packageName = entry.getKey();
-			Set<String> mainUsedBy = usedBy.get(packageName);
-			if(mainUsedBy == null) {
-				usedBy.put(packageName, entry.getValue());
-			} else {
-				mainUsedBy.addAll(entry.getValue());
-			}
-		}
+        // Merge the used-by package mappings
+        MultiMap<PackageRef, PackageRef> myUsedBy = CollectionUtils.invertMultiMap(uses);
+        for (Entry<PackageRef, List<PackageRef>> entry : myUsedBy.entrySet()) {
+            String pkgName = entry.getKey().getFQN();
+            List<String> users = getFQNList(entry.getValue());
+            
+            List<String> mainUsedBy = usedBy.get(pkgName);
+            if (mainUsedBy == null) {
+                usedBy.put(pkgName, users);
+            } else {
+                mainUsedBy.addAll(users);
+            }
+        }
 
         // Merge the bundle name + version
         String bsn = BundleUtils.getBundleSymbolicName(attribs);
@@ -226,7 +233,16 @@ public class AnalyseBundleResolutionJob extends Job {
             versions.add(version);
         }
 	}
-	void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, Map<String, Set<String>> usedBy,
+
+    private List<String> getFQNList(List<PackageRef> pkgRefs) {
+        List<String> result = new ArrayList<String>(pkgRefs.size());
+        for (PackageRef pkgRef : pkgRefs) {
+            result.add(pkgRef.getFQN());
+        }
+        return result;
+    }
+
+    void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy,
 	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
 		Manifest manifest = jar.getManifest();
@@ -234,11 +250,12 @@ public class AnalyseBundleResolutionJob extends Job {
 			return;
 		Attributes attribs = manifest.getMainAttributes();
 
-		// Process imports
-		final Map<String, Map<String, String>> importsMap = Processor.parseHeader(attribs.getValue(Constants.IMPORT_PACKAGE), null);
-		for(Entry<String, Map<String, String>> entry : importsMap.entrySet()) {
+        // Process imports
+		String importPkgStr = attribs.getValue(Constants.IMPORT_PACKAGE);
+		Parameters importsMap = new Parameters(importPkgStr);
+		for(Entry<String, Attrs> entry : importsMap.entrySet()) {
 			String pkgName = entry.getKey();
-			Map<String, String> importAttribs = entry.getValue();
+			Attrs importAttribs = entry.getValue();
 
 			// Calculate the importing classes for this import
 			Map<String, List<Clazz>> classMap = new HashMap<String, List<Clazz>>();
@@ -278,8 +295,7 @@ public class AnalyseBundleResolutionJob extends Job {
 					}
 				}
 			}
-
-			ImportPackage importPackage = new ImportPackage(pkgName, selfImport, importAttribs, usedBy.get(pkgName), classMap);
+            ImportPackage importPackage = new ImportPackage(pkgName, selfImport, importAttribs, usedBy.get(pkgName), classMap);
 			List<ImportPackage> importList = imports.get(pkgName);
 			if(importList == null) {
 				importList = new LinkedList<ImportPackage>();
@@ -288,11 +304,12 @@ public class AnalyseBundleResolutionJob extends Job {
 			importList.add(importPackage);
 		}
 
-		// Process require-bundles
-        final Map<String, Map<String, String>> requiredBundleMap = Processor.parseHeader(attribs.getValue(Constants.REQUIRE_BUNDLE), null);
-        for(Entry<String, Map<String, String>> entry : requiredBundleMap.entrySet()) {
+        // Process require-bundles
+        String requireBundlesStr = attribs.getValue(Constants.REQUIRE_BUNDLE);
+        final Parameters requiredBundleMap = new Parameters(requireBundlesStr);
+        for(Entry<String, Attrs> entry : requiredBundleMap.entrySet()) {
             String name = entry.getKey();
-            Map<String, String> rbAttribs = entry.getValue();
+            Attrs rbAttribs = entry.getValue();
 
             // Check if the required bundle is already included in the closure
             boolean satisfied = false;

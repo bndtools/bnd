@@ -4,11 +4,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -54,6 +52,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
@@ -69,8 +68,6 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
-
-	private static final String VERSION_LATEST = "latest";
 
     private final String propertyName;
 	private Table table;
@@ -227,7 +224,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                         List<VersionedClause> addingClauses = new ArrayList<VersionedClause>(addingBundles.size());
 
                         for(Pair<String, String> addingBundle : addingBundles) {
-                            Map<String, String> attribs = new HashMap<String, String>();
+                            Attrs attribs = new Attrs();
                             attribs.put(Constants.VERSION_ATTRIBUTE, addingBundle.getSecond());
                             addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
                         }
@@ -303,7 +300,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             return false;
 
         if (selection instanceof IStructuredSelection) {
-            List list = ((IStructuredSelection) selection).toList();
+            List<?> list = ((IStructuredSelection) selection).toList();
             for (Object object : list) {
                 if (!(object instanceof VersionedClause)) {
                     return false;

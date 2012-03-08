@@ -10,23 +10,23 @@
  *******************************************************************************/
 package bndtools.model.importanalysis;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
+import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.libg.header.Attrs;
 import bndtools.model.clauses.HeaderClause;
-
 
 public class ExportPackage extends HeaderClause {
 
-	private final Set<String> uses;
+    private final List<PackageRef> uses;
 
-	public ExportPackage(String name, Map<String, String> attribs, Set<String> uses) {
-		super(name, attribs);
-		this.uses = uses;
-	}
+    public ExportPackage(String name, Attrs attribs, List<PackageRef> uses) {
+        super(name, attribs);
+        this.uses = uses;
+    }
 
-	public Set<String> getUses() {
-		return uses;
-	}
+    public List<PackageRef> getUses() {
+        return uses;
+    }
 
 }
