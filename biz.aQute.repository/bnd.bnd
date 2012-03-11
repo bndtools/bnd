@@ -1,0 +1,20 @@
+-buildpath: aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	bindex2.lib,\
+	junit.osgi,\
+	osgi.cmpn;version=4.3.0
+Export-Package: aQute.lib.repository,\
+	org.osgi.service.indexer,\
+	org.osgi.service.coordinator,\
+	org.osgi.service.log
+Private-Package:\
+	aQute.lib.repository.xml,\
+	aQute.libg.gzip,\
+	aQute.libg.filerepo,\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util,\
+	org.osgi.framework
+Import-Package: org.osgi.framework;version='[1.5,2)',\
+	org.osgi.service.log;version='[1.3,1.4)',\
+	*
