@@ -1,6 +1,5 @@
 package aQute.bnd.service;
 
-@Deprecated
-public enum OBRResolutionMode {
+public enum ResolutionPhase {
 	build, runtime
 }
