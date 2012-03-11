@@ -1,81 +1,155 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="bndtools.core" xmlns="http://www.w3.org/2001/XMLSchema">
-
-   <annotation>
+<annotation>
       <appinfo>
-         <meta.schema plugin="bndtools.core" id="bndPlugins" name="Bnd Plug-ins" />
+         <meta.schema plugin="bndtools.core" id="bndPlugins" name="Bnd Plug-ins"/>
       </appinfo>
+      <documentation>
+         
+      </documentation>
    </annotation>
 
    <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
       <complexType>
-
          <sequence>
-            <element ref="plugin" minOccurs="1" maxOccurs="unbounded" />
+            <element ref="plugin" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
-
-         <attribute name="point" type="string" use="required" />
-
-         <attribute name="id" type="string" />
-
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="name" type="string">
             <annotation>
+               <documentation>
+                  
+               </documentation>
                <appinfo>
-                  <meta.attribute translatable="true" />
+                  <meta.attribute translatable="true"/>
                </appinfo>
             </annotation>
          </attribute>
-
       </complexType>
    </element>
 
    <element name="plugin">
       <complexType>
-
          <sequence>
-            <element ref="property" minOccurs="0" maxOccurs="unbounded" />
+            <element ref="property" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-
-         <attribute name="class" type="string" use="required" />
-
-         <attribute name="name" type="string">
-            <appinfo>
-               <meta.attribute translatable="true" />
-            </appinfo>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
          </attribute>
-
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="icon" type="string">
             <annotation>
+               <documentation>
+                  
+               </documentation>
                <appinfo>
-                  <meta.attribute kind="resource" />
+                  <meta.attribute kind="resource"/>
                </appinfo>
             </annotation>
          </attribute>
-         
-         <attribute name="path" type="string"/>
-
+         <attribute name="path" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="deprecated" type="string">
+            <annotation>
+               <documentation>
+                  If present, indicates that this plugin is deprecated; the string contents will be displayed to the user.
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
    <element name="property">
       <complexType>
-         <attribute name="name" type="string" use="required" />
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="type">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
             <simpleType>
                <restriction base="string">
-                  <enumeration value="string"/>
-                  <enumeration value="boolean"/>
+                  <enumeration value="string">
+                  </enumeration>
+                  <enumeration value="boolean">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>
          <attribute name="description" type="string">
-            <appinfo>
-               <meta.attribute translatable="true" />
-            </appinfo>
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
          </attribute>
-         <attribute name="default" type="string"/>
+         <attribute name="default" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="deprecated" type="string">
+            <annotation>
+               <documentation>
+                  If present, indicates that this property is deprecated; the string contents will be displayed to the user.
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
+
+
+
+
+
 
 </schema>

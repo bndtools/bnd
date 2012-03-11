@@ -131,7 +131,6 @@ public class PluginPropertiesPage extends WizardPage {
 
                 String propertyType = propertyElement.getAttribute("type");
                 String defaultStr = propertyElement.getAttribute("default");
-
                 if (value == null && defaultStr != null) {
                     value = defaultStr;
                     properties.put(name, defaultStr);
@@ -173,10 +172,18 @@ public class PluginPropertiesPage extends WizardPage {
 
                 String description = propertyElement.getAttribute("description");
                 if (description != null) {
-                    ControlDecoration decoration = new ControlDecoration(label, SWT.RIGHT| SWT.CENTER);
+                    ControlDecoration decoration = new ControlDecoration(label, SWT.RIGHT | SWT.CENTER);
                     decoration.setShowHover(true);
                     decoration.setDescriptionText(description);
                     decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+                }
+                
+                String deprecation = propertyElement.getAttribute("deprecated");
+                if (deprecation != null) {
+                    ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT | SWT.CENTER);
+                    decoration.setShowHover(true);
+                    decoration.setDescriptionText("Property deprecated: " + deprecation);
+                    decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
                 }
             }
             Label summaryLabel = new Label(fieldContainer, SWT.NONE);

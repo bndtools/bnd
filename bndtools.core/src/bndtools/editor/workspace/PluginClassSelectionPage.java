@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -20,6 +21,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 
 import bndtools.Plugin;
 
@@ -29,9 +33,11 @@ public class PluginClassSelectionPage extends WizardPage {
 
     private Table table;
     private TableViewer viewer;
+    private ScrolledFormText txtDescription;
 
     private IConfigurationElement selectedElement;
     private boolean programmaticChange = false;
+    
 
     public PluginClassSelectionPage() {
         super("pluginClassSelection");
@@ -46,7 +52,10 @@ public class PluginClassSelectionPage extends WizardPage {
         table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER);
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
+        viewer.setSorter(new PluginClassSorter());
         viewer.setLabelProvider(new PluginDeclarationLabelProvider());
+        
+        // txtDescription = new ScrolledFormText(composite, true);
 
         // Load data
         IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
@@ -82,6 +91,10 @@ public class PluginClassSelectionPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         table.setLayoutData(gd);
 
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+        gd.heightHint = 150;
+        // txtDescription.setLayoutData(gd);
+        
         setControl(composite);
     }
 
@@ -104,9 +117,33 @@ public class PluginClassSelectionPage extends WizardPage {
                     programmaticChange = false;
                 }
             }
+            // updateDescription();
+            validate();
             getContainer().updateButtons();
         }
         propSupport.firePropertyChange("selectedElement", old, selectedElement);
+    }
+    
+    private void updateDescription() {
+        String description = null;
+        if (selectedElement != null)
+            description = selectedElement.getValue();
+        
+        if (description == null)
+            description = "";
+        txtDescription.setText(description);
+    }
+
+    private void validate() {
+        String warning = null;
+        
+        if (selectedElement != null) {
+            String deprecationMsg = selectedElement.getAttribute("deprecated");
+            if (deprecationMsg != null)
+                warning = "Plugin is deprecated: " + deprecationMsg;
+        }
+        
+        setMessage(warning, IMessageProvider.WARNING);
     }
 
     @Override

@@ -671,9 +671,11 @@
       <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
    </extension>
    
+   <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
       <plugin
          class="aQute.lib.deployer.FileRepo"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="File Repository">
          <property name="name" type="string" description="Name of the repository"/>
@@ -683,18 +685,20 @@
       
       <plugin
          class="aQute.lib.deployer.obr.OBR"
-         icon="icons/bundlefolder.png"
-         name="OBR Repository (read-only)">
+         icon="icons/database.png"
+         name="OBR Repository (read-only)"
+         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
-         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
          <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
       </plugin>
       
       <plugin
          class="aQute.lib.deployer.obr.LocalOBR"
-         icon="icons/bundlefolder.png"
-         name="OBR Repository with Local Storage">
+         icon="icons/database.png"
+         name="OBR Repository with Local Storage"
+         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="local" type="string" description="Local directory path"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
@@ -704,6 +708,7 @@
       
       <plugin
          class="aQute.bnd.maven.MavenRepository"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="Maven Local Repository">
          <property name="name" type="string" description="Name of the repository"/>
@@ -712,6 +717,7 @@
       
       <plugin
          class="aQute.bnd.maven.support.MavenRemoteRepository"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="Maven Remote Repository">
          <property name="repositories" type="string" description="List of remote repository URLs"/>
