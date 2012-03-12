@@ -13,6 +13,8 @@ package bndtools;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IWorkspace;
@@ -59,6 +61,8 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
+    
+    private volatile ScheduledExecutorService scheduler;
 
     private volatile Central central;
 
@@ -69,6 +73,8 @@ public class Plugin extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         this.bundleContext = context;
+        
+        scheduler = Executors.newScheduledThreadPool(1);
 
         bndActivator = new Activator();
         bndActivator.start(context);
@@ -151,6 +157,7 @@ public class Plugin extends AbstractUIPlugin {
         plugin = null;
         super.stop(context);
         unregisterWorkspaceURLHandler();
+        scheduler.shutdown();
     }
 
 	public static Plugin getDefault() {
@@ -284,6 +291,10 @@ public class Plugin extends AbstractUIPlugin {
     
     public ResourceIndexer getResourceIndexer() {
         return resourceIndexerTracker;
+    }
+    
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
     }
 
 }

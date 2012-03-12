@@ -28,6 +28,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     private static final String CACHE_REPOSITORY = "cache";
 
     private final EnumSet<OBRResolutionMode> modes;
+    
+    private boolean showRepos = true;
 
     public RepositoryTreeContentProvider() {
         this.modes = EnumSet.allOf(OBRResolutionMode.class);
@@ -40,6 +42,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     public RepositoryTreeContentProvider(EnumSet<OBRResolutionMode> modes) {
         this.modes = modes;
     }
+    
+    public void setShowRepos(boolean showRepos) {
+        this.showRepos = showRepos;
+    }
+    
+    public boolean isShowRepos() {
+        return showRepos;
+    }
 
     @SuppressWarnings("unchecked")
     public Object[] getElements(Object inputElement) {
@@ -48,11 +58,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             result = new ArrayList<Object>();
             Workspace workspace = (Workspace) inputElement;
             addRepositoryPlugins(result, workspace);
-//            addProjects(result, workspace);
         } else if (inputElement instanceof Collection) {
-            result = (Collection<Object>) inputElement;
+            result = new ArrayList<Object>();
+            addCollection(result, (Collection<Object>) inputElement);
         } else if (inputElement instanceof Object[]) {
-            result = Arrays.asList((Object[]) inputElement);
+            result = new ArrayList<Object>();
+            addCollection(result, Arrays.asList(inputElement));
         } else {
             result = Collections.emptyList();
         }
@@ -111,7 +122,27 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 if (!supportsMode(indexProvider))
                     continue;
             }
-            result.add(repoPlugin);
+            if (showRepos)
+                result.add(repoPlugin);
+            else
+                result.addAll(Arrays.asList(getRepositoryBundles(repoPlugin)));
+        }
+    }
+    
+    void addCollection(Collection<Object> result, Collection<Object> inputs) {
+        for (Object input : inputs) {
+            if (input instanceof RepositoryPlugin) {
+                RepositoryPlugin repo = (RepositoryPlugin) input;
+                if (repo instanceof OBRIndexProvider) {
+                    if (!supportsMode((OBRIndexProvider) repo))
+                        continue;
+                }
+                
+                if (showRepos)
+                    result.add(repo);
+                else
+                    result.addAll(Arrays.asList(getRepositoryBundles(repo)));
+            }
         }
     }
 
@@ -121,14 +152,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             if (supportedModes.contains(mode)) return true;
         }
         return false;
-    }
-
-    void addProjects(Collection<Object> result, Workspace workspace) {
-        try {
-            result.addAll(workspace.getAllProjects());
-        } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying workspace Bnd projects.", e));
-        }
     }
 
     ProjectBundle[] getProjectBundles(Project project) {

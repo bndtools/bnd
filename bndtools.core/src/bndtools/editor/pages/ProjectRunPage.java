@@ -17,6 +17,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import bndtools.Plugin;
 import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.model.BndEditModel;
+import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
@@ -50,6 +51,7 @@ public class ProjectRunPage extends FormPage {
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
+        // Toolbar Actions: run and debug
         RunAction runAction = new RunAction(this, "run");
         runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
         runAction.setText("Run OSGi");
@@ -91,12 +93,21 @@ public class ProjectRunPage extends FormPage {
         right.setLayout(gl);
 
         // First column
-        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
         managedForm.addPart(reposPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+//        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+        
+        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(availableBundlesPart);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = 50;
+        availableBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        
 
         RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(runFwkPart);
