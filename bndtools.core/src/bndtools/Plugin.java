@@ -29,6 +29,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.bindex.BundleIndexer;
+import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
@@ -57,6 +58,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
+    private volatile ResourceIndexerTracker resourceIndexerTracker;
 
     private volatile Central central;
 
@@ -73,6 +75,9 @@ public class Plugin extends AbstractUIPlugin {
 
         indexerTracker = new IndexerTracker(context);
         indexerTracker.open();
+        
+        resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
+        resourceIndexerTracker.open();
 
         registerWorkspaceServiceFactory(context);
 
@@ -140,6 +145,7 @@ public class Plugin extends AbstractUIPlugin {
 
         bndActivator.stop(context);
         central.close();
+        resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
         plugin = null;
@@ -274,6 +280,10 @@ public class Plugin extends AbstractUIPlugin {
 
     public BundleIndexer getBundleIndexer() {
         return indexerTracker;
+    }
+    
+    public ResourceIndexer getResourceIndexer() {
+        return resourceIndexerTracker;
     }
 
 }

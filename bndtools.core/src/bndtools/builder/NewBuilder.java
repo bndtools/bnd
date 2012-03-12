@@ -520,6 +520,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         if (built.length > 0) {
             try {
                 Central.getWorkspaceObrProvider().replaceProjectFiles(model, built);
+                Central.getWorkspaceRepoProvider().replaceProjectFiles(model, built);
             } catch (Exception e) {
                 Plugin.logError("Error rebuilding workspace OBR index", e);
             }

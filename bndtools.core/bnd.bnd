@@ -92,6 +92,7 @@ eclipse.deps: \
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
 	${bndlib},\
+	org.osgi.impl.bundle.bindex2.lib,\
 	org.apache.felix.bundlerepository,\
 	patricia-trie,\
 	junit.osgi,\

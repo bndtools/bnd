@@ -2,8 +2,8 @@
 base-version: 1.0.1.DEV
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 
-bndlib-version-base:    1.51
-bndlib-version-ceiling: 1.52
+bndlib-version-base:    1.52
+bndlib-version-ceiling: 1.53
 bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
 # We use git
