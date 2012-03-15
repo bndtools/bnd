@@ -381,7 +381,19 @@ import java.util.*;
 		return sb.toString();
 	}
 
-
+	public boolean hasDuplicates() {
+		if ( list.length < 2)
+			return false;
+		
+		T prev = list[0];
+		for ( int i =1; i<list.length; i++) {
+			if ( prev.equals( list[i]))
+				return true;
+		}
+		return false;
+	}
+	
+	
 	public static <T extends Comparable<?>> SortedList<T> fromIterator( Iterator<T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l);
