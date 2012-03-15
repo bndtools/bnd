@@ -128,6 +128,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (manifest == null)
 			throw new IllegalArgumentException("No manifest in JAR: " + jar);
 
+		manifest.write(System.err);
+		
 		String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
@@ -149,16 +151,17 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		else
 			version = new Version(versionString);
 
+		reporter.trace("bsn=%s version=%s",bsn,version);
+		
 		File dir = new File(root, bsn);
 		dir.mkdirs();
-		String fName = bsn + "-" + version.getMajor() + "." + version.getMinor() + "."
-				+ version.getMicro() + ".jar";
+		String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 		File file = new File(dir, fName);
 
-		reporter.trace("Updating " + file.getAbsolutePath());
+		reporter.trace("updating %s ", file.getAbsolutePath());
 		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
-			reporter.progress("Updated " + file.getAbsolutePath());
+			reporter.progress("updated " + file.getAbsolutePath());
 			fireBundleAdded(jar, file);
 		} else {
 			reporter.progress("Did not update " + jar + " because repo has a newer version");

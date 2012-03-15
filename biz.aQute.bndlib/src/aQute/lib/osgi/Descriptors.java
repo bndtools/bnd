@@ -9,17 +9,20 @@ public class Descriptors {
 	Map<String, Descriptor>	descriptorCache	= Create.map();
 	Map<String, PackageRef>	packageCache	= Create.map();
 
-	final static TypeRef	VOID			= new ConcreteRef("V", "void");
-	final static TypeRef	BOOLEAN			= new ConcreteRef("Z", "boolean");
-	final static TypeRef	BYTE			= new ConcreteRef("B", "byte");
-	final static TypeRef	CHAR			= new ConcreteRef("C", "char");
-	final static TypeRef	SHORT			= new ConcreteRef("S", "short");
-	final static TypeRef	INTEGER			= new ConcreteRef("I", "int");
-	final static TypeRef	LONG			= new ConcreteRef("J", "long");
-	final static TypeRef	DOUBLE			= new ConcreteRef("D", "double");
-	final static TypeRef	FLOAT			= new ConcreteRef("F", "float");
-
+	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE	= new PackageRef();
+	final static PackageRef	PRIMITIVE_PACKAGE	= new PackageRef();
+	
+	final static TypeRef	VOID			= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
+	final static TypeRef	BOOLEAN			= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
+	final static TypeRef	BYTE			= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
+	final static TypeRef	CHAR			= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
+	final static TypeRef	SHORT			= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
+	final static TypeRef	INTEGER			= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
+	final static TypeRef	LONG			= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
+	final static TypeRef	DOUBLE			= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
+	final static TypeRef	FLOAT			= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
+
 
 	{
 		packageCache.put("", DEFAULT_PACKAGE);
@@ -96,6 +99,10 @@ public class Descriptors {
 			return this.fqn.equals(".");
 		}
 
+		boolean isPrimitivePackage() {
+			return this == PRIMITIVE_PACKAGE;
+		}
+
 		public int compareTo(PackageRef other) {
 			return fqn.compareTo(other.fqn);
 		}
@@ -137,18 +144,18 @@ public class Descriptors {
 
 		ConcreteRef(PackageRef packageRef, String binaryName) {
 			if ( packageRef.getFQN().length() < 2 )
-				System.out.println("in default pack? " + binaryName);
+				System.err.println("in default pack? " + binaryName);
 			this.binaryName = binaryName;
 			this.fqn = binaryToFQN(binaryName);
 			this.primitive = false;
 			this.packageRef = packageRef;
 		}
 
-		ConcreteRef(String binaryName, String fqn) {
+		ConcreteRef(String binaryName, String fqn, PackageRef pref) {
 			this.binaryName = binaryName;
 			this.fqn = fqn;
 			this.primitive = true;
-			this.packageRef = DEFAULT_PACKAGE;
+			this.packageRef = pref;
 		}
 
 		public String getBinary() {
@@ -499,6 +506,30 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
+		if ( fqn.equals("boolean"))
+			return BOOLEAN;
+		
+		if ( fqn.equals("byte"))
+			return BOOLEAN;
+		
+		if ( fqn.equals("char"))
+			return CHAR;
+		
+		if ( fqn.equals("short"))
+			return SHORT;
+		
+		if ( fqn.equals("int"))
+			return INTEGER;
+		
+		if ( fqn.equals("long"))
+			return LONG;
+		
+		if ( fqn.equals("float"))
+			return FLOAT;
+		
+		if ( fqn.equals("double"))
+			return DOUBLE;
+		
 		return getTypeRef(fqnToBinary(fqn));
 	}
 

@@ -15,9 +15,10 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public Instructions(Collection<String> other) {
-		for ( String s : other  ) {
-			put( new Instruction(s), null);
-		}
+		if ( other != null)
+			for ( String s : other  ) {
+				put( new Instruction(s), null);
+			}
 	}
 
 	public Instructions() {
@@ -152,12 +153,15 @@ public class Instructions implements Map<Instruction, Attrs> {
 			put( new Instruction(e.getKey()), e.getValue());
 		}
 	}
-	public <T> Collection<T> select(Collection<T> set) {
-		return select(set,null);
+	public <T> Collection<T> select(Collection<T> set, boolean emptyIsAll) {
+		return select(set,null, emptyIsAll);
 	}
 	
-	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused) {
+	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused, boolean emptyIsAll) {
 		List<T> input = new ArrayList<T>(set);
+		if ( emptyIsAll && isEmpty())
+			return input;
+		
 		List<T> result = new ArrayList<T>();
 
 		for (Instruction instruction : keySet()) {
@@ -200,6 +204,9 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public boolean matches(String value) {
+		if ( size() == 0)
+			return true;
+		
 		for ( Instruction i : keySet()) {
 			if ( i.matches(value)) {
 				if ( i.isNegated())

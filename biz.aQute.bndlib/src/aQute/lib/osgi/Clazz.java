@@ -1019,11 +1019,11 @@ public class Clazz {
 				if ((methodref == forName || methodref == class$) && lastReference != -1
 						&& pool[intPool[lastReference]] instanceof String) {
 					String fqn = (String) pool[intPool[lastReference]];
-
-					// TODO seems to find class?
-					TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
-					if (!clazz.getPackageRef().isDefaultPackage())
+					if (!fqn.equals("class")) {
+						TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
 						referTo(clazz);
+					}
+
 				}
 				break;
 			}
@@ -1184,13 +1184,16 @@ public class Clazz {
 	 *            A '.' delimited package name
 	 */
 	void referTo(TypeRef typeRef) {
-		if ( xref != null)
+		if (xref != null)
 			xref.add(typeRef);
+		if (typeRef.isPrimitive())
+			return;
+
 		PackageRef packageRef = typeRef.getPackageRef();
-		if (packageRef != null) {
-			if (packageRef.getFQN().length() != 0)
-				imports.add(packageRef);
-		}
+		if (packageRef.isPrimitivePackage())
+			return;
+
+		imports.add(packageRef);
 	}
 
 	/**
@@ -1285,7 +1288,7 @@ public class Clazz {
 			referTo(ref);
 		} else {
 			if ("+-*BCDFIJSZV".indexOf(c) < 0)
-				;// System.out.println("Should not skip: " + c);
+				;// System.err.println("Should not skip: " + c);
 		}
 
 		// this skips a lot of characters

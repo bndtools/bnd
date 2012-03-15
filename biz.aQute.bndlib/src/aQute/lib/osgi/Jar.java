@@ -14,19 +14,25 @@ import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 
 public class Jar implements Closeable {
-	public static final Object[]		EMPTY_ARRAY	= new Jar[0];
-	Map<String, Resource>				resources	= new TreeMap<String, Resource>();
-	Map<String, Map<String, Resource>>	directories	= new TreeMap<String, Map<String, Resource>>();
-	Manifest							manifest;
-	boolean								manifestFirst;
-	String								name;
-	File								source;
-	ZipFile								zipFile;
-	long								lastModified;
-	String								lastModifiedReason;
-	Reporter							reporter;
-	boolean								doNotTouchManifest;
-	boolean								nomanifest;
+	public enum Compression {
+		DEFLATE, STORE
+	};
+
+	public static final Object[]				EMPTY_ARRAY	= new Jar[0];
+	final Map<String, Resource>					resources	= new TreeMap<String, Resource>();
+	final Map<String, Map<String, Resource>>	directories	= new TreeMap<String, Map<String, Resource>>();
+	Manifest									manifest;
+	boolean										manifestFirst;
+	String										name;
+	File										source;
+	ZipFile										zipFile;
+	long										lastModified;
+	String										lastModifiedReason;
+	Reporter									reporter;
+	boolean										doNotTouchManifest;
+	boolean										nomanifest;
+	Compression									compression	= Compression.DEFLATE;
+	boolean										closed;
 
 	public Jar(String name) {
 		this.name = name;
@@ -97,10 +103,12 @@ public class Jar implements Closeable {
 	}
 
 	public boolean putResource(String path, Resource resource) {
+		check();
 		return putResource(path, resource, true);
 	}
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
+		check();
 		updateModified(resource.lastModified(), path);
 		while (path.startsWith("/"))
 			path = path.substring(1);
@@ -133,12 +141,14 @@ public class Jar implements Closeable {
 	}
 
 	public Resource getResource(String path) {
-		if ( resources == null)
+		check();
+		if (resources == null)
 			return null;
 		return resources.get(path);
 	}
 
 	private String getDirectory(String path) {
+		check();
 		int n = path.lastIndexOf('/');
 		if (n < 0)
 			return "";
@@ -147,14 +157,17 @@ public class Jar implements Closeable {
 	}
 
 	public Map<String, Map<String, Resource>> getDirectories() {
+		check();
 		return directories;
 	}
 
 	public Map<String, Resource> getResources() {
+		check();
 		return resources;
 	}
 
 	public boolean addDirectory(Map<String, Resource> directory, boolean overwrite) {
+		check();
 		boolean duplicates = false;
 		if (directory == null)
 			return false;
@@ -169,6 +182,7 @@ public class Jar implements Closeable {
 	}
 
 	public Manifest getManifest() throws Exception {
+		check();
 		if (manifest == null) {
 			Resource manifestResource = getResource("META-INF/MANIFEST.MF");
 			if (manifestResource != null) {
@@ -181,15 +195,18 @@ public class Jar implements Closeable {
 	}
 
 	public boolean exists(String path) {
+		check();
 		return resources.containsKey(path);
 	}
 
 	public void setManifest(Manifest manifest) {
+		check();
 		manifestFirst = true;
 		this.manifest = manifest;
 	}
 
 	public void setManifest(File file) throws IOException {
+		check();
 		FileInputStream fin = new FileInputStream(file);
 		try {
 			Manifest m = new Manifest(fin);
@@ -198,8 +215,9 @@ public class Jar implements Closeable {
 			fin.close();
 		}
 	}
-	
+
 	public void write(File file) throws Exception {
+		check();
 		try {
 			OutputStream out = new FileOutputStream(file);
 			write(out);
@@ -213,12 +231,24 @@ public class Jar implements Closeable {
 	}
 
 	public void write(String file) throws Exception {
+		check();
 		write(new File(file));
 	}
 
 	public void write(OutputStream out) throws Exception {
+		check();
 		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out)
 				: new JarOutputStream(out);
+
+		switch (compression) {
+		case STORE:
+			jout.setMethod(ZipOutputStream.DEFLATED);
+			break;
+
+		default:
+			// default is DEFLATED
+		}
+
 		Set<String> done = new HashSet<String>();
 
 		Set<String> directories = new HashSet<String>();
@@ -241,6 +271,7 @@ public class Jar implements Closeable {
 	}
 
 	private void doManifest(Set<String> done, ZipOutputStream jout) throws Exception {
+		check();
 		if (nomanifest)
 			return;
 
@@ -261,6 +292,7 @@ public class Jar implements Closeable {
 	 */
 
 	public void writeManifest(OutputStream out) throws Exception {
+		check();
 		writeManifest(getManifest(), out);
 	}
 
@@ -298,7 +330,7 @@ public class Jar implements Closeable {
 	 * <p>
 	 * As a bonus, we can now sort the manifest!
 	 */
-	static byte[]	CONTINUE	=  new byte[] {'\r','\n', ' '};
+	static byte[]	CONTINUE	= new byte[] { '\r', '\n', ' ' };
 
 	/**
 	 * Main function to output a manifest properly in UTF-8.
@@ -499,6 +531,7 @@ public class Jar implements Closeable {
 	 *            a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar sub, Instruction filter, String destination) {
+		check();
 		boolean dupl = false;
 		for (String name : sub.getResources().keySet()) {
 			if ("META-INF/MANIFEST.MF".equals(name))
@@ -512,14 +545,15 @@ public class Jar implements Closeable {
 	}
 
 	public void close() {
+		this.closed = true;
 		if (zipFile != null)
 			try {
 				zipFile.close();
 			} catch (IOException e) {
 				// Ignore
 			}
-		resources = null;
-		directories = null;
+		resources.clear();
+		directories.clear();
 		manifest = null;
 		source = null;
 	}
@@ -540,10 +574,12 @@ public class Jar implements Closeable {
 	}
 
 	public boolean hasDirectory(String path) {
+		check();
 		return directories.get(path) != null;
 	}
 
 	public List<String> getPackages() {
+		check();
 		List<String> list = new ArrayList<String>(directories.size());
 
 		for (Map.Entry<String, Map<String, Resource>> i : directories.entrySet()) {
@@ -557,14 +593,17 @@ public class Jar implements Closeable {
 	}
 
 	public File getSource() {
+		check();
 		return source;
 	}
 
 	public boolean addAll(Jar src) {
+		check();
 		return addAll(src, null);
 	}
 
 	public boolean rename(String oldPath, String newPath) {
+		check();
 		Resource resource = remove(oldPath);
 		if (resource == null)
 			return false;
@@ -573,6 +612,7 @@ public class Jar implements Closeable {
 	}
 
 	public Resource remove(String path) {
+		check();
 		Resource resource = resources.remove(path);
 		String dir = getDirectory(path);
 		Map<String, Resource> mdir = directories.get(dir);
@@ -595,15 +635,16 @@ public class Jar implements Closeable {
 	 */
 
 	public void calcChecksums(String algorithms[]) throws Exception {
+		check();
 		if (algorithms == null)
 			algorithms = new String[] { "SHA", "MD5" };
 
 		Manifest m = getManifest();
-		if ( m == null) {
-			m= new Manifest();
+		if (m == null) {
+			m = new Manifest();
 			setManifest(m);
 		}
-		
+
 		MessageDigest digests[] = new MessageDigest[algorithms.length];
 		int n = 0;
 		for (String algorithm : algorithms)
@@ -612,7 +653,7 @@ public class Jar implements Closeable {
 		byte buffer[] = new byte[30000];
 
 		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
-			
+
 			// Skip the manifest
 			if (entry.getKey().equals("META-INF/MANIFEST.MF"))
 				continue;
@@ -644,14 +685,15 @@ public class Jar implements Closeable {
 	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
 
 	public String getBsn() throws Exception {
+		check();
 		Manifest m = getManifest();
 		if (m == null)
 			return null;
 
 		String s = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-		if ( s == null)
+		if (s == null)
 			return null;
-		
+
 		Matcher matcher = BSN.matcher(s);
 		if (matcher.matches()) {
 			return matcher.group(1);
@@ -660,6 +702,7 @@ public class Jar implements Closeable {
 	}
 
 	public String getVersion() throws Exception {
+		check();
 		Manifest m = getManifest();
 		if (m == null)
 			return null;
@@ -680,6 +723,7 @@ public class Jar implements Closeable {
 	 *             if anything does not work as expected.
 	 */
 	public void expand(File dir) throws Exception {
+		check();
 		dir = dir.getAbsoluteFile();
 		dir.mkdirs();
 		if (!dir.isDirectory()) {
@@ -695,10 +739,11 @@ public class Jar implements Closeable {
 
 	/**
 	 * Make sure we have a manifest
+	 * 
 	 * @throws Exception
 	 */
 	public void ensureManifest() throws Exception {
-		if ( getManifest() != null)
+		if (getManifest() != null)
 			return;
 		manifest = new Manifest();
 	}
@@ -712,8 +757,20 @@ public class Jar implements Closeable {
 	}
 
 	public void copy(Jar srce, String path, boolean overwrite) {
-		addDirectory( srce.getDirectories().get(path), overwrite);
+		check();
+		addDirectory(srce.getDirectories().get(path), overwrite);
 	}
 
-}
+	public void setCompression(Compression compression) {
+		this.compression = compression;
+	}
 
+	public Compression hasCompression() {
+		return this.compression;
+	}
+
+	void check() {
+		if ( closed) 
+			throw new RuntimeException("Already closed " + name);
+	}
+}

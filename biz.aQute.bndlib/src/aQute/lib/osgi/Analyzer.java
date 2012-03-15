@@ -197,7 +197,7 @@ public class Analyzer extends Processor {
 				// Remove any matching a dynamic import package instruction
 				Instructions dynamicImports = new Instructions(getDynamicImportPackage());
 				Collection<PackageRef> dynamic = dynamicImports
-						.select(referredAndExported.keySet());
+						.select(referredAndExported.keySet(),false);
 				referredAndExported.keySet().removeAll(dynamic);
 
 				// Remove any Java references ... where are the closures???
@@ -398,7 +398,7 @@ public class Analyzer extends Processor {
 
 		// Remove all the headers mentioned in -removeheaders
 		Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
-		Collection<Object> result = instructions.select(main.keySet());
+		Collection<Object> result = instructions.select(main.keySet(), false);
 		main.keySet().removeAll(result);
 
 		dot.setManifest(manifest);
@@ -749,9 +749,13 @@ public class Analyzer extends Processor {
 	 * @return
 	 */
 	public Jar setJar(Jar jar) {
+		if ( dot != null)
+			removeClose(dot);
+		
 		this.dot = jar;
 		if (dot != null)
 			addClose(dot);
+		
 		return jar;
 	}
 
@@ -1150,7 +1154,7 @@ public class Analyzer extends Processor {
 
 		if (remove != null) {
 			Instructions removeInstr = new Instructions(remove);
-			attributes.keySet().removeAll(removeInstr.select(attributes.keySet()));
+			attributes.keySet().removeAll(removeInstr.select(attributes.keySet(),false));
 		}
 
 		// Remove any ! valued attributes
@@ -1327,7 +1331,7 @@ public class Analyzer extends Processor {
 
 	public void close() {
 		if (diagnostics) {
-			PrintStream out = System.out;
+			PrintStream out = System.err;
 			out.printf("Current directory            : %s\n", new File("").getAbsolutePath());
 			out.println("Classpath used");
 			for (Jar jar : getClasspath()) {
@@ -1604,7 +1608,8 @@ public class Analyzer extends Processor {
 							in.close();
 						}
 					} catch (Throwable e) {
-						error("Invalid class file: " + relativePath, e);
+						error("Invalid class file %s (%s)", e,relativePath, e);
+						e.printStackTrace();
 						continue next;
 					}
 
