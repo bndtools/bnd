@@ -1,4 +1,0 @@
-#!/bin/sh
-packagemaker --doc bnd.pmdoc
-
-
