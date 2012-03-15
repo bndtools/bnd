@@ -1,14 +1,13 @@
 package aQute.bnd.main;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
-import java.util.prefs.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
+import javax.script.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
@@ -18,16 +17,21 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.help.*;
+import aQute.bnd.main.BaselineCommands.baseLineOptions;
+import aQute.bnd.main.BaselineCommands.schemaOptions;
+import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.configurable.*;
 import aQute.lib.collections.*;
+import aQute.lib.filter.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
+import aQute.lib.justif.*;
 import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
@@ -43,35 +47,43 @@ import aQute.libg.version.*;
  */
 public class bnd extends Processor {
 	Settings		settings	= new Settings();
+	PrintStream		err			= System.err;
 	PrintStream		out			= System.out;
+	Justif			justif		= new Justif(60);
 
 	static Pattern	JARCOMMANDS	= Pattern
 										.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern	COMMAND		= Pattern.compile("\\w[\\w\\d]+");
 
-	interface bndoptions extends Options {
-		@Config(description = "Turns errors into warnings so command always succeeds") boolean failok();
+	@Description("OSGi Bundle Tool") interface bndOptions extends Options {
+		@Description("Turns errors into warnings so command always succeeds") boolean failok();
 
-		@Config(description = "Report errors pedantically") boolean pedantic();
+		@Description("Report errors pedantically") boolean pedantic();
 
-		@Config(description = "Print out stack traces when there is an unexpected exception") boolean exceptions();
+		@Description("Print out stack traces when there is an unexpected exception") boolean exceptions();
 
-		@Config(description = "Redirect output") File output();
+		@Description("Redirect output") File output();
 
-		@Config(description = "Use as base directory") String base();
+		@Description("Use as base directory") String base();
 
-		@Config(description = "Trace progress") boolean trace();
+		@Description("Trace progress") boolean trace();
 
-		@Config(description = "Error/Warning ignore patterns") String[] ignore();
+		@Description("Error/Warning ignore patterns") String[] ignore();
 
 	}
 
 	public static void main(String args[]) throws Exception {
-		Command getopt = new Command(System.out);
 		bnd main = new bnd();
-		ExtList<String> args2 = new ExtList<String>(args);
-		getopt.execute(main, "run", args2);
+		main.start(args);
+	}
+
+	public void start(String args[]) throws Exception {
+		CommandLine cl = new CommandLine(this);
+		String help = cl.execute(this, "bnd", new ExtList<String>(args));
+		check();
+		if (help != null)
+			err.println(help);
 	}
 
 	/**
@@ -165,12 +177,13 @@ public class bnd extends Processor {
 	 * @param options
 	 * @throws Exception
 	 */
-	void _run(bndoptions options) throws Exception {
+	public void _bnd(bndOptions options) throws Exception {
 		try {
 			set(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
 			setPedantic(options.pedantic());
+
 			if (options.base() != null)
 				setBase(getFile(getBase(), options.base()));
 
@@ -179,17 +192,26 @@ public class bnd extends Processor {
 				setProperty(entry.getKey(), entry.getValue());
 			}
 
-			Command getopt = options._command();
-			List<String> args = options._();
-			rewrite(args);
-			System.out.println(" subcmds " + args);
+			CommandLine handler = options._command();
+			List<String> arguments = options._();
 
-			if (args.isEmpty()) {
-				getopt.help(this, null);
+			// Rewrite command line to match jar commands and
+			// handle commands that provide file names
+
+			rewrite(arguments);
+
+			trace("rewritten %s", arguments);
+
+			if (arguments.isEmpty()) {
+				Formatter f = new Formatter(err);
+				handler.help(f, this);
+				f.flush();
 			} else {
-				String arg = args.remove(0);
-				getopt.execute(this, arg, args);
-
+				String cmd = arguments.remove(0);
+				String help = handler.execute(this, cmd, arguments);
+				if (help != null) {
+					err.println(help);
+				}
 			}
 		} catch (Throwable t) {
 			error("Failed %s", t, t.getMessage());
@@ -197,7 +219,7 @@ public class bnd extends Processor {
 
 		if (!check(options.ignore())) {
 			System.err.flush();
-			System.out.flush();
+			System.err.flush();
 			Thread.sleep(1000);
 			System.exit(getErrors().size());
 		}
@@ -207,24 +229,29 @@ public class bnd extends Processor {
 	 * Options for the jar create command.
 	 * 
 	 */
-	interface create extends Options {
-		boolean verbose();
+	@Description("Equivalent jar command c[v0mf] command (supports the jar tool's syntax). Will wrap the bundle unless --wrapnot is specified") interface createOptions
+			extends Options {
+		@Description("Verbose (v option)") boolean verbose();
 
-		boolean nocompression();
+		@Description("No compression (0 option)") boolean nocompression();
 
-		boolean nomanifest();
+		@Description("No manifest (M option)") boolean Manifest();
 
-		String manifest();
+		@Description("Use manifest (m option)") String manifest();
 
-		String file();
+		@Description("Jar file (f option)") String file();
 
-		String Cdir();
+		@Description("Directory (-C option)") String Cdir();
 
-		String bsn();
+		@Description("Wrap") boolean wrap();
 
-		Version version();
+		@Description("Properties for wrapping") String properties();
 
-		boolean force();
+		@Description("Bundle Symbolic Name for wrap") String bsn();
+
+		@Description("Bundle Version for wrap") Version version();
+
+		@Description("Force write event if there are errors") boolean force();
 	}
 
 	/**
@@ -240,7 +267,7 @@ public class bnd extends Processor {
 	 * @param options
 	 * @throws Exception
 	 */
-	public void _create(create options) throws Exception {
+	public void _create(createOptions options) throws Exception {
 		Jar jar = new Jar("dot");
 
 		File dir = getBase().getAbsoluteFile();
@@ -259,36 +286,37 @@ public class bnd extends Processor {
 		String manifest = options.manifest();
 		if (manifest != null) {
 			if (options.verbose())
-				out.printf("Adding manifest from %s\n", manifest);
+				err.printf("Adding manifest from %s\n", manifest);
 
 			jar.setManifest(getFile(manifest));
 		}
 
-		if (options.nomanifest()) {
+		if (options.Manifest()) {
 			jar.setManifest((Manifest) null);
 		} else {
-			Analyzer w = new Analyzer(this);
-			w.setBase(getBase());
-			w.use(this);
-			w.setDefaults(options.bsn(), options.version());
-			File out = w.getOutputFile(options.file());
-
-			w.calcManifest();
-			getInfo(w);
-
-			if (isOk()) {
-				boolean saved = w.save(out, options.force());
-				this.out.printf("%30s %6d %s\n", jar.getBsn() + "-" + jar.getVersion(),
-						out.length(), saved ? "" : "(not modified)");
+			if (options.wrap()) {
+				Analyzer w = new Analyzer(this);
+				addClose(w);
+				w.setBase(getBase());
+				w.use(this);
+				w.setDefaults(options.bsn(), options.version());
+				w.calcManifest();
+				getInfo(w);
+				w.setJar((Jar) null);
+				w.close();
 			}
 		}
 
-		String jarFile = options.file();
-		if (jarFile == null)
-			jar.write(System.out);
-		else
-			jar.write(jarFile);
+		if (options.nocompression())
+			jar.setCompression(Jar.Compression.STORE);
 
+		if (isOk()) {
+			String jarFile = options.file();
+			if (jarFile == null)
+				jar.write(System.out);
+			else
+				jar.write(jarFile);
+		}
 		jar.close();
 
 	}
@@ -311,7 +339,7 @@ public class bnd extends Processor {
 		else
 			f = getFile(base, path);
 
-		out.printf("Adding: %s\n", path);
+		err.printf("Adding: %s\n", path);
 
 		if (f.isFile()) {
 			jar.putResource(path, new FileResource(f));
@@ -330,6 +358,97 @@ public class bnd extends Processor {
 	}
 
 	/**
+	 * Extract a file from the JAR
+	 */
+
+	@Description("Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)") interface extractOptions
+			extends Options {
+		@Description("Verbose (v option)") boolean verbose();
+
+		@Description("Jar file (f option)") String file();
+
+		@Description("Directory where to store") String CDir();
+	}
+
+	public void _extract(extractOptions opts) throws Exception {
+		Jar jar;
+
+		if (opts.file() != null) {
+			File f = getFile(opts.file());
+			if (!f.isFile()) {
+				error("No such file %s", f);
+				return;
+			}
+			jar = new Jar(f);
+		} else {
+			jar = new Jar("cin", System.in);
+		}
+		try {
+			Instructions instructions = new Instructions(opts._());
+			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			File store = getBase();
+			if (opts.CDir() != null)
+				store = getFile(opts.CDir());
+
+			store.mkdirs();
+			Jar.Compression compression = jar.hasCompression();
+			for (String path : selected) {
+				if (opts.verbose())
+					System.err.printf("%8s: %s\n", compression.toString().toLowerCase(), path);
+
+				File f = getFile(store, path);
+				f.getParentFile().mkdirs();
+				Resource r = jar.getResource(path);
+				IO.copy(r.openInputStream(), f);
+			}
+		} finally {
+			jar.close();
+		}
+	}
+
+	/**
+	 * List the contents of the JAR
+	 */
+
+	@Description("List files int a JAR file, equivalent jar command t[vf] (syntax supported)") interface typeOptions
+			extends Options {
+		@Description("Verbose (v option)") boolean verbose();
+
+		@Description("Jar file (f option)") String file();
+
+	}
+
+	public void _type(typeOptions opts) throws Exception {
+		Jar jar;
+
+		if (opts.file() != null) {
+			File f = getFile(opts.file());
+			if (!f.isFile()) {
+				error("No such file %s", f);
+				return;
+			}
+			jar = new Jar(f);
+		} else {
+			jar = new Jar("cin", System.in);
+		}
+
+		try {
+			Instructions instructions = new Instructions(opts._());
+			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+
+			for (String path : selected) {
+				if (opts.verbose()) {
+					Resource r = jar.getResource(path);
+					err.printf("%8s %-32s %s\n", r.size(), new Date(r.lastModified()), path);
+				} else
+					err.printf("%s\n", path);
+			}
+		} finally {
+			jar.close();
+		}
+	}
+
+	/**
 	 * The do command interprets files and does a default action for each file
 	 * 
 	 * @param project
@@ -339,10 +458,11 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	interface dooptions extends Options {
-		String output();
+	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)") interface dooptions
+			extends Options {
+		@Description("The output file") String output();
 
-		boolean force();
+		@Description("Force even when there are errors") boolean force();
 	}
 
 	public void _do(dooptions options) throws Exception {
@@ -374,30 +494,29 @@ public class bnd extends Processor {
 	 * Project command, executes actions.
 	 */
 
-	interface projectoptions extends Options {
+	interface projectOptions extends Options {
 		String project();
 
 		boolean info();
 	}
 
-	public void _project(projectoptions options) throws Exception {
+	public void _project(projectOptions options) throws Exception {
 		Project project = getProject(options.project());
-		System.out.println("project " + project + " " + options.info());
 		if (project == null) {
 			error("No project available");
 			return;
 		}
 
-		if (options.info()) {
-			out.printf("Nam          %s\n", project.getName());
-			out.printf("Actions      %s\n", project.getActions().keySet());
-			out.printf("Directory    %s\n", project.getBase());
-			out.printf("Depends on   %s\n", project.getDependson());
-			out.printf("Sub builders %s\n", project.getSubBuilders());
+		List<String> l = new ArrayList<String>(options._());
+		if (l.isEmpty()) {
+			err.printf("Name         %s\n", project.getName());
+			err.printf("Actions      %s\n", project.getActions().keySet());
+			err.printf("Directory    %s\n", project.getBase());
+			err.printf("Depends on   %s\n", project.getDependson());
+			err.printf("Sub builders %s\n", project.getSubBuilders());
 			return;
 		}
 
-		List<String> l = new ArrayList<String>(options._());
 		String cmd = null;
 		String arg = null;
 
@@ -422,37 +541,6 @@ public class bnd extends Processor {
 			getInfo(project);
 			return;
 		}
-	}
-
-	private void doRun(String path) throws Exception {
-		File file = getFile(path);
-		if (!file.isFile())
-			throw new FileNotFoundException(path);
-
-		File projectDir = file.getParentFile();
-		File workspaceDir = projectDir.getParentFile();
-		if (workspaceDir == null) {
-			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
-		}
-		Workspace ws = Workspace.getWorkspace(workspaceDir);
-
-		File bndbnd = new File(projectDir, Project.BNDFILE);
-		Project project;
-		if (bndbnd.isFile()) {
-			project = new Project(ws, projectDir, bndbnd);
-			project.doIncludeFile(file, true, project.getProperties());
-		} else
-			project = new Project(ws, projectDir, file);
-
-		project.setTrace(isTrace());
-		project.setPedantic(isPedantic());
-		try {
-			project.run();
-
-		} catch (Exception e) {
-			error("Failed to run %s: %s", project, e);
-		}
-		getInfo(project);
 	}
 
 	/**
@@ -496,7 +584,136 @@ public class bnd extends Processor {
 			project.bump(mask);
 
 		getInfo(project);
-		out.println(project.getProperty(BUNDLE_VERSION, "No version found"));
+		err.println(project.getProperty(BUNDLE_VERSION, "No version found"));
+	}
+
+	interface buildoptions extends Options {
+		String project();
+
+		boolean test();
+	}
+
+	public void _build(buildoptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("No project available");
+			return;
+		}
+		project.build(opts.test());
+	}
+
+	interface testOptions extends Options {
+		String project();
+	}
+
+	public void _test(testOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("No project available");
+			return;
+		}
+		project.test();
+	}
+
+	interface runOptions extends Options {
+		String project();
+	}
+
+	public void _run(runOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("No project available");
+			return;
+		}
+		project.run();
+	}
+
+	interface cleanOptions extends Options {
+		String project();
+	}
+
+	public void _clean(cleanOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("No project available");
+			return;
+		}
+		project.clean();
+	}
+
+	@Arguments(arg = { "header|instruction", "..." }) interface syntaxOptions extends Options {
+	}
+
+	public void _syntax(syntaxOptions opts) throws Exception {
+		List<String> args = opts._();
+		StringBuilder sb = new StringBuilder();
+		Formatter f = new Formatter(sb);
+
+		for (String s : args) {
+			f.format("[%s]\n", s);
+			Syntax sx = Syntax.HELP.get(s);
+			if (s == null)
+				f.format("Unknown");
+			else {
+				print(f, sx, "  ");
+			}
+		}
+		f.format("\n");
+		f.flush();
+		justif.wrap(sb);
+		err.println(sb);
+	}
+
+	private void print(Formatter f, Syntax sx, String indent) {
+		if (sx == null)
+			return;
+
+		f.format("%s%s\n\n", indent, sx.getLead());
+		if (sx.getValues() != null)
+			f.format("%sValues\t3: %s\n", indent, sx.getValues());
+
+		if (sx.getPattern() != null)
+			f.format("%sPattern  \t3: %s\n", indent, sx.getPattern());
+		if (sx.getExample() != null)
+			f.format("%sExample  \t3: %s\n", indent, sx.getExample());
+		if (sx.getChildren() != null) {
+
+			for (Syntax child : sx.getChildren()) {
+				f.format("\n%s[%s]\n", indent, child.getHeader());
+				print(f, child, indent + "  ");
+			}
+		}
+	}
+
+	private void doRun(String path) throws Exception {
+		File file = getFile(path);
+		if (!file.isFile())
+			throw new FileNotFoundException(path);
+
+		File projectDir = file.getParentFile();
+		File workspaceDir = projectDir.getParentFile();
+		if (workspaceDir == null) {
+			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
+		}
+		Workspace ws = Workspace.getWorkspace(workspaceDir);
+
+		File bndbnd = new File(projectDir, Project.BNDFILE);
+		Project project;
+		if (bndbnd.isFile()) {
+			project = new Project(ws, projectDir, bndbnd);
+			project.doIncludeFile(file, true, project.getProperties());
+		} else
+			project = new Project(ws, projectDir, file);
+
+		project.setTrace(isTrace());
+		project.setPedantic(isPedantic());
+		try {
+			project.run();
+
+		} catch (Exception e) {
+			error("Failed to run %s: %s", project, e);
+		}
+		getInfo(project);
 	}
 
 	/**
@@ -529,11 +746,11 @@ public class bnd extends Processor {
 			containers.addAll(p.getDeliverables());
 		}
 		long duration = System.currentTimeMillis() - start;
-		out.println("Took " + duration + " ms");
+		err.println("Took " + duration + " ms");
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			out.printf("%-40s %8s  %s\n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
+			err.printf("%-40s %8s  %s\n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
 					c.getFile());
 		}
 		getInfo(project);
@@ -577,7 +794,7 @@ public class bnd extends Processor {
 			del = " ";
 		}
 		getInfo(project);
-		out.println(sb);
+		err.println(sb);
 	}
 
 	/**
@@ -654,9 +871,9 @@ public class bnd extends Processor {
 			String first = "";
 			if (row.hasNext())
 				first = row.next().getFQN();
-			out.printf("%40s > %s\n", element.getFQN(), first);
+			err.printf("%40s > %s\n", element.getFQN(), first);
 			while (row.hasNext()) {
-				out.printf("%40s   %s\n", "", row.next().getFQN());
+				err.printf("%40s   %s\n", "", row.next().getFQN());
 			}
 		}
 	}
@@ -685,11 +902,11 @@ public class bnd extends Processor {
 			error("Cannot find .classpath in project directory: " + dir.getAbsolutePath());
 		} else {
 			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
-			out.println("Classpath    " + eclipse.getClasspath());
-			out.println("Dependents   " + eclipse.getDependents());
-			out.println("Sourcepath   " + eclipse.getSourcepath());
-			out.println("Output       " + eclipse.getOutput());
-			out.println();
+			err.println("Classpath    " + eclipse.getClasspath());
+			err.println("Dependents   " + eclipse.getDependents());
+			err.println("Sourcepath   " + eclipse.getSourcepath());
+			err.println("Output       " + eclipse.getOutput());
+			err.println();
 		}
 	}
 
@@ -850,7 +1067,7 @@ public class bnd extends Processor {
 			args.add("*");
 
 		Instructions instructions = new Instructions(args);
-		Collection<String> selected = instructions.select(jar.getResources().keySet());
+		Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
 		for (String selection : selected) {
 			Resource r = jar.getResource(selection);
 
@@ -859,10 +1076,10 @@ public class bnd extends Processor {
 				printManifest(m);
 			} else if (selection.endsWith(".class")) {
 				ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
-				clsd.dump(out);
+				clsd.dump(err);
 			} else {
 				InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
-				IO.copy(isr, out);
+				IO.copy(isr, err);
 			}
 		}
 	}
@@ -980,7 +1197,19 @@ public class bnd extends Processor {
 	 */
 
 	public void _repo(repoOptions opts) throws Exception {
-		new RepoCommand(this,opts);
+		new RepoCommand(this, opts);
+	}
+
+	/**
+	 * Run a JavaScript program
+	 * 
+	 */
+	interface scriptOptions extends Options {
+		String file();
+	}
+
+	public void _script(scriptOptions opts) throws IOException, ScriptException {
+		new ScriptCommand(this, opts);
 	}
 
 	/**
@@ -1081,13 +1310,13 @@ public class bnd extends Processor {
 				if (manifest == null)
 					warning("JAR has no manifest " + file);
 				else {
-					out.println("[MANIFEST " + jar.getName() + "]");
+					err.println("[MANIFEST " + jar.getName() + "]");
 					printManifest(manifest);
 				}
-				out.println();
+				err.println();
 			}
 			if ((options & IMPEXP) != 0) {
-				out.println("[IMPEXP]");
+				err.println("[IMPEXP]");
 				Manifest m = jar.getManifest();
 				Domain domain = Domain.domain(m);
 
@@ -1109,44 +1338,44 @@ public class bnd extends Processor {
 			}
 
 			if ((options & (USES | USEDBY)) != 0) {
-				out.println();
+				err.println();
 				Analyzer analyzer = new Analyzer();
 				analyzer.setPedantic(isPedantic());
 				analyzer.setJar(jar);
 				analyzer.analyze();
 				if ((options & USES) != 0) {
-					out.println("[USES]");
+					err.println("[USES]");
 					printMultiMap(analyzer.getUses());
-					out.println();
+					err.println();
 				}
 				if ((options & USEDBY) != 0) {
-					out.println("[USEDBY]");
+					err.println("[USEDBY]");
 					printMultiMap(analyzer.getUses().transpose());
 				}
 			}
 
 			if ((options & COMPONENT) != 0) {
-				printComponents(out, jar);
+				printComponents(err, jar);
 			}
 
 			if ((options & METATYPE) != 0) {
-				printMetatype(out, jar);
+				printMetatype(err, jar);
 			}
 
 			if ((options & LIST) != 0) {
-				out.println("[LIST]");
+				err.println("[LIST]");
 				for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
 						.entrySet()) {
 					String name = entry.getKey();
 					Map<String, Resource> contents = entry.getValue();
-					out.println(name);
+					err.println(name);
 					if (contents != null) {
 						for (String element : contents.keySet()) {
 							int n = element.lastIndexOf('/');
 							if (n > 0)
 								element = element.substring(n + 1);
-							out.print("  ");
-							out.print(element);
+							err.print("  ");
+							err.print(element);
 							String path = element;
 							if (name.length() != 0)
 								path = name + "/" + element;
@@ -1155,16 +1384,16 @@ public class bnd extends Processor {
 								String extra = r.getExtra();
 								if (extra != null) {
 
-									out.print(" extra='" + escapeUnicode(extra) + "'");
+									err.print(" extra='" + escapeUnicode(extra) + "'");
 								}
 							}
-							out.println();
+							err.println();
 						}
 					} else {
-						out.println(name + " <no contents>");
+						err.println(name + " <no contents>");
 					}
 				}
-				out.println();
+				err.println();
 			}
 		} finally {
 			jar.close();
@@ -1309,7 +1538,7 @@ public class bnd extends Processor {
 	private void print(String msg, Map<?, ? extends Map<?, ?>> ports) {
 		if (ports.isEmpty())
 			return;
-		out.println(msg);
+		err.println(msg);
 		for (Entry<?, ? extends Map<?, ?>> entry : ports.entrySet()) {
 			Object key = entry.getKey();
 			Map<?, ?> clause = Create.copy(entry.getValue());
@@ -1391,141 +1620,25 @@ public class bnd extends Processor {
 				sb.append(c);
 			}
 		}
-		out.print(sb);
+		err.print(sb);
 	}
 
 	public void setOut(PrintStream out) {
-		this.out = out;
-	}
-
-	public Project getProject() throws Exception {
-		return getProject(null);
-	}
-
-	public Project getProject(String where) throws Exception {
-		if (where == null || where.equals("."))
-			where = Project.BNDFILE;
-
-		File f = getFile(where);
-		if (f.isDirectory()) {
-			f = new File(f, Project.BNDFILE);
-		}
-
-		if (f.isFile()) {
-			File projectDir = f.getParentFile();
-			File workspaceDir = projectDir.getParentFile();
-			Workspace ws = Workspace.getWorkspace(workspaceDir);
-			Project project = ws.getProject(projectDir.getName());
-			if (project.isValid()) {
-				return project;
-			}
-		}
-		if (where.equals(Project.BNDFILE))
-			error("The current directory is not a project directory: %s", getBase());
-		else
-			error("Project not found: " + f);
-
-		return null;
+		this.err = out;
 	}
 
 	/**
 	 * Patch
 	 */
 
-	void patch(String args[], int i) throws Exception {
-		for (; i < args.length; i++) {
-			if ("create".equals(args[i]) && i + 3 < args.length) {
-				createPatch(args[++i], args[++i], args[++i]);
-			} else if ("apply".equals(args[i]) && i + 3 < args.length) {
-				applyPatch(args[++i], args[++i], args[++i]);
-			} else if ("help".equals(args[i])) {
-				out.println("patch (create <old> <new> <patch> | patch <old> <patch> <new>)");
-			} else
-				out.println("Patch does not recognize command? " + Arrays.toString(args));
-		}
+	interface patchOptions extends Options {
+
 	}
 
-	void createPatch(String old, String newer, String patch) throws Exception {
-		Jar a = new Jar(new File(old));
-		Manifest am = a.getManifest();
-		Jar b = new Jar(new File(newer));
-		Manifest bm = b.getManifest();
-
-		Set<String> delete = newSet();
-
-		for (String path : a.getResources().keySet()) {
-			Resource br = b.getResource(path);
-			if (br == null) {
-				trace("DELETE    %s", path);
-				delete.add(path);
-			} else {
-				Resource ar = a.getResource(path);
-				if (isEqual(ar, br)) {
-					trace("UNCHANGED %s", path);
-					b.remove(path);
-				} else
-					trace("UPDATE    %s", path);
-			}
-		}
-
-		bm.getMainAttributes().putValue("Patch-Delete", join(delete, ", "));
-		bm.getMainAttributes().putValue("Patch-Version",
-				am.getMainAttributes().getValue("Bundle-Version"));
-
-		b.write(new File(patch));
-		a.close();
-		a.close();
-	}
-
-	private boolean isEqual(Resource ar, Resource br) throws Exception {
-		InputStream ain = ar.openInputStream();
-		try {
-			InputStream bin = br.openInputStream();
-			try {
-				while (true) {
-					int an = ain.read();
-					int bn = bin.read();
-					if (an == bn) {
-						if (an == -1)
-							return true;
-					} else
-						return false;
-				}
-			} finally {
-				bin.close();
-			}
-		} finally {
-			ain.close();
-		}
-	}
-
-	void applyPatch(String old, String patch, String newer) throws Exception {
-		Jar a = new Jar(new File(old));
-		Jar b = new Jar(new File(patch));
-		Manifest bm = b.getManifest();
-
-		String patchDelete = bm.getMainAttributes().getValue("Patch-Delete");
-		String patchVersion = bm.getMainAttributes().getValue("Patch-Version");
-		if (patchVersion == null) {
-			error("To patch, you must provide a patch bundle.\nThe given " + patch
-					+ " bundle does not contain the Patch-Version header");
-			return;
-		}
-
-		Collection<String> delete = split(patchDelete);
-		Set<String> paths = new HashSet<String>(a.getResources().keySet());
-		paths.removeAll(delete);
-
-		for (String path : paths) {
-			Resource br = b.getResource(path);
-			if (br == null)
-				b.putResource(path, a.getResource(path));
-		}
-
-		bm.getMainAttributes().putValue("Bundle-Version", patchVersion);
-		b.write(new File(newer));
-		a.close();
-		b.close();
+	public void patch(patchOptions opts) throws Exception {
+		PatchCommand pcmd = new PatchCommand(this);
+		List<String> args = opts._();
+		opts._command().execute(pcmd, args.remove(0), args);
 	}
 
 	/**
@@ -1535,39 +1648,55 @@ public class bnd extends Processor {
 	 * @param i
 	 * @throws Exception
 	 */
-	public void runtests(String args[], int i) throws Exception {
+
+	@Description("Run OSGi tests and create report") interface runtestsOptions extends Options {
+		String reportdir();
+
+		String title();
+
+		String dir();
+
+		String workspace();
+	}
+
+	public void _runtests(runtestsOptions opts) throws Exception {
 		int errors = 0;
 		File cwd = new File("").getAbsoluteFile();
+
 		Workspace ws = new Workspace(cwd);
 		File reportDir = getFile("reports");
 
 		IO.delete(reportDir);
-		reportDir.mkdirs();
 
 		Tag summary = new Tag("summary");
 		summary.addAttribute("date", new Date());
 		summary.addAttribute("ws", ws.getBase());
 
-		try {
-			boolean hadOne = false;
+		if (opts.reportdir() != null) {
+			reportDir = getFile(opts.reportdir());
+		}
+		reportDir.mkdirs();
 
-			for (; i < args.length; i++) {
-				if (args[i].startsWith("-reportdir")) {
-					reportDir = getFile(args[++i]).getAbsoluteFile();
-					if (!reportDir.isDirectory())
-						error("reportdir must be a directory " + reportDir);
-				} else if (args[i].startsWith("-title")) {
-					summary.addAttribute("title", args[++i]);
-				} else if (args[i].startsWith("-dir")) {
-					cwd = getFile(args[++i]).getAbsoluteFile();
-				} else if (args[i].startsWith("-workspace")) {
-					File tmp = getFile(args[++i]).getAbsoluteFile();
-					ws = Workspace.getWorkspace(tmp);
-				} else {
-					File f = getFile(args[i]);
-					errors += runtTest(f, ws, reportDir, summary);
-					hadOne = true;
-				}
+		if (!reportDir.isDirectory())
+			error("reportdir must be a directory %s (tried to create it ...)", reportDir);
+
+		if (opts.title() != null)
+			summary.addAttribute("title", opts.title());
+
+		if (opts.dir() != null)
+			cwd = getFile(opts.dir());
+
+		if (opts.workspace() != null)
+			ws = Workspace.getWorkspace(getFile(opts.workspace()));
+
+		// TODO check all the arguments
+
+		boolean hadOne = false;
+		try {
+			for (String arg : opts._()) {
+				File f = getFile(arg);
+				errors += runtTest(f, ws, reportDir, summary);
+				hadOne = true;
 			}
 
 			if (!hadOne) {
@@ -1581,10 +1710,13 @@ public class bnd extends Processor {
 				}
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
+			if (isExceptions())
+				e.printStackTrace();
+
 			error("FAILURE IN RUNTESTS", e);
 			errors++;
 		}
+
 		if (errors > 0)
 			summary.addAttribute("errors", errors);
 
@@ -1598,9 +1730,10 @@ public class bnd extends Processor {
 			e.addContent(warning);
 		}
 
-		File r = getFile(reportDir + "/summary.xml");
+		File r = getFile(reportDir, "summary.xml");
 		FileOutputStream out = new FileOutputStream(r);
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
+		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+
 		try {
 			summary.print(0, pw);
 		} finally {
@@ -1611,6 +1744,9 @@ public class bnd extends Processor {
 			error("Errors found %s", errors);
 	}
 
+	/**
+	 * Help function to run the tests
+	 */
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
 		tmpDir.mkdirs();
@@ -1759,105 +1895,29 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Extract a file from the JAR
+	 * Merge a bundle with its source.
+	 * 
+	 * @throws Exception
 	 */
 
-	public void doExtract(String args[], int i) throws Exception {
-		if (i >= args.length) {
-			error("No arguments for extract");
-			return;
-		}
+	interface verifyOptions extends Options {
+	}
 
-		File f = getFile(args[i++]);
-		if (!f.isFile()) {
-			error("No JAR file to extract from: %s", f);
-			return;
-		}
-
-		if (i == args.length) {
-			out.println("FILES:");
-			doPrint(f, LIST);
-			return;
-		}
-		Jar j = new Jar(f);
-		try {
-			Writer output = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
-			while (i < args.length) {
-				String path = args[i++];
-
-				Resource r = j.getResource(path);
-				if (r == null)
-					error("No such resource: %s in %s", path, f);
+	public void _verify(verifyOptions opts) throws Exception {
+		for (String path : opts._()) {
+			File f = getFile(path);
+			if (!f.isFile()) {
+				error("No such file: %ss", f);
+			} else {
+				Jar jar = new Jar(f);
+				if (jar.getManifest() == null || jar.getBsn() == null)
+					error("Not a bundle %s", f);
 				else {
-					InputStream in = r.openInputStream();
-					IO.copy(in, output);
-					output.flush();
+					Verifier v = new Verifier(jar);
+					getInfo(v, f.getName());
+					v.close();
 				}
-			}
-		} finally {
-			j.close();
-		}
-
-	}
-
-	void doDot(String args[], int i) throws Exception {
-		File out = getFile("graph.gv");
-		Builder b = new Builder();
-
-		for (; i < args.length; i++) {
-			if ("-o".equals(args[i]))
-				out = getFile(args[++i]);
-			else if (args[i].startsWith("-"))
-				error("Unknown option for dot: %s", args[i]);
-			else
-				b.addClasspath(getFile(args[i]));
-		}
-		b.setProperty(EXPORT_PACKAGE, "*");
-		b.setPedantic(isPedantic());
-		b.build();
-		FileWriter os = new FileWriter(out);
-		PrintWriter pw = new PrintWriter(os);
-		try {
-			pw.println("digraph bnd {");
-			pw.println("  size=\"6,6\";");
-			pw.println("node [color=lightblue2, style=filled,shape=box];");
-			for (Entry<PackageRef, List<PackageRef>> uses : b.getUses().entrySet()) {
-				for (PackageRef p : uses.getValue()) {
-					if (!p.isJava())
-						pw.printf("\"%s\" -> \"%s\";\n", uses.getKey(), p);
-				}
-			}
-			pw.println("}");
-
-		} finally {
-			pw.close();
-		}
-
-	}
-
-	public void global(String args[], int i) throws BackingStoreException {
-		Settings settings = new Settings();
-
-		if (args.length == i) {
-			for (String key : settings.getKeys())
-				out.printf("%-30s %s\n", key, settings.globalGet(key, "<>"));
-		} else {
-			while (i < args.length) {
-				boolean remove = false;
-				if ("-remove".equals(args[i])) {
-					remove = true;
-					i++;
-				}
-				if (i + 1 == args.length) {
-					if (remove)
-						settings.globalRemove(args[i]);
-					else
-						out.printf("%-30s %s\n", args[i], settings.globalGet(args[i], "<>"));
-					i++;
-				} else {
-					settings.globalSet(args[i], args[i + 1]);
-					i += 2;
-				}
+				jar.close();
 			}
 		}
 	}
@@ -1868,173 +1928,356 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	public void doMerge(String args[], int i) throws Exception {
-		File out = null;
-		// String prefix = "";
-		// boolean maven;
+	@Description("Merge a binary jar with its sources. It is possible to specify  source path")//
+	@Arguments(arg = { "jar file/dir", "source file/dir", "..." })//
+	interface sourceOptions extends Options {
+		@Description("The output file") String output();
+	}
 
-		List<Jar> sourcePath = new ArrayList<Jar>();
-		while (i < args.length - 1) {
-			String arg = args[i++];
-			if (arg.equals("-o")) {
-				out = getFile(arg);
-			} else if (arg.equals("-maven")) {
-				// maven = true;
+	public void _source(sourceOptions opts) throws Exception {
+
+		List<String> arguments = opts._();
+		File jarFile = getFile(arguments.remove(0));
+
+		if (!jarFile.exists()) {
+			error("File %s does not exist ", jarFile);
+			return;
+		}
+
+		List<Jar> sources = new ArrayList<Jar>();
+		for (String path : arguments) {
+			File sourceFile = getFile(path);
+			if (!sourceFile.exists()) {
+				error("File %s does not exist ", sourceFile);
 			} else {
-				File source = getFile(arg);
-				if (source.exists()) {
-					Jar jar = new Jar(source);
-					addClose(jar);
-					sourcePath.add(jar);
-				} else {
-					error("Sourec file/dir does not exist");
-				}
+				Jar source = new Jar(sourceFile);
+				addClose(source);
+				sources.add(source);
 			}
 		}
-		if (i >= args.length) {
-			error("No binary file specified");
-			return;
-		}
 
-		File binary = getFile(args[i]);
-		Jar output = new Jar(binary);
+		Jar jar = new Jar(jarFile);
 		try {
-			Analyzer analyzer = new Analyzer();
-			analyzer.setJar(output);
-			analyzer.analyze();
-
-			outer: for (Clazz clazz : analyzer.getClassspace().values()) {
-				String sourcename = clazz.getSourceFile();
-				String path = clazz.getAbsolutePath();
-				int n = path.lastIndexOf('/');
-				if (n >= 0) {
-					path = path.substring(0, n + 1);
-				} else
-					path = "";
-
-				String cname = path + sourcename;
-				for (Jar source : sourcePath) {
-					Resource r = source.getResource(cname);
-					if (r != null) {
-						output.putResource("OSGI-OPT/src/" + cname, r);
-						continue outer;
-					}
-				}
-				error("Source not found %s", cname);
-			}
-
-			if (out == null) {
-				File backup = new File(binary.getAbsolutePath() + ".bak");
-				binary.renameTo(backup);
-				out = binary;
-			}
-			output.write(out);
-		} finally {
-			output.close();
-			for (Jar jar : sourcePath)
-				jar.close();
-		}
-	}
-
-	/**
-	 * Create lib file on a directory.
-	 * 
-	 * @throws Exception
-	 * 
-	 * @throws Exception
-	 */
-
-	public void doLib(String args[], int i) throws Exception {
-		File out = null;
-		List<File> files = new ArrayList<File>();
-
-		while (i < args.length) {
-			String arg = args[i++];
-			if ("-o".equals(arg)) {
-				out = getFile(args[i++]);
-			} else if (arg.startsWith("-")) {
-				error("Unknown option: %s", arg);
-			} else
-				files.add(getFile(arg));
-		}
-		if (files.isEmpty()) {
-			error("No files specified for lib");
-			return;
-		}
-
-		if (out == null) {
-			out = getFile(files.get(0).getName() + ".lib");
-		}
-
-		this.out.println("Using " + out);
-		Writer w = new FileWriter(out);
-		try {
-			for (File file : files) {
-				this.out.println("And using " + file);
-				if (file.isDirectory())
-					doLib(file, w);
-				else if (file.isFile())
-					doSingleFileLib(file, w);
-				else if (!file.equals(out))
-					error("Not a file %s", file);
-			}
-		} finally {
-			w.close();
-		}
-	}
-
-	public void doLib(File dir, Appendable out) throws Exception {
-		for (File file : dir.listFiles()) {
-			doSingleFileLib(file, out);
-		}
-	}
-
-	/**
-	 * @param out
-	 * @param file
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	void doSingleFileLib(File file, Appendable out) throws IOException, Exception {
-		Jar jar = new Jar(file);
-		String bsn = jar.getBsn();
-		this.out.println(bsn);
-		String version = jar.getVersion();
-		jar.close();
-		if (bsn == null) {
-			error("No valid bsn for %s", file);
-			bsn = "not set";
-		}
-		if (version == null)
-			version = "0";
-
-		Version v = new Version(version);
-		v = new Version(v.getMajor(), v.getMinor(), v.getMicro());
-		out.append(bsn);
-		out.append(";version=" + v + "\n"); // '[" + v + "," + v + "]'\n");
-	}
-
-	/**
-	 * @return
-	 * @throws IOException
-	 * @throws MalformedURLException
-	 */
-	protected Jar getJarFromFileOrURL(String spec) throws IOException, MalformedURLException {
-		Jar jar;
-		File jarFile = getFile(spec);
-		if (jarFile.exists()) {
-			jar = new Jar(jarFile);
-		} else {
-			URL url = new URL(spec);
-			InputStream in = url.openStream();
+			addClose(jar);
 			try {
-				jar = new Jar(url.getFile(), in);
+				// TOOD ignoring bcp
+
+				nextClass: for (String path : jar.getResources().keySet()) {
+					if (!path.endsWith(".class") || path.indexOf('$') > 0)
+						continue;
+
+					path = replaceExtension(path, ".class", ".java");
+					String destPath = "OSGI-INF/src/" + path;
+
+					if (jar.getResources().containsKey(destPath))
+						continue;
+
+					for (Jar source : sources) {
+						Resource r = source.getResource(path);
+						if (r == null)
+							r = source.getResource(path);
+
+						if (r == null)
+							r = source.getResource("OSGI-OPT/src/" + path);
+
+						if (r == null)
+							r = source.getResource("src/" + path);
+
+						if (r != null) {
+							jar.putResource("OSGI-OPT/src/" + path, r);
+							continue nextClass;
+
+						}
+					}
+					trace("source not found %s", path);
+				}
+
+				if (opts.output() != null) {
+					jarFile = getFile(opts.output());
+					jarFile.getParentFile().mkdirs();
+				}
+
+				if (jarFile.isDirectory())
+					jarFile = getFile(jarFile.getAbsolutePath() + ".jar");
+
+				jar.write(jarFile);
+				trace("wrote %s", jarFile);
+			} finally {
+				for (Jar s : sources)
+					s.close();
+			}
+		} finally {
+			jar.close();
+		}
+	}
+
+	/**
+	 * Diff two jar files
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+
+	public void _diff(diffOptions opts) throws Exception {
+		DiffCommand diff = new DiffCommand(this);
+		diff.diff(opts);
+	}
+
+	/**
+	 * Baseline
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+
+	public void _baseline(baseLineOptions opts) throws Exception {
+		BaselineCommands baseliner = new BaselineCommands(this);
+		baseliner._baseline(opts);
+	}
+
+	/**
+	 * Create a schema of package deltas and versions
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+
+	public void _schema(schemaOptions opts) throws Exception {
+		BaselineCommands baseliner = new BaselineCommands(this);
+		baseliner._schema(opts);
+	}
+
+	public Project getProject() throws Exception {
+		return getProject(null);
+	}
+
+	public Project getProject(String where) throws Exception {
+		if (where == null || where.equals("."))
+			where = Project.BNDFILE;
+
+		File f = getFile(where);
+		if (f.isDirectory()) {
+			f = new File(f, Project.BNDFILE);
+		}
+
+		if (f.isFile()) {
+			File projectDir = f.getParentFile();
+			File workspaceDir = projectDir.getParentFile();
+			Workspace ws = Workspace.getWorkspace(workspaceDir);
+			Project project = ws.getProject(projectDir.getName());
+			if (project.isValid()) {
+				return project;
+			}
+		}
+
+		if (where.equals(Project.BNDFILE)) {
+			return null;
+		} else
+			error("Project not found: " + f);
+
+		return null;
+	}
+
+	/**
+	 * Convert files
+	 */
+	@Description("Converter to different formats") @Arguments(arg = { "from", "to" }) interface convertOptions
+			extends Options {
+		@Config(description = "Convert a manifest to a properties files") boolean m2p();
+
+		@Config(description = "Save as xml") boolean xml();
+	}
+
+	public void _convert(convertOptions opts) throws IOException {
+		File from = getFile(opts._().get(0));
+		File to = getFile(opts._().get(1));
+		if (opts.m2p()) {
+			FileInputStream in = new FileInputStream(from);
+			try {
+				Properties p = new Properties();
+				Manifest m = new Manifest(in);
+				Attributes attrs = m.getMainAttributes();
+				for (Map.Entry<Object, Object> i : attrs.entrySet()) {
+					p.put(i.getKey().toString(), i.getValue().toString());
+				}
+				FileOutputStream fout = new FileOutputStream(to);
+				try {
+					if (opts.xml())
+						p.storeToXML(fout, "converted from " + from);
+					else
+						p.store(fout, "converted from " + from);
+				} finally {
+					fout.close();
+				}
 			} finally {
 				in.close();
 			}
-		}
-		addClose(jar);
-		return jar;
+			return;
+		} else
+			error("no conversion specified");
 	}
 
+	/**
+	 * Create a list of file names that match manifest headers
+	 * 
+	 * bnd select -h Bundle-SymbolicName --where (...) *
+	 */
+	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.") @Arguments(arg = { "..." }) interface selectOptions
+			extends Options {
+		@Description("A simple assertion on a manifest header or an OSGi filter. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted.") String where();
+
+		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ") Collection<String> header();
+
+		@Description("Print the key before the value") boolean key();
+
+		@Description("Print the file name before the value") boolean name();
+
+		@Description("Print the file path before the value") boolean path();
+	}
+
+	public void _select(selectOptions opts) throws Exception {
+		PrintStream out = this.out;
+
+		Filter filter = null;
+		if (opts.where() != null) {
+			String w = opts.where();
+			if (!w.startsWith("("))
+				w = "(" + w + ")";
+			filter = new Filter(w);
+		}
+
+		Instructions instructions = new Instructions(opts.header());
+
+		for (String s : opts._()) {
+			Jar jar = getJar(s);
+			if (jar == null) {
+				err.println("no file " + s);
+				continue;
+			}
+
+			Domain domain = Domain.domain(jar.getManifest());
+			Hashtable<String, Object> ht = new Hashtable<String, Object>();
+			Iterator<String> i = domain.iterator();
+			Set<String> realNames = new HashSet<String>();
+
+			while (i.hasNext()) {
+				String key = i.next();
+				String value = domain.get(key).trim();
+				ht.put(key.trim().toLowerCase(), value);
+				realNames.add(key);
+			}
+			ht.put("resources", jar.getResources().keySet());
+			realNames.add("resources");
+			if (filter != null) {
+				if (!filter.match(ht))
+					continue;
+			}
+
+			Set<Instruction> unused = new HashSet<Instruction>();
+			Collection<String> select = instructions.select(realNames, unused, true);
+			for (String h : select) {
+				if (opts.path()) {
+					out.print(jar.getSource().getAbsolutePath() + ":");
+				}
+				if (opts.name()) {
+					out.print(jar.getSource().getName() + ":");
+				}
+				if (opts.key()) {
+					out.print(h + ":");
+				}
+				out.println(ht.get(h.toLowerCase()));
+			}
+			for (Instruction ins : unused) {
+				String literal = ins.getLiteral();
+				if (literal.equals("name"))
+					out.println(jar.getSource().getName());
+				else if (literal.equals("path"))
+					out.println(jar.getSource().getAbsolutePath());
+				else if (literal.equals("size") || literal.equals("length"))
+					out.println(jar.getSource().length());
+				else if (literal.equals("modified"))
+					out.println(new Date(jar.getSource().lastModified()));
+			}
+		}
+	}
+
+	/**
+	 * Get the exports of a number of bnd files and combine them
+	 */
+	interface exportOptions extends Options {
+		Collection<String> augments();
+	}
+
+	public void _exports(exportOptions opts) throws Exception {
+		Parameters parameters = new Parameters();
+
+		for (String fname : opts._()) {
+			Jar jar = getJar(fname);
+			try {
+				Manifest m = jar.getManifest();
+				Domain domain = Domain.domain(m);
+
+				Parameters p = domain.getExportPackage();
+				
+				// Check for augments, we borrow properties from
+				// the manifest and add them to the exports
+				for (String augment : opts.augments()) {
+					String v = domain.get(augment);
+					if (v != null) {
+						v = v.trim();
+						for (String pname : p.keySet()) {
+							System.err.println("Add " + augment + " to " + pname +" v=" + v);
+							Attrs attrs = p.get(pname);
+							attrs.put(augment, v);
+						}
+					}
+				}
+				
+				parameters.putAll(p);
+			} finally {
+				jar.close();
+			}
+		}
+		out.printf("Export-Package:");
+		String del = " \\\n  ";
+		for (String key : parameters.keySet()) {
+			out.print(del);
+			out.print(key);
+			Attrs attrs = parameters.get(key);
+			for (String name : attrs.keySet()) {
+				if (name.equals("uses:"))
+					continue;
+
+				out.print(";");
+				out.print(name);
+				out.print("=");
+				Processor.quote(out, attrs.get(name));
+			}
+			del = ", \\\n  ";
+		}
+		out.println();
+	}
+
+	/**
+	 * Central routine to get a JAR with error checking
+	 * 
+	 * @param s
+	 * @return
+	 */
+	Jar getJar(String s) {
+
+		File f = getFile(s);
+		if (!f.isFile()) {
+			error("Not a file: %s", f);
+			return null;
+		}
+		try {
+			return new Jar(f);
+		} catch (ZipException e) {
+			error("Not a jar/zip file: %s", f);
+		} catch (Exception e) {
+			error("Opening file: %s", e, f);
+		}
+		return null;
+	}
 }
