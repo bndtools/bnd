@@ -42,7 +42,7 @@ public class CalltreeResource extends WriteResource {
      */
     public CalltreeResource(Collection<Clazz> values) {
         this.classes = values;
-        System.out.println(values);
+        System.err.println(values);
     }
 
     /**

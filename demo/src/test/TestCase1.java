@@ -5,7 +5,7 @@ import junit.framework.*;
 public class TestCase1 extends TestCase {
 	
 	public void test1() {
-		System.out.println("All ok");
+		System.err.println("All ok");
 	}
 
 	public void test2() {
@@ -16,6 +16,6 @@ public class TestCase1 extends TestCase {
 		fail("I am feeling depressive");
 	}
 	public void test4() {
-		System.out.println("All ok again");
+		System.err.println("All ok again");
 	}
 }

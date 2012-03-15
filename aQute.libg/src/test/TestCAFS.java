@@ -39,7 +39,7 @@ public class TestCAFS extends TestCase {
 //		int n = 0;
 //		for (SHA1 key : cafs) {
 //			assertTrue(sha1.equals(key) || sha2.equals(key));
-//			System.out.println(n++ + ": " + key);
+//			System.err.println(n++ + ": " + key);
 //			InputStream in = cafs.read(key);
 //			assertNotNull(in);
 //			String s = IO.collect(in, "UTF-8");

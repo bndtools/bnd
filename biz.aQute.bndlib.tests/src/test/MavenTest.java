@@ -35,7 +35,7 @@ public class MavenTest extends TestCase {
 		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
 		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
 		for ( Pom dep : dependencies ) {
-			System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+			System.err.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 		}
 		
 	}
@@ -57,7 +57,7 @@ public class MavenTest extends TestCase {
 //			files.add( c.getFile().getName());
 //		}
 //		assertTrue(files.remove("bin"));
-//		System.out.println(files);
+//		System.err.println(files);
 //		assertTrue( files.contains("com.springsource.org.apache.commons.beanutils-1.6.1.jar"));
 	}
 
@@ -117,7 +117,7 @@ public class MavenTest extends TestCase {
 		assertTrue( file.isFile());
 		assertEquals("compile.lib", file.getName());
 		String lib = IO.collect(file);
-		System.out.println(lib);
+		System.err.println(lib);
 		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"","1");
    		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.collections;version=\"2.1.1\"", "2");
 		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.logging;version=\"1.0.4\"", "3");
@@ -236,12 +236,12 @@ public class MavenTest extends TestCase {
 		// "com.springsource.javax.xml.ws", "2.1.1", new
 		// URL("http://repository.springsource.com/maven/bundles/release"), new
 		// URL("http://repository.springsource.com/maven/bundles/external"));
-		System.out.println(pom.getGroupId() + " + " + pom.getArtifactId() + "-" + pom.getVersion());
+		System.err.println(pom.getGroupId() + " + " + pom.getArtifactId() + "-" + pom.getVersion());
 
-		System.out.println(pom.getDependencies(Pom.Scope.compile));
+		System.err.println(pom.getDependencies(Pom.Scope.compile));
 
 		File artifact = pom.getArtifact();
-		System.out.println(artifact);
+		System.err.println(artifact);
 	}
 
 
@@ -255,7 +255,7 @@ public class MavenTest extends TestCase {
 	public void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
 		Properties p = parser.getProperties(new File("test/ws/maven1/pom.xml"));
-		p.store(System.out, "testing");
+		p.store(System.err, "testing");
 		assertEquals("Apache Felix Metatype Service", p.get("pom.name"));
 		assertEquals("org.apache.felix", p.get("pom.groupId")); // is from
 																// parent
@@ -305,7 +305,7 @@ public class MavenTest extends TestCase {
 //		assertEquals("bndlib-0.0.255.jar", files[4].getName());
 //
 //		List<String> names = maven.list(null);
-//		System.out.println(names);
+//		System.err.println(names);
 //		assertEquals(13, names.size());
 //		assertTrue(names.contains("biz.aQute.bndlib"));
 //		assertTrue(names.contains("org.apache.felix.javax.servlet"));

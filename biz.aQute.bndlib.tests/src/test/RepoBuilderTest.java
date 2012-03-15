@@ -35,12 +35,12 @@ public class RepoBuilderTest extends TestCase {
 //        for ( int i =0; i<endsWith.length; i++ ) {
 //            assertTrue(endsWith[i] + " : " + l.get(i), l.get(i).toString().endsWith(endsWith[i]));
 //        }
-//        System.out.println(b);        
+//        System.err.println(b);        
 //    }
 //    
 //    void check(Analyzer r) {
-//        System.out.println(r.getErrors());
-//        System.out.println(r.getWarnings());
+//        System.err.println(r.getErrors());
+//        System.err.println(r.getWarnings());
 //        assertEquals(0, r.getWarnings().size());
 //        assertEquals(0, r.getErrors().size());
 //    }

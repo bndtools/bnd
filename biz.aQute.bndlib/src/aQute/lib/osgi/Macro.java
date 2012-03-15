@@ -211,7 +211,7 @@ public class Macro implements Replacer {
 
 	private String doCommand(Object target, String method, String[] args) {
 		if (target == null)
-			; // System.out.println("Huh? Target should never be null " +
+			; // System.err.println("Huh? Target should never be null " +
 		// domain);
 		else {
 			String cname = "_" + method.replaceAll("-", "_");
@@ -969,7 +969,7 @@ public class Macro implements Replacer {
 			return (Properties) f.get(p);
 		} catch (Exception e) {
 			Field[] fields = Properties.class.getFields();
-			System.out.println(Arrays.toString(fields));
+			System.err.println(Arrays.toString(fields));
 			return null;
 		}
 	}

@@ -101,7 +101,7 @@ public class CompareTest<O extends Serializable> extends TestCase {
 //		// pb.parse(new FileInputStream("bin/test/CompareTest$Z.class"));
 //
 //		root.cleanRoot();
-//		PrintWriter pw = new PrintWriter(System.out);
+//		PrintWriter pw = new PrintWriter(System.err);
 //		root.report(pw, 0);
 //		pw.flush();
 //

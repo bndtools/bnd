@@ -84,6 +84,7 @@ public class Verifier extends Processor {
 																			.compile(VERSION_STRING);
 	final static Pattern			FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	public final static Pattern		VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
+			
 																			+ VERSION_STRING + ","
 																			+ VERSION_STRING
 																			+ "(\\]|\\)))|"
@@ -166,7 +167,8 @@ public class Verifier extends Processor {
 	private Instructions	dynamicImports;
 
 	public Verifier(Jar jar) throws Exception {
-		this.analyzer = new Analyzer();
+		this.analyzer = new Analyzer(this);
+		this.analyzer.use(this);
 		addClose(analyzer);
 		this.analyzer.setJar(jar);
 		this.manifest = this.analyzer.calcManifest();

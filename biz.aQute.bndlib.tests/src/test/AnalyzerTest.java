@@ -38,7 +38,7 @@ public class AnalyzerTest extends BndTestCase {
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
 		assertTrue(b.check());
-		m.write(System.out);
+		m.write(System.err);
 	}
 	
 	
@@ -78,7 +78,7 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.setProperty("Import-Package","*");
 		Manifest manifest = analyzer.calcManifest();
 		assertTrue(analyzer.check());
-		manifest.write(System.out);
+		manifest.write(System.err);
 		Domain main = Domain.domain(manifest);
 		Parameters export = main.getExportPackage();
 		Parameters expected = new Parameters("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
@@ -122,7 +122,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertNotNull(jar.getResource("org/osgi/service/event/EventAdmin.class"));
 		
 		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
-		System.out.println(exports);
+		System.err.println(exports);
 		assertTrue(exports.contains("uses:=\"org.osgi.framework\""));
 
 		b = new Builder();
@@ -148,8 +148,8 @@ public class AnalyzerTest extends BndTestCase {
 		b.setProperty("Private-Package", "org.osgi.framework");
 		b.setProperty("-require-bnd", "10000");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -162,8 +162,8 @@ public class AnalyzerTest extends BndTestCase {
 		b.setProperty("Import-Package", "not.here,*");
 		b.setProperty("Service-Component", "org.osgi.framework.Bundle;ref=not.here.Reference");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 	}
@@ -173,11 +173,11 @@ public class AnalyzerTest extends BndTestCase {
 		a.setProperty("Export-Package", "org.osgi.service.io");
 		a.addClasspath(new File("jar/osgi.jar"));
 		a.build();
-		System.out.println(a.getErrors());
-		System.out.println(a.getWarnings());
+		System.err.println(a.getErrors());
+		System.err.println(a.getWarnings());
 
 		Collection<Clazz> c = a.getClasses("", "IMPORTS", "javax.microedition.io");
-		System.out.println(c);
+		System.err.println(c);
 	}
 
 	public void testMultilevelInheritance() throws Exception {
@@ -186,7 +186,7 @@ public class AnalyzerTest extends BndTestCase {
 		a.analyze();
 
 		String result = a._classes("cmd", "named", "*T?", "extends", "test.T0", "concrete");
-		System.out.println(result);
+		System.err.println(result);
 		assertTrue(result.contains("test.T2"));
 		assertTrue(result.contains("test.T3"));
 	}
@@ -215,12 +215,12 @@ public class AnalyzerTest extends BndTestCase {
 		a.addClasspath(new File("jar/osgi.jar"));
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
-		System.out.println(a.getErrors());
-		System.out.println(a.getWarnings());
+		System.err.println(a.getErrors());
+		System.err.println(a.getWarnings());
 		assertEquals(0, a.getErrors().size());
 		assertEquals(0, a.getWarnings().size());
 		String bb = manifest.getMainAttributes().getValue("Bundle-Blueprint");
-		System.out.println(bb);
+		System.err.println(bb);
 		assertNotNull(bb);
 		assertEquals("", bb);
 	}
@@ -269,7 +269,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertTrue( a.check());
 		
 		String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
-		System.out.println(imports);
+		System.err.println(imports);
 		assertTrue(imports.indexOf("x=1") >= 0);
 		assertTrue(imports.indexOf("y=2") >= 0);
 	}
@@ -289,12 +289,12 @@ public class AnalyzerTest extends BndTestCase {
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
-		System.out.println(a.getErrors());
-		System.out.println(a.getWarnings());
+		System.err.println(a.getErrors());
+		System.err.println(a.getWarnings());
 		assertEquals(0, a.getErrors().size());
 		assertEquals(0, a.getWarnings().size());
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
-		System.out.println(imports);
+		System.err.println(imports);
 		assertNull(imports);
 	}
 
@@ -335,8 +335,8 @@ public class AnalyzerTest extends BndTestCase {
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
-		System.out.println(a.getErrors());
-		System.out.println(a.getWarnings());
+		System.err.println(a.getErrors());
+		System.err.println(a.getWarnings());
 		assertEquals(0, a.getErrors().size());
 		assertEquals(0, a.getWarnings().size());
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
@@ -402,7 +402,7 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setJar(new File("jar/asm.jar"));
 		analyzer.setProperties(base);
-		analyzer.calcManifest().write(System.out);
+		analyzer.calcManifest().write(System.err);
 		assertTrue(analyzer.check());
 		
 		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm.signature")!=null);
@@ -426,7 +426,7 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer h = new Analyzer();
 		h.setJar(new File("jar/asm.jar"));
 		h.setProperties(base);
-		h.calcManifest().write(System.out);
+		h.calcManifest().write(System.err);
 		assertTrue(h.check());
 		Packages exports = h.getExports();
 		assertTrue( exports.getByFQN("org.objectweb.asm.signature") != null);
@@ -446,7 +446,7 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setJar(tmp);
 		analyzer.setProperties(base);
-		analyzer.calcManifest().write(System.out);
+		analyzer.calcManifest().write(System.err);
 		assertTrue(analyzer.check());
 		assertPresent(analyzer.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
@@ -468,11 +468,11 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer h = new Analyzer();
 		h.setJar(tmp);
 		h.setProperties(base);
-		h.calcManifest().write(System.out);
+		h.calcManifest().write(System.err);
 		assertPresent(h.getImports().keySet(), "org.xml.sax, " + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.eclipse.osgi.util");
 
-		System.out.println("IMports " + h.getImports());
+		System.err.println("IMports " + h.getImports());
 		assertNotPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.osgi.service.log," + " org.osgi.framework," + " org.osgi.util.tracker, "
 				+ "org.osgi.service.component, " + "org.osgi.service.cm");
@@ -490,7 +490,7 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer h = new Analyzer();
 		h.setJar(tmp);
 		h.setProperties(base);
-		h.calcManifest().write(System.out);
+		h.calcManifest().write(System.err);
 		assertPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
 				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
 				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
@@ -500,7 +500,7 @@ public class AnalyzerTest extends BndTestCase {
 				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
-		System.out.println(h.getUnreachable());
+		System.err.println(h.getUnreachable());
 	}
 
 	public void testClasspath() throws Exception {
@@ -513,7 +513,7 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		h.setClasspath(new File[] { osgi });
-		h.calcManifest().write(System.out);
+		h.calcManifest().write(System.err);
 		assertEquals("Version from osgi.jar", "[1.2,2)",
 				get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
 		assertEquals("Version from osgi.jar", "[1.3,2)",
@@ -540,7 +540,7 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		Manifest m = h.calcManifest();
-		m.write(System.out);
+		m.write(System.err);
 		assertTrue(h.check( //
 				"Unused Export-Package instructions: \\[baz.*\\]", // 
 				"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));

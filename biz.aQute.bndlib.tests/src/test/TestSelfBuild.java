@@ -14,8 +14,8 @@ public class TestSelfBuild extends TestCase {
 		project.action("build");
 		
 		File files[] = project.build();
-		System.out.println(Processor.join(project.getErrors(),"\n"));
-		System.out.println(Processor.join(project.getWarnings(),"\n"));
+		System.err.println(Processor.join(project.getErrors(),"\n"));
+		System.err.println(Processor.join(project.getWarnings(),"\n"));
 		assertEquals(0, project.getErrors().size());
 		assertEquals(0, project.getWarnings().size());
 		assertNotNull(files);

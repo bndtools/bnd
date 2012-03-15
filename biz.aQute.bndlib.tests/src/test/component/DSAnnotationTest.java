@@ -103,11 +103,11 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$Defaults.xml");
-			System.out.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 			assertNotNull(r);
-			r.write(System.out);
+			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-					"http://www.osgi.org/xmlns/scr/1.1.0");
+					"http://www.osgi.org/xmlns/scr/v1.1.0");
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$Defaults",
@@ -147,7 +147,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 			Resource r = jar.getResource("OSGI-INF/name.xml");
 			assertNotNull(r);
-			r.write(System.out);
+			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "xmlns");
 
 			// Test the defaults
@@ -224,9 +224,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/enums.xml");
 		assertNotNull(r);
-		r.write(System.out);
+		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/1.2.0");
+				"http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		xt.assertAttribute("setA", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
@@ -296,9 +296,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/methods.xml");
 		assertNotNull(r);
-		r.write(System.out);
+		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/1.2.0");
+				"http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		// use - to make sure no unbind and updated method is set
 		xt.assertAttribute("setA", "scr:component/reference[1]/@name");
@@ -369,9 +369,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/bottom.xml");
 		assertNotNull(r);
-		r.write(System.out);
+		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/1.2.0");
+				"http://www.osgi.org/xmlns/scr/v1.2.0");
 		
 		
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@name");
@@ -430,9 +430,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/prototypes.xml");
 		assertNotNull(r);
-		r.write(System.out);
+		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/1.2.0");
+				"http://www.osgi.org/xmlns/scr/v1.2.0");
 		
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");

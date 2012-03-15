@@ -117,7 +117,7 @@ public abstract class Pom {
 
 	void parse() throws Exception {
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		System.out.println("Parsing " + pomFile.getAbsolutePath());
+		System.err.println("Parsing " + pomFile.getAbsolutePath());
 		Document doc = db.parse(pomFile);
 		XPath xp = xpf.newXPath();
 		parse(doc, xp);
@@ -241,16 +241,16 @@ public abstract class Pom {
 						}
 					} else
 						if (rover.previous != null)
-							System.out.println("Cannot find " + dep + " from "
+							System.err.println("Cannot find " + dep + " from "
 									+ rover.previous.dependency);
 						else
-							System.out.println("Cannot find " + dep + " from top");
+							System.err.println("Cannot find " + dep + " from top");
 				} catch (Exception e) {
 					if (rover.previous != null)
-						System.out.println("Cannot find " + dep + " from "
+						System.err.println("Cannot find " + dep + " from "
 								+ rover.previous.dependency);
 					else
-						System.out.println("Cannot find " + dep + " from top");
+						System.err.println("Cannot find " + dep + " from top");
 
 //			boolean include = false;
 //			if (dep.scope == Scope.compile) {
@@ -275,7 +275,7 @@ public abstract class Pom {
 	}
 
 	protected String replace(String in) {
-		System.out.println("replace: " + in);
+		System.err.println("replace: " + in);
 		if (in == null)
 			return "null";
 

@@ -4,7 +4,7 @@ import java.util.*;
 
 public interface Options {
 	List<String> _();
-	Command _command();
+	CommandLine _command();
 	Map<String,String> _properties();
 	boolean _ok();
 	boolean _help();

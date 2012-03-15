@@ -12,7 +12,7 @@ public class TestDirectoryInputStream extends TestCase {
 //        assertNotNull(in.getManifest());
 //        JarEntry entry = in.getNextJarEntry();
 //        while (entry != null) {
-//            System.out.println(entry.getName());
+//            System.err.println(entry.getName());
 //            entry = in.getNextJarEntry();
 //        }
 //

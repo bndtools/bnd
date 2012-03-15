@@ -52,7 +52,7 @@ public class PropertiesTest extends TestCase {
                 sb.append(c);
             }
         }
-        System.out.println(sb);
+        System.err.println(sb);
     }
 
     public  void testSpacesAround() throws Exception {
@@ -113,9 +113,9 @@ public class PropertiesTest extends TestCase {
 		assertTrue(map.containsKey("org.osgi.service.cm"));
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
         assertEquals(1,analyzer.getWarnings().size());
-        System.out.println(analyzer.getWarnings());
+        System.err.println(analyzer.getWarnings());
         assertTrue(analyzer.getWarnings().get(0).indexOf("Empty clause, usually caused by repeating a comma without")>=0);
-		System.out.println(analyzer.getWarnings());
+		System.err.println(analyzer.getWarnings());
 	}
 	
 	public void testProperties() throws Exception {
@@ -123,6 +123,6 @@ public class PropertiesTest extends TestCase {
 		analyzer.setProperties(new File("src/test/variables.mf"));
 		
 		assertEquals("aQute.test", analyzer.getProperty("Header"));
-		System.out.println("property " + analyzer.getProperty("Header"));
+		System.err.println("property " + analyzer.getProperty("Header"));
 	}
 }

@@ -33,7 +33,7 @@ public class BER implements Types {
             tag = TAGS[nmbr];
 
         if (cnst) {
-            System.out.printf("%5d %s %s %s\n", length, indent, CLASSES[clss],
+            System.err.printf("%5d %s %s %s\n", length, indent, CLASSES[clss],
                     tag);
             while (length > 1) {
                 long atStart = getPosition();

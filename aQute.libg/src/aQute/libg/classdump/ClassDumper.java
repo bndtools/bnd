@@ -49,7 +49,7 @@ public class ClassDumper {
     final static String HEX_COLUMN = "%-30s %x\n";
     final static String STR_COLUMN = "%-30s %s\n";
 
-    PrintStream         ps         = System.out;
+    PrintStream         ps         = System.err;
     Object[]            pool;
     InputStream         in;
 

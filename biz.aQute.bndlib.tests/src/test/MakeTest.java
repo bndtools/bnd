@@ -26,8 +26,8 @@ public class MakeTest extends TestCase {
         b.setProperty("-plugin", "test.make.MD5");
         b.addClasspath( new File("jar/osgi.jar"));
         Jar jar = b.build();
-        System.out.println(b.getErrors());
-        System.out.println(b.getWarnings());
+        System.err.println(b.getErrors());
+        System.err.println(b.getWarnings());
         assertEquals(0, b.getErrors().size());
         assertEquals(0, b.getWarnings().size());
         assertNotNull( jar.getResource("asm.jar.md5"));
@@ -102,11 +102,11 @@ public class MakeTest extends TestCase {
         
     }
     void report(Processor processor) {
-        System.out.println();
+        System.err.println();
         for ( int i=0; i<processor.getErrors().size(); i++ )
-            System.out.println(processor.getErrors().get(i));
+            System.err.println(processor.getErrors().get(i));
         for ( int i=0; i<processor.getWarnings().size(); i++ )
-            System.out.println(processor.getWarnings().get(i));
+            System.err.println(processor.getWarnings().get(i));
         assertEquals(0, processor.getErrors().size());
         assertEquals(0, processor.getWarnings().size());
     }

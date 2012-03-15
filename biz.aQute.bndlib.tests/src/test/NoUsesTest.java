@@ -118,9 +118,9 @@ public class NoUsesTest extends TestCase {
 	}
 	
 	void assertOk(Analyzer bmaker) throws Exception {
-		System.out.println(bmaker.getErrors());
-		System.out.println(bmaker.getWarnings());
-		bmaker.getJar().getManifest().write(System.out);
+		System.err.println(bmaker.getErrors());
+		System.err.println(bmaker.getWarnings());
+		bmaker.getJar().getManifest().write(System.err);
 		assertEquals(0,bmaker.getErrors().size());
 		assertEquals(0,bmaker.getWarnings().size());
 		

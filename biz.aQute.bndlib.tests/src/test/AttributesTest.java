@@ -35,13 +35,13 @@ public class AttributesTest extends TestCase {
 		assertNotNull(bmaker.getImports());
 		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io"));
 		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io").get("a2"));
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
 		assertNotNull("Import package header", imprt );
 		Parameters map = Processor.parseHeader(imprt, null);
-		System.out.println("** " + map);
+		System.err.println("** " + map);
 		Map<String,String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
 		assertNull(attrs.get("a1"));
@@ -73,7 +73,7 @@ public class AttributesTest extends TestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 		
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
@@ -97,11 +97,11 @@ public class AttributesTest extends TestCase {
 		bmaker.setClasspath(cp);
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.out);
+		System.err.println(jar.getResources());
+		// System.err.println(bmaker.getExports());
+		System.err.println("Warnings: " + bmaker.getWarnings());
+		System.err.println("Errors  : " + bmaker.getErrors());
+		jar.getManifest().write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
@@ -124,11 +124,11 @@ public class AttributesTest extends TestCase {
 		bmaker.setClasspath(cp);
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		System.out.println(jar.getResources());
-		// System.out.println(bmaker.getExports());
-		System.out.println("Warnings: " + bmaker.getWarnings());
-		System.out.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.out);
+		System.err.println(jar.getResources());
+		// System.err.println(bmaker.getExports());
+		System.err.println("Warnings: " + bmaker.getWarnings());
+		System.err.println("Errors  : " + bmaker.getErrors());
+		jar.getManifest().write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");

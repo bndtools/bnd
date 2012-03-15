@@ -11,6 +11,7 @@ public class TestIndex extends TestCase {
 	public void testPersistence() throws Exception {
 		File test = new File("tmp/test.tmp");
 		test.delete();
+		test.getParentFile().mkdirs();
 		Index index = new Index(test, 2000);
 		index.insert( new byte[]{1}, 2);
 		index.insert( new byte[]{2}, 4);
@@ -18,11 +19,11 @@ public class TestIndex extends TestCase {
 		assertEquals( 2, index.search(new byte[] {1}));
 		assertEquals( 4, index.search(new byte[] {2}));
 		assertEquals( 6, index.search(new byte[] {3}));
-		System.out.println(index.toString());
+		System.err.println(index.toString());
 		index.close();
 		
 		index = new Index(test, 2000);
-		System.out.println(index.toString());
+		System.err.println(index.toString());
 		assertEquals( 2, index.search(new byte[] {1}));
 		assertEquals( 4, index.search(new byte[] {2}));
 		assertEquals( 6, index.search(new byte[] {3}));
@@ -35,6 +36,7 @@ public class TestIndex extends TestCase {
 	public void testBasic() throws Exception {
 		File test = new File("tmp/test.tmp");
 		test.delete();
+		test.getParentFile().mkdirs();
 		Index index = new Index(test, 2000);
 		
 		index.insert( new byte[] {12}, 24);

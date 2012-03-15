@@ -20,8 +20,8 @@ public class IncludeHeaderTest extends TestCase {
 //		x.put("pom.scope.test", "set");		
 //		x.put("-include", "~maven/pom.xml,b.props");
 //		analyzer.setProperties(x);
-//		System.out.println(analyzer.getErrors());
-//		System.out.println(analyzer.getWarnings());
+//		System.err.println(analyzer.getErrors());
+//		System.err.println(analyzer.getWarnings());
 //		assertEquals("b", analyzer.getProperty("pom.modelVersion")); // from b
 //		assertEquals("org.apache.felix.metatype", analyzer.getProperty("pom.artifactId")); // from pom
 //		assertEquals("org.apache.felix", analyzer.getProperty("pom.groupId")); // from parent pom
@@ -92,7 +92,7 @@ public class IncludeHeaderTest extends TestCase {
 		Properties p = new Properties();
 		p.put("-include", "-iamnotthere.txt");
 		analyzer.setProperties(p);
-		System.out.println(analyzer.getErrors());
+		System.err.println(analyzer.getErrors());
 		assertEquals(0, analyzer.getErrors().size());
 	}
 
@@ -130,7 +130,7 @@ public class IncludeHeaderTest extends TestCase {
 		p.put("a", "1");
 		p.put("-include", "includeheadertest.mf, includeheadertest.prop");
 		analyzer.setProperties(p);
-		System.out.println(analyzer.getProperties());
+		System.err.println(analyzer.getProperties());
 		assertEquals("1", analyzer.getProperty("a"));
 		assertEquals("end", analyzer.getProperty("last-props"));
 		assertEquals("end", analyzer.getProperty("last-manifest"));

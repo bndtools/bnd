@@ -10,8 +10,8 @@ public class InstructionTest extends TestCase {
 	
 	public void testSelect() {
 		assertEquals( Arrays.asList("a","c"), new Instructions("b").reject( Arrays.asList("a","b","c")));
-		assertEquals( Arrays.asList("a","c"), new Instructions("a,c").select( Arrays.asList("a","b","c")));
-		assertEquals( Arrays.asList("a","c"), new Instructions("!b,*").select( Arrays.asList("a","b","c")));
+		assertEquals( Arrays.asList("a","c"), new Instructions("a,c").select( Arrays.asList("a","b","c"), false));
+		assertEquals( Arrays.asList("a","c"), new Instructions("!b,*").select( Arrays.asList("a","b","c"),false));
 	}
 	
 	

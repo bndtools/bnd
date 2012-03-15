@@ -178,7 +178,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			Tee systemErr;
 			Tee systemOut;
 
-			systemOut = new Tee(System.out);
+			systemOut = new Tee(System.err);
 			systemErr = new Tee(System.err);
 			systemOut.capture(trace).echo(true);
 			systemErr.capture(trace).echo(true);
@@ -229,7 +229,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					}
 				}
 			} catch(Throwable t) {
-				System.out.println("exiting " + t);
+				System.err.println("exiting " + t);
 				t.printStackTrace();
 			}
 			finally {

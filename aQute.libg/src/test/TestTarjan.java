@@ -10,7 +10,7 @@ public class TestTarjan extends TestCase {
 
 	public void testTarjan() throws Exception {
 		MultiMap<String, String> g = mkGraph("A{BC}B{A}C{DE}D{C}E{D}");
-		System.out.println(g);
+		System.err.println(g);
 		
 		Collection<? extends Collection<String>> scc = Tarjan.tarjan(g);
 		

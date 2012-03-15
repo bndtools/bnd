@@ -20,11 +20,11 @@ public abstract class BndTestCase extends TestCase {
 
 
 	private void print(String title, List<?> strings) {
-		System.out.println("-------------------------------------------------------------------------");
-		System.out.println(title + " " + strings.size());
-		System.out.println("-------------------------------------------------------------------------");
+		System.err.println("-------------------------------------------------------------------------");
+		System.err.println(title + " " + strings.size());
+		System.err.println("-------------------------------------------------------------------------");
 		for ( Object s : strings) {
-			System.out.println(s);
+			System.err.println(s);
 		}
 	}
 }

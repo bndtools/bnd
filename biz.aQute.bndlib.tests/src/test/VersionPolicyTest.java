@@ -131,7 +131,7 @@ public class VersionPolicyTest extends TestCase {
         b.setProperty("Private-Package", pack);
         b.build();
         Manifest m = b.getJar().getManifest();
-        m.write(System.out);
+        m.write(System.err);
         Map<String, String> map = b.getImports().getByFQN("test.versionpolicy.api");
         assertNotNull(map);
 //        String s = map.get(Constants.IMPLEMENTED_DIRECTIVE);
@@ -154,7 +154,7 @@ public class VersionPolicyTest extends TestCase {
                 "org.osgi.framework,org.objectweb.asm,abc;version=2.0.0,*");
         b.build();
         Manifest m = b.getJar().getManifest();
-        m.write(System.out);
+        m.write(System.err);
         String s = b.getImports().getByFQN("org.objectweb.asm").get("version");
         assertNull(s);
         s = b.getImports().getByFQN("abc").get("version");

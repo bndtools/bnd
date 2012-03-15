@@ -52,7 +52,7 @@ public class PrepareTask extends BaseTask {
             String key = (String) k.nextElement();
             String value = flattened.getProperty(key);
             if (isPrint())
-                System.out.printf("%-20s = %s\n", key, value);
+                System.err.printf("%-20s = %s\n", key, value);
 
             // We override existing values.
             getProject().setProperty(key, value.trim());

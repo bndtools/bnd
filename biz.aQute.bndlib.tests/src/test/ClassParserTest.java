@@ -112,12 +112,12 @@ public class ClassParserTest extends TestCase {
 	}
 
 	public void testGeneric() throws Exception {
-		print(System.out, WithGenerics.class.getField("field").getGenericType());
-		System.out.println();
-		print(System.out, Class.class);
-		System.out.println();
-		print(System.out, WithGenerics.class);
-		System.out.println();
+		print(System.err, WithGenerics.class.getField("field").getGenericType());
+		System.err.println();
+		print(System.err, Class.class);
+		System.err.println();
+		print(System.err, WithGenerics.class);
+		System.err.println();
 	}
 
 	public void print(Appendable sb, Type t) throws Exception {
@@ -194,7 +194,7 @@ public class ClassParserTest extends TestCase {
 	public void testWildcards() throws Exception {
 		Clazz c = new Clazz(a,"genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("WithGenerics.class"));
-		System.out.println(c.getReferred());
+		System.err.println(c.getReferred());
 		assertEquals("size ", 5, c.getReferred().size());
 		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/lib/osgi")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("java/util")));
@@ -268,7 +268,7 @@ public class ClassParserTest extends TestCase {
 		Clazz clazz = new Clazz(a,"test", null);
 		clazz.parseClassFile(in);
 
-		System.out.println(clazz.getReferred());
+		System.err.println(clazz.getReferred());
 		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;");
 		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
@@ -313,11 +313,11 @@ public class ClassParserTest extends TestCase {
 		builder.setClasspath(new File[] { new File("jar/ecj_3.2.2.jar") });
 		builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
 		builder.build();
-		System.out.println(builder.getErrors());
+		System.err.println(builder.getErrors());
 		assertEquals(0, builder.getErrors().size());
 		assertEquals(0, builder.getWarnings().size());
-		System.out.println(builder.getErrors());
-		System.out.println(builder.getWarnings());
+		System.err.println(builder.getErrors());
+		System.err.println(builder.getWarnings());
 	}
 
 	/**

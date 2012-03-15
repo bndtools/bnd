@@ -106,7 +106,7 @@ public class Forker<T> {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
-		System.out.println("doWhen " + dependencies + " " + target);
+		System.err.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
 		job.dependencies = new HashSet<T>(dependencies);
 		job.target = target;
@@ -117,7 +117,7 @@ public class Forker<T> {
 	public void start(long ms) throws InterruptedException {
 		check();
 		count = waiting.size();
-		System.out.println("Count " + count);
+		System.err.println("Count " + count);
 		schedule();
 		if (ms >= 0)
 			sync(ms);
@@ -136,12 +136,12 @@ public class Forker<T> {
 	}
 
 	public synchronized void sync(long ms) throws InterruptedException {
-		System.out.println("Waiting for sync");
+		System.err.println("Waiting for sync");
 		while (count > 0) {
-			System.out.println("Waiting for sync " + count);
+			System.err.println("Waiting for sync " + count);
 			wait(ms);
 		}
-		System.out.println("Exiting sync " + count);
+		System.err.println("Exiting sync " + count);
 	}
 
 	private void schedule() {
@@ -170,11 +170,11 @@ public class Forker<T> {
 	 */
 	private void done(Job done) {
 		synchronized (this) {
-			System.out.println("count = " + count);
+			System.err.println("count = " + count);
 			executing.remove(done);
 			count--;
 			if (count == 0) {
-				System.out.println("finished");
+				System.err.println("finished");
 				notifyAll();
 				return;
 			}
@@ -182,7 +182,7 @@ public class Forker<T> {
 			for (Job job : waiting.values()) {
 				// boolean x =
 					job.dependencies.remove(done.target);
-				//System.out.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
+				//System.err.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
 			}
 		}
 		schedule();
@@ -194,7 +194,7 @@ public class Forker<T> {
 	 * @throws InterruptedException
 	 */
 	public void cancel(long ms) throws InterruptedException {
-		System.out.println("canceled " + count);
+		System.err.println("canceled " + count);
 
 		if (!canceled.getAndSet(true)) {
 			synchronized (this) {

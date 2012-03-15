@@ -143,10 +143,10 @@ public class MavenEntry implements Closeable {
 	private boolean download(URI repo, String path) throws MalformedURLException {
 		try {
 			URL url = toURL(repo, path);
-			System.out.println("Downloading "  + repo + " path " + path + " url " + url);
+			System.err.println("Downloading "  + repo + " path " + path + " url " + url);
 			File file = new File(root, path);
 			IO.copy(url.openStream(), file);
-			System.out.println("Downloaded "  + url);
+			System.err.println("Downloaded "  + url);
 			return true;
 		} catch (Exception e) {
 			System.err.println("debug: " + e);
@@ -307,11 +307,11 @@ public class MavenEntry implements Closeable {
 			String source = IO.collect(digestFile).toUpperCase();
 			String hex = Hex.toHexString(digest).toUpperCase();
 			if (source.startsWith(hex)) {
-				System.out.println("Verified ok " + actualFile + " digest " + algorithm);
+				System.err.println("Verified ok " + actualFile + " digest " + algorithm);
 				return true;
 			}
 		}
-		System.out.println("Failed to verify " + actualFile + " for digest " + algorithm);
+		System.err.println("Failed to verify " + actualFile + " for digest " + algorithm);
 		return false;
 	}
 

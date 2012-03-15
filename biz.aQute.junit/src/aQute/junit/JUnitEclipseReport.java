@@ -98,7 +98,7 @@ public class JUnitEclipseReport implements TestReporter {
         out.println(payload);
         out.flush();
         if (verbose)
-            System.out.println(key + payload);
+            System.err.println(key + payload);
     }
 
     private void message(String key, Test test) {

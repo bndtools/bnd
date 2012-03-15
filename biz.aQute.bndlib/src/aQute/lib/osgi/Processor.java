@@ -181,6 +181,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.add(jar);
 	}
 
+	public void removeClose(Closeable jar) {
+		assert jar != null;
+		toBeClosed.remove(jar);
+	}
+
 	public void progress(String s, Object... args) {
 		trace(s, args);
 	}
@@ -376,7 +381,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
 		if (p.trace) {
-			System.out.printf("# " + msg + "\n", parms);
+			System.err.printf("# " + msg + "\n", parms);
 		}
 	}
 
@@ -634,10 +639,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setBase(base);
 		try {
 			if (propertiesFile.isFile()) {
-				// System.out.println("Loading properties " + propertiesFile);
+				// System.err.println("Loading properties " + propertiesFile);
 				long modified = propertiesFile.lastModified();
 				if (modified > System.currentTimeMillis() + 100) {
-					System.out.println("Huh? This is in the future " + propertiesFile);
+					System.err.println("Huh? This is in the future " + propertiesFile);
 					this.modified = System.currentTimeMillis();
 				} else
 					this.modified = modified;
@@ -1155,10 +1160,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return true;
 
 		if (!missed.isEmpty())
-			System.out
+			System.err
 					.println("Missed the following patterns in the warnings or errors: " + missed);
 
-		report(System.out);
+		report(System.err);
 		return false;
 	}
 

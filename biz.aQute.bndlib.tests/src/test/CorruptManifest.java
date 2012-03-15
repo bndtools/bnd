@@ -20,7 +20,7 @@ public class CorruptManifest extends TestCase {
 		b.setClasspath( new File[] {new File("jar/asm.jar")});
 		Jar jar  = b.build();
 		Manifest manifest = jar.getManifest();
-		jar.writeManifest(System.out);
+		jar.writeManifest(System.err);
 		
 		Attributes main = manifest.getMainAttributes();
 		assertNull(main.getValue("NL1"));
@@ -32,9 +32,9 @@ public class CorruptManifest extends TestCase {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.writeManifest(bout);
 		bout.flush();
-		System.out.println("-----");
-		System.out.write(bout.toByteArray());
-        System.out.println("-----");
+		System.err.println("-----");
+		System.err.write(bout.toByteArray());
+        System.err.println("-----");
 		ByteArrayInputStream bin = new ByteArrayInputStream( bout.toByteArray());
 		manifest = new Manifest(bin);
 		

@@ -22,8 +22,8 @@ public class TestBndBook extends TestCase {
         assertTrue( fwusers.indexOf("org.eclipse.equinox.ds.instance.BuildDispose")>=0 );
         assertFalse( foo.indexOf("org.osgi.framework.ServicePermission")>=0 );
         assertTrue( foo.indexOf("org.eclipse.equinox.ds.instance.BuildDispose")>=0 );
-        System.out.println(b.getProperty("fwusers"));
-        System.out.println(b.getProperty("foo"));
+        System.err.println(b.getProperty("fwusers"));
+        System.err.println(b.getProperty("foo"));
         
     }
 }

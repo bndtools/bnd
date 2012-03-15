@@ -158,7 +158,7 @@ public class ManifestTest extends TestCase {
         Jar.writeManifest(m,bout);
         byte [] result = bout.toByteArray();
         
-        System.out.println( new String(result));
+        System.err.println( new String(result));
     }
     
 
@@ -173,7 +173,7 @@ public class ManifestTest extends TestCase {
         Jar.writeManifest(m,bout);
         byte [] result = bout.toByteArray();
         
-        System.out.println( new String(result));
+        System.err.println( new String(result));
     }
     
 	public void testQuotes() throws IOException {

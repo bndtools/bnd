@@ -12,7 +12,7 @@ public class ClassReferenceTest extends TestCase {
 	}
 	
 	static {
-		System.out.println(Inner.class);
+		System.err.println(Inner.class);
 	}
 	/**
 	 * We create a JAR with the test.classreferenc.ClassReference class. This
@@ -33,8 +33,8 @@ public class ClassReferenceTest extends TestCase {
 			properties.put("Export-Package", packages[i]);
 			builder.setProperties(properties);
 			Jar jar = builder.build();
-			System.out.println(builder.getErrors());
-			System.out.println(builder.getWarnings());
+			System.err.println(builder.getErrors());
+			System.err.println(builder.getWarnings());
 			assertEquals(0,builder.getErrors().size());
 			assertEquals(0,builder.getWarnings().size());
 

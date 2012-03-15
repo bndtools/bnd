@@ -16,7 +16,7 @@ public class SignatureGenerator {
 //	}
 //
 //	public static void main(String args[]) throws Exception {
-//		final PrintStream out = System.out;
+//		final PrintStream out = System.err;
 //
 //		Clazz c = new Clazz("x", new FileResource(new File(
 //				"src/aQute/bnd/compatibility/SignatureGenerator.class")));

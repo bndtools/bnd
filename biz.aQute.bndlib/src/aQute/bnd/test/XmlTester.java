@@ -57,7 +57,7 @@ public class XmlTester {
 
 	public void assertAttribute(String value, String expr)
 			throws XPathExpressionException {
-		System.out.println(expr);
+		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o);

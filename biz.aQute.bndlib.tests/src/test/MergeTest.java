@@ -46,8 +46,8 @@ public class MergeTest extends TestCase {
 		b.setProperties(p);
 		Jar jar = b.build();
 		
-		System.out.println("Errors     :" + b.getErrors());
-		System.out.println("Warnings   :" + b.getWarnings());
+		System.err.println("Errors     :" + b.getErrors());
+		System.err.println("Warnings   :" + b.getWarnings());
 		assertEquals(errors, b.getErrors().size());
 		assertEquals(warnings, b.getWarnings().size());
 		if (errors != 0)

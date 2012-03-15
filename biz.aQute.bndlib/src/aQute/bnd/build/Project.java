@@ -1557,13 +1557,13 @@ public class Project extends Processor {
 		}
 		int errors = tester.test();
 		if (errors == 0) {
-			System.out.println("No Errors");
+			System.err.println("No Errors");
 		} else {
 			if (errors > 0) {
-				System.out.println(errors + " Error(s)");
+				System.err.println(errors + " Error(s)");
 
 			} else
-				System.out.println("Error " + errors);
+				System.err.println("Error " + errors);
 		}
 	}
 
@@ -1964,9 +1964,9 @@ public class Project extends Processor {
 		if (!lock.tryLock(5, TimeUnit.SECONDS)) {
 			error("Could not acquire lock for %s, was locked by %s for %s", reason, lockingThread,
 					lockingReason);
-			System.out.printf("Could not acquire lock for %s, was locked by %s for %s\n", reason,
+			System.err.printf("Could not acquire lock for %s, was locked by %s for %s\n", reason,
 					lockingThread, lockingReason);
-			System.out.flush();
+			System.err.flush();
 			return false;
 		}
 		this.lockingReason = reason;

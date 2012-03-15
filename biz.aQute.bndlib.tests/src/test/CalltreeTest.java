@@ -20,7 +20,7 @@ public class CalltreeTest extends TestCase {
 
 		CalltreeResource.writeCalltree(pw, clazzes);
 		pw.close();
-		System.out.println(sw.toString());
+		System.err.println(sw.toString());
 	}
 
 	static class Implements implements Resource {
@@ -70,7 +70,7 @@ public class CalltreeTest extends TestCase {
 //		Collection<Clazz> target = c.getClassspace().values();
 //
 //		Map<Clazz.MethodDef, List<Clazz.MethodDef>> xref = Coverage.getCrossRef(testsuite, target);
-//		System.out.println(xref);
+//		System.err.println(xref);
 //
 //		List<Clazz.MethodDef> refs = xref.get(new Clazz.MethodDef(0, Resource.class.getName(),
 //				"write", "(Ljava/io/OutputStream;)V"));
@@ -100,7 +100,7 @@ public class CalltreeTest extends TestCase {
 //						new Clazz.MethodDef(0, "test.CalltreeTest", "testCoverage", "()V")));
 //
 //		Tag tag = CoverageResource.toTag(xref);
-//		PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
+//		PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.err));
 //		tag.print(0, pw);
 //		pw.close();
 //	}
@@ -114,7 +114,7 @@ public class CalltreeTest extends TestCase {
 //
 //		Map<MethodDef, List<MethodDef>> xref = Coverage.getCrossRef(new ArrayList<Clazz>(), target);
 //
-//		System.out.println(Processor.join(xref.keySet(), "\n"));
+//		System.err.println(Processor.join(xref.keySet(), "\n"));
 //
 //		assertTrue(xref.containsKey(new Clazz.MethodDef(0, "org.osgi.framework.AdminPermission",
 //				"<init>", "()V")));

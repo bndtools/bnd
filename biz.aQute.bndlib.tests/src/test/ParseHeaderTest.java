@@ -46,13 +46,13 @@ public class ParseHeaderTest extends TestCase {
 		
 		assertEquals(keys.length, map.size());
 		if (expectedError != null) {
-			System.out.println(p.getErrors());
+			System.err.println(p.getErrors());
 			assertTrue(p.getErrors().size()>0);
 			assertTrue(((String) p.getErrors().get(0)).indexOf(expectedError) >= 0);
 		} else
 			assertEquals(0, p.getErrors().size());
 		if (expectedWarning != null) {
-			System.out.println(p.getWarnings());
+			System.err.println(p.getWarnings());
 			assertTrue(p.getWarnings().size()>0);
 			String w = (String) p.getWarnings().get(0);
 			assertTrue(w.startsWith(expectedWarning));
@@ -76,6 +76,6 @@ public class ParseHeaderTest extends TestCase {
 		Map<String,String> e = map.get("e");
 		assertEquals(e, d);
 
-		System.out.println(map);
+		System.err.println(map);
 	}
 }

@@ -120,7 +120,7 @@ public class MavenCommand extends Processor {
 
 		LineCollection lc = new LineCollection(new BufferedReader(rdr));
 		while (lc.hasNext()) {
-			System.out.println(lc.next());
+			System.err.println(lc.next());
 		}
 	}
 
@@ -389,7 +389,7 @@ public class MavenCommand extends Processor {
 			command.add("--passphrase", passphrase);
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
-		System.out.println(command);
+		System.err.println(command);
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 		int result = command.execute(stdout, stderr);
@@ -455,7 +455,7 @@ public class MavenCommand extends Processor {
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();
 
-		System.out.println(command);
+		System.err.println(command);
 
 		int result = command.execute(out, err);
 		if (result != 0) {
@@ -550,7 +550,7 @@ public class MavenCommand extends Processor {
 	static Pattern GROUP_ARTIFACT_VERSION = Pattern.compile("([^+]+)\\+([^+]+)\\+([^+]+)");
 	void view( String args[], int i) throws Exception {
 		Maven maven = new Maven(executor);
-		OutputStream out = System.out;
+		OutputStream out = System.err;
 		
 		List<URI>	urls = new ArrayList<URI>();
 		
@@ -558,7 +558,7 @@ public class MavenCommand extends Processor {
 			if( "-r".equals(args[i])) {
 				URI uri = new URI(args[++i]);
 				urls.add( uri );
-				System.out.println("URI for repo " + uri);
+				System.err.println("URI for repo " + uri);
 			}
 			else
 				if ( "-o".equals(args[i])) {
@@ -589,7 +589,7 @@ public class MavenCommand extends Processor {
 				a.setProperty("Private-Package", "*");
 				Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
 				for ( Pom dep : dependencies ) {
-					System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+					System.err.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 					a.addClasspath(dep.getArtifact());
 				}
 				pw.println(a.getClasspath());
@@ -602,7 +602,7 @@ public class MavenCommand extends Processor {
 //				for ( Map.Entry<String, Set<String>> entry : a.getUses().entrySet()) {
 //					String from = entry.getKey();
 //					for ( String uses : entry.getValue()) {
-//						System.out.printf("%40s %s\n", from, uses);
+//						System.err.printf("%40s %s\n", from, uses);
 //						from = "";
 //					}
 //				}

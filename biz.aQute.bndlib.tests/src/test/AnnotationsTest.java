@@ -46,7 +46,7 @@ public class AnnotationsTest extends TestCase {
 		File f = new File("bin/test/AnnotationsTest$MyComponent.class");
 		Clazz c = new Clazz(analyzer, "test.AnnotationsTest.MyComponent", new FileResource(f));
 		Map<String, String> map = ComponentAnnotationReader.getDefinition(c);
-		System.out.println(map);
+		System.err.println(map);
 		assertEquals("mycomp", map.get("name:"));
 		assertEquals("true", map.get("servicefactory:"));
 		assertEquals("activatex", map.get("activate:"));
@@ -65,28 +65,28 @@ public class AnnotationsTest extends TestCase {
 			}
 
 			public void annotation(Annotation annotation) {
-				System.out.println("Annotation " + annotation);
+				System.err.println("Annotation " + annotation);
 			}
 
 			public void classBegin(int access, TypeRef name) {
-				System.out.println("Class " + name);
+				System.err.println("Class " + name);
 			}
 
 			public void classEnd() {
-				System.out.println("Class end ");
+				System.err.println("Class end ");
 			}
 
 			public void extendsClass(TypeRef name) {
-				System.out.println("extends " + name);
+				System.err.println("extends " + name);
 			}
 
 			public void implementsInterfaces(TypeRef[] name) {
-				System.out.println("implements " + Arrays.toString(name));
+				System.err.println("implements " + Arrays.toString(name));
 
 			}
 
 			public void parameter(int p) {
-				System.out.println("parameter " + p);
+				System.err.println("parameter " + p);
 			}
 
 		};

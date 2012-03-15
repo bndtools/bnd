@@ -108,7 +108,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 				InputStream in = url.openStream();
 				info = parse(in);
 			} catch (IOException e) {
-				System.out.println("Unable to read permission info for bundle  "
+				System.err.println("Unable to read permission info for bundle  "
 						+ bundle.getLocation() + " " + e);
 			}
 		return info;
@@ -132,7 +132,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 						permissions.add(new PermissionInfo(line));
 					} catch (IllegalArgumentException iae) {
 						/* incorrectly encoded permission */
-						System.out.println("Permission incorrectly encoded: " + line + " " + iae);
+						System.err.println("Permission incorrectly encoded: " + line + " " + iae);
 					}
 				}
 			} finally {

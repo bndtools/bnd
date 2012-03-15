@@ -212,7 +212,7 @@ public abstract class ProjectLauncher {
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
-		int result = java.execute(System.in, System.out, System.err);
+		int result = java.execute(System.in, System.err, System.err);
 		if (result == Integer.MIN_VALUE)
 			return TIMEDOUT;
 

@@ -73,11 +73,11 @@ public class ProjectTest extends TestCase {
 	public void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
 				Strategy.EXACT, null));
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
 				Strategy.HIGHEST, null));
-		System.out.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
 				Strategy.LOWEST, null));
 	}
 
@@ -101,8 +101,8 @@ public class ProjectTest extends TestCase {
 		assertTrue(names.contains("p4-sub.c"));
 
 		File[] files = project.build();
-		System.out.println(Processor.join(project.getErrors(), "\n"));
-		System.out.println(Processor.join(project.getWarnings(), "\n"));
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
 		assertEquals(0, project.getErrors().size());
 		assertEquals(0, project.getWarnings().size());
 		assertNotNull(files);
@@ -126,8 +126,8 @@ public class ProjectTest extends TestCase {
 		File[] files = project.build();
 		Arrays.sort(files);
 
-		System.out.println(Processor.join(project.getErrors(), "\n"));
-		System.out.println(Processor.join(project.getWarnings(), "\n"));
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
 
 		assertEquals(0, project.getErrors().size());
 		assertEquals(0, project.getWarnings().size());
@@ -156,8 +156,8 @@ public class ProjectTest extends TestCase {
 		try {
 			// Now we build it.
 			File[] files = project.build();
-			System.out.println(project.getErrors());
-			System.out.println(project.getWarnings());
+			System.err.println(project.getErrors());
+			System.err.println(project.getWarnings());
 			assertTrue(project.isOk());
 			assertNotNull(files);
 			assertEquals(1, files.length);
@@ -182,9 +182,9 @@ public class ProjectTest extends TestCase {
 	public void testRepoMacro() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p2");
-		System.out.println(project.getPlugins(FileRepo.class));
+		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
-		System.out.println(s);
+		System.err.println(s);
 		assertTrue(s.contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0"));
 		assertTrue(s.contains("org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar"));
 
@@ -202,10 +202,10 @@ public class ProjectTest extends TestCase {
 		File workspace = project.getParentFile();
 		Processor processor = new Processor();
 		EclipseClasspath p = new EclipseClasspath(processor, workspace, project);
-		System.out.println(p.getDependents());
-		System.out.println(p.getClasspath());
-		System.out.println(p.getSourcepath());
-		System.out.println(p.getOutput());
+		System.err.println(p.getDependents());
+		System.err.println(p.getClasspath());
+		System.err.println(p.getSourcepath());
+		System.err.println(p.getOutput());
 	}
 
 	public void testBump() throws Exception {
@@ -221,10 +221,10 @@ public class ProjectTest extends TestCase {
 			Project project = ws.getProject("p1");
 			int size = project.getProperties().size();
 			Version old = new Version(project.getProperty("Bundle-Version"));
-			System.out.println("Old version " + old);
+			System.err.println("Old version " + old);
 			project.bump("=+0");
 			Version newv = new Version(project.getProperty("Bundle-Version"));
-			System.out.println("New version " + newv);
+			System.err.println("New version " + newv);
 			assertEquals(old.getMajor(), newv.getMajor());
 			assertEquals(old.getMinor() + 1, newv.getMinor());
 			assertEquals(0, newv.getMicro());
@@ -256,7 +256,7 @@ public class ProjectTest extends TestCase {
 			
 			
 			Version newv = new Version(processor.getProperty("Bundle-Version"));
-			System.out.println("New version " + newv);
+			System.err.println("New version " + newv);
 			assertEquals(1, newv.getMajor());
 			assertEquals(1, newv.getMinor());
 			assertEquals(0, newv.getMicro());

@@ -275,7 +275,7 @@ public class Tag {
 				in.close();
 			}
 		} catch (Exception e) {
-			System.out.println("Problems copying extra XML");
+			System.err.println("Problems copying extra XML");
 		}
 	}
 

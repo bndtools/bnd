@@ -15,7 +15,7 @@ public class SpringTest extends TestCase {
 	    
 //		InputStream in = getClass().getResourceAsStream("spring-test1.xml");
 //		Set set = SpringComponent.analyze(in);
-//		System.out.println(set);
+//		System.err.println(set);
 //		assertTrue(set.contains("com.foo.one"));
 //		assertTrue(set.contains("com.foo.one.one"));
 //		assertTrue(set.contains("com.foo.one.two"));
@@ -82,8 +82,8 @@ public class SpringTest extends TestCase {
 //	}
 
 	public void checkMessages(Processor processor, int errors, int warnings) {
-		System.out.println("Errors:    " + processor.getErrors());
-		System.out.println("Warnings:  " + processor.getWarnings());
+		System.err.println("Errors:    " + processor.getErrors());
+		System.err.println("Warnings:  " + processor.getWarnings());
 		assertEquals(errors, processor.getErrors().size());
 		assertEquals(warnings, processor.getWarnings().size());
 

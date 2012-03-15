@@ -231,7 +231,7 @@ public class MetatypeTest extends TestCase {
 
 		Resource r = b.getJar().getResource(
 				"OSGI-INF/metatype/test.metatype.MetatypeTest$Naming.xml");
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 		Document d = db.parse(r.openInputStream(), "UTF-8");
 		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
 				.getNamespaceURI());
@@ -246,7 +246,7 @@ public class MetatypeTest extends TestCase {
 		private static final long	serialVersionUID	= 1L;
 
 		public MyList() {
-			System.out.println("Constr");
+			System.err.println("Constr");
 
 		}
 	}
@@ -496,7 +496,7 @@ public class MetatypeTest extends TestCase {
 
 		Resource r = b.getJar().getResource(
 				"OSGI-INF/metatype/test.metatype.MetatypeTest$Enums.xml");
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
 		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
@@ -547,7 +547,7 @@ public class MetatypeTest extends TestCase {
 		b.build();
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
-		System.out.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar().getResources().keySet());
 
 		assertOCD(b, "test.metatype.MetatypeTest$OCDEmpty", "test.metatype.MetatypeTest$OCDEmpty",
 				"Metatype test OCDEmpty", null, "test.metatype.MetatypeTest$OCDEmpty", false, null);
@@ -577,7 +577,7 @@ public class MetatypeTest extends TestCase {
 			String designate, boolean factory, String localization) throws Exception {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + cname + ".xml");
 		assertNotNull(r);
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 		Document d = db.parse(r.openInputStream());
 		assertEquals(id, xpath.evaluate("//OCD/@id", d, XPathConstants.STRING));
 		assertEquals(name, xpath.evaluate("//OCD/@name", d, XPathConstants.STRING));
@@ -653,9 +653,9 @@ public class MetatypeTest extends TestCase {
 				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestAD.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
-		System.out.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
 
@@ -814,9 +814,9 @@ public class MetatypeTest extends TestCase {
 				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestReturnTypes.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
-		System.out.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
 		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
@@ -931,9 +931,9 @@ public class MetatypeTest extends TestCase {
 				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestSimple.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
-		System.out.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
-		IO.copy(r.openInputStream(), System.out);
+		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
 

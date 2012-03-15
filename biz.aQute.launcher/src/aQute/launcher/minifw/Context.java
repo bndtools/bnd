@@ -69,7 +69,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
         jar = new JarFile(jarFile = new File(location));
 //        Enumeration<JarEntry> entries = jar.entries();
 //        while ( entries.hasMoreElements())
-//        	System.out.println(entries.nextElement().getName());
+//        	System.err.println(entries.nextElement().getName());
         
         manifest = jar.getManifest();
         jar.close();

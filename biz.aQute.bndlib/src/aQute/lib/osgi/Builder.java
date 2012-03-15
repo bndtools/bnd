@@ -270,7 +270,7 @@ public class Builder extends Analyzer {
 			return null;
 		Instructions instructions = new Instructions(conditionals);
 
-		Collection<PackageRef> referred = instructions.select(getReferred().keySet());
+		Collection<PackageRef> referred = instructions.select(getReferred().keySet(),false);
 		referred.removeAll(getContained().keySet());
 
 		Jar jar = new Jar("conditional-import");
@@ -365,7 +365,7 @@ public class Builder extends Analyzer {
 						}
 					}
 					if (packageRef.isDefaultPackage())
-						System.out.println("Duh?");
+						System.err.println("Duh?");
 					dot.putResource("OSGI-OPT/src/" + sourcePath, new FileResource(f));
 				}
 			}
@@ -1350,7 +1350,7 @@ public class Builder extends Analyzer {
 		if (diffs.isEmpty())
 			return;
 
-		System.out.printf("baseline %s\n", diffs);
+		System.err.printf("baseline %s\n", diffs);
 
 		Baseline baseline = new Baseline(this, differ);
 

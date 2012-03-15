@@ -16,6 +16,6 @@ public class TestEclipseRepo extends TestCase {
         map.put("name", "eclipse-test");
         er.setProperties(map);
         
-        System.out.println(er.list("*"));
+        System.err.println(er.list("*"));
     }
 }

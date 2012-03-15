@@ -82,22 +82,22 @@ import java.util.*;
 	 */
 	public Response serve(String uri, String method, Properties header, Properties parms,
 			Properties files) {
-		System.out.println(method + " '" + uri + "' ");
+		System.err.println(method + " '" + uri + "' ");
 
 		Enumeration e = header.propertyNames();
 		while (e.hasMoreElements()) {
 			String value = (String) e.nextElement();
-			System.out.println("  HDR: '" + value + "' = '" + header.getProperty(value) + "'");
+			System.err.println("  HDR: '" + value + "' = '" + header.getProperty(value) + "'");
 		}
 		e = parms.propertyNames();
 		while (e.hasMoreElements()) {
 			String value = (String) e.nextElement();
-			System.out.println("  PRM: '" + value + "' = '" + parms.getProperty(value) + "'");
+			System.err.println("  PRM: '" + value + "' = '" + parms.getProperty(value) + "'");
 		}
 		e = files.propertyNames();
 		while (e.hasMoreElements()) {
 			String value = (String) e.nextElement();
-			System.out.println("  UPLOADED: '" + value + "' = '" + files.getProperty(value) + "'");
+			System.err.println("  UPLOADED: '" + value + "' = '" + files.getProperty(value) + "'");
 		}
 
 		return serveFile(uri, header, baseDir, true);

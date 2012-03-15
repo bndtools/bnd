@@ -29,7 +29,7 @@ public class ResourcesTest extends TestCase {
         bmaker.setProperties(p);
         Jar jar = bmaker.build();
         for ( String s : jar.getResources().keySet() )
-            System.out.println( s);
+            System.err.println( s);
         assertNotNull(jar.getResource("Activator.java"));
         assertEquals( 0, bmaker.getErrors().size() );
         assertEquals( 0, bmaker.getWarnings().size() );
@@ -159,7 +159,7 @@ public class ResourcesTest extends TestCase {
         Jar jar = bmaker.build();
         assertEquals( 0, jar.getResources().size());
         assertEquals( 1, bmaker.getErrors().size() );
-        System.out.println(bmaker.getErrors());
+        System.err.println(bmaker.getErrors());
         assertTrue( bmaker.getErrors().get(0).indexOf("The JAR is empty") >= 0);
         assertEquals( 0, bmaker.getWarnings().size() );
     }
@@ -210,11 +210,11 @@ public class ResourcesTest extends TestCase {
     }
     
     void report(Processor processor) {
-        System.out.println();
+        System.err.println();
         for ( int i=0; i<processor.getErrors().size(); i++ )
-            System.out.println(processor.getErrors().get(i));
+            System.err.println(processor.getErrors().get(i));
         for ( int i=0; i<processor.getWarnings().size(); i++ )
-            System.out.println(processor.getWarnings().get(i));
+            System.err.println(processor.getWarnings().get(i));
         assertEquals(0, processor.getErrors().size());
         assertEquals(0, processor.getWarnings().size());
     }

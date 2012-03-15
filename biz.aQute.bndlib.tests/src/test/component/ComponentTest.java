@@ -106,10 +106,10 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Export-Package", "com.test.scala.*");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
-		System.out.println(Processor.join(b.getErrors()));
-		System.out.println(Processor.join(b.getWarnings()));
-		System.out.println(m.getMainAttributes().getValue("Service-Component"));
-		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml").openInputStream(), System.out);
+		System.err.println(Processor.join(b.getErrors()));
+		System.err.println(Processor.join(b.getWarnings()));
+		System.err.println(m.getMainAttributes().getValue("Service-Component"));
+		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml").openInputStream(), System.err);
 		Document doc = doc(b, "com.test.scala.Service");
 		assertEquals("com.test.scala.Service", xpath.evaluate("component/implementation/@class", doc));
 		assertEquals("", xpath.evaluate("component/service/provide/@interface", doc));
@@ -142,16 +142,16 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*MetatypeConfig*");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
-		System.out.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar().getResources().keySet());
 
 		// Check component name
 		{
 			Resource cr = b.getJar().getResource("OSGI-INF/config.xml");
-			cr.write(System.out);
+			cr.write(System.err);
 			Document d = db.parse(cr.openInputStream());
 			assertEquals("config", xpath.evaluate("/scr:component/@name", d, XPathConstants.STRING));
 		}
@@ -159,7 +159,7 @@ public class ComponentTest extends TestCase {
 		// Check if config properly linked
 		{
 			Resource mr = b.getJar().getResource("OSGI-INF/metatype/config.xml");
-			mr.write(System.out);
+			mr.write(System.err);
 			Document d = db.parse(mr.openInputStream());
 			assertEquals("config", xpath.evaluate("//Designate/@factoryPid", d,
 					XPathConstants.STRING));
@@ -171,7 +171,7 @@ public class ComponentTest extends TestCase {
 		{
 			Resource cr2 = b.getJar()
 					.getResource("OSGI-INF/test.component.ComponentTest$MetatypeConfig2.xml");
-			cr2.write(System.out);
+			cr2.write(System.err);
 			Document d = db.parse(cr2.openInputStream());
 			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate("//scr:component/@name",
 					d, XPathConstants.STRING));
@@ -179,7 +179,7 @@ public class ComponentTest extends TestCase {
 		{
 			Resource mr2 = b.getJar().getResource(
 					"OSGI-INF/metatype/test.component.ComponentTest$MetatypeConfig2.xml");
-			mr2.write(System.out);
+			mr2.write(System.err);
 			Document d = db.parse(mr2.openInputStream());
 			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate(
 					"//Designate/@pid", d, XPathConstants.STRING));
@@ -207,13 +207,13 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*PropertiesAndConfig");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
 		Resource cr = b.getJar().getResource("OSGI-INF/props.xml");
-		cr.write(System.out);
+		cr.write(System.err);
 		{
 			Document doc = doc(b, "props");
 			assertEquals("1", xpath.evaluate("scr:component/property[@name='a']/@value", doc));
@@ -236,8 +236,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Private-Package", "test.activator.inherits");
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -347,8 +347,8 @@ public class ComponentTest extends TestCase {
 		Manifest manifest = jar.getManifest();
 		String sc = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 		assertFalse(sc.contains(";"));
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -367,14 +367,14 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS + "=true");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
 		Manifest manifest = jar.getManifest();
 		String component = manifest.getMainAttributes().getValue("Service-Component");
-		System.out.println(component);
+		System.err.println(component);
 		assertNull(component);
 	}
 
@@ -392,14 +392,14 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(1, b.getWarnings().size());
 
 		Manifest manifest = jar.getManifest();
 		String component = manifest.getMainAttributes().getValue("Service-Component");
-		System.out.println(component);
+		System.err.println(component);
 		assertNull(component);
 	}
 
@@ -416,8 +416,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*NoUnbind");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -439,8 +439,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*ExplicitUnbind");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -513,8 +513,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.SameRefName");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -536,8 +536,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.ConfigurationPolicyTest");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -585,8 +585,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.ActivateWithWrongArguments");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -613,8 +613,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.ActivateWithMultipleArguments");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -645,8 +645,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.(MultipleArguments|ReferenceArgument)");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -680,8 +680,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.TypeVersusDetailed");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -709,13 +709,13 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.MyComponent4");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "acomp");
-		System.out.println(doc.getDocumentElement().getNamespaceURI());
+		System.err.println(doc.getDocumentElement().getNamespaceURI());
 	}
 
 	/**
@@ -733,8 +733,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.MyComponent2");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -762,8 +762,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.MyComponent3");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -809,8 +809,8 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Service-Component", "*.MyComponent");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -834,7 +834,7 @@ public class ComponentTest extends TestCase {
 
 	public void assertAttribute(Document doc, String value, String expr)
 			throws XPathExpressionException {
-		System.out.println(expr);
+		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
 		if ( o == null ) {
 			
@@ -848,7 +848,7 @@ public class ComponentTest extends TestCase {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		assertNotNull(r);
 		Document doc = db.parse(r.openInputStream());
-		r.write(System.out);
+		r.write(System.err);
 		return doc;
 	}
 
@@ -888,12 +888,12 @@ public class ComponentTest extends TestCase {
 		b.setProperty("Private-Package", "test.activator, org.osgi.service.http.*");
 		b.build();
 
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		print(b.getJar().getResource("OSGI-INF/test.activator.Activator.xml"), System.out);
+		print(b.getJar().getResource("OSGI-INF/test.activator.Activator.xml"), System.err);
 		Document doc = db.parse(new InputSource(b.getJar().getResource(
 				"OSGI-INF/test.activator.Activator.xml").openInputStream()));
 
@@ -920,7 +920,7 @@ public class ComponentTest extends TestCase {
 	 * b .setProperty(Analyzer.SERVICE_COMPONENT, "test/component/*.xml");
 	 * b.setProperty("-resourceonly", "true"); b.setProperty("Include-Resource",
 	 * "test/component=test/component"); Jar jar = b.build();
-	 * System.out.println(b.getErrors()); System.out.println(b.getWarnings());
+	 * System.err.println(b.getErrors()); System.err.println(b.getWarnings());
 	 * assertEquals(0, b.getErrors().size()); assertEquals(0,
 	 * b.getWarnings().size()); }
 	 */
@@ -933,8 +933,8 @@ public class ComponentTest extends TestCase {
 		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
 		b.setProperty("Private-Package", "test.activator");
 		b.build();
-		System.out.println(b.getErrors());
-		System.out.println(b.getWarnings());
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
@@ -974,7 +974,7 @@ public class ComponentTest extends TestCase {
 		NodeList l = doc.getElementsByTagName("property");
 		assertEquals(2, l.getLength());
 		Node n = l.item(0);
-		System.out.println(n.getFirstChild().getNodeValue());
+		System.err.println(n.getFirstChild().getNodeValue());
 		assertEquals("3\n4", l.item(0).getFirstChild().getNodeValue().trim());
 		assertEquals("1\n2\n3", l.item(1).getFirstChild().getNodeValue().trim());
 
@@ -1134,7 +1134,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	private void print(Node doc, String indent) {
-		System.out.println(indent + doc);
+		System.err.println(indent + doc);
 		NamedNodeMap attributes = doc.getAttributes();
 		if (attributes != null)
 			for (int i = 0; i < attributes.getLength(); i++) {

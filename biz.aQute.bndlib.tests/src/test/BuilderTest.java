@@ -28,7 +28,7 @@ public class BuilderTest extends BndTestCase {
 		
 		Domain domain = Domain.domain(jar.getManifest());
 		Parameters ee = domain.getBundleRequiredExecutionEnvironment();
-		System.out.println(ee);
+		System.err.println(ee);
 		assertTrue( ee.containsKey("JRE-1.1"));
 	}	
 	
@@ -76,7 +76,7 @@ public class BuilderTest extends BndTestCase {
 		build.calcChecksums(new String[] { "MD5", "SHA1" });
 		assertTrue(b.check());
 		Manifest m = build.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 
 		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
 		assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("SHA1"));
@@ -454,7 +454,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 
 		Manifest m = jar.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 		assertNotNull(b.getImports().getByFQN("org.osgi.framework"));
 	}
 
@@ -669,7 +669,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 
 		Manifest m = jar.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 		Attributes main = m.getMainAttributes();
 		assertList(
 				asl("org.eclipse.equinox.ds.service.ComponentContextImpl,org.eclipse.equinox.ds.service.ComponentFactoryImpl,org.eclipse.equinox.ds.service.ComponentInstanceImpl"),
@@ -762,9 +762,9 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 		Manifest m = jar.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 		String ip = m.getMainAttributes().getValue("Export-Package");
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.1\"") >= 0);
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
@@ -824,7 +824,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 		Manifest m = jar.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 		String ip = m.getMainAttributes().getValue("Export-Package");
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
 	}
@@ -840,7 +840,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 		Manifest m = jar.getManifest();
 		String ip = m.getMainAttributes().getValue("Export-Package");
 		assertTrue(ip.indexOf("org.objectweb.asm") >= 0);
@@ -924,7 +924,7 @@ public class BuilderTest extends BndTestCase {
 
 		Manifest manifest = jar.getManifest();
 		String header = manifest.getMainAttributes().getValue("Export-Package");
-		System.out.println(header);
+		System.err.println(header);
 		assertTrue(header.indexOf("resources") >= 0);
 	}
 
@@ -944,7 +944,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check("Invalid package name: 'META-INF"));
 
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 		Manifest manifest = jar.getManifest();
 		String header = manifest.getMainAttributes().getValue("Export-Package");
 		assertTrue(header.indexOf("META-INF.xyz") >= 0);
@@ -1315,7 +1315,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = b.build();
 		assertTrue(b.check());
 		Manifest m = jar.getManifest();
-		m.write(System.out);
+		m.write(System.err);
 		assertEquals(m.getMainAttributes().getValue("Bundle-Version"), "0.9.5.SNAPSHOT");
 
 		assertNotNull(b.getExports().getByFQN("org.eclipse.equinox.ds.parser"));
@@ -1577,7 +1577,7 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
-		jar.getManifest().write(System.out);
+		jar.getManifest().write(System.err);
 	}
 
 	public void testSources() throws Exception {
@@ -1593,7 +1593,7 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	public void testVerify() throws Exception {
-		System.out.println("Erroneous bundle: tb1.jar");
+		System.err.println("Erroneous bundle: tb1.jar");
 		Jar jar = new Jar("test", getClass().getResourceAsStream("tb1.jar"));
 		Verifier verifier = new Verifier(jar);
 		verifier.verify();
@@ -1601,11 +1601,11 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	public void report(String title, Analyzer builder, Jar jar) {
-		System.out.println("Directories " + jar.getDirectories().keySet());
-		System.out.println("Warnings    " + builder.getWarnings());
-		System.out.println("Errors      " + builder.getErrors());
-		System.out.println("Exports     " + builder.getExports());
-		System.out.println("Imports     " + builder.getImports());
+		System.err.println("Directories " + jar.getDirectories().keySet());
+		System.err.println("Warnings    " + builder.getWarnings());
+		System.err.println("Errors      " + builder.getErrors());
+		System.err.println("Exports     " + builder.getExports());
+		System.err.println("Imports     " + builder.getImports());
 	}
 
 }

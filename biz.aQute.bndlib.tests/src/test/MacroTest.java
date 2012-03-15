@@ -39,10 +39,10 @@ public class MacroTest extends TestCase {
 		top.setProperty("a", "${random}");
 		top.setProperty("a12", "${random;12}");
 		String a = top.getProperty("a");
-		System.out.println(a);
+		System.err.println(a);
 		assertEquals(8, a.length());
 		String a12 = top.getProperty("a12");
-		System.out.println(a12);
+		System.err.println(a12);
 		assertEquals(12, a12.length());
 		assertNotSame(a, a12);
 	}
@@ -412,7 +412,7 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		String value = m.process("xx$(replace;1.2.3-SNAPSHOT;(\\d(\\.\\d)+).*;$1)xx");
-		System.out.println(p.getWarnings());
+		System.err.println(p.getWarnings());
 		assertEquals("xx1.2.3xx", value);
 
 		assertEquals("xx1.222.3xx",
@@ -512,8 +512,8 @@ public class MacroTest extends TestCase {
 		assertTrue(fwusers.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
 		assertFalse(foo.indexOf("org.osgi.framework.ServicePermission") >= 0);
 		assertTrue(foo.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
-		System.out.println(b.getProperty("fwusers"));
-		System.out.println(b.getProperty("foo"));
+		System.err.println(b.getProperty("fwusers"));
+		System.err.println(b.getProperty("foo"));
 
 	}
 }

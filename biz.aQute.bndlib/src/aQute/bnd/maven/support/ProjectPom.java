@@ -86,8 +86,8 @@ public class ProjectPom extends Pom {
 	}
 
 //	private void print(Node node, String indent) {
-//		System.out.print(indent);
-//		System.out.println(node.getNodeName());
+//		System.err.print(indent);
+//		System.err.println(node.getNodeName());
 //		Node rover = node.getFirstChild();
 //		while ( rover != null) {
 //			print( rover, indent+" ");
@@ -139,9 +139,9 @@ public class ProjectPom extends Pom {
 	final static Pattern	MACRO	= Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
 
 	protected String replace(String in) {
-		System.out.println("Replce: " + in);
+		System.err.println("Replce: " + in);
 		if ( in == null) {
-			System.out.println("null??");
+			System.err.println("null??");
 		}
 		Matcher matcher = MACRO.matcher(in);
 		int last = 0;

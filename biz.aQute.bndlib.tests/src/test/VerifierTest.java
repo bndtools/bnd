@@ -10,6 +10,13 @@ import aQute.lib.osgi.*;
 public class VerifierTest extends TestCase {
 	
 	
+	public void testFailedOSGiJar() throws Exception {
+		Jar jar = new Jar("jar/osgi.residential-4.3.0.jar");
+		Verifier v = new Verifier( jar );
+		assertTrue(v.check());
+	}
+	
+	
 	public void testnativeCode() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath( new File("bin"));
@@ -20,7 +27,7 @@ public class VerifierTest extends TestCase {
 		Verifier v = new Verifier(b);
 		
 		v.verifyNative();
-		System.out.println( v.getErrors());
+		System.err.println( v.getErrors());
 		assertEquals(0, v.getErrors().size());
 		v.close();
 		b.close();
@@ -196,8 +203,8 @@ public class VerifierTest extends TestCase {
         Analyzer analyzer = new Analyzer();
         analyzer.setProperties(p);
         analyzer.getProperties();
-        System.out.println("Errors   " + analyzer.getErrors());
-        System.out.println("Warnings " + analyzer.getWarnings());
+        System.err.println("Errors   " + analyzer.getErrors());
+        System.err.println("Warnings " + analyzer.getWarnings());
         assertEquals(0, analyzer.getErrors().size());
         assertEquals(2, analyzer.getWarnings().size());
     }
@@ -211,7 +218,7 @@ public class VerifierTest extends TestCase {
         assertTrue(bmaker.check());
         
         Manifest m = jar.getManifest();
-        m.write(System.out);
+        m.write(System.err);
         assertFalse(m.getMainAttributes().getValue("Import-Package").indexOf(
                 "org.slf4j") >= 0);
         assertTrue(m.getMainAttributes().getValue("DynamicImport-Package")

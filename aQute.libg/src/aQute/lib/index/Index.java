@@ -187,7 +187,7 @@ public class Index implements Iterable<byte[]> {
 
 		long c(int i) {
 			if (i < 0) {
-				System.out.println("Arghhh");
+				System.err.println("Arghhh");
 			}
 			int index = pos(i) + keySize;
 			return buffer.getLong(index);

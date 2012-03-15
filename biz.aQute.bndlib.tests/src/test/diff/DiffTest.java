@@ -108,9 +108,9 @@ public class DiffTest extends TestCase {
 //			return;
 
 		 for (int i = 0; i < indent; i++)
-			 System.out.print("   ");
+			 System.err.print("   ");
 
-		System.out.println(diff.toString());
+		System.err.println(diff.toString());
 
 //		if (diff.getDelta().isStructural())
 //			return;
@@ -123,9 +123,9 @@ public class DiffTest extends TestCase {
 	void show(Tree tree, int indent) {
 
 		 for (int i = 0; i < indent; i++)
-			 System.out.print("   ");
+			 System.err.print("   ");
 
-		System.out.println(tree.toString());
+		System.err.println(tree.toString());
 
 
 		for (Tree c : tree.getChildren()) {

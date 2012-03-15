@@ -44,7 +44,7 @@ public class JarSignerTest extends TestCase {
         b.setTrace(true);
         b.setJar(jar);
         signer.sign(b, "test");
-        System.out.println( Processor.join(b.getErrors(),"\n"));
+        System.err.println( Processor.join(b.getErrors(),"\n"));
         assertEquals( 1, b.getErrors().size() );
         assertEquals( 0, b.getWarnings().size() );
     }
@@ -65,8 +65,8 @@ public class JarSignerTest extends TestCase {
         Builder b = new Builder();
         b.setJar(jar);
         signer.sign(b, "test");
-        System.out.println( Processor.join(b.getErrors(), "\n"));
-        System.out.println( Processor.join(b.getWarnings(), "\n"));
+        System.err.println( Processor.join(b.getErrors(), "\n"));
+        System.err.println( Processor.join(b.getWarnings(), "\n"));
         assertEquals( 0, b.getErrors().size() );
         assertEquals( 0, b.getWarnings().size() );
         assertNotNull( jar.getResource("META-INF/TEST.SF") );
@@ -83,7 +83,7 @@ public class JarSignerTest extends TestCase {
  
         // Check if all resources are named
         for ( String name : names ) {
-            System.out.println("name: " + name);
+            System.err.println("name: " + name);
             assertNotNull( m.getAttributes(name));
         }
     }
