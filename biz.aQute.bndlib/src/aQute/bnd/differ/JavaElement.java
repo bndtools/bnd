@@ -140,7 +140,7 @@ class JavaElement {
 			List<Element> set = entry.getValue();
 			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
 				
-				if (notAccessible.contains( analyzer.getTypeRef(i.next().getName())))
+				if (notAccessible.contains( analyzer.getTypeRefFromFQN(i.next().getName())))
 					i.remove();
 				
 			}

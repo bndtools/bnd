@@ -58,6 +58,9 @@ public class Baseline {
 		Parameters nExports = getExports(newer);
 		Tree o = differ.tree(older);
 		Parameters oExports = getExports(older);
+		if ( packageFilters == null)
+			packageFilters = new Instructions();
+		
 		return baseline(n, nExports, o, oExports, packageFilters);
 	}
 
