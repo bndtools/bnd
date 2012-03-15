@@ -7,7 +7,6 @@ import java.util.jar.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
-import javax.script.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
@@ -1208,7 +1207,7 @@ public class bnd extends Processor {
 		String file();
 	}
 
-	public void _script(scriptOptions opts) throws IOException, ScriptException {
+	public void _script(scriptOptions opts) throws Exception {
 		new ScriptCommand(this, opts);
 	}
 
