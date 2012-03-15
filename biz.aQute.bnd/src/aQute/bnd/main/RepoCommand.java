@@ -16,15 +16,24 @@ import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 public class RepoCommand {
+	
+	@Description("Access to the repositories")
+	@Arguments(arg="*")
 	interface repoOptions extends Options {
+		@Description("Add a file repository")
 		Collection<String> repo();
 
+		@Description("Include the maven repository")
 		boolean maven();
 
+		@Description("Specify a project")
+		@OptionArgument("<path>")
 		String project();
 
+		@Description("Include the cache repository")
 		boolean cache();
 	}
+	
 
 	final bnd						bnd;
 	final repoOptions				opts;
@@ -93,7 +102,10 @@ public class RepoCommand {
 		} else {
 			// Other commands
 			String cmd = args.remove(0);
-			opts._command().execute(this, cmd, args);
+			String help = opts._command().execute(this, cmd, args);
+			if ( help != null) {
+				bnd.out.print(help);
+			}
 		}
 	}
 
@@ -158,64 +170,71 @@ public class RepoCommand {
 	 * 
 	 * @param opts
 	 */
-	
+
 	interface getOptions extends Options {
 		String output();
+
 		boolean lowest();
+
 		Instruction from();
 	}
-	
+
 	public void _get(getOptions opts) throws Exception {
 		Instruction from = opts.from();
 		if (from == null)
 			from = new Instruction("*");
-		
-		List<String> args =opts._(); 
-		if ( args.isEmpty()) {
+
+		List<String> args = opts._();
+		if (args.isEmpty()) {
 			bnd.error("Get needs at least a bsn");
 			return;
 		}
-		
+
 		String bsn = args.remove(0);
 		String range = null;
-		
-		if ( !args.isEmpty()) {
+
+		if (!args.isEmpty()) {
 			range = args.remove(0);
-			if ( !args.isEmpty()) {
+			if (!args.isEmpty()) {
 				bnd.error("Extra args %s", args);
 			}
 		}
-		
-		VersionRange r = new VersionRange( range == null ? "0" : range);
-		Map<Version,RepositoryPlugin> index = new HashMap<Version, RepositoryPlugin>();
-		
+
+		VersionRange r = new VersionRange(range == null ? "0" : range);
+		Map<Version, RepositoryPlugin> index = new HashMap<Version, RepositoryPlugin>();
+
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
 				List<Version> versions = repo.versions(bsn);
-				if ( versions != null)
-					for ( Version v : versions ) {
-						if ( r.includes(v)) 
+				if (versions != null)
+					for (Version v : versions) {
+						if (r.includes(v))
 							index.put(v, repo);
 					}
 			}
 		}
 
 		SortedList<Version> l = new SortedList<Version>(index.keySet());
+		if ( l.isEmpty() ) {
+			bnd.out.printf("No versions found for %s\n", bsn);
+			return;
+		}
+		
 		Version v;
-		if ( opts.lowest())
+		if (opts.lowest())
 			v = l.first();
 		else
 			v = l.last();
-		
+
 		RepositoryPlugin repo = index.get(v);
-		File file = repo.get(bsn,v.toString(),Strategy.EXACT,null);
-		
+		File file = repo.get(bsn, v.toString(), Strategy.EXACT, null);
+
 		File dir = bnd.getBase();
 		String name = file.getName();
-		
-		if ( opts.output() != null) {
+
+		if (opts.output() != null) {
 			File f = bnd.getFile(opts.output());
-			if ( f.isDirectory())
+			if (f.isDirectory())
 				dir = f;
 			else {
 				dir = f.getParentFile();
@@ -224,63 +243,65 @@ public class RepoCommand {
 		}
 
 		dir.mkdirs();
-		IO.copy(file, new File(dir,name));
+		IO.copy(file, new File(dir, name));
 	}
-	
+
 	/**
 	 * put
 	 */
+
 	interface putOptions extends Options {
-		Instruction to();
+
+		boolean force();
 	}
-	
+
 	public void _put(putOptions opts) throws Exception {
-		Instruction to = opts.to();
-		if (to == null)
-			to = new Instruction("*");
-		
-	}
+		if (writable == null) {
+			bnd.error("No writable repository in %s", repos);
+			return;
+		}
+
+		List<String> args = opts._();
+		if (args.isEmpty()) {
+			bnd.out.println("Writable repo is " + writable.getName() + " ("
+					+ writable.getLocation() + ")");
+			return;
+		}
+
+		File file = bnd.getFile(args.remove(0));
+		if (!file.isFile()) {
+			bnd.error("No such file %s", file);
+			return;
+		}
 	
-	/*
-	 * { Command cmd = opts._command(); if ( ) cmd.execute(rc, arg, args) String
-	 * bsn = null; String version = null;
-	 * 
-	 * for (; i < args.length; i++) { if ("repos".equals(args[i])) { int n = 0;
-	 * for (RepositoryPlugin repo : repos) { out.printf("%3d. %s\n", n++, repo);
-	 * } return; } else if ("list".equals(args[i])) { String mask = null; if (i
-	 * < args.length - 1) { mask = args[++i]; } repoList(repos, mask); return; }
-	 * else if ("--repo".equals(args[i]) || "-r".equals(args[i])) { String
-	 * location = args[++i]; } else if ("spring".equals(args[i])) { // if (bsn
-	 * == null || version == null) { //
-	 * error("--bsn and --version must be set before spring command is used");
-	 * // } else { // String url = String // .format(
-	 * "http://www.springsource.com/repository/app/bundle/version/download?name=%s&version=%s&type=binary"
-	 * , // bsn, version); // repoPut(writable, p, url, bsn, version); // }
-	 * error("not supported anymore"); return; } else if ("put".equals(args[i]))
-	 * { while (i < args.length - 1) { String source = args[++i]; try {
-	 * 
-	 * URL url = IO.toURL(source, getBase()); trace("put from %s", url);
-	 * InputStream in = url.openStream(); try { Jar jar = new
-	 * Jar(url.toString(), in); Verifier verifier = new Verifier(jar);
-	 * verifier.verify(); getInfo(verifier); if (isOk()) { File put =
-	 * writable.put(jar); trace("stored in %s", put); } } finally { in.close();
-	 * } } catch (Exception e) { error("putting %s into %s, exception: %s",
-	 * source, writable, e); } } return; } else if ("get".equals(args[i])) { if
-	 * (i < args.length) { error("repo get requires a bsn, see repo help");
-	 * return; } bsn = args[i++]; if (i < args.length) {
-	 * error("repo get requires a version, see repo help"); return; } version =
-	 * args[i++];
-	 * 
-	 * for (RepositoryPlugin repo : repos) { File f = repo.get(bsn, version,
-	 * Strategy.LOWEST, null); if (f != null) { if (i < args.length) { File out
-	 * = getFile(args[i++]); IO.copy(f, out); } else out.println(f);
-	 * 
-	 * return; } } error("cannot find %s-%s in %s", bsn, version, repos);
-	 * return; } }
-	 * 
-	 * if (i < args.length && !"help".equals(args[i]))
-	 * out.println("Unknown repo command: " + args[i]);
-	 * 
-	 * return; }
-	 */
+		bnd.trace("put %s", file);
+
+		Jar jar = new Jar(file);
+		
+		String bsn = jar.getBsn();
+		if ( bsn == null) {
+			bnd.error("File %s is not a bundle (it has no bsn) ", file);
+			return;
+		}
+		 
+		bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+		
+		try {
+			if (!opts.force()) {
+				Verifier v = new Verifier(jar);
+				v.setTrace(true);
+				v.setExceptions(true);
+				v.verify();
+				bnd.getInfo(v);
+			}
+
+			jar = new Jar(file);
+			if (bnd.isOk()) {
+				File out = writable.put(jar);
+				bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(), out);
+			}
+		} finally {
+			jar.close();
+		}
+	}
 }

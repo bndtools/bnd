@@ -18,8 +18,8 @@ public class DiffCommand {
 		this.bnd=bnd;
 	}
 	
-	
-	interface diff extends Options {
+	@Arguments(arg={"newer file","[older file]"})
+	interface diffOptions extends Options {
 		@Config(description = "Print the API") boolean api();
 
 		@Config(description = "Print the Resources") boolean resources();
@@ -35,7 +35,7 @@ public class DiffCommand {
 		@Config(description = "Limit to these packages") Collection<String> pack();
 	}
 
-	public void diff(diff options) throws Exception {
+	public void diff(diffOptions options) throws Exception {
 
 		if (options._().size() == 1) {
 			bnd.trace("Show tree");
@@ -108,7 +108,7 @@ public class DiffCommand {
 	 * @throws Exception
 	 */
 	
-	private static void showTree(bnd bnd, diff options) throws Exception {
+	private static void showTree(bnd bnd, diffOptions options) throws Exception {
 		File fout = options.output();
 		PrintWriter pw;
 		if (fout == null)
