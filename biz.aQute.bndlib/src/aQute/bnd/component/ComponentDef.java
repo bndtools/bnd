@@ -84,7 +84,7 @@ class ComponentDef {
 		if (xmlns != null)
 			component.addAttribute("xmlns:scr", xmlns);
 		else
-			component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/" + version);
+			component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/v" + version);
 
 		component.addAttribute("name", name);
 
