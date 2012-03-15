@@ -368,7 +368,6 @@ public class BndTask extends BaseTask {
 	// updates classpath for classpathref and nested classpath
 
 	private void updateClasspath() {
-		log("Updating classpath after classpathref setting");
 		if (classpathReference == null) {
 			return;
 		}
