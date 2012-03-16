@@ -5,12 +5,11 @@ import java.util.concurrent.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
-import aQute.lib.osgi.*;
 
 public class LauncherTest extends TestCase {
 
 	public void testSimple() throws Exception{
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		Project project = getProject();
 		project.clear();
 		
 		ProjectLauncher l = project.getProjectLauncher();
@@ -18,9 +17,19 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", "exit");
 		assertEquals(42,l.launch());
 	}
+
+	/**
+	 * @return
+	 * @throws Exception
+	 */
+	Project getProject() throws Exception {
+		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
+		Project project = workspace.getProject("demo");
+		return project;
+	}
 	
 	public void testTester() throws Exception {
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		Project project = getProject();
 		project.clear();
 		project.build();
 		
@@ -35,7 +44,7 @@ public class LauncherTest extends TestCase {
 	
 	
 	public void testTimeoutActivator() throws Exception {
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		Project project = getProject();
 		project.clear();
 		
 		ProjectLauncher l = project.getProjectLauncher();
@@ -46,7 +55,7 @@ public class LauncherTest extends TestCase {
 	}
 	
 	public void testTimeout() throws Exception {
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		Project project = getProject();
 		project.clear();
 		
 		ProjectLauncher l = project.getProjectLauncher();
@@ -57,7 +66,7 @@ public class LauncherTest extends TestCase {
 	}
 	
 	public void testMainThread() throws Exception {
-		Project project = Workspace.getProject(Processor.getFile(new File("").getAbsoluteFile().getParentFile(), "demo"));
+		Project project = getProject();
 		project.clear();
 		
 		ProjectLauncher l = project.getProjectLauncher();

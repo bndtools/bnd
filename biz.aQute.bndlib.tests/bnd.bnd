@@ -1,3 +1,4 @@
+-dependson: demo
 -nobundles: true
 
 -buildpath: \
