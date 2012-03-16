@@ -1256,7 +1256,7 @@ public class Analyzer extends Processor {
 			} else
 				// This is for backward compatibility 0.0.287
 				// can be deprecated over time
-				override = override.replaceAll(USES_USES, sb.toString()).trim();
+				override = override.replaceAll(USES_USES, Matcher.quoteReplacement(sb.toString())).trim();
 
 			if (override.endsWith(","))
 				override = override.substring(0, override.length() - 1);
