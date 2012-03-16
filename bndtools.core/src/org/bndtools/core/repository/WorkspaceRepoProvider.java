@@ -134,7 +134,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
     
     @Override
     public String toString() {
-        return "«Workspace»";
+        return "<<Workspace>>";
     }
 
 }
