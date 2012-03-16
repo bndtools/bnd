@@ -11,12 +11,38 @@ import aQute.libg.header.*;
 
 public class BuilderTest extends BndTestCase {
 
-	
+	/**
+	 * Github #130 Consider the following descriptor file:
+	 * 
+	 * Bundle-Activator: org.example.Activator Private-Package: org.example
+	 * 
+	 * Now suppose that at build time, bnd cannot find the package org.example,
+	 * or it is empty. Bnd sees the Bundle-Activator instruction as creating a
+	 * dependency, so it generates a manifest containing an import for that
+	 * package:
+	 * 
+	 * Import-Package: org.example
+	 * 
+	 * This is unexpected. If a Private-Package instruction is given with a
+	 * specific package name (i.e. not a wildcard), and that package does not
+	 * exist or is empty, then bnd should fail or print an error.
+	 * @throws Exception 
+	 */
+	public void testPrivatePackageNonExistent() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.setBundleActivator("com.example.Activator");
+		b.setPrivatePackage("com.example");
+		b.setIncludeResource("p;literal='x'");
+		
+		b.build();
+		assertTrue(b.check("on the class path: \\[com.example\\]"));
+	}
 	
 	/**
 	 * Test the EE macro
 	 */
-	
+
 	public void testEEMacro() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -25,15 +51,13 @@ public class BuilderTest extends BndTestCase {
 		b.setBundleRequiredExecutionEnvironment("${ee}");
 		Jar jar = b.build();
 		assertTrue(b.check());
-		
+
 		Domain domain = Domain.domain(jar.getManifest());
 		Parameters ee = domain.getBundleRequiredExecutionEnvironment();
 		System.err.println(ee);
-		assertTrue( ee.containsKey("JRE-1.1"));
-	}	
-	
-	
-	
+		assertTrue(ee.containsKey("JRE-1.1"));
+	}
+
 	/**
 	 * bnd issues Consider the following descriptor file:
 	 * 
@@ -41,10 +65,12 @@ public class BuilderTest extends BndTestCase {
 	 * Bundle-Activator: org.example.Activator 
 	 * Private-Package: org.example
 	 * </pre>
+	 * 
 	 * Now suppose that at build time, bnd cannot find the package org.example,
 	 * or it is empty. Bnd sees the Bundle-Activator instruction as creating a
 	 * dependency, so it generates a manifest containing an import for that
 	 * package:
+	 * 
 	 * <pre>
 	 * Import-Package: org.example
 	 * </pre>
@@ -60,7 +86,8 @@ public class BuilderTest extends BndTestCase {
 		b.setPrivatePackage("does.not.exist");
 		b.build();
 		assertTrue(b.check("The JAR is empty", "Unused Private-Package instruction"));
-	}	
+	}
+
 	/**
 	 * Test the name section
 	 */

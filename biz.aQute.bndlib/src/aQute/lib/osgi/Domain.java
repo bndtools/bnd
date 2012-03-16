@@ -170,6 +170,16 @@ public abstract class Domain implements Iterable<String> {
 			set(PRIVATE_PACKAGE, s);
 	}
 
+	public void setIncludeResource(String s) {
+		if (s != null)
+			set(INCLUDE_RESOURCE, s);
+	}
+
+	public void setBundleActivator(String s) {
+		if (s != null)
+			set(BUNDLE_ACTIVATOR, s);
+	}
+
 	public void setExportPackage(String s) {
 		if (s != null)
 			set(EXPORT_PACKAGE, s);
