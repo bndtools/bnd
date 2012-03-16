@@ -32,11 +32,11 @@ public class DSAnnotationTest extends BndTestCase {
 		@Modified void modified() {
 		}
 
-		@Reference void setLogService(LogService log) {
+		@Reference void xsetLogService(LogService log) {
 
 		}
 
-		void unsetLogService(LogService log) {
+		void unxsetLogService(LogService log) {
 
 		}
 
@@ -135,10 +135,10 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("0", "count(scr:component/properties)");
 			xt.assertAttribute("0", "count(scr:component/property)");
 
-			xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
-			xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
-			xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+			xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
 			xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
 			xt.assertAttribute("", "scr:component/reference[1]/@policy");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
