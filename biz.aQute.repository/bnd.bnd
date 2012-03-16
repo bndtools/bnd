@@ -1,12 +1,14 @@
 -buildpath: aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	bindex2.lib,\
+	org.osgi.impl.bundle.bindex2.lib,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0
+Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
+	aQute.lib.repository.LocalIndexedRepo
 Export-Package: aQute.lib.repository,\
 	org.osgi.service.indexer,\
-	org.osgi.service.coordinator,\
-	org.osgi.service.log
+	org.osgi.service.coordinator;-split-package:=merge-first,\
+	org.osgi.service.log;-split-package:=merge-first
 Private-Package:\
 	aQute.lib.repository.xml,\
 	aQute.libg.gzip,\

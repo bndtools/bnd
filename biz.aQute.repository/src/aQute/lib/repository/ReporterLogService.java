@@ -24,12 +24,12 @@ public class ReporterLogService implements LogService {
 	}
 
 	@Override
-	public void log(@SuppressWarnings("rawtypes") ServiceReference sr, int level, String message) {
+	public void log(ServiceReference sr, int level, String message) {
 		log(sr, level, message, null);
 	}
 
 	@Override
-	public void log(@SuppressWarnings("rawtypes") ServiceReference sr, int level, String message, Throwable t) {
+	public void log(ServiceReference sr, int level, String message, Throwable t) {
 		if (t != null)
 			message += " [" + t + "]";
 		
