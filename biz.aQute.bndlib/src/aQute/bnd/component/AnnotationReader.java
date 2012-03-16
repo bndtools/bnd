@@ -31,6 +31,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
+	static Pattern				BINDNAME				= Pattern.compile("(set|add)?(.*)");
 	static Pattern				BINDDESCRIPTOR			= Pattern
 																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
 
@@ -76,8 +77,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
-					analyzer.error("Missing super class for DS annotations: "
-							+ extendsClass + " from " + clazz.getClassName());
+					analyzer.error("Missing super class for DS annotations: " + extendsClass
+							+ " from " + clazz.getClassName());
 				} else {
 					ec.parseClassFileWithCollector(this);
 				}
@@ -184,8 +185,13 @@ public class AnnotationReader extends ClassDataCollector {
 		ReferenceDef def = new ReferenceDef();
 		def.name = reference.name();
 
-		if (def.name == null)
-			def.name = method.getName();
+		if (def.name == null) {
+			Matcher m = BINDNAME.matcher(method.getName());
+			if ( m.matches() )
+				def.name = m.group(2);
+			else
+				analyzer.error("Invalid name for bind method %s", method.getName());
+		}
 
 		def.unbind = reference.unbind();
 		def.updated = reference.updated();

@@ -110,7 +110,7 @@ public class DSAnnotationTest extends BndTestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-					"http://www.osgi.org/xmlns/scr/v1.1.0");
+					"http://www.osgi.org/xmlns/scr/v1.1.0"); //#136 was http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$Defaults",
@@ -135,6 +135,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("0", "count(scr:component/properties)");
 			xt.assertAttribute("0", "count(scr:component/property)");
 
+			xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
 			xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 			xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
@@ -231,27 +232,27 @@ public class DSAnnotationTest extends BndTestCase {
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
 
-		xt.assertAttribute("setA", "scr:component/reference[1]/@name");
+		xt.assertAttribute("A", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
 		xt.assertAttribute("", "scr:component/reference[1]/@policy");
 		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 
-		xt.assertAttribute("setB", "scr:component/reference[2]/@name");
+		xt.assertAttribute("B", "scr:component/reference[2]/@name");
 		xt.assertAttribute("1..n", "scr:component/reference[2]/@cardinality");
 		xt.assertAttribute("dynamic", "scr:component/reference[2]/@policy");
 		xt.assertAttribute("greedy", "scr:component/reference[2]/@policy-option");
 
-		xt.assertAttribute("setC", "scr:component/reference[3]/@name");
+		xt.assertAttribute("C", "scr:component/reference[3]/@name");
 		xt.assertAttribute("1..1", "scr:component/reference[3]/@cardinality");
 		xt.assertAttribute("static", "scr:component/reference[3]/@policy");
 		xt.assertAttribute("reluctant", "scr:component/reference[3]/@policy-option");
 
-		xt.assertAttribute("setD", "scr:component/reference[4]/@name");
+		xt.assertAttribute("D", "scr:component/reference[4]/@name");
 		xt.assertAttribute("0..n", "scr:component/reference[4]/@cardinality");
 		xt.assertAttribute("dynamic", "scr:component/reference[4]/@policy");
 		xt.assertAttribute("greedy", "scr:component/reference[4]/@policy-option");
 
-		xt.assertAttribute("setE", "scr:component/reference[5]/@name");
+		xt.assertAttribute("E", "scr:component/reference[5]/@name");
 		xt.assertAttribute("0..1", "scr:component/reference[5]/@cardinality");
 		xt.assertAttribute("dynamic", "scr:component/reference[5]/@policy");
 		xt.assertAttribute("reluctant", "scr:component/reference[5]/@policy-option");
@@ -304,23 +305,23 @@ public class DSAnnotationTest extends BndTestCase {
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		// use - to make sure no unbind and updated method is set
-		xt.assertAttribute("setA", "scr:component/reference[1]/@name");
+		xt.assertAttribute("A", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setA", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("", "scr:component/reference[1]/@updated");
 
 		// override the names for the methods
-		xt.assertAttribute("setB", "scr:component/reference[2]/@name");
+		xt.assertAttribute("B", "scr:component/reference[2]/@name");
 		xt.assertAttribute("setB", "scr:component/reference[2]/@bind");
 		xt.assertAttribute("_B", "scr:component/reference[2]/@unbind");
 		xt.assertAttribute("__B", "scr:component/reference[2]/@updated");
 
-		xt.assertAttribute("setC", "scr:component/reference[3]/@name");
+		xt.assertAttribute("C", "scr:component/reference[3]/@name");
 		xt.assertAttribute("setC", "scr:component/reference[3]/@bind");
 		xt.assertAttribute("unsetC", "scr:component/reference[3]/@unbind");
 		xt.assertAttribute("updatedC", "scr:component/reference[3]/@updated");
 		
-		xt.assertAttribute("setD", "scr:component/reference[4]/@name");
+		xt.assertAttribute("D", "scr:component/reference[4]/@name");
 		xt.assertAttribute("setD", "scr:component/reference[4]/@bind");
 		xt.assertAttribute("", "scr:component/reference[4]/@unbind");
 		xt.assertAttribute("", "scr:component/reference[4]/@updated");
@@ -377,12 +378,12 @@ public class DSAnnotationTest extends BndTestCase {
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
 		
 		
-		xt.assertAttribute("setLogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
 		
-		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@name");
+		xt.assertAttribute("PrivateLogService", "scr:component/reference[2]/@name");
 		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@bind");
 		xt.assertAttribute("unsetPrivateLogService", "scr:component/reference[2]/@unbind");
 		xt.assertAttribute("", "scr:component/reference[2]/@updated"); // is private in super class	
@@ -437,7 +438,7 @@ public class DSAnnotationTest extends BndTestCase {
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
 		
-		xt.assertAttribute("setLogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
