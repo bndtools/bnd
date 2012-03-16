@@ -11,6 +11,9 @@ import org.osgi.service.log.*;
 import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 
+/**
+ * #118
+ */
 public class DSAnnotationTest extends BndTestCase {
 
 	/**
