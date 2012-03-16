@@ -780,8 +780,9 @@
    
    <extension point="runExportWizards">
       <wizard
-         name="Standalone Application"
-         class="bndtools.wizards.bndfile.StandaloneExportWizard"
+         name="Executable JAR"
+         class="bndtools.wizards.bndfile.ExecutableJarExportWizard"
+         icon="icons/jar_exec.gif"
       />
    </extension>
    

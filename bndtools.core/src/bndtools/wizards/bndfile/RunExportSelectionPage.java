@@ -3,24 +3,33 @@ package bndtools.wizards.bndfile;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.IWizardNode;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardSelectionPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
+import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
 public class RunExportSelectionPage extends WizardSelectionPage {
@@ -36,6 +45,8 @@ public class RunExportSelectionPage extends WizardSelectionPage {
     
     protected RunExportSelectionPage(String pageName, IConfigurationElement[] elements, IBndModel model, Project bndProject) {
         super(pageName);
+        setDescription("Select a wizard for exporting this Run Descriptor");
+        setTitle("Export Wizard Selection");
         this.elements = elements;
         this.model = model;
         this.bndProject = bndProject;
@@ -51,15 +62,7 @@ public class RunExportSelectionPage extends WizardSelectionPage {
 
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setLabelProvider(new StyledCellLabelProvider() {
-            @Override
-            public void update(ViewerCell cell) {
-                IConfigurationElement element = (IConfigurationElement) cell.getElement();
-                
-                String name = element.getAttribute("name");
-                cell.setText(name);
-            }
-        });
+        viewer.setLabelProvider(new ConfigElementLabelProvider(table.getDisplay(), null));
         
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
@@ -75,6 +78,13 @@ public class RunExportSelectionPage extends WizardSelectionPage {
                     }
                     setSelectedNode(node);
                 }
+            }
+        });
+        viewer.addOpenListener(new IOpenListener() {
+            public void open(OpenEvent event) {
+                IWizardPage nextPage = getNextPage();
+                if (nextPage != null)
+                    getContainer().showPage(nextPage);
             }
         });
 

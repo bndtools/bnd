@@ -1,15 +1,12 @@
 package bndtools.wizards.bndfile;
 
-import java.io.ByteArrayInputStream;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -18,16 +15,30 @@ import java.util.jar.Manifest;
 import org.bndtools.core.ui.IRunDescriptionExportWizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.refactoring.reorg.CopyToClipboardAction;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Container;
-import aQute.bnd.build.Project;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
@@ -39,14 +50,14 @@ import aQute.libg.header.Parameters;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
-public class StandaloneExportWizard extends Wizard implements IRunDescriptionExportWizard {
+public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {
     
-    private final StandaloneExportWizardPage destinationPage = new StandaloneExportWizardPage();
+    private final ExecutableJarWizardPage destinationPage = new ExecutableJarWizardPage();
 
     private IBndModel model;
     private Project bndProject;
     
-    public StandaloneExportWizard() {
+    public ExecutableJarExportWizard() {
         addPage(destinationPage);
     }
     
@@ -131,7 +142,7 @@ public class StandaloneExportWizard extends Wizard implements IRunDescriptionExp
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().putValue("Main-Class", "launch");
         launcherJar.setManifest(manifest);
-        launcherJar.putResource("launch.class", new URLResource(StandaloneExportWizard.class.getResource("launch.clazz")));
+        launcherJar.putResource("launch.class", new URLResource(ExecutableJarExportWizard.class.getResource("launch.clazz")));
         
 
         try {
@@ -167,35 +178,5 @@ public class StandaloneExportWizard extends Wizard implements IRunDescriptionExp
         }
     }
 
-    private void copyBundles(MultiStatus status, File folder, Parameters jarSpec) {
-        for (Entry<String, Attrs> entry : jarSpec.entrySet()) {
-            String bsn = entry.getKey();
-            String version = entry.getValue().get(Constants.VERSION_ATTRIBUTE, Version.emptyVersion.toString());
-            
-            copyBundle(status, folder, bsn, version);
-        }
-    }
-
-    private void copyBundle(MultiStatus status, File folder, String bsn, String version) {
-        Container container = null;
-        try {
-            container = bndProject.getBundle(bsn, version, Strategy.HIGHEST, null);
-        } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error resolving OSGi framework.", e));
-        }
-        if (container == null) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Name: %s, version: %s", bsn, version), null));
-        } else if (container.getType() == TYPE.ERROR) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error resolving OSGi framework: " + container.getError(), null));
-        } else  {
-            try {
-                File source = container.getFile();
-                File dest = new File(folder, source.getName());
-                IO.copy(source, dest);
-            } catch (IOException e) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to copy file to ", e));
-            }
-        }
-    }
-
 }
+

@@ -7,39 +7,39 @@ import java.io.File;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Label;
 
-public class StandaloneExportWizardPage extends WizardPage {
+public class ExecutableJarWizardPage extends WizardPage {
     
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
-    private boolean folder = true;
-    private boolean jar = false;
+    private boolean jar = true;
+    private boolean folder = false;
     
-    private String folderPath;
     private String jarPath;
+    private String folderPath;
     
-    private Text txtFolderPath;
     private Text txtJarPath;
+    private Text txtFolderPath;
     private Button btnBrowseJar;
     private Button btnBrowseFolder;
 
     /**
      * Create the wizard.
      */
-    public StandaloneExportWizardPage() {
+    public ExecutableJarWizardPage() {
         super("standaloneExportDestination");
         setTitle("Export Destination");
         setDescription("Configure the destination for export");
@@ -60,6 +60,18 @@ public class StandaloneExportWizardPage extends WizardPage {
         grpDestination.setText("Destination:");
         grpDestination.setLayout(new GridLayout(3, false));
         
+        final Button btnJar = new Button(grpDestination, SWT.RADIO);
+        btnJar.setText("Export to JAR:");
+        btnJar.setSelection(jar);
+        
+        txtJarPath = new Text(grpDestination, SWT.BORDER);
+        txtJarPath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        txtJarPath.setText(jarPath != null ? jarPath : "");
+        
+        btnBrowseJar = new Button(grpDestination, SWT.NONE);
+        btnBrowseJar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnBrowseJar.setText("Browse");
+        
         final Button btnFolder = new Button(grpDestination, SWT.RADIO);
         btnFolder.setText("Export to folder:");
         btnFolder.setSelection(folder);
@@ -72,17 +84,15 @@ public class StandaloneExportWizardPage extends WizardPage {
         btnBrowseFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnBrowseFolder.setText("Browse");
         
-        final Button btnJar = new Button(grpDestination, SWT.RADIO);
-        btnJar.setText("Export to JAR:");
-        btnJar.setSelection(jar);
-        
-        txtJarPath = new Text(grpDestination, SWT.BORDER);
-        txtJarPath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        txtJarPath.setText(jarPath != null ? jarPath : "");
-        
-        btnBrowseJar = new Button(grpDestination, SWT.NONE);
-        btnBrowseJar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnBrowseJar.setText("Browse");
+        btnBrowseFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DirectoryDialog dialog = new DirectoryDialog(getShell());
+                String path = dialog.open();
+                if (path != null)
+                    txtFolderPath.setText(path);
+            }
+        });
         
         updateEnablement();
         validate();
@@ -99,20 +109,12 @@ public class StandaloneExportWizardPage extends WizardPage {
                 validate();
             }
         };
-        btnFolder.addListener(SWT.Selection, listener);
-        txtFolderPath.addListener(SWT.Modify, listener);
-        btnJar.addListener(SWT.Selection, listener);
+
         txtJarPath.addListener(SWT.Modify, listener);
-        
-        btnBrowseFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(getShell());
-                String path = dialog.open();
-                if (path != null)
-                    txtFolderPath.setText(path);
-            }
-        });
+        btnJar.addListener(SWT.Selection, listener);
+        txtFolderPath.addListener(SWT.Modify, listener);
+        btnFolder.addListener(SWT.Selection, listener);
+
         btnBrowseJar.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
