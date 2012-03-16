@@ -36,6 +36,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
 	}
 
+	/**
+	 * Cleanup the properties file. Is called after the process terminates.
+	 */
+
+	protected void cleanup() {
+		propertiesFile.delete();
+		project.trace("Deleted ", propertiesFile.getAbsolutePath());
+	}
+
 	public String getMainTypeName() {
 		return "aQute.launcher.Launcher";
 	}

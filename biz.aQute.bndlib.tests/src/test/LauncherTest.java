@@ -5,8 +5,59 @@ import java.util.concurrent.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
+import aQute.lib.io.*;
 
 public class LauncherTest extends TestCase {
+
+	/**
+	 * Tests if the properties are cleaned up. This requires
+	 * some knowledge of the launcher unfortunately. It is also 
+	 * not sure if the file is not just deleted by the onExit ...
+	 * @throws Exception
+	 */
+	public void testCleanup() throws Exception{
+		Project project = getProject();
+		File target = project.getTarget();
+		IO.delete(target);
+		project.clear();
+		assertNoProperties(target);
+		final ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					Thread.sleep(1000);
+					l.cancel();
+				} catch( Exception e) {
+					// Ignore
+				}
+			}
+		};
+		
+		t.start();
+		l.getRunProperties().put("test.cmd", "timeout");
+		l.launch();
+		assertNoProperties(target);
+	}
+
+	/**
+	 * The properties file is an implementation detail ... so this is 
+	 * white box testing.
+	 * 
+	 * @param project
+	 * @throws Exception 
+	 */
+	private void assertNoProperties(File target) throws Exception {
+		if (!target.exists())
+			return;
+		
+		for ( File file: target.listFiles()) {
+			if ( file.getAbsolutePath().startsWith("launch")) {
+				fail("There is a launch file in the target directory: "+ file);
+			}
+		}
+	}
 
 	public void testSimple() throws Exception{
 		Project project = getProject();
