@@ -116,7 +116,6 @@ public class Analyzer extends Processor {
 			classspace.clear();
 			classpathExports.clear();
 
-
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
 			analyzeBundleClasspath();
@@ -196,8 +195,8 @@ public class Analyzer extends Processor {
 
 				// Remove any matching a dynamic import package instruction
 				Instructions dynamicImports = new Instructions(getDynamicImportPackage());
-				Collection<PackageRef> dynamic = dynamicImports
-						.select(referredAndExported.keySet(),false);
+				Collection<PackageRef> dynamic = dynamicImports.select(
+						referredAndExported.keySet(), false);
 				referredAndExported.keySet().removeAll(dynamic);
 
 				// Remove any Java references ... where are the closures???
@@ -211,9 +210,9 @@ public class Analyzer extends Processor {
 				if (h == null) // If not set use a default
 					h = "*";
 
-				if ( isPedantic() && h.trim().length() == 0 )
+				if (isPedantic() && h.trim().length() == 0)
 					warning("Empty Import-Package header");
-				
+
 				Instructions filter = new Instructions(h);
 				imports = filter(filter, referredAndExported, unused);
 				if (!unused.isEmpty()) {
@@ -325,7 +324,7 @@ public class Analyzer extends Processor {
 			main.remove(PRIVATE_PACKAGE);
 
 		Parameters bcp = getBundleClasspath();
-		if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size()==1)) 
+		if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size() == 1))
 			main.remove(BUNDLE_CLASSPATH);
 		else
 			main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
@@ -752,13 +751,13 @@ public class Analyzer extends Processor {
 	 * @return
 	 */
 	public Jar setJar(Jar jar) {
-		if ( dot != null)
+		if (dot != null)
 			removeClose(dot);
-		
+
 		this.dot = jar;
 		if (dot != null)
 			addClose(dot);
-		
+
 		return jar;
 	}
 
@@ -1022,6 +1021,7 @@ public class Analyzer extends Processor {
 	 * from the classpathExports.
 	 */
 	void augmentImports(Packages imports, Packages exports) {
+		List<PackageRef> noimports = Create.list();
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
@@ -1086,9 +1086,16 @@ public class Analyzer extends Processor {
 				fixupAttributes(importAttributes);
 				removeAttributes(importAttributes);
 
+				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
+				if (result == null)
+					noimports.add(packageRef);
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
+		}
+		
+		if ( isPedantic() && noimports.size()!=0) {
+			warning("Imports that lack version ranges: %s", noimports);
 		}
 	}
 
@@ -1157,7 +1164,7 @@ public class Analyzer extends Processor {
 
 		if (remove != null) {
 			Instructions removeInstr = new Instructions(remove);
-			attributes.keySet().removeAll(removeInstr.select(attributes.keySet(),false));
+			attributes.keySet().removeAll(removeInstr.select(attributes.keySet(), false));
 		}
 
 		// Remove any ! valued attributes
@@ -1256,7 +1263,8 @@ public class Analyzer extends Processor {
 			} else
 				// This is for backward compatibility 0.0.287
 				// can be deprecated over time
-				override = override.replaceAll(USES_USES, Matcher.quoteReplacement(sb.toString())).trim();
+				override = override.replaceAll(USES_USES, Matcher.quoteReplacement(sb.toString()))
+						.trim();
 
 			if (override.endsWith(","))
 				override = override.substring(0, override.length() - 1);
@@ -1491,7 +1499,7 @@ public class Analyzer extends Processor {
 
 	private void analyzeBundleClasspath() throws Exception {
 		Parameters bcp = getBundleClasspath();
-		
+
 		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true);
 		} else {
@@ -1611,7 +1619,7 @@ public class Analyzer extends Processor {
 							in.close();
 						}
 					} catch (Throwable e) {
-						error("Invalid class file %s (%s)", e,relativePath, e);
+						error("Invalid class file %s (%s)", e, relativePath, e);
 						e.printStackTrace();
 						continue next;
 					}
