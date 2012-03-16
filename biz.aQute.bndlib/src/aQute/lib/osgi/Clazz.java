@@ -1096,8 +1096,9 @@ public class Clazz {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<TypeRef>();
-
-		annotations.add(analyzer.getTypeRef(pool[type_index].toString()));
+		
+		TypeRef tr = analyzer.getTypeRef(pool[type_index].toString());
+		annotations.add(tr);
 
 		if (policy == RetentionPolicy.RUNTIME) {
 			descriptors.add(new Integer(type_index));

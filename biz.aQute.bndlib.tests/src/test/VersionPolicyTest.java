@@ -10,7 +10,7 @@ import aQute.libg.header.*;
 
 public class VersionPolicyTest extends TestCase {
 	
-	/**
+    /**
 	 * Test disable default package versions.
 	 */
     public void testDisableDefaultPackageVersion() throws Exception {
@@ -107,15 +107,32 @@ public class VersionPolicyTest extends TestCase {
      * 
      * Uses the package test.versionpolicy.(uses|implemented)
      * 
-     * TODO currently commented out because it is too restrictive unless
-     * supported by package
      */
     public void testImplementationVersionPolicies() throws Exception {
-//        assertPolicy("test.versionpolicy.implemented", "IMPL");
-//        assertPolicy("test.versionpolicy.implmajor", "USES");
-//        assertPolicy("test.versionpolicy.uses", "USES");
+    	Builder a  = new Builder();
+        a.addClasspath(new File("bin"));
+    	a.setPrivatePackage("test.versionpolicy.implemented");
+    	a.setExportPackage("test.versionpolicy.api");
+    	a.setProperty("build","123");
+    	Jar jar = a.build();
+    	assertTrue(a.check());
+    	Manifest m = jar.getManifest();
+    	m.write(System.err);
+    	Domain d = Domain.domain(m);
+    	
+    	Parameters parameters = d.getImportPackage();
+    	Attrs attrs = parameters.get("test.versionpolicy.api");
+    	assertNotNull(attrs);
+    	assertEquals( "[1.2,1.3)", attrs.get("version"));
+    	
     }
 
+    /**
+     * Check implementation version policy.
+     * 
+     * Uses the package test.versionpolicy.(uses|implemented)
+     * 
+     */
     void assertPolicy(String pack, String type) throws Exception {
         Builder a = new Builder();
         a.addClasspath(new File("bin"));

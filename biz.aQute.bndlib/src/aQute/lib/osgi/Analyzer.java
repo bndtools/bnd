@@ -1019,9 +1019,12 @@ public class Analyzer extends Processor {
 	 * Find some more information about imports in manifest and other places. It
 	 * is assumed that the augmentsExports has already copied external attrs
 	 * from the classpathExports.
+	 * 
+	 * @throws Exception
 	 */
-	void augmentImports(Packages imports, Packages exports) {
+	void augmentImports(Packages imports, Packages exports) throws Exception {
 		List<PackageRef> noimports = Create.list();
+		Set<PackageRef> provided = findProvidedPackages();
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
@@ -1049,7 +1052,8 @@ public class Analyzer extends Processor {
 					//
 
 					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
-							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE));
+							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE))
+							|| provided.contains(packageRef);
 
 					exportVersion = cleanupVersion(exportVersion);
 
@@ -1093,10 +1097,46 @@ public class Analyzer extends Processor {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 		}
-		
-		if ( isPedantic() && noimports.size()!=0) {
+
+		if (isPedantic() && noimports.size() != 0) {
 			warning("Imports that lack version ranges: %s", noimports);
 		}
+	}
+
+	/**
+	 * Find the packages we depend on, where we implement an interface that is a
+	 * Provider Type. These packages, when we import them, must use the provider
+	 * policy.
+	 * 
+	 * @throws Exception
+	 */
+	Set<PackageRef> findProvidedPackages() throws Exception {
+		Set<PackageRef> providers = Create.set();
+		Set<TypeRef> cached = Create.set();
+
+		for (Clazz c : classspace.values()) {
+			TypeRef[] interfaces = c.getInterfaces();
+			if (interfaces != null)
+				for (TypeRef t : interfaces)
+					if (cached.contains(t) || isProvider(t)) {
+						cached.add(t);
+						providers.add(t.getPackageRef());
+					}
+		}
+		return providers;
+	}
+
+	private boolean isProvider(TypeRef t) throws Exception {
+		Clazz c = findClass(t);
+		if (c == null)
+			return false;
+
+		if (c.annotations == null)
+			return false;
+
+		TypeRef pt = getTypeRefFromFQN(ProviderType.class.getName());
+		boolean result = c.annotations.contains(pt);
+		return result;
 	}
 
 	/**
@@ -1683,8 +1723,8 @@ public class Analyzer extends Processor {
 							if (Verifier.VERSION.matcher(version).matches())
 								info.put(VERSION_ATTRIBUTE, version);
 							else
-								error("Export annotatio in %s has invalid version info: %s", clazz,
-										version);
+								error("Export annotation in %s has invalid version info: %s",
+										clazz, version);
 						}
 					} else {
 						// Verify this matches with packageinfo
