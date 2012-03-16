@@ -26,21 +26,22 @@ public class BuilderTest extends BndTestCase {
 	 * This is unexpected. If a Private-Package instruction is given with a
 	 * specific package name (i.e. not a wildcard), and that package does not
 	 * exist or is empty, then bnd should fail or print an error.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testPrivatePackageNonExistent() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File("jar/osgi.jar"));
+		b.addClasspath(new File("jar/osgi.jar"));
 		b.setBundleActivator("com.example.Activator");
 		b.setPrivatePackage("com.example");
 		b.setIncludeResource("p;literal='x'");
-		
+
 		b.build();
 		assertTrue(b.check("on the class path: \\[com.example\\]"));
 	}
-	
+
 	/**
-	 * Test the EE macro
+	 * #41 Test the EE macro
 	 */
 
 	public void testEEMacro() throws Exception {
@@ -56,6 +57,26 @@ public class BuilderTest extends BndTestCase {
 		Parameters ee = domain.getBundleRequiredExecutionEnvironment();
 		System.err.println(ee);
 		assertTrue(ee.containsKey("JRE-1.1"));
+	}
+
+	public void testEEMacro2() throws Exception {
+		String[] packages = { "eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4",
+				"eclipse_1_5", "eclipse_1_6", "eclipse_jsr14" };
+
+		String[] ees = { "JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6",
+				"J2SE-1.4" };
+		for (int i = 0; i < packages.length; i++) {
+			Builder b = new Builder();
+			b.addClasspath(new File("compilerversions/compilerversions.jar"));
+			b.setPrivatePackage(packages[i]);
+			b.setBundleRequiredExecutionEnvironment("${ee}");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters ee = domain.getBundleRequiredExecutionEnvironment();
+			System.err.println(ee);
+			assertEquals(ees[i], ee.toString());
+		}
 	}
 
 	/**
