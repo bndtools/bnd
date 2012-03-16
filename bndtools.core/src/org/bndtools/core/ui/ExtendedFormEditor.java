@@ -1,4 +1,4 @@
-package bndtools.editor.common;
+package org.bndtools.core.ui;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -10,7 +10,13 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-public abstract class AbstractBaseFormEditor extends FormEditor {
+/**
+ * A {@link FormPage} that allows updating of tab titles, images and overlay images.
+ * 
+ * @author Neil Bartlett
+ *
+ */
+public abstract class ExtendedFormEditor extends FormEditor {
 
     private ImageDescriptor baseImageDescriptor;
     private Image titleImage;

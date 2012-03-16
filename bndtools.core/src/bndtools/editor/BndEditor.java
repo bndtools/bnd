@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.core.obr.ObrResolutionJob;
 import org.bndtools.core.obr.ObrResolutionResult;
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -59,12 +61,10 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.api.ResolveMode;
-import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ComponentsPage;
-import bndtools.editor.pages.IPageFactory;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
@@ -74,7 +74,7 @@ import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.wizards.obr.ObrResolutionWizard;
 
-public class BndEditor extends AbstractBaseFormEditor implements IResourceChangeListener {
+public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
 
     public static final String WORKSPACE_EDITOR  = "bndtools.bndWorkspaceConfigEditor";
 
@@ -87,7 +87,7 @@ public class BndEditor extends AbstractBaseFormEditor implements IResourceChange
     static final String TEST_SUITES_PAGE = "__test_suites_page";
     static final String SOURCE_PAGE = "__source_page";
 
-    private final Map<String, IPageFactory> pageFactories = new HashMap<String, IPageFactory>();
+    private final Map<String, IFormPageFactory> pageFactories = new HashMap<String, IFormPageFactory>();
 
     private final BndEditModel model = new BndEditModel();
     private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
