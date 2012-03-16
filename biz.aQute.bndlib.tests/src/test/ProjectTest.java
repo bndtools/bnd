@@ -25,8 +25,10 @@ public class ProjectTest extends TestCase {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p-stale");
 		assertNotNull(top);
+		top.build();
 		Project bottom = ws.getProject("p-stale-dep");
 		assertNotNull(bottom);
+		bottom.build();
 		
 		long lastModified = bottom.lastModified();
 		top.getPropertiesFile().setLastModified(lastModified+1000);
@@ -101,6 +103,8 @@ public class ProjectTest extends TestCase {
 		assertTrue(names.contains("p4-sub.c"));
 
 		File[] files = project.build();
+		assertTrue( project.check());
+		
 		System.err.println(Processor.join(project.getErrors(), "\n"));
 		System.err.println(Processor.join(project.getWarnings(), "\n"));
 		assertEquals(0, project.getErrors().size());

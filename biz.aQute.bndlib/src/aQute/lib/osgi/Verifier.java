@@ -358,13 +358,13 @@ public class Verifier extends Processor {
 
 	public void verify() throws Exception {
 		verifyHeaders();
-		verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE);
-		verifyDirectives("Import-Package", "resolution:");
-		verifyDirectives("Require-Bundle", "visibility:|resolution:");
-		verifyDirectives("Fragment-Host", "resolution:");
-		verifyDirectives("Provide-Capability", "effective:|uses:");
-		verifyDirectives("Require-Capability", "effective:|resolve:|filter:");
-		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:");
+		verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN);
+		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN);
+		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME);
+		verifyDirectives("Fragment-Host", "resolution:", SYMBOLICNAME);
+		verifyDirectives("Provide-Capability", "effective:|uses:", SYMBOLICNAME);
+		verifyDirectives("Require-Capability", "effective:|resolve:|filter:", SYMBOLICNAME);
+		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",SYMBOLICNAME);
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -395,14 +395,14 @@ public class Verifier extends Processor {
 	 * @param header
 	 * @param directives
 	 */
-	private void verifyDirectives(String header, String directives) {
+	private void verifyDirectives(String header, String directives, Pattern namePattern) {
 		Pattern pattern = Pattern.compile(directives);
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
 				header));
 		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
-			if (!PACKAGEPATTERN.matcher(pname).matches())
+			if (!namePattern.matcher(pname).matches())
 				if (isPedantic())
 					error("Invalid package name: '%s'", pname);
 				else
