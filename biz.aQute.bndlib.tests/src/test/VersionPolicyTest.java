@@ -103,12 +103,11 @@ public class VersionPolicyTest extends TestCase {
     }
 
     /**
-     * Check implementation version policy.
-     * 
-     * Uses the package test.versionpolicy.(uses|implemented)
-     * 
+     * Tests if the implementation of the EventAdmin (which is marked
+     * as a ProviderType) causes the import of the api package to use
+     * the provider version policy.
      */
-    public void testImplementationVersionPolicies() throws Exception {
+    public void testProviderType() throws Exception {
     	Builder a  = new Builder();
         a.addClasspath(new File("bin"));
     	a.setPrivatePackage("test.versionpolicy.implemented");
@@ -127,6 +126,29 @@ public class VersionPolicyTest extends TestCase {
     	
     }
 
+    /**
+     * Tests if the implementation of the EventHandler (which is marked
+     * as a ConsumerType) causes the import of the api package to use
+     * the consumer version policy.
+     */
+    public void testConsumerType() throws Exception {
+    	Builder a  = new Builder();
+        a.addClasspath(new File("bin"));
+    	a.setPrivatePackage("test.versionpolicy.uses");
+    	a.setExportPackage("test.versionpolicy.api");
+    	a.setProperty("build","123");
+    	Jar jar = a.build();
+    	assertTrue(a.check());
+    	Manifest m = jar.getManifest();
+    	m.write(System.err);
+    	Domain d = Domain.domain(m);
+    	
+    	Parameters parameters = d.getImportPackage();
+    	Attrs attrs = parameters.get("test.versionpolicy.api");
+    	assertNotNull(attrs);
+    	assertEquals( "[1.2,2)", attrs.get("version"));
+    	
+    }
     /**
      * Check implementation version policy.
      * 
