@@ -211,6 +211,9 @@ public class Analyzer extends Processor {
 				if (h == null) // If not set use a default
 					h = "*";
 
+				if ( isPedantic() && h.trim().length() == 0 )
+					warning("Empty Import-Package header");
+				
 				Instructions filter = new Instructions(h);
 				imports = filter(filter, referredAndExported, unused);
 				if (!unused.isEmpty()) {

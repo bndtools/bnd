@@ -129,8 +129,11 @@ public class AnalyzerTest extends BndTestCase {
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "");
 		b.setProperty("Export-Package", "org.osgi.service.event");
+		b.setPedantic(true);
 		jar = b.build();
-		assertTrue(b.check("Unresolved references to \\[org.osgi.framework\\]"));
+		exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+		System.err.println(exports);
+		assertTrue(b.check("Empty Import-Package header"));
 		exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 		assertFalse(exports.contains("uses:=\"org.osgi.framework\""));
 
@@ -314,7 +317,7 @@ public class AnalyzerTest extends BndTestCase {
 				new Jar(new File("jar/osgi.jar")) });
 		a.setProperties(p);
 		a.build();
-		assertTrue(a.check("Bundle-Activator not found","Unresolved references to \\[org.osgi.framework\\]"));
+		assertTrue(a.check("Bundle-Activator not found"));
 		Manifest manifest = a.getJar().getManifest();		
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		assertNull(imports);
