@@ -51,7 +51,7 @@ public class ProjectRunPage extends FormPage {
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
-        // Toolbar Actions: run and debug
+        // Toolbar Actions
         RunAction runAction = new RunAction(this, "run");
         runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
         runAction.setText("Run OSGi");
@@ -65,7 +65,15 @@ public class ProjectRunPage extends FormPage {
         ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
         debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         form.getToolBarManager().add(debugContrib);
-
+        
+        ExportAction exportAction = new ExportAction(getEditorSite().getShell(), getEditor(), model);
+        exportAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run_export.png"));
+        exportAction.setText("Export");
+        ActionContributionItem exportContrib = new ActionContributionItem(exportAction);
+        exportContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        if (exportAction.shouldEnable())
+            form.getToolBarManager().add(exportContrib);
+        
         form.getToolBarManager().update(true);
 
         GridLayout gl;

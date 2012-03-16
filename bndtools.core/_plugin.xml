@@ -35,6 +35,11 @@
       schema="schema/buildListeners.exsd"
    />
    
+   <extension-point id="runExportWizards"
+      name="Run Descriptor Export Wizards"
+      schema="schema/runExportWizards.exsd"
+   />
+   
    <!-- Popup Menus -->
    <extension
          point="org.eclipse.ui.editors">
@@ -772,5 +777,12 @@
          </enabledWhen>
       </page>
    </extension>
-
+   
+   <extension point="runExportWizards">
+      <wizard
+         name="Standalone Application"
+         class="bndtools.wizards.bndfile.StandaloneExportWizard"
+      />
+   </extension>
+   
  </plugin>

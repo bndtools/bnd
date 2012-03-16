@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="bndtools" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="bndtools.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="bndtools" id="projectTemplates" name="Project Templates"/>
+         <meta.schema plugin="bndtools.core" id="runExportWizards" name="Run Export Wizard"/>
       </appinfo>
       <documentation>
-         Used to declare repository contributions for addition to Bnd&apos;s configuration project.
+         
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="template" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="wizard" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,19 +47,9 @@
       </complexType>
    </element>
 
-   <element name="template">
+   <element name="wizard">
       <complexType>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="priority" type="string">
+         <attribute name="name" type="string">
             <annotation>
                <documentation>
                   
@@ -72,14 +62,14 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":bndtools.api.repository.RemoteRepositoryFactory"/>
+                  <meta.attribute kind="java" basedOn=":org.bndtools.core.ui.IRunDescriptionExportWizard"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="doc" type="string">
+         <attribute name="icon" type="string">
             <annotation>
                <documentation>
-                  Optional reference to a document describing this template.
+                  
                </documentation>
                <appinfo>
                   <meta.attribute kind="resource"/>
@@ -89,41 +79,9 @@
       </complexType>
    </element>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="since"/>
-      </appinfo>
-      <documentation>
-         0.0.0
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="examples"/>
-      </appinfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="apiinfo"/>
-      </appinfo>
-      <documentation>
-         No programmatic API is available.
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="implementation"/>
-      </appinfo>
-      <documentation>
-         No implementation is supplied.
-      </documentation>
-   </annotation>
 
 
 </schema>
