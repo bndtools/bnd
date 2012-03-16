@@ -336,6 +336,10 @@ public class Descriptors {
 				}
 				// falls trough for other 1 letter class names
 			}
+			ref = typeRefCache.get(binaryClassName);
+			if ( ref != null)
+				return ref;
+			
 			PackageRef pref;
 			int n = binaryClassName.lastIndexOf('/');
 			if (n < 0)
@@ -345,6 +349,7 @@ public class Descriptors {
 
 			ref = new ConcreteRef(pref, binaryClassName);
 		}
+		
 		typeRefCache.put(binaryClassName, ref);
 		return ref;
 	}
