@@ -40,6 +40,11 @@
       schema="schema/runExportWizards.exsd"
    />
    
+   <extension-point id="editorPages"
+      name="Bnd Editor Pages"
+      schema="schema/editorPages"
+   />
+   
    <!-- Popup Menus -->
    <extension
          point="org.eclipse.ui.editors">

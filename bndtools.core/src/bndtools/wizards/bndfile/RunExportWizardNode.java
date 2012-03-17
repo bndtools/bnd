@@ -3,11 +3,14 @@ package bndtools.wizards.bndfile;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.bndtools.core.ui.IRunDescriptionExportWizard;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardNode;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
@@ -15,14 +18,16 @@ import bndtools.api.IBndModel;
 
 public class RunExportWizardNode implements IWizardNode {
 
+    private final Shell shell;
     private final IConfigurationElement config;
-    
     private final IBndModel model;
     private final Project bndProject;
     
     private final AtomicReference<IRunDescriptionExportWizard> wizardRef = new AtomicReference<IRunDescriptionExportWizard>(null);
 
-    public RunExportWizardNode(IConfigurationElement config, IBndModel model, Project bndProject) {
+
+    public RunExportWizardNode(Shell shell, IConfigurationElement config, IBndModel model, Project bndProject) {
+        this.shell = shell;
         this.config = config;
         this.model = model;
         this.bndProject = bndProject;
@@ -45,8 +50,8 @@ public class RunExportWizardNode implements IWizardNode {
                 wizard = wizardRef.get();
 
             return wizard;
-        } catch (CoreException e) {
-            Plugin.logError("Failed to instantiate export wizard.", e);
+        } catch (Exception e) {
+            ErrorDialog.openError(shell, "Error", null,  new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to create selected export wizard", e));
             return null;
         }
     }

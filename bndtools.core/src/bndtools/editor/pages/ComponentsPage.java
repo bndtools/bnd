@@ -38,6 +38,10 @@ public class ComponentsPage extends FormPage {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new ComponentsPage(editor, model, id, "Components");
         }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
+        }
     };
 
 	public ComponentsPage(FormEditor editor, IBndModel model, String id, String title) {

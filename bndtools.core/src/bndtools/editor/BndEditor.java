@@ -12,11 +12,12 @@ package bndtools.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.core.obr.ObrResolutionJob;
@@ -29,9 +30,11 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -87,7 +90,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     static final String TEST_SUITES_PAGE = "__test_suites_page";
     static final String SOURCE_PAGE = "__source_page";
 
-    private final Map<String, IFormPageFactory> pageFactories = new HashMap<String, IFormPageFactory>();
+    private final Map<String, IFormPageFactory> pageFactories = new LinkedHashMap<String, IFormPageFactory>();
 
     private final BndEditModel model = new BndEditModel();
     private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
@@ -102,6 +105,17 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
         pageFactories.put(COMPONENTS_PAGE, ComponentsPage.FACTORY);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
+        
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
+        if (configElems != null) for (IConfigurationElement configElem : configElems) {
+            String id = configElem.getAttribute("id");
+            if (id != null) {
+                if (pageFactories.containsKey(id))
+                    Plugin.logError("Duplicate form page ID: " + id, null);
+                else
+                    pageFactories.put(id, new DelayedPageFactory(configElem));
+            }
+        }
     }
 
     Pair<String, String> getFileAndProject(IEditorInput input) {
@@ -364,25 +378,29 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         boolean isProjectFile = Project.BNDFILE.equals(fileName);
         List<String> subBndFiles = model.getSubBndFiles();
         boolean isSubBundles = subBndFiles != null && !subBndFiles.isEmpty();
-
-        if (!isSubBundles)
-            pages.add(CONTENT_PAGE);
-
-        if (isProjectFile) {
-            pages.add(BUILD_PAGE);
-            pages.add(PROJECT_RUN_PAGE);
-        }
-
-        if (!isSubBundles) {
-            pages.add(COMPONENTS_PAGE);
-            pages.add(TEST_SUITES_PAGE);
+        
+        for (Entry<String, IFormPageFactory> pageEntry : pageFactories.entrySet()) {
+            String pageId = pageEntry.getKey();
+            IFormPageFactory page = pageEntry.getValue();
+            
+            if (!isSubBundles && page.supportsMode(IFormPageFactory.Mode.bundle))
+                pages.add(pageId);
+            else if (isProjectFile && page.supportsMode(IFormPageFactory.Mode.build))
+                pages.add(pageId);
+            else if (isProjectFile && page.supportsMode(IFormPageFactory.Mode.run))
+                pages.add(pageId);
         }
 
         return pages;
     }
 
     private List<String> getPagesBndRun() {
-        return Collections.singletonList(PROJECT_RUN_PAGE);
+        List<String> pageIds = new ArrayList<String>(3);
+        for (Entry<String, IFormPageFactory> pageEntry : pageFactories.entrySet()) {
+            if (pageEntry.getValue().supportsMode(IFormPageFactory.Mode.run))
+                pageIds.add(pageEntry.getKey());
+        }
+        return pageIds;
     }
 
     @Override

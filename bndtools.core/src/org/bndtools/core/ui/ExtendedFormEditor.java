@@ -6,6 +6,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -86,5 +87,13 @@ public abstract class ExtendedFormEditor extends FormEditor {
             setPageText(index, page.getTitle());
         }
     }
+
+    @Override
+    protected void configurePage(int index, IFormPage page) throws PartInitException {
+        super.configurePage(index, page);
+        Image image = page.getTitleImage();
+        if (image != null) setPageImage(index, page.getTitleImage());
+    }
+
 
 }

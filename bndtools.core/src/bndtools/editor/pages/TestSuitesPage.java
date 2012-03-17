@@ -2,6 +2,7 @@ package bndtools.editor.pages;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -32,6 +33,10 @@ public class TestSuitesPage extends FormPage {
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
         }
     };
 

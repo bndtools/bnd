@@ -67,6 +67,10 @@ public class BundleContentPage extends FormPage {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new BundleContentPage(editor, model, id, "Contents");
         }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
+        }
     };
 
     public BundleContentPage(FormEditor editor, IBndModel model, String id, String title) {

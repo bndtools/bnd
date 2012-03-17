@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -13,23 +12,17 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.IWizardNode;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardSelectionPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.graphics.Device;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
-import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
 public class RunExportSelectionPage extends WizardSelectionPage {
@@ -73,7 +66,7 @@ public class RunExportSelectionPage extends WizardSelectionPage {
                     IConfigurationElement elem = (IConfigurationElement) ((IStructuredSelection) sel).getFirstElement();
                     IWizardNode node = nodeCache.get(elem);
                     if (node == null) {
-                        node = new RunExportWizardNode(elem, model, bndProject);
+                        node = new RunExportWizardNode(getShell(), elem, model, bndProject);
                         nodeCache.put(elem, node);
                     }
                     setSelectedNode(node);

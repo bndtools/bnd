@@ -29,11 +29,19 @@ public class WorkspacePage extends FormPage {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
         }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.workspace;
+        }
     };
 
     public static IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.workspace;
         }
     };
 

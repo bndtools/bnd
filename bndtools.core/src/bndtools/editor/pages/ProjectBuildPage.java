@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -63,6 +64,10 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new ProjectBuildPage(editor, model, id, "Build");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.build;
         }
     };
 
