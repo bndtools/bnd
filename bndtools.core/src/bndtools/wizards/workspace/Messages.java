@@ -16,6 +16,7 @@ public class Messages extends NLS {
 
     public static String CnfSetupNeverWarningTitle;
     public static String DontShowMessageAgain;
+    public static String CnfSetupUserConfirmationWizardPage_this_message;
 
 	static {
 		// initialize resource bundle

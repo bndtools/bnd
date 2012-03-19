@@ -35,7 +35,6 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.io.IO;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.utils.BundleUtils;
@@ -130,23 +129,12 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     protected void createOrReplaceCnf(IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor);
-
-        CnfInfo cnfInfo = getWorkspaceCnfInfo();
-        switch (cnfInfo.getExistence()) {
-        case ImportedClosed:
-        case ImportedOpen:
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Cannot create: project already exists in the Eclipse workspace.", null));
-        case Exists:
-            deleteDir(cnfInfo.getLocation());
-            break;
-        case None:
-            break;
-        }
+        progress.setWorkRemaining(3);
 
         IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
-        progress.setWorkRemaining(3);
-        JavaCapabilityConfigurationPage.createProject(cnfProject, (URI) null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-        configureJavaProject(JavaCore.create(cnfProject), null, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        URI location = operation.getLocation() != null ? operation.getLocation().toFile().toURI() : null;
+        JavaCapabilityConfigurationPage.createProject(cnfProject, location, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        configureJavaProject(JavaCore.create(cnfProject), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         String bsn = templateConfig.getContributor().getName();
         Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
@@ -173,10 +161,6 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     void rebuildWorkspace(IProgressMonitor monitor) throws CoreException {
         ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-    }
-
-    private void deleteDir(IPath path) {
-        IO.delete(path.toFile());
     }
 
     private static void copyBundleEntries(Bundle sourceBundle, String sourcePath, IPath sourcePrefix, IContainer destination, IProgressMonitor monitor) throws CoreException {
@@ -220,7 +204,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
     }
 
-    private static void configureJavaProject(IJavaProject javaProject, String newProjectCompliance, IProgressMonitor monitor) throws CoreException {
+    private static void configureJavaProject(IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 5);
         IProject project = javaProject.getProject();
         BuildPathsBlock.addJavaNature(project, progress.newChild(1));

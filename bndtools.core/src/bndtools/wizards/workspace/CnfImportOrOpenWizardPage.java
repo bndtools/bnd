@@ -25,23 +25,25 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
     private CnfSetupOperation operation;
 
     private boolean suppressEvents = false;
+    
+    private Text txtLocation;
     private Button btnImport;
     private Button btnReplace;
 
     private boolean shown = false;
 
+
     /**
      * Create the wizard.
      * @param cnfPath
      */
-    public CnfImportOrOpenWizardPage(CnfSetupOperation operation) {
+    public CnfImportOrOpenWizardPage() {
         super("wizardPage");
-        this.operation = operation;
         setTitle("Import Bnd Configuration Project");
         setDescription("The bnd configuration project already exists, but is not open in Eclipse. Would you like to import it?");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
     }
-
+    
     /**
      * Create contents of the wizard.
      * @param parent
@@ -58,9 +60,10 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
         Label lblLocation = new Label(container, SWT.NONE);
         lblLocation.setText("Location:");
 
-        Text txtLocation = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtLocation = new Text(container, SWT.BORDER | SWT.READ_ONLY);
         txtLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        txtLocation.setText(operation.getLocation().toString());
+        if (operation != null && operation.getLocation() != null)
+            txtLocation.setText(operation.getLocation().toString());
 
         SelectionListener selectionListener = new SelectionAdapter() {
             @Override
@@ -106,6 +109,8 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
         if (getControl() != null && !getControl().isDisposed() && !suppressEvents) {
             try {
                 suppressEvents = true;
+                if (operation.getLocation() != null)
+                    txtLocation.setText(operation.getLocation().toString());
                 btnImport.setSelection(operation.getType() == CnfSetupOperation.Type.Import);
                 btnReplace.setSelection(operation.getType() == CnfSetupOperation.Type.Create);
             } finally {
