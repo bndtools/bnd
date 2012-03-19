@@ -538,6 +538,9 @@ public abstract class AbstractBaseOBR implements RegistryPlugin, Plugin, RemoteR
 			return null;
 		
 		SortedMap<Version, Resource> versions = resourceMap.get(identity);
+		if (versions == null)
+			return null;
+		
 		resource = versions.get(range.getLow());
 		
 		return mapResourceToHandle(resource);
