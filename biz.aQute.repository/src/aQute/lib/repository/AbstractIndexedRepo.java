@@ -447,6 +447,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			return null;
 		
 		SortedMap<Version, Resource> versions = resourceMap.get(identity);
+		if (versions == null)
+			return null;
+
 		resource = versions.get(range.getLow());
 		
 		return mapResourceToHandle(resource);
