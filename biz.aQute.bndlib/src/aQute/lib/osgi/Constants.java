@@ -39,7 +39,9 @@ public interface Constants {
 	String								FRAGMENT_HOST								= "Fragment-Host";
 	String								IMPORT_PACKAGE								= "Import-Package";
 	String								IMPORT_SERVICE								= "Import-Service";
+	String								PROVIDE_CAPABILITY							= "Provide-Capability";
 	String								REQUIRE_BUNDLE								= "Require-Bundle";
+	String								REQUIRE_CAPABILITY							= "Require-Capability";
 	String								SERVICE_COMPONENT							= "Service-Component";
 
 	String								PRIVATE_PACKAGE								= "Private-Package";
@@ -60,7 +62,7 @@ public interface Constants {
 			BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE,
 			IMPORT_SERVICE, EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES,
-			SIGNATURE_TEST															};
+			SIGNATURE_TEST, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY															};
 
 	String								BUILDPATH									= "-buildpath";
 	String								BUILDPACKAGES								= "-buildpackages";
@@ -148,7 +150,7 @@ public interface Constants {
 			INCLUDE_RESOURCE, BUNDLE_ACTIVATOR, BUNDLE_CLASSPATH, BUNDLE_NAME, BUNDLE_NATIVECODE,
 			BUNDLE_SYMBOLICNAME, IMPORT_PACKAGE, EXPORT_PACKAGE, DYNAMICIMPORT_PACKAGE,
 			FRAGMENT_HOST, REQUIRE_BUNDLE, PRIVATE_PACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST,
-			SIGNATURE_TEST, WAB, WABLIB											};
+			SIGNATURE_TEST, WAB, WABLIB, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY											};
 
 	char								DUPLICATE_MARKER							= '~';
 	String								SPECIFICATION_VERSION						= "specification-version";

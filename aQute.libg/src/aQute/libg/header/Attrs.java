@@ -1,22 +1,56 @@
 package aQute.libg.header;
 
 import java.util.*;
+import java.util.regex.*;
 
 import aQute.lib.collections.*;
+import aQute.libg.version.*;
 
 public class Attrs implements Map<String, String> {
-	private HashMap<String, String>	map;
-	static Map<String, String>		EMPTY	= Collections.emptyMap();
+	public enum Type {
+		STRING(null), LONG(null), VERSION(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION);
 
-	public Attrs(Attrs ...attrs ) {
-		for ( Attrs a : attrs) {
-			if ( a != null) {
+		Type	sub;
+
+		Type(Type sub) {
+			this.sub = sub;
+		}
+
+	};
+
+	/**
+	 * <pre>
+	 * Provide-Capability ::= capability ::=
+	 * name-space ::= typed-attr ::= type ::= scalar ::=
+	 * capability ( ',' capability )*
+	 * name-space
+	 *     ( ’;’ directive | typed-attr )*
+	 * symbolic-name
+	 * extended ( ’:’ type ) ’=’ argument
+	 * scalar | list
+	 * ’String’ | ’Version’ | ’Long’
+	 * list ::=
+	 * ’List<’ scalar ’>’
+	 * </pre>
+	 */
+	static String					EXTENDED	= "[-a-zA-Z\\._]+";
+	static String					SCALAR		= "String|Version|Long";
+	static String					LIST		= "List<(" + SCALAR + ")>";
+	static Pattern					TYPED		= Pattern.compile("(" + EXTENDED + ")\\s*:\\s*("
+														+ SCALAR + "|" + LIST + ")\\s*");
+
+	private HashMap<String, String>	map;
+	private Map<String, Type>		types;
+	static Map<String, String>		EMPTY		= Collections.emptyMap();
+
+	public Attrs(Attrs... attrs) {
+		for (Attrs a : attrs) {
+			if (a != null) {
 				putAll(a);
 			}
 		}
 	}
-	
-	
+
 	public void clear() {
 		map.clear();
 	}
@@ -28,8 +62,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsKey(name);
 	}
 
-	@Deprecated
-	public boolean containsKey(Object name) {
+	@Deprecated public boolean containsKey(Object name) {
 		assert name instanceof String;
 		if (map == null)
 			return false;
@@ -44,8 +77,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsValue(value);
 	}
 
-	@Deprecated
-	public boolean containsValue(Object value) {
+	@Deprecated public boolean containsValue(Object value) {
 		assert value instanceof String;
 		if (map == null)
 			return false;
@@ -60,8 +92,7 @@ public class Attrs implements Map<String, String> {
 		return map.entrySet();
 	}
 
-	@Deprecated
-	public String get(Object key) {
+	@Deprecated public String get(Object key) {
 		assert key instanceof String;
 		if (map == null)
 			return null;
@@ -78,7 +109,7 @@ public class Attrs implements Map<String, String> {
 
 	public String get(String key, String deflt) {
 		String s = get(key);
-		if ( s == null)
+		if (s == null)
 			return deflt;
 		else
 			return s;
@@ -99,20 +130,52 @@ public class Attrs implements Map<String, String> {
 		if (map == null)
 			map = new HashMap<String, String>();
 
+		Matcher m = TYPED.matcher(key);
+		if (m.matches()) {
+			key = m.group(1);
+			String type = m.group(2);
+			Type t = Type.STRING;
+
+			if (type == null) {
+				type = m.group(3);
+				if (type.equals("Long"))
+					t = Type.LONG;
+				else if (type.equals("Version"))
+					t = Type.VERSION;
+			} else {
+				if (type.equals("List<Long>"))
+					t = Type.LONGS;
+				else if (type.equals("List<Version>"))
+					t = Type.VERSION;
+				else
+					t = Type.STRINGS;
+			}
+			if (types == null)
+				types = new HashMap<String, Type>();
+			types.put(key, t);
+
+			// TODO verify value?
+		}
+
 		return map.put(key, value);
 	}
 
-	public void putAll(Map<? extends String, ? extends String> map) {
-		if (this.map == null)
-			if (map.isEmpty())
-				return;
-			else
-				this.map = new HashMap<String, String>();
-		this.map.putAll(map);
+	public Type getType(String key) {
+		if (types == null)
+			return Type.STRING;
+		Type t = types.get(key);
+		if (t == null)
+			return Type.STRING;
+		else
+			return t;
 	}
 
-	@Deprecated
-	public String remove(Object var0) {
+	public void putAll(Map<? extends String, ? extends String> map) {
+		for (Map.Entry<? extends String, ? extends String> e : map.entrySet())
+			put(e.getKey(), e.getValue());
+	}
+
+	@Deprecated public String remove(Object var0) {
 		assert var0 instanceof String;
 		if (map == null)
 			return null;
@@ -149,9 +212,10 @@ public class Attrs implements Map<String, String> {
 		append(sb);
 		return sb.toString();
 	}
+
 	public void append(StringBuilder sb) {
 		String del = "";
-		for ( Map.Entry<String, String> e : entrySet() ) {
+		for (Map.Entry<String, String> e : entrySet()) {
 			sb.append(del);
 			sb.append(e.getKey());
 			sb.append("=");
@@ -160,41 +224,69 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
-	@Deprecated
-	public boolean equals(Object other) {
+	@Deprecated public boolean equals(Object other) {
 		return super.equals(other);
 	}
-	
-	@Deprecated
-	public int hashCode() {
+
+	@Deprecated public int hashCode() {
 		return super.hashCode();
 	}
-	
+
 	public boolean isEqual(Attrs o) {
-		if ( this == o)
+		if (this == o)
 			return true;
-		
-		if ( ! (o instanceof Attrs) )
+
+		if (!(o instanceof Attrs))
 			return false;
-		Attrs other = (Attrs)o;
-		
-		if ( size() != other.size())
+		Attrs other = (Attrs) o;
+
+		if (size() != other.size())
 			return false;
-		
-		if ( isEmpty() )
+
+		if (isEmpty())
 			return true;
-		
+
 		SortedList<String> l = new SortedList<String>(keySet());
 		SortedList<String> lo = new SortedList<String>(other.keySet());
-		if ( !l.isEqual(lo) )
+		if (!l.isEqual(lo))
 			return false;
-		
-		for ( String key : keySet()) {
-			if ( !get(key).equals(other.get(key)))
+
+		for (String key : keySet()) {
+			if (!get(key).equals(other.get(key)))
 				return false;
 		}
 		return true;
-	
+
 	}
-	
+
+	public Object getTyped(String adname) {
+		String s = get(adname);
+		if (s == null)
+			return null;
+
+		Type t = getType(adname);
+		return convert(t, s);
+	}
+
+	private Object convert(Type t, String s) {
+		if (t.sub == null) {
+			switch (t) {
+			case STRING:
+				return s;
+			case LONG:
+				return Long.parseLong(s.trim());
+			case VERSION:
+				return Version.parseVersion(s);
+			}
+			return null;
+		} else {
+			List<Object> list = new ArrayList<Object>();
+			String split[] = s.split("\\s(?!\\),\\s*");
+			for (String p : split) {
+				p = p.replaceAll("\\\\", "");
+				list.add(convert(t.sub, p));
+			}
+			return list;
+		}
+	}
 }

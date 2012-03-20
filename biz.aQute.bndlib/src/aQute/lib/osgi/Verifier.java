@@ -1,48 +1,45 @@
 package aQute.lib.osgi;
 
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.lib.base64.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.libg.cryptography.*;
 import aQute.libg.header.*;
 import aQute.libg.qtokens.*;
 
 public class Verifier extends Processor {
 
-	private final Jar								dot;
-	private final Manifest							manifest;
-	private final Domain						main;
+	private final Jar		dot;
+	private final Manifest	manifest;
+	private final Domain	main;
 
-	private boolean									r3;
-	private boolean									usesRequire;
+	private boolean			r3;
+	private boolean			usesRequire;
 
-	final static Pattern							EENAME	= Pattern
-																	.compile("CDC-1\\.0/Foundation-1\\.0"
-																			+ "|CDC-1\\.1/Foundation-1\\.1"
-																			+ "|OSGi/Minimum-1\\.[1-9]"
-																			+ "|JRE-1\\.1"
-																			+ "|J2SE-1\\.2"
-																			+ "|J2SE-1\\.3"
-																			+ "|J2SE-1\\.4"
-																			+ "|J2SE-1\\.5"
-																			+ "|JavaSE-1\\.6"
-																			+ "|JavaSE-1\\.7"
-																			+ "|PersonalJava-1\\.1"
-																			+ "|PersonalJava-1\\.2"
-																			+ "|CDC-1\\.0/PersonalBasis-1\\.0"
-																			+ "|CDC-1\\.0/PersonalJava-1\\.0");
+	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0"
+											+ "|CDC-1\\.1/Foundation-1\\.1"
+											+ "|OSGi/Minimum-1\\.[1-9]" + "|JRE-1\\.1"
+											+ "|J2SE-1\\.2" + "|J2SE-1\\.3" + "|J2SE-1\\.4"
+											+ "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
+											+ "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
+											+ "|CDC-1\\.0/PersonalBasis-1\\.0"
+											+ "|CDC-1\\.0/PersonalJava-1\\.0");
 
-	final static int								V1_1	= 45;
-	final static int								V1_2	= 46;
-	final static int								V1_3	= 47;
-	final static int								V1_4	= 48;
-	final static int								V1_5	= 49;
-	final static int								V1_6	= 50;
-	final static int								V1_7	= 51;
-	final static int								V1_8	= 52;
+	final static int		V1_1	= 45;
+	final static int		V1_2	= 46;
+	final static int		V1_3	= 47;
+	final static int		V1_4	= 48;
+	final static int		V1_5	= 49;
+	final static int		V1_6	= 50;
+	final static int		V1_7	= 51;
+	final static int		V1_8	= 52;
 
 	static class EE {
 		String	name;
@@ -54,7 +51,7 @@ public class Verifier extends Processor {
 		}
 	}
 
-	final static EE[]				ees								= {
+	final static EE[]			ees								= {
 			new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),
 			new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),
 			new EE("OSGi/Minimum-1.0", V1_3, V1_1),
@@ -72,53 +69,55 @@ public class Verifier extends Processor {
 			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),
 			new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
-			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)			};
+			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)		};
 
-	final static Pattern			BUNDLEMANIFESTVERSION			= Pattern.compile("2");
-	public final static String		SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
-	public final static Pattern		SYMBOLICNAME					= Pattern
-																			.compile(SYMBOLICNAME_STRING);
+	final static Pattern		CARDINALITY_PATTERN				= Pattern
+																		.compile("single|multiple");
+	final static Pattern		RESOLUTION_PATTERN				= Pattern
+																		.compile("optional|mandatory");
+	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
+	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
+	public final static Pattern	SYMBOLICNAME					= Pattern
+																		.compile(SYMBOLICNAME_STRING);
 
-	public final static String		VERSION_STRING					= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?";
-	public final static Pattern		VERSION							= Pattern
-																			.compile(VERSION_STRING);
-	final static Pattern			FILTEROP						= Pattern.compile("=|<=|>=|~=");
-	public final static Pattern		VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
-			
-																			+ VERSION_STRING + ","
-																			+ VERSION_STRING
-																			+ "(\\]|\\)))|"
-																			+ VERSION_STRING);
-	final static Pattern			FILE							= Pattern
-																			.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
-	final static Pattern			WILDCARDPACKAGE					= Pattern
-																			.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
-	public final static Pattern		ISO639							= Pattern.compile("[A-Z][A-Z]");
-	public final static Pattern		HEADER_PATTERN					= Pattern
-																			.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
-	public final static Pattern		TOKEN							= Pattern
-																			.compile("[-a-zA-Z0-9_]+");
+	public final static String	VERSION_STRING					= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?";
+	public final static Pattern	VERSION							= Pattern.compile(VERSION_STRING);
+	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
+	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
 
-	public final static Pattern		NUMBERPATTERN					= Pattern.compile("\\d+");
-	public final static Pattern		PACKAGEPATTERN					= Pattern
-																			.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
-	public final static Pattern		PATHPATTERN						= Pattern.compile(".*");
-	public final static Pattern		FQNPATTERN						= Pattern.compile(".*");
-	public final static Pattern		URLPATTERN						= Pattern.compile(".*");
-	public final static Pattern		ANYPATTERN						= Pattern.compile(".*");
-	public final static Pattern		FILTERPATTERN					= Pattern.compile(".*");
-	public final static Pattern		TRUEORFALSEPATTERN				= Pattern
-																			.compile("true|false|TRUE|FALSE");
-	public static final Pattern		WILDCARDNAMEPATTERN				= Pattern.compile(".*");
-	public static final Pattern		BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
+																+ VERSION_STRING + ","
+																		+ VERSION_STRING
+																		+ "(\\]|\\)))|"
+																		+ VERSION_STRING);
+	final static Pattern		FILE							= Pattern
+																		.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
+	final static Pattern		WILDCARDPACKAGE					= Pattern
+																		.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
+	public final static Pattern	ISO639							= Pattern.compile("[A-Z][A-Z]");
+	public final static Pattern	HEADER_PATTERN					= Pattern
+																		.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
+	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
 
-	public final static String		EES[]							= { "CDC-1.0/Foundation-1.0",
+	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
+	public final static Pattern	PACKAGEPATTERN					= Pattern
+																		.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
+	public final static Pattern	FQNPATTERN						= Pattern.compile(".*");
+	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
+	public final static Pattern	ANYPATTERN						= Pattern.compile(".*");
+	public final static Pattern	FILTERPATTERN					= Pattern.compile(".*");
+	public final static Pattern	TRUEORFALSEPATTERN				= Pattern
+																		.compile("true|false|TRUE|FALSE");
+	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
+	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
+
+	public final static String	EES[]							= { "CDC-1.0/Foundation-1.0",
 			"CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1", "OSGi/Minimum-1.2",
 			"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7",
 			"PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0",
-			"CDC-1.0/PersonalJava-1.0"								};
+			"CDC-1.0/PersonalJava-1.0"							};
 
-	public final static String		OSNAMES[]						= { "AIX", // IBM
+	public final static String	OSNAMES[]						= { "AIX", // IBM
 			"DigitalUnix", // Compaq
 			"Embos", // Segger Embedded Software Solutions
 			"Epoc32", // SymbianOS Symbian OS
@@ -137,10 +136,10 @@ public class Verifier extends Processor {
 			"VxWorks", // WindRiver Systems
 			"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000", // Win2000
 			"Windows2003", // Win2003
-			"WindowsXP", "WindowsVista",							};
+			"WindowsXP", "WindowsVista",						};
 
-	public final static String		PROCESSORNAMES[]				= { //
-																	//
+	public final static String	PROCESSORNAMES[]				= { //
+																//
 			"68k", // Motorola 68000
 			"ARM_LE", // Intel Strong ARM. Deprecated because it does not
 			// specify the endianness. See the following two rows.
@@ -161,10 +160,10 @@ public class Verifier extends Processor {
 			"V850E", // NEC V850E
 			"x86", // pentium i386
 			"i486", // i586 i686 Intel& AMD 32 bit
-			"x86-64",												};
+			"x86-64",											};
 
-	final Analyzer					analyzer;
-	private Instructions	dynamicImports;
+	final Analyzer				analyzer;
+	private Instructions		dynamicImports;
 
 	public Verifier(Jar jar) throws Exception {
 		this.analyzer = new Analyzer(this);
@@ -298,7 +297,6 @@ public class Verifier extends Processor {
 		}
 	}
 
-
 	/**
 	 * Check for unresolved imports. These are referrals that are not imported
 	 * by the manifest and that are not part of our bundle class path. The are
@@ -358,13 +356,15 @@ public class Verifier extends Processor {
 
 	public void verify() throws Exception {
 		verifyHeaders();
-		verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN);
+		verifyDirectives("Export-Package",
+				"uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN);
 		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN);
 		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME);
 		verifyDirectives("Fragment-Host", "resolution:", SYMBOLICNAME);
 		verifyDirectives("Provide-Capability", "effective:|uses:", SYMBOLICNAME);
 		verifyDirectives("Require-Capability", "effective:|resolve:|filter:", SYMBOLICNAME);
-		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",SYMBOLICNAME);
+		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",
+				SYMBOLICNAME);
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -387,6 +387,123 @@ public class Verifier extends Processor {
 								"Bundle uses Require Bundle, this can generate false errors because then not enough information is available without the required bundles");
 			}
 		}
+
+		verifyRequirements();
+		verifyCapabilities();
+	}
+
+	private void verifyRequirements() {
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
+				Constants.REQUIRE_CAPABILITY));
+		for (String key : map.keySet()) {
+			Attrs attrs = map.get(key);
+			verify(attrs, "filter:", FILTERPATTERN, true, "Requirement %s filter not correct", key);
+			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
+					"Requirement %s cardinality not correct", key);
+			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
+					"Requirement %s resolution not correct", key);
+
+			if (key.equals("osgi.extender")) {
+				// No requirements on extender
+			} else if (key.equals("osgi.serviceloader")) {
+				verify(attrs, "register:", PACKAGEPATTERN, false,
+						"Service Loader extender register: directive not a fully qualified Java name");
+			} else if (key.equals("osgi.contract")) {
+
+			} else if (key.equals("osgi.service")) {
+
+			} else if (key.equals("osgi.ee")) {
+
+			} else if (key.startsWith("osgi.wiring.") || key.startsWith("osgi.identity")) {
+				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
+			}
+
+			verifyAttrs(attrs);
+
+			if (attrs.containsKey("mandatory:"))
+				error("mandatory: directive is intended for Capabilities, not Requirement %s", key);
+
+			if (attrs.containsKey("uses:"))
+				error("uses: directive is intended for Capabilities, not Requirement %s", key);
+		}
+	}
+
+	/**
+	 * @param attrs
+	 */
+	void verifyAttrs(Attrs attrs) {
+		for (String a : attrs.keySet()) {
+			String v = attrs.get(a);
+
+			if (!a.endsWith(":")) {
+				Attrs.Type t = attrs.getType(a);
+				if ("version".equals(a)) {
+					if (t != Attrs.Type.VERSION)
+						error("Version attributes should always be of type version, it is %s", t);
+				} else
+					verifyType(t, v);
+			}
+		}
+	}
+
+	private void verifyCapabilities() {
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
+				Constants.PROVIDE_CAPABILITY));
+		for (String key : map.keySet()) {
+			Attrs attrs = map.get(key);
+			verify(attrs, "filter:", FILTERPATTERN, true, "Requirement %s filter not correct", key);
+			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
+					"Requirement %s cardinality not correct", key);
+			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
+					"Requirement %s resolution not correct", key);
+
+			if (key.equals("osgi.extender")) {
+				verify(attrs, "osgi.extender", SYMBOLICNAME, true,
+						"Extender %s must always have the osgi.extender attribute set", key);
+				verify(attrs, "version", VERSION, true, "Extender %s must always have a version",
+						key);
+			} else if (key.equals("osgi.serviceloader")) {
+				verify(attrs, "register:", PACKAGEPATTERN, false,
+						"Service Loader extender register: directive not a fully qualified Java name");
+			} else if (key.equals("osgi.contract")) {
+				verify(attrs, "osgi.contract", SYMBOLICNAME, true,
+						"Contracts %s must always have the osgi.contract attribute set", key);
+
+			} else if (key.equals("osgi.service")) {
+				verify(attrs, "objectClass", PACKAGEPATTERN, true,
+						"osgi.service %s must have the objectClass attribute set", key);
+
+			} else if (key.equals("osgi.ee")) {
+				// TODO
+			} else if (key.startsWith("osgi.wiring.") || key.startsWith("osgi.identity")) {
+				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
+			}
+
+			verifyAttrs(attrs);
+
+			if (attrs.containsKey("filter:"))
+				error("filter: directive is intended for Requirements, not Capability %s", key);
+			if (attrs.containsKey("cardinality:"))
+				error("cardinality: directive is intended for Requirements, not Capability %s", key);
+			if (attrs.containsKey("resolution:"))
+				error("resolution: directive is intended for Requirements, not Capability %s", key);
+		}
+	}
+
+	private void verify(Attrs attrs, String ad, Pattern pattern, boolean mandatory, String msg,
+			String... args) {
+		String v = attrs.get(ad);
+		if (v == null) {
+			if (mandatory)
+				error("Missing required attribute/directive %s", ad);
+		}
+		Matcher m = pattern.matcher(v);
+		if (!m.matches())
+			error(msg, (Object[]) args);
+	}
+
+	private void verifyType(Attrs.Type type, String string) {
+
 	}
 
 	/**
@@ -397,8 +514,7 @@ public class Verifier extends Processor {
 	 */
 	private void verifyDirectives(String header, String directives, Pattern namePattern) {
 		Pattern pattern = Pattern.compile(directives);
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
-				header));
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(header));
 		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
@@ -765,4 +881,52 @@ public class Verifier extends Processor {
 		return true;
 	}
 
+	/**
+	 * Verify checksums
+	 */
+	/**
+	 * Verify the checksums from the manifest against the real thing.
+	 * 
+	 * @param all
+	 *            if each resources must be digested
+	 * @return true if ok
+	 * @throws Exception
+	 */
+
+	public void verifyChecksums(boolean all) throws Exception {
+		Manifest m = dot.getManifest();
+		if (m == null || m.getEntries().isEmpty()) {
+			if (all)
+				error("Verify checksums with all but no digests");
+			return;
+		}
+
+		List<String> missingDigest = new ArrayList<String>();
+
+		for (String path : dot.getResources().keySet()) {
+			if (path.equals("META-INF/MANIFEST.MF"))
+				continue;
+			
+			Attributes a = m.getAttributes(path);
+			String digest = a.getValue("SHA1-Digest");
+			if (digest == null) {
+				if (!path.matches(""))
+					missingDigest.add(path);
+			} else {
+				byte[] d = Base64.decodeBase64(digest);
+				SHA1 expected = new SHA1(d);
+				Digester<SHA1> digester = SHA1.getDigester();
+				InputStream in = dot.getResource(path).openInputStream();
+				IO.copy(in, digester);
+				digester.digest();
+				if (!expected.equals(digester.digest())) {
+					error("Checksum mismatch %s, expected %s, got %s", path, expected,
+							digester.digest());
+				}
+			}
+		}
+		if (missingDigest.size() > 0) {
+			error("Entries in the manifest are missing digests: %s", missingDigest);
+		}
+	}
 }
