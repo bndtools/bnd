@@ -3,6 +3,7 @@ package bndtools.builder;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,7 +34,13 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathContainer;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModelMarker;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
@@ -46,6 +53,7 @@ import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
+import bndtools.utils.Predicate;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
@@ -435,6 +443,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
      * @param force Whether to force bnd to build
      * @return Whether any files were built
      */
+    @SuppressWarnings("unchecked")
     private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
@@ -484,6 +493,26 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Clear errors & warnings before build
         model.clear();
+        
+        // Load Eclipse classpath containers
+        List<File> files = new ArrayList<File>(20);
+        IJavaProject javaProject = JavaCore.create(getProject());
+        
+        accumulateClasspath(files, javaProject, false, new Predicate<IClasspathContainer>() {
+            public boolean select(IClasspathContainer container) {
+                // Exclude the Bnd and JRE containers
+                boolean result = true;
+                if (BndContainerInitializer.PATH_ID.equals(container.getPath())) {
+                    result = false;
+                } else if (JavaRuntime.JRE_CONTAINER.equals(container.getPath().segment(0))) {
+                    result = false;
+                }
+                return result;
+            }
+        });
+        for (File file : files) {
+            System.out.println("------> Adding to classpath: " + file);
+        }
 
         if (buildAction == Action.build) {
             // Build!
@@ -578,7 +607,66 @@ public class NewBuilder extends IncrementalProjectBuilder {
         log(LOG_FULL, "returning depends-on list: %s", result);
         return result.toArray(new IProject[result.size()]);
     }
+    
+    private void accumulateClasspath(List<File> files, IJavaProject project, boolean exports, Predicate<IClasspathContainer>... containerFilters) throws JavaModelException {
+        if (exports) {
+            IPath outputPath = project.getOutputLocation();
+            files.add(getFileForPath(outputPath));
+        }
+        
+        IClasspathEntry[] entries = project.getRawClasspath();
+        List<IClasspathEntry> queue = new ArrayList<IClasspathEntry>(entries.length);
+        queue.addAll(Arrays.asList(entries));
 
+        while (!queue.isEmpty()) {
+            IClasspathEntry entry = queue.remove(0);
+            
+            if (exports && !entry.isExported())
+                continue;
+            
+            IPath path = entry.getPath();
+            
+            switch(entry.getEntryKind()) {
+            case IClasspathEntry.CPE_LIBRARY:
+                files.add(getFileForPath(path));
+                break;
+            case IClasspathEntry.CPE_VARIABLE:
+                IPath resolvedPath = JavaCore.getResolvedVariablePath(path);
+                files.add(getFileForPath(resolvedPath));
+                break;
+            case IClasspathEntry.CPE_SOURCE:
+                IPath outputLocation = entry.getOutputLocation();
+                if (exports && outputLocation != null)
+                    files.add(getFileForPath(outputLocation));
+                break;
+            case IClasspathEntry.CPE_CONTAINER:
+                IClasspathContainer container = JavaCore.getClasspathContainer(path, project);
+                boolean allow = true;
+                for (Predicate<IClasspathContainer> filter : containerFilters)
+                    if (!filter.select(container))
+                        allow = false;
+                if (allow)
+                    queue.addAll(Arrays.asList(container.getClasspathEntries()));
+                break;
+            case IClasspathEntry.CPE_PROJECT:
+                IProject targetProject = ResourcesPlugin.getWorkspace().getRoot().getProject(path.lastSegment());
+                IJavaProject targetJavaProject = JavaCore.create(targetProject);
+                accumulateClasspath(files, targetJavaProject, true, containerFilters);
+                break;
+            }
+        }
+    }
+    
+    private File getFileForPath(IPath path) {
+        File file;
+        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+        if (resource != null && resource.exists())
+            file = resource.getLocation().toFile();
+        else
+            file = path.toFile();
+        return file;
+    }
+    
     private boolean hasBlockingErrors() {
         try {
             if (containsError(getProject().findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
