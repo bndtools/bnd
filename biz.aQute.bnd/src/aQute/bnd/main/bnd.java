@@ -1104,6 +1104,7 @@ public class bnd extends Processor {
 		Version version();
 	}
 
+	
 	public void _wrap(wrapOptions options) throws Exception {
 		List<File> classpath = Create.list();
 		File properties = getBase();
@@ -1112,9 +1113,10 @@ public class bnd extends Processor {
 			properties = getFile(options.properties());
 		}
 
-		for (String cp : options.classpath()) {
-			classpath.add(getFile(cp));
-		}
+		if (options.classpath() != null)
+			for (String cp : options.classpath()) {
+				classpath.add(getFile(cp));
+			}
 
 		for (String j : options._()) {
 			File file = getFile(j);
@@ -1128,31 +1130,65 @@ public class bnd extends Processor {
 				wrapper.use(this);
 				addClose(wrapper);
 
+				for (File f : classpath)
+					wrapper.addClasspath(f);
+
 				wrapper.setJar(file);
+
+				File outputFile = wrapper.getOutputFile(options.output());
+				outputFile.delete();
+				
+				String stem = file.getName();
+				if (stem.endsWith(".jar"))
+					stem = stem.substring(0, stem.length() - 4) + ".bnd";
+				
+				File p = getPropertiesFile(properties, file, stem);
+				
+				if (p == null) {
+					wrapper.setImportPackage("*;resolution:=optional");
+					wrapper.setExportPackage("*");
+					warning("Using defaults for wrap, which means no export versions");
+					
+				} else if (p.isFile())
+					wrapper.setProperties(p);
+				else {
+					error("No valid property file: %s", p);
+				}
+
 				if (options.bsn() != null)
 					wrapper.setBundleSymbolicName(options.bsn());
 
 				if (options.version() != null)
 					wrapper.setBundleVersion(options.version());
-
-				File outputFile = wrapper.getOutputFile(options.output());
-
-				File p = properties;
-				if (p.isDirectory()) {
-					p = getFile(p, file.getName());
-				}
-				if (p.isFile())
-					wrapper.setProperties(p);
-
+				
 				wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
 					wrapper.save(outputFile, options.force());
 				}
+				getInfo(wrapper, file.toString());
 			} finally {
 				wrapper.close();
 			}
 		}
+	}
+
+	private File getPropertiesFile(File properties, File file, String stem ) {
+		if (properties.isFile())
+			return properties;
+
+
+		File p = getFile(file.getParentFile(), stem);
+		if (p.isFile())
+			return p;
+
+		if (properties.isDirectory()) {
+			p = getFile(properties, stem);
+			if ( p.isFile())
+				return p;
+		}
+
+		return null;
 	}
 
 	/**
@@ -1928,13 +1964,12 @@ public class bnd extends Processor {
 	 */
 
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")//
-	@Arguments(arg = { "jar file/dir", "source file/dir", "..." })//
+	@Arguments(arg = { "jar file", "source file" })//
 	interface sourceOptions extends Options {
 		@Description("The output file") String output();
 	}
 
 	public void _source(sourceOptions opts) throws Exception {
-
 		List<String> arguments = opts._();
 		File jarFile = getFile(arguments.remove(0));
 
@@ -1943,71 +1978,32 @@ public class bnd extends Processor {
 			return;
 		}
 
-		List<Jar> sources = new ArrayList<Jar>();
-		for (String path : arguments) {
-			File sourceFile = getFile(path);
-			if (!sourceFile.exists()) {
-				error("File %s does not exist ", sourceFile);
-			} else {
-				Jar source = new Jar(sourceFile);
-				addClose(source);
-				sources.add(source);
-			}
+		File sourceFile = getFile(arguments.remove(0));
+		if (!sourceFile.exists()) {
+			error("Source file %s does not exist ", sourceFile);
+			return;
 		}
 
-		Jar jar = new Jar(jarFile);
+		File output = jarFile;
+		if (opts.output() != null)
+			output = getFile(opts.output());
+
+		Jar bin = new Jar(jarFile);
+		File tmp = File.createTempFile("tmp", ".jar", jarFile.getParentFile());
+		tmp.deleteOnExit();
 		try {
-			addClose(jar);
+			Jar src = new Jar(sourceFile);
 			try {
-				// TOOD ignoring bcp
-
-				nextClass: for (String path : jar.getResources().keySet()) {
-					if (!path.endsWith(".class") || path.indexOf('$') > 0)
-						continue;
-
-					path = replaceExtension(path, ".class", ".java");
-					String destPath = "OSGI-INF/src/" + path;
-
-					if (jar.getResources().containsKey(destPath))
-						continue;
-
-					for (Jar source : sources) {
-						Resource r = source.getResource(path);
-						if (r == null)
-							r = source.getResource(path);
-
-						if (r == null)
-							r = source.getResource("OSGI-OPT/src/" + path);
-
-						if (r == null)
-							r = source.getResource("src/" + path);
-
-						if (r != null) {
-							jar.putResource("OSGI-OPT/src/" + path, r);
-							continue nextClass;
-
-						}
-					}
-					trace("source not found %s", path);
-				}
-
-				if (opts.output() != null) {
-					jarFile = getFile(opts.output());
-					jarFile.getParentFile().mkdirs();
-				}
-
-				if (jarFile.isDirectory())
-					jarFile = getFile(jarFile.getAbsolutePath() + ".jar");
-
-				jar.write(jarFile);
-				trace("wrote %s", jarFile);
+				for (String path : src.getResources().keySet())
+					bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+				bin.write(tmp);
 			} finally {
-				for (Jar s : sources)
-					s.close();
+				src.close();
 			}
 		} finally {
-			jar.close();
+			bin.close();
 		}
+		tmp.renameTo(output);
 	}
 
 	/**
@@ -2217,7 +2213,7 @@ public class bnd extends Processor {
 				Domain domain = Domain.domain(m);
 
 				Parameters p = domain.getExportPackage();
-				
+
 				// Check for augments, we borrow properties from
 				// the manifest and add them to the exports
 				for (String augment : opts.augments()) {
@@ -2225,13 +2221,13 @@ public class bnd extends Processor {
 					if (v != null) {
 						v = v.trim();
 						for (String pname : p.keySet()) {
-							System.err.println("Add " + augment + " to " + pname +" v=" + v);
+							System.err.println("Add " + augment + " to " + pname + " v=" + v);
 							Attrs attrs = p.get(pname);
 							attrs.put(augment, v);
 						}
 					}
 				}
-				
+
 				parameters.putAll(p);
 			} finally {
 				jar.close();
