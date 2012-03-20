@@ -443,7 +443,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
             case skip:
-                addBuildMarker("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", IMarker.SEVERITY_ERROR);
+                addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
                 return false;
             case build:
