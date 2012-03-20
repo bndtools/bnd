@@ -88,6 +88,11 @@ import aQute.lib.codec.*;
 		return decode(type, isr);
 	}
 
+	public<T>  T decode(Reader r, Class<T> type) throws Exception {
+		PeekReader isr = new PeekReader(r);
+		return type.cast(decode(type, isr));
+	}
+
 	private void encode(Appendable app, Type type, Object object, Map<Object, Type> visited)
 			throws Exception {
 		if (object == null) {
