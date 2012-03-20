@@ -37,6 +37,7 @@ public class Project extends Processor {
 	final Workspace				workspace;
 	boolean						preparedPaths;
 	final Collection<Project>	dependson				= new LinkedHashSet<Project>();
+	final Collection<Container>	classpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	buildpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
@@ -55,7 +56,7 @@ public class Project extends Processor {
 	File						files[];
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
-	
+
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
@@ -208,7 +209,7 @@ public class Project extends Processor {
 						error("Can not find output directory: " + output);
 					else {
 						Container c = new Container(this, output);
-						if ( !buildpath.contains(c))
+						if (!buildpath.contains(c))
 							buildpath.add(c);
 					}
 
@@ -383,8 +384,7 @@ public class Project extends Processor {
 		Parameters bundles = new Parameters(spec);
 
 		try {
-			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet().iterator(); i
-					.hasNext();) {
+			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet().iterator(); i.hasNext();) {
 				Entry<String, Attrs> entry = i.next();
 				String bsn = entry.getKey();
 				Map<String, String> attrs = entry.getValue();
@@ -481,7 +481,7 @@ public class Project extends Processor {
 		Map<File, Container> pkgResolvedBundles = new HashMap<File, Container>();
 
 		List<Entry<String, Attrs>> queue = new LinkedList<Map.Entry<String, Attrs>>();
-		queue.addAll( new Parameters(spec).entrySet());
+		queue.addAll(new Parameters(spec).entrySet());
 
 		while (!queue.isEmpty()) {
 			Entry<String, Attrs> entry = queue.remove(0);
@@ -1492,8 +1492,7 @@ public class Project extends Processor {
 		for (NamedAction a : plugins)
 			all.put(a.getName(), a);
 
-		Parameters actions = new Parameters(getProperty("-actions",
-				DEFAULT_ACTIONS));
+		Parameters actions = new Parameters(getProperty("-actions", DEFAULT_ACTIONS));
 		for (Entry<String, Attrs> entry : actions.entrySet()) {
 			String key = Processor.removeDuplicateMarker(entry.getKey());
 			Action action;
@@ -1991,8 +1990,11 @@ public class Project extends Processor {
 
 	/**
 	 * Sets the package version on an exported package
-	 * @param packageName The package name
-	 * @param version The new package version
+	 * 
+	 * @param packageName
+	 *            The package name
+	 * @param version
+	 *            The new package version
 	 */
 	public void setPackageInfo(String packageName, Version version) {
 		try {
@@ -2003,16 +2005,17 @@ public class Project extends Processor {
 	}
 
 	void updatePackageInfoFile(String packageName, Version newVersion) throws Exception {
-		
+
 		File file = getPackageInfoFile(packageName);
 
-		// If package/classes are copied into the bundle through Private-Package etc, there will be no source
+		// If package/classes are copied into the bundle through Private-Package
+		// etc, there will be no source
 		if (!file.getParentFile().exists()) {
 			return;
 		}
 
 		Version oldVersion = getPackageInfo(packageName);
-		
+
 		if (newVersion.compareTo(oldVersion) == 0) {
 			return;
 		} else {
@@ -2021,12 +2024,12 @@ public class Project extends Processor {
 			pw.println("version " + newVersion);
 			pw.flush();
 			pw.close();
-	
+
 			String path = packageName.replace('.', '/') + "/packageinfo";
 			File binary = IO.getFile(getOutput(), path);
 			binary.getParentFile().mkdirs();
 			IO.copy(file, binary);
-			
+
 			refresh();
 		}
 	}
@@ -2036,7 +2039,7 @@ public class Project extends Processor {
 		return IO.getFile(getSrc(), path);
 
 	}
-	
+
 	public Version getPackageInfo(String packageName) throws IOException {
 		File packageInfoFile = getPackageInfoFile(packageName);
 		if (!packageInfoFile.exists()) {
@@ -2058,5 +2061,26 @@ public class Project extends Processor {
 			}
 		}
 		return Version.emptyVersion;
+	}
+
+	/**
+	 * bnd maintains a class path that is set by the environment, i.e. bnd is
+	 * not in charge of it.
+	 */
+	
+	public void addClasspath( File f) {
+		if ( !f.isFile()) {
+			error("Adding non existent file to the classpath %s", f);
+		}
+		Container container = new Container(f);
+		classpath.add(container);
+	}
+	
+	public void clearClasspath() {
+		classpath.clear();
+	}
+	
+	public Collection<Container> getClasspath() {
+		return classpath;
 	}
 }

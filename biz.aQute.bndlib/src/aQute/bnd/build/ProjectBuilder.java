@@ -43,6 +43,10 @@ public class ProjectBuilder extends Builder {
         try {
             if (!initialized) {
                 initialized = true;
+                for (Container file : project.getClasspath()) {
+                    addClasspath(file.getFile());
+                }
+                
                 for (Container file : project.getBuildpath()) {
                     addClasspath(file.getFile());
                 }
