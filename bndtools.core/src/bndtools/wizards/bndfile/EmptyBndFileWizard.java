@@ -28,7 +28,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -44,6 +43,7 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.api.IPersistableBndModel;
 import bndtools.editor.model.BndEditModel;
+import bndtools.preferences.BndPreferences;
 import bndtools.utils.FileUtils;
 
 public class EmptyBndFileWizard extends Wizard implements INewWizard {
@@ -130,8 +130,8 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 
 		// If -sub is unset, ask if it should be set to *.bnd
 		if(subBndFiles == null || subBndFiles.isEmpty()) {
-			IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
-			String enableSubsPref = prefs.getString(Plugin.PREF_ENABLE_SUB_BUNDLES);
+		    BndPreferences prefs = new BndPreferences();
+			String enableSubsPref = prefs.getEnableSubBundles();
 
 			if(MessageDialogWithToggle.ALWAYS.equals(enableSubsPref)) {
 				enableSubs = true;
@@ -149,7 +149,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 				// Persist the selection if the toggle is on
 				if(dialog.getToggleState()) {
 					enableSubsPref = (returnCode == IDialogConstants.YES_ID) ? MessageDialogWithToggle.ALWAYS : MessageDialogWithToggle.NEVER;
-					prefs.setValue(Plugin.PREF_ENABLE_SUB_BUNDLES, enableSubsPref);
+					prefs.setEnableSubBundles(enableSubsPref);
 				}
 			}
 		} else {

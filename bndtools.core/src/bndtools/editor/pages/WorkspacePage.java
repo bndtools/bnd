@@ -1,5 +1,7 @@
 package bndtools.editor.pages;
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
@@ -12,8 +14,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
-import bndtools.editor.common.AbstractBaseFormEditor;
-import bndtools.editor.model.BndEditModel;
+import bndtools.api.IBndModel;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
 import bndtools.model.clauses.HeaderClause;
@@ -21,24 +22,32 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class WorkspacePage extends FormPage {
 
-    private final BndEditModel model;
+    private final IBndModel model;
     private PluginsPart pluginsPart;
 
-    public static IPageFactory MAIN_FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static IFormPageFactory MAIN_FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.workspace;
         }
     };
 
-    public static IPageFactory EXT_FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.workspace;
         }
     };
 
     private final boolean mainBuildFile;
 
-    private WorkspacePage(boolean mainBuildFile, FormEditor editor, BndEditModel model, String id, String title) {
+    private WorkspacePage(boolean mainBuildFile, FormEditor editor, IBndModel model, String id, String title) {
         super(editor, id, title);
         this.mainBuildFile = mainBuildFile;
         this.model = model;

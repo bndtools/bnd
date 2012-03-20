@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -17,6 +18,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
 
 public class DummyBundle implements Bundle {
 
@@ -174,6 +176,14 @@ public class DummyBundle implements Bundle {
 
     public void update(InputStream arg0) throws BundleException {
         if (DEBUG) System.out.println("=== update(InputStream)");
+    }
+
+    public Map getSignerCertificates(int arg0) {
+        return null;
+    }
+
+    public Version getVersion() {
+        return null;
     }
 
 }

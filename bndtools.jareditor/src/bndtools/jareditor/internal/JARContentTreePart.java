@@ -84,12 +84,18 @@ public class JARContentTreePart extends AbstractFormPart {
 	    super.initialize(form);
 	}
 
-	@Override
-	public void refresh() {
-	    super.refresh();
-	    Object input = getManagedForm().getInput();
-	    viewer.setInput(input);
-	}
+    @Override
+    public boolean isStale() {
+        // Claim to always be stale, so we always get refresh events.
+        return true;
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        Object input = getManagedForm().getInput();
+        viewer.setInput(input);
+    }
 
 	@Override
     public boolean setFormInput(Object input) {

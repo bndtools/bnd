@@ -5,7 +5,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +19,7 @@ import org.osgi.framework.Version;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
+import aQute.libg.header.Attrs;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Plugin;
@@ -107,7 +107,7 @@ public class ObrResolutionWizard extends Wizard {
         String bsn = resource.getSymbolicName();
 
         // Map version range string, using "latest" for any workspace resources
-        Map<String, String> attribs = new HashMap<String, String>();
+        Attrs attribs = new Attrs();
         String versionRangeStr;
         if (isWorkspace(resource)) {
             versionRangeStr = "latest";

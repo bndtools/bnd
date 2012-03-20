@@ -11,6 +11,8 @@
 package bndtools.editor.pages;
 
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -21,9 +23,8 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.common.AbstractBaseFormEditor;
+import bndtools.api.IBndModel;
 import bndtools.editor.components.ComponentsBlock;
-import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.ServiceComponent;
 import bndtools.utils.MessageHyperlinkAdapter;
 
@@ -31,15 +32,19 @@ public class ComponentsPage extends FormPage {
 
     private final Image componentsImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/component.gif").createImage();
 	private final ComponentsBlock block = new ComponentsBlock();
-	private final BndEditModel model;
+	private final IBndModel model;
 
-    public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new ComponentsPage(editor, model, id, "Components");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
         }
     };
 
-	public ComponentsPage(FormEditor editor, BndEditModel model, String id, String title) {
+	public ComponentsPage(FormEditor editor, IBndModel model, String id, String title) {
 		super(editor, id, title);
 		this.model = model;
 	}

@@ -12,7 +12,6 @@ package bndtools.utils;
 
 
 import java.io.File;
-import java.util.Map;
 import java.util.jar.Attributes;
 
 import org.eclipse.core.runtime.IPath;
@@ -23,7 +22,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
-import aQute.lib.osgi.Processor;
+import aQute.libg.header.Parameters;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 
@@ -111,7 +110,7 @@ public class BundleUtils {
 	}
 
 	public static String getBundleSymbolicName(Attributes attribs) {
-	    Map<String, Map<String, String>> header = Processor.parseHeader(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME), null);
+	    Parameters header = new Parameters(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME));
 	    if(header == null || header.size() != 1)
 	        return null;
 

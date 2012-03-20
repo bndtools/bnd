@@ -9,7 +9,7 @@
 	org.osgi.impl.bundle.bindex
 
 Include-Resource:\
-	${repo;biz.aQute.bndlib;latest},\
+	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
 	${repo;bndtools.core;latest},\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\

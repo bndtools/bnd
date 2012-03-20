@@ -31,7 +31,32 @@
          doc="templateDocs/integrationTestTemplate.xml"/>
    </extension>
    
+   <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
+   
+      <plugin
+         class="aQute.lib.repository.FixedIndexedRepo"
+         rank="15"
+         icon="icons/database.png"
+         name="Indexed Repository (Fixed Content)"
+         path="${build}/repo/biz.aQute.repository/biz.aQute.repository-0.0.0.jar">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="locations" type="string" description="Index locations (comma-separated list of URLs)."/>
+         <property name="phase" type="string" description="Resolution Phase (build, runtime or any)"/>
+      </plugin>
+      
+      <plugin
+         class="aQute.lib.repository.LocalIndexedRepo"
+         rank="15"
+         icon="icons/database.png"
+         name="Indexed Repository with Local Storage"
+         path="${build}/repo/biz.aQute.repository/biz.aQute.repository-0.0.0.jar">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="local" type="string" description="Local directory path"/>
+         <property name="phase" type="string" description="Resolution Phase (build, runtime or any)"/>
+         <property name="pretty" type="boolean" description="Use pretty-printed XML index"/>
+      </plugin>
+      
       <plugin
          class="org.osgi.impl.bundle.bindex.BundleIndexerImpl"
          icon="icons/cog.png"

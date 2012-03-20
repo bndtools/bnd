@@ -13,6 +13,8 @@ package bndtools;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IWorkspace;
@@ -29,6 +31,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.bindex.BundleIndexer;
+import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
@@ -45,16 +48,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
 
-	public static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
-    public static final String PREF_NOASK_PACKAGEINFO = "noAskPackageInfo";
-
-	public static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
-	public static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
-
-	public static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
-
-    public static final String PREF_BUILD_LOGGING = "buildLogging";
-
 	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
 	private static volatile Plugin plugin;
@@ -67,6 +60,9 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
+    private volatile ResourceIndexerTracker resourceIndexerTracker;
+    
+    private volatile ScheduledExecutorService scheduler;
 
     private volatile Central central;
 
@@ -77,12 +73,17 @@ public class Plugin extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         this.bundleContext = context;
+        
+        scheduler = Executors.newScheduledThreadPool(1);
 
         bndActivator = new Activator();
         bndActivator.start(context);
 
         indexerTracker = new IndexerTracker(context);
         indexerTracker.open();
+        
+        resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
+        resourceIndexerTracker.open();
 
         registerWorkspaceServiceFactory(context);
 
@@ -150,11 +151,13 @@ public class Plugin extends AbstractUIPlugin {
 
         bndActivator.stop(context);
         central.close();
+        resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
         plugin = null;
         super.stop(context);
         unregisterWorkspaceURLHandler();
+        scheduler.shutdown();
     }
 
 	public static Plugin getDefault() {
@@ -284,6 +287,14 @@ public class Plugin extends AbstractUIPlugin {
 
     public BundleIndexer getBundleIndexer() {
         return indexerTracker;
+    }
+    
+    public ResourceIndexer getResourceIndexer() {
+        return resourceIndexerTracker;
+    }
+    
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
     }
 
 }

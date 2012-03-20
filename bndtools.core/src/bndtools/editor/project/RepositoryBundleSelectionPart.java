@@ -4,18 +4,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -55,6 +52,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
@@ -64,13 +62,12 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryUtils;
+import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
-
-	private static final String VERSION_LATEST = "latest";
 
     private final String propertyName;
 	private Table table;
@@ -208,15 +205,15 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             }
             private boolean handleFileDrop(File[] files) {
                 if(files.length > 0) {
-                    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-                    boolean hideWarning = store.getBoolean(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE);
+                    BndPreferences prefs = new BndPreferences();
+                    boolean hideWarning = prefs.getHideWarningExternalFile();
                     if(!hideWarning) {
                         MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(getSection().getShell(), "Add External Files",
                                 "External files cannot be directly added to a project, they must be added to a local repository first.",
                                 "Do not show this warning again.", false, null, null);
                         if(Window.CANCEL == dialog.getReturnCode()) return false;
                         if(dialog.getToggleState()) {
-                            store.setValue(Plugin.PREF_HIDE_WARNING_EXTERNAL_FILE, true);
+                            prefs.setHideWarningExternalFile(true);
                         }
                     }
 
@@ -227,7 +224,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                         List<VersionedClause> addingClauses = new ArrayList<VersionedClause>(addingBundles.size());
 
                         for(Pair<String, String> addingBundle : addingBundles) {
-                            Map<String, String> attribs = new HashMap<String, String>();
+                            Attrs attribs = new Attrs();
                             attribs.put(Constants.VERSION_ATTRIBUTE, addingBundle.getSecond());
                             addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
                         }
@@ -303,7 +300,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             return false;
 
         if (selection instanceof IStructuredSelection) {
-            List list = ((IStructuredSelection) selection).toList();
+            List<?> list = ((IStructuredSelection) selection).toList();
             for (Object object : list) {
                 if (!(object instanceof VersionedClause)) {
                     return false;

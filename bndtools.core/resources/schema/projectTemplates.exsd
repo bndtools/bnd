@@ -3,7 +3,7 @@
 <schema targetNamespace="bndtools" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="bndtools" id="repositoryContributor" name="Repository Contributor"/>
+         <meta.schema plugin="bndtools" id="projectTemplates" name="Project Templates"/>
       </appinfo>
       <documentation>
          Used to declare repository contributions for addition to Bnd&apos;s configuration project.

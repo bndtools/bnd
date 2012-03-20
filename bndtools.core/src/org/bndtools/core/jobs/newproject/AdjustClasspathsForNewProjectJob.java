@@ -12,7 +12,6 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -32,42 +31,37 @@ public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
 
     @Override
     public IStatus runInWorkspace(IProgressMonitor monitor) {
-            MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while adjusting classpaths for new project", null);
+        List<Project> projects;
+        SubMonitor progress;
+        try {
+            projects = new ArrayList<Project>(Central.getWorkspace().getAllProjects());
+            progress = SubMonitor.convert(monitor, projects.size());
+        } catch (Exception e) {
+            return Status.CANCEL_STATUS;
+        }
 
-            List<Project> projects;
-            SubMonitor progress;
-            try {
-                projects = new ArrayList<Project>(Central.getWorkspace().getAllProjects());
-                progress = SubMonitor.convert(monitor, projects.size());
-            } catch (Exception e) {
-                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project list", e);
-            }
-
-            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-            while (!projects.isEmpty()) {
-                Project project = projects.remove(0);
-                IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
-                if (eclipseProject != null && !eclipseProject.equals(addedProject)) {
-                    List<String> errors = new LinkedList<String>();
-                    if (eclipseProject != null) {
-                        try {
-                            project.propertiesChanged();
-                            BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
-                            BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
-                        } catch (CoreException e) {
-                            status.add(e.getStatus());
-                        }
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        while (!projects.isEmpty()) {
+            Project project = projects.remove(0);
+            IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
+            if (eclipseProject != null && !eclipseProject.equals(addedProject)) {
+                List<String> errors = new LinkedList<String>();
+                if (eclipseProject != null) {
+                    try {
+                        project.propertiesChanged();
+                        BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
+                        BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
+                    } catch (CoreException e) {
+                        Plugin.log(e.getStatus());
+                        return Status.CANCEL_STATUS;
                     }
-                    progress.worked(1);
                 }
-                if (progress.isCanceled())
-                    return Status.CANCEL_STATUS;
+                progress.worked(1);
             }
-
-            if (status.isOK())
-                return Status.OK_STATUS;
-
-            return status;
+            if (progress.isCanceled())
+                return Status.CANCEL_STATUS;
+        }
+        return Status.OK_STATUS;
     }
 
 }

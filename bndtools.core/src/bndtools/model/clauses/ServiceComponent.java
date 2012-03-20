@@ -11,7 +11,6 @@
 package bndtools.model.clauses;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -21,6 +20,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import aQute.libg.header.Attrs;
 
 public class ServiceComponent extends HeaderClause implements Cloneable {
 
@@ -47,7 +48,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
     private final static Pattern REFERENCE_PATTERN = Pattern.compile("([^(]+)(\\(.+\\))?");
 
-	public ServiceComponent(String name, Map<String,String> attribs) {
+	public ServiceComponent(String name, Attrs attribs) {
 		super(name, attribs);
 	}
 	public boolean isPath() {
@@ -246,7 +247,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 	@Override
 	public ServiceComponent clone() {
-		return new ServiceComponent(this.name, new HashMap<String, String>(this.attribs));
+		return new ServiceComponent(this.name, new Attrs(this.attribs));
 	}
 	@Override
 	protected boolean newlinesBetweenAttributes() {

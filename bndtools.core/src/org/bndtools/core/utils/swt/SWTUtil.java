@@ -1,5 +1,6 @@
 package org.bndtools.core.utils.swt;
 
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -27,4 +28,12 @@ public class SWTUtil {
             }
         }
     }
+
+    public static void setHorizontalGrabbing(Control control) {
+        Object ld= control.getLayoutData();
+        if (ld instanceof GridData) {
+            ((GridData)ld).grabExcessHorizontalSpace= true;
+        }
+    }
+
 }

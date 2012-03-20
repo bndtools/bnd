@@ -1,5 +1,3 @@
-bndlibver: 1.0.0
-
 Test: true
 Bundle-SymbolicName: bndtools.diff
 Bundle-Vendor: Bndtools
@@ -10,7 +8,7 @@ Export-Package: bndtools.diff
 Conditional-Package: aQute.libg.*
 
 # Build and Run
--buildpath: biz.aQute.bndlib;version=${bndlibver},\
+-buildpath: ${bndlib},\
 			com.springsource.org.objectweb.asm,\
 			com.springsource.org.objectweb.asm.tree,\
 			bndtools.core;version=project,\

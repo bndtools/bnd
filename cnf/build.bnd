@@ -2,6 +2,10 @@
 base-version: 1.0.1.DEV
 master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
 
+bndlib-version-base:    1.52
+bndlib-version-ceiling: 1.53
+bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
+
 # We use git
 Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
 Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}

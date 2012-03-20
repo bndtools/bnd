@@ -18,7 +18,9 @@ Main-Class: 			org.osgi.impl.bundle.bindex.Index
 
 Service-Component: *
 Bundle-ActivationPolicy: lazy
--buildpath: biz.aQute.bnd.annotation;version=1.42.0,\
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	biz.aQute.bnd.annotation;version=1.42.0,\
 	jar/ant.jar;version=file,\
 	jar/kxml2-min.jar;version=file,\
 	jar/org.osgi.service.obr.jar;version=file,\

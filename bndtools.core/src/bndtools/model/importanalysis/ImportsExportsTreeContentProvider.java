@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.lib.osgi.Clazz;
+import aQute.lib.osgi.Descriptors.PackageRef;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
@@ -41,10 +42,10 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		    result = importsAndExports != null ? importsAndExports.requiredBundles : Collections.emptyList();
 		else if(parentElement instanceof ExportPackage) {
 			ExportPackage exportPackage = (ExportPackage) parentElement;
-			Set<String> uses = exportPackage.getUses();
+			List<PackageRef> uses = exportPackage.getUses();
 			List<ExportUsesPackage> temp = new ArrayList<ExportUsesPackage>(uses.size());
-			for (String name : uses) {
-				temp.add(new ExportUsesPackage(exportPackage, name));
+			for (PackageRef pkg : uses) {
+				temp.add(new ExportUsesPackage(exportPackage, pkg.getFQN()));
 			}
 			result = temp;
 		} else if(parentElement instanceof ImportPackage) {
@@ -101,7 +102,7 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 		    return importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty();
 
 		if(element instanceof ExportPackage) {
-			Set<String> uses = ((ExportPackage) element).getUses();
+			List<PackageRef> uses = ((ExportPackage) element).getUses();
 			return uses != null && !uses.isEmpty();
 		}
 

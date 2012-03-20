@@ -1,5 +1,8 @@
 package bndtools.editor.pages;
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -16,25 +19,28 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.common.AbstractBaseFormEditor;
+import bndtools.api.IBndModel;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.TestSuitesPart;
-import bndtools.editor.model.BndEditModel;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class TestSuitesPage extends FormPage {
 
-    private final BndEditModel model;
+    private final IBndModel model;
     private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
 
-    public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
         }
     };
 
-    public TestSuitesPage(FormEditor editor, BndEditModel model, String id, String title) {
+    public TestSuitesPage(FormEditor editor, IBndModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

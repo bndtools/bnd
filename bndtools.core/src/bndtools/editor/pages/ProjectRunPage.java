@@ -1,5 +1,8 @@
 package bndtools.editor.pages;
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -15,8 +18,8 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.editor.common.AbstractBaseFormEditor;
-import bndtools.editor.model.BndEditModel;
+import bndtools.api.IBndModel;
+import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
@@ -27,15 +30,19 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ProjectRunPage extends FormPage {
 
-    private final BndEditModel model;
+    private final IBndModel model;
 
-    public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new ProjectRunPage(editor, model, id, "Run");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.run;
         }
     };
 
-    public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
+    public ProjectRunPage(FormEditor editor, IBndModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }
@@ -50,6 +57,7 @@ public class ProjectRunPage extends FormPage {
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
+        // Toolbar Actions
         RunAction runAction = new RunAction(this, "run");
         runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
         runAction.setText("Run OSGi");
@@ -63,7 +71,15 @@ public class ProjectRunPage extends FormPage {
         ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
         debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         form.getToolBarManager().add(debugContrib);
-
+        
+        ExportAction exportAction = new ExportAction(getEditorSite().getShell(), getEditor(), model);
+        exportAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run_export.png"));
+        exportAction.setText("Export");
+        ActionContributionItem exportContrib = new ActionContributionItem(exportAction);
+        exportContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        if (exportAction.shouldEnable())
+            form.getToolBarManager().add(exportContrib);
+        
         form.getToolBarManager().update(true);
 
         GridLayout gl;
@@ -91,12 +107,21 @@ public class ProjectRunPage extends FormPage {
         right.setLayout(gl);
 
         // First column
-        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
         managedForm.addPart(reposPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+//        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+        
+        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        managedForm.addPart(availableBundlesPart);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = 50;
+        availableBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        
 
         RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(runFwkPart);

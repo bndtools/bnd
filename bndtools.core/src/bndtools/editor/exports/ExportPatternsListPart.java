@@ -40,7 +40,6 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -52,6 +51,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.contents.PackageInfoDialog;
 import bndtools.editor.model.BndEditModel;
@@ -60,6 +60,7 @@ import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.model.clauses.ExportedPackage;
+import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
 
@@ -108,7 +109,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 			// Select the results
 			for (Object result : results) {
 				String newPackageName = (String) result;
-				ExportedPackage newPackage = new ExportedPackage(newPackageName, new HashMap<String, String>());
+				ExportedPackage newPackage = new ExportedPackage(newPackageName, new Attrs());
 				added.add(newPackage);
 			}
 		}
@@ -127,8 +128,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         }
 	    Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
 
-	    IPreferenceStore store = Plugin.getDefault().getPreferenceStore();
-	    boolean noAskPackageInfo = store.getBoolean(Plugin.PREF_NOASK_PACKAGEINFO);
+	    BndPreferences prefs = new BndPreferences();
+	    boolean noAskPackageInfo = prefs.getNoAskPackageInfo();
 
 	    if(noAskPackageInfo || missingPkgInfoDirs.isEmpty()) {
 	        generatePkgInfoDirs.addAll(missingPkgInfoDirs.values());
@@ -136,7 +137,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 	        PackageInfoDialog dlg = new PackageInfoDialog(getSection().getShell(), missingPkgInfoDirs);
 	        if (dlg.open() == Window.CANCEL)
 	            return;
-	        store.setValue(Plugin.PREF_NOASK_PACKAGEINFO, dlg.isDontAsk());
+	        prefs.setNoAskPackageInfo(dlg.isDontAsk());
 	        generatePkgInfoDirs.addAll(dlg.getSelectedPackageDirs());
 	    }
 
@@ -213,7 +214,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 
 	@Override
 	protected ExportedPackage newHeaderClause(String text) {
-		return new ExportedPackage(text, new HashMap<String, String>());
+		return new ExportedPackage(text, new Attrs());
 	}
 	@Override
 	protected List<ExportedPackage> loadFromModel(BndEditModel model) {

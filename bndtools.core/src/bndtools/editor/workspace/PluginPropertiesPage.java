@@ -1,8 +1,6 @@
 package bndtools.editor.workspace;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -26,11 +24,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 
 public class PluginPropertiesPage extends WizardPage {
 
     private IConfigurationElement configElement;
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Attrs properties = new Attrs();
     private boolean changed = false;
 
     private Composite mainComposite;
@@ -132,7 +131,6 @@ public class PluginPropertiesPage extends WizardPage {
 
                 String propertyType = propertyElement.getAttribute("type");
                 String defaultStr = propertyElement.getAttribute("default");
-
                 if (value == null && defaultStr != null) {
                     value = defaultStr;
                     properties.put(name, defaultStr);
@@ -174,10 +172,18 @@ public class PluginPropertiesPage extends WizardPage {
 
                 String description = propertyElement.getAttribute("description");
                 if (description != null) {
-                    ControlDecoration decoration = new ControlDecoration(label, SWT.RIGHT| SWT.CENTER);
+                    ControlDecoration decoration = new ControlDecoration(label, SWT.RIGHT | SWT.CENTER);
                     decoration.setShowHover(true);
                     decoration.setDescriptionText(description);
                     decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+                }
+                
+                String deprecation = propertyElement.getAttribute("deprecated");
+                if (deprecation != null) {
+                    ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT | SWT.CENTER);
+                    decoration.setShowHover(true);
+                    decoration.setDescriptionText("Property deprecated: " + deprecation);
+                    decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
                 }
             }
             Label summaryLabel = new Label(fieldContainer, SWT.NONE);
@@ -198,14 +204,14 @@ public class PluginPropertiesPage extends WizardPage {
         }
     }
 
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Attrs properties) {
         this.properties = properties;
         if (Display.getCurrent() != null && fieldContainer != null && !fieldContainer.isDisposed()) {
             resetPropertyFields();
         }
     }
 
-    public Map<String, String> getProperties() {
+    public Attrs getProperties() {
         return properties;
     }
 

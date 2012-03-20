@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -93,7 +94,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         txtDescription.setLayoutData(gd_txtDescription);
 
         viewer.setContentProvider(new ArrayContentProvider());
-        viewer.setLabelProvider(new TemplateLabelProvider(parent.getDisplay()));
+        viewer.setLabelProvider(new ConfigElementLabelProvider(parent.getDisplay(), "icons/template.gif"));
 
         loadData();
 
@@ -210,46 +211,5 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propSupport.removePropertyChangeListener(propertyName, listener);
-    }
-}
-
-class TemplateLabelProvider extends StyledCellLabelProvider {
-
-    private final Image defaultImg;
-    private final Map<ImageDescriptor, Image> imgCache = new HashMap<ImageDescriptor, Image>();
-
-    public TemplateLabelProvider(Device device) {
-        defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/template.gif").createImage(device);
-    }
-
-    @Override
-    public void update(ViewerCell cell) {
-        IConfigurationElement element = (IConfigurationElement) cell.getElement();
-        cell.setText(element.getAttribute("name"));
-
-        Image icon = defaultImg;
-
-        String iconPath = element.getAttribute("icon");
-        if (iconPath != null) {
-            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
-            if (descriptor != null) {
-                icon = imgCache.get(descriptor);
-                if (icon == null) {
-                    icon = descriptor.createImage();
-                    imgCache.put(descriptor, icon);
-                }
-            }
-        }
-
-        cell.setImage(icon);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        defaultImg.dispose();
-        for (Image cached: imgCache.values()) {
-            cached.dispose();
-        }
     }
 }

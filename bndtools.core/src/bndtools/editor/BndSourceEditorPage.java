@@ -17,7 +17,9 @@ import java.io.IOException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -26,12 +28,15 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import bndtools.Plugin;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
+    
+    private final Image icon;
 
 	private final BndEditor formEditor;
 	private final String id;
@@ -54,13 +59,15 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 		setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
 
 		formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
-
+		ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
+        icon = iconDescriptor.createImage();
 	}
 
 	@Override
 	public void dispose() {
 		this.formEditor.getBndModel().removePropertyChangeListener(propChangeListener);
 		super.dispose();
+		icon.dispose();
 	}
 
 	public boolean canLeaveThePage() {
@@ -150,5 +157,10 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 		IEditorInput input = getEditorInput();
 		IDocument doc = docProvider.getDocument(input);
 		return doc;
+	}
+	
+	@Override
+	public Image getTitleImage() {
+	    return icon;
 	}
 }

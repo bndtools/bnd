@@ -2,19 +2,26 @@
 <project name="bndtools" default="p2">
 	
 	<import file="../cnf/build.xml"/>
-	
-	<!-- Build the Eclipse "features" directory -->
-	<target name="features.dir" depends="init" description="Generate the Eclipse Feature JAR">
-		<mkdir dir="${target}/features"/>
-		<copy todir="${target}/features">
-			<fileset dir="feature" includes="*.xml"/>
-		</copy>
-		<!-- Replace the qualifier string with a timestamp -->
-		<replace dir="${target}/features" includes="*.xml" token="qualifier" value="${NOW}" summary="true"/>
-		<zip destfile="${target}/features/bndtools.feature.jar">
-			<fileset dir="${target}/features" includes="feature.xml"/>
-		</zip>
-	</target>
+
+   <!-- Build the Eclipse "features" directory -->
+   <target name="features.dir" depends="init" description="Generate the Eclipse Feature JAR">
+      <!-- Copy Feature XML Descriptors -->
+      <copy todir="${target}/features">
+         <fileset dir="feature" includes="category.xml,**/feature.xml" />
+      </copy>
+
+      <!-- Replace the qualifier string with a timestamp -->
+      <replace dir="${target}/features" includes="category.xml,**/feature.xml" token="qualifier" value="${NOW}" summary="true" />
+
+      <!-- Zip Main Feature -->
+      <zip destfile="${target}/features/bndtools.feature.jar">
+         <fileset dir="${target}/features/main" includes="feature.xml" />
+      </zip>
+      <!-- Zip JarViewer Feature -->
+      <zip destfile="${target}/features/jarviewer.feature.jar">
+         <fileset dir="${target}/features/jarviewer" includes="feature.xml" />
+      </zip>
+   </target>
 	
 	<!-- Build the Eclipse "plugins" directory -->
 	<target name="plugins.dir" depends="init" description="Expand the required bundles">

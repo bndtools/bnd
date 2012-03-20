@@ -4,6 +4,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -33,12 +36,11 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
+import bndtools.api.IBndModel;
 import bndtools.builder.NewBuilder;
 import bndtools.classpath.BndContainerInitializer;
-import bndtools.editor.common.AbstractBaseFormEditor;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
-import bndtools.editor.model.BndEditModel;
 import bndtools.editor.project.BuildOperationsPart;
 import bndtools.editor.project.BuildPathPart;
 import bndtools.editor.project.SubBundlesPart;
@@ -46,7 +48,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ProjectBuildPage extends FormPage implements IPriority, IResourceChangeListener {
 
-    private final BndEditModel model;
+    private final IBndModel model;
     private final Image imgError = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
     private final Image imgWarning = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK);
 
@@ -57,15 +59,19 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private int problemSeverity = 0;
 
     private Image pageImage = null;
-    private AbstractBaseFormEditor editor;
+    private ExtendedFormEditor editor;
 
-    public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new ProjectBuildPage(editor, model, id, "Build");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.build;
         }
     };
 
-    private ProjectBuildPage(AbstractBaseFormEditor editor, BndEditModel model, String id, String title) {
+    private ProjectBuildPage(ExtendedFormEditor editor, IBndModel model, String id, String title) {
         super(editor, id, title);
         this.editor = editor;
         this.model = model;

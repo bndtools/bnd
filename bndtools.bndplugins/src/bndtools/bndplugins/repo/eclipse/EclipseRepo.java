@@ -157,7 +157,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     public List<String> list(String regex) {
         Instruction pattern = null;
         if (regex != null)
-            pattern = Instruction.getPattern(regex);
+            pattern = new Instruction(regex);
 
         List<String> result = new ArrayList<String>();
         for (String f : index.keySet()) {
@@ -212,7 +212,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             mainJar.setDoNotTouchManifest();
             Jar sourceJar = new Jar(sourceFile);
 
-            mainJar.addAll(sourceJar, new Instruction(".*\\.java", false), "OSGI-OPT/src");
+            mainJar.addAll(sourceJar, new Instruction(".*\\.java"), "OSGI-OPT/src");
             FileOutputStream out = new FileOutputStream(augmentedFile);
             mainJar.write(out);
     }
@@ -265,6 +265,10 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     @Override
     public String toString() {
         return getName();
+    }
+    
+    public String getLocation() {
+    	return root.getAbsolutePath();
     }
 
 }

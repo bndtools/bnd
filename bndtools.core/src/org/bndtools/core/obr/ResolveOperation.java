@@ -57,7 +57,8 @@ import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
-import aQute.libg.header.OSGiHeader;
+import aQute.libg.header.Attrs;
+import aQute.libg.header.Parameters;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.Central;
@@ -252,8 +253,8 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
         String pkgsStr = pkgProps.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES);
 
-        Map<String, Map<String, String>> header = OSGiHeader.parseHeader(pkgsStr);
-        for (Entry<String, Map<String, String>> entry : header.entrySet()) {
+        Parameters header = new Parameters(pkgsStr);
+        for (Entry<String, Attrs> entry : header.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
             String version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
 
@@ -359,13 +360,13 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     private File findFramework(MultiStatus status) {
         String runFramework = model.getRunFramework();
-        Map<String, Map<String, String>> header = OSGiHeader.parseHeader(runFramework);
+        Parameters header = new Parameters(runFramework);
         if (header.size() != 1) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid format for " + BndConstants.RUNFRAMEWORK + " header", null));
             return null;
         }
 
-        Entry<String, Map<String, String>> entry = header.entrySet().iterator().next();
+        Entry<String, Attrs> entry = header.entrySet().iterator().next();
         VersionedClause clause = new VersionedClause(entry.getKey(), entry.getValue());
 
         String versionRange = clause.getVersionRange();

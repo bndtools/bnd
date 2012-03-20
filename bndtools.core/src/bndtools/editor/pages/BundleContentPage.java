@@ -11,6 +11,8 @@
 package bndtools.editor.pages;
 
 
+import org.bndtools.core.ui.ExtendedFormEditor;
+import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -32,7 +34,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.editor.common.AbstractBaseFormEditor;
+import bndtools.api.IBndModel;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
@@ -42,7 +44,6 @@ import bndtools.editor.exports.ExportPackagesDetailsPage;
 import bndtools.editor.exports.ExportPatternsListPart;
 import bndtools.editor.imports.ImportPatternsDetailsPage;
 import bndtools.editor.imports.ImportPatternsListPart;
-import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
@@ -50,7 +51,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {
 
-    private final BndEditModel model;
+    private final IBndModel model;
 
     private Color greyTitleBarColour;
 
@@ -62,13 +63,17 @@ public class BundleContentPage extends FormPage {
 
     private ImportPatternsDetailsPage importDetailsPage;
 
-    public static final IPageFactory FACTORY = new IPageFactory() {
-        public IFormPage createPage(AbstractBaseFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new BundleContentPage(editor, model, id, "Contents");
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bundle;
         }
     };
 
-    public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
+    public BundleContentPage(FormEditor editor, IBndModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

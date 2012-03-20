@@ -3,7 +3,6 @@ package bndtools.wizards.workspace;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -17,15 +16,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.Plugin;
-import bndtools.wizards.workspace.CnfSetupWizard.RequiredOperation;
 
 public class CnfImportOrOpenWizardPage extends WizardPage {
 
     public static final String PROP_OPERATION = "operation";
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
-    private final IPath cnfPath;
-    private RequiredOperation operation = RequiredOperation.Import;
+    private CnfSetupOperation operation;
 
     private boolean suppressEvents = false;
     private Button btnImport;
@@ -33,14 +30,13 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-
     /**
      * Create the wizard.
      * @param cnfPath
      */
-    public CnfImportOrOpenWizardPage(IPath cnfPath) {
+    public CnfImportOrOpenWizardPage(CnfSetupOperation operation) {
         super("wizardPage");
-        this.cnfPath = cnfPath;
+        this.operation = operation;
         setTitle("Import Bnd Configuration Project");
         setDescription("The bnd configuration project already exists, but is not open in Eclipse. Would you like to import it?");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
@@ -64,7 +60,7 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
 
         Text txtLocation = new Text(container, SWT.BORDER | SWT.READ_ONLY);
         txtLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        txtLocation.setText(cnfPath.toString());
+        txtLocation.setText(operation.getLocation().toString());
 
         SelectionListener selectionListener = new SelectionAdapter() {
             @Override
@@ -72,7 +68,8 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
                 if (!suppressEvents) {
                     try {
                         suppressEvents = true;
-                        setOperation(btnImport.getSelection() ? RequiredOperation.Import : RequiredOperation.Create);
+                        CnfSetupOperation.Type newOperationType = btnImport.getSelection() ? CnfSetupOperation.Type.Import : CnfSetupOperation.Type.Create;
+                        setOperation(new CnfSetupOperation(newOperationType, operation.getLocation()));
                     } finally {
                         suppressEvents = false;
                     }
@@ -82,35 +79,35 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
         btnImport = new Button(container, SWT.RADIO);
         btnImport.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 5, 1));
         btnImport.setText("Import and open in Eclipse workspace");
-        btnImport.setSelection(operation == RequiredOperation.Import);
+        btnImport.setSelection(operation.getType() == CnfSetupOperation.Type.Import);
 
         btnReplace = new Button(container, SWT.RADIO);
         btnReplace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
         btnReplace.setText("Replace with a new configuration project, using Bndtools templates.");
         btnReplace.setToolTipText("Replace with a new configuration project, using Bndtools templates.");
         btnReplace.addSelectionListener(selectionListener);
-        btnReplace.setSelection(operation == RequiredOperation.Create);
+        btnReplace.setSelection(operation.getType() == CnfSetupOperation.Type.Create);
 
         btnImport.addSelectionListener(selectionListener);
     }
 
-    public RequiredOperation getOperation() {
+    public CnfSetupOperation getOperation() {
         return operation;
     }
 
-    public void setOperation(RequiredOperation operation) {
-        if (operation == RequiredOperation.Nothing)
+    public void setOperation(CnfSetupOperation operation) {
+        if (operation.getType() == CnfSetupOperation.Type.Nothing)
             throw new IllegalArgumentException();
 
-        RequiredOperation old = this.operation;
+        CnfSetupOperation old = this.operation;
         this.operation = operation;
         propertySupport.firePropertyChange(PROP_OPERATION, old, operation);
 
         if (getControl() != null && !getControl().isDisposed() && !suppressEvents) {
             try {
                 suppressEvents = true;
-                btnImport.setSelection(operation == RequiredOperation.Import);
-                btnReplace.setSelection(operation == RequiredOperation.Create);
+                btnImport.setSelection(operation.getType() == CnfSetupOperation.Type.Import);
+                btnReplace.setSelection(operation.getType() == CnfSetupOperation.Type.Create);
             } finally {
                 suppressEvents = false;
             }
@@ -120,7 +117,7 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
     }
 
     private void updateMessage() {
-        if (operation == RequiredOperation.Create)
+        if (operation.getType() == CnfSetupOperation.Type.Create)
             setMessage("WARNING: the entire directory on disk will be deleted and replaced!", WARNING);
         else
             setMessage(null, WARNING);

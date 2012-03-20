@@ -2,17 +2,17 @@ package bndtools.launch;
 
 import java.text.MessageFormat;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.SocketUtil;
@@ -48,6 +48,19 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     }
 
     @Override
+    public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        boolean result = super.finalLaunchCheck(configuration, mode, monitor);
+
+        // Trigger opening of the JUnit view
+        Status junitStatus = new Status(IStatus.INFO, Plugin.PLUGIN_ID, LaunchConstants.LAUNCH_STATUS_JUNIT, "", null);
+        IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(junitStatus);
+        if (handler != null)
+            handler.handleStatus(junitStatus, null);
+
+        return result;
+    }
+
+    @Override
     protected IStatus getLauncherStatus() {
         return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher().getErrors(), bndTester.getProjectLauncher().getWarnings());
     }
@@ -67,11 +80,10 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
 
         // JUnit plugin ignores the launch unless attribute "org.eclipse.jdt.launching.PROJECT_ATTR" is set.
         ILaunchConfigurationWorkingCopy modifiedConfig = configuration.getWorkingCopy();
-        String launchTarget = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if(launchTarget != null) {
-            IResource launchResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTarget);
-            IProject launchProject = launchResource.getProject();
-            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, launchProject.getName());
+
+        IResource launchResource = LaunchUtils.getTargetResource(configuration);
+        if(launchResource != null) {
+            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(launchResource));
         }
 
         return super.getLaunch(modifiedConfig.doSave(), mode);

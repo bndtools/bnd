@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import aQute.lib.collections.MultiMap;
+
 public class CollectionUtils {
     /**
      * Move the selected items down one position in the list.
@@ -108,6 +110,21 @@ public class CollectionUtils {
 		}
 		return false;
 	}
+	
+    public static <K, V> MultiMap<V, K> invertMultiMap(MultiMap<K, V> input) {
+        MultiMap<V, K> result = new MultiMap<V, K>();
+        
+        for (Entry<K, List<V>> inputEntry : input.entrySet()) {
+            K inputKey = inputEntry.getKey();
+            List<V> inputList = inputEntry.getValue();
+            for (V inputVal : inputList) {
+                result.add(inputVal, inputKey);
+            }
+        }
+        
+        return result;
+    }
+	
 	public static <K,V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
 		Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
 

@@ -4,7 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.model.clauses.VersionedClause;
@@ -245,7 +245,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		// LAYOUT
 		GridLayout layout;
-		GridData gd;
 
 		layout = new GridLayout(3, false);
 		layout.horizontalSpacing = 0;
@@ -284,7 +283,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
                 adding.add(RepositoryUtils.convertRepoBundleVersion((RepositoryBundleVersion) item));
             } else if (item instanceof ProjectBundle) {
                 String bsn = ((ProjectBundle) item).getBsn();
-                Map<String, String> attribs = new HashMap<String, String>();
+                Attrs attribs = new Attrs();
                 attribs.put(Constants.VERSION_ATTRIBUTE, "latest");
                 adding.add(new VersionedClause(bsn, attribs));
             }

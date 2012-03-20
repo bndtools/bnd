@@ -1,2 +1,0 @@
-Private-Package: bndtools.bndplugins.analysis.*
-Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmm}

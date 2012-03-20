@@ -1,9 +1,11 @@
 repo:           ${build}/repo
 releaserepo:    ${build}/releaserepo
 
--plugin:        aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
-                aQute.lib.deployer.obr.OBR;name='Build Repository';mode=build;locations='http://buildrepo.bndtools.org.s3.amazonaws.com/repository.xml',\
-                aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo},\
-                org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
+-plugin: \
+	aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo},\
+	aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo},\
+	aQute.lib.deployer.obr.OBR;name='Bndtools Hub';locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
+	aQute.lib.deployer.obr.OBR;name='Build Repository';mode=build;locations='http://buildrepo.bndtools.org.s3.amazonaws.com/repository.xml',\
+	org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar,\
 
 -releaserepo:   Release

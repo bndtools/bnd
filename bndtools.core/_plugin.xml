@@ -30,6 +30,20 @@
       name="Build Validators"
       schema="schema/validators.exsd"
    />
+   <extension-point id="buildListeners"
+      name="Build Listeners"
+      schema="schema/buildListeners.exsd"
+   />
+   
+   <extension-point id="runExportWizards"
+      name="Run Descriptor Export Wizards"
+      schema="schema/runExportWizards.exsd"
+   />
+   
+   <extension-point id="editorPages"
+      name="Bnd Editor Pages"
+      schema="schema/editorPages"
+   />
    
    <!-- Popup Menus -->
    <extension
@@ -588,8 +602,11 @@
     </extension>
 
    <extension point="bndtoolsStartupParticipant">
-      <startupParticipant class="bndtools.wizards.workspace.CnfSetupStartupParticipant" />
-      <startipParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+      <startupParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+   </extension>
+   
+   <extension point="buildListeners">
+      <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
    </extension>
 
    <extension point="bndtools.core.projectTemplates">
@@ -601,12 +618,12 @@
    
    <extension point="bndtools.core.launchTemplates">
       <template
-         name="Apache Felix 4 with Shell"
+         name="Apache Felix 4 with Gogo Shell"
          path="launchTemplates/felix4+shell.bndrun"
          doc="html/felix4+shell.form.xml"
          icon="icons/felix.gif"/>
       <template
-         name="Apache Felix 4 with Web Console"
+         name="Apache Felix 4 with Web Console and Gogo"
          path="launchTemplates/felix4+webconsole.bndrun"
          doc="html/felix4+webconsole.form.xml"
          icon="icons/felix.gif"/>
@@ -616,18 +633,18 @@
          doc="html/felix4.form.xml"
          icon="icons/felix.gif"/>
       <template
-         name="Eclipse Equinox 3.7 with Console"
+         name="Eclipse Equinox 3.7 with Built-in Console"
          path="launchTemplates/equinox37+console.bndrun"
          doc="html/equinox37+console.form.xml"
          icon="icons/equinox.gif"/>
       <template
-         name="Knopflerfish 5.1 with Felix Shell"
+         name="Knopflerfish 5.1 with Gogo Shell"
          path="launchTemplates/knopflerfish.bndrun"
          doc="html/knopflerfish.form.xml"
          icon="icons/knopflerfish_16x16_inverted.gif"/>
       <template
          name="«Empty»"
-         path="launchTempaltes/empty.bndrun"
+         path="launchTemplates/empty.bndrun"
          doc="html/empty.form.xml"/>
    </extension>
    
@@ -664,9 +681,11 @@
       <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
    </extension>
    
+   <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
       <plugin
          class="aQute.lib.deployer.FileRepo"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="File Repository">
          <property name="name" type="string" description="Name of the repository"/>
@@ -676,18 +695,20 @@
       
       <plugin
          class="aQute.lib.deployer.obr.OBR"
-         icon="icons/bundlefolder.png"
-         name="OBR Repository (read-only)">
+         icon="icons/database.png"
+         name="OBR Repository (read-only)"
+         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
-         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
          <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
       </plugin>
       
       <plugin
          class="aQute.lib.deployer.obr.LocalOBR"
-         icon="icons/bundlefolder.png"
-         name="OBR Repository with Local Storage">
+         icon="icons/database.png"
+         name="OBR Repository with Local Storage"
+         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="local" type="string" description="Local directory path"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
@@ -697,6 +718,7 @@
       
       <plugin
          class="aQute.bnd.maven.MavenRepository"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="Maven Local Repository">
          <property name="name" type="string" description="Name of the repository"/>
@@ -705,6 +727,7 @@
       
       <plugin
          class="aQute.bnd.maven.support.MavenRemoteRepository"
+         rank="10"
          icon="icons/bundlefolder.png"
          name="Maven Remote Repository">
          <property name="repositories" type="string" description="List of remote repository URLs"/>
@@ -733,6 +756,12 @@
          plugin="bndtools.core"
          code="0"
       />
+      <statusHandler
+         id="bndtools.core.debug.junitStatusHandler"
+         class="bndtools.launch.ui.JUnitViewOpenerStatusHandler"
+         plugin="bndtools.core"
+         code="999"
+      />
    </extension>
    
    <extension point="bndtools.core.validators">
@@ -753,5 +782,13 @@
          </enabledWhen>
       </page>
    </extension>
-
+   
+   <extension point="runExportWizards">
+      <wizard
+         name="Executable JAR"
+         class="bndtools.wizards.bndfile.ExecutableJarExportWizard"
+         icon="icons/jar_exec.gif"
+      />
+   </extension>
+   
  </plugin>

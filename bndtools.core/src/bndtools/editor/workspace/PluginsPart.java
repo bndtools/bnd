@@ -48,6 +48,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
+import aQute.libg.header.Attrs;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.model.clauses.HeaderClause;
@@ -241,7 +242,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     void doEdit() {
         HeaderClause header = (HeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
         if (header != null) {
-            Map<String, String> copyOfProperties = new HashMap<String, String>(header.getAttribs());
+            Attrs copyOfProperties = new Attrs(header.getAttribs());
 
             IConfigurationElement configElem = configElements.get(header.getName());
             PluginEditWizard wizard = new PluginEditWizard(configElem, copyOfProperties);

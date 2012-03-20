@@ -7,19 +7,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import bndtools.Plugin;
+import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
@@ -47,12 +51,40 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        // Check for existing launches of same resource
+        BndPreferences prefs = new BndPreferences();
+        if (prefs.getWarnExistingLaunches()) {
+            IResource launchResource = LaunchUtils.getTargetResource(configuration);
+            int processCount = 0;
+            for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+                // ... is it the same launch resource?
+                if (launchResource.equals(LaunchUtils.getTargetResource(l.getLaunchConfiguration()))) {
+                    // Iterate existing processes
+                    for(IProcess process : l.getProcesses()) {
+                        if (!process.isTerminated())
+                            processCount++;
+                    }
+                }
+            }
+
+            // Warn if existing processes running
+            if (processCount > 0) {
+                Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
+                IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                if (prompter != null) {
+                    boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
+                    if (!okay)
+                        return okay;
+                }
+            }
+        }
+
         IStatus launchStatus = getLauncherStatus();
 
         IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(launchStatus);
-
-        boolean continueLaunch = (Boolean) prompter.handleStatus(launchStatus, model);
-        return continueLaunch;
+        if (prompter != null)
+            return (Boolean) prompter.handleStatus(launchStatus, model);
+        return true;
     }
 
     @Override

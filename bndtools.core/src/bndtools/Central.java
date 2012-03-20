@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.bndtools.core.repository.WorkspaceRepoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -31,6 +32,7 @@ public class Central {
 
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
+    static WorkspaceRepoProvider workspaceRepo = null;
 
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
@@ -159,6 +161,15 @@ public class Central {
 
         return matches[0];
     }
+    
+    public synchronized static WorkspaceRepoProvider getWorkspaceRepoProvider() throws Exception {
+        if (workspaceRepo != null)
+            return workspaceRepo;
+        
+        workspaceRepo = new WorkspaceRepoProvider(Plugin.getDefault().getResourceIndexer());
+        workspaceRepo.setWorkspace(getWorkspace());
+        return workspaceRepo;
+    }
 
     public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() throws Exception {
         if (workspaceObr != null)
@@ -194,6 +205,7 @@ public class Central {
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
         workspace.addBasicPlugin(getWorkspaceObrProvider());
+        workspace.addBasicPlugin(getWorkspaceRepoProvider());
 
         return workspace;
     }

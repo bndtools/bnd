@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/bndtools.feature_1.0.1.DEV-qualifier" id="bndtools.feature" version="1.0.1.DEV-qualifier">
-      <category name="bndtools"/>
+
+   <category-def name="bndtools" label="Bndtools" />
+
+   <feature url="features/bndtools.feature_1.0.1.DEV-qualifier" id="bndtools.feature"
+      version="1.0.1.DEV-qualifier">
+      <category name="bndtools" />
    </feature>
-   <category-def name="bndtools" label="Bndtools"/>
+
+   <feature url="features/jarviewer.feature_1.0.1.DEV-qualifier" id="jarviewer.feature"
+      version="1.0.1.DEV-qualifier">
+      <category name="bndtools" />
+   </feature>
+
 </site>

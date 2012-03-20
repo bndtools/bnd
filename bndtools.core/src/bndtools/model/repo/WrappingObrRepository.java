@@ -13,10 +13,12 @@ import aQute.lib.deployer.obr.AbstractBaseOBR;
 
 public class WrappingObrRepository extends AbstractBaseOBR {
 
+    private final String location;
     private final OBRIndexProvider delegate;
     private final File cacheDir;
 
-    public WrappingObrRepository(OBRIndexProvider delegate, File cacheDir, Registry registry) {
+    public WrappingObrRepository(String location, OBRIndexProvider delegate, File cacheDir, Registry registry) {
+        this.location = location;
         this.delegate = delegate;
         this.cacheDir = cacheDir;
         this.registry = registry;
@@ -42,6 +44,10 @@ public class WrappingObrRepository extends AbstractBaseOBR {
     @Override
     public synchronized String getName() {
         return delegate.toString();
+    }
+    
+    public String getLocation() {
+        return location;
     }
 
 }

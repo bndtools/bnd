@@ -10,14 +10,13 @@
  *******************************************************************************/
 package bndtools.model.clauses;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.osgi.framework.Constants;
+
+import aQute.libg.header.Attrs;
 
 public class ImportPattern extends VersionedClause implements Cloneable {
 
-	public ImportPattern(String pattern, Map<String, String> attributes) {
+	public ImportPattern(String pattern, Attrs attributes) {
 		super(pattern, attributes);
 	}
 	public boolean isOptional() {
@@ -34,6 +33,6 @@ public class ImportPattern extends VersionedClause implements Cloneable {
 
 	@Override
 	public ImportPattern clone() {
-		return new ImportPattern(this.name, new HashMap<String, String>(this.attribs));
+		return new ImportPattern(this.name, new Attrs(this.attribs));
 	}
 }
