@@ -77,6 +77,23 @@ public class IO {
 		}
 	}
 
+	public static void copy(URL url, File file) throws IOException {
+		copy(url.openStream(),file);
+	}
+	
+	public static void copy(InputStream in, URL out) throws IOException {
+		copy(in,out,null);
+	}
+	public static void copy(InputStream in, URL out, String method) throws IOException {
+		URLConnection c = out.openConnection();
+		if ( c instanceof HttpURLConnection && method!=null) {
+			HttpURLConnection http = (HttpURLConnection)c;
+			http.setRequestMethod(method);
+		}
+		c.setDoOutput(true);
+		copy(in,c.getOutputStream());
+	}
+	
 	public static void copy(File a, File b) throws IOException {
 		if (a.isFile()) {
 			FileOutputStream out = new FileOutputStream(b);
