@@ -16,8 +16,6 @@ import java.util.Set;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.osgi.service.indexer.ResourceIndexer;
 
 import aQute.bnd.build.Project;
@@ -25,15 +23,17 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.lib.osgi.Builder;
-import bndtools.Plugin;
+import bndtools.api.ILogger;
 
 public class WorkspaceRepoProvider implements IndexProvider {
 
     // Generate warnings if the index generation takes longer than this (millisecs)
     private static final long WARNING_THRESHOLD_TIME = 1000;
 
-    private final ResourceIndexer indexer;
     private final File indexFile;
+    private final ResourceIndexer indexer;
+    private final ILogger logger;
+    
     private Workspace workspace;
 
     @GuardedBy("this")
@@ -42,10 +42,10 @@ public class WorkspaceRepoProvider implements IndexProvider {
     private boolean initialised = false;
 
 
-    
-    public WorkspaceRepoProvider(ResourceIndexer indexer) {
+    public WorkspaceRepoProvider(File indexFile, ResourceIndexer indexer, ILogger logger) {
         this.indexer = indexer;
-        this.indexFile = new File(Plugin.getDefault().getStateLocation().toFile(), "ws-index.xml");
+        this.indexFile = indexFile;
+        this.logger = logger;
     }
     
     public void setWorkspace(Workspace workspace) {
@@ -59,7 +59,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
         try {
             rebuildAll();
         } catch (Exception e) {
-            Plugin.logError("Error initialising workspace OBR index.", e);
+            logger.logError("Error initialising workspace OBR index.", e);
         } finally {
             initialised = true;
         }
@@ -109,7 +109,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
         } finally {
             long timeTaken = System.currentTimeMillis() - startingTime;
             if (timeTaken >= WARNING_THRESHOLD_TIME)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Workspace index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null));
+                logger.logWarning(String.format("Workspace index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null);
         }
     }
 

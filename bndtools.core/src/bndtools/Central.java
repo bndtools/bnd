@@ -166,8 +166,10 @@ public class Central {
         if (workspaceRepo != null)
             return workspaceRepo;
         
-        workspaceRepo = new WorkspaceRepoProvider(Plugin.getDefault().getResourceIndexer());
+        File wsIndexFile = new File(Plugin.getDefault().getStateLocation().toFile(), "ws-index.xml");
+        workspaceRepo = new WorkspaceRepoProvider(wsIndexFile, Plugin.getDefault().getResourceIndexer(), Plugin.getDefault().getLogger());
         workspaceRepo.setWorkspace(getWorkspace());
+        
         return workspaceRepo;
     }
 

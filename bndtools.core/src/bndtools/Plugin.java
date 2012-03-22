@@ -39,6 +39,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
+import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
@@ -65,7 +66,18 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ScheduledExecutorService scheduler;
 
     private volatile Central central;
-
+    
+    private final ILogger logger = new ILogger() {
+        public void logError(String message, Throwable exception) {
+            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
+        }
+        public void logWarning(String message, Throwable exception) {
+            getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, 0, message, exception));
+        }
+        public void logInfo(String message, Throwable exception) {
+            getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, exception));
+        }
+    };
 
     @Override
     public void start(BundleContext context) throws Exception {
@@ -162,15 +174,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static Plugin getDefault() {
 		return plugin;
-	}
-
-	public static void log(IStatus status) {
-		Plugin instance = plugin;
-		if(instance != null) {
-			instance.getLog().log(status);
-		} else {
-			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
-		}
 	}
 
 	public BundleContext getBundleContext() {
@@ -272,11 +275,34 @@ public class Plugin extends AbstractUIPlugin {
             }
         });
     }
+    
+    public ILogger getLogger() {
+        return logger;
+    }
+    
+    /**
+     * @deprecated Use {@link #getLogger() instead}
+     * @param status
+     */
+    @Deprecated
+    public static void log(IStatus status) {
+        Plugin instance = plugin;
+        if (instance != null) {
+            instance.getLog().log(status);
+        } else {
+            System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
+        }
+    }
 
-	public static void logError(String message, Throwable exception) {
-		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
-	}
-
+    /**
+     * @deprecated Use {@link #getLogger() instead}
+     * @param status
+     */
+    @Deprecated
+    public static void logError(String message, Throwable exception) {
+        log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
+    }
+    
     public Central getCentral() {
         return central;
     }
