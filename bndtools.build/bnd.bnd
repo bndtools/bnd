@@ -16,6 +16,7 @@ Include-Resource:\
 	${repo;bndtools.diff;latest},\
 	${repo;bndtools.release;latest},\
 	${repo;org.bndtools.embeddedrepo;latest},\
+	${repo;org.osgi.impl.bundle.bindex2.lib;latest},\
 	${repo;org.osgi.impl.bundle.bindex;latest},\
 	${repo;com.springsource.org.objectweb.asm;latest},\
 	${repo;com.springsource.org.objectweb.asm.tree;latest},\
