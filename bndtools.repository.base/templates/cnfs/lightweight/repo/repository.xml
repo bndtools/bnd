@@ -1,12 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
 
-<repository lastmodified='20111112014300.783' name='Local Repository'>
-  <resource id='biz.aQute.bnd/1.51.1' presentationname='bnd' symbolicname='biz.aQute.bnd' uri='biz.aQute.bnd/biz.aQute.bnd-1.51.1.jar' version='1.51.1'>
-    <description>
-      A utility and plugin to wrap, build, print, or otherwise manipulate
-       bundles
-    </description>
+<repository lastmodified='20120323041131.764' name='LocalRepository'>
+  <resource id='biz.aQute.bnd/1.52.3' presentationname='biz.aQute.bnd' symbolicname='biz.aQute.bnd' uri='biz.aQute.bnd/biz.aQute.bnd-1.52.3.jar' version='1.52.3'>
     <size>
-      1252615
+      1171252
     </size>
     <license>
       http://www.opensource.org/licenses/apache2.0.php; description="All
@@ -21,17 +19,9 @@
     </copyright>
     <capability name='bundle'>
       <p n='manifestversion' v='2'/>
-      <p n='presentationname' v='bnd'/>
+      <p n='presentationname' v='biz.aQute.bnd'/>
       <p n='symbolicname' v='biz.aQute.bnd'/>
-      <p n='version' t='version' v='1.51.1'/>
-    </capability>
-    <capability name='package'>
-      <p n='package' v='aQute.bnd.service'/>
-      <p n='version' t='version' v='1.44.0'/>
-    </capability>
-    <capability name='package'>
-      <p n='package' v='aQute.bnd.service.url'/>
-      <p n='version' t='version' v='1.51.1'/>
+      <p n='version' t='version' v='1.52.3'/>
     </capability>
     <capability name='package'>
       <p n='package' v='aQute.bnd.service.action'/>
@@ -42,120 +32,58 @@
       <p n='version' t='version' v='1.0.0'/>
     </capability>
     <capability name='package'>
-      <p n='package' v='org.osgi.service.coordinator'/>
-      <p n='uses' v='org.osgi.framework'/>
-      <p n='version' t='version' v='1.0.0'/>
+      <p n='package' v='aQute.bnd.service.url'/>
+      <p n='version' t='version' v='1.52.3'/>
     </capability>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.ui.ide)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.ui.ide; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jface.text)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jface.text; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.ui.workbench.texteditor)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.ui.workbench.texteditor; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.ui.editors)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.ui.editors; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.ui)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.ui; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.debug.ui)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.debug.ui; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jdt.core)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jdt.core; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jdt.ui)(version&gt;=3.3.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jdt.ui; [3.3.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.core.runtime)(version&gt;=3.2.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.core.runtime; [3.2.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jdt.launching)(version&gt;=3.2.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jdt.launching; [3.2.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jdt.debug.ui)(version&gt;=3.2.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jdt.debug.ui; [3.2.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.jdt.junit)(version&gt;=3.2.0)(!(version&gt;=4.0.0)))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.jdt.junit; [3.2.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.junit)(version&gt;=0.0.0))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.junit; 0.0.0
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.osgi.services)(version&gt;=0.0.0))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.osgi.services; 0.0.0
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.apache.ant)(version&gt;=0.0.0))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.apache.ant; 0.0.0
-    </require>
-    <require extend='false' filter='(&amp;(symbolicname=org.eclipse.ui.console)(version&gt;=0.0.0))' multiple='false' name='bundle' optional='false'>
-      Require Bundle org.eclipse.ui.console; 0.0.0
-    </require>
-    <require extend='false' filter='(&amp;(package=aQute.bnd.service.url)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package aQute.bnd.service.url
-    </require>
+    <capability name='package'>
+      <p n='package' v='aQute.bnd.service.diff'/>
+      <p n='version' t='version' v='1.52.3'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='aQute.bnd.service'/>
+      <p n='version' t='version' v='1.45.0'/>
+    </capability>
     <require extend='false' filter='(&amp;(package=javax.naming)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
       Import package javax.naming
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.namespace
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.parsers
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.transform)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.transform
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.transform.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.transform.dom
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.transform.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.transform.sax
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.transform.stream)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.transform.stream
-    </require>
-    <require extend='false' filter='(&amp;(package=javax.xml.xpath)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package javax.xml.xpath
-    </require>
-    <require extend='false' filter='(&amp;(package=junit.framework)(version&gt;=3.8.0)(!(version&gt;=4.0.0)))' multiple='false' name='package' optional='false'>
-      Import package junit.framework ;version=[3.8.0,4.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(package=org.apache.tools.ant)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
-      Import package org.apache.tools.ant
-    </require>
-    <require extend='false' filter='(&amp;(package=org.apache.tools.ant.types)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package org.apache.tools.ant.types
     </require>
     <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.5.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
       Import package org.osgi.framework ;version=[1.5.0,2.0.0)
     </require>
-    <require extend='false' filter='(&amp;(package=org.osgi.service.bindex)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
-      Import package org.osgi.service.bindex ;version=[1.0.0,2.0.0)
+    <require extend='false' filter='(&amp;(package=javax.xml.namespace)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.namespace
     </require>
-    <require extend='false' filter='(&amp;(package=org.osgi.service.component.annotations)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
-      Import package org.osgi.service.component.annotations ;version=[1.2.0,2.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(package=org.osgi.service.coordinator)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
-      Import package org.osgi.service.coordinator ;version=[1.0.0,2.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(package=org.osgi.service.packageadmin)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
-      Import package org.osgi.service.packageadmin ;version=[1.2.0,2.0.0)
-    </require>
-    <require extend='false' filter='(&amp;(package=org.w3c.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package org.w3c.dom
+    <require extend='false' filter='(&amp;(package=javax.xml.transform.stream)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.transform.stream
     </require>
     <require extend='false' filter='(&amp;(package=org.xml.sax)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
       Import package org.xml.sax
     </require>
-    <require extend='false' filter='(&amp;(package=org.xml.sax.helpers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
-      Import package org.xml.sax.helpers
+    <require extend='false' filter='(&amp;(package=javax.xml.xpath)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.xpath
     </require>
-    <require extend='false' filter='(|(ee=J2SE-1.5))' multiple='false' name='ee' optional='false'>
-      Execution Environment (|(ee=J2SE-1.5))
+    <require extend='false' filter='(&amp;(package=org.apache.tools.ant.types)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.apache.tools.ant.types
+    </require>
+    <require extend='false' filter='(&amp;(package=org.w3c.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.w3c.dom
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.transform.dom)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.transform.dom
+    </require>
+    <require extend='false' filter='(&amp;(package=org.apache.tools.ant)(version&gt;=0.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.apache.tools.ant
+    </require>
+    <require extend='false' filter='(&amp;(package=junit.framework)(version&gt;=3.8.0)(!(version&gt;=4.0.0)))' multiple='false' name='package' optional='false'>
+      Import package junit.framework ;version=[3.8.0,4.0.0)
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.transform)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.transform
+    </require>
+    <require extend='false' filter='(&amp;(package=javax.xml.parsers)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package javax.xml.parsers
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.component.annotations)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.component.annotations ;version=[1.2.0,2.0.0)
     </require>
   </resource>
   <resource id='org.osgi.impl.bundle.bindex/2.2.0' presentationname='org.osgi.impl.bundle.bindex' symbolicname='org.osgi.impl.bundle.bindex' uri='org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar' version='2.2.0'>
