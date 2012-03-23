@@ -55,8 +55,8 @@ main = hakyll $ do
     -- Compile templates
     match "templates/*" $ compile templateCompiler
 
-    -- Compile topbar, footer
-    match (list ["navigation.html", "footer.html"]) $ compile readPageCompiler
+    -- Compile topbar, sidebar, footer
+    match (list ["topbar.html", "sidebar.html", "footer.html"]) $ compile readPageCompiler
 
     -- Html-sourced pages
     match (list ["index.html", "installation.html", "training.html" ]) $ do
@@ -89,7 +89,8 @@ processPage = processPagePartial
           >>> relativizeUrlsCompiler
 
 processPagePartial :: Compiler (Page String) (Page String)
-processPagePartial = generatePlaceholder "navigation.html" "navigation"
+processPagePartial = generatePlaceholder "sidebar.html" "sidebar"
+          >>> generatePlaceholder "topbar.html" "topbar"
           >>> generatePlaceholder "footer.html" "footer"
           >>> applyTemplateCompiler "templates/default.html"
 

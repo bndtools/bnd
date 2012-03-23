@@ -1,0 +1,12 @@
+To build the site:
+==================
+
+$ rm -r out
+$ ./generate.sh
+
+
+To test the site:
+=================
+
+$ ./serve.sh
+$ open http://localhost:8000/
