@@ -696,8 +696,7 @@
       <plugin
          class="aQute.lib.deployer.obr.OBR"
          icon="icons/database.png"
-         name="OBR Repository (read-only)"
-         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
+         name="OBR Repository (read-only)">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
          <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
@@ -707,8 +706,7 @@
       <plugin
          class="aQute.lib.deployer.obr.LocalOBR"
          icon="icons/database.png"
-         name="OBR Repository with Local Storage"
-         deprecated="Old-style OBR repository. Use an 'Indexed Repository' instead.">
+         name="OBR Repository with Local Storage">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="local" type="string" description="Local directory path"/>
          <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>

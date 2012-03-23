@@ -34,6 +34,7 @@
    <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
    
+      <!--
       <plugin
          class="aQute.lib.repository.FixedIndexedRepo"
          rank="15"
@@ -56,6 +57,7 @@
          <property name="phase" type="string" description="Resolution Phase (build, runtime or any)"/>
          <property name="pretty" type="boolean" description="Use pretty-printed XML index"/>
       </plugin>
+      -->
       
       <plugin
          class="org.osgi.impl.bundle.bindex.BundleIndexerImpl"
