@@ -40,7 +40,6 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
@@ -53,6 +52,7 @@ import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
+import bndtools.preferences.EclipseClasspathPreference;
 import bndtools.utils.Predicate;
 
 public class NewBuilder extends IncrementalProjectBuilder {
@@ -71,11 +71,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private List<String> buildLog;
     private int logLevel = LOG_NONE;
+    private ScopedPreferenceStore projectPrefs;
 
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
         BndPreferences prefs = new BndPreferences();
         logLevel = prefs.getBuildLogging();
+        projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
 
         // Prepare build listeners
         BuildListeners listeners = new BuildListeners();
@@ -495,23 +497,15 @@ public class NewBuilder extends IncrementalProjectBuilder {
         model.clear();
         
         // Load Eclipse classpath containers
-        List<File> files = new ArrayList<File>(20);
-        IJavaProject javaProject = JavaCore.create(getProject());
-        
-        accumulateClasspath(files, javaProject, false, new Predicate<IClasspathContainer>() {
-            public boolean select(IClasspathContainer container) {
-                // Exclude the Bnd and JRE containers
-                boolean result = true;
-                if (BndContainerInitializer.PATH_ID.equals(container.getPath())) {
-                    result = false;
-                } else if (JavaRuntime.JRE_CONTAINER.equals(container.getPath().segment(0))) {
-                    result = false;
-                }
-                return result;
+        model.clearClasspath();
+        EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
+        if (classpathPref == EclipseClasspathPreference.expose) {
+            List<File> classpathFiles = new ArrayList<File>(20);
+            accumulateClasspath(classpathFiles, JavaCore.create(getProject()), false, new ClasspathContainerFilter());
+            for (File file : classpathFiles) {
+                log(LOG_FULL, "Adding Eclipse classpath entry %s", file.getAbsolutePath());
+                model.addClasspath(file);
             }
-        });
-        for (File file : files) {
-            System.out.println("------> Adding to classpath: " + file);
         }
 
         if (buildAction == Action.build) {

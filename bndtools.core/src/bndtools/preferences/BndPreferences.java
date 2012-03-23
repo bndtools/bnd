@@ -73,4 +73,8 @@ public class BndPreferences {
         return store.getBoolean(PREF_HIDE_WARNING_EXTERNAL_FILE);
     }
 
+    public IPreferenceStore getStore() {
+        return store;
+    }
+
 }

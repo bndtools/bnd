@@ -19,10 +19,12 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import bndtools.Plugin;
 import bndtools.preferences.CompileErrorAction;
+import bndtools.preferences.EclipseClasspathPreference;
 
 public class BndProjectPropertyPage extends PropertyPage {
 
     private CompileErrorAction action;
+    private EclipseClasspathPreference classpathPref;
 
     public BndProjectPropertyPage() {
         setTitle("Bndtools");
@@ -55,6 +57,17 @@ public class BndProjectPropertyPage extends PropertyPage {
 
         final Button btnContinue = new Button(grpJavaCompilationErrors, SWT.RADIO);
         btnContinue.setText("Continue building the bundle");
+        
+        Group grpEclipseClasspathEntries = new Group(container, SWT.NONE);
+        grpEclipseClasspathEntries.setLayout(new GridLayout(1, false));
+        grpEclipseClasspathEntries.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        grpEclipseClasspathEntries.setText("Eclipse Classpath Entries");
+        
+        final Button btnExposeEclipseClasspath = new Button(grpEclipseClasspathEntries, SWT.RADIO);
+        btnExposeEclipseClasspath.setText("Expose Eclipse classpath entries to bnd");
+        
+        final Button btnHideEclipseClasspath = new Button(grpEclipseClasspathEntries, SWT.RADIO);
+        btnHideEclipseClasspath.setText("Hide Eclipse classpath entries (safer)");
 
         // LOAD DATA
         IPreferenceStore store = getPreferenceStore();
@@ -70,9 +83,17 @@ public class BndProjectPropertyPage extends PropertyPage {
             btnDelete.setSelection(false); btnSkip.setSelection(false); btnContinue.setSelection(true);
             break;
         }
+        classpathPref = EclipseClasspathPreference.parse(store.getString(EclipseClasspathPreference.PREFERENCE_KEY));
+        switch (classpathPref) {
+        case expose:
+            btnExposeEclipseClasspath.setSelection(true); btnHideEclipseClasspath.setSelection(false);
+            break;
+        case hide:
+            btnExposeEclipseClasspath.setSelection(false); btnHideEclipseClasspath.setSelection(true);
+        }
 
         // LISTENERS
-        SelectionAdapter listener = new SelectionAdapter() {
+        SelectionAdapter errorActionListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnDelete.getSelection())
@@ -81,12 +102,23 @@ public class BndProjectPropertyPage extends PropertyPage {
                     action = CompileErrorAction.skip;
                 else if (btnContinue.getSelection())
                     action = CompileErrorAction.build;
-            };
+            }
         };
-        btnDelete.addSelectionListener(listener);
-        btnSkip.addSelectionListener(listener);
-        btnContinue.addSelectionListener(listener);
+        btnDelete.addSelectionListener(errorActionListener);
+        btnSkip.addSelectionListener(errorActionListener);
+        btnContinue.addSelectionListener(errorActionListener);
 
+        SelectionAdapter classpathPrefListener = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (btnExposeEclipseClasspath.getSelection())
+                    classpathPref = EclipseClasspathPreference.expose;
+                else if (btnHideEclipseClasspath.getSelection())
+                    classpathPref = EclipseClasspathPreference.hide;
+            }
+        };
+        btnExposeEclipseClasspath.addSelectionListener(classpathPrefListener);
+        btnHideEclipseClasspath.addSelectionListener(classpathPrefListener);
 
         return container;
     }
@@ -107,6 +139,7 @@ public class BndProjectPropertyPage extends PropertyPage {
     public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
         store.setValue(CompileErrorAction.PREFERENCE_KEY, action.name());
+        store.setValue(EclipseClasspathPreference.PREFERENCE_KEY, classpathPref.name());
 
         return true;
     }
