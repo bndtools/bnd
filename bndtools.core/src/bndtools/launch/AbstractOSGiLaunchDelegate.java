@@ -3,8 +3,11 @@ package bndtools.launch;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IResource;
@@ -13,7 +16,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
@@ -27,12 +32,12 @@ import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
+    private static final Map<String, ProjectLauncher> launcherMap = new ConcurrentHashMap<String, ProjectLauncher>();
+    
     protected Project model;
-
+    
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
-
     protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
-
     protected abstract IStatus getLauncherStatus();
 
     @Override
@@ -86,7 +91,41 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             return (Boolean) prompter.handleStatus(launchStatus, model);
         return true;
     }
-
+    
+    @Override
+    public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
+        // Register listener to clean up temp files on exit of launched JVM
+        final ProjectLauncher launcher = getProjectLauncher();
+        IDebugEventSetListener listener = new IDebugEventSetListener() {
+            public void handleDebugEvents(DebugEvent[] events) {
+                for (DebugEvent event : events) {
+                    if (event.getKind() == DebugEvent.TERMINATE) {
+                        Object source = event.getSource();
+                        if (source instanceof IProcess) {
+                            ILaunch processLaunch = ((IProcess) source).getLaunch();
+                            if (processLaunch == launch) {
+                                // Not interested in any further events => unregister this listener
+                                DebugPlugin.getDefault().removeDebugEventListener(this);
+                                
+                                // Cleanup. Guard with a draconian catch because changes in the ProjectLauncher API
+                                // *may* cause LinkageErrors.
+                                try {
+                                    launcher.cleanup();
+                                } catch (Throwable t) {
+                                    Plugin.getDefault().getLogger().logError("Error cleaning launcher temporary files", t);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        DebugPlugin.getDefault().addDebugEventListener(listener);
+        
+        // Now actually launch
+        super.launch(configuration, mode, launch, monitor);
+    }
+    
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         Collection<String> paths = getProjectLauncher().getClasspath();
