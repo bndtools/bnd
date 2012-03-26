@@ -30,64 +30,85 @@ public class Launcher implements ServiceListener {
 	private SimplePermissionPolicy			policy;
 	private Runnable						mainThread;
 	private PackageAdmin					padmin;
-	private static File						propertiesFile;
-	private final Timer						timer				= new Timer();
 	private final List<BundleActivator>		embedded			= new ArrayList<BundleActivator>();
-	private TimerTask						watchdog			= null;
 	private final Map<Bundle, Throwable>	errors				= new HashMap<Bundle, Throwable>();
 	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<File, Bundle>();
 
 	public static void main(String[] args) {
 		try {
+			final InputStream in;
+			final File propertiesFile;
+			
 			String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
-			assert path != null;
-			propertiesFile = new File(path).getAbsoluteFile();
-			propertiesFile.deleteOnExit();
-			FileInputStream in = new FileInputStream(propertiesFile);
+			if (path != null) {
+				propertiesFile = new File(path).getAbsoluteFile();
+				if (!propertiesFile.isFile())
+					errorAndExit("Specified launch file `%s' was not found.", path);
+				in = new FileInputStream(propertiesFile);
+			} else {
+				propertiesFile = null;
+				in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
+				if (in == null) {
+					printUsage();
+					errorAndExit("Launch file not specified, and no embedded properties found.");
+				}
+			}
+			
 			Properties properties = new Properties();
 			try {
 				properties.load(in);
 			} finally {
 				in.close();
 			}
-			Launcher target = new Launcher(properties);
+			Launcher target = new Launcher(properties, propertiesFile);
 			target.run(args);
 		} catch (Throwable t) {
 			// Last resort ... errors should be handled lower
 			t.printStackTrace(System.err);
 		}
 	}
+	
+	private static void printUsage() {
+		System.out.println("Usage: java -Dlauncher.properties=<launcher.properties> -jar <launcher.jar>");
+	}
+	
+	private static void errorAndExit(String message, Object... args) {
+		System.err.println(String.format(message, args));
+		System.exit(1);
+	}
 
-	public Launcher(Properties properties) throws Exception {
+	public Launcher(Properties properties, final File propertiesFile) throws Exception {
 		this.properties = properties;
 		System.getProperties().putAll(properties);
 		this.parms = new LauncherConstants(properties);
 
 		out = System.err;
 		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
-		watchdog = new TimerTask() {
-			long	begin	= propertiesFile.lastModified();
-
-			public void run() {
-				if (begin < propertiesFile.lastModified()) {
-					try {
-						FileInputStream in = new FileInputStream(propertiesFile);
-						Properties properties = new Properties();
+		if (propertiesFile != null) {
+			TimerTask watchdog = new TimerTask() {
+				long	begin	= propertiesFile.lastModified();
+	
+				public void run() {
+					if (begin < propertiesFile.lastModified()) {
 						try {
-							properties.load(in);
-						} finally {
-							in.close();
+							FileInputStream in = new FileInputStream(propertiesFile);
+							Properties properties = new Properties();
+							try {
+								properties.load(in);
+							} finally {
+								in.close();
+							}
+							parms = new LauncherConstants(properties);						
+							update();
+						} catch (Exception e) {
+							error("Error in updating the framework from the properties: %s", e);
 						}
-						parms = new LauncherConstants(properties);						
-						update();
-					} catch (Exception e) {
-						error("Error in updating the framework from the properties: %s", e);
+						begin = propertiesFile.lastModified();
 					}
-					begin = propertiesFile.lastModified();
 				}
-			}
-		};
-		timer.scheduleAtFixedRate(watchdog, 5000, 1000);
+			};
+			new Timer().scheduleAtFixedRate(watchdog, 5000, 1000);
+		}
 	}
 
 	private void run(String args[]) throws Throwable {

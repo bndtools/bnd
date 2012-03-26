@@ -1,13 +1,20 @@
 package aQute.launcher.constants;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 public class LauncherConstants {
 
-	public final static String	LAUNCHER_PROPERTIES		= "launcher.properties";
-	public final static String	LAUNCHER_ARGUMENTS		= "launcher.arguments";
-	public final static String	LAUNCHER_READY			= "launcher.ready";
+	public final static String	LAUNCHER_PROPERTIES			= "launcher.properties";
+	public final static String	DEFAULT_LAUNCHER_PROPERTIES	= "launcher.properties";
+	public final static String	LAUNCHER_ARGUMENTS			= "launcher.arguments";
+	public final static String	LAUNCHER_READY				= "launcher.ready";
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
 	// so cannot refer.

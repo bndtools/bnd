@@ -40,7 +40,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * Cleanup the properties file. Is called after the process terminates.
 	 */
 
-	protected void cleanup() {
+	public void cleanup() {
 		propertiesFile.delete();
 		project.trace("Deleted ", propertiesFile.getAbsolutePath());
 	}
@@ -124,7 +124,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		final Properties p = lc.getProperties();
 		p.setProperty(RUNBUNDLES, Processor.join(runbundles, ", \\\n  "));
 
-		jar.putResource("descriptor.properties", new WriteResource() {
+		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new WriteResource() {
 			@Override public void write(OutputStream outStream) throws IOException, Exception {
 				p.store(outStream, "comment");
 			}

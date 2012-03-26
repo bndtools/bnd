@@ -229,7 +229,7 @@ public abstract class ProjectLauncher {
 	 * the properties file.
 	 */
 	
-	protected void cleanup() {
+	public void cleanup() {
 		// do nothing by default
 	}
 
