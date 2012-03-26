@@ -82,7 +82,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
 
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
         cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP);
+        ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP, composite);
         eeDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
         eeDecor.setDescriptionText("The runtime Java Virtual Machine will be required/assumed " +
         		"\nto support this Execution Environment");

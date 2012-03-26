@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
-import org.bndtools.core.ui.IFormPageFactory.Mode;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
