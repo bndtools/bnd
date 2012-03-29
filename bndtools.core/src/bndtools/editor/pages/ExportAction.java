@@ -16,14 +16,12 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
-import bndtools.editor.model.BndEditModel;
 import bndtools.launch.LaunchUtils;
 import bndtools.wizards.bndfile.RunExportSelectionWizard;
 
