@@ -12,7 +12,6 @@ package bndtools.wizards.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -278,15 +277,15 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             setMessage(null);
         }
 
-        private boolean canCreate(File file) {
-            while (!file.exists()) {
-                file= file.getParentFile();
-                if (file == null)
-                    return false;
-            }
-
-            return file.canWrite();
-        }
+//        private boolean canCreate(File file) {
+//            while (!file.exists()) {
+//                file= file.getParentFile();
+//                if (file == null)
+//                    return false;
+//            }
+//
+//            return file.canWrite();
+//        }
     }
 
 
