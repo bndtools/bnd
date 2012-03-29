@@ -39,11 +39,11 @@ import org.osgi.framework.Version;
 public class ResourceImpl implements Resource
 {
 
-    private final Map m_map = new HashMap();
-    private final List m_capList = new ArrayList();
-    private final List m_reqList = new ArrayList();
+    private final Map<String, Object> m_map = new HashMap<String, Object>();
+    private final List<Capability> m_capList = new ArrayList<Capability>();
+    private final List<Requirement> m_reqList = new ArrayList<Requirement>();
     private Repository m_repo;
-    private Map m_uris;
+    private Map<String, String> m_uris;
     private transient int m_hash;
 
     public ResourceImpl()
@@ -92,7 +92,7 @@ public class ResourceImpl implements Resource
         this.m_repo = repository;
     }
 
-    public Map getProperties()
+    public Map<String, Object> getProperties()
     {
         convertURIs();
         return m_map;
@@ -153,7 +153,8 @@ public class ResourceImpl implements Resource
 
     public String[] getCategories()
     {
-        List catList = (List) m_map.get(CATEGORY);
+        @SuppressWarnings("unchecked")
+        List<String> catList = (List<String>) m_map.get(CATEGORY);
         if (catList == null)
         {
             return new String[0];
@@ -163,10 +164,11 @@ public class ResourceImpl implements Resource
 
     public void addCategory(String category)
     {
-        List catList = (List) m_map.get(CATEGORY);
+        @SuppressWarnings("unchecked")
+        List<String> catList = (List<String>) m_map.get(CATEGORY);
         if (catList == null)
         {
-            catList = new ArrayList();
+            catList = new ArrayList<String>();
             m_map.put(CATEGORY, catList);
         }
         catList.add(category);
@@ -194,7 +196,7 @@ public class ResourceImpl implements Resource
         {
             if (m_uris == null)
             {
-                m_uris = new HashMap();
+                m_uris = new HashMap<String, String>();
             }
             m_uris.put(key, value);
         }
@@ -209,7 +211,7 @@ public class ResourceImpl implements Resource
         else if (Property.SET.equals(type) || CATEGORY.equals(key))
         {
             StringTokenizer st = new StringTokenizer(value, ",");
-            Set s = new HashSet();
+            Set<String> s = new HashSet<String>();
             while (st.hasMoreTokens())
             {
                 s.add(st.nextToken().trim());
@@ -226,7 +228,7 @@ public class ResourceImpl implements Resource
     {
         if (m_uris != null)
         {
-            for (Iterator it = m_uris.keySet().iterator(); it.hasNext();)
+            for (Iterator<String> it = m_uris.keySet().iterator(); it.hasNext();)
             {
                 String key = (String) it.next();
                 String val = (String) m_uris.get(key);

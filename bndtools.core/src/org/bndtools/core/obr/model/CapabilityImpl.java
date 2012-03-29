@@ -30,8 +30,8 @@ import org.apache.felix.bundlerepository.impl.PropertyImpl;
 public class CapabilityImpl implements Capability
 {
     private String m_name = null;
-    private final Map m_map = new HashMap();
-    private final List m_list = new ArrayList();
+    private final Map<String, Object> m_map = new HashMap<String, Object>();
+    private final List<Property> m_list = new ArrayList<Property>();
 
     public CapabilityImpl()
     {
@@ -61,7 +61,7 @@ public class CapabilityImpl implements Capability
         m_name = name.intern();
     }
 
-    public Map getPropertiesAsMap()
+    public Map<String, Object> getPropertiesAsMap()
     {
         return m_map;
     }

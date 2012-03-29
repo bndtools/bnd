@@ -22,12 +22,10 @@ import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Resource;
 
-class ResourceComparator implements Comparator
+class ResourceComparator implements Comparator<Resource>
 {
-    public int compare(Object o1, Object o2)
+    public int compare(Resource r1, Resource r2)
     {
-        Resource r1 = (Resource) o1;
-        Resource r2 = (Resource) o2;
         String name1 = r1.getPresentationName();
         String name2 = r2.getPresentationName();
         if (name1 == null)

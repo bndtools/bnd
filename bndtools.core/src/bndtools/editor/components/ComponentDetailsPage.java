@@ -350,7 +350,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		viewerProperties.editElement("name", 0);
 	}
 	void doRemoveProperty() {
-		Iterator iter = ((IStructuredSelection) viewerProperties.getSelection()).iterator();
+        @SuppressWarnings("unchecked")
+        Iterator<Object> iter = ((IStructuredSelection) viewerProperties.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
 			properties.remove(item);
@@ -425,7 +426,8 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		}
 	}
 	void doRemoveProvide() {
-		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerProvide.getSelection()).iterator();
+		@SuppressWarnings("unchecked")
+		Iterator<Object> iter = ((IStructuredSelection) viewerProvide.getSelection()).iterator();
 		while(iter.hasNext()) {
 			Object item = iter.next();
 			provides.remove(item);
@@ -558,9 +560,10 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		}
 	}
 	void doRemoveReference() {
-		@SuppressWarnings("unchecked") Iterator iter = ((IStructuredSelection) viewerReferences.getSelection()).iterator();
+		@SuppressWarnings("unchecked")
+        Iterator<ComponentSvcReference> iter = ((IStructuredSelection) viewerReferences.getSelection()).iterator();
 		while(iter.hasNext()) {
-			ComponentSvcReference svcRef = (ComponentSvcReference) iter.next();
+			ComponentSvcReference svcRef = iter.next();
 			references.remove(svcRef);
 			viewerReferences.remove(svcRef);
 			markDirty(PROP_REFERENCES);

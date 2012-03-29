@@ -16,7 +16,8 @@ import java.util.List;
 public class CircularDependencyException extends Exception {
 
 	private static final long serialVersionUID = 1L;
-	private final List circle;
+	@SuppressWarnings("rawtypes")
+    private final List circle;
 
 	public CircularDependencyException(@SuppressWarnings("rawtypes") List circle) {
 		this.circle = circle;

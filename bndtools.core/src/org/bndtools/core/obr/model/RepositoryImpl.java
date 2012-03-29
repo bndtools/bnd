@@ -34,7 +34,7 @@ public class RepositoryImpl implements Repository
     private String m_uri = null;
     private Resource[] m_resources = null;
     private Referral[] m_referrals = null;
-    private Set m_resourceSet = new HashSet();
+    private Set<Resource> m_resourceSet = new HashSet<Resource>();
 
     public RepositoryImpl()
     {
