@@ -176,7 +176,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             final String name= null;//fNameGroup.getName();
 
             // check whether the project name field is empty
-            if (name.length() == 0) {
+            if ((name == null) || (name.length() == 0)) {
                 setErrorMessage(null);
                 setMessage("Enter a project name.");
                 setPageComplete(false);
@@ -222,7 +222,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             final String location= null;//fLocationGroup.getLocation().toOSString();
 
             // check whether location is empty
-            if (location.length() == 0) {
+            if ((location == null) || (location.length() == 0)) {
                 setErrorMessage(null);
                 setMessage("Enter a location for the project.");
                 setPageComplete(false);
