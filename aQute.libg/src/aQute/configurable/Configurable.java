@@ -290,7 +290,7 @@ public class Configurable<T> {
 		
 		private Map<?, ?> toMap(Object o) {
 			if ( o instanceof Map) 
-				return (Map) o;
+				return (Map<?, ?>) o;
 			
 			throw new IllegalArgumentException(
 					"Cannot convert " + o + " to a map as requested");

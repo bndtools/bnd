@@ -138,7 +138,7 @@ public class ClassParserTest extends TestCase {
 		} else if (t instanceof GenericArrayType) {
 			sb.append("[" + ((GenericArrayType) t).getGenericComponentType());
 		} else if (t instanceof TypeVariable) {
-			TypeVariable tv = (TypeVariable<?>) t;
+			TypeVariable<?> tv = (TypeVariable<?>) t;
 			sb.append("T");
 			sb.append(tv.getName());
 			for (Type upper : tv.getBounds()) {

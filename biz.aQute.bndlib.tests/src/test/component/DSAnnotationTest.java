@@ -352,7 +352,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 	
 	@Component(name="bottom") public class Bottom extends Top{
-		void unsetLogService(LogService l, Map map) {
+		void unsetLogService(LogService l, Map<Object, Object> map) {
 			
 		}
 		
@@ -414,7 +414,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private void setLogService( LogService l) {
 			
 		}
-		protected void unsetLogService( LogService l, Map map) {
+		protected void unsetLogService( LogService l, Map<Object, Object> map) {
 			
 		}
 		

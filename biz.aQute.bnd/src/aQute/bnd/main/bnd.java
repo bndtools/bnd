@@ -1532,7 +1532,7 @@ public class bnd extends Processor {
 	}
 
 	<T extends Comparable<?>> void printMultiMap(Map<T, ? extends Collection<T>> map) {
-		SortedList keys = new SortedList<Object>(map.keySet());
+		SortedList<Object> keys = new SortedList<Object>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
 

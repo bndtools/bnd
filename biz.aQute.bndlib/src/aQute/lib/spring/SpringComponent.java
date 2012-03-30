@@ -2,6 +2,7 @@ package aQute.lib.spring;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.*;
 
 import javax.xml.transform.*;
@@ -67,20 +68,20 @@ public class SpringComponent implements AnalyzerPlugin {
 
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
 	    Jar jar = analyzer.getJar();
-		Map dir = (Map) jar.getDirectories().get("META-INF/spring");
+	    Map<String, Resource> dir = (Map<String, Resource>) jar.getDirectories().get("META-INF/spring");
 		if ( dir == null || dir.isEmpty())
 			return false;
 		
-		for (Iterator i = dir.entrySet().iterator(); i.hasNext();) {
-			Map.Entry entry = (Map.Entry) i.next();
+		for (Iterator<Entry<String, Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
+			Entry<String, Resource> entry = i.next();
 			String path = (String) entry.getKey();
 			Resource resource = (Resource) entry.getValue();
 			if (SPRING_SOURCE.matcher(path).matches()) {
 				try {
 				InputStream in = resource.openInputStream();
-				Set set = analyze(in);
+				Set<CharSequence> set = analyze(in);
 				in.close();
-				for (Iterator r = set.iterator(); r.hasNext();) {
+				for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
 					PackageRef pack = analyzer.getPackageRef((String) r.next());
 					if ( !QN.matcher(pack.getFQN()).matches())
 					    analyzer.warning("Package does not seem a package in spring resource ("+path+"): " + pack );

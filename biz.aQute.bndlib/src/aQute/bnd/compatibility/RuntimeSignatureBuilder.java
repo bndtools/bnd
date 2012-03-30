@@ -18,7 +18,7 @@ public class RuntimeSignatureBuilder {
 				.getParameterTypes()));
 	}
 
-	static public String identity(Constructor m) {
+	static public String identity(Constructor<?> m) {
 		return Scope.constructorIdentity(getDescriptor(void.class, m.getParameterTypes()));
 	}
 
@@ -56,7 +56,7 @@ public class RuntimeSignatureBuilder {
 			);
 		}
 
-		for (Constructor constr : c.getConstructors()) {
+		for (Constructor<?> constr : c.getConstructors()) {
 			add(local, // class scope
 					local, // enclosing
 					constr.getModifiers(), // access modifiers
@@ -160,7 +160,7 @@ public class RuntimeSignatureBuilder {
 		return null;
 	}
 
-	private GenericParameter[] convert(TypeVariable vars[]) {
+	private GenericParameter[] convert(TypeVariable<?> vars[]) {
 		if (vars == null)
 			return null;
 

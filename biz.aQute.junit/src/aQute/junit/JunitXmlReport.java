@@ -115,7 +115,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
-	public void begin(List classNames, int realcount) {
+	public void begin(List<Test> classNames, int realcount) {
 	}
 
 	public void end() {

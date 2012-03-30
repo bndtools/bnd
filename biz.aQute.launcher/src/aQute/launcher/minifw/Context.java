@@ -15,13 +15,12 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
     int             state = Bundle.INSTALLED;
     JarFile         jar;
     Manifest        manifest;
-    TreeSet         keys;
-    private TreeSet paths;
+    private TreeSet<String> paths;
 	private File	jarFile;
 
-    class Dict extends Dictionary {
+    class Dict extends Dictionary<String, Object> {
 
-        public Enumeration elements() {
+        public Enumeration<Object> elements() {
             return Collections.enumeration(manifest.getMainAttributes()
                     .values());
         }
@@ -35,9 +34,9 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
             return manifest.getMainAttributes().isEmpty();
         }
 
-        public Enumeration keys() {
-            Vector v = new Vector();
-            for (Iterator i = manifest.getMainAttributes().keySet().iterator(); i
+        public Enumeration<String> keys() {
+            Vector<String> v = new Vector<String>();
+            for (Iterator<Object> i = manifest.getMainAttributes().keySet().iterator(); i
                     .hasNext();) {
                 Attributes.Name name = (Attributes.Name) i.next();
                 v.add(name.toString());
@@ -45,7 +44,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
             return v.elements();
         }
 
-        public Object put(Object key, Object value) {
+        public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
 
@@ -89,15 +88,15 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
         return getResource(path);
     }
 
-    public Enumeration getEntryPaths(String path) {
+    public Enumeration<?> getEntryPaths(String path) {
         throw new UnsupportedOperationException();
     }
 
-    public Dictionary getHeaders() {
+    public Dictionary<String, Object> getHeaders() {
         return new Dict();
     }
 
-    public Dictionary getHeaders(String locale) {
+    public Dictionary<String, Object> getHeaders(String locale) {
         return new Dict();
     }
 
@@ -109,7 +108,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
         return location;
     }
 
-    public Enumeration findEntries(String path, String filePattern,
+    public Enumeration<URL> findEntries(String path, String filePattern,
             boolean recurse) {
 
         try {
@@ -118,9 +117,9 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
             if (!path.endsWith("/"))
                 path += "/";
 
-            Vector paths = new Vector();
-            for (Iterator i = getPaths().iterator(); i.hasNext();) {
-                String entry = (String) i.next();
+            Vector<URL> paths = new Vector<URL>();
+            for (Iterator<String> i = getPaths().iterator(); i.hasNext();) {
+                String entry = i.next();
                 if (entry.startsWith(path)) {
                     if (recurse || entry.indexOf('/', path.length()) < 0) {
                         if (filePattern == null || matches(entry, filePattern)) {
@@ -158,14 +157,14 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
         } while (true);
     }
 
-    private Collection getPaths() throws Exception {
+    private Collection<String> getPaths() throws Exception {
         if (paths != null)
             return paths;
 
-        paths = new TreeSet();
+        paths = new TreeSet<String>();
         JarFile jar = new JarFile(new File(location));
         try {
-            for (Enumeration e = jar.entries(); e.hasMoreElements();) {
+            for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
                 ZipEntry entry = (JarEntry) e.nextElement();
                 paths.add(entry.getName());
             }
@@ -183,7 +182,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
         return null;
     }
 
-    public Map getSignerCertificates(int signersType) {
+    public Map<?, ?> getSignerCertificates(int signersType) {
         throw new UnsupportedOperationException();
     }
 

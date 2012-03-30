@@ -35,7 +35,7 @@ public class ComponentTest extends TestCase {
 			db = dbf.newDocumentBuilder();
 			xpath.setNamespaceContext(new NamespaceContext() {
 
-				public Iterator getPrefixes(String namespaceURI) {
+				public Iterator<String> getPrefixes(String namespaceURI) {
 					return Arrays.asList("md", "scr").iterator();
 				}
 

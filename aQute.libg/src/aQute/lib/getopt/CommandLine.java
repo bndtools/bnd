@@ -453,7 +453,7 @@ import aQute.libg.reporter.*;
 			ParameterizedType pt = (ParameterizedType) type;
 			Type c = pt.getRawType();
 			if (c instanceof Class) {
-				if (Collection.class.isAssignableFrom((Class) c)) {
+				if (Collection.class.isAssignableFrom((Class<?>) c)) {
 					return getTypeDescriptor(pt.getActualTypeArguments()[0]) + "*";
 				}
 			}
@@ -461,7 +461,7 @@ import aQute.libg.reporter.*;
 		if (!(type instanceof Class))
 			return "<>";
 
-		Class clazz = (Class) type;
+		Class<?> clazz = (Class<?>) type;
 
 		if (clazz == Boolean.class || clazz == boolean.class)
 			return ""; // Is a flag

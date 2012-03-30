@@ -186,6 +186,7 @@ public abstract class OSGiTestCase extends TestCase {
 			if (instance == null || !service.isInstance(instance))
 				fail(MessageFormat.format("Service \"{0}\" not available.", service.getName()));
 
+			@SuppressWarnings("unchecked")
 			S casted = (S) instance;
 			return operation.perform(casted);
 		} catch (InterruptedException e) {

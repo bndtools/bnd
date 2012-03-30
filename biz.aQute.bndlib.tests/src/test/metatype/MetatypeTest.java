@@ -31,7 +31,7 @@ public class MetatypeTest extends TestCase {
 			db = dbf.newDocumentBuilder();
 			xpath.setNamespaceContext(new NamespaceContext() {
 
-				public Iterator getPrefixes(String namespaceURI) {
+				public Iterator<String> getPrefixes(String namespaceURI) {
 					return Arrays.asList("md").iterator();
 				}
 
@@ -334,7 +334,7 @@ public class MetatypeTest extends TestCase {
 		p.put("clazz", "java.lang.Object");
 		p.put("constructor", "http://www.aQute.biz");
 
-		SpecialConversions trt = Configurable.createConfigurable(SpecialConversions.class, (Map) p);
+		SpecialConversions trt = Configurable.createConfigurable(SpecialConversions.class, (Map<Object, Object>) p);
 		assertEquals(SpecialConversions.X.A, trt.enumv());
 		assertEquals(".*", trt.pattern().pattern());
 		assertEquals(Object.class, trt.clazz());
@@ -466,7 +466,7 @@ public class MetatypeTest extends TestCase {
 		for (Method m : ms) {
 			p.put(m.getName(), value);
 		}
-		return Configurable.createConfigurable(interf, (Map) p);
+		return Configurable.createConfigurable(interf, (Map<Object, Object>) p);
 	}
 
 	/**
@@ -506,7 +506,7 @@ public class MetatypeTest extends TestCase {
 		p.setProperty("r", "requireConfiguration");
 		p.setProperty("i", "ignoreConfiguration");
 		p.setProperty("o", "optionalConfiguration");
-		Enums enums = Configurable.createConfigurable(Enums.class, (Map) p);
+		Enums enums = Configurable.createConfigurable(Enums.class, (Map<Object, Object>) p);
 		assertEquals(Enums.X.requireConfiguration, enums.r());
 		assertEquals(Enums.X.ignoreConfiguration, enums.i());
 		assertEquals(Enums.X.optionalConfiguration, enums.o());

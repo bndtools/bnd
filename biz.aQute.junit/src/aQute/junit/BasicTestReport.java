@@ -27,7 +27,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		this.targetBundle = targetBundle;
 	}
 	
-	public void begin(List tests, int realcount) {
+	public void begin(List<Test> tests, int realcount) {
 		activator.trace(">>>> %s, tests %s", targetBundle, tests);
 	}
 

@@ -16,7 +16,7 @@ public class JUnitEclipseReport implements TestReporter {
     PrintWriter    out;
     long           startTime;
     Bundle         targetBundle;
-    List           tests;
+    List<Test>     tests;
     boolean        verbose = false;
     Test           current;
 
@@ -44,7 +44,7 @@ public class JUnitEclipseReport implements TestReporter {
         this.targetBundle = targetBundle;    	
     }
     
-    public void begin(List tests, int realcount) {
+    public void begin(List<Test> tests, int realcount) {
         this.tests = tests;
         message("%TESTC  ", realcount + " v2");
         report(tests);
@@ -108,12 +108,12 @@ public class JUnitEclipseReport implements TestReporter {
     		message(key, (tests.indexOf(test) + 1) + "," + test);
     }
 
-    private void report(List flattened) {
+    private void report(List<Test> flattened) {
         for (int i = 0; i < flattened.size(); i++) {
             StringBuffer sb = new StringBuffer();
             sb.append(i + 1);
             sb.append(",");
-            Test test = (Test) flattened.get(i);
+            Test test = flattened.get(i);
             sb.append(flattened.get(i));
             sb.append(",");
             sb.append(test instanceof TestSuite);

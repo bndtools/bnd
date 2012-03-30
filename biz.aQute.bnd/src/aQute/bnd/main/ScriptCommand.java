@@ -28,7 +28,7 @@ public class ScriptCommand {
 //		engine.eval(s);
 	}
 
-	@SuppressWarnings("unchecked") public Object copy(Map from, Map to) {
+	public Object copy(Map<Object, Object> from, Map<Object, Object> to) {
 		for ( Object key : from.keySet()) {
 			to.put(key,from.get(key));
 		}

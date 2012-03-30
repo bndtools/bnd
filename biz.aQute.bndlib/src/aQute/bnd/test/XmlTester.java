@@ -31,7 +31,7 @@ public class XmlTester {
 	public XmlTester(InputStream in, final String... namespace) throws Exception {
 		xpath.setNamespaceContext(new NamespaceContext() {
 
-			public Iterator getPrefixes(String namespaceURI) {
+			public Iterator<String> getPrefixes(String namespaceURI) {
 				return Arrays.asList("md", "scr").iterator();
 			}
 

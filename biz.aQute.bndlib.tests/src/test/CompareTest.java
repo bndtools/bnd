@@ -70,7 +70,7 @@ public class CompareTest<O extends Serializable> extends TestCase {
 		assertEquals( "T", m.getTypeParameters()[0].getName() );
 		assertEquals( 1, m.getTypeParameters()[0].getBounds().length);
 		assertTrue( m.getTypeParameters()[0].getBounds()[0] instanceof TypeVariable );
-		assertEquals( getClass(), ((TypeVariable)m.getTypeParameters()[0].getBounds()[0]).getGenericDeclaration());
+		assertEquals( getClass(), ((TypeVariable<?>)m.getTypeParameters()[0].getBounds()[0]).getGenericDeclaration());
 		
 	}
 	

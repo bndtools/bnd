@@ -10,12 +10,12 @@ import org.osgi.framework.launch.*;
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader	loader;
 	Properties	properties;
-	Map			bundles	= new HashMap();
+	Map<Long, Bundle> bundles = new HashMap<Long, Bundle>();
 	int			ID		= 1;
 	int			state	= Bundle.INSTALLED;
 	ClassLoader	last;
 
-	public MiniFramework(Map properties) {
+	public MiniFramework(Map<Object, Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
 
@@ -57,15 +57,15 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(path);
 	}
 
-	public Enumeration getEntryPaths(String path) {
+	public Enumeration<?> getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Dictionary getHeaders() {
-		return new Hashtable();
+	public Dictionary<String, String> getHeaders() {
+		return new Hashtable<String, String>();
 	}
 
-	public Dictionary getHeaders(String locale) {
+	public Dictionary<?, ?> getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -81,7 +81,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(name);
 	}
 
-	public Enumeration getResources(String name) throws IOException {
+	public Enumeration<URL> getResources(String name) throws IOException {
 		return loader.getResources(name);
 	}
 
@@ -101,7 +101,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return true;
 	}
 
-	public Class loadClass(String name) throws ClassNotFoundException {
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		return loader.loadClass(name);
 	}
 
@@ -167,6 +167,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		try {
 			in.close();
 			try {
+				@SuppressWarnings("unused")
 				URL url = new URL(location);
 			} catch (MalformedURLException e) {
 				throw new BundleException(
@@ -182,7 +183,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
-	public Enumeration findEntries(String path, String filePattern, boolean recurse) {
+	public Enumeration<?> findEntries(String path, String filePattern, boolean recurse) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -194,7 +195,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-	public Map getSignerCertificates(int signersType) {
+	public Map<?, ?> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -278,9 +279,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	class Loader extends ClassLoader {
-		public Class findClass(String name) throws ClassNotFoundException {
-			for (Iterator i = bundles.values().iterator(); i.hasNext();) {
-				Bundle b = (Bundle) i;
+		public Class<?> findClass(String name) throws ClassNotFoundException {
+			for (Bundle b : bundles.values()) {
 				try {
 					return b.loadClass(name);
 				} catch (ClassNotFoundException e) {

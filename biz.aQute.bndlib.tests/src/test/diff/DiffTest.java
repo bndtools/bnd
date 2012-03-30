@@ -60,7 +60,7 @@ public class DiffTest extends TestCase {
 		public void foo() {}
 	}
 	
-	interface A extends Comparable, Serializable {
+	interface A extends Comparable<Object>, Serializable {
 
 	}
 
