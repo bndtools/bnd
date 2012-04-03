@@ -18,7 +18,9 @@ public class Hex {
 
 		byte[]out = new byte[ string.length()/2];
 		for ( int i=0; i < out.length; i++) {
-			out[i] = (byte) (nibble(string.charAt(i*2))<<4 + nibble(string.charAt(i*2+1)));
+			int high = nibble(string.charAt(i*2))<<4;
+			int low = nibble(string.charAt(i*2+1));
+			out[i] = (byte) (high + low);
 		}
 		return out;
 	}
