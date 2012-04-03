@@ -11,7 +11,7 @@ Bundle-SymbolicName: demo
 	biz.aQute.junit; version=snapshot
 
 -runpath: \
-	org.eclipse.osgi, \
+	org.apache.felix.framework;version='[2.0.5,2.0.5]', \
 	biz.aQute.launcher; version=snapshot
  	
 -runbundles: org.apache.felix.scr,\
@@ -30,3 +30,6 @@ Import-Package: \
 	
 javac.target=1.4
 javac.source=1.4
+
+-runtrace: true
+-runee: JavaSE-1.6

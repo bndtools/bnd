@@ -716,6 +716,95 @@ public class bnd extends Processor {
 	}
 
 	/**
+	 * Package a bnd or bndrun file for packaging.
+	 * 
+	 * @param path
+	 * @throws Exception
+	 */
+	interface packageOptions extends Options {
+		String output();
+	}
+
+	public void _package(packageOptions opts) throws Exception {
+		Project project = getProject(); // default project
+		List<String> cmdline = opts._();
+		File output = null;
+
+		if (opts.output() != null) {
+			output = getFile(opts.output());
+		} else
+			output = getBase();
+
+		if (opts._().size() > 1)
+			output.mkdirs();
+		else
+			output.getParentFile().mkdirs();
+
+		if (cmdline.isEmpty()) {
+			if (project == null)
+				error("No file given and this is not a project dir");
+			else {
+				pack(project, output, project.getName() + ".jar");
+			}
+		} else {
+
+			for (String path : opts._()) {
+
+				File file = getFile(path);
+				if (!file.isFile()) {
+					error("No such file %s", file);
+				} else {
+
+					// Tricky because we can be run inside the context of a
+					// project (in which case
+					// we need to inherit from the project or outside.
+					
+					File projectDir = file.getParentFile();
+					File workspaceDir = projectDir.getParentFile();
+					if (workspaceDir == null) {
+						workspaceDir = new File(System.getProperty("user.home") + File.separator
+								+ ".bnd");
+					}
+					Workspace ws = Workspace.getWorkspace(workspaceDir);
+
+					File bndbnd = new File(projectDir, Project.BNDFILE);
+					if (bndbnd.isFile()) {
+
+						// This is a normal project since the bnd.bnd file
+						// exists
+
+						project = new Project(ws, projectDir, bndbnd);
+						project.doIncludeFile(file, true, project.getProperties());
+
+					} else
+						// We create a "dummy" project for this file
+						project = new Project(ws, projectDir, file);
+
+					pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
+				}
+			}
+		}
+	}
+
+	/*
+	 * Pack the project (could be a bndrun file) and save it on disk. Report
+	 * errors if they happen.
+	 */
+	private void pack(Project project, File output, String path) {
+		try {
+			project.use(this);
+			Jar jar = project.getProjectLauncher().executable();
+			File out = output;
+			if (output.isDirectory())
+				out = new File(output, path);
+			jar.write(out);
+		} catch (Exception e) {
+			error("Failed to created executable from project %s to %s", e, project, path);
+		}
+		getInfo(project);
+	}
+
+	/**
 	 * List all deliverables for this workspace.
 	 * 
 	 */
@@ -1104,7 +1193,6 @@ public class bnd extends Processor {
 		Version version();
 	}
 
-	
 	public void _wrap(wrapOptions options) throws Exception {
 		List<File> classpath = Create.list();
 		File properties = getBase();
@@ -1137,18 +1225,18 @@ public class bnd extends Processor {
 
 				File outputFile = wrapper.getOutputFile(options.output());
 				outputFile.delete();
-				
+
 				String stem = file.getName();
 				if (stem.endsWith(".jar"))
 					stem = stem.substring(0, stem.length() - 4) + ".bnd";
-				
+
 				File p = getPropertiesFile(properties, file, stem);
-				
+
 				if (p == null) {
 					wrapper.setImportPackage("*;resolution:=optional");
 					wrapper.setExportPackage("*");
 					warning("Using defaults for wrap, which means no export versions");
-					
+
 				} else if (p.isFile())
 					wrapper.setProperties(p);
 				else {
@@ -1160,7 +1248,7 @@ public class bnd extends Processor {
 
 				if (options.version() != null)
 					wrapper.setBundleVersion(options.version());
-				
+
 				wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
@@ -1173,10 +1261,9 @@ public class bnd extends Processor {
 		}
 	}
 
-	private File getPropertiesFile(File properties, File file, String stem ) {
+	private File getPropertiesFile(File properties, File file, String stem) {
 		if (properties.isFile())
 			return properties;
-
 
 		File p = getFile(file.getParentFile(), stem);
 		if (p.isFile())
@@ -1184,7 +1271,7 @@ public class bnd extends Processor {
 
 		if (properties.isDirectory()) {
 			p = getFile(properties, stem);
-			if ( p.isFile())
+			if (p.isFile())
 				return p;
 		}
 

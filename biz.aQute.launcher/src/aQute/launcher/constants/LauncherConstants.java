@@ -18,28 +18,29 @@ public class LauncherConstants {
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
 	// so cannot refer.
-	public final static int		OK						= 0;
-	public final static int		ERROR					= -2;
-	public final static int		WARNING					= -1;
-	public final static int		TIMEDOUT				= -3;
-	public final static int		UPDATE_NEEDED			= -4;
-	public final static int		CANCELED				= -5;
-	public final static int		DUPLICATE_BUNDLE		= -6;
-	public final static int		RESOLVE_ERROR			= -7;
-	public final static int		ACTIVATOR_ERROR			= -8;
+	public final static int		OK							= 0;
+	public final static int		ERROR						= -2;
+	public final static int		WARNING						= -1;
+	public final static int		TIMEDOUT					= -3;
+	public final static int		UPDATE_NEEDED				= -4;
+	public final static int		CANCELED					= -5;
+	public final static int		DUPLICATE_BUNDLE			= -6;
+	public final static int		RESOLVE_ERROR				= -7;
+	public final static int		ACTIVATOR_ERROR				= -8;
 	// Start custom errors from here
-	public final static int		CUSTOM_LAUNCHER			= -128;
+	public final static int		CUSTOM_LAUNCHER				= -128;
 
 	// Local names
-	final static String			LAUNCH_SERVICES			= "launch.services";
-	final static String			LAUNCH_STORAGE_DIR		= "launch.storage.dir";
-	final static String			LAUNCH_KEEP				= "launch.keep";
-	final static String			LAUNCH_RUNBUNDLES		= "launch.bundles";
-	final static String			LAUNCH_SYSTEMPACKAGES	= "launch.system.packages";
-	final static String			LAUNCH_TRACE			= "launch.trace";
-	final static String			LAUNCH_TIMEOUT			= "launch.timeout";
-	final static String			LAUNCH_ACTIVATORS		= "launch.activators";
-
+	final static String			LAUNCH_SERVICES				= "launch.services";
+	final static String			LAUNCH_STORAGE_DIR			= "launch.storage.dir";
+	final static String			LAUNCH_KEEP					= "launch.keep";
+	final static String			LAUNCH_RUNBUNDLES			= "launch.bundles";
+	final static String			LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
+	final static String			LAUNCH_TRACE				= "launch.trace";
+	final static String			LAUNCH_TIMEOUT				= "launch.timeout";
+	final static String			LAUNCH_ACTIVATORS			= "launch.activators";
+	final static String			LAUNCH_EMBEDDED				= "launch.embedded";
+	final static String			LAUNCH_NAME					= "launch.name";
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
 	 * eat any arguments, they should use -D VM arguments so that applications
@@ -48,14 +49,16 @@ public class LauncherConstants {
 	 */
 
 	public boolean				services;
-	public File					storageDir				= new File("");
+	public File					storageDir;
 	public boolean				keep;
-	public final List<String>	runbundles				= new ArrayList<String>();
+	public final List<String>	runbundles					= new ArrayList<String>();
 	public String				systemPackages;
 	public boolean				trace;
 	public long					timeout;
-	public final List<String>	activators				= new ArrayList<String>();
-	public Map<String, String>	runProperties			= new HashMap<String, String>();
+	public final List<String>	activators					= new ArrayList<String>();
+	public Map<String, String>	runProperties				= new HashMap<String, String>();
+	public boolean				embedded					= false;
+	public String				name;
 
 	/**
 	 * Translate a constants to properties.
@@ -65,7 +68,8 @@ public class LauncherConstants {
 	public Properties getProperties() {
 		Properties p = new Properties();
 		p.setProperty(LAUNCH_SERVICES, services + "");
-		p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
+		if (storageDir != null)
+			p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
 		p.setProperty(LAUNCH_KEEP, keep + "");
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
 		if (systemPackages != null)
@@ -73,10 +77,14 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_TRACE, trace + "");
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
+		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
+		if (name != null)
+			p.setProperty(LAUNCH_NAME, name);
 
 		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
-				if (entry.getKey() != null) p.remove(entry.getKey());
+				if (entry.getKey() != null)
+					p.remove(entry.getKey());
 			} else {
 				p.put(entry.getKey(), entry.getValue());
 			}
@@ -99,13 +107,17 @@ public class LauncherConstants {
 	 */
 	public LauncherConstants(Properties p) {
 		services = Boolean.valueOf(p.getProperty(LAUNCH_SERVICES));
-		storageDir = new File(p.getProperty(LAUNCH_STORAGE_DIR));
+		if (p.getProperty(LAUNCH_STORAGE_DIR) != null)
+			storageDir = new File(p.getProperty(LAUNCH_STORAGE_DIR));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
 		activators.addAll(split(p.getProperty(LAUNCH_ACTIVATORS), " ,"));
+		String s = p.getProperty(LAUNCH_EMBEDDED);
+		embedded = s != null && Boolean.parseBoolean(s);
+		name = p.getProperty(LAUNCH_NAME);
 		Map<String, String> map = (Map) p;
 		runProperties.putAll(map);
 	}

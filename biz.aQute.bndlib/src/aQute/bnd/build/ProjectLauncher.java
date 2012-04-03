@@ -24,7 +24,7 @@ import aQute.libg.header.*;
 public abstract class ProjectLauncher {
 	private final Project				project;
 	private long						timeout				= 0;
-	private final Collection<String>	classpath			= new ArrayList<String>();
+	private final List<String>	classpath			= new ArrayList<String>();
 	private List<String>				runbundles			= Create.list();
 	private final List<String>			runvm				= new ArrayList<String>();
 	private Map<String, String>			runproperties;
@@ -165,7 +165,7 @@ public abstract class ProjectLauncher {
 		runbundles.add(f);
 	}
 
-	public Collection<String> getRunBundles() {
+	public List<String> getRunBundles() {
 		return runbundles;
 	}
 
@@ -173,7 +173,7 @@ public abstract class ProjectLauncher {
 		runvm.add(arg);
 	}
 
-	public Collection<String> getRunpath() {
+	public List<String> getRunpath() {
 		return classpath;
 	}
 

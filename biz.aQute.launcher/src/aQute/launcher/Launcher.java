@@ -33,12 +33,15 @@ public class Launcher implements ServiceListener {
 	private final List<BundleActivator>		embedded			= new ArrayList<BundleActivator>();
 	private final Map<Bundle, Throwable>	errors				= new HashMap<Bundle, Throwable>();
 	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<File, Bundle>();
+	private File							home				= new File(
+																		System.getProperty("user.home"));
+	private File							bnd					= new File(home, "bnd");
 
 	public static void main(String[] args) {
 		try {
 			final InputStream in;
 			final File propertiesFile;
-			
+
 			String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
 			if (path != null) {
 				propertiesFile = new File(path).getAbsoluteFile();
@@ -47,13 +50,14 @@ public class Launcher implements ServiceListener {
 				in = new FileInputStream(propertiesFile);
 			} else {
 				propertiesFile = null;
-				in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
+				in = Launcher.class.getClassLoader().getResourceAsStream(
+						DEFAULT_LAUNCHER_PROPERTIES);
 				if (in == null) {
 					printUsage();
 					errorAndExit("Launch file not specified, and no embedded properties found.");
 				}
 			}
-			
+
 			Properties properties = new Properties();
 			try {
 				properties.load(in);
@@ -67,11 +71,12 @@ public class Launcher implements ServiceListener {
 			t.printStackTrace(System.err);
 		}
 	}
-	
+
 	private static void printUsage() {
-		System.out.println("Usage: java -Dlauncher.properties=<launcher.properties> -jar <launcher.jar>");
+		System.out
+				.println("Usage: java -Dlauncher.properties=<launcher.properties> -jar <launcher.jar>");
 	}
-	
+
 	private static void errorAndExit(String message, Object... args) {
 		System.err.println(String.format(message, args));
 		System.exit(1);
@@ -79,15 +84,26 @@ public class Launcher implements ServiceListener {
 
 	public Launcher(Properties properties, final File propertiesFile) throws Exception {
 		this.properties = properties;
+		
+		// Allow the system to override any properties with -Dkey=value
+		
+		for ( Object key : properties.keySet()) {
+			String s = (String) key;
+			String v = System.getProperty(s);
+			if ( v != null ) 
+				properties.put(key, v);
+		}
+		
 		System.getProperties().putAll(properties);
 		this.parms = new LauncherConstants(properties);
 
 		out = System.err;
-		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
-		if (propertiesFile != null) {
+		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators,
+				parms.timeout);
+		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
 				long	begin	= propertiesFile.lastModified();
-	
+
 				public void run() {
 					if (begin < propertiesFile.lastModified()) {
 						try {
@@ -98,7 +114,7 @@ public class Launcher implements ServiceListener {
 							} finally {
 								in.close();
 							}
-							parms = new LauncherConstants(properties);						
+							parms = new LauncherConstants(properties);
 							update();
 						} catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
@@ -225,14 +241,59 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * @param systemContext
-	 * @throws MalformedURLException
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * Ensure that all the bundles in the parameters are actually started. We
+	 * can start in embedded mode (bundles are inside our main jar) or in file
+	 * system mode.
+	 * 
 	 */
 	private void update() throws Exception {
 		trace("Updating framework with %s", parms.runbundles);
-		
+
+		List<Bundle> tobestarted = new ArrayList<Bundle>();
+		if (parms.embedded)
+			installEmbedded(tobestarted);
+		else
+			synchronizeFiles(tobestarted);
+
+		if (padmin != null)
+			padmin.refreshPackages(null);
+
+		trace("bundles administered %s", installedBundles.keySet());
+
+		// From now on, the bundles are on their own. They have
+		// by default AllPermission, but if they install bundles
+		// they will not automatically get AllPermission anymore
+		if (security)
+			policy.setDefaultPermissions(null);
+
+		// Get the resolved status
+		if (padmin != null && padmin.resolveBundles(null) == false) {
+			error("could not resolve the bundles");
+			// return LauncherConstants.RESOLVE_ERROR;
+		}
+
+		// Now start all the installed bundles in the same order
+		// (unless they're a fragment)
+
+		trace("Will start bundles: %s", tobestarted);
+		for (Bundle b : tobestarted) {
+			try {
+				trace("starting %s", b.getSymbolicName());
+				if (!isFragment(b))
+					b.start(Bundle.START_ACTIVATION_POLICY);
+				trace("started  %s", b.getSymbolicName());
+			} catch (BundleException e) {
+				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(),
+						b.getVersion(), e);
+			}
+		}
+
+	}
+
+	/**
+	 * @param tobestarted
+	 */
+	void synchronizeFiles(List<Bundle> tobestarted) {
 		// Turn the bundle location paths into files
 		List<File> desired = new ArrayList<File>();
 		for (Object o : parms.runbundles) {
@@ -254,8 +315,6 @@ public class Launcher implements ServiceListener {
 		// install = new - old
 		List<File> tobeinstalled = new ArrayList<File>(desired);
 		tobeinstalled.removeAll(installedBundles.keySet());
-
-		List<Bundle> tobestarted = new ArrayList<Bundle>();
 
 		for (File f : tobedeleted)
 			try {
@@ -281,7 +340,7 @@ public class Launcher implements ServiceListener {
 				Bundle b = installedBundles.get(f);
 				if (b.getLastModified() < f.lastModified()) {
 					trace("updating %s", f);
-					if ( b.getState() == Bundle.ACTIVE) {
+					if (b.getState() == Bundle.ACTIVE) {
 						tobestarted.add(b);
 						b.stop();
 					}
@@ -291,41 +350,29 @@ public class Launcher implements ServiceListener {
 			} catch (Exception e) {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
+	}
 
-		if (padmin != null)
-			padmin.refreshPackages(null);
-
-		trace("bundles administered %s", installedBundles.keySet());
-
-		// From now on, the bundles are on their own. They have
-		// by default AllPermission, but if they install bundles
-		// they will not automatically get AllPermission anymore
-		if (security)
-			policy.setDefaultPermissions(null);
-
-		// Get the resolved status
-		if (padmin != null && padmin.resolveBundles(null) == false) {
-			error("could not resolve the bundles");
-			// return LauncherConstants.RESOLVE_ERROR;
-		}
-
-		// Now start all the installed bundles in the same order
-		// (unless they're a fragment)
-		
-		
-		trace("Will start bundles: %s" ,tobestarted);
-		for (Bundle b : tobestarted) {
+	/**
+	 * Install the bundles from the current jar.
+	 * 
+	 * @param tobestarted
+	 * @throws BundleException
+	 * @throws IOException
+	 */
+	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
+		trace("starting in embedded mode");
+		BundleContext context = systemBundle.getBundleContext();
+		for (Object o : parms.runbundles) {
+			String path = (String) o;
+			trace("installing %s", path);
+			InputStream in = getClass().getClassLoader().getResourceAsStream(path);
 			try {
-				trace("starting %s", b.getSymbolicName());
-				if (!isFragment(b))
-					b.start(Bundle.START_ACTIVATION_POLICY);
-				trace("started  %s", b.getSymbolicName());
-			} catch (BundleException e) {
-				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b
-						.getVersion(), e);
+				Bundle bundle = context.installBundle(path, in);
+				tobestarted.add(bundle);
+			} finally {
+				in.close();
 			}
 		}
-
 	}
 
 	Bundle install(File f) throws Exception {
@@ -357,7 +404,7 @@ public class Launcher implements ServiceListener {
 			public void run() {
 				try {
 					FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
-					trace( "framework event " + result + " " + result.getType());
+					trace("framework event " + result + " " + result.getType());
 					Thread.sleep(1000);
 					switch (result.getType()) {
 					case FrameworkEvent.STOPPED:
@@ -434,13 +481,19 @@ public class Launcher implements ServiceListener {
 	private Framework createFramework() throws Exception {
 		Properties p = new Properties();
 		p.putAll(properties);
-		File workingdir = new File("tmp").getAbsoluteFile();
+		File workingdir = null;
 		if (parms.storageDir != null)
 			workingdir = parms.storageDir;
+		else if (parms.keep && parms.name != null) {
+			workingdir = new File(bnd, parms.name);
+		}
 
-		trace("using working dir: %s", parms.storageDir);
+		if (workingdir == null)
+			workingdir = File.createTempFile("osgi.", ".fw");
 
-		if (!parms.keep) {
+		trace("using working dir: %s", workingdir);
+
+		if (!parms.keep && workingdir.exists()) {
 			trace("deleting working dir %s because not kept", workingdir);
 			delete(workingdir);
 			p.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
@@ -466,8 +519,8 @@ public class Launcher implements ServiceListener {
 			ClassLoader loader = getClass().getClassLoader();
 
 			// 3) Lookup in META-INF/services
-			List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class
-					.getName());
+			List<String> implementations = getMetaInfServices(loader,
+					FrameworkFactory.class.getName());
 
 			if (implementations.size() == 0)
 				error("Found no fw implementation");
@@ -556,8 +609,8 @@ public class Launcher implements ServiceListener {
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
 			list(out, fill("Run bundles", 40), parms.runbundles);
-			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"),
-					File.pathSeparator));
+			list(out, fill("Classpath", 40),
+					split(System.getProperty("java.class.path"), File.pathSeparator));
 			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
 			row(out, "Properties");
 			for (Entry<Object, Object> entry : properties.entrySet()) {
@@ -582,7 +635,7 @@ public class Launcher implements ServiceListener {
 							out.print(fill(toDate(f.lastModified()), 14));
 						else
 							out.print(fill("<>", 14));
-						
+
 						if (errors.containsKey(bundles[i])) {
 							out.print(fill(loc, 50));
 							out.print(errors.get(bundles[i]).getMessage());
@@ -602,9 +655,9 @@ public class Launcher implements ServiceListener {
 		boolean fill = true;
 		for (Object p : parms) {
 			if (fill)
-				out.print(fill(p.toString(), 40));
+				out.print(fill(p + "", 40));
 			else
-				out.print(p.toString());
+				out.print(p);
 			fill = false;
 		}
 		out.println();
