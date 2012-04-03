@@ -1,5 +1,7 @@
 package aQute.libg.cryptography;
 
+import java.util.*;
+
 import aQute.lib.hex.*;
 
 public abstract class Digest {
@@ -22,4 +24,17 @@ public abstract class Digest {
 	}
 
 	public abstract String getAlgorithm();
+	
+	
+	public boolean equals(Object other) {
+		if ( !(other instanceof Digest))
+			return false;
+
+		Digest d = (Digest) other;
+		return Arrays.equals(d.digest, digest);
+	}
+	
+	public int hashCode() {
+		return Arrays.hashCode(digest);
+	}
 }
