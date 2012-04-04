@@ -128,8 +128,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (manifest == null)
 			throw new IllegalArgumentException("No manifest in JAR: " + jar);
 
-		manifest.write(System.err);
-		
 		String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
