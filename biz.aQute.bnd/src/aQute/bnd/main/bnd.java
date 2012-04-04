@@ -45,15 +45,15 @@ import aQute.libg.version.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	Settings		settings	= new Settings();
-	PrintStream		err			= System.err;
-	PrintStream		out			= System.out;
-	Justif			justif		= new Justif(60);
+	Settings			settings	= new Settings();
+	PrintStream			err			= System.err;
+	public PrintStream	out			= System.out;
+	Justif				justif		= new Justif(60);
 
-	static Pattern	JARCOMMANDS	= Pattern
-										.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern		JARCOMMANDS	= Pattern
+											.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern	COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern		COMMAND		= Pattern.compile("\\w[\\w\\d]+");
 
 	@Description("OSGi Bundle Tool") interface bndOptions extends Options {
 		@Description("Turns errors into warnings so command always succeeds") boolean failok();
@@ -758,7 +758,7 @@ public class bnd extends Processor {
 					// Tricky because we can be run inside the context of a
 					// project (in which case
 					// we need to inherit from the project or outside.
-					
+
 					File projectDir = file.getParentFile();
 					File workspaceDir = projectDir.getParentFile();
 					if (workspaceDir == null) {
@@ -2362,4 +2362,5 @@ public class bnd extends Processor {
 		}
 		return null;
 	}
+
 }
