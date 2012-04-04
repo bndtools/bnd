@@ -3,6 +3,7 @@ package aQute.lib.io;
 import java.io.*;
 import java.net.*;
 import java.nio.*;
+import java.security.*;
 import java.util.*;
 
 public class IO {
@@ -27,20 +28,21 @@ public class IO {
 
 	public static void copy(InputStream r, Writer w, String charset) throws IOException {
 		try {
-			InputStreamReader isr = new InputStreamReader(r,charset);
-			copy(isr,w);
+			InputStreamReader isr = new InputStreamReader(r, charset);
+			copy(isr, w);
 		} finally {
 			r.close();
 		}
 	}
 
 	public static void copy(Reader r, OutputStream o) throws IOException {
-		copy(r,o,"UTF-8");
+		copy(r, o, "UTF-8");
 	}
+
 	public static void copy(Reader r, OutputStream o, String charset) throws IOException {
 		try {
-			OutputStreamWriter osw = new OutputStreamWriter(o,charset);
-			copy(r,osw);
+			OutputStreamWriter osw = new OutputStreamWriter(o, charset);
+			copy(r, osw);
 		} finally {
 			r.close();
 		}
@@ -49,6 +51,7 @@ public class IO {
 	public static void copy(InputStream in, OutputStream out) throws IOException {
 		DataOutputStream dos = new DataOutputStream(out);
 		copy(in, (DataOutput) dos);
+		out.flush();
 	}
 
 	public static void copy(InputStream in, DataOutput out) throws IOException {
@@ -77,23 +80,55 @@ public class IO {
 		}
 	}
 
+	public static void copy(URL in, MessageDigest md) throws IOException {
+		copy(in.openStream(), md);
+	}
+
+	public static void copy(File in, MessageDigest md) throws IOException {
+		copy(new FileInputStream(in), md);
+	}
+
+	public static void copy(URLConnection in, MessageDigest md) throws IOException {
+		copy(in.getInputStream(), md);
+	}
+
+
+	public static void copy(InputStream in, MessageDigest md) throws IOException {
+		byte[] buffer = new byte[10000];
+		try {
+			int size = in.read(buffer);
+			while (size > 0) {
+				md.update(buffer, 0, size);
+				size = in.read(buffer);
+			}
+		} finally {
+			in.close();
+		}
+	}
+
 	public static void copy(URL url, File file) throws IOException {
-		copy(url.openStream(),file);
+		URLConnection c = url.openConnection();
+		copy(c, file);
 	}
-	
+
+	public static void copy(URLConnection c, File file) throws IOException {
+		copy(c.getInputStream(), file);
+	}
+
 	public static void copy(InputStream in, URL out) throws IOException {
-		copy(in,out,null);
+		copy(in, out, null);
 	}
+
 	public static void copy(InputStream in, URL out, String method) throws IOException {
 		URLConnection c = out.openConnection();
-		if ( c instanceof HttpURLConnection && method!=null) {
-			HttpURLConnection http = (HttpURLConnection)c;
+		if (c instanceof HttpURLConnection && method != null) {
+			HttpURLConnection http = (HttpURLConnection) c;
 			http.setRequestMethod(method);
 		}
 		c.setDoOutput(true);
-		copy(in,c.getOutputStream());
+		copy(in, c.getOutputStream());
 	}
-	
+
 	public static void copy(File a, File b) throws IOException {
 		if (a.isFile()) {
 			FileOutputStream out = new FileOutputStream(b);
