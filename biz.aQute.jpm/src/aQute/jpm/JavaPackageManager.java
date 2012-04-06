@@ -17,7 +17,6 @@ import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
-import aQute.lib.justif.*;
 import aQute.libg.filerepo.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
@@ -34,9 +33,11 @@ public class JavaPackageManager extends ReporterAdapter {
 	public interface installOptions extends Options {
 		String command();
 
-		boolean nocommand();
+		boolean commandIgnore();
 
-		boolean noverify();
+		boolean digestsAbsent();
+
+		boolean serviceIgnore();
 	}
 	
 
@@ -67,6 +68,8 @@ public class JavaPackageManager extends ReporterAdapter {
 	 */
 	public interface listOptions extends Options {
 		String filter();
+
+		boolean commands();
 	}
 
 	/**
@@ -74,23 +77,42 @@ public class JavaPackageManager extends ReporterAdapter {
 	 */
 	public interface platformOptions extends Options {
 	}
+
+	/**
+	 * Service options
+	 */
+	public interface serviceOptions extends Options {
+		String dir();
+
+		String user();
+
+		String args();
+	}
+
 	/**
 	 * Uninstall a binary.
 	 * 
 	 */
 	public interface uninstallOptions extends Options {
 		VersionRange range();
+
+		boolean all();
 	}
 
 	File			base				= new File(System.getProperty("user.dir"));
 	String			repository			= "http://repo.libsync.org";
 	File			home;
-	Platform		platform			= Platform.getPlatform();
+	File			commands;
+	File			services;
+	File			working;
+	Platform		platform			= Platform.getPlatform(this);
 	FileRepo		repo;
 	PrintStream		err					= System.err;
 	PrintStream		out					= System.out;
+	File			sm;
 
-	static Pattern	VERSION_PATTERN		= Pattern.compile("[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?");
+	static Pattern	VERSION_PATTERN		= Pattern
+												.compile("[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?");
 	static Pattern	BSN_PATTERN			= Pattern.compile("[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*");
 
 	static Pattern	COMMAND_PATTERN		= Pattern.compile("[\\w\\d]*");
@@ -100,7 +122,8 @@ public class JavaPackageManager extends ReporterAdapter {
 	static Pattern	DIGEST_PATTERN		= Pattern.compile("([\\w\\d]+)-Digest",
 												Pattern.CASE_INSENSITIVE);
 
-	static Pattern	MAINCLASS_PATTERN	= Pattern.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+	static Pattern	MAINCLASS_PATTERN	= Pattern
+												.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
 
 	/**
 	 * Main entry
@@ -112,8 +135,8 @@ public class JavaPackageManager extends ReporterAdapter {
 		JavaPackageManager jpm = new JavaPackageManager();
 		jpm.run(args);
 	}
-	
-	/** 
+
+	/**
 	 * Default constructor
 	 * 
 	 */
@@ -121,7 +144,7 @@ public class JavaPackageManager extends ReporterAdapter {
 	public JavaPackageManager() {
 		super(System.err);
 	}
-	
+
 	/**
 	 * The command line command for install.
 	 * 
@@ -129,6 +152,11 @@ public class JavaPackageManager extends ReporterAdapter {
 	 *            The options for installing
 	 */
 	public void _install(installOptions opts) throws Exception {
+		if (!home.canWrite()) {
+			error("No write acces, might require administrator or root privileges (sudo in *nix)");
+			return;
+		}
+
 		for (String target : opts._()) {
 			try {
 				if (URL_PATTERN.matcher(target).matches()) {
@@ -177,9 +205,45 @@ public class JavaPackageManager extends ReporterAdapter {
 			Set<Version> versions = new TreeSet<Version>(repo.versions(bsn));
 			System.out.printf("%-40s %s\n", bsn, versions);
 		}
+		for (File cmd : commands.listFiles()) {
+			System.out.printf("%-40s %s\n", cmd.getName(), collect(cmd));
+		}
+		for (File service : services.listFiles()) {
+			File start = new File(service, "start");
+			System.out.printf("%-40s %s\n", service.getName(), collect(start));
+		}
 	}
 
 	public void _uninstall(uninstallOptions opts) throws Exception {
+		if (!home.canWrite()) {
+			error("No write acces, might require administrator or root privileges (sudo in *nix)");
+			return;
+		}
+
+		if (opts.all()) {
+			if (opts._().size() != 0) {
+				error("The -a,--all options requires no other parameters");
+				return;
+			}
+
+			for (String cmd : commands.list()) {
+				trace("unlinking %s", cmd);
+				platform.deleteCommand(cmd);
+			}
+			if (platform.getGlobal().exists()) {
+				trace("deleting %s", platform.getGlobal());
+				delete(platform.getGlobal());
+			}
+			if (platform.getLocal().exists()) {
+				trace("deleting %s", platform.getLocal());
+				delete(platform.getLocal());
+			}
+			return;
+		}
+		if (opts._().isEmpty()) {
+			error("Uninstall requires at least one bsn");
+			return;
+		}
 		VersionRange range = opts.range();
 
 		for (String bsn : opts._()) {
@@ -200,7 +264,7 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * @param file
 	 * @throws IOException
 	 */
-	private void uninstall(File file) throws IOException {
+	private void uninstall(File file) throws Exception {
 		JarFile jar = new JarFile(file);
 		try {
 			Manifest manifest = jar.getManifest();
@@ -208,7 +272,7 @@ public class JavaPackageManager extends ReporterAdapter {
 			String command = main.getValue("System-Command");
 			if (command != null) {
 				command = command.trim();
-				platform.unlink(command);
+				platform.deleteCommand(command);
 			}
 		} finally {
 			jar.close();
@@ -227,7 +291,10 @@ public class JavaPackageManager extends ReporterAdapter {
 	public void _jpm(jpmOptions opts) {
 		home = opts.local() ? platform.getLocal() : platform.getGlobal();
 		home.mkdirs();
-		
+
+		if (!home.isDirectory())
+			error("No access to the home directory %s", home);
+
 		File r;
 
 		if (opts.repository() != null)
@@ -238,6 +305,11 @@ public class JavaPackageManager extends ReporterAdapter {
 		r.mkdirs();
 
 		repo = new FileRepo(r);
+
+		commands = new File(home, "commands");
+		commands.mkdir();
+		services = new File(home, "services");
+		services.mkdir();
 
 		try {
 			setExceptions(opts.exceptions());
@@ -280,20 +352,37 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * @throws IOException
 	 */
 
-	private void install(File source, installOptions opts) throws IOException {
+	private void install(File source, installOptions opts) throws Exception {
 		JarFile jar = new JarFile(source);
 		Manifest m = jar.getManifest();
 		Attributes main = m.getMainAttributes();
 		String bsn = main.getValue("Bundle-SymbolicName");
 		String version = main.getValue("Bundle-Version");
-		String command = main.getValue("System-Command");
+		String command = main.getValue("JPM-Command");
+		String service = main.getValue("JPM-Service");
+		String embedded = main.getValue("JPM-Embedded");
 		String mainClass = main.getValue("Main-Class");
+
+		List<File> install = new ArrayList<File>();
+		if (embedded != null) {
+			for (String e : embedded.trim().split("\\s*,\\s*")) {
+				trace("embedded %s from %s", e, source);
+				File tmp =  File.createTempFile("jpm", ".jar");
+				InputStream in = getClass().getClassLoader().getResourceAsStream(e);
+				if (in != null) {
+					copy(in, tmp);
+					install.add(tmp);
+				} else
+					warning("%s contains embedded that is not present: %s", source, e);
+			}
+		}
+		trace("embedded %s", install);
 
 		if (opts != null && opts.command() != null)
 			command = opts.command();
 
 		try {
-			String msg = verify(jar, !opts.noverify());
+			String msg = verify(jar, !opts.digestsAbsent());
 			if (msg != null) {
 				error("The JAR %s fails to verify, %s", source, msg);
 				return;
@@ -303,11 +392,17 @@ public class JavaPackageManager extends ReporterAdapter {
 			version = verify(VERSION_PATTERN, version);
 			if (command != null)
 				command = verify(COMMAND_PATTERN, command);
+			if (service != null)
+				service = verify(COMMAND_PATTERN, service);
 			if (mainClass != null)
 				mainClass = verify(MAINCLASS_PATTERN, mainClass);
 
 			if (command != null && mainClass == null)
-				error("System command is specified but JAR contains no Main-Class attribute for %s",
+				error("JPM command is specified but JAR contains no Main-Class attribute for %s",
+						source);
+
+			if (service != null && mainClass == null)
+				error("JPM service is specified but JAR contains no Main-Class attribute for %s",
 						source);
 
 			if (!isOk())
@@ -318,24 +413,42 @@ public class JavaPackageManager extends ReporterAdapter {
 
 		Version v = new Version(version);
 		File target = repo.put(bsn, v);
-		if ( !target.getParentFile().canWrite()) {
+		if (!target.getParentFile().canWrite()) {
 			error("Cannot write repo file, try using sudo, %s", target);
 			return;
 		}
-			
+
 		try {
-			
+			for (File e : install)
+				install(e, opts);
+
 			copy(source, target);
 			trace("copied %s to %s (%s)", source, target, target.isFile());
-			
-			if (command != null) {
-				platform.link(command, target);
-				trace("linked %s to %s", command, target);
+
+			if (command != null && !opts.commandIgnore()) {
+				platform.createCommand(command, target);
+
+				store(target.getAbsolutePath(), new File(commands, command));
+
+				trace("created command %s to %s", command, target);
 			}
-			
-		} catch(Throwable t) {
+
+			if (service != null && !opts.serviceIgnore()) {
+				Service s = getService(service);
+				s.createService(target, mainClass);
+				trace("created services %s to %s", service, target);
+			}
+
+
+		} catch (Exception t) {
 			target.delete();
+			throw t;
 		}
+	}
+
+	private Service getService(String service) throws Exception {
+		File base = new File(services, service);
+		return new Service(this, base, service);
 	}
 
 	/**
@@ -345,18 +458,28 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	private void run(String[] args) throws Exception {
-		Console console = System.console();
-		if (console == null) {
+		try {
+			if (System.console() == null) {
+				Icon icon = new ImageIcon(JavaPackageManager.class.getResource("/images/jpm.png"),
+						"JPM");
+				int answer = JOptionPane.showOptionDialog(null,
+						"This is a command line application. Setup?", "Package Manager for Java™",
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon, null, null);
+				if (answer == JOptionPane.OK_OPTION) {
 
-			Icon icon = new ImageIcon(JavaPackageManager.class.getResource("/images/jpm.png"),
-					"JPM");
-			int answer = JOptionPane.showOptionDialog(null,
-					"This is a command line application. Setup?", "Package Manager for Java™",
-					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon, null, null);
-			if (answer == JOptionPane.OK_OPTION) {
-				init();
+					_init(null);
+					if (!isPerfect()) {
+						StringBuilder sb = new StringBuilder();
+						report(sb);
+						JOptionPane.showMessageDialog(null, sb.toString());
+					} else
+						JOptionPane.showMessageDialog(null, "Initialized");
+				}
+				return;
 			}
-			return;
+		} catch (Throwable t) {
+			// Ignore, happens in weird circumstances, we fallback to the
+			// command line
 		}
 		CommandLine cl = new CommandLine(this);
 		String help = cl.execute(this, "jpm", new ExtList<String>(args));
@@ -371,47 +494,23 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * 
 	 * @throws Exception
 	 */
-	private void init() throws Exception {
+	public void _init(Options opts) throws Exception {
 		String s = System.getProperty("java.class.path");
-		if (s == null || s.indexOf(File.pathSeparator) > 0)
-			JOptionPane.showMessageDialog(null,
-					"Cannot initialize, class path contains multiple entries (" + s
-							+ "). Run java-jar <jpm.jar> init");
-		else {
-			try {
-				File f = new File(s).getAbsoluteFile();
-				if (f.exists()) {
-					CommandLine cl = new CommandLine(this);
-					String help = cl.execute(this, "install", Arrays.asList(f.getAbsolutePath()));
-					if (help != null)
-						JOptionPane.showMessageDialog(null, help);
-					else if (!isOk()) {
-						StringBuilder sb = new StringBuilder();
-						for (String error : getErrors()) {
-							sb.append(error);
-							sb.append("\n");
-						}
-						if (getWarnings().size() > 0) {
-							sb.append("\nWarnings\n");
-							for (String warning : getWarnings()) {
-								sb.append(warning);
-								sb.append("\n");
-							}
-						}
-						Justif justif = new Justif(60);
-						justif.wrap(sb);
-						JOptionPane.showMessageDialog(null, sb.toString());						
-					} else
-						platform.shell("jpm hello");
-				}
+		if (s == null || s.indexOf(File.pathSeparator) > 0) {
+			error("Cannot initialize because not clear what the command jar is from java.class.path: %s",
+					s);
+			return;
+		}
 
-			} catch (InvocationTargetException e) {
-				JOptionPane.showMessageDialog(null, "Failed: " + e.getCause());
-
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "Failed: " + e);
-
-			}
+		try {
+			File f = new File(s).getAbsoluteFile();
+			if (f.exists()) {
+				CommandLine cl = new CommandLine(this);
+				cl.execute(this, "install", Arrays.asList(f.getAbsolutePath()));
+			} else
+				error("Cannot find the jpm jar from %s", f);
+		} catch (InvocationTargetException e) {
+			exception(e, "Could not install jpm, %s", e.getCause().getMessage());
 		}
 	}
 
@@ -429,9 +528,10 @@ public class JavaPackageManager extends ReporterAdapter {
 
 			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
 				JarEntry je = e.nextElement();
-				if ( je.getName().equals("META-INF/MANIFEST.MF") || je.getName().endsWith(".SF") || je.getName().endsWith("/"))
+				if (je.getName().equals("META-INF/MANIFEST.MF") || je.getName().endsWith(".SF")
+						|| je.getName().endsWith("/"))
 					continue;
-				
+
 				Attributes nameSection = m.getAttributes(je.getName());
 				if (nameSection == null)
 					return "No name section for " + je.getName();
@@ -448,7 +548,7 @@ public class JavaPackageManager extends ReporterAdapter {
 							byte digest[] = Base64.decodeBase64(expected);
 							copy(jar.getInputStream(je), md);
 							if (!Arrays.equals(digest, md.digest()))
-								return "Invalid digest for " + k + ", " + expected + " != "
+								return "Invalid digest for " + je.getName() + ", " + expected + " != "
 										+ Base64.encodeBase64(md.digest());
 
 							atLeastOne = true;
@@ -483,5 +583,73 @@ public class JavaPackageManager extends ReporterAdapter {
 
 	public void _platform(platformOptions opts) {
 		out.println(platform);
+	}
+	
+	/**
+	 * Start a service.
+	 * 
+	 * @param options
+	 * @throws Exception 
+	 */
+	public void _start( Options options ) throws Exception {
+		for ( String s : options._()){
+			Service service = getService(s);
+			if ( service == null)
+				error("Non existent service %s", s);
+			else {
+				try {
+					if ( !service.start() )
+						progress("Service %s was already started", s);
+				} catch( Exception e ) {
+					exception(e, "Could not start service %s due to %s", s, e.getMessage());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Stop a service.
+	 * 
+	 * @param options
+	 * @throws Exception 
+	 */
+	public void _stop( Options options ) throws Exception {
+		for ( String s : options._()){
+			Service service = getService(s);
+			if ( service == null)
+				error("Non existent service %s", s);
+			else {
+				try {
+					if ( !service.stop() )
+						progress("Service %s was not running", s);
+				} catch( Exception e ) {
+					exception(e, "Could not stop service %s due to %s", s, e.getMessage());
+				}
+			}
+		}		
+	}
+	
+	/**
+	 * Status a service.
+	 * 
+	 * @param options
+	 * @throws Exception 
+	 */
+	public void _status( Options options ) {
+		for ( String s : options._()) {
+			String runs = "false";
+			String status = "no service";
+			try {
+				Service service = getService(s);
+				if ( service != null) {
+					runs = service.isRunning() + "";
+					status = service.status();
+				}
+			} catch( Exception e) {
+				status = e.getMessage();
+				exception(e, "could not fetch status information from service %s, due to %s", s, e.getMessage());
+			}
+			out.printf("%-40s %8s %s\n", s, runs, status);
+		}
 	}
 }

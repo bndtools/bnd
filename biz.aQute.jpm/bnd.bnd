@@ -1,20 +1,18 @@
 -sources: false
-Main-Class: 					aQute.jpm.JavaPackageManager
-System-Command:					jpm
-Bundle-Version: 				0.0.1
+
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="${Bundle-Copyright}"; \
 									link=LICENSE
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
+Bundle-Version: 				0.0.5
 
 -buildpath:\
 	aQute.libg;version=project,\
-	ee.j2se;version="[1.5,1.6)",\
 	biz.aQute.bndlib;version=project
-Private-Package: aQute.jpm.*,\
-	aQute.configurable
 	
-Include-Resource: images=images
 
 -namesection: 					*;MD5-Digest='${md5;${@}}';SHA1-Digest='${sha1;${@}}'
+
+
+-sub: *.bnd

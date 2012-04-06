@@ -1,0 +1,6 @@
+Private-Package: aQute.daemon
+Main-Class: aQute.daemon.Daemon
+JPM-Service: testd
+JPM-Command: 
+JPM-Embedded: 
+

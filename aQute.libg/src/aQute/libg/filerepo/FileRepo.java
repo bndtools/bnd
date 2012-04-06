@@ -84,7 +84,7 @@ public class FileRepo {
 
 	public File get(String bsn, VersionRange range, int strategy) throws Exception {
 		File[] files = get(bsn, range);
-		if (files.length == 0)
+		if (files == null || files.length == 0)
 			return null;
 
 		if (files.length == 1)

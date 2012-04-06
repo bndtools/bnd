@@ -1,6 +1,5 @@
 package aQute.libg.reporter;
 
-import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -66,15 +65,13 @@ public class ReporterAdapter implements Reporter {
 	public void error(String s, Object... args) {
 		String e = String.format(s, args);
 		errors.add(e);
-		if (out != null)
-			out.format("ERROR: %s", e);
+		trace("ERROR: %s", e);
 	}
 
 	public void exception(Throwable t, String s, Object... args) {
 		String e = String.format(s, args);
 		errors.add(e);
-		if (out != null)
-			out.format("ERROR: %s", e);
+		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
 			t.printStackTrace(System.err);
 	}
@@ -82,19 +79,20 @@ public class ReporterAdapter implements Reporter {
 	public void warning(String s, Object... args) {
 		String e = String.format(s, args);
 		warnings.add(e);
-		if (out != null)
-			out.format("WARNING: %s", e);
+		trace("warning: %s", e);
 	}
 
 	public void progress(String s, Object... args) {
-		if (out != null)
+		if (out != null) {
 			out.format(s, args);
+			if ( !s.endsWith("\n"))
+				out.format("\n");
+		}
 	}
 
 	public void trace(String s, Object... args) {
 		if (trace && out != null) {
-			out.format(s, args);
-			out.format("\n");
+			out.format("# "+s+"\n", args);
 			out.flush();
 		}
 	}
@@ -160,19 +158,20 @@ public class ReporterAdapter implements Reporter {
 	 * Report the errors and warnings
 	 */
 
-	public void report(PrintStream out) {
-		report("Error", getErrors(), out);
-		report("Warning", getWarnings(), out);
+	public void report(Appendable out) {
+		Formatter f = new Formatter(out);
+		report("Error", getErrors(), f);
+		report("Warning", getWarnings(), f);
+		f.flush();
 	}
 
-	void report(String title, Collection<String> list, PrintStream out) {
+	void report(String title, Collection<String> list, Formatter f) {
 		if (list.isEmpty())
 			return;
-
-		out.println(title + (list.size() > 1 ? "s" : ""));
+		f.format(title + (list.size() > 1 ? "s" : ""));
 		int n=0;
 		for (String s : list) {
-			out.printf("%3s. %s\n", n++, s);
+			f.format("%3s. %s\n", n++, s);
 		}
 	}
 

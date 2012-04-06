@@ -22,13 +22,13 @@ class Windows extends Platform {
 		return new File(s);
 	}
 	
-	@Override public void link(String name, File file) throws IOException {
+	@Override public void createCommand(String name, File file) throws IOException {
 		String path = "/usr/bin/"+name + ".bat";
 		File link = new File( path);
 		IO.copy(getClass().getResourceAsStream("mac.sh"), link);
 		Runtime.getRuntime().exec("chmod a+x " + path);
 	}
-	@Override public void unlink(String name) throws IOException {
+	@Override public void deleteCommand(String name) throws IOException {
 		String path = "/usr/local/bin/"+name;
 		File link = new File( path);
 		link.delete();
@@ -40,4 +40,9 @@ class Windows extends Platform {
 
 	@Override public String getName() { return "Windows"; }
 
+	@Override public void uninstall() {
+		
+	}
+
+	@Override public void createService(File base, File[] path, String main, String... args) {}
 }

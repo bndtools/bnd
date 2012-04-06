@@ -8,6 +8,7 @@ public class Sed {
     final File                 file;
     final Replacer             macro;
     File                       output;
+    boolean backup = true;
 
     final Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
 
@@ -15,6 +16,12 @@ public class Sed {
         assert file.isFile();
         this.file = file;
         this.macro = macro;
+    }
+    
+    public Sed(File file) {
+        assert file.isFile();
+        this.file = file;
+        this.macro = null;
     }
 
     public void setOutput(File f) {
@@ -45,8 +52,9 @@ public class Sed {
                     StringBuffer sb = new StringBuffer();
                     while (m.find()) {
                         String tmp = setReferences(m, replace);
-                        tmp = macro.process(tmp);
-                        m.appendReplacement(sb, Matcher.quoteReplacement(tmp));
+                        if ( macro != null)
+                        	tmp = Matcher.quoteReplacement(macro.process(tmp));
+                        m.appendReplacement(sb, tmp);
                         actions++;
                     }
                     m.appendTail(sb);
@@ -81,5 +89,9 @@ public class Sed {
                 sb.append(c);
         }
         return sb.toString();
+    }
+
+    public void setBackup(boolean b) {
+    	this.backup=b;
     }
 }
