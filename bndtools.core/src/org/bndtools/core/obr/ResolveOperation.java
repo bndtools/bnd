@@ -152,7 +152,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         // Add EE capabilities
         EE ee = model.getEE();
         if (ee == null)
-            ee = EE.J2SE_1_5; // TODO: read default from the workbench
+            ee = EE.JavaSE_1_6; // TODO: read default from the workbench
         resolver.addGlobalCapability(createEeCapability(ee));
         for (EE compat : ee.getCompatible()) {
             resolver.addGlobalCapability(createEeCapability(compat));

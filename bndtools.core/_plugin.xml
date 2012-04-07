@@ -638,6 +638,11 @@
          doc="html/equinox37+console.form.xml"
          icon="icons/equinox.gif"/>
       <template
+         name="Eclipse Equinox 3.7 with Gogo and DS"
+         path="launchTemplates/equinox37+gogo+ds.bndrun"
+         doc="html/equinox37+gogo+ds.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
          name="Knopflerfish 5.1 with Gogo Shell"
          path="launchTemplates/knopflerfish.bndrun"
          doc="html/knopflerfish.form.xml"

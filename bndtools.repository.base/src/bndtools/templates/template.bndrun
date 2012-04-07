@@ -1,4 +1,5 @@
 -runfw: org.apache.felix.framework
+-runee: JavaSE-1.6
 -runbundles: org.apache.felix.shell,\
 	org.apache.felix.shell.tui,\
 	osgi.cmpn,\

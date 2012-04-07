@@ -9,6 +9,7 @@ import java.util.List;
 import org.osgi.framework.Constants;
 
 import aQute.libg.header.Attrs;
+import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
@@ -33,6 +34,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 
         model.setTestSuites(Arrays.asList(ALL_TEST_CASES_MACRO));
         model.setRunFramework("org.apache.felix.framework");
+        model.setEE(EE.JavaSE_1_6);
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example.tests" }));
         model.setRunBundles(Arrays.asList(new VersionedClause[] { createBundleRef("org.mockito.mockito-all", null) }));
 

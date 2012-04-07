@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
 
-<repository lastmodified='20120323040944.958' name='LocalRepository'>
+<repository lastmodified='20120407091354.913' name='LocalRepository'>
   <resource id='biz.aQute.bnd/1.52.3' presentationname='biz.aQute.bnd' symbolicname='biz.aQute.bnd' uri='biz.aQute.bnd/biz.aQute.bnd-1.52.3.jar' version='1.52.3'>
     <size>
       1171252
@@ -1124,6 +1124,119 @@
       Import package org.objenesis ;version=1.2.0
     </require>
   </resource>
+  <resource id='org.eclipse.equinox.ds/1.3.1.R37x_v20110701' presentationname='Declarative Services' symbolicname='org.eclipse.equinox.ds' uri='org.eclipse.equinox.ds/org.eclipse.equinox.ds-1.3.1.jar' version='1.3.1.R37x_v20110701'>
+    <description>
+      This bundle provides support for OSGi Declarative Services
+    </description>
+    <size>
+      189350
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='Declarative Services'/>
+      <p n='symbolicname' v='org.eclipse.equinox.ds'/>
+      <p n='version' t='version' v='1.3.1.R37x_v20110701'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.ds'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.ds.impl'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.ds.model'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.ds.storage.file'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.io'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.xml'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.xml.impl'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.string'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.apache.felix.scr'/>
+      <p n='version' t='version' v='1.6.0'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.event)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.event ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.hash)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.hash ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.pool)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.pool ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.ref)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.ref ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.threadpool)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.threadpool
+       ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.equinox.internal.util.timer)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.equinox.internal.util.timer ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.osgi.framework.console)(version&gt;=1.0.0))' multiple='false' name='package' optional='true'>
+      Import package org.eclipse.osgi.framework.console ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.osgi.framework.log)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.osgi.framework.log ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.osgi.service.debug)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.osgi.service.debug ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.osgi.service.environment)(version&gt;=1.2.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.osgi.service.environment ;version=1.2.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.eclipse.osgi.util)(version&gt;=0.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.eclipse.osgi.util
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=1.3.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.cm)(version&gt;=1.2.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.cm ;version=1.2.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.component)(version&gt;=1.1.0)(!(version&gt;=1.2.0)))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.component ;version=[1.1.0,1.2.0)
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.log)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.log ;version=1.3.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.util.tracker)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.util.tracker ;version=1.3.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.apache.felix.scr)(version&gt;=1.6.0)(!(version&gt;=1.7.0)))' multiple='false' name='package' optional='false'>
+      Import package org.apache.felix.scr ;version=[1.6.0,1.7.0)
+    </require>
+    <require extend='false' filter='(|(ee=OSGi/Minimum-1.2)(ee=CDC-1.1/Foundation-1.1)(ee=J2SE-1.4))' multiple='false' name='ee' optional='false'>
+      Execution Environment (|(ee=OSGi/Minimum-1.2)(ee=CDC-1.1/Foundation-1.1)(ee=J2SE-1.4))
+    </require>
+  </resource>
   <resource id='org.eclipse.equinox.supplement/1.3.0.v20100503' presentationname='Supplemental Equinox Functionality' symbolicname='org.eclipse.equinox.supplement' uri='org.eclipse.equinox.supplement/org.eclipse.equinox.supplement-1.3.0.jar' version='1.3.0.v20100503'>
     <size>
       113255
@@ -1230,6 +1343,92 @@
     </require>
     <require extend='false' filter='(|(ee=J2SE-1.4)(ee=CDC-1.0/Foundation-1.0)(ee=J2SE-1.3))' multiple='false' name='ee' optional='false'>
       Execution Environment (|(ee=J2SE-1.4)(ee=CDC-1.0/Foundation-1.0)(ee=J2SE-1.3))
+    </require>
+  </resource>
+  <resource id='org.eclipse.equinox.util/1.0.300.v20110502' presentationname='Equinox Util Bundle' symbolicname='org.eclipse.equinox.util' uri='org.eclipse.equinox.util/org.eclipse.equinox.util-1.0.300.jar' version='1.0.300.v20110502'>
+    <description>
+      The Equinox Util Bundle contains services to facilitate bundle
+       developers in their programming, and to lighten resource usage
+       at runtime.
+    </description>
+    <size>
+      76820
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='Equinox Util Bundle'/>
+      <p n='symbolicname' v='org.eclipse.equinox.util'/>
+      <p n='version' t='version' v='1.0.300.v20110502'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.event'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.hash'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds,org.eclipse.equinox.io,org.eclipse.equinox.wireadmin'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.impl.tpt'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.impl.tpt.threadpool'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.impl.tpt.timer'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.pool'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds,org.eclipse.equinox.io'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.ref'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds,org.eclipse.equinox.io,org.eclipse.equinox.ip,org.eclipse.equinox.wireadmin'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.security'/>
+      <p n='version' t='version' v='0.0.0'/>
+      <p n='x-internal' v='true'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.threadpool'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds'/>
+    </capability>
+    <capability name='package'>
+      <p n='package' v='org.eclipse.equinox.internal.util.timer'/>
+      <p n='version' t='version' v='1.0.0'/>
+      <p n='x-friends' v='org.eclipse.equinox.ds,org.eclipse.equinox.ip'/>
+    </capability>
+    <require extend='false' filter='(&amp;(package=org.osgi.framework)(version&gt;=1.3.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.framework ;version=1.3.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.cm)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.cm ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.service.log)(version&gt;=1.0.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.service.log ;version=1.0.0
+    </require>
+    <require extend='false' filter='(&amp;(package=org.osgi.util.tracker)(version&gt;=1.2.0))' multiple='false' name='package' optional='false'>
+      Import package org.osgi.util.tracker ;version=1.2.0
+    </require>
+    <require extend='false' filter='(|(ee=OSGi/Minimum-1.1))' multiple='false' name='ee' optional='false'>
+      Execution Environment (|(ee=OSGi/Minimum-1.1))
     </require>
   </resource>
   <resource id='org.mockito.mockito-all/1.8.5' presentationname='Mockito Mock Library for Java. Hamcrest-core &amp; Objenesis included in the bundle.' symbolicname='org.mockito.mockito-all' uri='org.mockito.mockito-all/org.mockito.mockito-all-1.8.5.jar' version='1.8.5'>

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import aQute.libg.header.Attrs;
+import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
@@ -38,12 +39,14 @@ public class ComponentTemplate implements IProjectTemplate {
 
         addRunBundle("osgi.cmpn", runPath, requires, true);
         addRunBundle("org.apache.felix.scr", runPath, requires, false);
-        addRunBundle("org.apache.felix.shell", runPath, requires, true);
-        addRunBundle("org.apache.felix.shell.tui", runPath, requires, false);
+        addRunBundle("org.apache.felix.gogo.shell", runPath, requires, false);
+        addRunBundle("org.apache.felix.gogo.command", runPath, requires, false);
+        addRunBundle("org.apache.felix.gogo.runtime", runPath, requires, true);
 
         model.setRunRequire(requires);
         model.setRunBundles(runPath);
         model.setRunFramework("org.apache.felix.framework");
+        model.setEE(EE.JavaSE_1_6);
 
         model.setServiceComponents(Arrays.asList(new ServiceComponent[] { new ServiceComponent("*", null) }));
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
