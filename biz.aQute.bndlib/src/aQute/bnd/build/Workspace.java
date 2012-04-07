@@ -322,13 +322,14 @@ public class Workspace extends Processor {
 
 	private void getBuildOrder(Collection<Project> dependsOn, List<Project> result) throws Exception {
 		for (Project project : dependsOn) {
-			if (!result.contains(project)) {
-				Collection<Project> subProjects = project.getDependson();
-				for (Project subProject : subProjects) {
-					if (!result.contains(subProject)) {
-						result.add(subProject);
-					}
+			Collection<Project> subProjects = project.getDependson();
+			for (Project subProject : subProjects) {
+				if (!result.contains(subProject)) {
+					result.add(subProject);
 				}
+			}
+			if (!result.contains(project)) {
+				result.add(project);
 			}
 		}
 	}
