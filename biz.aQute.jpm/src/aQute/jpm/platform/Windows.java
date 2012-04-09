@@ -10,13 +10,13 @@ class Windows extends Platform {
 		if ( global == null) {
 			
 		}
-		return new File("/Library/Java/JavaPackageManager");
+		return new File("/Library/Java/JustAnotherPackageManager");
 	}
 
 	@Override public File getLocal() {
 		String s = System.getenv("APPDATA");
 		if ( s == null) {
-			s = System.getenv("user.home") + "\\Application Data\\JavaPackageManager";
+			s = System.getenv("user.home") + "\\Application Data\\JustAnotherPackageManager";
 		}
 			
 		return new File(s);
