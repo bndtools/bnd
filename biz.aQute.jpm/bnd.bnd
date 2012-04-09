@@ -7,9 +7,9 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
 Bundle-Version: 				0.0.5
 
--buildpath:\
-	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=project
+-buildpath: aQute.libg;version=project,\
+	biz.aQute.bndlib;version=project,\
+	ee.j2se;version=1.5.0
 	
 
 -namesection: 					*;MD5-Digest='${md5;${@}}';SHA1-Digest='${sha1;${@}}'
