@@ -378,6 +378,11 @@ import aQute.libg.reporter.*;
 	 * Show all commands in a target
 	 */
 	public void help(Formatter f, Object target) throws Exception {
+		// TODO get help from the class
+		Description descr = target.getClass().getAnnotation(Description.class);
+		if (descr != null) {
+			f.format("%s\n\n", descr.value());
+		}
 		f.format("Available commands: ");
 
 		String del = "";
