@@ -26,77 +26,71 @@ import aQute.libg.version.*;
  * home directory and/or a global directory. This class is the main entry point
  * for the command line.
  */
-public class JavaPackageManager extends ReporterAdapter {
-	/**
-	 * Install a jar options
-	 */
-	public interface installOptions extends Options {
-		String command();
-
-		boolean commandIgnore();
-
-		boolean digestsAbsent();
-
-		boolean serviceIgnore();
-	}
-	
-
+@Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.") public class JustAnotherPackageManager
+		extends ReporterAdapter {
 	/**
 	 * Main options
 	 */
 
-	interface jpmOptions extends Options {
-		String home();
+	@Description("Options valid for all commands. Must be given before sub command") interface jpmOptions
+			extends Options {
 
-		boolean local();
+		@Description("Use a local jpm directory.") String local();
 
-		String repository();
+		@Description("Print exception stack traces when they occur.") boolean exceptions();
 
-		boolean exceptions();
+		@Description("Trace on.") boolean trace();
 
-		boolean trace();
+		@Description("Be pedantic about all details.") boolean pedantic();
 
-		boolean pedantic();
+		@Description("Specify a new base directory (default working directory).") String base();
 
-		String base();
+		@Description("Do not return error status for error that match this given regular expression.") String[] failok();
+	}
 
-		String[] ignore();
+	/**
+	 * Install a jar options
+	 */
+	@Arguments(arg = { "url|file", "..." }) @Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ") public interface installOptions
+			extends Options {
+		@Description("Overrides the command name. If the name is '-' then no command is installed. The JAR must have a Main-Class header.") String command();
+
+		@Description("Verify digests in the JAR, provide algorithms. Default is MD5 and SHA1. A '-' ignores the digests.") String[] verify();
+
+		@Description("Install the jar as a service. The JAR must have a Main-Class header.") String service();
 	}
 
 	/**
 	 * Show installed binaries
 	 */
-	public interface listOptions extends Options {
-		String filter();
 
-		boolean commands();
+	@Arguments(arg = {}) @Description("List the repository information. Contains bsns, versions, and services.") public interface listOptions
+			extends Options {
+		String filter();
 	}
 
 	/**
 	 * Show platform
 	 */
-	public interface platformOptions extends Options {
-	}
-
-	/**
-	 * Service options
-	 */
-	public interface serviceOptions extends Options {
-		String dir();
-
-		String user();
-
-		String args();
+	@Arguments(arg = {}) @Description("Show platform specific information.") public interface platformOptions
+			extends Options {
 	}
 
 	/**
 	 * Uninstall a binary.
 	 * 
 	 */
-	public interface uninstallOptions extends Options {
-		VersionRange range();
+	@Description("Uninstall a jar by bsn.") @Arguments(arg = { "bsn", "..." }) public interface uninstallOptions
+			extends Options {
+		@Description("Version range that must be matched, if not specified all versions are removed.") VersionRange range();
+	}
 
-		boolean all();
+	/**
+	 * Uninstall a binary.
+	 * 
+	 */
+	public interface deinitOptions extends Options {
+		boolean force();
 	}
 
 	File			base				= new File(System.getProperty("user.dir"));
@@ -132,7 +126,7 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * 
 	 */
 	public static void main(String args[]) throws Exception {
-		JavaPackageManager jpm = new JavaPackageManager();
+		JustAnotherPackageManager jpm = new JustAnotherPackageManager();
 		jpm.run(args);
 	}
 
@@ -141,7 +135,7 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * 
 	 */
 
-	public JavaPackageManager() {
+	public JustAnotherPackageManager() {
 		super(System.err);
 	}
 
@@ -199,6 +193,12 @@ public class JavaPackageManager extends ReporterAdapter {
 			}
 		}
 	}
+	
+	/**
+	 * List the repository, services, and commands
+	 * @param opts
+	 * @throws Exception
+	 */
 
 	public void _list(listOptions opts) throws Exception {
 		for (String bsn : repo.list(opts.filter())) {
@@ -214,32 +214,18 @@ public class JavaPackageManager extends ReporterAdapter {
 		}
 	}
 
+	/**
+	 * Uninstall a bsn and any dependent commands
+	 * 
+	 * @param opts
+	 * @throws Exception
+	 */
 	public void _uninstall(uninstallOptions opts) throws Exception {
 		if (!home.canWrite()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
 
-		if (opts.all()) {
-			if (opts._().size() != 0) {
-				error("The -a,--all options requires no other parameters");
-				return;
-			}
-
-			for (String cmd : commands.list()) {
-				trace("unlinking %s", cmd);
-				platform.deleteCommand(cmd);
-			}
-			if (platform.getGlobal().exists()) {
-				trace("deleting %s", platform.getGlobal());
-				delete(platform.getGlobal());
-			}
-			if (platform.getLocal().exists()) {
-				trace("deleting %s", platform.getLocal());
-				delete(platform.getLocal());
-			}
-			return;
-		}
 		if (opts._().isEmpty()) {
 			error("Uninstall requires at least one bsn");
 			return;
@@ -256,6 +242,38 @@ public class JavaPackageManager extends ReporterAdapter {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Remove all traces.
+	 * 
+	 * @param opts
+	 * @throws Exception
+	 */
+	public void _deinit(deinitOptions opts) throws Exception {
+		
+		if (opts._().size() != 0) {
+			error("Deinit requires no other parameters: %s", opts._());
+			return;
+		}
+
+		if ( !checkWrite() )
+			return;
+		
+		for (String cmd : commands.list()) {
+			trace("unlinking %s", cmd);
+			platform.deleteCommand(cmd);
+		}
+		
+		if (platform.getGlobal().exists()) {
+			trace("deleting %s", platform.getGlobal());
+			delete(platform.getGlobal());
+		}
+		return;
+	}
+
+	private boolean checkWrite() {
+		return home.isDirectory() && home.canWrite();
 	}
 
 	/**
@@ -289,26 +307,31 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * @throws IOException
 	 */
 	public void _jpm(jpmOptions opts) {
-		home = opts.local() ? platform.getLocal() : platform.getGlobal();
+		home = platform.getGlobal();
 		home.mkdirs();
 
-		if (!home.isDirectory())
+		if (opts.local() != null) {
+			File local = new File(opts.local());
+			if (local.isAbsolute())
+				home = local;
+			else
+				home = new File(base, opts.local());
+		}
+
+		if (!home.isDirectory()) {
 			error("No access to the home directory %s", home);
+			return;
+		}
 
-		File r;
-
-		if (opts.repository() != null)
-			r = IO.getFile(base, opts.repository());
-		else
-			r = IO.getFile(home, "repo");
+		File r = IO.getFile(home, "repo");
 
 		r.mkdirs();
 
 		repo = new FileRepo(r);
 
 		commands = new File(home, "commands");
-		commands.mkdir();
 		services = new File(home, "services");
+		commands.mkdir();
 		services.mkdir();
 
 		try {
@@ -338,7 +361,7 @@ public class JavaPackageManager extends ReporterAdapter {
 		}
 
 		report(err);
-		if (!check(opts.ignore())) {
+		if (!check(opts.failok())) {
 			System.exit(getErrors().size());
 		}
 	}
@@ -367,7 +390,7 @@ public class JavaPackageManager extends ReporterAdapter {
 		if (embedded != null) {
 			for (String e : embedded.trim().split("\\s*,\\s*")) {
 				trace("embedded %s from %s", e, source);
-				File tmp =  File.createTempFile("jpm", ".jar");
+				File tmp = File.createTempFile("jpm", ".jar");
 				InputStream in = getClass().getClassLoader().getResourceAsStream(e);
 				if (in != null) {
 					copy(in, tmp);
@@ -381,8 +404,11 @@ public class JavaPackageManager extends ReporterAdapter {
 		if (opts != null && opts.command() != null)
 			command = opts.command();
 
+		if (opts != null && opts.service() != null)
+			service = opts.service();
+
 		try {
-			String msg = verify(jar, !opts.digestsAbsent());
+			String msg = verify(jar, opts.verify());
 			if (msg != null) {
 				error("The JAR %s fails to verify, %s", source, msg);
 				return;
@@ -425,7 +451,7 @@ public class JavaPackageManager extends ReporterAdapter {
 			copy(source, target);
 			trace("copied %s to %s (%s)", source, target, target.isFile());
 
-			if (command != null && !opts.commandIgnore()) {
+			if (command != null && !command.equals("-")) {
 				platform.createCommand(command, target);
 
 				store(target.getAbsolutePath(), new File(commands, command));
@@ -433,12 +459,11 @@ public class JavaPackageManager extends ReporterAdapter {
 				trace("created command %s to %s", command, target);
 			}
 
-			if (service != null && !opts.serviceIgnore()) {
+			if (service != null && !service.equals("-")) {
 				Service s = getService(service);
 				s.createService(target, mainClass);
 				trace("created services %s to %s", service, target);
 			}
-
 
 		} catch (Exception t) {
 			target.delete();
@@ -459,9 +484,11 @@ public class JavaPackageManager extends ReporterAdapter {
 	 */
 	private void run(String[] args) throws Exception {
 		try {
-			if (System.console() == null) {
-				Icon icon = new ImageIcon(JavaPackageManager.class.getResource("/images/jpm.png"),
-						"JPM");
+			Method m =System.class.getMethod("console");
+			Object o = m.invoke(null);
+			if ( o == null) {
+				Icon icon = new ImageIcon(
+						JustAnotherPackageManager.class.getResource("/images/jpm.png"), "JPM");
 				int answer = JOptionPane.showOptionDialog(null,
 						"This is a command line application. Setup?", "Package Manager for Java™",
 						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon, null, null);
@@ -478,7 +505,7 @@ public class JavaPackageManager extends ReporterAdapter {
 				return;
 			}
 		} catch (Throwable t) {
-			// Ignore, happens in weird circumstances, we fallback to the
+			// Ignore, happens in certain circumstances, we fallback to the
 			// command line
 		}
 		CommandLine cl = new CommandLine(this);
@@ -520,7 +547,12 @@ public class JavaPackageManager extends ReporterAdapter {
 	 * 
 	 * @throws IOException
 	 */
-	String verify(JarFile jar, boolean obligatory) throws IOException {
+	String verify(JarFile jar, String[] algorithms) throws IOException {
+		if (algorithms == null)
+			algorithms = new String[] { "MD5", "SHA1" };
+		else if (algorithms.length == 1 && algorithms[0].equals("-"))
+			return null;
+
 		try {
 			Manifest m = jar.getManifest();
 			if (m.getEntries().isEmpty())
@@ -536,30 +568,20 @@ public class JavaPackageManager extends ReporterAdapter {
 				if (nameSection == null)
 					return "No name section for " + je.getName();
 
-				boolean atLeastOne = false;
+				for (String algorithm : algorithms) {
+					try {
+						MessageDigest md = MessageDigest.getInstance(algorithm);
+						String expected = nameSection.getValue(algorithm + "-Digest");
+						byte digest[] = Base64.decodeBase64(expected);
+						copy(jar.getInputStream(je), md);
+						if (!Arrays.equals(digest, md.digest()))
+							return "Invalid digest for " + je.getName() + ", " + expected + " != "
+									+ Base64.encodeBase64(md.digest());
 
-				for (Object k : nameSection.keySet()) {
-					Matcher matcher = DIGEST_PATTERN.matcher(k.toString());
-					if (matcher.matches()) {
-						String algorithm = matcher.group(1);
-						try {
-							MessageDigest md = MessageDigest.getInstance(algorithm);
-							String expected = nameSection.getValue((Attributes.Name) k);
-							byte digest[] = Base64.decodeBase64(expected);
-							copy(jar.getInputStream(je), md);
-							if (!Arrays.equals(digest, md.digest()))
-								return "Invalid digest for " + je.getName() + ", " + expected + " != "
-										+ Base64.encodeBase64(md.digest());
-
-							atLeastOne = true;
-						} catch (NoSuchAlgorithmException nsae) {
-							if (obligatory)
-								return "Missing digest algorithm " + algorithm;
-						}
+					} catch (NoSuchAlgorithmException nsae) {
+						return "Missing digest algorithm " + algorithm;
 					}
 				}
-				if (obligatory && !atLeastOne)
-					return "No digests specified";
 			}
 		} catch (Exception e) {
 			return "Failed to verify due to exception: " + e.getMessage();
@@ -584,70 +606,71 @@ public class JavaPackageManager extends ReporterAdapter {
 	public void _platform(platformOptions opts) {
 		out.println(platform);
 	}
-	
+
 	/**
 	 * Start a service.
 	 * 
 	 * @param options
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public void _start( Options options ) throws Exception {
-		for ( String s : options._()){
+	public void _start(Options options) throws Exception {
+		for (String s : options._()) {
 			Service service = getService(s);
-			if ( service == null)
+			if (service == null)
 				error("Non existent service %s", s);
 			else {
 				try {
-					if ( !service.start() )
+					if (!service.start())
 						progress("Service %s was already started", s);
-				} catch( Exception e ) {
+				} catch (Exception e) {
 					exception(e, "Could not start service %s due to %s", s, e.getMessage());
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Stop a service.
 	 * 
 	 * @param options
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public void _stop( Options options ) throws Exception {
-		for ( String s : options._()){
+	public void _stop(Options options) throws Exception {
+		for (String s : options._()) {
 			Service service = getService(s);
-			if ( service == null)
+			if (service == null)
 				error("Non existent service %s", s);
 			else {
 				try {
-					if ( !service.stop() )
+					if (!service.stop())
 						progress("Service %s was not running", s);
-				} catch( Exception e ) {
+				} catch (Exception e) {
 					exception(e, "Could not stop service %s due to %s", s, e.getMessage());
 				}
 			}
-		}		
+		}
 	}
-	
+
 	/**
 	 * Status a service.
 	 * 
 	 * @param options
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public void _status( Options options ) {
-		for ( String s : options._()) {
+	public void _status(Options options) {
+		for (String s : options._()) {
 			String runs = "false";
 			String status = "no service";
 			try {
 				Service service = getService(s);
-				if ( service != null) {
+				if (service != null) {
 					runs = service.isRunning() + "";
 					status = service.status();
 				}
-			} catch( Exception e) {
+			} catch (Exception e) {
 				status = e.getMessage();
-				exception(e, "could not fetch status information from service %s, due to %s", s, e.getMessage());
+				exception(e, "could not fetch status information from service %s, due to %s", s,
+						e.getMessage());
 			}
 			out.printf("%-40s %8s %s\n", s, runs, status);
 		}
