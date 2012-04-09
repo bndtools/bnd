@@ -12,9 +12,9 @@ public class Service {
 
 	File				base;
 	File				lock;
-	JavaPackageManager	jpm;
+	JustAnotherPackageManager	jpm;
 
-	Service(JavaPackageManager jpm, File base, String name) throws Exception {
+	Service(JustAnotherPackageManager jpm, File base, String name) throws Exception {
 		this.jpm = jpm;
 		this.base = base;
 		this.lock = new File(base, "lock");
