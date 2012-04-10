@@ -172,7 +172,7 @@ public class ReporterAdapter implements Reporter {
 	void report(String title, Collection<String> list, Formatter f) {
 		if (list.isEmpty())
 			return;
-		f.format(title + (list.size() > 1 ? "s" : ""));
+		f.format(title + (list.size() > 1 ? "s" : "")+"\n");
 		int n=0;
 		for (String s : list) {
 			f.format("%3s. %s\n", n++, s);
