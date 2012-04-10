@@ -40,7 +40,6 @@ public class Sed {
             out = output;
         else
             out = new File(file.getAbsolutePath() + ".tmp");
-        File bak = new File(file.getAbsolutePath() + ".bak");
         PrintWriter pw = new PrintWriter(new FileWriter(out));
         try {
             String line;
@@ -65,7 +64,10 @@ public class Sed {
             }
             pw.close();
             if (output == null) {
-                file.renameTo(bak);
+            	if ( backup ) {
+                    File bak = new File(file.getAbsolutePath() + ".bak");
+            		file.renameTo(bak);
+            	}
                 out.renameTo(file);
             }
         } finally {
