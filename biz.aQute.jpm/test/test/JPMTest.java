@@ -1,7 +1,5 @@
 package test;
 
-import static org.mockito.Mockito.*;
-
 import java.io.*;
 
 import junit.framework.*;

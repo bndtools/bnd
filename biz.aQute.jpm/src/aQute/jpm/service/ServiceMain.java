@@ -14,12 +14,12 @@ public class ServiceMain extends Thread {
 	static Method			serviceMethod;
 	static Thread			mainThread;
 	static final UUID		uuid	= UUID.randomUUID();
-	private static boolean	trace;
+	private static boolean	trace = true;
 
 	public static void main(String args[]) throws Exception, SecurityException,
 			NoSuchMethodException {
 		lock = new File(args[0]).getAbsoluteFile();
-		lock.deleteOnExit(); // we want it automatically be gone when we die
+		
 		if (!lock.exists())
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
 

@@ -45,13 +45,14 @@ import aQute.libg.version.*;
 	/**
 	 * Services
 	 */
-	@Arguments(arg = {"[name]"}) @Description("Services") public interface serviceOptions extends Options {
+	@Arguments(arg = { "[name]" }) @Description("Services") public interface serviceOptions extends
+			Options {
 
 		String create();
 
 		String args();
 
-		String vmargs();
+		String jvmargs();
 
 		Version version();
 
@@ -288,11 +289,11 @@ import aQute.libg.version.*;
 			data = s.getServiceData();
 		else {
 			if (opts.create() != null) {
-				if ( !jpm.hasAccess() ) {
+				if (!jpm.hasAccess()) {
 					error("No write access to create service %s", name);
 					return;
 				}
-				
+
 				update = true;
 				data = new ServiceData();
 				data.name = name;
@@ -323,8 +324,8 @@ import aQute.libg.version.*;
 			data.args = opts.args();
 			update = true;
 		}
-		if (opts.vmargs() != null) {
-			data.vmArgs = opts.vmargs();
+		if (opts.jvmargs() != null) {
+			data.jvmArgs = opts.jvmargs();
 			update = true;
 		}
 		if (opts.log() != null) {
@@ -337,7 +338,7 @@ import aQute.libg.version.*;
 		}
 
 		if (update) {
-			if ( !jpm.hasAccess() ) {
+			if (!jpm.hasAccess()) {
 				error("No write access to update service %s", name);
 				return;
 			}
@@ -349,6 +350,9 @@ import aQute.libg.version.*;
 				}
 				s = jpm.getService(name);
 			} else {
+				if (s.isRunning())
+					warning("Changes will not affect the currently running process");
+
 				String result = s.update(data);
 				if (result != null) {
 					error("Failed to update service %s, due to %s", name, result);
@@ -487,7 +491,7 @@ import aQute.libg.version.*;
 				if (attrs.containsKey("args"))
 					data.args = attrs.get("args");
 				if (attrs.containsKey("vmargs"))
-					data.vmArgs = attrs.get("vmargs");
+					data.jvmArgs = attrs.get("vmargs");
 
 				data.force = opts.force();
 				data.main = mainClass;
@@ -504,7 +508,7 @@ import aQute.libg.version.*;
 				data.bsn = bsn;
 				data.version = version;
 				data.name = e.getKey();
-				data.vmArgs = attrs.get("vmargs");
+				data.jvmArgs = attrs.get("vmargs");
 				data.force = opts.force();
 				data.main = mainClass;
 				commands.add(data);
@@ -597,7 +601,8 @@ import aQute.libg.version.*;
 			// command line
 		}
 		CommandLine cl = new CommandLine(this);
-		String help = cl.execute(this, "jpm", new ExtList<String>(args));
+		ExtList<String> list = new ExtList<String>(args);
+		String help = cl.execute(this, "jpm", list);
 		check();
 		if (help != null)
 			err.println(help);
@@ -654,6 +659,63 @@ import aQute.libg.version.*;
 					}
 				} else
 					warning("Service %s already running", s);
+			}
+		}
+	}
+
+	/**
+	 * Restart a service.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
+	public void _restart(Options options) throws Exception {
+		for (String s : options._()) {
+			Service service = jpm.getService(s);
+			if (service == null)
+				error("Non existent service %s", s);
+			else {
+				try {
+					if (service.isRunning())
+						service.stop();
+					String result = service.start();
+					if (result != null)
+						error("Failed to start: %s", result);
+				} catch (Exception e) {
+					exception(e, "Could not start service %s due to %s", s, e.getMessage());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Trace a service.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
+	@Arguments(arg = { "service", "[on|off]" }) public interface traceOptions extends Options {
+	}
+
+	public void _trace(traceOptions options) throws Exception {
+		List<String> args = options._();
+		String s = args.remove(0);
+		boolean on = args.isEmpty() || !"off".equalsIgnoreCase(args.remove(0));
+		
+		Service service = jpm.getService(s);
+		if (service == null)
+			error("Non existent service %s", s);
+		else {
+			try {
+				if (!service.isRunning())
+					error("First start the service to trace it");
+				else {
+					String result = service.trace(on);
+					if (result != null)
+						error("Failed to trace: %s", result);
+				}
+			} catch (Exception e) {
+				exception(e, "Could not trace service %s due to %s", s, e.getMessage());
 			}
 		}
 	}

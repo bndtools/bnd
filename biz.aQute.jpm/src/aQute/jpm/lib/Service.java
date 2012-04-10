@@ -37,11 +37,16 @@ public class Service {
 			} else {
 				try {
 					send(getPort(), "STOP");
+					for ( int i=0; i<20; i++) {
+						if ( !data.lock.exists())
+							return null;
+					
+						Thread.sleep(500);
+					}
+					return "Lock was not deleted by service in time (waited 10 secs)";
 				} finally {
-					// TODO wait for lock to disappear
 					data.lock.delete();
 				}
-				return null;
 			}
 		}
 		return "Not running";
@@ -111,5 +116,16 @@ public class Service {
 
 	public String update(ServiceData data) throws Exception {
 		return jpm.createService(data);
+	}
+
+	public String trace(boolean b) throws Exception {
+		if ( !isRunning())
+			return "Not running";
+
+		if ( b )
+			send(getPort(), "TRACE-ON");
+		else
+			send(getPort(), "TRACE-OFF");
+		return null;
 	}
 }

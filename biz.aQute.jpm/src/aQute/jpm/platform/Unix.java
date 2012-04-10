@@ -79,6 +79,10 @@ public abstract class Unix extends Platform {
 		Sed sed = new Sed(file);
 		sed.setBackup(false);
 		for (Field key : data.getClass().getFields()) {
+			Object value = key.get(data);
+			if ( value == null)
+				value = "";
+			
 			sed.replace("%"+key.getName()+"%", ""+key.get(data));
 		}
 		sed.doIt();
