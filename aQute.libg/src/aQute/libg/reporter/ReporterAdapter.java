@@ -1,5 +1,6 @@
 package aQute.libg.reporter;
 
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -73,7 +74,10 @@ public class ReporterAdapter implements Reporter {
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
-			t.printStackTrace(System.err);
+			if ( t instanceof InvocationTargetException )
+				t.getCause().printStackTrace(System.err);
+			else
+				t.printStackTrace(System.err);
 	}
 
 	public void warning(String s, Object... args) {
