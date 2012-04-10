@@ -1,10 +1,10 @@
 Bundle-Description: The main jpm command. This is a command line utility.
 Private-Package: aQute.jpm.*,\
-	aQute.configurable
-Include-Resource: images=images, service.jar,daemon.jar
+	aQute.configurable,\
+	aQute.jpm.lib
+Include-Resource: images=images, service.jar
 Bundle-Version: 0.0.3
 
-Main-Class: 					aQute.jpm.JustAnotherPackageManager
+Main-Class: 					aQute.jpm.main.Main
 JPM-Command:					jpm
-JPM-Service:					jpm
-JPM-Embedded:					service.jar, daemon.jar
+JPM-Embedded:					service.jar

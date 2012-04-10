@@ -3,16 +3,12 @@ package aQute.jpm.platform;
 import static aQute.lib.io.IO.*;
 
 import java.io.*;
+import java.lang.reflect.*;
 
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
+import aQute.jpm.lib.*;
 import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
-
-	public String getBinPrefix() {
-		return "/usr/local/bin/";
-	}
 
 	@Override public File getGlobal() {
 		return new File("/var/jpm");
@@ -23,40 +19,70 @@ public abstract class Unix extends Platform {
 		return new File(home, ".jpm");
 	}
 
-	@Override public void createCommand(String name, File file) throws Exception {
-		String path = getBinPrefix() + name;
-		File link = new File(path).getAbsoluteFile();
-		link.getParentFile().mkdirs();
-
-		String sh = IO.collect(getClass().getResourceAsStream("run-unix.sh"));
-		sh = sh.replaceAll("%file%", file.getAbsolutePath());
-		IO.store(sh, link);
-		run("chmod a+x " + path);
+	@Override public String createCommand(CommandData data) throws Exception {
+		File executable = getExecutable(data);
+		if ( !data.force && executable.exists() )
+			return "Command already exists " + executable;
+		
+		process("unix/command.sh", data, executable);
+		return null;
 	}
 
-	@Override public void deleteCommand(String name) throws Exception {
-		String path = getBinPrefix() + name;
-		File link = new File(path);
-		link.delete();
+	@Override public String createService(ServiceData data) throws Exception {
+		File initd = getInitd(data);
+		File launch = getLaunch(data);
+		
+		if ( !data.force && (initd.exists() || launch.exists()))
+			return "Service already exists " + initd + " & " + launch;
+		
+		process("unix/launch.sh", data, launch);	
+		process("unix/initd.sh", data, initd);
+		return null;
+	}
+	
+	private File getInitd(ServiceData data) {
+		return new File("/etc/init.d/" + data.name);
 	}
 
-	@Override public void createService(File base, File[] path, String main, String... args) throws Exception {
-		File wdir = new File(base, "work");
-		wdir.mkdir();
-		File start = new File(base, "start");
-		copy(getClass().getResourceAsStream("service-unix.sh"), start);
+	protected File getLaunch(ServiceData data) {
+		return new File( data.sdir, "launch.sh");
+	}
 
-		Sed sed = new Sed(start);
+	private File getExecutable(CommandData data) {
+		return new File( "/usr/local/bin/" + data.name );
+	}
+
+	@Override public String remove(ServiceData data) {
+		if ( !getInitd(data).delete() )
+			return "Cannot delete " + getInitd(data);
+		
+		if ( !getExecutable(data).delete() )
+			return "Cannot delete " + getExecutable(data);
+		
+		return null;
+	}
+
+	@Override public String remove(CommandData data) throws Exception {
+		if ( !getExecutable(data).delete() )
+			return "Cannot delete " + getExecutable(data);
+		
+		return null;
+	}
+
+	@Override public int launchService(ServiceData data) throws Exception {
+		File launch = getLaunch(data);
+		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, data.work);
+		return p.waitFor();
+	}
+	protected void process(String resource, Object data, File file) throws Exception {
+		copy(getClass().getResourceAsStream(resource), file);
+		Sed sed = new Sed(file);
 		sed.setBackup(false);
-		sed.replace("%service%", base.getName());
-		sed.replace("%path%", new ExtList<File>(path).join(":"));
-		sed.replace("%wdir%", wdir.getAbsolutePath());
-		sed.replace("%vmargs%", "");
-		sed.replace("%main%", main);
-		sed.replace("%args%", new ExtList<String>(args).join(" "));
-		sed.replace("%file%", path[0].getAbsolutePath());
+		for (Field key : data.getClass().getFields()) {
+			sed.replace("%"+key.getName()+"%", ""+key.get(data));
+		}
 		sed.doIt();
-		run("chmod a+x " + start);		
+		run("chmod a+x " + file.getAbsolutePath());
 	}
-
+	
 }

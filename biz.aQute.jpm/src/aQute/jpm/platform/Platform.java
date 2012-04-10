@@ -3,6 +3,7 @@ package aQute.jpm.platform;
 import java.io.*;
 import java.util.*;
 
+import aQute.jpm.lib.*;
 import aQute.libg.reporter.*;
 
 public abstract class Platform {
@@ -16,7 +17,7 @@ public abstract class Platform {
 
 			String osName = System.getProperty("os.name").toLowerCase();
 			if (osName.startsWith("windows"))
-				platform = new Windows();
+				throw new UnsupportedOperationException("Windows not supported");
 			else if (osName.startsWith("mac"))
 				platform = new MacOS();
 			else
@@ -29,10 +30,6 @@ public abstract class Platform {
 	public abstract File getGlobal();
 	public abstract File getLocal();
 
-	abstract public void createCommand(String value, File file) throws Exception;
-
-	abstract public void deleteCommand(String command) throws Exception;
-	
 	abstract public void shell(String initial) throws Exception;
 	
 	public String toString() {
@@ -50,18 +47,13 @@ public abstract class Platform {
 
 	public int run(String args) throws Exception {
 		return runtime.exec(args).waitFor();
-//		Command c = new Command();
-//		c.add(args.split("\\s+"));
-//		c.setTimeout(15, TimeUnit.SECONDS);
-//		c.setReporter(reporter);
-//		StringBuffer out = new StringBuffer(); // is synced
-//		int result = c.execute(out, out);
-//		if ( result != 0)
-//			throw new RuntimeException("process failed: " + out);
-//		return out.toString();
 	}
 
 
+	public abstract String createCommand(CommandData data) throws Exception;
+	public abstract String createService(ServiceData data) throws Exception;
+	public abstract String remove(CommandData data) throws Exception;
+	public abstract String remove(ServiceData data) throws Exception;
 
-	abstract public void createService(File base, File[] path, String main, String... args) throws IOException, Exception;
+	public abstract int launchService(ServiceData data) throws Exception;
 }

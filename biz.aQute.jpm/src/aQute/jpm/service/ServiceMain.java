@@ -13,6 +13,8 @@ public class ServiceMain extends Thread {
 	static Class<?>			mainClass;
 	static Method			serviceMethod;
 	static Thread			mainThread;
+	static final UUID		uuid	= UUID.randomUUID();
+	private static boolean	trace;
 
 	public static void main(String args[]) throws Exception, SecurityException,
 			NoSuchMethodException {
@@ -22,8 +24,9 @@ public class ServiceMain extends Thread {
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
 
 		socket = new DatagramSocket();
-	
-		write(lock, socket.getLocalPort() + ":" + System.getProperty("pid"));
+		trace("Port " + socket.getLocalPort());
+
+		write(lock, socket.getLocalPort() + ":" + System.getProperty("pid") + ":" + uuid.toString());
 
 		ServiceMain main = new ServiceMain();
 		main.start();
@@ -56,12 +59,17 @@ public class ServiceMain extends Thread {
 
 			while (!isInterrupted() && !stopped) {
 				try {
+					trace("Listening for messages");
 					socket.receive(dp);
+					trace("Received message " + dp.getAddress());
 					if (dp.getAddress().isLoopbackAddress()) {
+
 						String s = new String(dp.getData(), dp.getOffset(), dp.getLength());
+						trace("Received message " + s);
+						String parts[] = s.split(":");
 						String reply;
 
-						if (s.startsWith("STOP")) {
+						if (parts[0].equals("STOP")) {
 							stopped = true;
 							reply = "200 STOPPING";
 
@@ -75,19 +83,26 @@ public class ServiceMain extends Thread {
 								mainThread.join(2000);
 							}
 
-						} else if (s.startsWith("STATUS")) {
+						} else if (parts[0].equals("STATUS")) {
 							reply = "200 OK " + last + " " + message;
+						} else if (parts[0].equals("TRACE-ON")) {
+							trace = true;
+							reply = "200 Trace on";
+						} else if (parts[0].equals("TRACE-OFF")) {
+							trace = false;
+							reply = "200 Trace off";
 						} else
 							reply = "404 UNKNOWN REQUEST " + s;
 
 						byte data[] = reply.getBytes();
 						DatagramPacket p = new DatagramPacket(data, 0, data.length,
 								dp.getAddress(), dp.getPort());
+						trace("Sending reply message " + reply);
 						socket.send(p);
-					} else 
+					} else
 						System.err.println("Received UDP from external source");
 				} catch (SocketTimeoutException stoe) {
-					System.out.println("checking lock " + lock + " " + lock.exists());
+					trace("checking lock " + lock + " " + lock.exists());
 					if (!lock.exists())
 						break;
 				}
@@ -107,6 +122,11 @@ public class ServiceMain extends Thread {
 		}
 	}
 
+	private static void trace(String string) {
+		if (trace)
+			System.err.println("JPM: " + string);
+	}
+
 	private static void write(File f, String response) throws IOException {
 		FileWriter fw = new FileWriter(f);
 		try {
@@ -117,6 +137,7 @@ public class ServiceMain extends Thread {
 	}
 
 	public synchronized static void setMessage(String m) {
+		trace(m);
 		last = new Date();
 		message = m;
 	}
