@@ -10,12 +10,11 @@ import aQute.lib.codec.*;
 
 @SuppressWarnings("unchecked") public class JSONCodec implements Codec {
 	final static WeakHashMap<Class<?>, Accessor>	accessors	= new WeakHashMap<Class<?>, Accessor>();
-
 	static class Accessor {
 		final Field		fields[];
 		final Type		types[];
 		final Object	defaults[];
-		
+
 		Accessor(Class<?> c) throws Exception {
 			fields = c.getFields();
 			Arrays.sort(fields, new Comparator<Field>() {
@@ -25,15 +24,15 @@ import aQute.lib.codec.*;
 			});
 			types = new Type[fields.length];
 			defaults = new Object[fields.length];
-			
+
 			Object template = c.newInstance();
-			for ( int i = 0; i<fields.length; i++) {
+			for (int i = 0; i < fields.length; i++) {
 				types[i] = fields[i].getGenericType();
 				defaults[i] = fields[i].get(template);
 			}
 		}
 	}
-
+	
 	class PeekReader {
 		final Reader	reader;
 		int				last;
@@ -88,7 +87,7 @@ import aQute.lib.codec.*;
 		return decode(type, isr);
 	}
 
-	public<T>  T decode(Reader r, Class<T> type) throws Exception {
+	public <T> T decode(Reader r, Class<T> type) throws Exception {
 		PeekReader isr = new PeekReader(r);
 		return type.cast(decode(type, isr));
 	}
@@ -109,6 +108,16 @@ import aQute.lib.codec.*;
 
 		if (object instanceof String) {
 			string(app, (String) object);
+			return;
+		}
+
+		if (object instanceof File) {
+			string(app, ((File)object).getAbsolutePath());
+			return;
+		}
+
+		if (object instanceof Enum) {
+			string(app, object.toString());
 			return;
 		}
 
@@ -155,14 +164,14 @@ import aQute.lib.codec.*;
 			// do Object
 
 			app.append("{");
-			
+
 			Accessor accessor = accessors.get(rawClass);
-			if ( accessor == null) {
-				accessors.put(rawClass,accessor = new Accessor(rawClass));
+			if (accessor == null) {
+				accessors.put(rawClass, accessor = new Accessor(rawClass));
 			}
 
 			String del = "";
-			for (int i=0; i<accessor.fields.length; i++) {
+			for (int i = 0; i < accessor.fields.length; i++) {
 				Object value = accessor.fields[i].get(object);
 				if (value != accessor.defaults[i]) {
 					app.append(del);
@@ -707,4 +716,39 @@ import aQute.lib.codec.*;
 		throw new EOFException("Invalid hex character: " + c);
 	}
 
+	public static void write(Object value, File target) throws Exception {
+		write(value.getClass(), value, target);
+	}
+
+	public static void write(Type type, Object value, File target) throws Exception {
+		JSONCodec codec = new JSONCodec();
+		FileWriter fw = new FileWriter(target);
+		try {
+			codec.encode(type, value, fw);
+		} catch (Exception e) {
+			target.delete();
+			throw e;
+		} finally {
+			fw.close();
+		}
+	}
+
+	public static Object read(Type type, File target) throws Exception {
+		JSONCodec codec = new JSONCodec();
+		FileReader r = new FileReader(target);
+		try {
+			return codec.decode(r,type);
+		} finally {
+			r.close();
+		}
+	}
+	public static <T> T read(Class<T> type, File target) throws Exception {
+		JSONCodec codec = new JSONCodec();
+		FileReader r = new FileReader(target);
+		try {
+			return codec.decode(r,type);
+		} finally {
+			r.close();
+		}
+	}
 }
