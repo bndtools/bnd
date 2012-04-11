@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import test.lib.NanoHTTPD;
+
 import junit.framework.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.obr.*;
@@ -24,7 +26,7 @@ public class OBRTest extends TestCase {
 		
 		obr.setCacheDirectory(new File(tmpFile.getAbsolutePath() + ".dir"));
 		
-		httpd = new NanoHTTPD(new File("test/http"), 18080);
+		httpd = new NanoHTTPD(18080, new File("test/http"));
 	}
 	
 	@Override

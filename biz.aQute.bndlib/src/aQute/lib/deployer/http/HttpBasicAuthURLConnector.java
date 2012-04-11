@@ -18,7 +18,13 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private static final String PREFIX_PATTERN = "pattern.";
 	private static final String PREFIX_USER = "uid.";
 	private static final String PREFIX_PASSWORD = "pwd.";
+
+	private static final String HEADER_AUTHORIZATION = "Authorization";
+	private static final String PREFIX_BASIC_AUTH = "Basic ";
 	
+	private static final String HEADER_IF_NONE_MATCH = "If-None-Match";
+	private static final String HEADER_ETAG = "ETag";
+	private static final int RESPONSE_NOT_MODIFIED = 304;
 
 	private static class Mapping {
 		Glob urlPattern;
@@ -85,26 +91,56 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	}
 
 	public InputStream connect(URL url) throws IOException {
+		TaggedData data = connectTagged(url, null);
+		if (data == null)
+			throw new IOException("HTTP server did not respond with data.");
+		
+		return data.getInputStream();
+	}
+
+	public TaggedData connectTagged(URL url) throws IOException {
+		return connectTagged(url, null);
+	}
+	
+	public TaggedData connectTagged(URL url, String tag) throws IOException {
 		init();
 		
 		for (Mapping mapping : mappings) {
 			Matcher matcher = mapping.urlPattern.matcher(url.toString());
 			if (matcher.find())
-				return connect(url, mapping.user, mapping.pass);
+				return connectTagged(url, tag, mapping.user, mapping.pass);
 		}
 		
-		return url.openStream();
+		return connectTagged(url, tag, null, null);
 	}
 
-	private InputStream connect(URL url, String user, String pass) throws IOException {
-		String authString = user + ":" + pass;
-		String encoding = Base64.encodeBase64(authString.getBytes());
+	private TaggedData connectTagged(URL url, String tag, String user, String pass) throws IOException {
+		TaggedData result;
 		
-		URLConnection connection = url.openConnection();
-		connection.setRequestProperty("Authorization", "Basic " + encoding);
-		return connection.getInputStream();
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		// Add the authorization string using HTTP Basic Auth
+		if (user != null && pass != null) {
+			String authString = user + ":" + pass;
+			String encoded = Base64.encodeBase64(authString.getBytes());
+			connection.setRequestProperty(HEADER_AUTHORIZATION, PREFIX_BASIC_AUTH + encoded);
+		}
+		
+		// Add the ETag
+		if (tag != null)
+			connection.setRequestProperty(HEADER_IF_NONE_MATCH, tag);
+		
+		connection.connect();
+		
+		int responseCode = connection.getResponseCode();
+		if (responseCode == RESPONSE_NOT_MODIFIED)
+			result = null;
+		else {
+			String responseTag = connection.getHeaderField(HEADER_ETAG);
+			result = new TaggedData(responseTag, connection.getInputStream());
+		}
+		
+		return result;
 	}
 	
-	
-
 }

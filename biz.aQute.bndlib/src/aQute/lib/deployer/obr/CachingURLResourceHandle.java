@@ -59,6 +59,9 @@ public class CachingURLResourceHandle implements ResourceHandle {
 	// The cached file copy of the resource, if it is remote and has been downloaded.
 	final File cachedFile;
 	
+	// The etag file stores the etag of the last downloaded version
+	final File etagFile;
+	
 	final CachingMode mode;
 	boolean downloaded = false; // only used with mode=PreferRemote
 	
@@ -87,27 +90,32 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			if (!localFile.isFile() && !localFile.isDirectory())
 				throw new FileNotFoundException("File URL " + this.url + " points at a non-existing file.");
 			this.cachedFile = null;
+			this.etagFile = null;
 		} else if (url.startsWith(HTTP_SCHEME)) {
 			// HTTP URLs must be absolute
 			this.url = new URL(url);
 			this.localFile = null;
 			this.cachedFile = mapRemoteURL(this.url);
+			this.etagFile = mapETag(cachedFile);
 		} else if (baseUrl == null) {
 			// Some other scheme and no base => must be absolute
 			this.url = new URL(url);
 			this.localFile = null;
 			this.cachedFile = mapRemoteURL(this.url);
+			this.etagFile = mapETag(cachedFile);
 		} else {
 			// A path with no scheme means resolve relative to the base URL
 			if (baseUrl.startsWith(FILE_SCHEME)) {
 				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), url);
 				this.url = localFile.toURI().toURL();
 				this.cachedFile = null;
+				this.etagFile = null;
 			} else {
 				URL base = new URL(baseUrl);
 				this.url = new URL(base, url);
 				this.localFile = null;
 				this.cachedFile = mapRemoteURL(this.url);
+				this.etagFile = mapETag(cachedFile);
 			}
 		}
 	}
@@ -156,6 +164,10 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		
 		return new File(localDir, localFileName);
 	}
+	
+	private File mapETag(File cachedFile) {
+		return new File(cachedFile.getAbsolutePath() + ".etag");
+	}
 
 	public String getName() {
 		return url.toString();
@@ -184,13 +196,13 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		case PreferCache:
 			if (!cachedFile.exists()) {
 				cacheDir.mkdirs();
-				downloadToFile(url, cachedFile);
+				downloadToFile(cachedFile);
 			}
 			return cachedFile;
 		case PreferRemote:
 			File tempFile = File.createTempFile("download", ".tmp");
 			try {
-				downloadToFile(url, tempFile);
+				downloadToFile(tempFile);
 				
 				// remote download succeeded... copy tmp to cache
 				cacheDir.mkdirs();
@@ -210,7 +222,7 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		}
 	}
 	
-	void downloadToFile(URL url, File file) throws IOException {
+	void downloadToFile(File file) throws IOException {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
@@ -225,7 +237,7 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			}
 		} finally {
 			try { if (in != null) in.close(); } catch (IOException e) {};
-			try { if (out != null) in.close(); } catch (IOException e) {};
+			try { if (out != null) out.close(); } catch (IOException e) {};
 		}
 	}
 	
