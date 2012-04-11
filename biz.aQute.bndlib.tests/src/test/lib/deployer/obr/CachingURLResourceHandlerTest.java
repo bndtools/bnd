@@ -3,9 +3,8 @@ package test.lib.deployer.obr;
 import java.io.File;
 import java.io.IOException;
 
-import test.lib.NanoHTTPD;
-
 import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
 import aQute.lib.deployer.obr.CachingURLResourceHandle;
 import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
 import aQute.lib.io.IO;
@@ -81,6 +80,39 @@ public class CachingURLResourceHandlerTest extends TestCase {
 			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
 			
 			assertEquals("d5785fff", IO.collect(etagFile));
+		} finally {
+			httpd.stop();
+		}
+	}
+	
+	public void testPreferCacheEmptyCache() throws Exception {
+		File cached = new File("test/httpcache/6/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		cached.delete();
+		
+		File etagFile = new File(cached.getAbsolutePath() + ".etag");
+		etagFile.delete();
+		
+		CachingURLResourceHandle handle = new CachingURLResourceHandle("http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File("test/httpcache/6"), CachingMode.PreferCache);
+		NanoHTTPD httpd = new NanoHTTPD(18083, new File("test/http"));
+		try {
+			File result = handle.request();
+			assertEquals(cached, result);
+			assertEquals("d5785fff", IO.collect(etagFile));
+		} finally {
+			httpd.stop();
+		}
+	}
+
+	public void testPreferCache() throws Exception {
+		File cached = new File("test/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		long cachedTimestamp = cached.lastModified();
+		
+		CachingURLResourceHandle handle = new CachingURLResourceHandle("http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File("test/httpcache/7"), CachingMode.PreferCache);
+		NanoHTTPD httpd = new NanoHTTPD(18083, new File("test/http"));
+		try {
+			File result = handle.request();
+			assertEquals(cached, result);
+			assertEquals("File timestamp should NOT change", cachedTimestamp, result.lastModified());
 		} finally {
 			httpd.stop();
 		}

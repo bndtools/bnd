@@ -195,8 +195,15 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		switch (mode) {
 		case PreferCache:
 			if (!cachedFile.exists()) {
+				TaggedData data = connector.connectTagged(url);
+				
+				// Save the etag
+				if (data.getTag() != null)
+					saveETag(data.getTag());
+				
+				// Download to the cache
 				cacheDir.mkdirs();
-				downloadToFile(cachedFile);
+				IO.copy(data.getInputStream(), cachedFile);
 			}
 			return cachedFile;
 		case PreferRemote:
@@ -212,14 +219,8 @@ public class CachingURLResourceHandle implements ResourceHandle {
 					return cachedFile;
 				
 				// Save the etag...
-				if (data.getTag() != null) {
-					try {
-						IO.copy(IO.stream(data.getTag()), etagFile);
-					} catch (Exception e) {
-						// Errors saving the etag shouldn't interfere with the download
-						if (reporter != null) reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
-					}
-				}
+				if (data.getTag() != null)
+					saveETag(data.getTag());
 				
 				// Save the data to the cache
 				cacheDir.mkdirs();
@@ -248,22 +249,12 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		return etag;
 	}
 	
-	void downloadToFile(File file) throws IOException {
-		InputStream in = null;
-		OutputStream out = null;
+	void saveETag(String etag) {
 		try {
-			in = connector.connect(url);
-			out = new FileOutputStream(file);
-			
-			byte[] buf = new byte[1024];
-			for(;;) {
-				int bytes = in.read(buf, 0, 1024);
-				if (bytes < 0) break;
-				out.write(buf, 0, bytes);
-			}
-		} finally {
-			try { if (in != null) in.close(); } catch (IOException e) {};
-			try { if (out != null) out.close(); } catch (IOException e) {};
+			IO.copy(IO.stream(etag), etagFile);
+		} catch (Exception e) {
+			// Errors saving the etag should not interfere with the download
+			if (reporter != null) reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
 		}
 	}
 	
