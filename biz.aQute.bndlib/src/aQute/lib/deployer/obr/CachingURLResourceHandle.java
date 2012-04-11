@@ -200,17 +200,34 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			}
 			return cachedFile;
 		case PreferRemote:
-			File tempFile = File.createTempFile("download", ".tmp");
+			boolean cacheExists = cachedFile.exists();
+			String etag = readETag();
+			
 			try {
-				downloadToFile(tempFile);
+				// Only send the etag if we have a cached copy corresponding to that etag!
+				TaggedData data = cacheExists ? connector.connectTagged(url, etag) : connector.connectTagged(url);
 				
-				// remote download succeeded... copy tmp to cache
+				// Null return means the cached file is still current
+				if (data == null)
+					return cachedFile;
+				
+				// Save the etag...
+				if (data.getTag() != null) {
+					try {
+						IO.copy(IO.stream(data.getTag()), etagFile);
+					} catch (Exception e) {
+						// Errors saving the etag shouldn't interfere with the download
+						if (reporter != null) reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
+					}
+				}
+				
+				// Save the data to the cache
 				cacheDir.mkdirs();
-				IO.copy(tempFile, cachedFile);
+				IO.copy(data.getInputStream(), cachedFile);
 				return cachedFile;
 			} catch (IOException e) {
-				// Remote download failed... use the cache if available
-				if (cachedFile.exists()) {
+				// Remote access failed, use the cache if available
+				if (cacheExists) {
 					if (reporter != null) reporter.warning("Download of remote resource %s failed, using local cache %s.", url, cachedFile); 
 					return cachedFile;
 				} else {
@@ -220,6 +237,15 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		default:
 			throw new IllegalArgumentException("Invalid caching mode");
 		}
+	}
+	
+	String readETag() throws IOException {
+		String etag;
+		if (etagFile != null && etagFile.isFile())
+			etag = IO.collect(etagFile);
+		else
+			etag = null;
+		return etag;
 	}
 	
 	void downloadToFile(File file) throws IOException {
