@@ -19,4 +19,4 @@ Export-Package: junit.framework; version=3.8
 Import-Package: aQute.*;resolution:=optional,*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.3
