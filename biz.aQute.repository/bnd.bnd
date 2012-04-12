@@ -1,22 +1,32 @@
--buildpath: aQute.libg;version=project,\
+-buildpath:\
+	osgi.core;version=4.2,\
+	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex2.lib,\
+	org.osgi.impl.bundle.bindex,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0
+
 Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
-	aQute.lib.repository.LocalIndexedRepo
-Export-Package: aQute.lib.repository,\
+	aQute.lib.repository.LocalIndexedRepo,\
+	aQute.lib.deployer.obr.OBR,\
+	aQute.lib.deployer.obr.LocalOBR,\
+	aQute.lib.deployer.http.HttpBasicAuthURLConnector
+
+Export-Package: test.repository,\
 	org.osgi.service.indexer,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
 	org.osgi.service.log;-split-package:=merge-first
+
 Private-Package:\
-	aQute.lib.repository.xml,\
+	aQute.lib.deployer.repository.xml,\
 	aQute.libg.gzip,\
 	aQute.libg.filerepo,\
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl.util,\
-	org.osgi.framework
+	org.osgi.framework;-split-package:=first
+
 Import-Package: org.osgi.framework;version='[1.5,2)',\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*
