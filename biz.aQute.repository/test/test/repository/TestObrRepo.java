@@ -11,7 +11,7 @@ import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
 import aQute.libg.version.Version;
 
-public class CompressedOBRTest extends TestCase {
+public class TestObrRepo extends TestCase {
 	
 	private FixedIndexedRepo obr;
 	private NanoHTTPD httpd;
@@ -21,7 +21,7 @@ public class CompressedOBRTest extends TestCase {
 		obr = new FixedIndexedRepo();
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("name", "obr");
-		config.put("locations", new File("testdata/fullobr.xml.gz").toURI().toString());
+		config.put("locations", new File("testdata/fullobr.xml").toURI().toString());
 		config.put("type", "OBR");
 		obr.setProperties(config);
 		

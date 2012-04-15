@@ -19,12 +19,15 @@ public class OBRTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		obr = new OBR();
-		obr.setLocations(new URL[] { OBRTest.class.getResource("fullobr.xml") });
+		Map<String, String> config = new HashMap<String, String>();
+		config.put("location", new File("testdata/fullobr.xml").getAbsoluteFile().toURI().toString());
 		
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
+		File cacheDir = new File(tmpFile.getAbsolutePath() + ".dir");
+		config.put("cache", cacheDir.getAbsolutePath());
 		
-		obr.setCacheDirectory(new File(tmpFile.getAbsolutePath() + ".dir"));
+		obr.setProperties(config);
 		
 		httpd = new NanoHTTPD(18080, new File("testdata/http"));
 	}
@@ -42,16 +45,17 @@ public class OBRTest extends TestCase {
 		obr.getCacheDirectory().delete();
 	}
 	
-	public void testSetProperties() {
+	public void testSetProperties() throws Exception {
 		OBR obr2 = new OBR();
 		
 		Map<String,String> props = new HashMap<String, String>();
-		props.put("location", OBRTest.class.getResource("fullobr.xml").toString());
+		props.put("location", new File("testdata/fullobr.xml").toURI().toString());
 		props.put("cache", this.obr.getCacheDirectory().getAbsolutePath());
 		obr2.setProperties(props);
 		
-		assertEquals(1, obr2.getOBRIndexes().size());
-		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr2.getOBRIndexes().get(0).toString());
+		Collection<URL> indexes = obr2.getOBRIndexes();
+		assertEquals(1, indexes.size());
+		assertEquals(new File("testdata/fullobr.xml").toURI().toString(), indexes.iterator().next().toString());
 		
 		assertEquals(this.obr.getCacheDirectory(), obr2.getCacheDirectory());
 	}
@@ -60,7 +64,7 @@ public class OBRTest extends TestCase {
 		OBR obr2 = new OBR();
 		
 		Map<String,String> props = new HashMap<String, String>();
-		props.put("location", OBRTest.class.getResource("fullobr.xml").toString());
+		props.put("location", new File("testdata/fullobr.xml").toURI().toString());
 		obr2.setProperties(props);
 	}
 	
@@ -117,6 +121,7 @@ public class OBRTest extends TestCase {
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", result.getName());
 	}
 	
+	/*
 	public void testGetPackageLowest() throws Exception {
 		Map<String, String> props = new HashMap<String, String>();
 		props.put("package", "org.eclipse.emf.common");
@@ -152,6 +157,7 @@ public class OBRTest extends TestCase {
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.minimal-2.6.1.jar", result.getName());
 	}
+	*/
 	
 	public void testList() throws Exception {
 		List<String> result = obr.list("name\\.njbartlett\\..*");
@@ -168,7 +174,7 @@ public class OBRTest extends TestCase {
 	}
 	
 	public void testName() throws MalformedURLException {
-		assertEquals(OBRTest.class.getResource("fullobr.xml").toString(), obr.getName());
+		assertEquals(new File("testdata/fullobr.xml").getAbsoluteFile().toURI().toString(), obr.getName());
 		
 		OBR obr2 = new OBR();
 		obr2.setLocations(new URL[] { new URL("http://www.example.com/bundles/dummybundle.jar"), new URL("file:/Users/neil/bundles/dummy.jar") });

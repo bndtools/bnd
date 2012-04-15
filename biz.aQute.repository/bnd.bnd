@@ -13,12 +13,18 @@ Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.deployer.obr.LocalOBR,\
 	aQute.lib.deployer.http.HttpBasicAuthURLConnector
 
-Export-Package: test.repository,\
+Export-Package:\
+	aQute.lib.deployer.repository.api,\
 	org.osgi.service.indexer,\
+	org.osgi.service.bindex,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
 	org.osgi.service.log;-split-package:=merge-first
 
+# NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
 Private-Package:\
+	aQute.lib.deployer.http,\
+	aQute.lib.deployer.obr,\
+	aQute.lib.deployer.repository,\
 	aQute.lib.deployer.repository.parsers,\
 	aQute.libg.gzip,\
 	aQute.libg.filerepo,\
@@ -27,6 +33,7 @@ Private-Package:\
 	org.osgi.service.indexer.impl.util,\
 	org.osgi.framework;-split-package:=first
 
+# We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
 Import-Package: org.osgi.framework;version='[1.5,2)',\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*

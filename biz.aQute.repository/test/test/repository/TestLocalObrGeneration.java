@@ -43,7 +43,7 @@ public class TestLocalObrGeneration extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-//		IO.delete(outputDir);
+		IO.delete(outputDir);
 	}
 
 	public void testInitiallyEmpty() throws Exception {

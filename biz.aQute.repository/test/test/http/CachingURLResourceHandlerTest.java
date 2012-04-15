@@ -56,7 +56,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 			assertEquals(new File("testdata/httpcache/3/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar").getAbsolutePath(), result.getAbsolutePath());
 			
 			File etagFile = new File(result.getAbsolutePath() + ".etag");
-			assertEquals("281e8cff", IO.collect(etagFile));
+			assertEquals("aee2cb61", IO.collect(etagFile));
 			
 			result.delete();
 			etagFile.delete();
@@ -97,7 +97,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 			assertEquals(cached, result);
 			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
 			
-			assertEquals("281e8cff", IO.collect(etagFile));
+			assertEquals("aee2cb61", IO.collect(etagFile));
 		} finally {
 			httpd.stop();
 		}
@@ -115,7 +115,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
-			assertEquals("281e8cff", IO.collect(etagFile));
+			assertEquals("aee2cb61", IO.collect(etagFile));
 		} finally {
 			httpd.stop();
 		}
