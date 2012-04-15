@@ -12,6 +12,8 @@ import aQute.lib.io.IO;
 
 public class CachingURLResourceHandlerTest extends TestCase {
 	
+	private static final String EXPECTED_ETAG = "64035a95";
+	
 	File currentDir = new File(System.getProperty("user.dir"));
 	
 	public void testResolveAbsolute() throws IOException {
@@ -56,7 +58,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 			assertEquals(new File("testdata/httpcache/3/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar").getAbsolutePath(), result.getAbsolutePath());
 			
 			File etagFile = new File(result.getAbsolutePath() + ".etag");
-			assertEquals("aee2cb61", IO.collect(etagFile));
+			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
 			
 			result.delete();
 			etagFile.delete();
@@ -97,7 +99,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 			assertEquals(cached, result);
 			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
 			
-			assertEquals("aee2cb61", IO.collect(etagFile));
+			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
 		} finally {
 			httpd.stop();
 		}
@@ -115,7 +117,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
-			assertEquals("aee2cb61", IO.collect(etagFile));
+			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
 		} finally {
 			httpd.stop();
 		}

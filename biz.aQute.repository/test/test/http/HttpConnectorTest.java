@@ -22,6 +22,8 @@ public class HttpConnectorTest extends TestCase {
 	
 	private static final String URL_PREFIX      = "http://127.0.0.1:18081/";
 	private static final String AUTH_URL_PREFIX = "http://127.0.0.1:18082/";
+	
+	private static final String EXPECTED_ETAG = "64035a95";
 
 	private NanoHTTPD httpd;
 
@@ -44,13 +46,13 @@ public class HttpConnectorTest extends TestCase {
 		TaggedData data = connector.connectTagged(new URL(URL_PREFIX + "bundles/dummybundle.jar"));
 		assertNotNull("Data should be non-null because ETag not provided", data);
 		data.getInputStream().close();
-		assertEquals("ETag is incorrect", "aee2cb61", data.getTag());
+		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 	
 	public void testConnectKnownTag() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
-		TaggedData data = connector.connectTagged(new URL(URL_PREFIX + "bundles/dummybundle.jar"), "aee2cb61");
+		TaggedData data = connector.connectTagged(new URL(URL_PREFIX + "bundles/dummybundle.jar"), EXPECTED_ETAG);
 		assertNull("Data should be null since ETag not modified.", data);
 	}
 
@@ -60,7 +62,7 @@ public class HttpConnectorTest extends TestCase {
 		TaggedData data = connector.connectTagged(new URL(URL_PREFIX + "bundles/dummybundle.jar"), "00000000");
 		assertNotNull("Data should be non-null because ETag was different", data);
 		data.getInputStream().close();
-		assertEquals("ETag is incorrect", "aee2cb61", data.getTag());
+		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 	
 	public void testConnectNoUserPass() throws Exception {
@@ -125,7 +127,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			TaggedData data = connector.connectTagged(new URL(AUTH_URL_PREFIX + "bundles/dummybundle.jar"), "aee2cb61");
+			TaggedData data = connector.connectTagged(new URL(AUTH_URL_PREFIX + "bundles/dummybundle.jar"), EXPECTED_ETAG);
 			assertNull("Data should be null because resource not modified", data);
 		} finally {
 			authHttpd.stop();
