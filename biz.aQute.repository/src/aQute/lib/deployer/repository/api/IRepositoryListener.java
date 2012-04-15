@@ -1,6 +1,7 @@
-package aQute.lib.deployer.repository.xml;
+package aQute.lib.deployer.repository.api;
 
 public interface IRepositoryListener {
+
 	/**
 	 * Process an OBR resource descriptor from the index document, and possibly
 	 * request early termination of the parser.
@@ -11,7 +12,7 @@ public interface IRepositoryListener {
 	 *         will result in the parser being stopped with a
 	 *         {@link StopParseException}.
 	 */
-	boolean processResource(Resource resource);
+	boolean processResource(BaseResource resource);
 	
 	/**
 	 * Process an OBR referral
@@ -24,4 +25,5 @@ public interface IRepositoryListener {
 	 *         {@link StopParseException}.
 	 */
 	boolean processReferral(String parentUrl, Referral referral, int maxDepth, int currentDepth);
+
 }

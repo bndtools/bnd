@@ -57,6 +57,22 @@ public class TestFixedIndexedRepo extends TestCase {
 		
 		assertEquals(56, countBundles(repo));
 	}
-
+	
+	public void testObr() throws Exception {
+		FixedIndexedRepo repo = new FixedIndexedRepo();
+		
+		Map<String, String> config = new HashMap<String, String>();
+		config.put("name", "obr");
+		config.put("locations", new File("testdata/fullobr.xml").toURI().toString());
+		config.put("type", "OBR");
+		repo.setProperties(config);
+		
+		File[] files = repo.get("name.njbartlett.osgi.emf.xmi", null);
+		assertNotNull(files);
+		assertEquals(2, files.length);
+		
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", files[0].getName());
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", files[1].getName());
+	}
 
 }

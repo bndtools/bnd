@@ -1,4 +1,4 @@
-package aQute.lib.deployer.repository.xml;
+package aQute.lib.deployer.repository.api;
 
 public class Referral {
 

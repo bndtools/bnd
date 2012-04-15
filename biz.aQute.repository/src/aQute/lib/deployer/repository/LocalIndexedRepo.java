@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,12 +15,11 @@ import java.util.Set;
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.log.LogService;
 
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.filerepo.FileRepo;
 import aQute.libg.tuple.Pair;
@@ -64,9 +62,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		storageRepo = new FileRepo(storageDir);
 		
 		// Set the local index and cache directory locations
-		localIndex = pretty ? new File(storageDir, INDEX_FILE_NAME_PRETTY) : new File(storageDir, INDEX_FILE_NAME_GZIP);
-		if (localIndex.exists() && !localIndex.isFile())
-			throw new IllegalArgumentException(String.format("Cannot build local repository index: '%s' already exists but is not a plain file.", localIndex.getAbsolutePath()));
 		cacheDir = new File(storageDir, ".obrcache");
 		if (cacheDir.exists() && !cacheDir.isDirectory())
 			throw new IllegalArgumentException(String.format("Cannot create repository cache: '%s' already exists but is not directory.", cacheDir.getAbsolutePath()));
@@ -74,6 +69,11 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	
 	@Override
 	protected void initialiseIndexes() throws Exception {
+		String indexFileName = contentProvider.getDefaultIndexName(pretty);
+		localIndex = new File(storageDir, indexFileName);
+		if (localIndex.exists() && !localIndex.isFile())
+			throw new IllegalArgumentException(String.format("Cannot build local repository index: '%s' already exists but is not a plain file.", localIndex.getAbsolutePath()));
+
 		if (!localIndex.exists()) {
 			regenerateIndex();
 		}
@@ -88,15 +88,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 	
 	private synchronized void regenerateIndex() throws Exception {
-		BIndex2 indexer = new BIndex2();
-		if (reporter != null)
-			indexer.setLog(new ReporterLogService(reporter));
-		
-		List<ResourceAnalyzer> analyzers = registry.getPlugins(ResourceAnalyzer.class);
-		for (ResourceAnalyzer analyzer : analyzers) {
-			// TODO: where to get the filter property??
-			indexer.addAnalyzer(analyzer, null);
-		}
+		LogService log = (reporter != null) ? new ReporterLogService(reporter) : null;
 		
 		Set<File> allFiles = new HashSet<File>();
 		gatherFiles(allFiles);
@@ -105,14 +97,11 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		try {
 			storageDir.mkdirs();
 			out = new FileOutputStream(localIndex);
-			Map<String, String> config = new HashMap<String, String>();
-			config.put(ResourceIndexer.REPOSITORY_NAME, this.getName());
-			config.put(ResourceIndexer.ROOT_URL, storageDir.getCanonicalFile().toURI().toURL().toString());
-			if (pretty)
-				config.put(ResourceIndexer.PRETTY, Boolean.toString(true));
-			indexer.index(allFiles, out, config);
+			
+			String rootUrl = storageDir.getCanonicalFile().toURI().toURL().toString();
+			contentProvider.generateIndex(allFiles, out, this.getName(), rootUrl, pretty, registry, log);
 		} finally {
-			out.close();
+			IO.close(out);
 		}
 	}
 
@@ -190,7 +179,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	
 	@Override
 	public synchronized File put(Jar jar) throws Exception {
-		Coordinator coordinator = registry.getPlugin(Coordinator.class);
+		init();
+		
+		Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
 		File newFile;
 		if (coordinator != null && coordinator.addParticipant(this)) {
 			newFile = beginPut(jar);

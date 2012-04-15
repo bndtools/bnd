@@ -19,7 +19,7 @@ Export-Package: test.repository,\
 	org.osgi.service.log;-split-package:=merge-first
 
 Private-Package:\
-	aQute.lib.deployer.repository.xml,\
+	aQute.lib.deployer.repository.parsers,\
 	aQute.libg.gzip,\
 	aQute.libg.filerepo,\
 	org.osgi.service.indexer.impl,\
