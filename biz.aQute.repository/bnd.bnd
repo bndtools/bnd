@@ -37,3 +37,4 @@ Private-Package:\
 Import-Package: org.osgi.framework;version='[1.5,2)',\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*
+Bundle-Version: 1.0.0
