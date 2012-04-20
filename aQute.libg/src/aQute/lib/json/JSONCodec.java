@@ -6,10 +6,12 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.*;
 
+import aQute.lib.base64.*;
 import aQute.lib.codec.*;
 
 @SuppressWarnings("unchecked") public class JSONCodec implements Codec {
 	final static WeakHashMap<Class<?>, Accessor>	accessors	= new WeakHashMap<Class<?>, Accessor>();
+
 	static class Accessor {
 		final Field		fields[];
 		final Type		types[];
@@ -32,7 +34,7 @@ import aQute.lib.codec.*;
 			}
 		}
 	}
-	
+
 	class PeekReader {
 		final Reader	reader;
 		int				last;
@@ -88,6 +90,7 @@ import aQute.lib.codec.*;
 	}
 
 	public <T> T decode(Reader r, Class<T> type) throws Exception {
+
 		PeekReader isr = new PeekReader(r);
 		return type.cast(decode(type, isr));
 	}
@@ -111,8 +114,12 @@ import aQute.lib.codec.*;
 			return;
 		}
 
+		if (object instanceof byte[]) {
+			string(app, Base64.encodeBase64((byte[]) object));
+			return;
+		}
 		if (object instanceof File) {
-			string(app, ((File)object).getAbsolutePath());
+			string(app, ((File) object).getAbsolutePath());
 			return;
 		}
 
@@ -121,18 +128,18 @@ import aQute.lib.codec.*;
 			return;
 		}
 
-		if (rawClass == Boolean.class || rawClass == boolean.class) {
+		if (actualClass == Boolean.class || actualClass == boolean.class) {
 			app.append((Boolean) object ? "true" : "false");
 			return;
 		}
 
-		if (rawClass == Character.class || rawClass == char.class) {
+		if (actualClass == Character.class || actualClass == char.class) {
 			string(app, object.toString());
 			return;
 		}
 
-		if (rawClass.isPrimitive() || Number.class.isAssignableFrom(rawClass)
-				|| Enum.class.isAssignableFrom(rawClass) || rawClass == Pattern.class) {
+		if (actualClass.isPrimitive() || Number.class.isAssignableFrom(actualClass)
+				|| Enum.class.isAssignableFrom(actualClass) || actualClass == Pattern.class) {
 			app.append(object.toString());
 			return;
 		}
@@ -151,7 +158,18 @@ import aQute.lib.codec.*;
 				return;
 			}
 
-			if (rawClass.isArray()) {
+			if (Dictionary.class.isAssignableFrom(rawClass)) {
+				Dictionary d = (Dictionary)object;
+				Map map = new LinkedHashMap();
+				for ( Enumeration e = d.keys(); e.hasMoreElements(); ) {
+					Object k = e.nextElement();
+					map.put(k, d.get(k));
+				}
+				encodeMap(app, type, map, visited);
+				return;
+			}
+
+			if (actualClass.isArray()) {
 				encodeArray(app, type, object, visited);
 				return;
 			}
@@ -258,7 +276,6 @@ import aQute.lib.codec.*;
 			} else
 				string(app, (String) o);
 
-			encode(app, keyType, o, visited);
 			app.append(":");
 			encode(app, valueType, entry.getValue(), visited);
 			del = ", ";
@@ -335,7 +352,16 @@ import aQute.lib.codec.*;
 	}
 
 	@SuppressWarnings("rawtypes") private Object convert(Class<?> type, String s) throws Exception {
+		if (type == Object.class)
+			return s;
 
+		if (type == byte[].class) {
+			try {
+				return Base64.decodeBase64(s);
+			} catch (Exception e) {
+				return null;
+			}
+		}
 		if (type == boolean.class || type == Boolean.class)
 			return Boolean.parseBoolean(s);
 
@@ -384,7 +410,7 @@ import aQute.lib.codec.*;
 			Class<?> rawClass = toClass(type);
 			if (Map.class.isAssignableFrom(rawClass))
 				return decodeMap(rawClass, type, isr);
-			else if (String.class == rawClass)
+			else  if (String.class == rawClass)
 				return doString(isr, '}');
 			else
 				return decodeObject(rawClass, isr);
@@ -405,6 +431,8 @@ import aQute.lib.codec.*;
 				return decodeArray(rawClass.getComponentType(), isr);
 			else if (rawClass == String.class)
 				return doString(isr, ']');
+			else if (rawClass == Object.class)
+				return decodeArray(Object.class, isr);
 			else
 				throw new IllegalArgumentException(
 						"Got an array [] but result type is not a collection or array: " + rawClass);
@@ -513,8 +541,22 @@ import aQute.lib.codec.*;
 		while (c == '"' || Character.isDigit(c) || c == '-' || c == '[' || c == '{') {
 			Object member = decode(type, isr);
 			result.add(member);
+
 			c = isr.peek();
+
+			if (c == ',') {
+				c = isr.skipWs();
+				c = isr.peek();
+				continue;
+			}
+
+			if (c == ']') {
+				break;
+			}
 		}
+		check(c == ']', "Expected ']'");
+		c = isr.skipWs(); // eat the ]
+
 		Object array = Array.newInstance(rawClass, result.size());
 
 		for (int n = result.size() - 1; n >= 0; n--)
@@ -610,7 +652,7 @@ import aQute.lib.codec.*;
 
 		while (c == '"') {
 			Object key = parseString(isr);
-			if (keyType != String.class) {
+			if (key.getClass() != String.class) {
 				// TODO
 				key = decode(new StringReader((String) key), keyType);
 			}
@@ -618,10 +660,17 @@ import aQute.lib.codec.*;
 			Object value = decode(valueType, isr);
 			map.put(key, value);
 			c = isr.skipWs();
-			if (c != ',')
+
+			if (c == ',') {
 				c = isr.skipWs();
-			else
+				continue;
+			}
+
+			if (c == '}')
 				break;
+
+			check(false, "Expected } or ,");
+
 		}
 		check('}' == c, "Expected end of MAP: }");
 		return map;
@@ -737,16 +786,17 @@ import aQute.lib.codec.*;
 		JSONCodec codec = new JSONCodec();
 		FileReader r = new FileReader(target);
 		try {
-			return codec.decode(r,type);
+			return codec.decode(r, type);
 		} finally {
 			r.close();
 		}
 	}
+
 	public static <T> T read(Class<T> type, File target) throws Exception {
 		JSONCodec codec = new JSONCodec();
 		FileReader r = new FileReader(target);
 		try {
-			return codec.decode(r,type);
+			return codec.decode(r, type);
 		} finally {
 			r.close();
 		}
