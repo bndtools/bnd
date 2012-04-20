@@ -835,6 +835,9 @@ public class Builder extends Analyzer {
 			String destinationPath) throws Exception {
 		Jar src = getJarFromName(source, "Include-Resource " + source);
 		if (src != null) {
+			// Do not touch the manifest so this also
+			// works for signed files.
+			src.setDoNotTouchManifest();
 			JarResource jarResource = new JarResource(src);
 			jar.putResource(destinationPath, jarResource);
 		} else {
