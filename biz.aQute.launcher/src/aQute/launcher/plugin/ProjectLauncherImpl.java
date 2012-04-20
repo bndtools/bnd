@@ -154,15 +154,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		final Properties p = lc.getProperties();
 
-		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new WriteResource() {
-			@Override public void write(OutputStream outStream) throws IOException, Exception {
-				p.store(outStream, "comment");
-			}
-
-			@Override public long lastModified() {
-				return 0L;
-			}
-		});
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		p.store(bout, "");		
+		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
 
 		// Remove signer files, we have a different manifest now
 		Set<String> set = new HashSet<String>();
