@@ -1,8 +1,16 @@
 Include-Resource: 				LICENSE, embedded-repo.jar
-Private-Package: 				aQute.bnd.*, aQute.configurable.*
+Private-Package: aQute.bnd.*,\
+	aQute.configurable.*,\
+	org.osgi.service.component.annotations.*,\
+	aQute.lib.deployer.*,\
+	org.osgi.service.coordinator
 
 Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
-Import-Package: 				org.apache.tools.ant;resolution:=optional,*
+Import-Package: org.apache.tools.ant.*;resolution:=optional,\
+	junit.framework;resolution:=optional;version='[3.8,4)',\
+	org.osgi.service.coordinator;resolution:=optional;version='[1.0,2.0)',\
+	*
 
 Main-Class: 					aQute.bnd.main.bnd
+JPM-Command:					bnd
 Bundle-Version:					${^Bundle-Version}
