@@ -42,7 +42,7 @@ public class MultiMap<K,V> extends HashMap<K,List<V>> {
 		return set.add(value);
 	}
 	
-	@SuppressWarnings("unchecked") public boolean addAll( K key, Collection<V> value ) {
+	@SuppressWarnings("unchecked") public boolean addAll( K key, Collection<? extends V> value ) {
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if ( set == null) {
