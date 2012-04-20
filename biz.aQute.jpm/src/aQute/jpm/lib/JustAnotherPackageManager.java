@@ -129,7 +129,7 @@ public class JustAnotherPackageManager {
 
 	public void uninstall(String bsn, VersionRange range) throws Exception {
 		File[] files = repo.get(bsn, range);
-		if (files == null) {
+		if (files == null || files.length == 0) {
 			reporter.error("No artifact found for %s:%s", bsn, range);
 		} else {
 			for (File file : files) {
@@ -147,8 +147,10 @@ public class JustAnotherPackageManager {
 	public void gc() throws Exception {
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
+
 			if (!data.repoFile.isFile()) {
 				platform.remove(data);
+				cmd.delete();
 			}
 		}
 
@@ -156,6 +158,7 @@ public class JustAnotherPackageManager {
 			File dataFile = new File(service, "data");
 
 			ServiceData data = getData(ServiceData.class, dataFile);
+
 			if (!data.repoFile.isFile()) {
 				Service s = getService(service.getName());
 				s.stop();
@@ -163,6 +166,7 @@ public class JustAnotherPackageManager {
 				delete(data.sdir);
 				delete(data.log);
 				platform.remove(data);
+				delete(service);
 			}
 		}
 	}

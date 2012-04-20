@@ -269,7 +269,7 @@ import aQute.libg.version.*;
 		});
 
 		for (ArtifactData artifact : ads)
-			System.out.printf("%-40s %s\n", artifact.bsn, artifact.version);
+			out.printf("%-40s %s\n", artifact.bsn, artifact.version);
 	}
 
 	public void _service(serviceOptions opts) throws Exception {
@@ -371,7 +371,7 @@ import aQute.libg.version.*;
 	public void _command(commandOptions opts) throws Exception {
 		if (opts._().isEmpty()) {
 			for (CommandData sd : jpm.getCommands())
-				System.out.printf("%-40s %s-%s (%s)\n", sd.name, sd.bsn, sd.version, sd.repoFile);
+				out.printf("%-40s %s-%s (%s)\n", sd.name, sd.bsn, sd.version, sd.repoFile);
 			return;
 		}
 	}
@@ -398,8 +398,7 @@ import aQute.libg.version.*;
 			jpm.uninstall(bsn, range);
 		}
 
-		if (opts.gc())
-			jpm.gc();
+		jpm.gc();
 	}
 
 	public void _gc(GCOptions opts) throws Exception {
@@ -490,8 +489,8 @@ import aQute.libg.version.*;
 				data.version = version;
 				if (attrs.containsKey("args"))
 					data.args = attrs.get("args");
-				if (attrs.containsKey("vmargs"))
-					data.jvmArgs = attrs.get("vmargs");
+				if (attrs.containsKey("jvmargs"))
+					data.jvmArgs = attrs.get("jvmargs");
 
 				data.force = opts.force();
 				data.main = mainClass;
@@ -519,7 +518,8 @@ import aQute.libg.version.*;
 		try {
 			String msg = jpm.verify(jar, opts.verify());
 			if (msg != null) {
-				error("The JAR %s fails to verify, %s", source, msg);
+				error("The JAR %s fails to verify, %s. Use -v - to ignore verification", source,
+						msg);
 				return;
 			}
 
@@ -701,7 +701,7 @@ import aQute.libg.version.*;
 		List<String> args = options._();
 		String s = args.remove(0);
 		boolean on = args.isEmpty() || !"off".equalsIgnoreCase(args.remove(0));
-		
+
 		Service service = jpm.getService(s);
 		if (service == null)
 			error("Non existent service %s", s);

@@ -83,7 +83,7 @@ public abstract class Unix extends Platform {
 			if ( value == null)
 				value = "";
 			
-			sed.replace("%"+key.getName()+"%", ""+key.get(data));
+			sed.replace("%"+key.getName()+"%", ""+value);
 		}
 		sed.doIt();
 		run("chmod a+x " + file.getAbsolutePath());

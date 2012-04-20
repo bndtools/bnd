@@ -14,7 +14,7 @@ public class ServiceMain extends Thread {
 	static Method			serviceMethod;
 	static Thread			mainThread;
 	static final UUID		uuid	= UUID.randomUUID();
-	private static boolean	trace = true;
+	private static boolean	trace = false;
 
 	public static void main(String args[]) throws Exception, SecurityException,
 			NoSuchMethodException {
