@@ -1,8 +1,4 @@
-Bundle-Version: 				1.52.3
-Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
-									description="${Bundle-Copyright}"; \
-									link=LICENSE
-						
+Bundle-Version: 				1.52.3.t${tstamp}
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
 -sub: *.bnd
@@ -18,4 +14,3 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 	osgi.core;version=4.1,\
 	junit.osgi,\
 	org.osgi.impl.bundle.bindex
-
