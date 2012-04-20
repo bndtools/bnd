@@ -165,7 +165,7 @@ public abstract class ProjectLauncher {
 		runbundles.add(f);
 	}
 
-	public List<String> getRunBundles() {
+	public Collection<String> getRunBundles() {
 		return runbundles;
 	}
 

@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
@@ -22,6 +23,7 @@ import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.configurable.*;
@@ -721,12 +723,18 @@ public class bnd extends Processor {
 	 * @param path
 	 * @throws Exception
 	 */
-	interface packageOptions extends Options {
-		String output();
+	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar") @Arguments(arg = {
+			"bnd|bndrun", "[...]" }) interface packageOptions extends Options {
+		@Description("Where to store the resulting file") String output();
 	}
 
 	public void _package(packageOptions opts) throws Exception {
 		Project project = getProject(); // default project
+		if (project == null) {
+			error("Packaging only works inside a project directory (needs bnd.bnd file)");
+			return;
+		}
+
 		List<String> cmdline = opts._();
 		File output = null;
 
@@ -740,48 +748,25 @@ public class bnd extends Processor {
 		else
 			output.getParentFile().mkdirs();
 
-		if (cmdline.isEmpty()) {
-			if (project == null)
-				error("No file given and this is not a project dir");
-			else {
-				pack(project, output, project.getName() + ".jar");
-			}
-		} else {
+		project.build();
 
-			for (String path : opts._()) {
+		if (cmdline.isEmpty())
+			cmdline.add(Project.BNDFILE); // default project itself
 
-				File file = getFile(path);
-				if (!file.isFile()) {
-					error("No such file %s", file);
-				} else {
+		for (String path : opts._()) {
 
-					// Tricky because we can be run inside the context of a
-					// project (in which case
-					// we need to inherit from the project or outside.
+			File file = getFile(path);
+			if (!file.isFile()) {
+				error("No such file %s", file);
+			} else {
 
-					File projectDir = file.getParentFile();
-					File workspaceDir = projectDir.getParentFile();
-					if (workspaceDir == null) {
-						workspaceDir = new File(System.getProperty("user.home") + File.separator
-								+ ".bnd");
-					}
-					Workspace ws = Workspace.getWorkspace(workspaceDir);
+				// Tricky because we can be run inside the context of a
+				// project (in which case
+				// we need to inherit from the project or outside.
 
-					File bndbnd = new File(projectDir, Project.BNDFILE);
-					if (bndbnd.isFile()) {
-
-						// This is a normal project since the bnd.bnd file
-						// exists
-
-						project = new Project(ws, projectDir, bndbnd);
-						project.doIncludeFile(file, true, project.getProperties());
-
-					} else
-						// We create a "dummy" project for this file
-						project = new Project(ws, projectDir, file);
-
-					pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
-				}
+				Workspace ws = project.getWorkspace();
+				project = new Project(ws, getBase(), file);
+				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
 			}
 		}
 	}
@@ -790,10 +775,46 @@ public class bnd extends Processor {
 	 * Pack the project (could be a bndrun file) and save it on disk. Report
 	 * errors if they happen.
 	 */
-	private void pack(Project project, File output, String path) {
+	static List<String>	ignore	= new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
+
+	private void pack(Project project, File output, String path) throws Exception {
+		Collection<? extends Builder> subBuilders = project.getSubBuilders();
+
+		if (subBuilders.size() != 1) {
+			error("Project has multiple bnd files, please select one of the bnd files");
+			return;
+		}
+
+		Builder b = subBuilders.iterator().next();
+
+		ignore.remove(BUNDLE_SYMBOLICNAME);
+		ignore.remove(BUNDLE_VERSION);
+		ignore.add(SERVICE_COMPONENT);
+
 		try {
 			project.use(this);
 			Jar jar = project.getProjectLauncher().executable();
+			Manifest m = jar.getManifest();
+			Attributes main = m.getMainAttributes();
+			for (String key : project.getPropertyKeys(true)) {
+				if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
+					main.putValue(key, project.getProperty(key));
+				}
+			}
+
+			if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+				main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
+
+			if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+				main.putValue(BUNDLE_SYMBOLICNAME, project.getName());
+
+			if (main.getValue(BUNDLE_VERSION) == null) {
+				main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
+				warning("No version set, uses 0.0.0");
+			}
+
+			jar.setManifest(m);
+			jar.calcChecksums(new String[] { "SHA1", "MD5" });
 			File out = output;
 			if (output.isDirectory())
 				out = new File(output, path);
@@ -1290,19 +1311,31 @@ public class bnd extends Processor {
 	}
 
 	public void _debug(debugOptions options) throws Exception {
-		Processor project = getProject(options.project());
-		if (project == null)
-			project = this;
+		Project project = getProject(options.project());
+		Processor target = project;
+		if (project != null) {
+			getInfo(project.getWorkspace());
+
+			MultiMap<String, Object> table = new MultiMap<String, Object>();
+			table.add("Workspace", project.getWorkspace().toString());
+			table.addAll("Plugins", project.getPlugins(Object.class));
+			table.addAll("Repos", project.getWorkspace().getRepositories());
+			printMultiMap(table);
+		} else
+			err.println("No project");
+
+		target = this;
 
 		MultiMap<String, String> table = new MultiMap<String, String>();
 
-		for (Iterator<String> i = project.iterator(); i.hasNext();) {
+		for (Iterator<String> i = target.iterator(); i.hasNext();) {
 			String key = i.next();
-			String s = project.get(key);
+			String s = target.get(key);
 			Collection<String> set = split(s);
 			table.addAll(key, set);
 		}
 		printMultiMap(table);
+
 	}
 
 	/**
@@ -1618,7 +1651,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	<T extends Comparable<?>> void printMultiMap(Map<T, ? extends Collection<T>> map) {
+	<T extends Comparable<?>> void printMultiMap(Map<T, ? extends Collection<?>> map) {
 		SortedList<Object> keys = new SortedList<Object>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
@@ -2363,4 +2396,50 @@ public class bnd extends Processor {
 		return null;
 	}
 
+	/**
+	 * Show the version of this bnd
+	 * 
+	 * @throws IOException
+	 */
+
+	@Description("Show version information about bnd") public interface versionOptions extends
+			Options {
+		@Description("Show licensing, copyright, sha, scm, etc") boolean xtra();
+	}
+
+	public void _version(versionOptions o) throws IOException {
+		Enumeration<URL> e = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+		while (e.hasMoreElements()) {
+			URL u = e.nextElement();
+
+			Manifest m = new Manifest(u.openStream());
+			String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			if (bsn != null && bsn.equals("biz.aQute.bnd")) {
+				Attributes attrs = m.getMainAttributes();
+				if (o.xtra()) {
+
+					long lastModified = 0;
+					try {
+						lastModified = Long.parseLong(attrs.getValue("Bnd-LastModified"));
+					} catch (Exception ee) {
+						// Ignore
+					}
+					out.printf("%-40s %s\n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
+					if (lastModified > 0)
+						out.printf("%-40s %s\n", "From", new Date(lastModified));
+					Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
+					for (String l : p.keySet())
+						out.printf("%-40s %s\n", "License", p.get(l).get("description"));
+					out.printf("%-40s %s\n", "Copyright",
+							attrs.getValue(Constants.BUNDLE_COPYRIGHT));
+					out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
+					out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
+					out.printf("%-40s %s\n", "Sources", attrs.getValue("Bundle-SCM"));
+				} else
+					out.println(m.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
+				return;
+			}
+		}
+		error("Could not locate version");
+	}
 }
