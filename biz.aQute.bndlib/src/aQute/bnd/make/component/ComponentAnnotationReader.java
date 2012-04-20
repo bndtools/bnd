@@ -6,8 +6,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
-import org.osgi.framework.*;
-
 import aQute.bnd.annotation.component.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.MethodDef;
@@ -33,7 +31,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	static String[]				ACTIVATE_ARGUMENTS		= {
 		"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext",
-		Map.class.getName(), BundleContext.class.getName() };
+		Map.class.getName(), "org.osgi.framework.BundleContext" };
 	static String[]				OLD_ACTIVATE_ARGUMENTS	= { "org.osgi.service.component.ComponentContext" };
 	
 	Reporter					reporter				= new Processor();
