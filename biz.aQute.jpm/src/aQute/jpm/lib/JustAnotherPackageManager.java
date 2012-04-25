@@ -68,6 +68,7 @@ public class JustAnotherPackageManager {
 	Platform					platform;
 	FileRepo					repo;
 	Reporter					reporter;
+	final JSONCodec					codec = new JSONCodec();
 
 	public JustAnotherPackageManager(Reporter reporter) {
 		this.reporter = reporter;
@@ -314,11 +315,11 @@ public class JustAnotherPackageManager {
 	 */
 
 	private <T> T getData(Class<T> clazz, File dataFile) throws Exception {
-		return JSONCodec.read(clazz, dataFile);
+		return codec.dec().from(dataFile).get(clazz);
 	}
 
 	private void storeData(File dataFile, Object o) throws Exception {
-		JSONCodec.write(o, dataFile);
+		codec.enc().to(dataFile).put(o);
 	}
 
 	public void setPlatform(Platform plf) {
