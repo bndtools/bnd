@@ -185,7 +185,11 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     }
 
     void reportProblemsInHeader() {
-        IMessageManager manager = getManagedForm().getMessageManager();
+        IManagedForm mform = getManagedForm();
+        if (mform == null)
+            return;
+
+        IMessageManager manager = mform.getMessageManager();
         manager.removeMessages();
 
         for (Entry<String, Integer> entry : messageMap.entrySet()) {
