@@ -27,11 +27,17 @@ import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IOpenListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
@@ -43,10 +49,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
@@ -54,6 +62,7 @@ import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.Requirement;
 import bndtools.model.obr.UnresolvedReasonLabelProvider;
+import bndtools.wizards.workspace.ReasonLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
 public class ObrResultsWizardPage extends WizardPage {
@@ -72,8 +81,10 @@ public class ObrResultsWizardPage extends WizardPage {
     private TabItem tbtmResults;
     private Table tblRequired;
     private Table tblOptional;
+    private Table tblReasons;
     private TableViewer requiredViewer;
     private CheckboxTableViewer optionalViewer;
+    private TableViewer reasonsViewer;
     private Button btnAddResolveOptional;
 
     private TabItem tbtmErrors;
@@ -122,7 +133,7 @@ public class ObrResultsWizardPage extends WizardPage {
         Label lblRequired = new Label(compResults, SWT.NONE);
         lblRequired.setText("Required Resources");
 
-        tblRequired = new Table(compResults, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL);
+        tblRequired = new Table(compResults, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblRequired = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblRequired.heightHint = 100;
         tblRequired.setLayoutData(gd_tblRequired);
@@ -130,6 +141,24 @@ public class ObrResultsWizardPage extends WizardPage {
         requiredViewer = new TableViewer(tblRequired);
         requiredViewer.setContentProvider(ArrayContentProvider.getInstance());
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
+        requiredViewer.setSorter(new BundleSorter());
+
+        requiredViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) requiredViewer.getSelection();
+                Resource resource = (Resource) sel.getFirstElement();
+                if(resource != null){
+                    List<Reason> reasons = new ArrayList<Reason>();
+                    for (Reason reason : result.getReason(resource)) {
+                        reasons.add(reason);
+                    }
+                    reasonsViewer.setInput(reasons.toArray(new Reason[reasons.size()]));
+                }
+                else{
+                    reasonsViewer.setInput(new Reason[0]);
+                }
+            }
+        });
 
         Label lblOptional = new Label(compResults, SWT.NONE);
         lblOptional.setText("Optional Resources");
@@ -141,12 +170,13 @@ public class ObrResultsWizardPage extends WizardPage {
         gl_compResultsOptional.marginHeight = 0;
         compResultsOptional.setLayout(gl_compResultsOptional);
 
-        tblOptional = new Table(compResultsOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
+        tblOptional = new Table(compResultsOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
 
         optionalViewer = new CheckboxTableViewer(tblOptional);
         optionalViewer.setContentProvider(ArrayContentProvider.getInstance());
         optionalViewer.setLabelProvider(new ResourceLabelProvider());
+        optionalViewer.setSorter(new BundleSorter());
 
         optionalViewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
@@ -198,6 +228,42 @@ public class ObrResultsWizardPage extends WizardPage {
 
         new Label(compResultsOptional, SWT.NONE);
 
+        Label lblReason = new Label(compResults, SWT.NONE);
+        lblReason.setText("Reasons");
+
+        Composite compResultsReasons = new Composite(compResults, SWT.NONE);
+        compResultsReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        GridLayout gl_compResultsReasons = new GridLayout(1, false);
+        gl_compResultsReasons.marginWidth = 0;
+        gl_compResultsReasons.marginHeight = 0;
+        compResultsReasons.setLayout(gl_compResultsReasons);
+
+        tblReasons = new Table(compResultsReasons, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        tblReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+        reasonsViewer = new TableViewer(tblReasons);
+        reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
+        reasonsViewer.setSorter(new ReasonSorter());
+        reasonsViewer.setLabelProvider(new ReasonLabelProvider());
+        reasonsViewer.addDoubleClickListener(new IDoubleClickListener() {
+
+            public void doubleClick(DoubleClickEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                Reason reason = (Reason) sel.getFirstElement();
+
+                TableItem[] items = requiredViewer.getTable().getItems();
+                for (int idx = 0; idx < items.length; idx++) {
+                    Resource resource = (Resource) items[idx].getData();
+                    if (resource.equals(reason.getResource())) {
+                        requiredViewer.getTable().select(idx);
+                        requiredViewer.getTable().showSelection();
+                        requiredViewer.getTable().notifyListeners(SWT.Selection, new Event());
+                        return;
+                    }
+                }
+            }
+        });
+
         tbtmErrors = new TabItem(tabFolder, SWT.NONE);
         tbtmErrors.setText("Errors");
 
@@ -210,7 +276,7 @@ public class ObrResultsWizardPage extends WizardPage {
         Label lblProcessingErrors = new Label(composite, SWT.NONE);
         lblProcessingErrors.setText("Processing Errors:");
 
-        Table tblProcessingErrors = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
+        Table tblProcessingErrors = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblProcessingErrors.heightHint = 80;
         tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
@@ -235,7 +301,7 @@ public class ObrResultsWizardPage extends WizardPage {
         lblUnresolvedResources.setBounds(0, 0, 59, 14);
         lblUnresolvedResources.setText("Unresolved Requirements:");
 
-        tblUnresolved = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
+        tblUnresolved = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblUnresolved.heightHint = 80;
         tblUnresolved.setLayoutData(gd_tblUnresolved);
@@ -386,4 +452,59 @@ public class ObrResultsWizardPage extends WizardPage {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
 
+    private static class BundleSorter extends ViewerSorter {
+
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            Resource r1 = (Resource) e1;
+            Resource r2 = (Resource) e2;
+            String name1 = r1.getSymbolicName();
+            if (name1 == null) {
+                name1 = "";
+            }
+            String name2 = r2.getSymbolicName();
+            if (name2 == null) {
+                name2 = "";
+            }
+
+            int ret = name1.compareTo(name2);
+            if (ret != 0) {
+                return ret;
+            }
+
+            Version ver1 = r1.getVersion();
+            if (ver1 == null) {
+                ver1 = Version.emptyVersion;
+            }
+            Version ver2 = r2.getVersion();
+            if (ver2 == null) {
+                ver2 = Version.emptyVersion;
+            }
+            return ver1.compareTo(ver2);
+        }
+    }
+
+    private static class ReasonSorter extends BundleSorter {
+
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            Reason rs1 = (Reason) e1;
+            Reason rs2 = (Reason) e2;
+
+            Resource r1 = rs1.getResource();
+            Resource r2 = rs2.getResource();
+
+            int ret = super.compare(viewer, r1, r2);
+            if (ret != 0) {
+                return ret;
+            }
+
+            ret = rs1.getRequirement().getName().compareTo(rs2.getRequirement().getName());
+            if (ret != 0) {
+                return ret;
+            }
+
+            return rs1.getRequirement().getFilter().compareTo(rs2.getRequirement().getFilter());
+        }
+    }
 }

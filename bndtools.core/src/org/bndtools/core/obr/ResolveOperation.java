@@ -188,7 +188,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         boolean resolved = resolver.resolve();
 
-        result = new ObrResolutionResult(resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
+        result = new ObrResolutionResult(resolver, resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
                 Arrays.asList(resolver.getUnsatisfiedRequirements()));
     }
 
@@ -234,7 +234,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private ObrResolutionResult createErrorResult(MultiStatus status) {
-        return new ObrResolutionResult(false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList(), Collections.<Reason>emptyList());
+        return new ObrResolutionResult(null, false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList(), Collections.<Reason>emptyList());
     }
 
     private void addJREPackageCapabilities(Resolver resolver, EE ee) throws IOException {

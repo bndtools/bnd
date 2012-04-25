@@ -94,7 +94,7 @@ eclipse.deps: \
 	ee.j2se;version='[1.5,1.6)',\
 	${bndlib},\
 	org.osgi.impl.bundle.bindex2.lib,\
-	org.apache.felix.bundlerepository,\
+	org.apache.felix.bundlerepository;version=latest,\
 	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
