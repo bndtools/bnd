@@ -3,457 +3,286 @@ package aQute.lib.json;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.*;
 
-import aQute.lib.base64.*;
-import aQute.lib.codec.*;
+/**
+ * This is a simple JSON Coder and Encoder that uses the Java type system to
+ * convert data objects to JSON and JSON to (type safe) Java objects. The
+ * conversion is very much driven by classes and their public fields. Generic
+ * information, when present is taken into account. </p> Usage patterns to
+ * encode:
+ * 
+ * <pre>
+ *  JSONCoder codec = new JSONCodec(); // 
+ * 	assert "1".equals( codec.enc().to().put(1).toString());
+ * 	assert "[1,2,3]".equals( codec.enc().to().put(Arrays.asList(1,2,3).toString());
+ * 
+ *  Map m = new HashMap();
+ *  m.put("a", "A");
+ * 	assert "{\"a\":\"A\"}".equals( codec.enc().to().put(m).toString());
+ * 
+ *  static class D { public int a; }
+ *  D d = new D();
+ *  d.a = 41;
+ *  assert "{\"a\":41}".equals( codec.enc().to().put(d).toString());
+ * </pre>
+ * 
+ * It is possible to redirect the encoder to another output (default is a
+ * string). See {@link Encoder#to()},{@link Encoder#to(File))},
+ * {@link Encoder#to(OutputStream)}, {@link Encoder#to(Appendable))}. To reset
+ * the string output call {@link Encoder#to()}.
+ * <p/>
+ * This Codec class can be used in a concurrent environment. The Decoders and
+ * Encoders, however, must only be used in a single thread.
+ */
+public class JSONCodec {
+	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
 
-@SuppressWarnings("unchecked") public class JSONCodec implements Codec {
-	final static WeakHashMap<Class<?>, Accessor>	accessors	= new WeakHashMap<Class<?>, Accessor>();
+	// Handlers
+	private final static WeakHashMap<Type, Handler>	handlers			= new WeakHashMap<Type, Handler>();
+	private static StringHandler					sh					= new StringHandler();
+	private static BooleanHandler					bh					= new BooleanHandler();
+	private static CharacterHandler					ch					= new CharacterHandler();
+	private static CollectionHandler				dch					= new CollectionHandler(
+																				ArrayList.class,
+																				Object.class);
+	private static SpecialHandler					sph					= new SpecialHandler(
+																				Pattern.class,
+																				null, null);
+	private static DateHandler						sdh					= new DateHandler();
+	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
-	static class Accessor {
-		final Field		fields[];
-		final Type		types[];
-		final Object	defaults[];
-
-		Accessor(Class<?> c) throws Exception {
-			fields = c.getFields();
-			Arrays.sort(fields, new Comparator<Field>() {
-				public int compare(Field o1, Field o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
-			types = new Type[fields.length];
-			defaults = new Object[fields.length];
-
-			Object template = c.newInstance();
-			for (int i = 0; i < fields.length; i++) {
-				types[i] = fields[i].getGenericType();
-				defaults[i] = fields[i].get(template);
-			}
-		}
+	/**
+	 * Create a new Encoder with the state and appropriate API.
+	 * 
+	 * @return an Encoder
+	 */
+	public Encoder enc() {
+		return new Encoder(this);
 	}
 
-	class PeekReader {
-		final Reader	reader;
-		int				last;
-
-		PeekReader(Reader r) {
-			this.reader = r;
-		}
-
-		int get() throws IOException {
-			if (last == 0) {
-				int c = reader.read();
-				if (c < 0)
-					throw new EOFException();
-				return c;
-			}
-
-			int tmp = last;
-			last = 0;
-			return tmp;
-		}
-
-		void unget(int c) {
-			this.last = c;
-		}
-
-		int peek() throws IOException {
-			if (last == 0)
-				last = reader.read();
-			return last;
-		}
-
-		int skipWs() throws IOException {
-			int c = get();
-			while (Character.isWhitespace(c))
-				c = get();
-			return c;
-		}
-
-		void expect(String s) throws IOException {
-			for (int i = 0; i < s.length(); i++)
-				check(s.charAt(i) == get(), "Expected " + s + " but got something different");
-		}
+	/**
+	 * Create a new Decoder with the state and appropriate API.
+	 * 
+	 * @return a Decoder
+	 */
+	public Decoder dec() {
+		return new Decoder(this);
 	}
 
-	public void encode(Type type, Object object, Appendable app) throws Exception {
-		IdentityHashMap<Object, Type> visited = new IdentityHashMap<Object, Type>();
-		encode(app, type, object, visited);
-	}
+	/*
+	 * Work horse encode methods, all encoding ends up here.
+	 */
+	void encode(Encoder app, Object object, Type type, Map<Object, Type> visited) throws Exception {
 
-	public Object decode(Reader r, Type type) throws Exception {
-		PeekReader isr = new PeekReader(r);
-		return decode(type, isr);
-	}
+		// Get the null out of the way
 
-	public <T> T decode(Reader r, Class<T> type) throws Exception {
-
-		PeekReader isr = new PeekReader(r);
-		return type.cast(decode(type, isr));
-	}
-
-	private void encode(Appendable app, Type type, Object object, Map<Object, Type> visited)
-			throws Exception {
 		if (object == null) {
 			app.append("null");
 			return;
 		}
 
-		Class<?> rawClass = toClass(type);
-		Class<?> actualClass = object.getClass();
+		// If we have no type or the type is Object.class
+		// we take the type of the object itself. Normally types
+		// come from declaration sites (returns, fields, methods, etc)
+		// and contain generic info.
 
-		check(rawClass.isAssignableFrom(actualClass)
-				|| (rawClass.isPrimitive() && toWrapper(rawClass) == actualClass),
-				"Type does not match the object's class " + rawClass + " <= " + object.getClass());
+		if (type == null || type == Object.class)
+			type = object.getClass();
 
-		if (object instanceof String) {
-			string(app, (String) object);
-			return;
+		// Dispatch to the handler who knows how to handle the given type.
+		Handler h = getHandler(type);
+		h.encode(app, object, visited);
+	}
+
+	/*
+	 * This method figures out which handler should handle the type specific
+	 * stuff. It returns a handler for each type. If no appropriate handler
+	 * exists, it will create one for the given type. There are actually quite a
+	 * lot of handlers since Java is not very object oriented.
+	 * 
+	 * @param type
+	 * 
+	 * @return
+	 * 
+	 * @throws Exception
+	 */
+	Handler getHandler(Type type) throws Exception {
+
+		// First the static hard coded handlers for the common types.
+
+		if (type == String.class)
+			return sh;
+
+		if (type == Boolean.class || type == boolean.class)
+			return bh;
+
+		if (type == byte[].class)
+			return byteh;
+
+		if (Character.class == type || char.class == type)
+			return ch;
+
+		if (Pattern.class == type)
+			return sph;
+
+		if (Date.class == type)
+			return sdh;
+
+		Handler h;
+		synchronized (handlers) {
+			h = handlers.get(type);
 		}
 
-		if (object instanceof byte[]) {
-			string(app, Base64.encodeBase64((byte[]) object));
-			return;
-		}
-		if (object instanceof File) {
-			string(app, ((File) object).getAbsolutePath());
-			return;
-		}
+		if (h != null)
+			return h;
 
-		if (object instanceof Enum) {
-			string(app, object.toString());
-			return;
-		}
+		if (type instanceof Class) {
 
-		if (actualClass == Boolean.class || actualClass == boolean.class) {
-			app.append((Boolean) object ? "true" : "false");
-			return;
-		}
+			Class<?> clazz = (Class<?>) type;
 
-		if (actualClass == Character.class || actualClass == char.class) {
-			string(app, object.toString());
-			return;
-		}
+			if (Enum.class.isAssignableFrom(clazz))
+				h = new EnumHandler(clazz);
+			else if (Collection.class.isAssignableFrom(clazz)) // A Non Generic
+																// collection
 
-		if (actualClass.isPrimitive() || Number.class.isAssignableFrom(actualClass)
-				|| Enum.class.isAssignableFrom(actualClass) || actualClass == Pattern.class) {
-			app.append(object.toString());
-			return;
-		}
+				h = dch;
+			else if (clazz.isArray()) // Non generic array
+				h = new ArrayHandler(clazz, clazz.getComponentType());
+			else if (Map.class.isAssignableFrom(clazz)) // A Non Generic map
+				h = new MapHandler(clazz, Object.class, Object.class);
+			else if (Number.class.isAssignableFrom(clazz) || clazz.isPrimitive())
+				h = new NumberHandler(clazz);
+			else {
+				Method valueOf = null;
+				Constructor<?> constructor = null;
 
-		// With the simple stuff out of the way ...
-		if (visited.put(object, type) != null)
-			throw new IllegalStateException("Cycle detected " + object);
-		try {
-			if (Collection.class.isAssignableFrom(rawClass)) {
-				encodeCollection(app, type, (Collection<?>) object, visited);
-				return;
-			}
-
-			if (Map.class.isAssignableFrom(rawClass)) {
-				encodeMap(app, type, (Map<?, ?>) object, visited);
-				return;
-			}
-
-			if (Dictionary.class.isAssignableFrom(rawClass)) {
-				Dictionary d = (Dictionary)object;
-				Map map = new LinkedHashMap();
-				for ( Enumeration e = d.keys(); e.hasMoreElements(); ) {
-					Object k = e.nextElement();
-					map.put(k, d.get(k));
+				try {
+					constructor = clazz.getConstructor(String.class);
+				} catch (Exception e) {
+					// Ignore
 				}
-				encodeMap(app, type, map, visited);
-				return;
-			}
-
-			if (actualClass.isArray()) {
-				encodeArray(app, type, object, visited);
-				return;
-			}
-
-			if (rawClass == Class.class) {
-				app.append(((Class<?>) object).getName());
-				return;
-			}
-
-			// do Object
-
-			app.append("{");
-
-			Accessor accessor = accessors.get(rawClass);
-			if (accessor == null) {
-				accessors.put(rawClass, accessor = new Accessor(rawClass));
-			}
-
-			String del = "";
-			for (int i = 0; i < accessor.fields.length; i++) {
-				Object value = accessor.fields[i].get(object);
-				if (value != accessor.defaults[i]) {
-					app.append(del);
-					string(app, accessor.fields[i].getName());
-					app.append(":");
-					encode(app, accessor.types[i], value, visited);
-					del = ",";
+				try {
+					valueOf = clazz.getMethod("valueOf", String.class);
+				} catch (Exception e) {
+					// Ignore
 				}
+				if (constructor != null || valueOf != null)
+					h = new SpecialHandler(clazz, constructor, valueOf);
+				else
+					h = new ObjectHandler(this, clazz); // Hmm, might not be a
+														// data class ...
 			}
-			app.append("}\n");
-		} finally {
-			visited.remove(object);
-		}
-	}
 
-	private Class<?> toWrapper(Class<?> rawClass) {
-		if (rawClass == boolean.class)
-			return Boolean.class;
+		} else {
 
-		if (rawClass == byte.class)
-			return Byte.class;
-
-		if (rawClass == char.class)
-			return Character.class;
-
-		if (rawClass == short.class)
-			return Short.class;
-
-		if (rawClass == int.class)
-			return Integer.class;
-
-		if (rawClass == long.class)
-			return Long.class;
-
-		if (rawClass == long.class)
-			return Long.class;
-
-		if (rawClass == float.class)
-			return Float.class;
-
-		return Double.class;
-	}
-
-	private void encodeArray(Appendable app, Type type, Object object, Map<Object, Type> visited)
-			throws Exception {
-		Type componentType;
-		if (type instanceof GenericArrayType) {
-			componentType = ((GenericArrayType) type).getGenericComponentType();
-		} else
-			componentType = object.getClass().getComponentType();
-
-		app.append("[");
-		String del = "";
-		int l = Array.getLength(object);
-		for (int i = 0; i < l; i++) {
-			app.append(del);
-			encode(app, componentType, Array.get(object, i), visited);
-			del = ", ";
-		}
-		app.append("]\n");
-
-	}
-
-	private void encodeMap(Appendable app, Type type, Map<?, ?> map, Map<Object, Type> visited)
-			throws Exception {
-		Type keyType = Object.class;
-		Type valueType = Object.class;
-
-		if (type instanceof ParameterizedType) {
-			ParameterizedType ptype = (ParameterizedType) type;
-			keyType = ptype.getActualTypeArguments()[0];
-			valueType = ptype.getActualTypeArguments()[1];
-		}
-
-		app.append("{");
-		String del = "";
-		for (Map.Entry<?, ?> entry : map.entrySet()) {
-			app.append(del);
-			Object o = entry.getKey();
-			if (!(o instanceof String)) {
-				StringBuilder sb = new StringBuilder();
-				encode(sb, keyType, o, visited);
-				string(app, sb);
-			} else
-				string(app, (String) o);
-
-			app.append(":");
-			encode(app, valueType, entry.getValue(), visited);
-			del = ", ";
-		}
-		app.append("}\n");
-	}
-
-	private void encodeCollection(Appendable app, Type type, Collection<?> c,
-			Map<Object, Type> visited) throws Exception {
-		Type componentType = Object.class;
-
-		if (type instanceof ParameterizedType) {
-			ParameterizedType ptype = (ParameterizedType) type;
-			componentType = ptype.getActualTypeArguments()[0];
-		}
-
-		app.append("[");
-		String del = "";
-		for (Object o : c) {
-			app.append(del);
-			encode(app, componentType, o, visited);
-			del = ", ";
-		}
-		app.append("]\n");
-		return;
-
-	}
-
-	private void string(Appendable app, CharSequence s) throws IOException {
-		app.append('"');
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			switch (c) {
-			case '"':
-				app.append("\\\"");
-				break;
-
-			case '\\':
-				app.append("\\\\");
-				break;
-
-			case '\b':
-				app.append("\\b");
-				break;
-
-			case '\f':
-				app.append("\\f");
-				break;
-
-			case '\n':
-				app.append("\\n");
-				break;
-
-			case '\r':
-				app.append("\\r");
-				break;
-
-			case '\t':
-				app.append("\\t");
-				break;
-
-			default:
-				if (Character.isISOControl(c)) {
-					app.append("\\u");
-					app.append("0123456789ABCDEF".charAt(0xF & (c >> 12)));
-					app.append("0123456789ABCDEF".charAt(0xF & (c >> 8)));
-					app.append("0123456789ABCDEF".charAt(0xF & (c >> 4)));
-					app.append("0123456789ABCDEF".charAt(0xF & (c >> 0)));
-				} else
-					app.append(c);
-			}
-		}
-		app.append('"');
-	}
-
-	@SuppressWarnings("rawtypes") private Object convert(Class<?> type, String s) throws Exception {
-		if (type == Object.class)
-			return s;
-
-		if (type == byte[].class) {
-			try {
-				return Base64.decodeBase64(s);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-		if (type == boolean.class || type == Boolean.class)
-			return Boolean.parseBoolean(s);
-
-		if (type == byte.class || type == Byte.class)
-			return Byte.parseByte(s);
-
-		if (type == char.class || type == Character.class) {
-			return s.charAt(0);
-		}
-
-		if (type == short.class || type == Short.class)
-			return Short.parseShort(s);
-
-		if (type == int.class || type == Integer.class)
-			return Integer.parseInt(s);
-
-		if (type == long.class || type == Long.class)
-			return Long.parseLong(s);
-
-		if (type == float.class || type == Float.class)
-			return Float.parseFloat(s);
-
-		if (type == double.class || type == Double.class)
-			return Double.parseDouble(s);
-
-		if (type == Pattern.class)
-			return Pattern.compile(s);
-
-		if (type == Class.class) {
-			return type.getClassLoader().loadClass(s);
-		}
-
-		if (Enum.class.isAssignableFrom(type)) {
-			return Enum.valueOf((Class<Enum>) type, s);
-		}
-
-		Constructor<?> cnstr = type.getConstructor(String.class);
-		return cnstr.newInstance(s);
-	}
-
-	private Object decode(Type type, PeekReader isr) throws Exception {
-		int c = isr.skipWs();
-
-		switch (c) {
-		case '{': {
-			Class<?> rawClass = toClass(type);
-			if (Map.class.isAssignableFrom(rawClass))
-				return decodeMap(rawClass, type, isr);
-			else  if (String.class == rawClass)
-				return doString(isr, '}');
-			else
-				return decodeObject(rawClass, isr);
-		}
-
-		case '[': {
-			Class<?> rawClass = toClass(type);
+			// We have generic information available
+			// We only support generics on Collection, Map, and arrays
 
 			if (type instanceof ParameterizedType) {
 				ParameterizedType pt = (ParameterizedType) type;
-				check(Collection.class.isAssignableFrom(rawClass),
-						"must have a Collection or array here here");
-				return decodeCollection(rawClass, pt.getActualTypeArguments()[0], isr);
+				Type rawType = pt.getRawType();
+				if (rawType instanceof Class) {
+					Class<?> rawClass = (Class<?>) rawType;
+					if (Collection.class.isAssignableFrom(rawClass))
+						h = new CollectionHandler(rawClass, pt.getActualTypeArguments()[0]);
+					else if (Map.class.isAssignableFrom(rawClass))
+						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0],
+								pt.getActualTypeArguments()[1]);
+					else
+						throw new IllegalArgumentException(
+								"Found a parameterized type that is not a map or collection");
+				}
 			} else if (type instanceof GenericArrayType) {
 				GenericArrayType gat = (GenericArrayType) type;
-				return decodeArray(gat.getGenericComponentType(), isr);
-			} else if (rawClass.isArray())
-				return decodeArray(rawClass.getComponentType(), isr);
-			else if (rawClass == String.class)
-				return doString(isr, ']');
-			else if (rawClass == Object.class)
-				return decodeArray(Object.class, isr);
-			else
+				h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
+			} else
 				throw new IllegalArgumentException(
-						"Got an array [] but result type is not a collection or array: " + rawClass);
+						"Found a parameterized type that is not a map or collection");
+		}
+		synchronized (handlers) {
+			// We might actually have duplicates
+			// but who cares? They should be identical
+			handlers.put(type, h);
+		}
+		return h;
+	}
+
+	Object decode(Type type, Decoder isr) throws Exception {
+		int c = isr.skipWs();
+		Handler h;
+
+		if (type == null || type == Object.class) {
+
+			// Establish default behavior when we run without
+			// type information
+
+			switch (c) {
+			case '{':
+				type = LinkedHashMap.class;
+				break;
+
+			case '[':
+				type = ArrayList.class;
+				break;
+
+			case '"':
+				return parseString(isr);
+
+			case 'n':
+				isr.expect("ull");
+				return null;
+
+			case 't':
+				isr.expect("rue");
+				return true;
+
+			case 'f':
+				isr.expect("alse");
+				return false;
+
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '-':
+				return parseNumber(isr);
+
+			default:
+				throw new IllegalArgumentException("Invalid character at begin of token: "
+						+ (char) c);
+			}
 		}
 
-		case '"': {
-			String s = parseString(isr);
-			return convert((Class<?>) type, s);
-		}
+		h = getHandler(type);
 
-		case 't':
-			isr.expect("rue");
-			return Boolean.TRUE;
+		switch (c) {
+		case '{':
+			return h.decodeObject(isr);
+
+		case '[':
+			return h.decodeArray(isr);
+
+		case '"':
+			return h.decode(parseString(isr));
 
 		case 'n':
 			isr.expect("ull");
-			return null;
+			return h.decode();
+
+		case 't':
+			isr.expect("rue");
+			return h.decode(Boolean.TRUE);
 
 		case 'f':
 			isr.expect("alse");
-			return Boolean.FALSE;
+			return h.decode(Boolean.FALSE);
 
 		case '0':
 		case '1':
@@ -466,253 +295,26 @@ import aQute.lib.codec.*;
 		case '8':
 		case '9':
 		case '-':
-			StringBuilder sb = new StringBuilder();
-			sb.append((char) c);
-			c = isr.get();
-			while (Character.isDigit(c) || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-') {
-				sb.append((char) c);
-				c = isr.get();
-			}
-			isr.unget(c);
+			return h.decode(parseNumber(isr));
 
-			String s = sb.toString();
-			return convert((Class<?>) type, s);
-
+		default:
+			throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
 		}
-		throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
 	}
 
-	/**
-	 * Gather the input until you find the the closing character making sure
-	 * that new blocks are are take care of.
-	 * <p>
-	 * This method parses the input for a complete block so that it can be
-	 * stored in a string. This allows envelopes.
-	 * 
-	 * @param isr
-	 * @param c
-	 * @return
-	 * @throws IOException
-	 */
-	private Object doString(PeekReader isr, char close) throws IOException {
-		boolean instring = false;
-		int level = 1;
+	String parseString(Decoder r) throws Exception {
+		assert r.current() == '"';
+
+		int c = r.next(); // skip first "
+
 		StringBuilder sb = new StringBuilder();
-
-		int c = isr.get();
-		while (c > 0 && level > 0) {
-			sb.append((char) c);
-			if (instring)
-				switch (c) {
-				case '"':
-					instring = true;
-					break;
-
-				case '[':
-				case '{':
-					level++;
-					break;
-
-				case ']':
-				case '}':
-					level--;
-					break;
-				}
-			else
-				switch (c) {
-				case '"':
-					instring = false;
-					break;
-
-				case '\\':
-					sb.append((char) isr.get());
-					break;
-				}
-
-			c = isr.get();
-		}
-		return sb.toString();
-	}
-
-	private Object decodeArray(Type type, PeekReader isr) throws Exception {
-		Class<?> rawClass = toClass(type);
-		int c = isr.peek();
-		List<Object> result = new ArrayList<Object>();
-		while (c == '"' || Character.isDigit(c) || c == '-' || c == '[' || c == '{') {
-			Object member = decode(type, isr);
-			result.add(member);
-
-			c = isr.peek();
-
-			if (c == ',') {
-				c = isr.skipWs();
-				c = isr.peek();
-				continue;
-			}
-
-			if (c == ']') {
-				break;
-			}
-		}
-		check(c == ']', "Expected ']'");
-		c = isr.skipWs(); // eat the ]
-
-		Object array = Array.newInstance(rawClass, result.size());
-
-		for (int n = result.size() - 1; n >= 0; n--)
-			Array.set(array, n, result.get(n));
-
-		return result.toArray((Object[]) array);
-	}
-
-	private Object decodeCollection(Class<?> rt, Type type, PeekReader isr) throws Exception {
-		if (rt.isInterface()) {
-			if (rt == Collection.class || rt == List.class)
-				rt = ArrayList.class;
-			else if (rt == Set.class || rt == SortedSet.class)
-				rt = TreeSet.class;
-			else if (rt == Queue.class /* || resultType == Deque.class */)
-				rt = LinkedList.class;
-			else if (rt == Queue.class /* || resultType == Deque.class */)
-				rt = LinkedList.class;
-			else
-				throw new IllegalArgumentException(
-						"Unknown interface for a collection, no concrete class found: " + rt);
-		}
-
-		int c = isr.peek();
-
-		Collection<Object> collection = (Collection<Object>) rt.newInstance();
-
-		while (c == '"' || Character.isDigit(c) || c == '-' || c == '[' || c == '{') {
-			Object member = decode(type, isr);
-			collection.add(member);
-			c = isr.peek();
-			if (c == ',')
-				c = isr.skipWs();
-		}
-		check(c == ']', "expected } for closing collection");
-		return collection;
-	}
-
-	private Class<?> toClass(Type type) {
-		if (type instanceof Class)
-			return (Class<?>) type;
-
-		if (type instanceof ParameterizedType)
-			return toClass(((ParameterizedType) type).getRawType());
-
-		if (type instanceof GenericArrayType) {
-			GenericArrayType gat = (GenericArrayType) type;
-			Type componentType = gat.getGenericComponentType();
-			Class<?> rawComponent = toClass(componentType);
-			Object array = Array.newInstance(rawComponent, 0);
-			return array.getClass();
-		}
-
-		if (type instanceof TypeVariable<?>) {
-			TypeVariable<?> tv = (TypeVariable<?>) type;
-			Type[] bounds = tv.getBounds();
-			if (bounds.length == 0)
-				return Object.class;
-			else
-				return toClass(bounds[0]);
-		}
-		if (type instanceof WildcardType) {
-			WildcardType tv = (WildcardType) type;
-			Type[] bounds = tv.getUpperBounds();
-			if (bounds.length == 0)
-				return Object.class;
-			else
-				return toClass(bounds[0]);
-		}
-		throw new IllegalArgumentException("Unknown type " + type);
-	}
-
-	private Object decodeMap(Class<?> clazz, Type type, PeekReader isr) throws Exception {
-		if (clazz.isInterface()) {
-			if (SortedMap.class.isAssignableFrom(clazz))
-				clazz = TreeMap.class;
-			else if (ConcurrentMap.class.isAssignableFrom(clazz))
-				clazz = ConcurrentHashMap.class;
-			else
-				clazz = HashMap.class;
-		}
-		Map<Object, Object> map = (Map<Object, Object>) clazz.newInstance();
-		Type keyType = Object.class;
-		Type valueType = Object.class;
-
-		if (type instanceof ParameterizedType) {
-			ParameterizedType pt = (ParameterizedType) type;
-			keyType = pt.getActualTypeArguments()[0];
-			valueType = pt.getActualTypeArguments()[1];
-		}
-
-		int c = isr.skipWs();
-
-		while (c == '"') {
-			Object key = parseString(isr);
-			if (key.getClass() != String.class) {
-				// TODO
-				key = decode(new StringReader((String) key), keyType);
-			}
-			check(':' == isr.skipWs(), "Expected separator");
-			Object value = decode(valueType, isr);
-			map.put(key, value);
-			c = isr.skipWs();
-
-			if (c == ',') {
-				c = isr.skipWs();
-				continue;
-			}
-
-			if (c == '}')
-				break;
-
-			check(false, "Expected } or ,");
-
-		}
-		check('}' == c, "Expected end of MAP: }");
-		return map;
-	}
-
-	private Object decodeObject(Class<?> clazz, PeekReader isr) throws Exception {
-		Object object = clazz.newInstance();
-
-		int c = isr.skipWs();
-
-		while (c == '"') {
-			String name = parseString(isr);
-			check(':' == isr.skipWs(), "Expected separator");
-			Field f = clazz.getField(name);
-			f.set(object, decode(f.getGenericType(), isr));
-			c = isr.skipWs();
-			if (c == ',')
-				c = isr.skipWs();
-			else
-				break;
-		}
-		check('}' == c, "Expected end of object: }, got " + (char) c);
-		return object;
-	}
-
-	private void check(boolean b, String string) {
-		if (b)
-			return;
-		throw new IllegalArgumentException(string);
-	}
-
-	private String parseString(PeekReader r) throws IOException {
-		StringBuilder sb = new StringBuilder();
-		int c = r.get();
-
-		while (c != '\"') {
+		while (c != '"') {
 			if (c < 0 || Character.isISOControl(c))
 				throw new IllegalArgumentException(
-						"JSON strings may not contain control characters: " + c);
+						"JSON strings may not contain control characters: " + r.current());
 
 			if (c == '\\') {
-				c = r.get();
+				c = r.read();
 				switch (c) {
 				case '"':
 				case '\\':
@@ -737,8 +339,12 @@ import aQute.lib.codec.*;
 					sb.append('\t');
 					break;
 				case 'u':
-					c = hexDigit(r.get()) << 12 + hexDigit(r.get() << 8) + hexDigit(r.get() << 4)
-							+ hexDigit(r.get());
+					int a3 = hexDigit(r.read()) << 12;
+					int a2 = hexDigit(r.read()) << 8;
+					int a1 = hexDigit(r.read()) << 4;
+					int a0 = hexDigit(r.read()) << 0;
+					c = a3 + a2 + a1 + a0;
+					sb.append((char) c);
 					break;
 
 				default:
@@ -749,56 +355,124 @@ import aQute.lib.codec.*;
 			} else
 				sb.append((char) c);
 
-			c = r.get();
+			c = r.read();
 		}
+		assert c == '"';
+		r.read(); // skip quote
 		return sb.toString();
 	}
 
-	private int hexDigit(int read) throws EOFException {
-		if (read >= '0' && read <= '9')
-			return read - '0';
+	private int hexDigit(int c) throws EOFException {
+		if (c >= '0' && c <= '9')
+			return c - '0';
 
-		int c = Character.toUpperCase(read);
 		if (c >= 'A' && c <= 'F')
 			return c - 'A' + 10;
 
-		throw new EOFException("Invalid hex character: " + c);
+		if (c >= 'a' && c <= 'f')
+			return c - 'a' + 10;
+
+		throw new IllegalArgumentException("Invalid hex character: " + c);
 	}
 
-	public static void write(Object value, File target) throws Exception {
-		write(value.getClass(), value, target);
-	}
+	private Number parseNumber(Decoder r) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		boolean d = false;
 
-	public static void write(Type type, Object value, File target) throws Exception {
-		JSONCodec codec = new JSONCodec();
-		FileWriter fw = new FileWriter(target);
-		try {
-			codec.encode(type, value, fw);
-		} catch (Exception e) {
-			target.delete();
-			throw e;
-		} finally {
-			fw.close();
+		if (r.current() == '-') {
+			sb.append('-');
+			r.read();
+		}
+
+		int c = r.current();
+		if (c == '0') {
+			sb.append('0');
+			c = r.read();
+		} else if (c >= '1' && c <= '9') {
+			sb.append((char) c);
+			c = r.read();
+
+			while (c >= '0' && c <= '9') {
+				sb.append((char) c);
+				c = r.read();
+			}
+		} else
+			throw new IllegalArgumentException("Expected digit");
+
+		if (c == '.') {
+			d = true;
+			sb.append('.');
+			c = r.read();
+			while (c >= '0' && c <= '9') {
+				sb.append((char) c);
+				c = r.read();
+			}
+		}
+		if (c == 'e' || c == 'E') {
+			d = true;
+			sb.append('e');
+			c = r.read();
+			if (c == '+') {
+				sb.append('+');
+				c = r.read();
+			} else if (c == '-') {
+				sb.append('-');
+				c = r.read();
+			}
+			while (c >= '0' && c <= '9') {
+				sb.append((char) c);
+				c = r.read();
+			}
+		}
+		if (d)
+			return Double.parseDouble(sb.toString());
+		else {
+			long l = Long.parseLong(sb.toString());
+			if (l > Integer.MAX_VALUE || l < Integer.MIN_VALUE)
+				return l;
+			return (int) l;
 		}
 	}
 
-	public static Object read(Type type, File target) throws Exception {
-		JSONCodec codec = new JSONCodec();
-		FileReader r = new FileReader(target);
-		try {
-			return codec.decode(r, type);
-		} finally {
-			r.close();
+	void parseArray(Collection<Object> list, Type componentType, Decoder r) throws Exception {
+		assert r.current() == '[';
+		int c = r.next();
+		while (START_CHARACTERS.indexOf(c) >= 0) {
+			Object o = decode(componentType, r);
+			list.add(o);
+
+			c = r.skipWs();
+			if (c == ']')
+				break;
+
+			if (c == ',') {
+				c = r.next();
+				continue;
+			}
+
+			throw new IllegalArgumentException(
+					"Invalid character in parsing list, expected ] or , but found " + (char) c);
 		}
+		assert r.current() == ']';
+		r.read(); // skip closing
 	}
 
-	public static <T> T read(Class<T> type, File target) throws Exception {
-		JSONCodec codec = new JSONCodec();
-		FileReader r = new FileReader(target);
-		try {
-			return codec.decode(r, type);
-		} finally {
-			r.close();
+	Class<?> getRawClass(Type type) {
+		if (type instanceof Class)
+			return (Class) type;
+
+		if (type instanceof ParameterizedType)
+			return getRawClass(((ParameterizedType) type).getRawType());
+
+		if (type instanceof GenericArrayType) {
+			Type subType = ((GenericArrayType) type).getGenericComponentType();
+			Class c = getRawClass(subType);
+			return Array.newInstance(c, 0).getClass();
 		}
+
+		throw new IllegalArgumentException(
+				"Does not support generics beyond Parameterized Type  and GenericArrayType, got "
+						+ type);
 	}
+
 }

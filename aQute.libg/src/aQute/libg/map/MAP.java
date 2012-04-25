@@ -16,6 +16,14 @@ public class MAP {
 			put(key, value);
 			return this;
 		}
+
+		public MAPX<K, V> $(Map<K,V> all) {
+			putAll(all);
+			return this;
+		}
+		public Hashtable<K,V> asHashtable() {
+			return new Hashtable<K,V>(this);
+		}
 	}
 
 	public static <Kx, Vx> MAPX<Kx, Vx> $(Kx key, Vx value) {
