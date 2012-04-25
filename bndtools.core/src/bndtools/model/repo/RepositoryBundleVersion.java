@@ -17,7 +17,7 @@ public class RepositoryBundleVersion implements IAdaptable {
 	private final Version version;
 	private final RepositoryBundle bundle;
 
-	RepositoryBundleVersion(RepositoryBundle bundle, Version version) {
+	public RepositoryBundleVersion(RepositoryBundle bundle, Version version) {
 		this.bundle = bundle;
 		this.version = version;
 	}
