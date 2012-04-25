@@ -63,7 +63,10 @@ public class Descriptors {
 		private PackageRef(String binaryName) {
 			this.binaryName = fqnToBinary(binaryName);
 			this.fqn = binaryToFQN(binaryName);
-			this.java = this.fqn.startsWith("java.") && !this.fqn.equals("java.sql");
+			this.java = this.fqn.startsWith("java.") ; // && !this.fqn.equals("java.sql)"
+			
+			// For some reason I excluded java.sql but the classloader will
+			// delegate anyway. So lost the understanding why I did it??
 		}
 
 		private PackageRef() {
