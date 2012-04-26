@@ -29,6 +29,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
+import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 
 public class BundleReleaseDialog extends Dialog {
@@ -150,7 +151,8 @@ public class BundleReleaseDialog extends Dialog {
 
 		ReleaseContext context = new ReleaseContext(project, diffs, release, updateOnly);
 		
-		ReleaseJob job = new ReleaseJob(context);
+		ReleaseJob job = new ReleaseJob(context, true);
+		job.setRule(ReleaseUtils.getProject(project));
 		job.schedule();
 		
 		super.okPressed();

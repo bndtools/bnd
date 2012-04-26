@@ -28,9 +28,11 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 	private int changeCode = CHANGE_CODE_NONE;
 	
 	private PackageInfo packageInfo;
+	private byte[] sha1;
 	
-	public ClassInfo(PackageInfo pi) {
+	public ClassInfo(PackageInfo pi, byte[] sha1) {
 		super();
+		this.sha1 = sha1;
 		this.packageInfo = pi;
 	}
 
@@ -156,5 +158,9 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 	
 	public String toString() {
 		return name;
+	}
+
+	public byte[] getSHA1() {
+		return sha1;
 	}
 }

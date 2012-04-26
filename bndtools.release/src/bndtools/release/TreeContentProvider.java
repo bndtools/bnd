@@ -49,9 +49,11 @@ public class TreeContentProvider implements ITreeContentProvider {
 			if (showAll) {
 				pkgs.addAll(((JarDiff)parent).getImportedPackages());
 				pkgs.addAll(((JarDiff)parent).getExportedPackages());
+				pkgs.addAll(((JarDiff)parent).getPrivatePackages());
 			} else {
 				pkgs.addAll(((JarDiff)parent).getChangedImportedPackages());
 				pkgs.addAll(((JarDiff)parent).getChangedExportedPackages());
+				pkgs.addAll(((JarDiff)parent).getChangedPrivatePackages());
 			}
 			return pkgs.toArray(new Object[pkgs.size()]);
 		}
@@ -106,9 +108,11 @@ public class TreeContentProvider implements ITreeContentProvider {
 			if (showAll) {
 				pkgs.addAll(((JarDiff)parent).getImportedPackages());
 				pkgs.addAll(((JarDiff)parent).getExportedPackages());
+				pkgs.addAll(((JarDiff)parent).getPrivatePackages());
 			} else {
 				pkgs.addAll(((JarDiff)parent).getChangedImportedPackages());
 				pkgs.addAll(((JarDiff)parent).getChangedExportedPackages());
+				pkgs.addAll(((JarDiff)parent).getChangedPrivatePackages());
 			}
 			return pkgs.size() > 0;
 		}

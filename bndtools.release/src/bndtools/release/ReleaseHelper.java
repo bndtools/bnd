@@ -403,4 +403,24 @@ public class ReleaseHelper {
 		}
 		return null;
 	}
+	
+	public static void initializeProjectDiffs(List<ProjectDiff> projects) {
+		String[] repos =  getReleaseRepositories();
+		for (ProjectDiff projectDiff : projects) {
+			String repo = projectDiff.getProject().getProperty(Project.RELEASEREPO);
+			if (repo == null) {
+				if (repos.length > 0) {
+					repo = repos[0];
+				} else {
+					repo = "";
+				}
+			}
+			projectDiff.setReleaseRepository(repo);
+			projectDiff.setDefaultReleaseRepository(repo);
+			for (JarDiff jarDiff : projectDiff.getJarDiffs()) {
+				//TODO: decide which projects to release
+				
+			}
+		}
+	}
 }

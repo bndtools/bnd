@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,6 +56,9 @@ public class BundleRelease {
 	private TreeViewer treeViewer;
 
 	private TreeContentProvider treeProvider = new TreeContentProvider();
+
+	public BundleRelease() {
+	}
 
 	public BundleRelease(List<JarDiff> diffs) {
 		this.diffs = diffs;
@@ -132,7 +136,10 @@ public class BundleRelease {
 				}
 				if (element instanceof PackageInfo) {
 					PackageInfo pi = (PackageInfo) element;
-					String baseImageKey = "package_export";
+					String baseImageKey = "package";
+					if (pi.isExported()) {
+						 baseImageKey = "package_export";
+					}
 					if (pi.isImported()) {
 						 baseImageKey = "package_import";
 					}
@@ -166,7 +173,7 @@ public class BundleRelease {
 							overlayKey = "minor_remove";
 							break;
 						}
-						case JarDiff.PKG_SEVERITY_VERSION_MISSING : {
+						case JarDiff.PKG_SEVERITY_MICRO : {
 							overlayKey = "micro_remove";
 							break;
 						}
@@ -476,6 +483,7 @@ public class BundleRelease {
 		
 
 		treeViewer.setContentProvider(treeProvider);
+		treeViewer.setAutoExpandLevel(2);
 	}
 
 	private void createButtons(Composite container, Composite comp) {
@@ -501,9 +509,20 @@ public class BundleRelease {
 	}
 
 	private void createInput() {
+		if (diffs != null) { 
+			treeViewer.setInput(diffs);
+		}
+	}
+
+	public void setInput(List<JarDiff> diffs) {
+		if (diffs == null) {
+			treeViewer.setInput(Collections.emptyList());
+			return;
+		}
 		treeViewer.setInput(diffs);
 	}
 
+	
 	public Control getControl() {
 		return container;
 	}

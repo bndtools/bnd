@@ -18,4 +18,26 @@
          </action>
       </objectContribution>
    </extension>
+   
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.release.releaseWorkspaceBundles"
+         name="%releaseWorkspaceBundles"
+         description=""
+      />
+   </extension>
+   
+      <extension point="org.eclipse.ui.handlers">
+       <handler
+         commandId="bndtools.release.releaseWorkspaceBundles"
+         class="bndtools.release.ReleaseWorkspaceHandler"
+       />
+   </extension>
+   
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:bndtools"><!-- ?after=bndtools.workspace.openMainConfig -->
+          <command commandId="bndtools.release.releaseWorkspaceBundles" mnemonic="R"/>
+      </menuContribution>
+   </extension>
+
 </plugin>

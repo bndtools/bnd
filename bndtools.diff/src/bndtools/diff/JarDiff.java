@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +45,7 @@ import aQute.libg.version.VersionRange;
 public class JarDiff {
 
 	public static final int PKG_SEVERITY_NONE = 0;
-	public static final int PKG_SEVERITY_VERSION_MISSING = 10; // Version missing on exported package
+	public static final int PKG_SEVERITY_MICRO = 10; // Version missing on exported package, or bytecode modification
 	public static final int PKG_SEVERITY_MINOR = 20; // Method or class added
 	public static final int PKG_SEVERITY_MAJOR = 30; // Class deleted, method changed or deleted
 
@@ -78,12 +80,12 @@ public class JarDiff {
 		bundleSymbolicName = stripInstructions(getAttribute(projectManifest, Constants.BUNDLE_SYMBOLICNAME));
 		currentVersion = removeVersionQualifier(getAttribute(projectManifest, Constants.BUNDLE_VERSION)); // This is the version from the .bnd file
 
-		Parameters previousPackages;
+		Parameters previousExportedPackages;
 		Parameters previousImportedPackages;
 		Manifest previousManifest = null;
 		if (previousJar != null) {
 			previousManifest = previousJar.getManifest();
-			previousPackages = new Parameters(getAttribute(previousManifest, Constants.EXPORT_PACKAGE));
+			previousExportedPackages = new Parameters(getAttribute(previousManifest, Constants.EXPORT_PACKAGE));
 			previousImportedPackages = new Parameters(getAttribute(previousManifest, Constants.IMPORT_PACKAGE));
 
 			// If no version in projectJar use previous version
@@ -91,7 +93,7 @@ public class JarDiff {
 				currentVersion = removeVersionQualifier(getAttribute(previousManifest, Constants.BUNDLE_VERSION));
 			}
 		} else {
-			previousPackages = new Parameters(); // empty
+			previousExportedPackages = new Parameters(); // empty
 			previousImportedPackages = new Parameters(); // empty
 		}
 
@@ -100,6 +102,64 @@ public class JarDiff {
 			throw new IllegalArgumentException(Constants.BUNDLE_SYMBOLICNAME + " must be equal");
 		}
 
+		// Private packages
+		if (previousJar != null) {
+			for (String packageName : projectJar.getPackages()) {
+
+				if (!projectExportedPackages.containsKey(packageName)) {
+					PackageInfo pi = packages.get(packageName);
+					if (pi == null) {
+						pi = new PackageInfo(this, packageName);
+					}
+					Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, null);
+					if (projectClasses.size() == 0) {
+						continue;
+					}
+					if (!packages.containsKey(packageName)) {
+						packages.put(packageName, pi);
+					}
+					Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName, null);
+
+					Set<ClassInfo> cis = pi.getClasses();
+
+					for (ClassInfo ci : projectClasses) {
+						ClassInfo prevCi = null;
+						if (previousClasses != null) {
+							for (ClassInfo c : previousClasses) {
+								if (c.equals(ci)) {
+									prevCi = c;
+									break;
+								}
+							}
+						}
+						cis.add(ci);
+						if (prevCi != null && !Arrays.equals(ci.getSHA1(), prevCi.getSHA1())) {
+							ci.setChangeCode(ClassInfo.CHANGE_CODE_MODIFIED);
+							pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
+							pi.setSeverity(PKG_SEVERITY_MICRO);
+							continue;
+						}
+						if (prevCi == null) {
+							ci.setChangeCode(ClassInfo.CHANGE_CODE_NEW);
+							pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
+							pi.setSeverity(PKG_SEVERITY_MICRO);
+							continue;
+						}
+					}
+					if (previousClasses != null) {
+						for (ClassInfo prevCi : previousClasses) {
+							if (projectClasses != null && !projectClasses.contains(prevCi)) {
+								cis.add(prevCi);
+								prevCi.setChangeCode(ClassInfo.CHANGE_CODE_REMOVED);
+								pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
+								pi.setSeverity(PKG_SEVERITY_MICRO);
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		for (String packageName : projectImportedPackages.keySet()) {
 			// New or modified packages
 			PackageInfo pi = packages.get(packageName);
@@ -148,7 +208,7 @@ public class JarDiff {
 				}
 
 				if (previousVersion != null) {
-					pi.setSeverity(PKG_SEVERITY_VERSION_MISSING);
+					pi.setSeverity(PKG_SEVERITY_MICRO);
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
 					pi.setVersionRange(previousVersion.toString());
 				}
@@ -166,7 +226,7 @@ public class JarDiff {
 					packages.put(packageName, pi);
 				}
 				pi.setImported(true);
-				pi.setSeverity(PKG_SEVERITY_VERSION_MISSING);
+				pi.setSeverity(PKG_SEVERITY_MICRO);
 				pi.setChangeCode(PackageInfo.CHANGE_CODE_REMOVED);
 				pi.setVersionRange(previousVersion);
 			}
@@ -190,8 +250,8 @@ public class JarDiff {
 			String previousVersion = null;
 			Set<ClassInfo> previousClasses = null;
 
-			if (previousPackages.containsKey(packageName)) {
-				Map<String, String> prevPackageMap = previousPackages.get(packageName);
+			if (previousExportedPackages.containsKey(packageName)) {
+				Map<String, String> prevPackageMap = previousExportedPackages.get(packageName);
 				previousVersion = prevPackageMap.get(VERSION);
 				previousClasses = getClassesFromPackage(pi, previousJar, packageName, previousVersion);
 			}
@@ -231,7 +291,7 @@ public class JarDiff {
 			if (pi.getSeverity() == PKG_SEVERITY_NONE) {
 				if (previousClasses != null && previousVersion == null) {
 					// No change, but version missing on package
-					pi.setSeverity(PKG_SEVERITY_VERSION_MISSING);
+					pi.setSeverity(PKG_SEVERITY_MICRO);
 					pi.setChangeCode(PackageInfo.CHANGE_CODE_VERSION_MISSING);
 					pi.addSuggestedVersion(getCurrentVersion());
 				}
@@ -255,10 +315,10 @@ public class JarDiff {
 			}
 		}
 
-		for (String packageName : previousPackages.keySet()) {
+		for (String packageName : previousExportedPackages.keySet()) {
 			if (!projectExportedPackages.containsKey(packageName)) {
 				// Removed Packages
-				Map<String, String> prevPackageMap = previousPackages.get(packageName);
+				Map<String, String> prevPackageMap = previousExportedPackages.get(packageName);
 				String previousVersion = prevPackageMap.get(VERSION);
 
 				PackageInfo pi = packages.get(packageName);
@@ -328,7 +388,12 @@ public class JarDiff {
 			if (severity > PKG_SEVERITY_NONE) {
 				clazz.setChangeCode(ClassInfo.CHANGE_CODE_MODIFIED);
 			} else {
-				clazz.setChangeCode(ClassInfo.CHANGE_CODE_NONE);
+				if (!Arrays.equals(clazz.getSHA1(), previousClass.getSHA1())) {
+					clazz.setChangeCode(ClassInfo.CHANGE_CODE_MODIFIED);
+					severity = PKG_SEVERITY_MICRO;
+				} else {
+					clazz.setChangeCode(ClassInfo.CHANGE_CODE_NONE);
+				}
 			}
 		} else if (previousClass == null) {
 			clazz.setChangeCode(ClassInfo.CHANGE_CODE_NEW);
@@ -402,8 +467,12 @@ public class JarDiff {
 						baos.write(bytes, 0, bytesRead);
 					}
 
-					ClassReader cr = new ClassReader(baos.toByteArray());
-					ClassInfo ca = new ClassInfo(pi);
+					byte[] classBytes = baos.toByteArray();
+					MessageDigest md = MessageDigest.getInstance("SHA1");
+					md.update(classBytes);
+					byte[] digest = md.digest();
+					ClassReader cr = new ClassReader(classBytes);
+					ClassInfo ca = new ClassInfo(pi, digest);
 					cr.accept(ca, 0);
 
 					for (int i = 0; i < ca.methods.size(); i++) {
@@ -435,6 +504,16 @@ public class JarDiff {
 		Set<PackageInfo> ret = new TreeSet<PackageInfo>();
 		for (PackageInfo pi : packages.values()) {
 			if (!pi.isExported()) {
+				continue;
+			}
+			ret.add(pi);
+		}
+		return ret;
+	}
+	public Set<PackageInfo> getPrivatePackages() {
+		Set<PackageInfo> ret = new TreeSet<PackageInfo>();
+		for (PackageInfo pi : packages.values()) {
+			if (pi.isExported() || pi.isImported()) {
 				continue;
 			}
 			ret.add(pi);
@@ -476,6 +555,17 @@ public class JarDiff {
 	public Set<PackageInfo> getChangedExportedPackages() {
 		Set<PackageInfo> ret = new TreeSet<PackageInfo>();
 		for (PackageInfo pi : getExportedPackages()) {
+			if (pi.getChangeCode() == PackageInfo.CHANGE_CODE_NONE) {
+				continue;
+			}
+			ret.add(pi);
+		}
+		return ret;
+	}
+
+	public Set<PackageInfo> getChangedPrivatePackages() {
+		Set<PackageInfo> ret = new TreeSet<PackageInfo>();
+		for (PackageInfo pi : getPrivatePackages()) {
 			if (pi.getChangeCode() == PackageInfo.CHANGE_CODE_NONE) {
 				continue;
 			}
@@ -590,7 +680,6 @@ public class JarDiff {
 	}
 	
 	public void calculatePackageVersions() {
-
 
 		int highestSeverity = PKG_SEVERITY_NONE;
 
@@ -789,28 +878,74 @@ public class JarDiff {
 	
 	public static void printDiff(JarDiff diff, PrintStream out) {
 		out.println();
+		out.println("============================================");
 		out.println("Bundle " + diff.getSymbolicName() + ":");
 		out.println("============================================");
 		out.println("Version: " + diff.getCurrentVersion() + (diff.getSuggestedVersion() != null ? " -> Suggested Version: " + diff.getSuggestedVersion() : ""));
-		out.println();
-		out.println("Modified Packages:");
-		out.println("==================");
-		for (PackageInfo pi : diff.getModifiedExportedPackages()) {
-			out.println(pi.getPackageName() + " " + pi.getCurrentVersion() + "   : " + getSeverityText(pi.getSeverity()) +  (pi.getSuggestedVersion() != null ? " -> Suggested version: " + pi.getSuggestedVersion() : ""));
+		if (diff.getModifiedExportedPackages().size() > 0) {
+			out.println();
+			out.println("Modified Exported Packages:");
+			out.println("---------------------------");
+			for (PackageInfo pi : diff.getModifiedExportedPackages()) {
+				out.println(pi.getPackageName() + " " + pi.getCurrentVersion() + "   : " + getSeverityText(pi.getSeverity()) +  (pi.getSuggestedVersion() != null ? " -> Suggested version: " + pi.getSuggestedVersion() : ""));
+				for (ClassInfo ci :pi.getChangedClasses()) {
+					out.println("           " + ci.toString());
+				}
+			}
 		}
 
-		out.println();
-		out.println("Added Packages:");
-		out.println("==================");
-		for (PackageInfo pi : diff.getNewExportedPackages()) {
-			out.println(pi.getPackageName() + (pi.getSuggestedVersion() != null ? " -> Suggested version: " + pi.getSuggestedVersion() : ""));
+		if (diff.getModifiedImportedPackages().size() > 0) {
+			out.println();
+			out.println("Modified Imported Packages:");
+			out.println("---------------------------");
+			for (PackageInfo pi : diff.getModifiedImportedPackages()) {
+				out.println(pi.getPackageName() + " " + pi.getVersionRange() + "   : " + getSeverityText(pi.getSeverity()) +  (pi.getSuggestedVersionRange() != null ? " -> Suggested version range: " + pi.getSuggestedVersionRange() : ""));
+				for (ClassInfo ci :pi.getChangedClasses()) {
+					out.println("           " + ci.toString());
+				}
+			}
 		}
 
-		out.println();
-		out.println("Deleted Packages:");
-		out.println("==================");
-		for (PackageInfo pi : diff.getRemovedExportedPackages()) {
-			out.println(pi.getPackageName() + " " + pi.getCurrentVersion());
+		if (diff.getNewExportedPackages().size() > 0) {
+			out.println();
+			out.println("Added Exported Packages:");
+			out.println("------------------------");
+			for (PackageInfo pi : diff.getNewExportedPackages()) {
+				out.println(pi.getPackageName() + (pi.getSuggestedVersion() != null ? " -> Suggested version: " + pi.getSuggestedVersion() : ""));
+				for (ClassInfo ci :pi.getChangedClasses()) {
+					out.println("           " + ci.toString());
+				}
+			}
+		}
+
+		if (diff.getNewImportedPackages().size() > 0) {
+			out.println();
+			out.println("Added Imported Packages:");
+			out.println("------------------------");
+			for (PackageInfo pi : diff.getNewImportedPackages()) {
+				out.println(pi.getPackageName() + (pi.getSuggestedVersionRange() != null ? " -> Suggested version range: " + pi.getSuggestedVersionRange() : ""));
+				for (ClassInfo ci :pi.getChangedClasses()) {
+					out.println("           " + ci.toString());
+				}
+			}
+		}
+
+		if (diff.getRemovedExportedPackages().size() > 0) {
+			out.println();
+			out.println("Deleted Exported Packages:");
+			out.println("--------------------------");
+			for (PackageInfo pi : diff.getRemovedExportedPackages()) {
+				out.println(pi.getPackageName() + " " + pi.getCurrentVersion());
+			}
+		}
+
+		if (diff.getRemovedImportedPackages().size() > 0) {
+			out.println();
+			out.println("Deleted Imported Packages:");
+			out.println("--------------------------");
+			for (PackageInfo pi : diff.getRemovedImportedPackages()) {
+				out.println(pi.getPackageName() + " " + pi.getVersionRange());
+			}
 		}
 
 	}

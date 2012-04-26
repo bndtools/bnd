@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.lib.osgi.Jar;
+import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
@@ -28,10 +29,12 @@ import bndtools.release.nl.Messages;
 public class ReleaseJob  extends Job {
 	
 	private ReleaseContext context;
+	private boolean showMessage;
 
-	public ReleaseJob(ReleaseContext context) {
+	public ReleaseJob(ReleaseContext context, boolean showMessage) {
 		super(Messages.bundleReleaseJob);
 		this.context = context;
+		this.showMessage = showMessage;
 	}
 
 	@Override
@@ -78,11 +81,15 @@ public class ReleaseJob  extends Job {
 					sb.append(" : ");
 					sb.append(context.getReleaseRepository().getName());
 				}
-				
-				Activator.getDefault().message(sb.toString());
+				if (showMessage) {
+					Activator.getDefault().message(sb.toString());
+				}
 			}
 
 		} catch (Exception e) {
+			for (JarDiff jarDiff : context.getJarDiffs()) {
+				context.getErrorHandler().error(jarDiff.getSymbolicName(), jarDiff.getSuggestedVersion() != null ? jarDiff.getSuggestedVersion().toString() : "0.0.0", e.getMessage());
+			}
 			return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
 		}
 

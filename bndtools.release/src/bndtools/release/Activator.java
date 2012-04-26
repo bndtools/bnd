@@ -400,6 +400,10 @@ public class Activator extends AbstractUIPlugin {
 		project.refreshLocal(IResource.DEPTH_INFINITE, null);
 	}
 
+	public static Workspace getWorkspace() {
+		return (Workspace) workspaceTracker.getService();
+	}
+	
 	public static List<RepositoryPlugin> getRepositories() {
 		
 		Workspace ws = (Workspace)workspaceTracker.getService();

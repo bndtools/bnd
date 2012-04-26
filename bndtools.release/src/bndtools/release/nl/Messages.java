@@ -38,6 +38,10 @@ public class Messages extends NLS {
 	public static String updateVersions;
 	public static String updateVersionsAndRelease;
 
+	public static String workspaceReleaseJob;
+	public static String calculatingBuildPath;
+
+	
 	static {
 		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
 	}
