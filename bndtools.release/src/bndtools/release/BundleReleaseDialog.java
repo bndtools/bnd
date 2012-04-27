@@ -12,6 +12,7 @@ package bndtools.release;
 
 import java.util.List;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -152,7 +153,7 @@ public class BundleReleaseDialog extends Dialog {
 		ReleaseContext context = new ReleaseContext(project, diffs, release, updateOnly);
 		
 		ReleaseJob job = new ReleaseJob(context, true);
-		job.setRule(ReleaseUtils.getProject(project));
+		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 		job.schedule();
 		
 		super.okPressed();
