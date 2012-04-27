@@ -1,4 +1,4 @@
--buildpath: com.springsource.junit,\
+-buildpath: com.springsource.org.junit,\
 	osgi.cmpn;version=4.2.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
@@ -10,8 +10,12 @@ Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 javac.source = 1.5
 javac.target = jsr14
 Private-Package: aQute.junit.*,\
-	junit.framework
-Export-Package: junit.framework; version=3.8
+	junit.*,\
+	org.junit.*,\
+	org.hamcrest.*
+	
+Export-Package: junit.framework; version=3.8,\
+				org.junit.*;version=4.10
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
@@ -19,4 +23,4 @@ Export-Package: junit.framework; version=3.8
 Import-Package: aQute.*;resolution:=optional,*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
-Bundle-Version: 1.0.3
+Bundle-Version: 1.1.0

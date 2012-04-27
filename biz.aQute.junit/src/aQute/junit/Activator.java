@@ -6,6 +6,8 @@ import java.util.*;
 
 import junit.framework.*;
 
+import org.junit.runner.*;
+import org.junit.runner.manipulation.*;
 import org.osgi.framework.*;
 
 import aQute.junit.constants.*;
@@ -249,23 +251,62 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) throws Exception {
 		TestSuite suite = new TestSuite();
 		for (String fqn : testNames) {
-			try {
-				int n = fqn.indexOf(':');
-				if (n > 0) {
-					String method = fqn.substring(n + 1);
-					fqn = fqn.substring(0, n);
-					Class<?> clazz = loadClass(tfw, fqn);
-					suite.addTest(TestSuite.createTest(clazz, method));
-				} else {
-					Class<?> clazz = loadClass(tfw, fqn);
-					suite.addTestSuite(clazz);
-				}
-			} catch (Throwable e) {
-				System.err.println("Can not create test case for: " + fqn + " : " + e);
-				result.addError(suite, e);
-			}
+			addTest(tfw, suite, fqn, result);
 		}
 		return suite;
+	}
+
+	private void addTest(Bundle tfw, TestSuite suite, String fqn, TestResult testResult) {
+		try {
+			int n = fqn.indexOf(':');
+			if (n > -1) {
+				String method = fqn.substring(n + 1);
+				fqn = fqn.substring(0, n);
+				Class<?> clazz = loadClass(tfw, fqn);
+				addTest(tfw, suite, clazz, testResult, method);
+			} else {
+				Class<?> clazz = loadClass(tfw, fqn);
+				addTest(tfw, suite, clazz, testResult, null);
+			}
+		} catch (Throwable e) {
+			System.err.println("Can not create test case for: " + fqn + " : " + e);
+			testResult.addError(suite, e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void addTest(Bundle tfw, TestSuite suite, Class<?> clazz, TestResult testResult, final String method) {
+		if (TestCase.class.isAssignableFrom(clazz)) {
+			if (method != null) {
+				suite.addTest(TestSuite.createTest(clazz, method));
+				return;
+			}
+			suite.addTestSuite((Class<? extends TestCase>) clazz);
+			return;
+		}
+		
+		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
+		if (method != null) {
+			try {
+				adapter.filter(new org.junit.runner.manipulation.Filter(){
+	
+					@Override
+					public String describe() {
+						return "Method filter";
+					}
+	
+					@Override
+					public boolean shouldRun(Description description) {
+						if (method.equals(description.getMethodName())) {
+							return true;
+						}
+						return false;
+					}});
+			} catch (NoTestsRemainException e) {
+				return;
+			}
+		}
+		suite.addTest(new JUnit4TestAdapter(clazz)); 
 	}
 
 	private Class<?> loadClass(Bundle tfw, String fqn) {
