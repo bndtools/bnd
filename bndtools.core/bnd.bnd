@@ -93,7 +93,7 @@ eclipse.deps: \
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
 	${bndlib},\
-	org.osgi.impl.bundle.bindex2.lib,\
+	biz.aQute.repository;version=1.0.0,\
 	org.apache.felix.bundlerepository;version=latest,\
 	patricia-trie,\
 	junit.osgi,\
@@ -102,6 +102,5 @@ eclipse.deps: \
 	woodstox-core-asl,\
 	javax.xml,\
 	javax.xml.stream,\
-	org.osgi.impl.bundle.bindex;version=project,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
 	libs/jcip-annotations.jar;version=file

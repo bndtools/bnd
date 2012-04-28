@@ -52,8 +52,8 @@ import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.url.URLConnector;
-import aQute.lib.deployer.obr.CachingURLResourceHandle;
-import aQute.lib.deployer.obr.CachingURLResourceHandle.CachingMode;
+import aQute.lib.deployer.repository.CachingURLResourceHandle;
+import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
@@ -224,11 +224,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     URLConnector getConnector() throws Exception {
         URLConnector connector = Central.getWorkspace().getPlugin(URLConnector.class);
         if (connector == null) {
-            connector = new URLConnector() {
-                public InputStream connect(URL url) throws IOException {
-                    return url.openStream();
-                }
-            };
+            connector = new SimpleURLConnector();
         }
         return connector;
     }
