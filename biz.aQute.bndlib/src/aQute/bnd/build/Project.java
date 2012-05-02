@@ -1332,9 +1332,14 @@ public class Project extends Processor {
 					s = s.trim();
 					File ff = new File(s);
 					if (!ff.isFile()) {
-						//error("buildfile lists file but the file does not exist %s", ff);
-						warning("buildfile lists file but the file does not exist %s", ff);
-						return null;
+						// Originally we warned the user
+						// but lets just rebuild. That way
+						// the error is not noticed but 
+						// it seems better to correct,
+						// See #154
+						fin.close();
+						f.delete();
+						break;
 					} else
 						files.add(ff);
 				}
