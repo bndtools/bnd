@@ -22,13 +22,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(property = { "x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1",
 			"char:Character=1", "short:Short=3", "integer:Integer=3", "long:Long=3",
-			"float:Float=3.0", "double:Double=3e7", "string:String=%", "wrongInteger:Integer=blabla" }) public static class PropertiesTest {
+			"float:Float=3.0", "double:Double=3e7", "string:String=%", "wrongInteger:Integer=blabla" }) public static class PropertiesTestx {
 
 	}
 
 	public void testProperties() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("-dsannotations", "test.component.*");
+		b.setProperty("-dsannotations", "test.component.*x");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -41,7 +41,7 @@ public class DSAnnotationTest extends BndTestCase {
 		//
 		
 
-		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$PropertiesTest.xml");
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$PropertiesTestx.xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
@@ -63,7 +63,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * The basic test. This test will take an all default component and a
 	 * component that has all values set.
 	 */
-	@Component public class Defaults implements Serializable, Runnable {
+	@Component public class Defaults_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate void open() {
@@ -94,7 +94,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
-			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public class Explicit
+			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public class Explicit_basic
 			implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -136,7 +136,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("-dsannotations", "test.component.*");
+		b.setProperty("-dsannotations", "test.component.*_basic");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -148,7 +148,7 @@ public class DSAnnotationTest extends BndTestCase {
 			// Test all the defaults
 			//
 
-			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$Defaults.xml");
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$Defaults_basic.xml");
 			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
@@ -157,11 +157,11 @@ public class DSAnnotationTest extends BndTestCase {
 																// http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$Defaults",
+			xt.assertAttribute("test.component.DSAnnotationTest$Defaults_basic",
 					"scr:component/implementation/@class");
 
 			// Default must be the implementation class
-			xt.assertAttribute("test.component.DSAnnotationTest$Defaults", "scr:component/@name");
+			xt.assertAttribute("test.component.DSAnnotationTest$Defaults_basic", "scr:component/@name");
 
 			xt.assertAttribute("", "scr:component/@configuration-policy");
 			xt.assertAttribute("", "scr:component/@immediate");
@@ -199,7 +199,7 @@ public class DSAnnotationTest extends BndTestCase {
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "xmlns");
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$Explicit",
+			xt.assertAttribute("test.component.DSAnnotationTest$Explicit_basic",
 					"scr:component/implementation/@class");
 
 			// Default must be the implementation class
