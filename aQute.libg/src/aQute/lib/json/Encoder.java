@@ -5,7 +5,7 @@ import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
 
-public class Encoder implements Appendable, Closeable {
+public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
 	Appendable		app;
 	MessageDigest	digest;
@@ -96,5 +96,11 @@ public class Encoder implements Appendable, Closeable {
 	public Encoder writeDefaults() {
 		writeDefaults = true;
 		return this;
+	}
+	
+	public void flush() throws IOException {
+		if ( app instanceof Flushable) {
+			((Flushable)app).flush();
+		}
 	}
 }
