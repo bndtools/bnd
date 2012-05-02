@@ -17,6 +17,9 @@ public class JunitXmlReport implements TestReporter {
 	long			startTime;
 	long			testStartTime;
 	int				tests		= 0;
+	int					failures	= 0;
+	int					errors		= 0;
+	int					skipped     = 0;
 	PrintWriter		out;
 	boolean			finished;
 	boolean			progress;
@@ -122,6 +125,9 @@ public class JunitXmlReport implements TestReporter {
 		if (!finished) {
 			finished = true;
 			testsuite.addAttribute("tests", tests);
+			testsuite.addAttribute("failures", failures);
+			testsuite.addAttribute("errors", errors);
+			testsuite.addAttribute("skipped", skipped);
 			testsuite.addAttribute("time",
 					getFraction(System.currentTimeMillis() - startTime, 1000));
 			testsuite.addAttribute("timestamp", df.format(new Date()));
@@ -173,6 +179,8 @@ public class JunitXmlReport implements TestReporter {
 		else
 			testcase.addContent(error);
 		progress(" e");
+		
+		errors++;
 	}
 
 	private void progress(String s) {
@@ -206,21 +214,25 @@ public class JunitXmlReport implements TestReporter {
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
+		
+		failures++;
 	}
 
 	public void endTest(Test test) {
 		String[] outs = basic.getCaptured();
 		if (outs[0] != null) {
-			Tag sysout = new Tag(testcase, "sys-out");
+			Tag sysout = new Tag(testcase, "system-out");
 			sysout.addContent(outs[0]);
 		}
 
 		if (outs[1] != null) {
-			Tag sysout = new Tag(testcase, "sys-err");
+			Tag sysout = new Tag(testcase, "system-err");
 			sysout.addContent(outs[1]);
 		}
 
 		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		tests++;
+		
 		tests++;
 	}
 
