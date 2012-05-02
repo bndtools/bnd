@@ -179,7 +179,6 @@ public class JunitXmlReport implements TestReporter {
 		else
 			testcase.addContent(error);
 		progress(" e");
-		
 		errors++;
 	}
 
@@ -214,7 +213,6 @@ public class JunitXmlReport implements TestReporter {
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
-		
 		failures++;
 	}
 
@@ -232,7 +230,6 @@ public class JunitXmlReport implements TestReporter {
 
 		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
 		tests++;
-		
 		tests++;
 	}
 
