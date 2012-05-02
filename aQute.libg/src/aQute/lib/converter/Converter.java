@@ -65,15 +65,26 @@ import aQute.lib.base64.*;
 		}
 
 		if (resultType.isArray()) {
-			if ( actualType == String.class) {
+			if (actualType == String.class) {
 				String s = (String) o;
-				if ( byte[].class == resultType )
+				if (byte[].class == resultType)
 					return Base64.decodeBase64(s);
-				
-				if ( char[].class == resultType )
+
+				if (char[].class == resultType)
 					return s.toCharArray();
 			}
-			
+			if (byte[].class == resultType) {
+				// Sometimes classes implement toByteArray
+				try {
+					Method m = actualType.getMethod("toByteArray");
+					if (m.getReturnType() == byte[].class)
+						return m.invoke(o);
+
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+
 			return array(resultType.getComponentType(), o);
 		}
 
@@ -133,12 +144,12 @@ import aQute.lib.base64.*;
 
 		if (actualType == String.class) {
 			String input = (String) o;
-			if ( resultType == char[].class )
+			if (resultType == char[].class)
 				return input.toCharArray();
-			
-			if ( resultType == byte[].class )
+
+			if (resultType == byte[].class)
 				return Base64.decodeBase64(input);
-			
+
 			if (Enum.class.isAssignableFrom(resultType)) {
 				return Enum.valueOf((Class<Enum>) resultType, input);
 			}

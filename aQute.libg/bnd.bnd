@@ -2,7 +2,7 @@
 	ee.j2se;version='[1.5,1.6)'
 
 Export-Package: aQute.lib.*, aQute.libg.*
-Bundle-Version: 2.1.2
+Bundle-Version: 2.3.0
 Bundle-Description: A library to be statically linked. Contains many small utilities. This bundle \
  should not be installed in a framework, it is compile only.
 
