@@ -208,6 +208,7 @@ body {
   position: fixed;
   top: 60px;
   right: 20px;
+  min-height: 100%;
   float: right;
   overflow: hidden;
 }
@@ -2206,6 +2207,14 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   box-shadow: inset 3px 3px 3px rgba(0, 0, 0, 0.05);
   
 }
+.sidebar h1,
+.sidebar h2,
+.sidebar h3,
+.sidebar h4,
+.sidebar h5,
+.sidebar h6 {
+  padding: 0;
+}
 .well blockquote {
   border-color: #ddd;
   border-color: rgba(0, 0, 0, 0.15);
@@ -2520,4 +2529,9 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   -webkit-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
   -moz-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
   box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
+}
+
+@media print {
+	.topbar { display: none; }
+	.sidebar { display: none; }
 }
