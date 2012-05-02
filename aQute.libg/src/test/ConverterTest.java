@@ -7,52 +7,74 @@ import java.util.concurrent.*;
 
 import junit.framework.*;
 import aQute.lib.converter.*;
+import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 import aQute.libg.version.*;
 
 @SuppressWarnings("unchecked") public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
 	/**
+	 * Digests as byte[]
+	 * 
+	 * @throws Exception
+	 */
+
+	public void testDigest() throws Exception {
+		Digester<SHA1> digester = SHA1.getDigester();
+		IO.copy("ABC".getBytes(), digester);
+		SHA1 digest = digester.digest();
+		byte[] out = converter.convert(byte[].class, digest);
+		assertTrue(Arrays.equals(digest.digest(), out));
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		bout.write( "Hello World".getBytes());
+		assertTrue( Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class,bout)));
+
+	}
+
+	/**
 	 * Map a string to a char[], Character[], or Collection<Character>
 	 */
-	
-	public List<Character> characters;
+
+	public List<Character>	characters;
+
 	public void testCharacters() throws Exception {
-		assertTrue( Arrays.equals(new char[]{'A','B','C'}, converter.convert(char[].class, "ABC")));
-		assertEquals( "ABC", converter.convert(String.class, new char[]{'A','B','C'}));
-		
-		
+		assertTrue(Arrays.equals(new char[] { 'A', 'B', 'C' },
+				converter.convert(char[].class, "ABC")));
+		assertEquals("ABC", converter.convert(String.class, new char[] { 'A', 'B', 'C' }));
+
 	}
-	
+
 	/**
 	 * Test string to primitives
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void testStringtoPrimitives() throws Exception {
-		assertEquals( (Integer) (int) 'A', converter.convert(int.class, 'A'));
-		assertEquals( (Integer) (int) 'A', converter.convert(Integer.class, 'A'));
-		assertEquals( (Boolean) true, converter.convert(boolean.class, "1"));
-		assertEquals( (Boolean) true, converter.convert(Boolean.class, "1"));
-		assertEquals( (Boolean) false, converter.convert(boolean.class, "0"));
-		assertEquals( (Boolean) false, converter.convert(Boolean.class, "0"));
-		assertEquals( (Byte) (byte) 1, converter.convert(byte.class, "1"));
-		assertEquals( (Byte) (byte) 1, converter.convert(Byte.class, "1"));
-		assertEquals( (Short) (short) 1, converter.convert(short.class, "1"));
-		assertEquals( (Short) (short) 1, converter.convert(Short.class, "1"));
-		assertEquals( (Integer) 1, converter.convert(int.class, "1"));
-		assertEquals( (Integer) 1, converter.convert(Integer.class, "1"));
-		assertEquals( (Long) 1L, converter.convert(long.class, "1"));
-		assertEquals( (Long) 1L, converter.convert(Long.class, "1"));
-		assertEquals( (Float) 1f, converter.convert(float.class, "1"));
-		assertEquals( (Float) 1f, converter.convert(Float.class, "1"));
-		assertEquals( (Double) 1d, converter.convert(double.class, "1"));
-		assertEquals( (Double) 1d, converter.convert(double.class, "1"));
-		assertEquals( (Character) 'A', converter.convert(char.class, "A"));
-		assertEquals( (Character) 'A', converter.convert(Character.class, "A"));
+		assertEquals((Integer) (int) 'A', converter.convert(int.class, 'A'));
+		assertEquals((Integer) (int) 'A', converter.convert(Integer.class, 'A'));
+		assertEquals((Boolean) true, converter.convert(boolean.class, "1"));
+		assertEquals((Boolean) true, converter.convert(Boolean.class, "1"));
+		assertEquals((Boolean) false, converter.convert(boolean.class, "0"));
+		assertEquals((Boolean) false, converter.convert(Boolean.class, "0"));
+		assertEquals((Byte) (byte) 1, converter.convert(byte.class, "1"));
+		assertEquals((Byte) (byte) 1, converter.convert(Byte.class, "1"));
+		assertEquals((Short) (short) 1, converter.convert(short.class, "1"));
+		assertEquals((Short) (short) 1, converter.convert(Short.class, "1"));
+		assertEquals((Integer) 1, converter.convert(int.class, "1"));
+		assertEquals((Integer) 1, converter.convert(Integer.class, "1"));
+		assertEquals((Long) 1L, converter.convert(long.class, "1"));
+		assertEquals((Long) 1L, converter.convert(Long.class, "1"));
+		assertEquals((Float) 1f, converter.convert(float.class, "1"));
+		assertEquals((Float) 1f, converter.convert(Float.class, "1"));
+		assertEquals((Double) 1d, converter.convert(double.class, "1"));
+		assertEquals((Double) 1d, converter.convert(double.class, "1"));
+		assertEquals((Character) 'A', converter.convert(char.class, "A"));
+		assertEquals((Character) 'A', converter.convert(Character.class, "A"));
 	}
-	
-	
+
 	/**
 	 * Test the wrappers
 	 * 
@@ -181,21 +203,22 @@ import aQute.libg.version.*;
 		public ConcurrentMap<String, Integer>		concurrent;
 		public Map									map;
 	}
+
 	public static class GT {
-		public int a = 1;
-		public double b = 2;
+		public int		a	= 1;
+		public double	b	= 2;
 	}
-	
+
 	public void testGenericMaps() throws Exception {
 		Class<GM> xx = GM.class;
 		GM gMap = xx.newInstance();
 		GM gSemiMap = xx.newInstance();
-		
+
 		GT semiMap = new GT();
-		Map map = new HashMap<String,Integer>();
+		Map map = new HashMap<String, Integer>();
 		map.put("a", 1);
 		map.put("b", 2);
-		
+
 		for (Field field : xx.getFields()) {
 			Object o = converter.convert(field.getGenericType(), map);
 			field.set(gMap, o);
@@ -233,29 +256,29 @@ import aQute.libg.version.*;
 	 * @param source
 	 * @throws Exception
 	 */
-	
+
 	public void testConstructor() throws Exception {
 		String home = System.getProperty("user.home");
-		assertEquals( new File(home), converter.convert(File.class,home));
-		assertEquals( new Version(1,0,0), converter.convert(Version.class,"1.0.0"));
+		assertEquals(new File(home), converter.convert(File.class, home));
+		assertEquals(new Version(1, 0, 0), converter.convert(Version.class, "1.0.0"));
 	}
-	
+
 	/**
 	 * Test valueOf
 	 * 
 	 * @param source
 	 * @throws Exception
 	 */
-	
+
 	public void testValueOf() throws Exception {
-		assertEquals( (Byte) (byte) 12, converter.convert(Byte.class,"12"));
-		assertEquals( (Boolean) true, converter.convert(Boolean.class,"TRUE"));
-		assertEquals( (Character) '1', converter.convert(char.class,"49"));
-		assertEquals( (Boolean) true, converter.convert(Boolean.class,"TRUE"));
-		assertEquals( (Boolean) true, converter.convert(Boolean.class,"TRUE"));
-		assertEquals( (Boolean) true, converter.convert(Boolean.class,"TRUE"));
+		assertEquals((Byte) (byte) 12, converter.convert(Byte.class, "12"));
+		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals((Character) '1', converter.convert(char.class, "49"));
+		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
 	}
-	
+
 	void assertPrimitives1(Object source) throws Exception {
 		Class[] types = { byte.class, boolean.class, char.class, short.class, int.class,
 				long.class, float.class, double.class };

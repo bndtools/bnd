@@ -37,4 +37,8 @@ public abstract class Digest {
 	public int hashCode() {
 		return Arrays.hashCode(digest);
 	}
+
+	public byte[] toByteArray() {
+		return digest();
+	}
 }

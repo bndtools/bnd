@@ -19,6 +19,19 @@ public class JSONTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	public void testStream() throws Exception {
+		Encoder enc = codec.enc();
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		enc.to(bout).put("Hello").flush();
+		assertEquals("\"Hello\"", new String( bout.toByteArray()));
+	}
+
+	/**
+	 * Test maps
+	 * 
+	 * @throws Exception
+	 */
+
 	public void testMaps() throws Exception {
 		Encoder enc = codec.enc();
 		Map<String, Object> map = new HashMap<String, Object>();
