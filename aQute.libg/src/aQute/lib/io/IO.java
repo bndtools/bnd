@@ -26,6 +26,14 @@ public class IO {
 		copy(r, w, "UTF-8");
 	}
 
+	public static void copy(byte []r, Writer w) throws IOException {
+		copy( new ByteArrayInputStream(r), w, "UTF-8");
+	}
+
+	public static void copy(byte []r, OutputStream w) throws IOException {
+		copy( new ByteArrayInputStream(r), w);
+	}
+
 	public static void copy(InputStream r, Writer w, String charset) throws IOException {
 		try {
 			InputStreamReader isr = new InputStreamReader(r, charset);
