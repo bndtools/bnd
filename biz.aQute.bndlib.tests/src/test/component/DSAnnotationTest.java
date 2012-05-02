@@ -17,6 +17,49 @@ import aQute.lib.osgi.*;
 public class DSAnnotationTest extends BndTestCase {
 
 	/**
+	 * Property test
+	 */
+
+	@Component(property = { "x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1",
+			"char:Character=1", "short:Short=3", "integer:Integer=3", "long:Long=3",
+			"float:Float=3.0", "double:Double=3e7", "string:String=%", "wrongInteger:Integer=blabla" }) public static class PropertiesTest {
+
+	}
+
+	public void testProperties() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		if ( !b.check("Cannot convert data blabla to type Integer", "Cannot convert data 3.0 to type Integer"))
+			fail();
+		
+		//
+		// Test all the defaults
+		//
+		
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$PropertiesTest.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
+				"http://www.osgi.org/xmlns/scr/v1.1.0");
+		xt.assertAttribute("1", "scr:component/property[@name='b']/@value");
+		xt.assertAttribute("", "scr:component/property[@name='a']/@value");
+		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
+		xt.assertAttribute("Boolean", "scr:component/property[@name='boolean']/@type");
+		xt.assertAttribute("Character", "scr:component/property[@name='char']/@type");
+		xt.assertAttribute("Short", "scr:component/property[@name='short']/@type");
+		xt.assertAttribute("Integer", "scr:component/property[@name='integer']/@type");
+		xt.assertAttribute("Long", "scr:component/property[@name='long']/@type");
+		xt.assertAttribute("Float", "scr:component/property[@name='float']/@type");
+		xt.assertAttribute("Double", "scr:component/property[@name='double']/@type");
+	}
+
+	/**
 	 * The basic test. This test will take an all default component and a
 	 * component that has all values set.
 	 */
@@ -110,7 +153,8 @@ public class DSAnnotationTest extends BndTestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-					"http://www.osgi.org/xmlns/scr/v1.1.0"); //#136 was http://www.osgi.org/xmlns/scr/1.1.0
+					"http://www.osgi.org/xmlns/scr/v1.1.0"); // #136 was
+																// http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$Defaults",
@@ -263,30 +307,42 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component(name = "methods") public class Methods {
 
-		@Reference(unbind="-", updated="-") void setA(LogService l) {
+		@Reference(unbind = "-", updated = "-") void setA(LogService l) {
 		}
 
-		void updatedA(LogService l) {}
-		void unsetA(LogService l) {}
-
-		@Reference(unbind="_B", updated="__B") void setB(LogService l) {
+		void updatedA(LogService l) {
 		}
 
-		void _B(LogService l) {}
-		void __B(LogService l) {}
-		void updatedB(LogService l) {}
-		void unsetB(LogService l) {}
+		void unsetA(LogService l) {
+		}
 
-		
+		@Reference(unbind = "_B", updated = "__B") void setB(LogService l) {
+		}
+
+		void _B(LogService l) {
+		}
+
+		void __B(LogService l) {
+		}
+
+		void updatedB(LogService l) {
+		}
+
+		void unsetB(LogService l) {
+		}
+
 		@Reference void setC(LogService l) {
 		}
-		void updatedC(LogService l) {}
-		void unsetC(LogService l) {}
-		
+
+		void updatedC(LogService l) {
+		}
+
+		void unsetC(LogService l) {
+		}
+
 		@Reference void setD(LogService l) {
 		}
-		
-		
+
 	}
 
 	public void testMethods() throws Exception {
@@ -320,7 +376,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("setC", "scr:component/reference[3]/@bind");
 		xt.assertAttribute("unsetC", "scr:component/reference[3]/@unbind");
 		xt.assertAttribute("updatedC", "scr:component/reference[3]/@updated");
-		
+
 		xt.assertAttribute("D", "scr:component/reference[4]/@name");
 		xt.assertAttribute("setD", "scr:component/reference[4]/@bind");
 		xt.assertAttribute("", "scr:component/reference[4]/@unbind");
@@ -330,44 +386,42 @@ public class DSAnnotationTest extends BndTestCase {
 	/**
 	 * Test inheritance (this is not official)
 	 */
-	
+
 	public class Top {
-		
-		@Reference
-		void setLogService( LogService l) {			
+
+		@Reference void setLogService(LogService l) {
 		}
-		
+
 		void updatedLogService(ServiceReference ref) {
-			
+
 		}
-		
-		@Reference 
-		protected void setPrivateLogService(LogService l) {
-			
+
+		@Reference protected void setPrivateLogService(LogService l) {
+
 		}
-		
+
 		@SuppressWarnings("unused") private void updatedPrivateLogService(ServiceReference ref) {
-			
+
 		}
 	}
-	
-	@Component(name="bottom") public class Bottom extends Top{
+
+	@Component(name = "bottom") public class Bottom extends Top {
 		void unsetLogService(LogService l, Map<Object, Object> map) {
-			
+
 		}
-		
+
 		void unsetPrivateLogService(ServiceReference ref) {
-			
+
 		}
 	}
-	
+
 	public void testInheritance() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Bottom");
 		b.setProperty("-dsannotations-inherit", "true");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
-		
+
 		Jar jar = b.build();
 		assertOk(b);
 
@@ -376,59 +430,58 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
-		
-		
+
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
-		
+
 		xt.assertAttribute("PrivateLogService", "scr:component/reference[2]/@name");
 		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@bind");
 		xt.assertAttribute("unsetPrivateLogService", "scr:component/reference[2]/@unbind");
-		xt.assertAttribute("", "scr:component/reference[2]/@updated"); // is private in super class	
-		
+		xt.assertAttribute("", "scr:component/reference[2]/@updated"); // is
+																		// private
+																		// in
+																		// super
+																		// class
 
 	}
 
-	
 	/**
 	 * Test the different prototypes ...
 	 */
-	
-	@Component(name="prototypes") public class Prototypes {
-		@SuppressWarnings("unused") @Activate
-		private void activate() {}
-		
-		@Deactivate
-		protected void deactivate(ComponentContext ctx) {
-			
+
+	@Component(name = "prototypes") public class Prototypes {
+		@SuppressWarnings("unused") @Activate private void activate() {
 		}
 
-		@Modified
-		void modified( BundleContext context) {
-			
+		@Deactivate protected void deactivate(ComponentContext ctx) {
+
 		}
-		
-		@SuppressWarnings("unused") @Reference
-		private void setLogService( LogService l) {
-			
+
+		@Modified void modified(BundleContext context) {
+
 		}
-		protected void unsetLogService( LogService l, Map<Object, Object> map) {
-			
+
+		@SuppressWarnings("unused") @Reference private void setLogService(LogService l) {
+
 		}
-		
+
+		protected void unsetLogService(LogService l, Map<Object, Object> map) {
+
+		}
+
 		void updatedLogService(ServiceReference ref) {
-			
+
 		}
 	}
-	
+
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Prototypes");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
-		
+
 		Jar jar = b.build();
 		assertOk(b);
 
@@ -437,18 +490,12 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
 				"http://www.osgi.org/xmlns/scr/v1.2.0");
-		
+
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
-		
-		
-		
+
 	}
-	
-	
-	
-	
-	
+
 }

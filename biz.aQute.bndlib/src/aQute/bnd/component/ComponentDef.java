@@ -1,5 +1,6 @@
 package aQute.bnd.component;
 
+import java.lang.reflect.*;
 import java.util.*;
 
 import org.osgi.service.component.annotations.*;
@@ -37,6 +38,7 @@ class ComponentDef {
 	Boolean							enabled;
 	String							xmlns;
 	String							configurationPid;
+	List<Tag>						propertyTags	= new ArrayList<Tag>();					;
 
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
@@ -44,7 +46,7 @@ class ComponentDef {
 	 * 
 	 * @param analyzer
 	 *            the analyzer to report errors and create references
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	void prepare(Analyzer analyzer) throws Exception {
 
@@ -57,7 +59,7 @@ class ComponentDef {
 		if (implementation == null) {
 			analyzer.error("No Implementation defined for component " + name);
 			return;
-		} 
+		}
 
 		analyzer.referTo(implementation);
 
@@ -69,9 +71,42 @@ class ComponentDef {
 				analyzer.referTo(interfaceName);
 		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
-		
-		if ( configurationPid != null)
-			version = ReferenceDef.max(version,AnnotationReader.V1_2);
+
+		if (configurationPid != null)
+			version = ReferenceDef.max(version, AnnotationReader.V1_2);
+
+		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
+			Tag property = new Tag("property");
+			String name = kvs.getKey();
+			String type = null;
+			int n = name.indexOf(':');
+			if (n > 0) {
+				type = name.substring(n + 1);
+				name = name.substring(0, n);
+			}
+
+			property.addAttribute("name", name);
+			if (type != null) {
+				property.addAttribute("type", type);
+			}
+			if (kvs.getValue().size() == 1) {
+				String value = kvs.getValue().get(0);
+				value = check(type, value, analyzer);
+				property.addAttribute("value", value);
+			} else {
+				StringBuilder sb = new StringBuilder();
+
+				String del = "";
+				for (String v : kvs.getValue()) {
+					sb.append(del);
+					v = check(type, v, analyzer);
+					sb.append(v);
+					del = "\n";
+				}
+				property.addContent(sb.toString());
+			}
+			propertyTags.add(property);
+		}
 	}
 
 	/**
@@ -135,30 +170,8 @@ class ComponentDef {
 			component.addContent(refTag);
 		}
 
-		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
-			Tag property = new Tag(component, "property");
-			String name = kvs.getKey();
-			String type = null;
-			int n = name.indexOf(':');
-			if (n > 0) {
-				type = name.substring(n + 1);
-				name = name.substring(0, n);
-			}
-
-			property.addAttribute("name", name);
-			if (type != null) {
-				property.addAttribute("type", type);
-			}
-			StringBuilder sb = new StringBuilder();
-
-			String del = "";
-			for (String v : kvs.getValue()) {
-				sb.append(del);
-				sb.append(v);
-				del = "\n";
-			}
-			property.addContent(sb.toString());
-		}
+		for (Tag tag : propertyTags)
+			component.addContent(tag);
 
 		for (String entry : properties) {
 			Tag properties = new Tag(component, "properties");
@@ -167,4 +180,29 @@ class ComponentDef {
 		return component;
 	}
 
+	private String check(String type, String v, Analyzer analyzer) {
+		if (type == null)
+			return v;
+
+		try {
+			Class<?> c = Class.forName("java.lang." + type);
+			if (c == String.class)
+				return v;
+
+			v = v.trim();
+			if (c == Character.class)
+				c = Integer.class;
+			Method m = c.getMethod("valueOf", String.class);
+			m.invoke(null, v);
+		} catch (ClassNotFoundException e) {
+			analyzer.error("Invalid data type %s", type);
+		} catch (NoSuchMethodException e) {
+			analyzer.error("Cannot convert data %s to type %s", v, type);
+		} catch (NumberFormatException e) {
+			analyzer.error("Not a valid number %s for %s, %s", v, type, e.getMessage());
+		} catch (Exception e) {
+			analyzer.error("Cannot convert data %s to type %s", v, type);
+		}
+		return v;
+	}
 }
