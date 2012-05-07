@@ -51,7 +51,7 @@ class ComponentDef {
 
 	Tag getTag() {
 		Tag component = new Tag("scr:component");
-		component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/" + version);
+		component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/v" + version);
 		component.addAttribute("name", name);
 
 		if (servicefactory != null)
