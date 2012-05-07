@@ -1,5 +1,7 @@
 -buildpath: ${bndlib},\
+	aQute.libg,\
 	com.jcraft.jsch,\
 	org.eclipse.jgit,\
-	junit.osgi
+	junit.osgi,\
+	biz.aQute.repository
 -sub: *.bnd

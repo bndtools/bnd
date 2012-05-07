@@ -14,3 +14,4 @@
 	osgi.ws=cocoa,\
 	osgi.arch=x86_64,\
 	osgi.os=macosx
+

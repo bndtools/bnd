@@ -33,20 +33,21 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import aQute.lib.deployer.FileRepo;
-import aQute.lib.deployer.obr.AbstractBaseOBR;
-import aQute.lib.deployer.obr.UniqueResourceFilter;
+import aQute.lib.deployer.repository.AbstractIndexedRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.sax.SAXUtil;
 import aQute.libg.sax.filters.MergeContentFilter;
+import aQute.libg.tuple.Pair;
 
-public class GitOBRRepo extends AbstractBaseOBR {
+public class GitOBRRepo extends AbstractIndexedRepo {
 
 	public static final String PROP_LOCAL_DIR = "local";
 	public static final String PROP_LOCAL_SUB_DIR = "sub";
 	public static final String PROP_READONLY = "readonly";
+	public static final String PROP_PRETTY = "pretty";
 	public static final String PROP_GIT_REPO_XML_URI = "git-repo-xml-uri";
 	public static final String PROP_GIT_URI = "git-uri";
 	public static final String PROP_GIT_PUSH_URI = "git-push-uri";
@@ -58,12 +59,16 @@ public class GitOBRRepo extends AbstractBaseOBR {
 	private static final String PREFIX_PASSWORD = "pwd.";
 
 	protected final FileRepo storageRepo = new FileRepo();
+	private boolean pretty = false;
 
 	protected File gitRootDir;
 	protected File storageDir;
 	protected File localIndex;
 
 	protected List<URL> indexUrls;
+
+	// @GuardedBy("newFilesInCoordination")
+	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
 
 	protected Repository repository;
 	
@@ -76,7 +81,7 @@ public class GitOBRRepo extends AbstractBaseOBR {
 	
 	private final AtomicBoolean configFileInited = new AtomicBoolean(false);
 	private final List<Mapping> mappings = Collections.synchronizedList(new LinkedList<Mapping>());
-	
+
 	@Override
 	public void setReporter(Reporter reporter) {
 		super.setReporter(reporter);
@@ -155,9 +160,12 @@ public class GitOBRRepo extends AbstractBaseOBR {
 		storageRepoConfig.put(FileRepo.LOCATION, storageDir.toString());
 		storageRepoConfig.put(FileRepo.READONLY, map.get(PROP_READONLY));
 		storageRepo.setProperties(storageRepoConfig);
+		
+		pretty = "true".equalsIgnoreCase(map.get(PROP_PRETTY));
 
 		// Set the local index location
-		localIndex = new File(storageDir, REPOSITORY_FILE_NAME);
+		String indexFileName = contentProvider.getDefaultIndexName(pretty);
+		localIndex = new File(storageDir, indexFileName);
 		if (localIndex.exists() && !localIndex.isFile())
 			throw new IllegalArgumentException(
 					String.format(
@@ -268,8 +276,8 @@ public class GitOBRRepo extends AbstractBaseOBR {
 	private static String getRelativePath(File base, File file) throws IOException {
 		return base.toURI().relativize(file.toURI()).getPath();
 	}
-
-	public Collection<URL> getOBRIndexes() throws IOException {
+	
+	public List<URL> getIndexLocations() throws IOException {
 		try {
 			indexUrls = new ArrayList<URL>();
 			if (localIndex.exists()) {
@@ -283,6 +291,10 @@ public class GitOBRRepo extends AbstractBaseOBR {
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Error initialising local index URL", e);
 		}
+	}
+
+	public Collection<URL> getOBRIndexes() throws IOException {
+		return getIndexLocations();
 	}
 	
 	protected void configFileInit() {
