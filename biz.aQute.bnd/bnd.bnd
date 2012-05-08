@@ -1,10 +1,10 @@
 Bundle-Version: 				1.52.3.t${tstamp}
-Conditional-Package: 			aQute.libg.*, aQute.lib.*
+Conditional-Package: 			aQute.libg.*, aQute.lib.*,aQute.configurable
 
 -sub: *.bnd
 
 -buildpath:\
-	aQute.libg;version=project,\
+	aQute.libg;version=latest,\
 	ee.j2se;version="[1.5,1.6)",\
 	biz.aQute.bndlib;version=project,\
 	biz.aQute.junit;version=project,\
