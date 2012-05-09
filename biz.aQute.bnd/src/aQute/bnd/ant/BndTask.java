@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.tools.ant.*;
+import org.apache.tools.ant.taskdefs.Property;
 import org.apache.tools.ant.types.*;
 
 import aQute.bnd.build.*;
@@ -13,10 +14,52 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.qtokens.*;
 
 /**
- * This file is the bnd main task for ant. 
+ * <p>This file is the bnd main task for ant.</p> 
  * 
- * Example usage
+ * <p>To define the task library, load property from <code>build.bnd</code> and prepare the workspace:</p>
+ * <pre>
+ * &lt;target name="init" unless="initialized"&gt;
+ *    &lt;taskdef classpath="${path.to.bnd.jar}" resource="aQute/bnd/ant/taskdef.properties"&gt;
+ *    &lt;bndprepare basedir="${projectdir}" print="false" top="${release.dir}"/&gt;
+ *    &lt;property name="initialized" value="set"/&gt;
+ * &lt;/target&gt;
+ * </pre>
  * 
+ * <p>To recursively build dependency projects, before building this project:</p>
+ * <pre>
+ * &lt;target name="dependencies" depends="init" if="project.dependson" unless="donotrecurse"&gt;
+ *    &lt;subant target="build" inheritAll="false" buildpath="${project.dependson}"&gt;
+ *       &lt;property name="donotrecurse" value="true"/&gt;
+ *    &lt;/subant&gt;
+ * &lt;/target>
+ * </pre>
+ * 
+ * <p>To build a bundle:</p>
+ * <pre>
+ * &lt;target name="build" depends="compile"&gt;
+ *    &lt;mkdir dir="${target}"/&gt;
+ *    &lt;bnd command="build" exceptions="true" basedir="${project}"/&gt;
+ * &lt;/target&gt;
+ * </pre>
+ * 
+ * <p>To pass properties into bnd from ANT:</p>
+ * <pre>
+ * &lt;target name="build" depends="compile"&gt;
+ *    &lt;mkdir dir="${target}"/&gt;
+ *    &lt;bnd command="build" exceptions="true" basedir="${project}"&gt;
+ *        &lt;!-- Property will be set on the bnd Project: --&gt;
+ *        &lt;property name="foo" value="bar"/&gt;
+ *
+ *        &lt;!-- Property will be set on the bnd Workspace: --&gt;
+ *        &lt;wsproperty name="foo" value="bar"/&gt;
+ *    &lt;/bnd&gt;
+ * &lt;/target&gt;
+ * </pre>
+ * 
+ * @see {@link DeployTask} {@link ReleaseTask}
+ */
+
+ /* OLD JAVADOCS:
  * <pre>
  * <project name="test path with bnd" default="run-test" basedir=".">
  *    <property file="run-demo.properties"/>
@@ -74,7 +117,7 @@ public class BndTask extends BaseTask {
 	private boolean	classpathDirectlySet;
 	private Path	classpathReference;
 	private Path	bndfilePath;
-
+	
 	public void execute() throws BuildException {
 		// JME add - ensure every required parameter is present
 		// handle cases where mutual exclusion live..
@@ -94,12 +137,22 @@ public class BndTask extends BaseTask {
 
 		try {
 			Project project = Workspace.getProject(basedir);
+			
+			Workspace ws = project.getWorkspace();
+			if (ws != null) for (Property prop : workspaceProps) {
+				ws.setProperty(prop.getName(), prop.getValue());
+			}
+			
 			project.setProperty("in.ant", "true");
 			project.setProperty("environment", "ant");
 			project.setExceptions(true);
 			project.setTrace(trace);
 			project.setPedantic(pedantic);
-
+			
+			for (Property prop : properties) {
+				project.setProperty(prop.getName(), prop.getValue());
+			}
+			
 			project.action(command);
 
 			if (report(project))
@@ -333,7 +386,7 @@ public class BndTask extends BaseTask {
 		assertPathNotSet(bndfilePath, "bnd files are already set");
 		bndfilePath = path;
 	}
-
+	
 	private Path createPath(Reference r) {
 		Path path = new Path(getProject()).createPath();
 		path.setRefid(r);

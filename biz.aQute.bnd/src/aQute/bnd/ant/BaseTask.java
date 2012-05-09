@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.tools.ant.*;
+import org.apache.tools.ant.taskdefs.Property;
 
 import aQute.libg.reporter.*;
 
@@ -14,6 +15,9 @@ public class BaseTask extends Task implements Reporter {
     boolean pedantic;
     boolean trace;
     String onfail;
+	final List<Property> properties = new LinkedList<Property>();
+	final List<Property> workspaceProps = new LinkedList<Property>();
+
     
     public void error(String s, Object... args ) {
         errors.add(String.format(s, args));
@@ -118,5 +122,13 @@ public class BaseTask extends Task implements Reporter {
     public void trace(String s, Object... args) {
         System.err.printf("# "+s+"\n", args);
     }
+    
+	public void addProperty(Property property) {
+		properties.add(property);
+	}
+
+	public void addWsproperty(Property property) {
+		workspaceProps.add(property);
+	}
 
 }
