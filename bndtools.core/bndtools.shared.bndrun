@@ -11,6 +11,7 @@ workspace.bundles: \
 	bndtools.diff;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\
+	org.bndtools.repos.obr;version=snapshot,\
 	org.osgi.impl.bundle.bindex2.lib
 
 # used by the bndtools.diff and bndtools.release plug-ins	
@@ -56,6 +57,7 @@ help.bundles: \
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles:\
 	biz.aQute.bndlib;version=1.51.0,\
+	biz.aQute.repository;version=1.0.0,\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	stax2-api,\

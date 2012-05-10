@@ -12,6 +12,7 @@ import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.Registry;
 import aQute.lib.deployer.repository.AbstractIndexedRepo;
+import aQute.lib.deployer.repository.providers.ObrContentProvider;
 
 @SuppressWarnings("deprecation")
 public class WrappingObrRepository extends AbstractIndexedRepo implements OBRIndexProvider {
@@ -25,6 +26,7 @@ public class WrappingObrRepository extends AbstractIndexedRepo implements OBRInd
         this.delegate = delegate;
         this.cacheDir = cacheDir;
         this.registry = registry;
+        this.contentProvider = new ObrContentProvider();
     }
 
     public OBRIndexProvider getDelegate() {

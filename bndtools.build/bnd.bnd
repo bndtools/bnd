@@ -6,16 +6,19 @@
 	bndtools.diff,\
 	bndtools.release,\
 	org.bndtools.embeddedrepo,\
+	org.bndtools.repos.obr,\
 	org.osgi.impl.bundle.bindex
 
 Include-Resource:\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
+	${repo;biz.aQute.repository;latest},\
 	${repo;bndtools.core;latest},\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\
 	${repo;bndtools.diff;latest},\
 	${repo;bndtools.release;latest},\
 	${repo;org.bndtools.embeddedrepo;latest},\
+	${repo;org.bndtools.repos.obr;latest},\
 	${repo;org.osgi.impl.bundle.bindex2.lib;latest},\
 	${repo;org.osgi.impl.bundle.bindex;latest},\
 	${repo;com.springsource.org.objectweb.asm;latest},\
