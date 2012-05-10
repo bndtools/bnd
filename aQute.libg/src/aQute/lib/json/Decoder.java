@@ -3,12 +3,16 @@ package aQute.lib.json;
 import java.io.*;
 import java.lang.reflect.*;
 import java.security.*;
+import java.util.*;
 
 public class Decoder implements Closeable {
-	final JSONCodec	codec;
-	Reader			reader;
-	int				current;
-	MessageDigest	digest;
+	final JSONCodec		codec;
+	Reader				reader;
+	int					current;
+	MessageDigest		digest;
+	Map<String, Object>	extra;
+
+	boolean strict;
 
 	Decoder(JSONCodec codec) {
 		this.codec = codec;
@@ -21,6 +25,11 @@ public class Decoder implements Closeable {
 	public Decoder from(InputStream in) throws Exception {
 		return from(new InputStreamReader(in));
 
+	}
+	
+	public Decoder strict() {
+		this.strict = true;
+		return this;
 	}
 
 	public Decoder from(Reader in) throws Exception {
@@ -115,4 +124,9 @@ public class Decoder implements Closeable {
 		reader.close();
 	}
 
+	public Map<String, Object> getExtra() {
+		if (extra == null)
+			extra = new HashMap<String, Object>();
+		return extra;
+	}
 }
