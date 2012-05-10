@@ -1,4 +1,4 @@
-package aQute.lib.deployer.repository.parsers;
+package aQute.lib.deployer.repository.providers;
 
 import java.io.File;
 import java.io.OutputStream;
