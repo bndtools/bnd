@@ -276,6 +276,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 	
 	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
+		init();
 		ResourceHandle result;
 		if (bsn != null)
 			result = resolveBundle(bsn, range, strategy);
@@ -476,13 +477,47 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if (versions == null)
 			return null;
 
-		resource = versions.get(range.getLow());
+		resource = findVersion(range.getLow(), versions);
 		if (resource == null)
 			return null;
-		
+
 		return mapResourceToHandle(resource);
 	}
 	
+	BaseResource findVersion(Version version, SortedMap<Version, BaseResource> versions) {
+		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
+			return versions.get(version);
+		}
+
+		BaseResource latest = null;
+		for (Map.Entry<Version, BaseResource> entry : versions.entrySet()) {
+			if (version.getMicro() == entry.getKey().getMicro()
+				&& version.getMinor() == entry.getKey().getMinor()
+				&& version.getMajor() == entry.getKey().getMajor()) {
+				latest = entry.getValue();
+				continue;
+			}
+			if (compare(version, entry.getKey()) < 0) {
+				break;
+			}
+		}
+		return latest;
+	}
+
+	private int compare(Version v1, Version v2) {
+
+        if (v1.getMajor() != v2.getMajor())
+            return v1.getMajor() - v2.getMajor();
+
+        if (v1.getMinor() != v2.getMinor())
+            return v1.getMinor() - v2.getMinor();
+
+        if (v1.getMicro() != v2.getMicro())
+            return v1.getMicro() - v2.getMicro();
+
+        return 0;
+	}
+
 	/**
 	 * Utility function for parsing lists of URLs.
 	 * 

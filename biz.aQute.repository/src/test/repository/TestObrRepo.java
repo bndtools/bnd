@@ -86,6 +86,27 @@ public class TestObrRepo extends TestCase {
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
 	}
 	
+	public void testGetBsnExcactNoMatch() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.4.0", Strategy.EXACT, null);
+		assertNull(result);
+	}
+
+	public void testGetBsnExcactWithQualifier() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.7.0.201104130744", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
+	}
+
+	public void testGetBsnExcact() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.7.0", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
+		
+		result = obr.get("name.njbartlett.osgi.emf.xmi", "2.5.0", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", result.getName());
+	}
+
 	public void testGetBsnLowestWithRange() throws Exception {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.5.1", Strategy.LOWEST, null);
 		assertNotNull(result);
