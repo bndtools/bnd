@@ -92,6 +92,7 @@ public interface Constants {
 	String								NOBUNDLES									= "-nobundles";
 	String								PEDANTIC									= "-pedantic";
 	String								PLUGIN										= "-plugin";
+	String								PLUGINPATH									= "-pluginpath";
 	String								POM											= "-pom";
 	String								RELEASEREPO									= "-releaserepo";
 	String								REMOVEHEADERS								= "-removeheaders";

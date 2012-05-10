@@ -71,4 +71,15 @@ public class PluginTest extends TestCase {
 		assertEquals(1, plugins.size());
 		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
 	}
+	
+	public void testLoadPluginWithGlobalPluginPath() {
+		Builder p = new Builder();
+		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
+		p.setProperty(Constants.PLUGINPATH, "jar/thinlet.jar");
+		
+		List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
+		assertEquals(0, p.getErrors().size());
+		assertEquals(1, plugins.size());
+		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
+	}
 }

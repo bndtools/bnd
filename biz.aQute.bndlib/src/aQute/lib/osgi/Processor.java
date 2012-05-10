@@ -277,8 +277,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String spe = getProperty(PLUGIN);
 			if (spe.equals(NONE))
 				return new LinkedHashSet<Object>();
-
-			loadPlugins(list, spe);
+			
+			String pluginPath = getProperty(PLUGINPATH);
+			loadPlugins(list, spe, pluginPath);
 		}
 
 		return this.plugins = list;
@@ -288,22 +289,46 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param list
 	 * @param spe
 	 */
-	protected void loadPlugins(Set<Object> list, String spe) {
+	protected void loadPlugins(Set<Object> list, String spe, String pluginPath) {
 		Parameters plugins = new Parameters(spe);
+		CL loader = getLoader();
+		
+		// First add the plugin-specific paths from their path: directives
 		for (Entry<String, Attrs> entry : plugins.entrySet()) {
-			String key = (String) entry.getKey();
-
-			try {
-				CL loader = getLoader();
-				String path = entry.getValue().get(PATH_DIRECTIVE);
-				if (path != null) {
-					String parts[] = path.split("\\s*,\\s*");
+			String key = removeDuplicateMarker(entry.getKey());
+			String path = entry.getValue().get(PATH_DIRECTIVE);
+			if (path != null) {
+				String parts[] = path.split("\\s*,\\s*");
+				try {
 					for (String p : parts) {
 						File f = getFile(p).getAbsoluteFile();
 						loader.add(f.toURI().toURL());
 					}
+				} catch (Exception e) {
+					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
 				}
-
+			}
+		}
+		
+		// Next add -pluginpath entries
+		if (pluginPath != null && pluginPath.length() > 0) {
+			StringTokenizer tokenizer = new StringTokenizer(pluginPath, ",");
+			while (tokenizer.hasMoreTokens()) {
+				String path = tokenizer.nextToken().trim();
+				try {
+					File f = getFile(path).getAbsoluteFile();
+					loader.add(f.toURI().toURL());
+				} catch (Exception e) {
+					error("Problem adding path %s from global plugin path. Exception: %s", path, e);
+				}
+			}
+		}
+		
+		// Load the plugins
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
+			String key = (String) entry.getKey();
+			
+			try {
 				trace("Using plugin %s", key);
 
 				// Plugins could use the same class with different
@@ -332,7 +357,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					}
 				}
 			} catch (Throwable e) {
-				error("Problem loading the plugin: " + key + " exception: " + e);
+				error("Problem loading the plugin: %s exception: (%s)", key, e);
 			}
 		}
 	}
