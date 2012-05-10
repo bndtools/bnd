@@ -7,11 +7,48 @@ import java.util.*;
 import java.util.regex.*;
 
 import junit.framework.*;
+import aQute.lib.io.*;
 import aQute.lib.json.*;
 import aQute.libg.map.*;
 
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
+
+	/**
+	 * Test missing field
+	 */
+
+	public static class MissingField {
+
+	}
+
+	public void testMissingField() throws Exception {
+		Decoder dec = codec.dec();
+		dec.from("{\"field\":3}").get(MissingField.class);
+		assertEquals(3, dec.getExtra().get(MissingField.class.getName() + ".field"));
+
+		try {
+			dec = codec.dec();
+			dec.from("{\"field\":3}").strict().get(MissingField.class);
+			fail("Should have thrown an exception due to a missing field");
+		} catch (Exception e) {
+			// ok
+		}
+	}
+
+	/**
+	 * Test escaping
+	 * 
+	 * @throws Exception
+	 */
+
+	public void testEscape() throws Exception {
+
+		assertEquals("{\"message\":\"Hello world\"}",
+				codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"").get(String.class));
+		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"",
+				codec.enc().put("{\"message\":\"Hello world\"}").toString());
+	}
 
 	/**
 	 * Test maps
@@ -23,7 +60,7 @@ public class JSONTest extends TestCase {
 		Encoder enc = codec.enc();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		enc.to(bout).put("Hello").flush();
-		assertEquals("\"Hello\"", new String( bout.toByteArray()));
+		assertEquals("\"Hello\"", new String(bout.toByteArray()));
 	}
 
 	/**
@@ -169,9 +206,14 @@ public class JSONTest extends TestCase {
 		assertTrue(Pattern.class == dec.from("\"abc\"").get(Pattern.class).getClass());
 		assertEquals(Pattern.compile("abc") + "", dec.from("\"abc\"").get(Pattern.class) + "");
 
-		// Constructor string based
-		assertEquals(new File(System.getProperty("user.home")),
-				dec.from("\"" + System.getProperty("user.home") + "\"").get(File.class));
+		// Check the file system
+		File f = File.createTempFile("tmp", ".tmp");
+		IO.store("Hello", f);
+		String encoded = new JSONCodec().enc().put(f).toString();
+		File otherTempFile = dec.from(encoded).get(File.class);
+		String hello = IO.collect(otherTempFile);
+		assertEquals("Hello", hello);
+		assertNotSame(f, otherTempFile);
 
 		// Enums
 		assertEquals(E.A, dec.from("\"A\"").get(E.class));
@@ -486,16 +528,18 @@ public class JSONTest extends TestCase {
 		assertTrue(Arrays.equals(read, read2));
 	}
 
-	
 	/**
 	 * Test for the blog
 	 */
-	public enum Sex { MALE, FEMALE; }
+	public enum Sex {
+		MALE, FEMALE;
+	}
+
 	public static class Person {
-	  public String name;
-	  public Sex    sex;
-	  public Date   birthday;
-	  public List<Person> offspring = new ArrayList<Person>();
+		public String		name;
+		public Sex			sex;
+		public Date			birthday;
+		public List<Person>	offspring	= new ArrayList<Person>();
 	}
 
 	public void testBlog() throws Exception {
@@ -510,10 +554,10 @@ public class JSONTest extends TestCase {
 		u3.name = "Thomas";
 		u3.sex = Sex.MALE;
 		u1.offspring.add(u3);
-		
-		String s = codec.enc().put( u1 ).toString();
+
+		String s = codec.enc().put(u1).toString();
 		System.out.println(s);
-		Person u4 = codec.dec().from(s).get( Person.class );
-		
+		// Person u4 = codec.dec().from(s).get( Person.class );
+
 	}
 }

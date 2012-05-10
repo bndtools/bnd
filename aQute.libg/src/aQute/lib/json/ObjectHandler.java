@@ -55,7 +55,7 @@ public class ObjectHandler extends Handler {
 				if (value != null && value.equals(defaults[i]))
 					continue;
 			}
-			
+
 			app.append(del);
 			StringHandler.string(app, fields[i].getName());
 			app.append(":");
@@ -67,7 +67,7 @@ public class ObjectHandler extends Handler {
 
 	@SuppressWarnings("unchecked") @Override Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
-		Object data = rawClass.newInstance();
+		Object targetObject = rawClass.newInstance();
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
@@ -88,19 +88,24 @@ public class ObjectHandler extends Handler {
 			if (f != null) {
 				// We have a field and thus a type
 				Object value = r.codec.decode(f.getGenericType(), r);
-				f.set(data, value);
+				f.set(targetObject, value);
 			} else {
 				// No field, but may extra is defined
-				if (extra == null)
-					throw new IllegalArgumentException("No such field " + key);
+				if (extra == null) {
+					if (r.strict)
+						throw new IllegalArgumentException("No such field " + key);
+					Object value = r.codec.decode(null, r);
+					r.getExtra().put(rawClass.getName() + "." + key, value);
+				} else {
 
-				Map<String, Object> map = (Map<String, Object>) extra.get(data);
-				if (map == null) {
-					map = new LinkedHashMap<String, Object>();
-					extra.set(data, map);
+					Map<String, Object> map = (Map<String, Object>) extra.get(targetObject);
+					if (map == null) {
+						map = new LinkedHashMap<String, Object>();
+						extra.set(targetObject, map);
+					}
+					Object value = r.codec.decode(null, r);
+					map.put(key, value);
 				}
-				Object value = r.codec.decode(null, r);
-				map.put(key, value);
 			}
 
 			c = r.skipWs();
@@ -118,7 +123,7 @@ public class ObjectHandler extends Handler {
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing
-		return data;
+		return targetObject;
 	}
 
 	private Field getField(String key) {
