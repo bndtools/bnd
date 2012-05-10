@@ -477,6 +477,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			return null;
 
 		resource = versions.get(range.getLow());
+		if (resource == null)
+			return null;
 		
 		return mapResourceToHandle(resource);
 	}
