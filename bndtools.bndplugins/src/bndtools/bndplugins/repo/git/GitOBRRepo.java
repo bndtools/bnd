@@ -52,7 +52,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	public static final String PROP_GIT_URI = "git-uri";
 	public static final String PROP_GIT_PUSH_URI = "git-push-uri";
 	public static final String PROP_GIT_BRANCH = "git-branch";
-	
+
 	private static final String CONFIG_FILE_LIST = "configs";
 	private static final String PREFIX_PATTERN = "pattern.";
 	private static final String PREFIX_USER = "uid.";
@@ -71,14 +71,14 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
 
 	protected Repository repository;
-	
+
 	protected String gitUri;
 	protected String gitPushUri;
 	protected String gitBranch;
 	protected String gitRepoXmlUri;
 
 	protected String configFileList;
-	
+
 	private final AtomicBoolean configFileInited = new AtomicBoolean(false);
 	private final List<Mapping> mappings = Collections.synchronizedList(new LinkedList<Mapping>());
 
@@ -93,27 +93,27 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		super.setProperties(map);
 
 		configFileList = map.get(CONFIG_FILE_LIST);
-		
+
 		gitUri = map.get(PROP_GIT_URI);
 		if (gitUri == null)
 			throw new IllegalArgumentException(String.format(
 					"Attribute '%s' must be set on GitOBRRepo plugin.",
 					PROP_GIT_URI));
-		
+
 		gitRepoXmlUri = map.get(PROP_GIT_REPO_XML_URI);
-		
+
 		gitPushUri = map.get(PROP_GIT_PUSH_URI);
 		if (gitPushUri == null)
 			throw new IllegalArgumentException(String.format(
 					"Attribute '%s' must be set on GitOBRRepo plugin.",
 					PROP_GIT_PUSH_URI));
-		
+
 		gitBranch = map.get(PROP_GIT_BRANCH);
 		if (gitBranch == null)
 			throw new IllegalArgumentException(String.format(
 					"Attribute '%s' must be set on GitOBRRepo plugin.",
 					PROP_GIT_BRANCH));
-		
+
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null) {
@@ -126,13 +126,12 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 				file.mkdirs();
 			}
 		}
-		
+
 		gitRootDir = new File(localDirPath);
 		if (!gitRootDir.isDirectory())
 			throw new IllegalArgumentException(String.format(
 					"Local path '%s' does not exist or is not a directory.",
 					localDirPath));
-
 
 		CredentialsProvider.setDefault(new GitCredentialsProvider(this));
 
@@ -153,27 +152,19 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		} else {
 			storageDir = gitRootDir;
 		}
-		
-		
+
 		// Configure the storage repository
 		Map<String, String> storageRepoConfig = new HashMap<String, String>(2);
 		storageRepoConfig.put(FileRepo.LOCATION, storageDir.toString());
 		storageRepoConfig.put(FileRepo.READONLY, map.get(PROP_READONLY));
 		storageRepo.setProperties(storageRepoConfig);
-		
-		pretty = "true".equalsIgnoreCase(map.get(PROP_PRETTY));
 
-		// Set the local index location
-		String indexFileName = contentProvider.getDefaultIndexName(pretty);
-		localIndex = new File(storageDir, indexFileName);
-		if (localIndex.exists() && !localIndex.isFile())
-			throw new IllegalArgumentException(
-					String.format(
-							"Cannot build local repository index: '%s' already exists but is not a plain file.",
-							localIndex.getAbsolutePath()));
+		pretty = "true".equalsIgnoreCase(map.get(PROP_PRETTY));
 
 	}
 
+	
+	
 	private static String escape(String url) {
 		url = url.replace('/', '-');
 		url = url.replace(':', '-');
@@ -184,28 +175,30 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 
 	@Override
 	public synchronized File put(Jar jar) throws Exception {
+		init();
+
 		File newFile = null;
 
 		try {
 			repository.incrementOpen();
-		
+
 			Git git = Git.wrap(repository);
-			
+
 			// Pull remote repository
 			PullResult pullResult = git.pull().call();
-			
+
 			// Check result
 			if (pullResult.getMergeResult().getMergeStatus() == MergeStatus.CONFLICTING || 
 					pullResult.getMergeResult().getMergeStatus() ==  MergeStatus.FAILED) {
-					
-					//TODO: How to report failure
+
+				//TODO: How to report failure
 					throw new RuntimeException(String.format("Failed to merge changes from %s", gitUri));
 			}
-			
+
 			//TODO: Check if jar already exists, is it ok to overwrite in all repositories?
-			
+
 			newFile = storageRepo.put(jar);
-			
+
 			// Index the new file
 			BundleIndexer indexer = registry.getPlugin(BundleIndexer.class);
 			if (indexer == null)
@@ -215,19 +208,19 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 			Map<String,String> config = new HashMap<String, String>();
 			config.put(BundleIndexer.ROOT_URL, gitRootDir.getCanonicalFile().toURI().toURL().toString());
 			indexer.index(Collections.singleton(newFile), newIndexBuffer, config);
-	
+
 			// Merge into main index
 			File tempIndex = File.createTempFile("repository", ".xml");
 			FileOutputStream tempIndexOutput = new FileOutputStream(tempIndex);
 			MergeContentFilter merger = new MergeContentFilter();
 			XMLReader reader = SAXUtil.buildPipeline(new StreamResult(
 					tempIndexOutput), new UniqueResourceFilter(), merger);
-	
+
 			try {
 				// Parse the newly generated index
 				reader.parse(new InputSource(new ByteArrayInputStream(
 						newIndexBuffer.toByteArray())));
-	
+
 				// Parse the existing index (which may be empty/missing)
 				try {
 					reader.parse(new InputSource(new FileInputStream(localIndex)));
@@ -236,19 +229,19 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 							"Existing local index is invalid or missing, overwriting (%s).",
 							localIndex.getAbsolutePath());
 				}
-	
+
 				merger.closeRootAndDocument();
 			} finally {
 				tempIndexOutput.flush();
 				tempIndexOutput.close();
 			}
 			IO.copy(tempIndex, localIndex);
-	
+
 			// Add, Commit and Push
 			git.add().addFilepattern(getRelativePath(gitRootDir, newFile)).addFilepattern(getRelativePath(gitRootDir, localIndex)).call();
 			git.commit().setMessage("bndtools added bundle : " + getRelativePath(gitRootDir, newFile)).call();
 			git.push().setCredentialsProvider(CredentialsProvider.getDefault()).call();
-			
+
 			// Re-read the index
 			reset();
 			init();
@@ -268,7 +261,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	public boolean canWrite() {
 		return storageRepo.canWrite();
 	}
-	
+
 	public String getLocation() {
 		return gitUri;
 	}
@@ -276,7 +269,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	private static String getRelativePath(File base, File file) throws IOException {
 		return base.toURI().relativize(file.toURI()).getPath();
 	}
-	
+
 	public List<URL> getIndexLocations() throws IOException {
 		try {
 			indexUrls = new ArrayList<URL>();
@@ -296,18 +289,18 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	public Collection<URL> getOBRIndexes() throws IOException {
 		return getIndexLocations();
 	}
-	
+
 	protected void configFileInit() {
 		if (configFileList == null) {
 			return;
 		}
 		if (configFileInited.compareAndSet(false, true)) {
 			mappings.clear();
-			
+
 			StringTokenizer tokenizer = new StringTokenizer(configFileList, ",");
 			while (tokenizer.hasMoreTokens()) {
 				String configFileName = tokenizer.nextToken().trim();
-				
+
 				File file = new File(configFileName);
 				if (file.exists()) {
 					Properties props = new Properties();
@@ -315,17 +308,17 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 					try {
 						stream = new FileInputStream(file);
 						props.load(stream);
-						
+
 						for (Object key : props.keySet()) {
 							String name = (String) key;
-							
+
 							if (name.startsWith(PREFIX_PATTERN)) {
 								String id = name.substring(PREFIX_PATTERN.length());
-								
+
 								Glob glob = new Glob(props.getProperty(name));
 								String uid = props.getProperty(PREFIX_USER + id);
 								String pwd = props.getProperty(PREFIX_PASSWORD + id);
-								
+
 								mappings.add(new Mapping(glob, uid, pwd));
 							}
 						}
@@ -343,7 +336,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		configFileInit();
 		return mappings.size() > 0;
 	}
-	
+
 	public Mapping findMapping(String url) {
 		configFileInit();
 		for (Mapping mapping : mappings) {
@@ -353,11 +346,11 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		}
 		return null;
 	}
-	
+
 	void addMapping(Mapping mapping) {
 		mappings.add(mapping);
 	}
-	
+
 	static class Mapping {
 		Glob urlPattern;
 		String user;
@@ -365,7 +358,19 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		Mapping(Glob urlPattern, String user, String pass) {
 			this.urlPattern = urlPattern; this.user = user; this.pass = pass;
 		}
-
 	}
 
+	@Override
+	protected void initialiseIndexes() throws Exception {
+		super.initialiseIndexes();
+
+		// Set the local index location
+		String indexFileName = contentProvider.getDefaultIndexName(pretty);
+		localIndex = new File(storageDir, indexFileName);
+		if (localIndex.exists() && !localIndex.isFile())
+			throw new IllegalArgumentException(
+					String.format(
+							"Cannot build local repository index: '%s' already exists but is not a plain file.",
+							localIndex.getAbsolutePath()));
+	}
 }
