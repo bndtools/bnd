@@ -21,10 +21,12 @@ public class PrepareTask extends BaseTask {
     public void execute() throws BuildException {
         try {
             if (basedir == null || !basedir.isDirectory())
-                throw new BuildException("The given base dir does not exist "
-                        + basedir);
+                throw new BuildException("The given base dir does not exist " + basedir);
 
             Project project = Workspace.getProject(basedir);
+            if (project == null)
+                throw new BuildException("Unable to find bnd project in directory: " + basedir);
+            
             project.setProperty("in.ant", "true");
             project.setProperty("environment", "ant");
             
@@ -37,8 +39,7 @@ public class PrepareTask extends BaseTask {
             project.setExceptions(true);
             Properties properties = project.getFlattenedProperties();
             if (report() || report(project))
-                throw new BuildException(
-                        "Errors during Eclipse Path inspection");
+                throw new BuildException("Errors during Eclipse Path inspection");
 
             copyProperties(properties);
         } catch (Exception e) {
