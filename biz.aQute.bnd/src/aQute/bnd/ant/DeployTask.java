@@ -10,6 +10,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
 
 public class DeployTask extends BaseTask {
+	private String deployRepo = null;
     List<FileSet> filesets = new ArrayList<FileSet>();
 
     public void execute() throws BuildException {
@@ -27,7 +28,8 @@ public class DeployTask extends BaseTask {
                     File file = new File(ds.getBasedir(), files[i]);
                     try {
                         if (file.isFile() && file.getName().endsWith(".jar")) {
-                            project.deploy(file);
+                            if (deployRepo != null) project.deploy(deployRepo, file);
+                            else project.deploy(file);
                         } else
                             error("Not a jar file: " + file);
                     } catch (Exception e) {
@@ -42,6 +44,10 @@ public class DeployTask extends BaseTask {
             t.printStackTrace();
             throw new BuildException(t);
         }
+    }
+    
+    public void setDeployrepo(String name) {
+    	this.deployRepo = name;
     }
 
     public void addFileset(FileSet files) {
