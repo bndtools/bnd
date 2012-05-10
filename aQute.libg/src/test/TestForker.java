@@ -44,7 +44,10 @@ public class TestForker extends TestCase {
 		forker.doWhen(EMPTY, 2, new R(result, 2));
 		forker.doWhen(EMPTY, 3, new R(result, 3));
 		forker.start(1000);
-		assertEquals(Arrays.asList(1, 2, 3, 4), result);
+
+		assertTrue(result.containsAll(Arrays.asList(1, 2, 3, 4)));
+		Object[] q = result.toArray();
+		assertEquals(new Integer(4), q[q.length-1]);
 	}
 
 	public void testInvalid() {
