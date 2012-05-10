@@ -50,6 +50,7 @@ public class JSONCodec {
 																				Pattern.class,
 																				null, null);
 	private static DateHandler						sdh					= new DateHandler();
+	private static FileHandler						fh					= new FileHandler();
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
 	/**
@@ -128,6 +129,9 @@ public class JSONCodec {
 
 		if (Date.class == type)
 			return sdh;
+
+		if (File.class == type)
+			return fh;
 
 		Handler h;
 		synchronized (handlers) {
@@ -319,7 +323,7 @@ public class JSONCodec {
 				case '"':
 				case '\\':
 				case '/':
-					sb.append(c);
+					sb.append((char)c);
 					break;
 
 				case 'b':
