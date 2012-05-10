@@ -28,21 +28,31 @@ public class Base64 {
 		this.data = data;
 	}
 
+	
+	
 	public final static byte[] decodeBase64(String string) {
-		string = string.trim();
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
+		ByteArrayOutputStream bout= new ByteArrayOutputStream(string.length()*2/3);
+		StringReader rdr = new StringReader(string.trim());
+		try {
+			decode(rdr,bout);
+		} catch (Exception e) {
+			// cannot happen
+		}
+		return bout.toByteArray();
+	}
+	
+	public final static void decode(Reader rdr, OutputStream out) throws Exception {
 		int register = 0;
 		int i = 0;
 		int pads = 0;
 
 		byte test[] = new byte[3];
+		int c;
+		while ((c=rdr.read()) >= 0) {
 
-		while (i < string.length()) {
-			char c = string.charAt(i);
 			if (c > 0x7F)
 				throw new IllegalArgumentException(
-						"Invalid base64 character in " + string
+						"Invalid base64 character in " + rdr
 								+ ", character value > 128 ");
 			
 			int v = 0;
@@ -52,7 +62,7 @@ public class Base64 {
 				v = values[c];
 				if ( v < 0 )
 					throw new IllegalArgumentException(
-							"Invalid base64 character in " + string + ", " + c );
+							"Invalid base64 character in " + rdr + ", " + c );
 			}					
 			register <<= 6;
 			register |= v;
@@ -68,10 +78,9 @@ public class Base64 {
 				pads = 0;
 			}
 		}
-		return out.toByteArray();
 	}
 
-	static private void flush(ByteArrayOutputStream out, int register, int pads) {
+	static private void flush(OutputStream out, int register, int pads) throws IOException {
 		switch (pads) {
 		case 0:
 			out.write(0xFF & (register >> 16));
@@ -98,38 +107,52 @@ public class Base64 {
 	}
 
 	public static String encodeBase64(byte data[]) {
-		StringBuilder sb = new StringBuilder();
+		StringWriter sw = new StringWriter();
+		ByteArrayInputStream bin = new ByteArrayInputStream(data);
+		try {
+			encode(bin,sw);
+		} catch (IOException e) {
+			// can't happen
+		}
+		return sw.toString();
+	}
+	
+
+	public Object toData() {
+		return data;
+	}
+
+	public static void encode(InputStream in, Appendable sb) throws IOException {
+		//StringBuilder sb = new StringBuilder();
 		int buf = 0;
 		int bits = 0;
-		int n = 0;
-
+		int out = 0;
+		
 		while (true) {
 			if (bits >= 6) {
 				bits -= 6;
 				int v = 0x3F & (buf >> bits);
 				sb.append(alphabet.charAt(v));
+				out++;
 			} else {
-				if (n >= data.length)
+				int c = in.read();
+				if (c < 0)
 					break;
 
 				buf <<= 8;
-				buf |= 0xFF & data[n++];
+				buf |= 0xFF & c;
 				bits += 8;
 			}
 		}
-		if (bits != 0) // must be less than 7
+		if (bits != 0) {// must be less than 7
 			sb.append(alphabet.charAt(0x3F & (buf << (6 - bits))));
-
-		int mod = 4 - (sb.length() % 4);
+			out++;
+		}
+		int mod = 4 - (out % 4);
 		if (mod != 4) {
 			for (int i = 0; i < mod; i++)
 				sb.append('=');
 		}
-		return sb.toString();
-	}
-
-	public Object toData() {
-		return data;
 	}
 
 }
