@@ -1,6 +1,7 @@
 package test;
 
 import java.applet.*;
+import java.awt.MenuContainer;
 import java.util.*;
 
 import junit.framework.*;
@@ -52,4 +53,22 @@ public class PluginTest extends TestCase {
             assertEquals( "thinlet.Thinlet", applet.getClass().getName());
         }        
     }
+    
+	public void testLoadPluginFailsWithMissingPath() throws Exception {
+		Builder p = new Builder();
+		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
+
+		p.getPlugins(Object.class);
+		assertEquals(1, p.getErrors().size());
+	}
+	
+	public void testLoadPluginWithPath() {
+		Builder p = new Builder();
+		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
+
+		List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
+		assertEquals(0, p.getErrors().size());
+		assertEquals(1, plugins.size());
+		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
+	}
 }
