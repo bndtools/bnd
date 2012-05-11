@@ -39,7 +39,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private boolean pretty = false;
 	private File storageDir;
 	private File localIndex;
-	private List<URL> indexUrls;
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
@@ -68,7 +67,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 	
 	@Override
-	protected void initialiseIndexes() throws Exception {
+	protected List<URL> loadIndexes() throws Exception {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
 		localIndex = new File(storageDir, indexFileName);
 		if (localIndex.exists() && !localIndex.isFile())
@@ -77,14 +76,17 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		if (!localIndex.exists()) {
 			regenerateIndex();
 		}
+		
+		List<URL> result;
 		try {
-			Collection<URL> remotes = super.getIndexLocations();
-			indexUrls = new ArrayList<URL>(remotes.size() + 1);
-			indexUrls.add(localIndex.toURI().toURL());
-			indexUrls.addAll(remotes);
+			Collection<URL> remotes = super.loadIndexes();
+			result = new ArrayList<URL>(remotes.size() + 1);
+			result.add(localIndex.toURI().toURL());
+			result.addAll(remotes);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Error initialising local index URL", e);
 		}
+		return result;
 	}
 	
 	private synchronized void regenerateIndex() throws Exception {
@@ -113,11 +115,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				allFiles.add(file.getCanonicalFile());
 			}
 		}
-	}
-	
-	@Override
-	public List<URL> getIndexLocations() throws IOException {
-		return indexUrls;
 	}
 
 	@Override

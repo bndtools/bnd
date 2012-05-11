@@ -83,6 +83,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	protected Reporter reporter;
 	protected String name = this.getClass().getName();
 	protected Set<ResolutionPhase> supportedPhases = EnumSet.allOf(ResolutionPhase.class);
+	
+	private List<URL> indexLocations;
 
 	private String requestedContentProvider = null;
 	protected IRepositoryContentProvider contentProvider;
@@ -111,15 +113,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 	
 
-	/**
-	 * Initialize the indexes prior to main initialisation of internal
-	 * data structures. This implementation does nothing, but subclasses
-	 * may override if they need to perform such initialisation.
-	 * @throws Exception 
-	 */
-	protected void initialiseIndexes() throws Exception {
-	}
-	
+	protected abstract List<URL> loadIndexes() throws Exception;
+
 	protected final synchronized void init() throws Exception {
 		if (!initialised) {
 			clear();
@@ -147,7 +142,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			}
 
 			// Initialise index locations
-			initialiseIndexes();
+			indexLocations = loadIndexes();
 
 			// Create the callback for new referral and resource objects
 			final URLConnector connector = getConnector();
@@ -178,8 +173,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			};
 
 			// Parse the indexes
-			Collection<URL> indexes = getIndexLocations();
-			for (URL indexLocation : indexes) {
+			for (URL indexLocation : indexLocations) {
 				try {
 					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
@@ -195,6 +189,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			
 			initialised = true;
 		}
+	}
+	
+	public final List<URL> getIndexLocations() throws Exception {
+		init();
+		return Collections.unmodifiableList(indexLocations);
 	}
 	
 	private URLConnector getConnector() {

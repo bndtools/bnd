@@ -1,10 +1,8 @@
 package aQute.lib.deployer.repository;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,25 +39,31 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	@Deprecated
 	public static final String PROP_CACHE = "cache";
 
-	protected List<URL> locations;
+	private String locations;
 	protected File cacheDir;
 
 	public void setProperties(Map<String, String> map) {
 		super.setProperties(map);
 		
-		String locationsStr = map.get(PROP_LOCATIONS);
-		try {
-			if (locationsStr != null)
-				locations = parseLocations(locationsStr);
-			else
-				locations = Collections.emptyList();
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException(String.format("Invalid location, unable to parse as URL list: %s", locationsStr), e);
-		}
+		locations = map.get(PROP_LOCATIONS);
 		
 		String cacheDirStr = map.get(PROP_CACHE);
 		if (cacheDirStr != null)
 			cacheDir = new File(cacheDirStr);
+	}
+	
+	@Override
+	protected List<URL> loadIndexes() throws Exception {
+		List<URL> result;
+		try {
+			if (locations != null)
+				result = parseLocations(locations);
+			else
+				result = Collections.emptyList();
+		} catch (MalformedURLException e) {
+			throw new IllegalArgumentException(String.format("Invalid location, unable to parse as URL list: %s", locations), e);
+		}
+		return result;
 	}
 	
 	// This is still an ugly hack...
@@ -72,10 +76,6 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 			}
 		}
 		return null;
-	}
-
-	public List<URL> getIndexLocations() throws IOException {
-		return locations;
 	}
 
 	public synchronized File getCacheDirectory() {
@@ -100,18 +100,7 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 		if (name != null && name != this.getClass().getName())
 			return name;
 		
-		StringBuilder builder = new StringBuilder();
-		
-		int count = 0;
-		for (URL location : locations) {
-			if (count++ > 0 ) builder.append(',');
-			builder.append(location);
-		}
-		return builder.toString();
-	}
-
-	public void setLocations(URL[] urls) {
-		this.locations = Arrays.asList(urls);
+		return locations;
 	}
 
 	public String getLocation() {

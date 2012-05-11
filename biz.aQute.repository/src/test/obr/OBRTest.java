@@ -177,7 +177,9 @@ public class OBRTest extends TestCase {
 		assertEquals(new File("testdata/fullobr.xml").getAbsoluteFile().toURI().toString(), obr.getName());
 		
 		OBR obr2 = new OBR();
-		obr2.setLocations(new URL[] { new URL("http://www.example.com/bundles/dummybundle.jar"), new URL("file:/Users/neil/bundles/dummy.jar") });
+		Map<String, String> config = new HashMap<String, String>();
+		config.put("location", "http://www.example.com/bundles/dummybundle.jar,file:/Users/neil/bundles/dummy.jar");
+		obr2.setProperties(config);
 		
 		assertEquals("http://www.example.com/bundles/dummybundle.jar,file:/Users/neil/bundles/dummy.jar", obr2.getName());
 	}
