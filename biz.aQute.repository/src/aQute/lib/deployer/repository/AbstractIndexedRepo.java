@@ -74,8 +74,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String PROP_RESOLUTION_PHASE = "phase";
 	public static final String PROP_RESOLUTION_PHASE_ANY = "any";
 	
-	public static final String REPO_TYPE_R5  = "R5";
-	public static final String REPO_TYPE_OBR = "OBR";
+	public static final String REPO_TYPE_R5  = R5RepoContentProvider.NAME;
+	public static final String REPO_TYPE_OBR = ObrContentProvider.NAME;
 	
 	private final Map<String, IRepositoryContentProvider> contentHandlerProviders = new HashMap<String, IRepositoryContentProvider>(5);
 	

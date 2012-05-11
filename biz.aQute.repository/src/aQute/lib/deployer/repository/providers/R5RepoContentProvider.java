@@ -33,11 +33,13 @@ import aQute.lib.deployer.repository.api.StopParseException;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 	
+	public static final String NAME = "R5";
+	
 	private static final String INDEX_NAME_COMPRESSED = "index.xml.gz";
 	private static final String INDEX_NAME_PRETTY = "index.xml";
 
 	public String getName() {
-		return "R5";
+		return NAME;
 	}
 	
 	public String getDefaultIndexName(boolean pretty) {
