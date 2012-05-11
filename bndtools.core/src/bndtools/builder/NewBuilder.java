@@ -166,7 +166,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         } finally {
             if (!builtAny) {
                 try {
-                    Central.getWorkspaceObrProvider().initialise();
+                    Central.getWorkspaceObrProvider().reset();
                 } catch (Exception e) {
                     Plugin.logError("Error initialising workspace OBR provider", e);
                 }

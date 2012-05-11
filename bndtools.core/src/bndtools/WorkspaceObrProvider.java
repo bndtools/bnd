@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,50 +30,58 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.deployer.repository.FixedIndexedRepo;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Jar;
 import aQute.libg.sax.SAXUtil;
+import aQute.libg.version.Version;
 import bndtools.bindex.AbsoluteizeContentFilter;
 import bndtools.bindex.CategoryInsertionContentFilter;
 
 @ThreadSafe
-public class WorkspaceObrProvider implements OBRIndexProvider {
+public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider {
+
+    private static final String NAME = "Workspace";
 
     public static final String CATEGORY_WORKSPACE = "__WORKSPACE";
 
     // Generate warnings if the index generation takes longer than this (millisecs)
     private static final long WARNING_THRESHOLD_TIME = 1000;
 
+    private final FixedIndexedRepo repository = new FixedIndexedRepo();
     private final File indexFile;
+    
     private Workspace workspace;
 
     @GuardedBy("this")
     private final Map<Project, File[]> projectFileMap = new HashMap<Project, File[]>();
-    @GuardedBy("this")
-    private boolean initialised = false;
 
     WorkspaceObrProvider() {
         IPath stateLocation = Plugin.getDefault().getStateLocation();
         indexFile = new File(stateLocation.toFile(), "workspace-index.xml");
+        
+        Map<String, String> config = new HashMap<String, String>();
+        config.put(FixedIndexedRepo.PROP_REPO_TYPE, FixedIndexedRepo.REPO_TYPE_OBR);
+        config.put(FixedIndexedRepo.PROP_LOCATIONS, indexFile.getAbsoluteFile().toURI().toString());
+        repository.setProperties(config);
     }
 
     void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
     }
 
-    public synchronized void initialise() {
-        if (initialised)
-            return;
-
-        try {
-            rebuildAll();
-        } catch (Exception e) {
-            Plugin.logError("Error initialising workspace OBR index.", e);
-        } finally {
-            initialised = true;
-        }
+    public synchronized void reset() throws Exception {
+        refreshProjects();
+        rebuildIndex();
+        repository.reset();
     }
-
-    public synchronized void rebuildAll() throws Exception {
+    
+    /**
+     * Refresh the project->file map from the actual projects
+     * @throws Exception
+     */
+    protected synchronized void refreshProjects() throws Exception {
         Collection<Project> projects = workspace.getAllProjects();
         for (Project project : projects) {
             File targetDir = project.getTarget();
@@ -89,17 +96,15 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
 
             projectFileMap.put(project, targetFileList.toArray(new File[targetFileList.size()]));
         }
-        rebuildIndex();
     }
 
     public synchronized void replaceProjectFiles(Project project, File[] files) throws Exception {
         projectFileMap.put(project, files);
-
         // TODO: can we be more efficient than rebuilding the whole workspace index each time one project changes??
         rebuildIndex();
     }
 
-    public synchronized void rebuildIndex() throws Exception {
+    private synchronized void rebuildIndex() throws Exception {
         long startingTime = System.currentTimeMillis();
 
         BundleIndexer indexer = workspace.getPlugin(BundleIndexer.class);
@@ -135,18 +140,53 @@ public class WorkspaceObrProvider implements OBRIndexProvider {
                 Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Workspace OBR index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null));
         }
     }
-
+    
     public Collection<URL> getOBRIndexes() throws IOException {
-        initialise();
-        return Collections.singletonList(indexFile.toURI().toURL());
+        try {
+            return repository.getIndexLocations();
+        } catch (Exception e) {
+            throw new IOException(e.toString());
+        }
     }
-
+    
     public Set<OBRResolutionMode> getSupportedModes() {
         return EnumSet.allOf(OBRResolutionMode.class);
+    }
+    
+    public String getName() {
+        return NAME;
     }
 
     @Override
     public String toString() {
-        return "Workspace";
+        return NAME;
+    }
+
+    public File[] get(String bsn, String range) throws Exception {
+        return repository.get(bsn, range);
+    }
+
+    public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
+        return repository.get(bsn, range, strategy, properties);
+    }
+
+    public boolean canWrite() {
+        return false;
+    }
+
+    public File put(Jar jar) throws Exception {
+        throw new UnsupportedOperationException("Cannot write directly to the Workspace repository");
+    }
+
+    public List<String> list(String regex) throws Exception {
+        return repository.list(regex);
+    }
+
+    public List<Version> versions(String bsn) throws Exception {
+        return repository.versions(bsn);
+    }
+
+    public String getLocation() {
+        return repository.getLocation();
     }
 }

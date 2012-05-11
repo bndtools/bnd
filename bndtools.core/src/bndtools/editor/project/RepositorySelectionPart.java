@@ -52,7 +52,6 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryUtils;
-import bndtools.model.repo.WrappingObrRepository;
 
 public class RepositorySelectionPart extends BndEditorPart {
 
@@ -153,9 +152,8 @@ public class RepositorySelectionPart extends BndEditorPart {
                 label = repo.getName();
                 image = repoImg;
 
-                if (repo instanceof WrappingObrRepository) {
-                    if (((WrappingObrRepository) repo).getDelegate() instanceof WorkspaceObrProvider)
-                        image = projectImg;
+                if (repo instanceof WorkspaceObrProvider) {
+                    image = projectImg;
                 }
                 
                 boolean available = isAvailableRepo(repo);

@@ -39,9 +39,8 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(name);
 
                 Image image = repoImg;
-                if (element instanceof WrappingObrRepository) {
-                    if (((WrappingObrRepository) element).getDelegate() == workspaceObr)
-                        image = projectImg;
+                if (element instanceof WorkspaceObrProvider) {
+                    image = projectImg;
                 }
                 cell.setImage(image);
             }

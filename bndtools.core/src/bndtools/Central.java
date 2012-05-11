@@ -1,6 +1,9 @@
 package bndtools;
 
 import java.io.File;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +29,7 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.Refreshable;
 
 public class Central {
@@ -206,8 +210,8 @@ public class Central {
         workspace.addBasicPlugin(new WorkspaceListener(workspace));
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
-        workspace.addBasicPlugin(getWorkspaceObrProvider());
-        workspace.addBasicPlugin(getWorkspaceRepoProvider());
+        workspace.addBasicPlugin(new WrappingOBRIndexProvder(getWorkspaceObrProvider()));
+//        workspace.addBasicPlugin(getWorkspaceRepoProvider());
 
         return workspace;
     }

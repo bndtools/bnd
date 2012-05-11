@@ -65,8 +65,6 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	protected File storageDir;
 	protected File localIndex;
 
-	protected List<URL> indexUrls;
-
 	// @GuardedBy("newFilesInCoordination")
 	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
 
@@ -269,10 +267,19 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	private static String getRelativePath(File base, File file) throws IOException {
 		return base.toURI().relativize(file.toURI()).getPath();
 	}
-
-	public List<URL> getIndexLocations() throws IOException {
+	
+	@Override
+	protected List<URL> loadIndexes() throws Exception {
+		// Set the local index location
+		String indexFileName = contentProvider.getDefaultIndexName(pretty);
+		localIndex = new File(storageDir, indexFileName);
+		if (localIndex.exists() && !localIndex.isFile())
+			throw new IllegalArgumentException(
+					String.format(
+							"Cannot build local repository index: '%s' already exists but is not a plain file.",
+							localIndex.getAbsolutePath()));
 		try {
-			indexUrls = new ArrayList<URL>();
+			List<URL> indexUrls = new ArrayList<URL>();
 			if (localIndex.exists()) {
 				indexUrls.add(localIndex.toURI().toURL());
 			}
@@ -287,7 +294,11 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	}
 
 	public Collection<URL> getOBRIndexes() throws IOException {
-		return getIndexLocations();
+		try {
+			return getIndexLocations();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	protected void configFileInit() {
@@ -360,17 +371,4 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		}
 	}
 
-	@Override
-	protected void initialiseIndexes() throws Exception {
-		super.initialiseIndexes();
-
-		// Set the local index location
-		String indexFileName = contentProvider.getDefaultIndexName(pretty);
-		localIndex = new File(storageDir, indexFileName);
-		if (localIndex.exists() && !localIndex.isFile())
-			throw new IllegalArgumentException(
-					String.format(
-							"Cannot build local repository index: '%s' already exists but is not a plain file.",
-							localIndex.getAbsolutePath()));
-	}
 }

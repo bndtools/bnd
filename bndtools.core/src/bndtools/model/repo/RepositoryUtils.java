@@ -31,7 +31,7 @@ public class RepositoryUtils {
             List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
             List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
-            repos.add(new WrappingObrRepository("Workspace", Central.getWorkspaceObrProvider(), null, workspace));
+            repos.add(Central.getWorkspaceObrProvider());
 
             for (RepositoryPlugin plugin : plugins) {
                 if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
@@ -62,9 +62,8 @@ public class RepositoryUtils {
     }
 
     public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
-        if (repo instanceof WrappingObrRepository) {
-            OBRIndexProvider indexProvider = ((WrappingObrRepository) repo).getDelegate();
-            return indexProvider instanceof WorkspaceObrProvider;
+        if (repo instanceof WorkspaceObrProvider) {
+            return true;
         }
         return false;
     }
