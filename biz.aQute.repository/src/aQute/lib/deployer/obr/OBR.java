@@ -45,7 +45,6 @@ public class OBR extends FixedIndexedRepo implements OBRIndexProvider{
 
 	public Collection<URL> getOBRIndexes() throws IOException {
 		try {
-			init();
 			return getIndexLocations();
 		} catch (Exception e) {
 			throw new IOException(e.toString());
