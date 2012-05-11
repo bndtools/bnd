@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +21,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import org.apache.felix.bundlerepository.Capability;
-import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
@@ -188,8 +186,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         boolean resolved = resolver.resolve();
 
-        result = new ObrResolutionResult(resolver, resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()),
-                Arrays.asList(resolver.getUnsatisfiedRequirements()));
+        result = new ObrResolutionResult(resolver, resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()));
     }
 
     private void addRepository(URL index, List<? super Repository> repos, File cacheDir) throws Exception {
@@ -230,7 +227,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private ObrResolutionResult createErrorResult(MultiStatus status) {
-        return new ObrResolutionResult(null, false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList(), Collections.<Reason>emptyList());
+        return new ObrResolutionResult(null, false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList());
     }
 
     private void addJREPackageCapabilities(Resolver resolver, EE ee) throws IOException {

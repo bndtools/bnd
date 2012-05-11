@@ -5,7 +5,6 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.felix.bundlerepository.Reason;
@@ -36,13 +35,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -55,13 +52,15 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Tree;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.Requirement;
-import bndtools.model.obr.UnresolvedReasonLabelProvider;
+import bndtools.model.obr.ResolutionFailureTreeContentProvider;
+import bndtools.model.obr.ResolutionFailureTreeLabelProvider;
 import bndtools.wizards.workspace.ReasonLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
@@ -74,7 +73,7 @@ public class ObrResultsWizardPage extends WizardPage {
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
-    private final UnresolvedReasonLabelProvider unresolvedLabelProvider = new UnresolvedReasonLabelProvider();
+//    private final UnresolvedReasonLabelProvider unresolvedLabelProvider = new UnresolvedReasonLabelProvider();
 
     private TabFolder tabFolder;
 
@@ -89,8 +88,8 @@ public class ObrResultsWizardPage extends WizardPage {
 
     private TabItem tbtmErrors;
     private TableViewer processingErrorsViewer;
-    private Table tblUnresolved;
-    private TableViewer unresolvedViewer;
+    private Tree treeUnresolved;
+    private TreeViewer unresolvedViewer;
 
     private ObrResolutionResult result;
 
@@ -301,14 +300,14 @@ public class ObrResultsWizardPage extends WizardPage {
         lblUnresolvedResources.setBounds(0, 0, 59, 14);
         lblUnresolvedResources.setText("Unresolved Requirements:");
 
-        tblUnresolved = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        treeUnresolved = new Tree(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblUnresolved.heightHint = 80;
-        tblUnresolved.setLayoutData(gd_tblUnresolved);
+        treeUnresolved.setLayoutData(gd_tblUnresolved);
 
-        unresolvedViewer = new TableViewer(tblUnresolved);
-        unresolvedViewer.setContentProvider(ArrayContentProvider.getInstance());
-        unresolvedViewer.setLabelProvider(unresolvedLabelProvider);
+        unresolvedViewer = new TreeViewer(treeUnresolved);
+        unresolvedViewer.setContentProvider(new ResolutionFailureTreeContentProvider());
+        unresolvedViewer.setLabelProvider(new ResolutionFailureTreeLabelProvider());
 
         Button btnErrorsToClipboard = new Button(composite, SWT.NONE);
         btnErrorsToClipboard.setText("Copy to Clipboard");
@@ -386,7 +385,7 @@ public class ObrResultsWizardPage extends WizardPage {
     private void updateUi() {
         requiredViewer.setInput(result != null ? result.getRequired() : null);
         optionalViewer.setInput(result != null ? result.getOptional() : null);
-        unresolvedViewer.setInput(result != null ? result.getUnresolved() : null);
+        unresolvedViewer.setInput(result != null ? result.getResolver() : null);
         processingErrorsViewer.setInput(result != null ? result.getStatus() : null);
 
         boolean resolved = result != null && result.isResolved() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
@@ -415,6 +414,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
 
     private void copyUnresolvedToClipboard() {
+        /* TODO
         if (result != null) {
             StringBuilder buffer = new StringBuilder();
             List<Reason> unresolved = result.getUnresolved();
@@ -434,6 +434,7 @@ public class ObrResultsWizardPage extends WizardPage {
             clipboard.setContents(new Object[] { buffer.toString() }, new Transfer[] { transfer });
             clipboard.dispose();
         }
+        */
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

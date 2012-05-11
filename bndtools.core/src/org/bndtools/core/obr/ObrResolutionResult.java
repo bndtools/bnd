@@ -14,16 +14,18 @@ public class ObrResolutionResult {
     private final IStatus status;
     private final List<Resource> required;
     private final List<Resource> optional;
-    private final List<Reason> unresolved;
     private final Resolver resolver;
 
-    public ObrResolutionResult(Resolver resolver, boolean resolved, IStatus status, List<Resource> required, List<Resource> optional, List<Reason> unresolved) {
+    public ObrResolutionResult(Resolver resolver, boolean resolved, IStatus status, List<Resource> required, List<Resource> optional) {
         this.resolver = resolver;
         this.resolved = resolved;
         this.status = status;
         this.required = required;
         this.optional = optional;
-        this.unresolved = unresolved;
+    }
+    
+    public Resolver getResolver() {
+        return resolver;
     }
 
     public boolean isResolved() {
@@ -40,10 +42,6 @@ public class ObrResolutionResult {
 
     public List<Resource> getOptional() {
         return optional;
-    }
-
-    public List<Reason> getUnresolved() {
-        return unresolved;
     }
 
     public Reason[] getReason(Resource resource) {
