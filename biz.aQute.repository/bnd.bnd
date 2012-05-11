@@ -1,11 +1,11 @@
--buildpath:\
-	osgi.core;version=4.2,\
+-buildpath: osgi.core;version=4.2,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex2.lib,\
 	org.osgi.impl.bundle.bindex,\
 	junit.osgi,\
-	osgi.cmpn;version=4.3.0
+	osgi.cmpn;version=4.3.0,\
+	ee.j2se;version=1.5.0
 
 Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.repository.LocalIndexedRepo,\

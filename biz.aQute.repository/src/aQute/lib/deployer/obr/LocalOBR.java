@@ -23,7 +23,7 @@ public class LocalOBR extends LocalIndexedRepo implements OBRIndexProvider {
 			init();
 			return getIndexLocations();
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(e.toString());
 		}
 	}
 
