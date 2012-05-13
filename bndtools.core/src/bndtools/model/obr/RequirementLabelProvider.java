@@ -20,6 +20,7 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
     private Image bundleImg;
     private Image errorImg;
     private Image serviceImg;
+    private Image javaImg;
 
     private Matcher findValueRegion(String name, String filter) throws IllegalArgumentException {
         String pattern = "\\(" + name + "=([^\\)]*)\\)";
@@ -39,6 +40,8 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
             propertyName = ObrConstants.FILTER_PACKAGE;
         else if (ObrConstants.REQUIREMENT_SERVICE.equals(requirement.getName()))
             propertyName = ObrConstants.FILTER_SERVICE;
+        else if (ObrConstants.REQUIREMENT_EE.equals(requirement.getName()))
+            propertyName = ObrConstants.FILTER_EE;
         else
             propertyName = null;
 
@@ -55,17 +58,39 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
 
     public Image getIcon(Requirement requirement) {
         String requireType = requirement.getName();
-        if ("package".equals(requireType)) {
-            if (pkgImg == null) pkgImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
-            return pkgImg;
-        } else if ("bundle".equals(requireType)) {
-            if (bundleImg == null) bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
-            return bundleImg;
-        } else if ("service".equals(requireType)) {
-            if (serviceImg == null) serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/service-tiny.png").createImage();
-            return serviceImg;
+        if (ObrConstants.REQUIREMENT_PACKAGE.equals(requireType)) {
+            return getPackageImage();
+        } else if (ObrConstants.REQUIREMENT_BUNDLE.equals(requireType)) {
+            return getBundleImage();
+        } else if (ObrConstants.REQUIREMENT_SERVICE.equals(requireType)) {
+            return getServiceImage();
+        } else if (ObrConstants.REQUIREMENT_EE.equals(requireType)) {
+            return getJavaImage();
         }
         return null;
+    }
+
+
+    protected Image getServiceImage() {
+        if (serviceImg == null) serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/service-tiny.png").createImage();
+        return serviceImg;
+    }
+
+
+    protected Image getBundleImage() {
+        if (bundleImg == null) bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+        return bundleImg;
+    }
+
+
+    protected Image getPackageImage() {
+        if (pkgImg == null) pkgImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_obj.gif").createImage();
+        return pkgImg;
+    }
+    
+    protected Image getJavaImage() {
+        if (javaImg == null) javaImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/java.png").createImage();
+        return javaImg;
     }
 
     @Override

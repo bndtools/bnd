@@ -1,11 +1,15 @@
 package bndtools.model.obr;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Reason;
@@ -17,27 +21,42 @@ import org.eclipse.jface.viewers.Viewer;
 
 public class ResolutionFailureTreeContentProvider implements ITreeContentProvider {
     
-    private final List<Reason> roots = new ArrayList<Reason>();
-    private final Map<Capability, Resource> capabilities = new HashMap<Capability, Resource>();
-    private final Map<Resource, List<Reason>> unresolved = new HashMap<Resource, List<Reason>>();
+//    private final Comparator<Requirement> requirementComparator = new RequirementComparator();
+//    private final Comparator<Capability> capabilityComparator = new CapabilityComparator(new PropertyComparator());
+//    private final Comparator<Resource> resourceComparator = new ResourceComparator();
     
-    private Resolver resolver;
+    Set<Requirement> roots = new HashSet<Requirement>();
+    Map<Resource, List<Reason>> unresolved = new HashMap<Resource, List<Reason>>();
+    Map<Capability, Set<Resource>> capabilities = new HashMap<Capability, Set<Resource>>();
+    
+    Resolver resolver;
     
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         roots.clear();
-        capabilities.clear();
         unresolved.clear();
+        capabilities.clear();
         
         resolver = (Resolver) newInput;
+        if (resolver == null)
+            return; // wtf?
+        
         for (Reason reason : resolver.getUnsatisfiedRequirements()) {
             Resource requiredResource = reason.getResource();
             if (isRoot(requiredResource)) {
-                roots.add(reason);
+                roots.add(reason.getRequirement());
             } else {
+                try {
                 addUnresolved(requiredResource, reason);
                 addCapabilities(requiredResource);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
         }
+    }
+    
+    private boolean isRoot(Resource resource) {
+        return resource == null || resource.getId() == null;
     }
     
     private void addUnresolved(Resource resource, Reason reason) {
@@ -52,37 +71,56 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
     private void addCapabilities(Resource resource) {
         Capability[] caps = resource.getCapabilities();
         for (Capability cap : caps) {
-            capabilities.put(cap, resource);
+            Set<Resource> resources = capabilities.get(cap);
+            if (resources == null) {
+                resources = new HashSet<Resource>();
+                capabilities.put(cap, resources);
+            }
+            resources.add(resource);
         }
     }
 
-    public boolean isRoot(Resource resource) {
-        return resource == null || resource.getId() == null;
-    }
-    
-    public Object[] getElements(Object input) {
-        return (Reason[]) roots.toArray(new Reason[roots.size()]);
-    }
-
-    public void dispose() {
-    }
-
-    public Object[] getChildren(Object parentElem) {
-        List<Reason> potentials = new LinkedList<Reason>();
+    private PotentialMatch findPotentialMatch(Requirement requirement) {
+        Set<Resource> resources = new HashSet<Resource>();
         
-        Reason sourceReason = (Reason) parentElem;
-        Requirement sourceReq = sourceReason.getRequirement();
-        
-        for (Entry<Capability, Resource> entry : capabilities.entrySet()) {
-            if (sourceReq.isSatisfied(entry.getKey())) {
-                Resource potentialProvider = entry.getValue();
-                List<Reason> potentialReasons = unresolved.get(potentialProvider);
-                if (potentialReasons != null)
-                    potentials.addAll(potentialReasons);
+        for (Entry<Capability, Set<Resource>> entry : capabilities.entrySet()) {
+            if (requirement.isSatisfied(entry.getKey())) {
+                for (Resource potential : entry.getValue()) {
+                    resources.add(potential);
+                }
             }
         }
         
-        return (Reason[]) potentials.toArray(new Reason[potentials.size()]);
+        return new PotentialMatch(requirement, resources);
+    }
+    
+    
+    public Object[] getElements(Object input) {
+        List<PotentialMatch> matches = new ArrayList<PotentialMatch>(roots.size());
+        for (Requirement requirement : roots) {
+            PotentialMatch match = findPotentialMatch(requirement);
+            matches.add(match);
+        }
+        return (PotentialMatch[]) matches.toArray(new PotentialMatch[matches.size()]);
+    }
+
+    public Object[] getChildren(Object parentElem) {
+        Object[] children;
+        if (parentElem instanceof PotentialMatch) {
+            Collection<Resource> resources = ((PotentialMatch) parentElem).getResources();
+            children = (Resource[]) resources.toArray(new Resource[resources.size()]);
+        } else if (parentElem instanceof Resource) {
+            List<Reason> reasons = unresolved.get(parentElem);
+            List<PotentialMatch> matches = new LinkedList<PotentialMatch>();
+            for (Reason reason : reasons) {
+                PotentialMatch match = findPotentialMatch(reason.getRequirement());
+                matches.add(match);
+            }
+            children = matches.toArray(new Object[matches.size()]);
+        } else {
+            children = null;
+        }
+        return children;
     }
 
     public Object getParent(Object element) {
@@ -90,7 +128,13 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
     }
 
     public boolean hasChildren(Object parentElement) {
+        if (parentElement instanceof PotentialMatch) {
+            return !((PotentialMatch) parentElement).getResources().isEmpty();
+        }
         return true;
+    }
+    
+    public void dispose() {
     }
 
 }

@@ -32,9 +32,11 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -59,8 +61,10 @@ import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.Requirement;
+import bndtools.model.obr.PotentialMatch;
 import bndtools.model.obr.ResolutionFailureTreeContentProvider;
 import bndtools.model.obr.ResolutionFailureTreeLabelProvider;
+import bndtools.model.obr.ResolutionFailureTreeSorter;
 import bndtools.wizards.workspace.ReasonLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
@@ -308,6 +312,18 @@ public class ObrResultsWizardPage extends WizardPage {
         unresolvedViewer = new TreeViewer(treeUnresolved);
         unresolvedViewer.setContentProvider(new ResolutionFailureTreeContentProvider());
         unresolvedViewer.setLabelProvider(new ResolutionFailureTreeLabelProvider());
+        unresolvedViewer.setSorter(new ResolutionFailureTreeSorter());
+        
+        unresolvedViewer.addTreeListener(new ITreeViewerListener() {
+            public void treeExpanded(TreeExpansionEvent ev) {
+                Object expanded = ev.getElement();
+                if (expanded instanceof PotentialMatch) {
+                    unresolvedViewer.expandToLevel(expanded, 2);
+                }
+            }
+            public void treeCollapsed(TreeExpansionEvent ev) {
+            }
+        });
 
         Button btnErrorsToClipboard = new Button(composite, SWT.NONE);
         btnErrorsToClipboard.setText("Copy to Clipboard");
@@ -387,6 +403,8 @@ public class ObrResultsWizardPage extends WizardPage {
         optionalViewer.setInput(result != null ? result.getOptional() : null);
         unresolvedViewer.setInput(result != null ? result.getResolver() : null);
         processingErrorsViewer.setInput(result != null ? result.getStatus() : null);
+        
+        unresolvedViewer.expandToLevel(2);
 
         boolean resolved = result != null && result.isResolved() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
 
