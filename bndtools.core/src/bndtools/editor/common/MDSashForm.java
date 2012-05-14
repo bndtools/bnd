@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -17,6 +18,7 @@ import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.IManagedForm;
 
 public class MDSashForm extends SashForm {
+    
 	ArrayList<Sash> sashes = new ArrayList<Sash>();
 	Listener listener = new Listener () {
 		public void handleEvent(Event e) {
@@ -38,13 +40,23 @@ public class MDSashForm extends SashForm {
 			}
 		}
 	};
+	
+    private Color bg;
+    private Color fg;
 
-    private final IManagedForm managedForm;
+    public MDSashForm(Composite parent, int style, Color bg, Color fg) {
+        super(parent, style);
+        this.bg = bg;
+        this.fg = fg;
+    }
 
-	public MDSashForm(Composite parent, int style, IManagedForm managedForm) {
-		super(parent, style);
-        this.managedForm = managedForm;
-	}
+    public MDSashForm(Composite parent, int style, IManagedForm managedForm) {
+        super(parent, style);
+
+        FormColors colors = managedForm.getToolkit().getColors();
+        bg = colors.getColor(IFormColors.TB_BG);
+        fg = colors.getColor(IFormColors.TB_BORDER);
+    }
 
 	@Override
     public void layout(boolean changed) {
@@ -83,12 +95,11 @@ public class MDSashForm extends SashForm {
 
    private void onSashPaint(Event e) {
         Sash sash = (Sash)e.widget;
-        FormColors colors = managedForm.getToolkit().getColors();
         boolean vertical = (sash.getStyle() & SWT.VERTICAL)!=0;
         GC gc = e.gc;
         Boolean hover = (Boolean)sash.getData("hover"); //$NON-NLS-1$
-        gc.setBackground(colors.getColor(IFormColors.TB_BG));
-        gc.setForeground(colors.getColor(IFormColors.TB_BORDER));
+        gc.setBackground(bg);
+        gc.setForeground(fg);
         Point size = sash.getSize();
         if (vertical) {
             if (hover!=null)

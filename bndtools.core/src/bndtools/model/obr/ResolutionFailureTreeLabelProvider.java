@@ -12,7 +12,6 @@ import bndtools.UIConstants;
 public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider {
 
     private static final String LABEL_INITIAL = "INITIAL";
-    private Image unmatchedImg = null;
 
     @Override
     public void update(ViewerCell cell) {
@@ -43,19 +42,6 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
             image = null;
             label = new StyledString("ERROR", UIConstants.BOLD_STYLER);
         }
-        
-        /*
-        if(ResolutionFailureTreeContentProvider.UNMATCHED == reason) {
-            if (unmatchedImg == null) unmatchedImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/cross.png").createImage();
-            image = unmatchedImg;
-            label = new StyledString("UNMATCHED", UIConstants.BOLD_STYLER);
-        } else {
-            image = getIcon(reason.getRequirement());
-            label = new StyledString(getLabel(reason.getResource()), StyledString.COUNTER_STYLER);
-            label.append(" ---> ");
-            label.append(getLabel(reason.getRequirement()));
-        }
-        */
 
         cell.setImage(image);
         cell.setText(label.getString());
@@ -74,9 +60,4 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
         return label;
     }
     
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (unmatchedImg != null && !unmatchedImg.isDisposed()) unmatchedImg.dispose();
-    }
 }

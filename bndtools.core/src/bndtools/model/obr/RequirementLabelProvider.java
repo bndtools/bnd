@@ -28,7 +28,6 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
         return regex.matcher(filter);
     }
 
-
     public StyledString getLabel(Requirement requirement) {
         String filter = requirement.getFilter();
         StyledString label = new StyledString(filter, StyledString.QUALIFIER_STYLER);
@@ -113,9 +112,9 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
     @Override
     public void dispose() {
         super.dispose();
-        if (pkgImg != null) pkgImg.dispose();
-        if (bundleImg != null) bundleImg.dispose();
-        if (errorImg != null) errorImg.dispose();
+        if (pkgImg != null && !pkgImg.isDisposed()) pkgImg.dispose();
+        if (bundleImg != null && !bundleImg.isDisposed()) bundleImg.dispose();
+        if (errorImg != null && !bundleImg.isDisposed()) errorImg.dispose();
     }
 
 }
