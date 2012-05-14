@@ -7,6 +7,8 @@
 	osgi.cmpn;version=4.3.0,\
 	ee.j2se;version=1.5.0
 
+Bundle-Version: 1.0.0.${tstamp}
+
 Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.repository.LocalIndexedRepo,\
 	aQute.lib.deployer.obr.OBR,\
@@ -20,7 +22,7 @@ Export-Package:\
 	aQute.lib.deployer.repository.api,\
 	aQute.lib.deployer.repository.providers,\
 	org.osgi.service.indexer,\
-	org.osgi.service.bindex,\
+	org.osgi.service.bindex;version=1.0,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
 	org.osgi.service.log;-split-package:=merge-first
 
@@ -40,8 +42,8 @@ Private-Package: aQute.lib.io;-split-package:=first,\
 
 # We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
 Import-Package:\
+	org.osgi.service.bindex;version='[1,2)',\
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*
 
-Bundle-Version: 1.0.0
