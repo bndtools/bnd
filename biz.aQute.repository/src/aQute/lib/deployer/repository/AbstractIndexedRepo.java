@@ -104,7 +104,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		addBundleSymbolicNameToIndex(resource);
 	}
 
-	protected synchronized void reset() {
+	public synchronized void reset() {
 		initialised = false;
 	}
 	
