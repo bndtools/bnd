@@ -25,21 +25,23 @@ Export-Package:\
 	org.osgi.service.log;-split-package:=merge-first
 
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
-Private-Package:\
-	aQute.lib.io;-split-package:=first,\
+Private-Package: aQute.lib.io;-split-package:=first,\
 	aQute.lib.filter;-split-package:=first,\
 	aQute.lib.base64;-split-package:=first,\
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl.util,\
-	org.osgi.framework;-split-package:=first
+	org.osgi.framework;-split-package:=first,\
+	aQute.libg.filerepo,\
+	aQute.libg.generics,\
+	aQute.libg.glob,\
+	aQute.libg.gzip,\
+	aQute.libg.tuple
 
 # We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
 Import-Package:\
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*
-
-Conditional-Package: aQute.libg.*
 
 Bundle-Version: 1.0.0
