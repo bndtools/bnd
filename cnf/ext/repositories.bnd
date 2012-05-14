@@ -6,6 +6,7 @@ eclipse-repo:     ${build}/eclipse-${eclipse-version}/repository.xml
 #eclipse-version:  3.7.1
 #eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
 
+-pluginpath: ${workspace}/cnf/repo/biz.aQute.repository/biz.aQute.repository-1.0.0.jar
 common-plugins: aQute.lib.deployer.obr.OBR;locations='file:${eclipse-repo}';name=Eclipse-${eclipse-version}
 
 # Local OBR
@@ -13,6 +14,7 @@ common-plugins: aQute.lib.deployer.obr.OBR;locations='file:${eclipse-repo}';name
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
 #	${common-plugins}
+
 
 # Remote OBR
 -plugin: aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/jars/repository.xml;name=Bnd Build Repository,\
