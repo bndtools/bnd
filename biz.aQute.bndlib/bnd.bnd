@@ -34,4 +34,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.core;version=4.1, \
 	ee.j2se;version='[1.5,1.6)'
 
-Bundle-Version: 1.53.0
+Bundle-Version: 1.53.1

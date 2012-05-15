@@ -496,10 +496,11 @@ public class Verifier extends Processor {
 		if (v == null) {
 			if (mandatory)
 				error("Missing required attribute/directive %s", ad);
+		} else {
+			Matcher m = pattern.matcher(v);
+			if (!m.matches())
+				error(msg, (Object[]) args);
 		}
-		Matcher m = pattern.matcher(v);
-		if (!m.matches())
-			error(msg, (Object[]) args);
 	}
 
 	private void verifyType(Attrs.Type type, String string) {
