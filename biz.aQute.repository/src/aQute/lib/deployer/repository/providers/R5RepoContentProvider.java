@@ -1,6 +1,12 @@
 package aQute.lib.deployer.repository.providers;
 
+import static aQute.lib.deployer.repository.api.Decision.*;
+import static aQute.lib.deployer.repository.api.Decision.reject;
+import static javax.xml.stream.XMLStreamConstants.*;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +15,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.osgi.service.indexer.Builder;
 import org.osgi.service.indexer.Capability;
@@ -19,24 +31,28 @@ import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.BIndex2;
 import org.osgi.service.log.LogService;
 import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 import aQute.bnd.service.Registry;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.deployer.repository.api.BaseResource;
+import aQute.lib.deployer.repository.api.CheckResult;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.deployer.repository.api.IRepositoryListener;
 import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.deployer.repository.api.StopParseException;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 	
 	public static final String NAME = "R5";
 	
+	private static final String NS_URI = "http://www.osgi.org/xmlns/repository/v1.0.0";
+	
 	private static final String INDEX_NAME_COMPRESSED = "index.xml.gz";
 	private static final String INDEX_NAME_PRETTY = "index.xml";
+
 
 	public String getName() {
 		return NAME;
@@ -46,8 +62,64 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		return pretty ? INDEX_NAME_PRETTY : INDEX_NAME_COMPRESSED;
 	}
 	
-	public ContentHandler createContentHandler(String baseUrl, IRepositoryListener listener) {
-		return new R5RepoSaxHandler(baseUrl, listener);
+	private static enum ParserState {
+		beforeRoot, inRoot, inResource, inCapability
+	}
+	
+	public CheckResult checkStream(String name, InputStream stream) throws IOException {
+		stream.mark(1024);
+
+		XMLStreamReader reader = null;
+		try {
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+
+			reader = inputFactory.createXMLStreamReader(stream);
+			ParserState state = ParserState.beforeRoot;
+
+			while (reader.hasNext()) {
+				int type = reader.next();
+				String localName;
+				
+				switch (type) {
+				case START_ELEMENT:
+					String nsUri = reader.getNamespaceURI();
+					if (nsUri != null)
+						return CheckResult.fromBool(NS_URI.equals(nsUri), "Corrent namespace", "Incorrect namespace: " + nsUri, null);
+					break;
+				default:
+					break;
+				}
+				
+			}
+			return new CheckResult(undecided, "Reached end of stream", null);
+		} catch (XMLStreamException e) {
+			return new CheckResult(reject, "Invalid XML", e);
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (XMLStreamException e) {
+				}
+			stream.reset();
+		}
+	}
+	
+	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log) throws Exception {
+		R5RepoSaxHandler handler = new R5RepoSaxHandler(baseUrl, listener);
+		
+		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+		SAXParser parser = parserFactory.newSAXParser();
+		
+		XMLReader reader = parser.getXMLReader();
+		reader.setContentHandler(handler);
+		InputSource source = new InputSource(stream);
+		source.setSystemId(baseUrl);
+		reader.parse(source);
+	}
+	
+	public boolean supportsGeneration() {
+		return true;
 	}
 	
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty, Registry registry, LogService log) throws Exception {
@@ -141,8 +213,7 @@ class R5RepoSaxHandler extends DefaultHandler {
 			capReqBuilder = null;
 		} else if (TAG_RESOURCE.equals(qName)) {
 			R5Resource resource = resourceBuilder.build();
-			if (!resourceListener.processResource(resource))
-				throw new StopParseException();
+			resourceListener.processResource(resource);
 			resourceBuilder = null;
 		} else if (TAG_REFERRAL.equals(qName)) {
 			if (maxDepth == 0) {

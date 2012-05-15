@@ -2,7 +2,6 @@ package aQute.lib.deployer.repository;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +18,7 @@ import org.osgi.service.log.LogService;
 
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.filerepo.FileRepo;
@@ -38,7 +38,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private boolean readOnly;
 	private boolean pretty = false;
 	private File storageDir;
-	private File localIndex;
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
@@ -67,41 +66,63 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 	
 	@Override
-	protected List<URL> loadIndexes() throws Exception {
-		String indexFileName = contentProvider.getDefaultIndexName(pretty);
-		localIndex = new File(storageDir, indexFileName);
-		if (localIndex.exists() && !localIndex.isFile())
-			throw new IllegalArgumentException(String.format("Cannot build local repository index: '%s' already exists but is not a plain file.", localIndex.getAbsolutePath()));
-
-		if (!localIndex.exists()) {
-			regenerateIndex();
+	protected synchronized List<URL> loadIndexes() throws Exception {
+		Collection<URL> remotes = super.loadIndexes();
+		List<URL> indexes = new ArrayList<URL>(remotes.size() + contentProviders.size());
+		
+		for (IRepositoryContentProvider contentProvider : contentProviders) {
+			File indexFile = getIndexFile(contentProvider);
+			try {
+				if (indexFile.exists()) {
+					indexes.add(indexFile.toURI().toURL());
+				} else {
+					if (contentProvider.supportsGeneration()) {
+						generateIndex(indexFile, contentProvider);
+						indexes.add(indexFile.toURI().toURL());
+					}
+				}
+			} catch (Exception e) {
+				logService.log(LogService.LOG_ERROR, String.format("Unable to load/generate index file '%s' for repository type %s", contentProvider.getName()), e);
+			}
 		}
 		
-		List<URL> result;
-		try {
-			Collection<URL> remotes = super.loadIndexes();
-			result = new ArrayList<URL>(remotes.size() + 1);
-			result.add(localIndex.toURI().toURL());
-			result.addAll(remotes);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Error initialising local index URL", e);
-		}
-		return result;
+		indexes.addAll(remotes);
+		return indexes;
+	}
+
+	private File getIndexFile(IRepositoryContentProvider contentProvider) {
+		String indexFileName = contentProvider.getDefaultIndexName(pretty);
+		File indexFile = new File(storageDir, indexFileName);
+		return indexFile;
 	}
 	
-	private synchronized void regenerateIndex() throws Exception {
-		LogService log = (reporter != null) ? new ReporterLogService(reporter) : null;
-		
+	private synchronized void regenerateAllIndexes() {
+		for (IRepositoryContentProvider provider : contentProviders) {
+			if (!provider.supportsGeneration())
+				continue;
+			File indexFile = getIndexFile(provider);
+			try {
+				generateIndex(indexFile, provider);
+			} catch (Exception e) {
+				logService.log(LogService.LOG_ERROR, String.format("Unable to regenerate index file '%s' for repository type %s", indexFile, provider.getName()), e);
+			}
+		}
+	}
+	
+	private synchronized void generateIndex(File indexFile, IRepositoryContentProvider provider) throws Exception {
+		if (indexFile.exists() && !indexFile.isFile())
+			throw new IllegalArgumentException(String.format("Cannot create file: '%s' already exists but is not a plain file.", indexFile.getAbsoluteFile()));
+
 		Set<File> allFiles = new HashSet<File>();
 		gatherFiles(allFiles);
 		
 		FileOutputStream out = null;
 		try {
 			storageDir.mkdirs();
-			out = new FileOutputStream(localIndex);
+			out = new FileOutputStream(indexFile);
 			
 			String rootUrl = storageDir.getCanonicalFile().toURI().toURL().toString();
-			contentProvider.generateIndex(allFiles, out, this.getName(), rootUrl, pretty, registry, log);
+			provider.generateIndex(allFiles, out, this.getName(), rootUrl, pretty, registry, logService);
 		} finally {
 			IO.close(out);
 		}
@@ -145,7 +166,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	
 	private synchronized void finishPut() throws Exception {
 		reset();
-		regenerateIndex();
+		regenerateAllIndexes();
+		
 		List<Pair<Jar,File>> clone = new ArrayList<Pair<Jar, File>>(newFilesInCoordination);
 		synchronized (newFilesInCoordination) {
 			newFilesInCoordination.clear();

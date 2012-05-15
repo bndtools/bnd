@@ -1,5 +1,6 @@
 package aQute.lib.deployer.repository;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,14 +24,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.osgi.service.log.LogService;
 
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;
@@ -47,10 +41,10 @@ import aQute.lib.deployer.repository.api.BaseResource;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.deployer.repository.api.IRepositoryListener;
 import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.deployer.repository.api.StopParseException;
 import aQute.lib.deployer.repository.providers.ObrContentProvider;
 import aQute.lib.deployer.repository.providers.R5RepoContentProvider;
 import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.libg.generics.Create;
 import aQute.libg.gzip.GZipUtils;
@@ -78,26 +72,29 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String REPO_TYPE_R5  = R5RepoContentProvider.NAME;
 	public static final String REPO_TYPE_OBR = ObrContentProvider.NAME;
 	
-	private final Map<String, IRepositoryContentProvider> contentHandlerProviders = new HashMap<String, IRepositoryContentProvider>(5);
+	private   final Map<String, IRepositoryContentProvider> contentHandlerProviders = new HashMap<String, IRepositoryContentProvider>(5);
+	protected final List<IRepositoryContentProvider> contentProviders = new LinkedList<IRepositoryContentProvider>();
 	
 	protected Registry registry;
 	protected Reporter reporter;
+	protected LogService logService = new NullLogService();
 	protected String name = this.getClass().getName();
 	protected Set<ResolutionPhase> supportedPhases = EnumSet.allOf(ResolutionPhase.class);
 	
 	private List<URL> indexLocations;
 
-	private String requestedContentProvider = null;
-	protected IRepositoryContentProvider contentProvider;
+	private String requestedContentProviderList = null;
 	
 	private boolean initialised = false;
 
 	private final Map<String, SortedMap<Version, BaseResource>> bsnMap = new HashMap<String, SortedMap<Version, BaseResource>>();
 	
+	
 	protected AbstractIndexedRepo() {
-		contentProvider = new R5RepoContentProvider();
+		R5RepoContentProvider defaultProvider = new R5RepoContentProvider();
+		contentProviders.add(defaultProvider);
 		
-		contentHandlerProviders.put(REPO_TYPE_R5, contentProvider);
+		contentHandlerProviders.put(REPO_TYPE_R5, defaultProvider);
 		contentHandlerProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
 	}
 	
@@ -116,29 +113,48 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	protected abstract List<URL> loadIndexes() throws Exception;
 
+	protected synchronized void loadContentProviders() {
+		if (registry == null)
+			return;
+
+		List<IRepositoryContentProvider> extraProviders = registry.getPlugins(IRepositoryContentProvider.class);
+
+		for (IRepositoryContentProvider provider : extraProviders) {
+			String providerName = provider.getName();
+			if (contentHandlerProviders.containsKey(providerName)) {
+				if (reporter != null) reporter.warning("Repository content provider with name \"%s\" is already registered.", providerName);
+			} else {
+				contentHandlerProviders.put(providerName, provider);
+			}
+		}
+	}
+	
 	protected final synchronized void init() throws Exception {
 		if (!initialised) {
 			clear();
-			// Load the repository content provider
-			if (requestedContentProvider != null && requestedContentProvider.length() > 0) {
-				IRepositoryContentProvider foundProvider;
-				synchronized (this) {
-					List<IRepositoryContentProvider> addedProviders = (registry != null) ? registry.getPlugins(IRepositoryContentProvider.class) : Collections.<IRepositoryContentProvider>emptyList();
-					for (IRepositoryContentProvider provider : addedProviders) {
-						String providerName = provider.getName();
-						if (contentHandlerProviders.containsKey(providerName)) {
-							if (reporter != null) reporter.warning("Repository content provider with name \"%s\" is already registered.", providerName);
-						} else {
-							contentHandlerProviders.put(providerName, provider);
-						}
-					}
-					foundProvider = contentHandlerProviders.get(requestedContentProvider);
-				}
+			
+			// Load the request repository content providers, if specified
+			if (requestedContentProviderList != null && requestedContentProviderList.length() > 0) {
+				contentProviders.clear();
 				
-				if (foundProvider == null) {
-					if (reporter != null) reporter.error("Repository content provider with name \"%s\" not found, using default provider \"%s\".", requestedContentProvider, contentProvider.getName());
-				} else {
-					contentProvider = foundProvider;
+				// Load the available providers from the workspace plugins.
+				loadContentProviders();
+				
+				// Find the requested providers from the available ones.
+				StringTokenizer tokenizer = new StringTokenizer(requestedContentProviderList, "|");
+				while (tokenizer.hasMoreTokens()) {
+					String token = tokenizer.nextToken().trim();
+					IRepositoryContentProvider provider = contentHandlerProviders.get(token);
+					if (provider == null) {
+						if (reporter != null) reporter.warning("Unknown repository content provider \"%s\".", token);
+					} else {
+						contentProviders.add(provider);
+					}
+				}
+
+				if (contentProviders.isEmpty()) {
+					if (reporter != null) reporter.error("No valid repository content providers were found, requested list was: %s", requestedContentProviderList);
+					throw new IllegalArgumentException("No valid repository content providers found.");
 				}
 			}
 
@@ -149,18 +165,17 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			final URLConnector connector = getConnector();
 			IRepositoryListener listener = new IRepositoryListener() {
 
-				public boolean processResource(BaseResource resource) {
+				public void processResource(BaseResource resource) {
 					addResourceToIndex(resource);
-					return true;
 				}
 
-				public boolean processReferral(String fromUrl, Referral referral, int maxDepth, int currentDepth) {
+				public void processReferral(String fromUrl, Referral referral, int maxDepth, int currentDepth) {
 					try {
 						URL indexLocation = new URL(referral.getUrl());
 						try {
 							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 							indexHandle.setReporter(reporter);
-							return readIndex(indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
+							readIndex(indexLocation.getFile(), indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
 						} catch (Exception e) {
 							if (reporter != null) reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
 						}
@@ -168,7 +183,6 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					} catch (MalformedURLException e) {
 						if (reporter != null) reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), fromUrl, e);
 					}
-					return false;
 				}
 
 			};
@@ -180,7 +194,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexLocation.toExternalForm(), indexStream, listener);
+					readIndex(indexFile.getName(), indexLocation.toExternalForm(), indexStream, listener);
 				} catch (Exception e) {
 					e.printStackTrace();
 					if (reporter != null)
@@ -232,7 +246,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			}
 		}
 		
-		requestedContentProvider = map.get(PROP_REPO_TYPE);
+		requestedContentProviderList = map.get(PROP_REPO_TYPE);
 	}
 	
 	public File[] get(String bsn, String range) throws Exception {
@@ -268,6 +282,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	
 	public synchronized void setReporter(Reporter reporter) {
 		this.reporter = reporter;
+		this.logService = new ReporterLogService(reporter);
 	}
 	
 	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
@@ -341,27 +356,31 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		versionMap.put(version, resource);
 	}
 
-	/**
-	 * @return Whether to continue parsing other indexes
-	 * @throws IOException 
-	 */
-	boolean readIndex(String baseUrl, InputStream stream, IRepositoryListener listener) throws ParserConfigurationException, SAXException, IOException {
-		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-		parserFactory.setNamespaceAware(true);
+	private void readIndex(String name, String baseUrl, InputStream stream, IRepositoryListener listener) throws Exception {
+		// Make sure we have a buffering stream
+		InputStream bufferedStream;
+		if (stream.markSupported())
+			bufferedStream = stream;
+		else
+			bufferedStream = new BufferedInputStream(stream);
+
+		// Find a compatible content provider for the input
+		IRepositoryContentProvider selectedProvider = null;
+		for (IRepositoryContentProvider provider : contentProviders) {
+			boolean supported = provider.checkStream(name, bufferedStream);
+			if (supported) {
+				selectedProvider = provider;
+				break;
+			}
+		}
+		if (selectedProvider == null)
+			throw new IOException("No content provider understands the specified index.");
 		
-		SAXParser parser = parserFactory.newSAXParser();
-		
-		ContentHandler contentHandler = contentProvider.createContentHandler(baseUrl, listener);
-		XMLReader reader = parser.getXMLReader();
-		reader.setContentHandler(contentHandler);
-		
+		// Finally, parse the bugger
 		try {
-			reader.parse(new InputSource(stream));
-			return true;
-		} catch (StopParseException e) {
-			return false;
+			selectedProvider.parseIndex(bufferedStream, baseUrl, listener, logService);
 		} finally {
-			stream.close();
+			IO.close(bufferedStream);
 		}
 	}
 

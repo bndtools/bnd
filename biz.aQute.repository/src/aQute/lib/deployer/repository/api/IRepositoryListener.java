@@ -8,11 +8,8 @@ public interface IRepositoryListener {
 	 * 
 	 * @param resource
 	 *            The resource descriptor to be processed.
-	 * @return Whether to continue parsing the document; returning {@code false}
-	 *         will result in the parser being stopped with a
-	 *         {@link StopParseException}.
 	 */
-	boolean processResource(BaseResource resource);
+	void processResource(BaseResource resource);
 	
 	/**
 	 * Process an OBR referral
@@ -20,10 +17,7 @@ public interface IRepositoryListener {
 	 * @param referral The referral to be processed
 	 * @param maxDepth The depth of referrals this repository acknowledges.
 	 * @param currentDepth The current depth
-	 * @return Whether to continue parsing the document; returning {@code false}
-	 *         will result in the parser being stopped with a
-	 *         {@link StopParseException}.
 	 */
-	boolean processReferral(String parentUrl, Referral referral, int maxDepth, int currentDepth);
+	void processReferral(String parentUrl, Referral referral, int maxDepth, int currentDepth);
 
 }

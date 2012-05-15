@@ -6,16 +6,21 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+
+import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
+
+import test.lib.MockRegistry;
 import aQute.lib.deployer.repository.AbstractIndexedRepo;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
 import aQute.lib.deployer.repository.LocalIndexedRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 
-public class TestLocalIndexGeneration extends TestCase {
+public class TestMultipleLocalIndexGeneration extends TestCase {
 
 	private LocalIndexedRepo repo;
 	private File outputDir;
+	private MockRegistry registry;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -27,8 +32,14 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo = new LocalIndexedRepo();
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put("type", "R5");
+		config.put("type", "OBR|R5");
 		repo.setProperties(config);
+
+		// Add the BundleIndexer plugin
+		MockRegistry registry = new MockRegistry();
+		BundleIndexerImpl obrIndexer = new BundleIndexerImpl();
+		registry.addPlugin(obrIndexer);
+		repo.setRegistry(registry);
 	}
 
 	@Override
@@ -48,11 +59,23 @@ public class TestLocalIndexGeneration extends TestCase {
 		
 		assertEquals(new File("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar").getAbsolutePath(), deployedFile.getAbsolutePath());
 		
-		File indexFile = new File("generated/testoutput/index.xml.gz");
-		assertTrue(indexFile.exists());
+		File r5IndexFile = new File("generated/testoutput/index.xml.gz");
+		assertTrue(r5IndexFile.exists());
 		
-		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);
-		File[] files = repo2.get("name.njbartlett.osgi.emf.minimal", null);
+		File obrIndexFile = new File("generated/testoutput/repository.xml");
+		assertTrue(obrIndexFile.exists());
+		
+		AbstractIndexedRepo checkRepo;
+		File[] files;
+		
+		checkRepo = createRepoForIndex(r5IndexFile, "R5");
+		files = checkRepo.get("name.njbartlett.osgi.emf.minimal", null);
+		assertNotNull(files);
+		assertEquals(1, files.length);
+		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
+		
+		checkRepo = createRepoForIndex(obrIndexFile, "OBR");
+		files = checkRepo.get("name.njbartlett.osgi.emf.minimal", null);
 		assertNotNull(files);
 		assertEquals(1, files.length);
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
@@ -60,11 +83,12 @@ public class TestLocalIndexGeneration extends TestCase {
 	
 	// UTILS
 
-	private static AbstractIndexedRepo createRepoForIndex(File index) {
+	private static AbstractIndexedRepo createRepoForIndex(File index, String type) {
 		FixedIndexedRepo newRepo = new FixedIndexedRepo();
 		
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("locations", index.getAbsoluteFile().toURI().toString());
+		config.put("type", type);
 		newRepo.setProperties(config);
 		
 		return newRepo;
