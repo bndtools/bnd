@@ -397,7 +397,7 @@ public class Verifier extends Processor {
 				Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
 			Attrs attrs = map.get(key);
-			verify(attrs, "filter:", FILTERPATTERN, true, "Requirement %s filter not correct", key);
+			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
 					"Requirement %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
@@ -451,7 +451,6 @@ public class Verifier extends Processor {
 				Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
 			Attrs attrs = map.get(key);
-			verify(attrs, "filter:", FILTERPATTERN, true, "Requirement %s filter not correct", key);
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
 					"Requirement %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
