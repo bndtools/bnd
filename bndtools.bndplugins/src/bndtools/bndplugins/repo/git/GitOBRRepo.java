@@ -297,7 +297,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 		try {
 			return getIndexLocations();
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 

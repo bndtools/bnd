@@ -23,6 +23,7 @@ javac:        javac
 javac.source: 1.5
 javac.target: 1.5
 javac.debug:  on
+javac.ee:     '[1.5,1.6)'
 
 # Bnd Options
 -sources:       true
