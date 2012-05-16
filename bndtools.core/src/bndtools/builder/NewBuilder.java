@@ -480,7 +480,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 break;
             }
         }
-        log(LOG_BASIC, "REBUILDING, force=%b, action=%s", force, buildAction);
 
         File[] built;
 
@@ -511,14 +510,19 @@ public class NewBuilder extends IncrementalProjectBuilder {
         if (buildAction == Action.build) {
             // Build!
             model.setTrace(true);
-            if (force)
+            boolean stale = model.isStale();
+            
+            if (force || stale) {
+                log(LOG_BASIC, "REBUILDING: force=%b; stale=%b", force, stale);
                 built = model.buildLocal(false);
-            else
-                built = model.build();
-            if (built == null) built = new File[0];
+                if (built == null) built = new File[0]; // shouldn't happen but just in case
+            } else {
+                log(LOG_BASIC, "NOT REBUILDING: force=%b;stale=%b", force, stale);
+                built = new File[0];
+            }
 
             // Log rebuilt files
-            log(LOG_BASIC, "requested rebuild of %d files", built.length);
+            log(LOG_BASIC, "%d files were rebuilt", built.length);
             if (logLevel >= LOG_FULL) {
                 for (File builtFile : built) {
                     log(LOG_FULL, "target file %s has an age of %d ms", builtFile, System.currentTimeMillis() - builtFile.lastModified());
