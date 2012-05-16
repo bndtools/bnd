@@ -2,6 +2,7 @@ package aQute.lib.deployer.repository;
 
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
@@ -232,7 +233,7 @@ public class CachingURLResourceHandle implements ResourceHandle {
 					if (reporter != null) reporter.warning("Download of remote resource %s failed, using local cache %s.", url, cachedFile); 
 					return cachedFile;
 				} else {
-					throw new IOException(String.format("Download of remote resource %s failed and cached file %s not available!", url, cachedFile));
+					throw new IOException(String.format("Download of remote resource %s failed and cached file %s not available.\nOriginal exception: %s\nTrace: %s", url, cachedFile, e, Arrays.toString(e.getStackTrace())));
 				}
 			}
 		default:
