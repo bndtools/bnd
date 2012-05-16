@@ -23,5 +23,10 @@ public class WrappingOBRIndexProvder implements OBRIndexProvider {
     public Set<OBRResolutionMode> getSupportedModes() {
         return delegate.getSupportedModes();
     }
+    
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
 
 }
