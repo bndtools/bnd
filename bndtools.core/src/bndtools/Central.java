@@ -1,9 +1,6 @@
 package bndtools;
 
 import java.io.File;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +26,6 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.Refreshable;
 
 public class Central {
@@ -181,7 +177,7 @@ public class Central {
         if (workspaceObr != null)
             return workspaceObr;
 
-        workspaceObr = new WorkspaceObrProvider();
+        workspaceObr = new WorkspaceObrProvider(Plugin.getDefault().getLogger());
         workspaceObr.setWorkspace(getWorkspace());
         return workspaceObr;
     }

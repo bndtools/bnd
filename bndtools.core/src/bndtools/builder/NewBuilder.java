@@ -539,16 +539,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));
         targetFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
 
-        // Replace into the workspace OBR provider
-        if (built.length > 0) {
-            try {
-                Central.getWorkspaceObrProvider().replaceProjectFiles(model, built);
-                Central.getWorkspaceRepoProvider().replaceProjectFiles(model, built);
-            } catch (Exception e) {
-                Plugin.logError("Error rebuilding workspace OBR index", e);
-            }
-        }
-
         // Report errors
         List<String> errors = new ArrayList<String>(model.getErrors());
         List<String> warnings = new ArrayList<String>(model.getWarnings());

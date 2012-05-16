@@ -5,21 +5,24 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.transform.stream.StreamResult;
 
-import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.osgi.service.bindex.BundleIndexer;
@@ -31,40 +34,39 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.deployer.repository.FixedIndexedRepo;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Instruction;
 import aQute.lib.osgi.Jar;
 import aQute.libg.sax.SAXUtil;
 import aQute.libg.version.Version;
+import aQute.libg.version.VersionRange;
+import bndtools.api.ILogger;
 import bndtools.bindex.AbsoluteizeContentFilter;
 import bndtools.bindex.CategoryInsertionContentFilter;
+import bndtools.types.Pair;
 
 @ThreadSafe
 public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider {
 
+    private static final String RANGE_SNAPSHOT = "snapshot";
+    private static final String RANGE_LATEST = "latest";
+    private static final String RANGE_PROJECT = "project";
     private static final String NAME = "Workspace";
-
-    public static final String CATEGORY_WORKSPACE = "__WORKSPACE";
-
+    private static final String INDEX_FILENAME = "ws-obr-index.xml";
     // Generate warnings if the index generation takes longer than this (millisecs)
     private static final long WARNING_THRESHOLD_TIME = 1000;
 
-    private final FixedIndexedRepo repository = new FixedIndexedRepo();
+    public static final String CATEGORY_WORKSPACE = "__WORKSPACE";
+
+    private final ILogger logger;
+    private final File stateDir;
     private final File indexFile;
-    
     private Workspace workspace;
 
-    @GuardedBy("this")
-    private final Map<Project, File[]> projectFileMap = new HashMap<Project, File[]>();
-
-    WorkspaceObrProvider() {
-        IPath stateLocation = Plugin.getDefault().getStateLocation();
-        indexFile = new File(stateLocation.toFile(), "workspace-index.xml");
-        
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(FixedIndexedRepo.PROP_REPO_TYPE, FixedIndexedRepo.REPO_TYPE_OBR);
-        config.put(FixedIndexedRepo.PROP_LOCATIONS, indexFile.getAbsoluteFile().toURI().toString());
-        repository.setProperties(config);
+    WorkspaceObrProvider(ILogger logger) {
+        this.logger = logger;
+        this.stateDir = Plugin.getDefault().getStateLocation().toFile();
+        this.indexFile = new File(stateDir, INDEX_FILENAME);
     }
 
     void setWorkspace(Workspace workspace) {
@@ -72,80 +74,88 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
     }
 
     public synchronized void reset() throws Exception {
-        refreshProjects();
-        rebuildIndex();
-        repository.reset();
+        indexFile.delete();
     }
     
-    /**
-     * Refresh the project->file map from the actual projects
-     * @throws Exception
-     */
-    protected synchronized void refreshProjects() throws Exception {
-        Collection<Project> projects = workspace.getAllProjects();
-        for (Project project : projects) {
-            File targetDir = project.getTarget();
-
-            Collection<? extends Builder> builders = project.getSubBuilders();
-            List<File> targetFileList = new ArrayList<File>(builders.size());
-
-            for (Builder builder : builders) {
-                File targetFile = new File(targetDir, builder.getBsn() + ".jar");
-                targetFileList.add(targetFile);
+    private Set<File> gatherWorkspaceFiles(IProgressMonitor monitor) throws CoreException {
+        final Set<File> jars = new HashSet<File>();
+        IWorkspaceRunnable operation = new IWorkspaceRunnable() {
+            public void run(IProgressMonitor monitor) throws CoreException {
+                Collection<Project> projects;
+                try {
+                    projects = workspace.getAllProjects();
+                } catch (Exception e) {
+                    throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to query bnd projects from workspace.", e));
+                }
+                for (Project project : projects) {
+                    try {
+                        for (Builder sub : project.getSubBuilders()) {
+                            File outputFile = getOutputFile(project, sub.getBsn());
+                            if (outputFile.isFile()) jars.add(outputFile);
+                        }
+                    } catch (Exception e) {
+                        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to query bnd output files from workspace.", e));
+                    }
+                }
             }
-
-            projectFileMap.put(project, targetFileList.toArray(new File[targetFileList.size()]));
-        }
+        };
+        ResourcesPlugin.getWorkspace().run(operation, monitor);
+        return jars;
+    }
+    
+    public synchronized Collection<URL> getOBRIndexes() throws IOException {
+        regenerateIndex();
+        return Collections.singletonList(indexFile.getAbsoluteFile().toURI().toURL());
+    }
+    
+    private synchronized boolean needsRegeneration() {
+        // TODO: for now, always generate
+        return true;
     }
 
-    public synchronized void replaceProjectFiles(Project project, File[] files) throws Exception {
-        projectFileMap.put(project, files);
-        // TODO: can we be more efficient than rebuilding the whole workspace index each time one project changes??
-        rebuildIndex();
-    }
-
-    private synchronized void rebuildIndex() throws Exception {
+    private synchronized void regenerateIndex() throws IOException {
+        if (!needsRegeneration())
+            return;
         long startingTime = System.currentTimeMillis();
-
+        
+        // Get an indexer
         BundleIndexer indexer = workspace.getPlugin(BundleIndexer.class);
         if (indexer == null)
             throw new IllegalStateException("No Bundle Indexer service available");
-
-        Set<File> jars = new HashSet<File>();
-        for (File[] files : projectFileMap.values()) {
-            for (File file : files) {
-                if (file.exists()) jars.add(file.getCanonicalFile());
-            }
+        
+        // Get the files to index
+        Set<File> jars;
+        try {
+            jars = gatherWorkspaceFiles(null);
+        } catch (CoreException e) {
+            logger.logError("Error generating workspace OBR index.", e);
+            throw new IOException("Unable to generate workspace OBR index, see Error Log for details.");
         }
         if (jars.isEmpty())
             return;
-
-        // Needed because bindex relativizes the URIs to the repository root even if we don't want it to!
-        AbsoluteizeContentFilter absoluteizeFilter = new AbsoluteizeContentFilter(workspace.getBase().getCanonicalFile().toURI().toURL().toString());
-
-        XMLReader pipeline = SAXUtil.buildPipeline(new StreamResult(indexFile), absoluteizeFilter, new CategoryInsertionContentFilter(CATEGORY_WORKSPACE));
-
-        File tempFile = File.createTempFile("workspace-repository", ".xml");
+        
+        // Do the generation
+        File tempFile = null;
         try {
+            // Needed because bindex relativizes the URIs to the repository root even if we don't want it to!
+            AbsoluteizeContentFilter absoluteizeFilter = new AbsoluteizeContentFilter(workspace.getBase().getCanonicalFile().toURI().toURL().toString());
+            XMLReader pipeline = SAXUtil.buildPipeline(new StreamResult(indexFile), absoluteizeFilter, new CategoryInsertionContentFilter(CATEGORY_WORKSPACE));
+            tempFile = File.createTempFile(".obrtemp", ".xml", stateDir);
+            
             Map<String, String> config = new HashMap<String, String>();
             config.put(BundleIndexer.REPOSITORY_NAME, "Bndtools Workspace Repository");
             config.put(BundleIndexer.ROOT_URL, workspace.getBase().getCanonicalFile().toURI().toURL().toString());
             indexer.index(jars, new FileOutputStream(tempFile), config);
+            
             pipeline.parse(new InputSource(new FileInputStream(tempFile)));
+        } catch (Exception e) {
+            logger.logError("Unable to generate workspace OBR index.", e);
+            throw new IOException("Unable to generate workspace OBR index, see Error Log for details");
         } finally {
-            tempFile.delete();
-
             long timeTaken = System.currentTimeMillis() - startingTime;
             if (timeTaken >= WARNING_THRESHOLD_TIME)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Workspace OBR index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null));
-        }
-    }
-    
-    public Collection<URL> getOBRIndexes() throws IOException {
-        try {
-            return repository.getIndexLocations();
-        } catch (Exception e) {
-            throw new IOException(e.toString());
+                logger.logWarning(String.format("Workspace OBR index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null);
+            if (tempFile != null) tempFile.delete();
         }
     }
     
@@ -161,13 +171,83 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
     public String toString() {
         return NAME;
     }
-
+    
     public File[] get(String bsn, String range) throws Exception {
-        return repository.get(bsn, range);
+        return get(bsn, range, false);
+    }
+    
+    public File[] get(String bsn, String range, boolean exact) throws Exception {
+        File[] result = null;
+        
+        Pair<Project, Builder> found = findFromWorkspace(bsn);
+        if (found != null) {
+            File bundleFile = getOutputFile(found.getFirst(), bsn);
+            if (bundleFile.isFile()) {
+                if (matchVersion(range, found.getSecond().getVersion(), exact))
+                    result = new File[] { bundleFile };
+            }
+        }
+        
+        return result;
+    }
+
+    private boolean matchVersion(String range, String version, boolean exact) {
+        if (range == null || range.trim().length() == 0)
+            return true;
+        if (RANGE_PROJECT.equals(range) || RANGE_LATEST.equals(range) || RANGE_SNAPSHOT.equals(range))
+            return true;
+        
+        VersionRange vr = new VersionRange(range);
+        Version v = Version.parseVersion(version);
+        
+        boolean result;
+        if (exact) {
+            if (vr.isRange())
+                result = false;
+            else
+                result = vr.getHigh().equals(v);
+        } else {
+            result = vr.includes(v);
+        }
+        return result;
+    }
+
+    private Pair<Project, Builder> findFromWorkspace(String bsn) throws Exception {
+        String pname = bsn;
+        while (true) {
+            Project p = workspace.getProject(pname);
+            if (p != null && p.isValid()) {
+                Builder sub = getSubBuilder(p, bsn);
+                if (sub != null)
+                    return Pair.newInstance(p, sub);
+            }
+
+            int n = pname.lastIndexOf('.');
+            if (n <= 0)
+                return null;
+            pname = pname.substring(0, n);
+        }
+    }
+    
+    private Builder getSubBuilder(Project project, String bsn) throws Exception {
+        for (Builder sub : project.getSubBuilders()) {
+            if (sub.getBsn().equals(bsn))
+                return sub;
+        }
+        return null;
+    }
+    
+    private File getOutputFile(Project project, String bsn) throws Exception {
+        return new File(project.getTarget(), bsn + ".jar");
     }
 
     public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
-        return repository.get(bsn, range, strategy, properties);
+        File[] files = get(bsn, range, strategy == Strategy.EXACT);
+        if (files == null || files.length == 0)
+            return null;
+        if (files.length > 1)
+            throw new IllegalStateException(String.format("Bundle with BSN %s is available from multiple workspace locations: %s." + bsn, files.toString()));
+        return files[0];
     }
 
     public boolean canWrite() {
@@ -179,14 +259,33 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
     }
 
     public List<String> list(String regex) throws Exception {
-        return repository.list(regex);
+        Instruction pattern = null;
+        if (regex != null)
+            pattern = new Instruction(regex);
+
+        List<String> result = new LinkedList<String>();
+        Collection<Project> projects = workspace.getAllProjects();
+        for (Project project : projects) {
+            for (Builder sub : project.getSubBuilders()) {
+                String bsn = sub.getBsn();
+                if (pattern == null || pattern.matches(bsn))
+                    result.add(bsn);
+            }
+        }
+        
+        return result;
     }
 
     public List<Version> versions(String bsn) throws Exception {
-        return repository.versions(bsn);
+        Pair<Project, Builder> found = findFromWorkspace(bsn);
+        if(found == null)
+            return Collections.emptyList();
+        
+        Version version = Version.parseVersion(found.getSecond().getVersion());
+        return Collections.singletonList(version);
     }
 
     public String getLocation() {
-        return repository.getLocation();
+        return NAME;
     }
 }

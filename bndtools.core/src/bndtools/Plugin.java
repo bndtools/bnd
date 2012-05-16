@@ -77,6 +77,9 @@ public class Plugin extends AbstractUIPlugin {
         public void logInfo(String message, Throwable exception) {
             getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, exception));
         }
+        public void logStatus(IStatus status) {
+            getLog().log(status);
+        }
     };
 
     @Override
