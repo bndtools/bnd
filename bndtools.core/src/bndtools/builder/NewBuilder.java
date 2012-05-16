@@ -534,6 +534,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
             built = new File[0];
         }
 
+        // Notify central that there are new bundles
+        if (built.length > 0)
+            Central.invalidateIndex();
 
         // Make sure Eclipse knows about the changed files (should already have been done?)
         IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));

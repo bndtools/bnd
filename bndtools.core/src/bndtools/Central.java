@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.core.repository.WorkspaceRepoProvider;
 import org.eclipse.core.resources.IFile;
@@ -33,6 +34,8 @@ public class Central {
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
     static WorkspaceRepoProvider workspaceRepo = null;
+    
+    static final AtomicBoolean indexValid = new AtomicBoolean(false);
 
     final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
@@ -308,6 +311,14 @@ public class Central {
     }
 
     public void close() {
+    }
+
+    public static void invalidateIndex() {
+        indexValid.set(false);
+    }
+    
+    public static boolean needsIndexing() {
+        return indexValid.compareAndSet(false, true);
     }
 
 }

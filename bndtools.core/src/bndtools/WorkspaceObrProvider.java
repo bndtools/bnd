@@ -19,6 +19,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import net.jcip.annotations.ThreadSafe;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -109,8 +110,9 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
     }
     
     private synchronized boolean needsRegeneration() {
-        // TODO: for now, always generate
-        return true;
+        if (!indexFile.exists())
+            return true;
+        return Central.needsIndexing();
     }
 
     private synchronized void regenerateIndex() throws IOException {
