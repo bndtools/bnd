@@ -245,6 +245,8 @@ public class AnalyseBundleResolutionJob extends Job {
     void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy,
 	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
+		if (jar == null)
+		    return;
 		Manifest manifest = jar.getManifest();
 		if(manifest == null)
 			return;
