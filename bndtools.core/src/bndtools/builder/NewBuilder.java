@@ -373,7 +373,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         }
 
         // Process the sub-builders to determine whether a rebuild, force rebuild, or nothing is required.
-        for (Builder builder : model.getSubBuilders()) {
+        if (!model.isNoBundles()) for (Builder builder : model.getSubBuilders()) {
             // If the builder's output JAR has been removed, this could be because the user
             // deleted it, so we should force build in order to regenerate it.
             File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
@@ -507,7 +507,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model.addClasspath(file);
             }
         }
-
+        
         if (buildAction == Action.build) {
             // Build!
             model.setTrace(true);
