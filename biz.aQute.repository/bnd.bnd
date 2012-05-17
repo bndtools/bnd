@@ -5,8 +5,8 @@
 	org.osgi.impl.bundle.bindex,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0,\
-	lib/winstone-0.9.10.jar;version=file,\
 	ee.j2se;version=1.5.0
+	#lib/winstone-0.9.10.jar;version=file,\
 
 Bundle-Version: 1.0.0.${tstamp}
 
