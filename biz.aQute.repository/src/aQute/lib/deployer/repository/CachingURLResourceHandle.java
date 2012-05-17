@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
+import aQute.lib.deployer.http.DefaultURLConnector;
 import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 

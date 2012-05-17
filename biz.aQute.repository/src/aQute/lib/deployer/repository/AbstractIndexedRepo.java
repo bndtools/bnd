@@ -41,6 +41,7 @@ import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.URLConnector;
+import aQute.lib.deployer.http.DefaultURLConnector;
 import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
 import aQute.lib.deployer.repository.api.BaseResource;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
