@@ -1,7 +1,6 @@
 package aQute.lib.deployer.repository.providers;
 
 import static aQute.lib.deployer.repository.api.Decision.*;
-import static aQute.lib.deployer.repository.api.Decision.reject;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 import java.io.File;
@@ -53,6 +52,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	private static final String INDEX_NAME_COMPRESSED = "index.xml.gz";
 	private static final String INDEX_NAME_PRETTY = "index.xml";
 
+	private static final String TAG_REPOSITORY = "repository";
+	private static final String TAG_RESOURCE = "resource";
+	private static final String TAG_CAPABILITY= "capability";
+	private static final String TAG_REQUIREMENT = "requirement";
+	private static final String TAG_ATTRIBUTE = "attribute";
+	private static final String TAG_DIRECTIVE = "directive";
 
 	public String getName() {
 		return NAME;
@@ -83,9 +88,40 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 				
 				switch (type) {
 				case START_ELEMENT:
-					String nsUri = reader.getNamespaceURI();
-					if (nsUri != null)
-						return CheckResult.fromBool(NS_URI.equals(nsUri), "Corrent namespace", "Incorrect namespace: " + nsUri, null);
+					localName = reader.getLocalName();
+					switch (state) {
+					case beforeRoot:
+						String nsUri = reader.getNamespaceURI();
+						if (nsUri != null)
+							return CheckResult.fromBool(NS_URI.equals(nsUri), "Corrent namespace", "Incorrect namespace: " + nsUri, null);
+						if (!TAG_REPOSITORY.equals(localName))
+							return new CheckResult(reject, "Incorrect root element name", null);
+						state = ParserState.inRoot;
+						break;
+					case inRoot:
+						if (TAG_RESOURCE.equals(localName)) {
+							state = ParserState.inResource;
+						}
+						break;
+					case inResource:
+						if (TAG_REQUIREMENT.equals(localName))
+							return new CheckResult(accept, "Recognised element 'requirement' in 'resource'", null);
+						if (TAG_CAPABILITY.equals(localName))
+							state = ParserState.inCapability;
+						break;
+					case inCapability:
+						if (TAG_ATTRIBUTE.equals(localName) || TAG_DIRECTIVE.equals(localName)) {
+							return new CheckResult(accept, "Recognised element '%s' in 'capability'", null);
+						}
+						break;
+					}
+					break;
+				case END_ELEMENT:
+					localName = reader.getLocalName();
+					if (state == ParserState.inResource && TAG_RESOURCE.equals(localName))
+						state = ParserState.inRoot;
+					if (state == ParserState.inCapability && TAG_CAPABILITY.equals(localName))
+						state = ParserState.inResource;
 					break;
 				default:
 					break;

@@ -33,7 +33,7 @@ public class TestObrRecognition extends TestCase {
 	
 	public void testRejectRootElementName() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" +
-				"<repo name='index1'>";
+				"<repo name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(reject, new ObrContentProvider().checkStream("xxx", stream).getDecision());
 		assertEquals(testdata, IO.collect(stream));
