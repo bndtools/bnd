@@ -2,6 +2,5 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
-	<classpathentry kind="lib" path="lib/winstone-0.9.10.jar" sourcepath="/Users/njbartlett/Downloads/winstone-src-0.9.10/src/java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

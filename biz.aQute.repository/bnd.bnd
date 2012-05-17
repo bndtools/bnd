@@ -1,3 +1,11 @@
+jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
+	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-io-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-security-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-server-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-util-7.6.3.v20120416.jar;version=file
+
 -buildpath: osgi.core;version=4.2,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
@@ -5,8 +13,8 @@
 	org.osgi.impl.bundle.bindex,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0,\
-	lib/winstone-0.9.10.jar;version=file,\
-	ee.j2se;version=1.5.0
+	ee.j2se;version=1.5.0,\
+	${jetty.libs}
 
 Bundle-Version: 1.0.0.${tstamp}
 
