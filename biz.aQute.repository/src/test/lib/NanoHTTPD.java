@@ -2,28 +2,40 @@ package test.lib;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.Vector;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+
+import aQute.lib.io.IO;
 
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
@@ -229,15 +241,45 @@ public class NanoHTTPD
 	// Socket & server code
 	// ==================================================
 
+	
+	public NanoHTTPD(int port, File wwwroot) throws Exception {
+		this(port, wwwroot, false, null, null);
+	}
+	
 	/**
 	 * Starts a HTTP server to given port.<p>
 	 * Throws an IOException if the socket is already in use
 	 */
-	public NanoHTTPD( int port, File wwwroot ) throws IOException
+	public NanoHTTPD( int port, File wwwroot, boolean ssl, File keyStoreFile, String keyStorePwd) throws Exception
 	{
 		myTcpPort = port;
 		this.myRootDir = wwwroot;
-		myServerSocket = new ServerSocket( myTcpPort );
+		if (ssl) {
+			System.out.println("Using SSL");
+
+			KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			keyStore.load(new FileInputStream(keyStoreFile), null);
+			
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(keyStore, keyStorePwd.toCharArray());
+			
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trustManagerFactory.init(keyStore);
+			
+			SSLContext sslContext = SSLContext.getInstance("TLSv1");
+			sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+			SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
+			
+			SSLServerSocket sslSock = (SSLServerSocket) serverSocketFactory.createServerSocket(myTcpPort);
+			sslSock.setEnableSessionCreation(true);
+			sslSock.setWantClientAuth(true);
+			String[] protocols = sslSock.getEnabledProtocols();
+			System.out.printf("Enabled protocols: %s\n", Arrays.toString(protocols));
+			
+			myServerSocket = sslSock;
+		} else {
+			myServerSocket = new ServerSocket(myTcpPort);
+		}
 		myThread = new Thread( new Runnable()
 			{
 				public void run()
@@ -276,11 +318,15 @@ public class NanoHTTPD
 	public static void main( String[] args )
 	{
 		myOut.println( "NanoHTTPD 1.25 (C) 2001,2005-2011 Jarno Elonen and (C) 2010 Konstantinos Togias\n" +
-				"(Command line options: [-p port] [-d root-dir] [--licence])\n" );
+				"(Command line options: [-p port] [-d root-dir] [--ssl] [--keyStore file] [--keyStorePass password] [--licence])\n" );
 
 		// Defaults
-		int port = 80;
+		int port = -1;
 		File wwwroot = new File(".").getAbsoluteFile();
+		File authFile = null;
+		boolean ssl = false;
+		File keyStoreFile = null;
+		String keyStorePass = null;
 
 		// Show licence if requested
 		for ( int i=0; i<args.length; ++i )
@@ -288,17 +334,27 @@ public class NanoHTTPD
 			port = Integer.parseInt( args[i+1] );
 		else if(args[i].equalsIgnoreCase("-d"))
 			wwwroot = new File( args[i+1] ).getAbsoluteFile();
+		else if(args[i].equalsIgnoreCase("--auth"))
+			authFile = new File(args[i+1]).getAbsoluteFile();
+		else if(args[i].equalsIgnoreCase("--ssl"))
+			ssl = true;
+		else if (args[i].equalsIgnoreCase("--keyStore"))
+			keyStoreFile = new File(args[i+1]).getAbsoluteFile();
+		else if (args[i].equalsIgnoreCase("--keyStorePass"))
+			keyStorePass = args[i+1];
 		else if ( args[i].toLowerCase().endsWith( "licence" ))
 		{
 			myOut.println( LICENCE + "\n" );
 			break;
 		}
+		
+		if (port == -1) port = ssl ? 443 : 80;
 
 		try
 		{
-			new NanoHTTPD( port, wwwroot );
+			new NanoHTTPD( port, wwwroot, ssl, keyStoreFile, keyStorePass);
 		}
-		catch( IOException ioe )
+		catch( Exception ioe )
 		{
 			System.err.println( "Couldn't start server:\n" + ioe );
 			System.exit( -1 );
@@ -342,6 +398,7 @@ public class NanoHTTPD
 				// Create a BufferedReader for parsing the header.
 				ByteArrayInputStream hbis = new ByteArrayInputStream(buf, 0, rlen);
 				BufferedReader hin = new BufferedReader( new InputStreamReader( hbis ));
+				dumpInput(hin);
 				Properties pre = new Properties();
 				Properties parms = new Properties();
 				Properties header = new Properties();
@@ -471,6 +528,16 @@ public class NanoHTTPD
 			catch ( InterruptedException ie )
 			{
 				// Thrown by sendError, ignore and exit the thread.
+			}
+		}
+
+		private void dumpInput(Reader in) throws IOException {
+			in.mark(2024);
+			try {
+				String data = IO.collect(in);
+				System.out.println("READ DATA: " + data);
+			} finally {
+				in.reset();
 			}
 		}
 

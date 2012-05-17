@@ -1,17 +1,38 @@
 package aQute.lib.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.base64.*;
-import aQute.lib.io.*;
-import aQute.libg.glob.*;
-import aQute.libg.reporter.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.base64.Base64;
+import aQute.lib.io.IO;
+import aQute.libg.glob.Glob;
+import aQute.libg.reporter.Reporter;
 
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	
@@ -40,6 +61,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	
 	private Reporter reporter;
 	private String configFileList;
+	private boolean disableSslVerify = false;
 	
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
@@ -49,6 +71,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		configFileList = map.get("configs");
 		if (configFileList == null)
 			throw new IllegalArgumentException("'configs' must be specified on HttpBasicAuthURLConnector");
+		disableSslVerify = "true".equalsIgnoreCase(map.get("disableSslVerify"));
 	}
 	
 	protected void init() {
@@ -118,6 +141,13 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		TaggedData result;
 		
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		if (connection instanceof HttpsURLConnection && disableSslVerify) {
+			try {
+				disableSslVerify((HttpsURLConnection) connection);
+			} catch (GeneralSecurityException e) {
+				throw new IOException("Error attempting to disable SSL vertification verification.");
+			}
+		}
 
 		// Add the authorization string using HTTP Basic Auth
 		if (user != null && pass != null) {
@@ -141,6 +171,33 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 		
 		return result;
+	}
+
+	private void disableSslVerify(HttpsURLConnection connection) throws GeneralSecurityException {
+		TrustManager[] trustAllCerts = new TrustManager[] {
+				new X509TrustManager() {
+					public X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+					public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+					}
+					public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+					}
+				}
+		};
+		
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+		sslContext.init(null, trustAllCerts, new SecureRandom());
+		
+		SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+		connection.setSSLSocketFactory(sslSocketFactory);
+		
+		HostnameVerifier trustAnyHost = new HostnameVerifier() {
+			public boolean verify(String string, SSLSession session) {
+				return true;
+			}
+		};
+		connection.setHostnameVerifier(trustAnyHost);
 	}
 	
 }
