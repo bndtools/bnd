@@ -41,7 +41,7 @@ public class HttpConnectorTest extends TestCase {
 	private static final String KEYSTORE_PATH = "testdata/example.keystore";
 	private static final String KEYSTORE_PASS = "opensesame";
 	
-	private static final String HTTP_URL_PREFIX       = "http://127.0.0.1:"  + 7001     + "/";
+	private static final String HTTP_URL_PREFIX       = "http://127.0.0.1:"  + HTTP_PORT     + "/";
 	private static final String HTTPS_URL_PREFIX      = "https://127.0.0.1:" + HTTPS_PORT    + "/";
 	
 	private static final String EXPECTED_ETAG = "64035a95";
