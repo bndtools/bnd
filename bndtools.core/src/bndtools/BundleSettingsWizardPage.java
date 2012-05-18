@@ -121,13 +121,14 @@ public class BundleSettingsWizardPage extends WizardPage {
 			if (symbolicName.charAt(symbolicName.length() - 1) == '.') {
 				symbolicName = null;
 				error = "Symbolic name must not terminate in a period.";
-			}
-			for (int i = 0; i < symbolicName.length(); i++) {
-				if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.".indexOf(symbolicName.charAt(i)) == -1) { //$NON-NLS-1$
-					symbolicName = null;
-					error = "Invalid character in symbolic name. Only letters, numbers, underscore, hyphen or period permitted.";
-					break;
-				}
+			} else {
+                for (int i = 0; i < symbolicName.length(); i++) {
+                    if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.".indexOf(symbolicName.charAt(i)) == -1) { //$NON-NLS-1$
+                        symbolicName = null;
+                        error = "Invalid character in symbolic name. Only letters, numbers, underscore, hyphen or period permitted.";
+                        break;
+                    }
+                }
 			}
 		} else {
 			symbolicName = null;
