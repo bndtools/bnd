@@ -1019,11 +1019,11 @@ public class Clazz {
 				if ((methodref == forName || methodref == class$) && lastReference != -1
 						&& pool[intPool[lastReference]] instanceof String) {
 					String fqn = (String) pool[intPool[lastReference]];
-					if (!fqn.equals("class")) {
+					if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
 						TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
 						referTo(clazz);
 					}
-
+					lastReference = -1;
 				}
 				break;
 			}
