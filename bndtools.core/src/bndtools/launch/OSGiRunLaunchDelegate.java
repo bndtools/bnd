@@ -77,7 +77,9 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                jar.close();
+                if (jar != null) {
+                    jar.close();
+                }
             }
         }
         return null;
