@@ -8,6 +8,26 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class MacroTest extends TestCase {
+	
+	/**
+	 * Test if $if accepts isdir
+	 */
+	
+	public void testifDir() {
+		Processor top = new Processor();
+		top.setProperty("presentd", "${if;${isdir;jar};YES;NO}");
+		top.setProperty("absentd", "${if;${isdir;xxx};YES;NO}");
+		top.setProperty("wrongd", "${if;${isdir;bnd.bnd};YES;NO}");
+		assertEquals( "YES", top.getProperty("presentd"));
+		assertEquals( "NO", top.getProperty("wrongd"));
+		assertEquals( "NO", top.getProperty("absentd"));
+		top.setProperty("presentf", "${if;${isfile;bnd.bnd};YES;NO}");
+		top.setProperty("absentf", "${if;${isfile;xxx};YES;NO}");
+		top.setProperty("wrongf", "${if;${isfile;jar};YES;NO}");
+		assertEquals( "YES", top.getProperty("presentf"));
+		assertEquals( "NO", top.getProperty("absentf"));
+		assertEquals( "NO", top.getProperty("wrongf"));
+	}
 
 	/**
 	 * Test the combine macro that groups properties
@@ -488,6 +508,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aaaa", m.process("${if;1;$<a>}"));
 		assertEquals("", m.process("${if;;$<a>}"));
 		assertEquals("yes", m.process("${if;;$<a>;yes}"));
+		assertEquals("yes", m.process("${if;false;$<a>;yes}"));
 	}
 
 	public void testLiteral() {

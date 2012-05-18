@@ -316,8 +316,10 @@ public class Macro implements Replacer {
 	public String _if(String args[]) {
 		verifyCommand(args, _ifHelp, null, 3, 4);
 		String condition = args[1].trim();
-		if (condition.length() != 0)
-			return args[2];
+		if ( !condition.equalsIgnoreCase("false"))
+			if (condition.length() != 0)
+				return args[2];
+		
 		if (args.length > 3)
 			return args[3];
 		else
