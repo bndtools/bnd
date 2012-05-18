@@ -31,7 +31,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
-	static Pattern				BINDNAME				= Pattern.compile("(set|add)?(.*)");
+	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
 	static Pattern				BINDDESCRIPTOR			= Pattern
 																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
 
@@ -87,7 +87,7 @@ public class AnnotationReader extends ClassDataCollector {
 		for (ReferenceDef rdef : component.references.values()) {
 			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1",
 					"(.*)", "un$1");
-			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set)(.*)",
+			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)",
 					"updated$2", "(.*)", "updated$1");
 		}
 		return component;

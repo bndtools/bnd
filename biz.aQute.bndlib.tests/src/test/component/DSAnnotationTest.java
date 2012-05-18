@@ -474,7 +474,8 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedLogService(ServiceReference ref) {
 
 		}
-	}
+
+}
 
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
@@ -494,6 +495,58 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
 		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+
+	}
+
+	/**
+	 * Test the different prototypes ...
+	 */
+
+	@Component(name = "prototypes") public class CheckBinds {
+		@SuppressWarnings("unused") @Activate private void activate() {
+		}
+
+		@Deactivate protected void deactivate(ComponentContext ctx) {
+
+		}
+
+		@Modified void modified(BundleContext context) {
+
+		}
+
+		@SuppressWarnings("unused") @Reference private void bindLogService(LogService l) {
+
+		}
+
+		protected void unbindLogService(LogService l, Map<Object, Object> map) {
+
+		}
+
+		void updatedLogService(ServiceReference ref) {
+
+		}
+
+}
+
+	public void testBinds() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*CheckBinds");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		Resource r = jar.getResource("OSGI-INF/prototypes.xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
+				"http://www.osgi.org/xmlns/scr/v1.2.0");
+
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("bindLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unbindLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
 
 	}
