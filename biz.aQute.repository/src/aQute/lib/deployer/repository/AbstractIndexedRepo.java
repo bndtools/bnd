@@ -18,6 +18,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
@@ -38,6 +39,8 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.lib.deployer.http.DefaultURLConnector;
 import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
 import aQute.lib.deployer.repository.api.BaseResource;
+import aQute.lib.deployer.repository.api.CheckResult;
+import aQute.lib.deployer.repository.api.Decision;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.deployer.repository.api.IRepositoryListener;
 import aQute.lib.deployer.repository.api.Referral;
@@ -72,8 +75,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String REPO_TYPE_R5  = R5RepoContentProvider.NAME;
 	public static final String REPO_TYPE_OBR = ObrContentProvider.NAME;
 	
-	private   final Map<String, IRepositoryContentProvider> contentHandlerProviders = new HashMap<String, IRepositoryContentProvider>(5);
-	protected final List<IRepositoryContentProvider> contentProviders = new LinkedList<IRepositoryContentProvider>();
+	private   final Map<String, IRepositoryContentProvider> allContentProviders = new HashMap<String, IRepositoryContentProvider>(5);
+	protected final List<IRepositoryContentProvider> generatingProviders = new LinkedList<IRepositoryContentProvider>();
 	
 	protected Registry registry;
 	protected Reporter reporter;
@@ -91,11 +94,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	
 	
 	protected AbstractIndexedRepo() {
-		R5RepoContentProvider defaultProvider = new R5RepoContentProvider();
-		contentProviders.add(defaultProvider);
+		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
+		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
 		
-		contentHandlerProviders.put(REPO_TYPE_R5, defaultProvider);
-		contentHandlerProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
+		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}
 	
 	protected void addResourceToIndex(BaseResource resource) {
@@ -113,7 +115,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	protected abstract List<URL> loadIndexes() throws Exception;
 
-	protected synchronized void loadContentProviders() {
+	protected synchronized void loadAllContentProviders() {
 		if (registry == null)
 			return;
 
@@ -121,10 +123,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		for (IRepositoryContentProvider provider : extraProviders) {
 			String providerName = provider.getName();
-			if (contentHandlerProviders.containsKey(providerName)) {
+			if (allContentProviders.containsKey(providerName)) {
 				if (reporter != null) reporter.warning("Repository content provider with name \"%s\" is already registered.", providerName);
 			} else {
-				contentHandlerProviders.put(providerName, provider);
+				allContentProviders.put(providerName, provider);
 			}
 		}
 	}
@@ -135,26 +137,25 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			
 			// Load the request repository content providers, if specified
 			if (requestedContentProviderList != null && requestedContentProviderList.length() > 0) {
-				contentProviders.clear();
+				generatingProviders.clear();
 				
 				// Load the available providers from the workspace plugins.
-				loadContentProviders();
+				loadAllContentProviders();
 				
 				// Find the requested providers from the available ones.
 				StringTokenizer tokenizer = new StringTokenizer(requestedContentProviderList, "|");
 				while (tokenizer.hasMoreTokens()) {
 					String token = tokenizer.nextToken().trim();
-					IRepositoryContentProvider provider = contentHandlerProviders.get(token);
+					IRepositoryContentProvider provider = allContentProviders.get(token);
 					if (provider == null) {
 						if (reporter != null) reporter.warning("Unknown repository content provider \"%s\".", token);
 					} else {
-						contentProviders.add(provider);
+						generatingProviders.add(provider);
 					}
 				}
-
-				if (contentProviders.isEmpty()) {
-					if (reporter != null) reporter.error("No valid repository content providers were found, requested list was: %s", requestedContentProviderList);
-					throw new IllegalArgumentException("No valid repository content providers found.");
+				if (generatingProviders.isEmpty()) {
+					if (reporter != null)
+						reporter.warning("No valid repository index generators were found, requested list was: [%s]", requestedContentProviderList);
 				}
 			}
 
@@ -193,7 +194,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
-					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
+					InputStream indexStream = GZipUtils.detectCompression(new WrappingStream(new FileInputStream(indexFile)));
 					readIndex(indexFile.getName(), indexLocation.toExternalForm(), indexStream, listener);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -366,11 +367,15 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		// Find a compatible content provider for the input
 		IRepositoryContentProvider selectedProvider = null;
-		for (IRepositoryContentProvider provider : contentProviders) {
-			boolean supported = provider.checkStream(name, bufferedStream);
-			if (supported) {
+		for (Entry<String, IRepositoryContentProvider> entry : allContentProviders.entrySet()) {
+			IRepositoryContentProvider provider = entry.getValue();
+			CheckResult checkResult = provider.checkStream(name, bufferedStream);
+			if (checkResult.getDecision() == Decision.accept) {
 				selectedProvider = provider;
 				break;
+			} else if (checkResult.getDecision() == Decision.undecided) {
+				if (reporter != null)
+					reporter.warning("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s", provider.getName(), baseUrl, checkResult.getMessage());
 			}
 		}
 		if (selectedProvider == null)

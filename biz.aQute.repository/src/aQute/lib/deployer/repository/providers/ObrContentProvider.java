@@ -29,11 +29,13 @@ import aQute.lib.io.IO;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 	
+
 	public static final String NAME = "OBR";
 	
 	private static final String INDEX_NAME = "repository.xml";
-	private static final String EMPTY_REPO_TEMPLATE = "<?xml version='1.0' encoding='UTF-8'?>%n<repository name='%s' lastmodified='0'/>";
+	private static final String EMPTY_REPO_TEMPLATE = "<?xml version='1.0' encoding='UTF-8'?>%n<repository name='%s' lastmodified='0' xmlns='http://www.osgi.org/xmlns/obr/v1.0.0'/>";
 	
+	private static final int    CHECK_BUFFER_LIMIT = 1024 * 1024;
 	private static final String NS_URI = "http://www.osgi.org/xmlns/obr/v1.0.0";
 	private static final String PI_DATA_STYLESHEET = "type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'";
 	private static final String PI_TARGET_STYLESHEET = "xml-stylesheet";
@@ -101,14 +103,14 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 
 	
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
-		stream.mark(1024);
+		stream.mark(CHECK_BUFFER_LIMIT);
 		
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			
-			reader = inputFactory.createXMLStreamReader(stream);
+			reader = inputFactory.createXMLStreamReader(new NonClosingStream(stream));
 			ParserState state = ParserState.beforeRoot;
 			
 			while (reader.hasNext()) {

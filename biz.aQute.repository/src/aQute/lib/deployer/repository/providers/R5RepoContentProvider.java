@@ -47,6 +47,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	
 	public static final String NAME = "R5";
 	
+	private static final int    CHECK_BUFFER_LIMIT = 1024 * 1024;
 	private static final String NS_URI = "http://www.osgi.org/xmlns/repository/v1.0.0";
 	
 	private static final String INDEX_NAME_COMPRESSED = "index.xml.gz";
@@ -72,14 +73,14 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 	
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
-		stream.mark(1024);
+		stream.mark(CHECK_BUFFER_LIMIT);
 
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 
-			reader = inputFactory.createXMLStreamReader(stream);
+			reader = inputFactory.createXMLStreamReader(new NonClosingStream(stream));
 			ParserState state = ParserState.beforeRoot;
 
 			while (reader.hasNext()) {

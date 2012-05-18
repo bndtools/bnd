@@ -16,7 +16,11 @@ public class GZipUtils {
 	 * @throws IOException
 	 */
 	public static InputStream detectCompression(InputStream stream) throws IOException {
-		BufferedInputStream buffered = new BufferedInputStream(stream);
+		InputStream buffered;
+		if (stream.markSupported())
+			buffered = stream;
+		else
+			buffered = new BufferedInputStream(stream);
 		
 		buffered.mark(2);
 		int magic = readUShort(buffered);

@@ -52,7 +52,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
-	
+
 	public void testDeployBundle() throws Exception {
 		Jar jar = new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		File deployedFile = repo.put(jar);
@@ -68,27 +68,44 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		AbstractIndexedRepo checkRepo;
 		File[] files;
 		
-		checkRepo = createRepoForIndex(r5IndexFile, "R5");
+		checkRepo = createRepoForIndex(r5IndexFile);
 		files = checkRepo.get("name.njbartlett.osgi.emf.minimal", null);
 		assertNotNull(files);
 		assertEquals(1, files.length);
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 		
-		checkRepo = createRepoForIndex(obrIndexFile, "OBR");
+		checkRepo = createRepoForIndex(obrIndexFile);
 		files = checkRepo.get("name.njbartlett.osgi.emf.minimal", null);
 		assertNotNull(files);
 		assertEquals(1, files.length);
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 	}
+
+	public void testReadMixedRepoTypes() throws Exception {
+		FixedIndexedRepo repo = new FixedIndexedRepo();
+		Map<String, String> config = new HashMap<String, String>();
+		config.put("locations", new File("testdata/fullobr.xml").toURI() + "," + new File("testdata/minir5.xml").toURI());
+		repo.setProperties(config);
+		
+		File[] files;
+		
+		files = repo.get("name.njbartlett.osgi.emf.minimal", "[2.6,2.7)");
+		assertEquals(1, files.length);
+		assertEquals(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar").getAbsoluteFile(), files[0]);
+		
+		files = repo.get("dummybundle", null);
+		assertEquals(1, files.length);
+		assertEquals(new File("testdata/bundles/dummybundle.jar").getAbsoluteFile(), files[0]);
+	}
 	
+
 	// UTILS
 
-	private static AbstractIndexedRepo createRepoForIndex(File index, String type) {
+	private static AbstractIndexedRepo createRepoForIndex(File index) {
 		FixedIndexedRepo newRepo = new FixedIndexedRepo();
 		
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("locations", index.getAbsoluteFile().toURI().toString());
-		config.put("type", type);
 		newRepo.setProperties(config);
 		
 		return newRepo;
