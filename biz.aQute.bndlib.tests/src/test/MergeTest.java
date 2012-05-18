@@ -29,7 +29,7 @@ public class MergeTest extends TestCase {
 	}
 	
 	public void testError() throws Exception {
-		testMerge("error", null, null,null, 2, 0);
+		testMerge("error", null, null,null, 1, 1);
 	}
 
 	void testMerge(String type, String[] in, String[] out, String c,
