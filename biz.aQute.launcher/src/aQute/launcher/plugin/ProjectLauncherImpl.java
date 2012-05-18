@@ -115,7 +115,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws Exception
 	 */
 
-	@SuppressWarnings("unchecked") public Jar executable() throws Exception {
+	public Jar executable() throws Exception {
 		Jar jar = new Jar(project.getName());
 
 		// Copy the class path of the launched VM to this bundle
