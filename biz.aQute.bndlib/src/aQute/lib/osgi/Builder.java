@@ -34,6 +34,7 @@ import aQute.libg.header.*;
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
+	static Pattern IR_PATTERN = Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
 	private final DiffPluginImpl	differ				= new DiffPluginImpl();
 	private Pattern					xdoNotCopy			= null;
 	private static final int		SPLIT_MERGE_LAST	= 1;
@@ -111,7 +112,8 @@ public class Builder extends Analyzer {
 			doVerify(dot);
 
 		if (dot.getResources().isEmpty())
-			error("The JAR is empty: " + dot.getName());
+			warning("The JAR is empty: The instructions for the JAR named %s did not cause any content to be included, this is likely wrong",
+					getBsn());
 
 		dot.updateModified(lastModified(), "Last Modified Processor");
 		dot.setName(getBsn());
@@ -270,7 +272,7 @@ public class Builder extends Analyzer {
 			return null;
 		Instructions instructions = new Instructions(conditionals);
 
-		Collection<PackageRef> referred = instructions.select(getReferred().keySet(),false);
+		Collection<PackageRef> referred = instructions.select(getReferred().keySet(), false);
 		referred.removeAll(getContained().keySet());
 
 		Jar jar = new Jar("conditional-import");
@@ -724,7 +726,10 @@ public class Builder extends Analyzer {
 
 	private void doIncludeResource(Jar jar, String name, Map<String, String> extra)
 			throws ZipException, IOException, Exception {
+
 		boolean preprocess = false;
+		boolean absentIsOk = false;
+
 		if (name.startsWith("{") && name.endsWith("}")) {
 			preprocess = true;
 			name = name.substring(1, name.length() - 1).trim();
@@ -736,8 +741,14 @@ public class Builder extends Analyzer {
 		if (parts.length == 2)
 			source = parts[1];
 
+		if (source.startsWith("-")) {
+			source = source.substring(1);
+			absentIsOk = true;
+		}
+
 		if (source.startsWith("@")) {
-			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination);
+			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination,
+					absentIsOk);
 		} else if (extra.containsKey("literal")) {
 			String literal = (String) extra.get("literal");
 			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
@@ -770,6 +781,9 @@ public class Builder extends Analyzer {
 			// destinationPath = checkDestinationPath(destinationPath);
 
 			if (!sourceFile.exists()) {
+				if (absentIsOk)
+					return;
+
 				noSuchFile(jar, name, extra, source, destinationPath);
 			} else
 				copy(jar, destinationPath, sourceFile, preprocess, extra);
@@ -862,8 +876,8 @@ public class Builder extends Analyzer {
 	 * @throws ZipException
 	 * @throws IOException
 	 */
-	private void extractFromJar(Jar jar, String source, String destination) throws ZipException,
-			IOException {
+	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
+			throws ZipException, IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
 		// like @zip.jar!/META-INF/MANIFEST.MF
@@ -881,9 +895,12 @@ public class Builder extends Analyzer {
 		// filter = wildcard(fstring);
 		// }
 		Jar sub = getJarFromName(source, "extract from jar");
-		if (sub == null)
+		if (sub == null) {
+			if (absentIsOk)
+				return;
+
 			error("Can not find JAR file " + source);
-		else {
+		} else {
 			addAll(jar, sub, instr, destination);
 		}
 	}
@@ -1156,8 +1173,6 @@ public class Builder extends Analyzer {
 	 * file it is on the class path and the Export-Pacakge or Private-Package
 	 * include this resource.
 	 * 
-	 * For now, include resources are skipped.
-	 * 
 	 * @param f
 	 * @return
 	 */
@@ -1168,6 +1183,9 @@ public class Builder extends Analyzer {
 			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES,
 					"test;presence:=optional")));
 		}
+		
+		Collection<String> ir = getIncludedResourcePrefixes();
+		
 		Instructions instructions = new Instructions(clauses);
 
 		for (File r : resources) {
@@ -1178,8 +1196,37 @@ public class Builder extends Analyzer {
 				if (i != null)
 					return !i.isNegated();
 			}
+			
+			// Check if this resource starts with one of the I-C header
+			// paths.
+			String path = r.getAbsolutePath();
+			for ( String p : ir ) {
+				if ( path.startsWith(p))
+					return true;
+			}
 		}
 		return false;
+	}
+
+	/**
+	 * Extra the paths for the directories and files that are
+	 * used in the Include-Resource header.
+	 * @return
+	 */
+	private Collection<String> getIncludedResourcePrefixes() {
+		List<String> prefixes = new ArrayList<String>();
+		Parameters includeResource = getIncludeResource();
+		for ( Entry<String, Attrs> p : includeResource.entrySet()) {
+			if ( p.getValue().containsKey("literal"))
+				continue;
+			
+			Matcher m = IR_PATTERN.matcher(p.getKey());
+			if ( m.matches()) {
+				File f = getFile(m.group(1));
+				prefixes.add(f.getAbsolutePath());
+			}
+		}
+		return prefixes;
 	}
 
 	/**

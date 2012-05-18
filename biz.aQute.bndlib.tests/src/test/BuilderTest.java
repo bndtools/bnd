@@ -608,6 +608,20 @@ public class BuilderTest extends BndTestCase {
 		assertFalse(b.isInScope(outside));
 	}
 
+	public void testInScopeResources() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Include-Resource", "@a.jar/!xya.txt,{@b.jar/!xya.txt}, -@c.jar/!xya.txt, dir, x=dirb, {-x=dirc}");
+		assertFalse(b.isInScope(Arrays.asList(b.getFile("x.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("a.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("b.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dir/a.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dir/x.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dir/x.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dirb/x.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dirb/x.jar"))));
+		assertTrue(b.isInScope(Arrays.asList(b.getFile("dirc/x.jar"))));
+	}
+
 	public void testExtra() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
@@ -778,7 +792,7 @@ public class BuilderTest extends BndTestCase {
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
-		assertTrue(b.check("The JAR is empty:"));
+		assertTrue(b.check("The JAR is empty"));
 
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);

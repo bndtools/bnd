@@ -153,6 +153,12 @@ public abstract class Domain implements Iterable<String> {
 		return getParameters(PRIVATE_PACKAGE);
 	}
 
+	public Parameters getIncludeResource() {
+		Parameters ic = getParameters(INCLUDE_RESOURCE);
+		ic.putAll( getParameters(INCLUDERESOURCE));
+		return ic;
+	}
+
 	public Parameters getDynamicImportPackage() {
 		return getParameters(DYNAMICIMPORT_PACKAGE);
 	}
