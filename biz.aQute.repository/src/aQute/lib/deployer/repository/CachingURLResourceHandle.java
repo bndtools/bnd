@@ -1,14 +1,20 @@
 package aQute.lib.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
+import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.service.url.URLConnector;
 import aQute.lib.deployer.http.DefaultURLConnector;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.Reporter;
 
 /**
  * <p>
@@ -197,15 +203,21 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		switch (mode) {
 		case PreferCache:
 			if (!cachedFile.exists()) {
-				TaggedData data = connector.connectTagged(url);
-				
-				// Save the etag
-				if (data.getTag() != null)
-					saveETag(data.getTag());
-				
-				// Download to the cache
-				cacheDir.mkdirs();
-				IO.copy(data.getInputStream(), cachedFile);
+				try {
+					TaggedData data = connector.connectTagged(url);
+					
+					// Save the etag
+					if (data.getTag() != null)
+						saveETag(data.getTag());
+					
+					// Download to the cache
+					cacheDir.mkdirs();
+					IO.copy(data.getInputStream(), cachedFile);
+				} catch (IOException e) {
+					if (reporter != null)
+						reporter.error("Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
+					throw new IOException(String.format("Download of remote resource %s failed and cache file %s not available, see log for details.", url, cachedFile));
+				}
 			}
 			return cachedFile;
 		case PreferRemote:
@@ -231,15 +243,25 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			} catch (IOException e) {
 				// Remote access failed, use the cache if available
 				if (cacheExists) {
-					if (reporter != null) reporter.warning("Download of remote resource %s failed, using local cache %s.", url, cachedFile); 
+					if (reporter != null)
+						reporter.warning("Download of remote resource %s failed, using local cache %s. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e)); 
 					return cachedFile;
 				} else {
-					throw new IOException(String.format("Download of remote resource %s failed and cached file %s not available.\nOriginal exception: %s\nTrace: %s", url, cachedFile, e, Arrays.toString(e.getStackTrace())));
+					if (reporter != null)
+						reporter.error("Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
+					throw new IOException(String.format("Download of remote resource %s failed and cache file %s not available, see log for details.", url, cachedFile));
 				}
 			}
 		default:
 			throw new IllegalArgumentException("Invalid caching mode");
 		}
+	}
+	
+	private String collectStackTrace(Throwable t) {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		PrintStream pps = new PrintStream(buffer);
+		t.printStackTrace(pps);
+		return buffer.toString();
 	}
 	
 	String readETag() throws IOException {

@@ -37,11 +37,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private static final int RESPONSE_NOT_MODIFIED = 304;
 
 	private static class Mapping {
+		String name;
 		Glob urlPattern;
 		String user;
 		String pass;
-		Mapping(Glob urlPattern, String user, String pass) {
-			this.urlPattern = urlPattern; this.user = user; this.pass = pass;
+		Mapping(String name, Glob urlPattern, String user, String pass) {
+			this.name = name; this.urlPattern = urlPattern; this.user = user; this.pass = pass;
 		}
 	}
 
@@ -89,11 +90,11 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 								String uid = props.getProperty(PREFIX_USER + id);
 								String pwd = props.getProperty(PREFIX_PASSWORD + id);
 								
-								mappings.add(new Mapping(glob, uid, pwd));
+								mappings.add(new Mapping(id, glob, uid, pwd));
 							}
 						}
 					} catch (IOException e) {
-						reporter.error("Failed to load %s", configFileName);
+						if (reporter != null) reporter.error("Failed to load %s", configFileName);
 					} finally {
 						if (stream != null) IO.close(stream);
 					}
@@ -119,10 +120,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		
 		for (Mapping mapping : mappings) {
 			Matcher matcher = mapping.urlPattern.matcher(url.toString());
-			if (matcher.find())
+			if (matcher.find()) {
+				if (reporter != null) reporter.trace("Found username %s, password ***** for URL '%s'. Matched on pattern %s=%s", mapping.user, url, mapping.name, mapping.urlPattern.toString());
 				return connectTagged(url, tag, mapping.user, mapping.pass);
+			}
 		}
-		
+		if (reporter != null) reporter.trace("No username/password found for URL '%s'.", url);
 		return connectTagged(url, tag, null, null);
 	}
 
@@ -133,8 +136,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		try {
 			if (disableSslVerify) HttpsUtil.disableServerVerification(connection);
 		} catch (GeneralSecurityException e) {
-			if (reporter != null)
-				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
+			if (reporter != null) reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
 			throw new IOException("Error attempting to disable SSL server certificate verification.");
 		}
 
