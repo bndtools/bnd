@@ -47,7 +47,6 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	
 	public static final String NAME = "R5";
 	
-	private static final int    CHECK_BUFFER_LIMIT = 1024 * 1024;
 	private static final String NS_URI = "http://www.osgi.org/xmlns/repository/v1.0.0";
 	
 	private static final String INDEX_NAME_COMPRESSED = "index.xml.gz";
@@ -73,14 +72,15 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 	
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
-		stream.mark(CHECK_BUFFER_LIMIT);
-
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 
-			reader = inputFactory.createXMLStreamReader(new NonClosingStream(stream));
+			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+
+			reader = inputFactory.createXMLStreamReader(stream);
 			ParserState state = ParserState.beforeRoot;
 
 			while (reader.hasNext()) {
@@ -138,7 +138,6 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 					reader.close();
 				} catch (XMLStreamException e) {
 				}
-			stream.reset();
 		}
 	}
 	
@@ -149,6 +148,9 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		SAXParser parser = parserFactory.newSAXParser();
 		
 		XMLReader reader = parser.getXMLReader();
+		reader.setFeature("http://xml.org/sax/features/validation", false);
+		reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		
 		reader.setContentHandler(handler);
 		InputSource source = new InputSource(stream);
 		source.setSystemId(baseUrl);

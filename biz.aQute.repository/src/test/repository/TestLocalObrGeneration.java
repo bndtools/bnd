@@ -5,21 +5,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 
 import test.lib.MockRegistry;
-
-import junit.framework.TestCase;
 import aQute.lib.deployer.repository.AbstractIndexedRepo;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
 import aQute.lib.deployer.repository.LocalIndexedRepo;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Processor;
 
 public class TestLocalObrGeneration extends TestCase {
 
 	private LocalIndexedRepo repo;
 	private File outputDir;
+	private Processor reporter;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -28,11 +30,13 @@ public class TestLocalObrGeneration extends TestCase {
 		outputDir.mkdirs();
 		
 		// Setup the repo
+		reporter = new Processor();
 		repo = new LocalIndexedRepo();
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "OBR");
 		repo.setProperties(config);
+		repo.setReporter(reporter);
 		
 		// Add the BundleIndexer plugin
 		MockRegistry registry = new MockRegistry();
@@ -44,6 +48,9 @@ public class TestLocalObrGeneration extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		IO.delete(outputDir);
+		
+		assertEquals(0, reporter.getErrors().size());
+		assertEquals(0, reporter.getWarnings().size());
 	}
 
 	public void testInitiallyEmpty() throws Exception {

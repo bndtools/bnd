@@ -9,7 +9,6 @@ import javax.xml.stream.XMLStreamException;
 import junit.framework.TestCase;
 import aQute.lib.deployer.repository.api.CheckResult;
 import aQute.lib.deployer.repository.providers.R5RepoContentProvider;
-import aQute.lib.io.IO;
 
 public class TestR5Recognition extends TestCase {
 	
@@ -19,7 +18,6 @@ public class TestR5Recognition extends TestCase {
 				"<resource>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
-		assertEquals(testdata, IO.collect(stream)); // This asserts that the original stream has been properly reset
 	}
 	
 	public void testAcceptNamespace() throws Exception {
@@ -27,7 +25,6 @@ public class TestR5Recognition extends TestCase {
 				"<repository xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(accept, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
-		assertEquals(testdata, IO.collect(stream));
 	}
 	
 	public void testRejectRootElementName() throws Exception {
@@ -35,7 +32,6 @@ public class TestR5Recognition extends TestCase {
 				"<repo name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
-		assertEquals(testdata, IO.collect(stream));
 	}
 	
 	public void testUndecidable() throws Exception {
@@ -46,19 +42,16 @@ public class TestR5Recognition extends TestCase {
 		testdata = "<?xml version='1.0' encoding='utf-8'?><repository name='index1'/>";
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(undecided, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
-		assertEquals(testdata, IO.collect(stream));
 
 		testdata = "<repository><resource/></repository>";
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(undecided, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 		
 		testdata = "<repository><referral/></repository>";
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(undecided, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 	}
 	
 	public void testUnparseable() throws Exception {
@@ -68,7 +61,6 @@ public class TestR5Recognition extends TestCase {
 		CheckResult result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(reject, result.getDecision());
 		assertTrue(result.getException() != null && result.getException() instanceof XMLStreamException);
-		assertEquals(testdata, IO.collect(stream));
 	}
 	
 	public void testAcceptOnCapabilityChildElementNames() throws Exception {
@@ -81,21 +73,18 @@ public class TestR5Recognition extends TestCase {
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(accept, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 
 		// Must be R5
 		testdata = "<repository><resource><capability><directive/>...";
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(accept, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 
 		// Arbitrary elements under repo, resource and capability are allowed
 		testdata = "<repository><XXX/><resource><YYY/><capability><ZZZ/><attribute/>...";
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(accept, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 	}
 	
 	public void testAcceptExtensionElementOtherNamespace() throws Exception {
@@ -108,6 +97,5 @@ public class TestR5Recognition extends TestCase {
 		stream = new ByteArrayInputStream(testdata.getBytes());
 		result = new R5RepoContentProvider().checkStream("xxx", stream);
 		assertEquals(accept, result.getDecision());
-		assertEquals(testdata, IO.collect(stream));
 	}
 }

@@ -35,7 +35,6 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 	private static final String INDEX_NAME = "repository.xml";
 	private static final String EMPTY_REPO_TEMPLATE = "<?xml version='1.0' encoding='UTF-8'?>%n<repository name='%s' lastmodified='0' xmlns='http://www.osgi.org/xmlns/obr/v1.0.0'/>";
 	
-	private static final int    CHECK_BUFFER_LIMIT = 1024 * 1024;
 	private static final String NS_URI = "http://www.osgi.org/xmlns/obr/v1.0.0";
 	private static final String PI_DATA_STYLESHEET = "type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'";
 	private static final String PI_TARGET_STYLESHEET = "xml-stylesheet";
@@ -69,7 +68,9 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 	
 	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log) throws Exception {
 		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
+		inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 		
 		StreamSource source = new StreamSource(stream, baseUrl);
 		XMLStreamReader reader = inputFactory.createXMLStreamReader(source);
@@ -103,14 +104,15 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 
 	
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
-		stream.mark(CHECK_BUFFER_LIMIT);
-		
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			
-			reader = inputFactory.createXMLStreamReader(new NonClosingStream(stream));
+			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+			
+			reader = inputFactory.createXMLStreamReader(stream);
 			ParserState state = ParserState.beforeRoot;
 			
 			while (reader.hasNext()) {
@@ -163,7 +165,6 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			return new CheckResult(reject, "Invalid XML", e);
 		} finally {
 			if (reader != null) try { reader.close(); } catch (XMLStreamException e) { }
-			stream.reset();
 		}
 	}
 	

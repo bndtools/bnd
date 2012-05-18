@@ -29,19 +29,9 @@ public interface IRepositoryContentProvider {
 
 	/**
 	 * <p>
-	 * Check the stream for compatibility with this provider. The client and
-	 * provider must carefully implement the following rules, to enable multiple
-	 * providers to check the stream and to allow the chosen provider to
-	 * correctly process the stream:
+	 * Check the stream for compatibility with this provider.
 	 * </p>
-	 * <ul>
-	 * <li>The client MUST supply and input stream that supports mark/reset
-	 * operations (i.e. that return {@code true} from
-	 * {@link InputStream#markSupported()}.)</li>
-	 * <li>The provider MUST call {@link InputStream#mark(int)} before reading
-	 * any bytes.</li>
-	 * <li>The provider MUST call {@link InputStream#reset()} before returning.
-	 * <li>
+	* 
 	 * </ul>
 	 * 
 	 * 

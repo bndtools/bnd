@@ -75,7 +75,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String REPO_TYPE_R5  = R5RepoContentProvider.NAME;
 	public static final String REPO_TYPE_OBR = ObrContentProvider.NAME;
 	
-	private   final Map<String, IRepositoryContentProvider> allContentProviders = new HashMap<String, IRepositoryContentProvider>(5);
+	private static final int READ_AHEAD_MAX = 5 * 1024 * 1024;
+	
+	protected final Map<String, IRepositoryContentProvider> allContentProviders = new HashMap<String, IRepositoryContentProvider>(5);
 	protected final List<IRepositoryContentProvider> generatingProviders = new LinkedList<IRepositoryContentProvider>();
 	
 	protected Registry registry;
@@ -135,12 +137,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if (!initialised) {
 			clear();
 			
+			// Load the available providers from the workspace plugins.
+			loadAllContentProviders();
+			
 			// Load the request repository content providers, if specified
 			if (requestedContentProviderList != null && requestedContentProviderList.length() > 0) {
 				generatingProviders.clear();
 				
-				// Load the available providers from the workspace plugins.
-				loadAllContentProviders();
 				
 				// Find the requested providers from the available ones.
 				StringTokenizer tokenizer = new StringTokenizer(requestedContentProviderList, "|");
@@ -194,10 +197,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
-					InputStream indexStream = GZipUtils.detectCompression(new WrappingStream(new FileInputStream(indexFile)));
+					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
 					readIndex(indexFile.getName(), indexLocation.toExternalForm(), indexStream, listener);
 				} catch (Exception e) {
-					e.printStackTrace();
 					if (reporter != null)
 						reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
@@ -367,21 +369,40 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		// Find a compatible content provider for the input
 		IRepositoryContentProvider selectedProvider = null;
+		IRepositoryContentProvider maybeSelectedProvider = null;
 		for (Entry<String, IRepositoryContentProvider> entry : allContentProviders.entrySet()) {
 			IRepositoryContentProvider provider = entry.getValue();
-			CheckResult checkResult = provider.checkStream(name, bufferedStream);
+			
+			CheckResult checkResult;
+			try {
+				bufferedStream.mark(READ_AHEAD_MAX);
+				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
+			} finally {
+				bufferedStream.reset();
+			}
+			
 			if (checkResult.getDecision() == Decision.accept) {
 				selectedProvider = provider;
 				break;
 			} else if (checkResult.getDecision() == Decision.undecided) {
 				if (reporter != null)
 					reporter.warning("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s", provider.getName(), baseUrl, checkResult.getMessage());
+				if (maybeSelectedProvider == null) maybeSelectedProvider = provider;
 			}
 		}
-		if (selectedProvider == null)
-			throw new IOException("No content provider understands the specified index.");
 		
-		// Finally, parse the bugger
+		// If no provider answered definitively, fall back to the first undecided provider, with an appropriate warning.
+		if (selectedProvider == null) {
+			if (maybeSelectedProvider != null) {
+				selectedProvider = maybeSelectedProvider;
+				if (reporter != null)
+					reporter.warning("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.", selectedProvider.getName());
+			} else {
+				throw new IOException("No content provider understands the specified index.");
+			}
+		}
+		
+		// Finally, parse the damn file.
 		try {
 			selectedProvider.parseIndex(bufferedStream, baseUrl, listener, logService);
 		} finally {

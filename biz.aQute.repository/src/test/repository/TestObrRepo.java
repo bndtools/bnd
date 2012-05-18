@@ -9,21 +9,25 @@ import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
+import aQute.lib.osgi.Processor;
 import aQute.libg.version.Version;
 
 public class TestObrRepo extends TestCase {
 	
 	private FixedIndexedRepo obr;
 	private NanoHTTPD httpd;
+	private Processor reporter;
 
 	@Override
 	protected void setUp() throws Exception {
+		reporter = new Processor();
 		obr = new FixedIndexedRepo();
 		Map<String, String> config = new HashMap<String, String>();
 		config.put("name", "obr");
 		config.put("locations", new File("testdata/fullobr.xml").toURI().toString());
 		config.put("type", "OBR");
 		obr.setProperties(config);
+		obr.setReporter(reporter);
 		
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
@@ -43,6 +47,9 @@ public class TestObrRepo extends TestCase {
 			}
 		}
 		obr.getCacheDirectory().delete();
+		
+		assertEquals(0, reporter.getErrors().size());
+		assertEquals(0, reporter.getWarnings().size());
 	}
 	
 	public void testGetLatest() throws Exception {
