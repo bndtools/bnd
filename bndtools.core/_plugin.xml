@@ -745,7 +745,22 @@
          class="aQute.lib.spring.JPAComponent"
          icon="icons/magnifier.png"
          name="JPA Component Analyzer"/>
+         
+      <plugin
+         class="aQute.lib.deployer.http.DefaultURLConnector"
+         icon="icons/link.png"
+         name="HTTP(S) Connector">
+         <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>
+      </plugin>
       
+      <plugin
+         class="aQute.lib.deployer.http.HttpBasicAuthURLConnector"
+         icon="icons/lock.png"
+         name="Authenticated HTTP(S) Connector">
+         <property name="configs" type="string" description="List of config files (comma-separated paths)"/>
+         <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>
+      </plugin>
+
    </extension>
 
    <extension point="org.eclipse.ui.intro.configExtension">
