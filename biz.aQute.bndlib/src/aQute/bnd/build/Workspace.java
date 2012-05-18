@@ -138,9 +138,11 @@ public class Workspace extends Processor {
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
 			for (File extension : extensions) {
-				if (extension.getName().endsWith(".bnd")) {
+				String extensionName = extension.getName();
+				if (extensionName.endsWith(".bnd")) {
+					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
 					try {
-						doIncludeFile(extension, false, getProperties());
+						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
 					} catch (Exception e) {
 						error("PropertiesChanged: " + e.getMessage());
 					}

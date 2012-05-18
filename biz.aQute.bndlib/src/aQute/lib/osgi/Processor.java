@@ -628,6 +628,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target) throws Exception {
+		doIncludeFile(file, overwrite, target, null);
+	}
+
+	/**
+	 * @param file
+	 * @param parent
+	 * @param done
+	 * @param overwrite
+	 * @param extensionName
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public void doIncludeFile(File file, boolean overwrite, Properties target, String extensionName) throws Exception {
 		if (included != null && included.contains(file)) {
 			error("Cyclic or multiple include of " + file);
 		} else {
@@ -644,8 +657,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				doIncludes(file.getParentFile(), sub);
 				// make sure we do not override properties
 				for (Map.Entry<?, ?> entry : sub.entrySet()) {
-					if (overwrite || !target.containsKey(entry.getKey()))
-						target.setProperty((String) entry.getKey(), (String) entry.getValue());
+					String key = (String) entry.getKey();
+					String value = (String) entry.getValue();
+					
+					if (overwrite || !target.containsKey(key)) {
+						target.setProperty(key, value);
+					} else if (extensionName != null) {
+						String extensionKey = extensionName + "." + key;
+						if (!target.containsKey(extensionKey))
+							target.setProperty(extensionKey, value);
+					}
 				}
 			} finally {
 				IO.close(in);
