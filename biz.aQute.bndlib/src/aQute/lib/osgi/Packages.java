@@ -6,12 +6,12 @@ import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.header.*;
 
 public class Packages implements Map<PackageRef, Attrs> {
-	private HashMap<PackageRef, Attrs>	map;
+	private LinkedHashMap<PackageRef, Attrs>	map;
 	static Map<PackageRef, Attrs>		EMPTY	= Collections.emptyMap();
 
 	public Packages(Packages other) {
 		if (other.map != null) {
-			map = new HashMap<Descriptors.PackageRef, Attrs>(other.map);
+			map = new LinkedHashMap<Descriptors.PackageRef, Attrs>(other.map);
 		}
 	}
 
@@ -99,7 +99,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 
 	public Attrs put(PackageRef key, Attrs value) {
 		if (map == null)
-			map = new HashMap<PackageRef, Attrs>();
+			map = new LinkedHashMap<PackageRef, Attrs>();
 
 		return map.put(key, value);
 	}
@@ -109,7 +109,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 			if (map.isEmpty())
 				return;
 			else
-				this.map = new HashMap<PackageRef, Attrs>();
+				this.map = new LinkedHashMap<PackageRef, Attrs>();
 		this.map.putAll(map);
 	}
 
