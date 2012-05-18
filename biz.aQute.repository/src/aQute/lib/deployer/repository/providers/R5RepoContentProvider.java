@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -29,11 +27,6 @@ import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.BIndex2;
 import org.osgi.service.log.LogService;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 import aQute.bnd.service.Registry;
 import aQute.lib.collections.MultiMap;
@@ -53,11 +46,22 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	private static final String INDEX_NAME_PRETTY = "index.xml";
 
 	private static final String TAG_REPOSITORY = "repository";
+	private static final String TAG_REFERRAL = "referral";
 	private static final String TAG_RESOURCE = "resource";
 	private static final String TAG_CAPABILITY= "capability";
 	private static final String TAG_REQUIREMENT = "requirement";
 	private static final String TAG_ATTRIBUTE = "attribute";
 	private static final String TAG_DIRECTIVE = "directive";
+
+	private static final String ATTR_REFERRAL_URL = "url";
+	private static final String ATTR_REFERRAL_DEPTH = "depth";
+	
+	private static final String ATTR_NAMESPACE = "namespace";
+	
+	private static final String ATTR_NAME = "name";
+	private static final String ATTR_VALUE = "value";
+	private static final String ATTR_TYPE = "type";
+
 
 	public String getName() {
 		return NAME;
@@ -142,19 +146,81 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 	
 	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log) throws Exception {
-		R5RepoSaxHandler handler = new R5RepoSaxHandler(baseUrl, listener);
-		
-		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-		SAXParser parser = parserFactory.newSAXParser();
-		
-		XMLReader reader = parser.getXMLReader();
-		reader.setFeature("http://xml.org/sax/features/validation", false);
-		reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-		
-		reader.setContentHandler(handler);
-		InputSource source = new InputSource(stream);
-		source.setSystemId(baseUrl);
-		reader.parse(source);
+		XMLStreamReader reader = null;
+		try {
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+	
+			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+	
+			reader = inputFactory.createXMLStreamReader(stream);
+			
+			R5Resource.Builder resourceBuilder = null;
+			Builder capReqBuilder = null;
+
+			while (reader.hasNext()) {
+				int type = reader.next();
+				String localName;
+				
+				switch (type) {
+				case START_ELEMENT:
+					localName = reader.getLocalName();
+					if (TAG_REFERRAL.equals(localName)) {
+						String url = reader.getAttributeValue(null, ATTR_REFERRAL_URL);
+						String depth = reader.getAttributeValue(null, ATTR_REFERRAL_DEPTH);
+						Referral referral = new Referral(url, parseInt(depth));
+						listener.processReferral(baseUrl, referral, 0, 0);
+					} else if (TAG_RESOURCE.equals(localName)) {
+						resourceBuilder = new R5Resource.Builder().setBaseUrl(baseUrl);
+					} else if (TAG_CAPABILITY.equals(localName) || TAG_REQUIREMENT.equals(localName)) {
+						capReqBuilder = new Builder().setNamespace(reader.getAttributeValue(null, ATTR_NAMESPACE));
+					} else if (TAG_ATTRIBUTE.equals(localName)) {
+						String name = reader.getAttributeValue(null, ATTR_NAME);
+						String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
+						String typeAttr = reader.getAttributeValue(null, ATTR_TYPE);
+						capReqBuilder.addAttribute(name, convertAttribute(valueStr, typeAttr));
+					} else if (TAG_DIRECTIVE.equals(localName)) {
+						String name = reader.getAttributeValue(null, ATTR_NAME);
+						String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
+						capReqBuilder.addDirective(name, valueStr);
+					}
+					break;
+				case END_ELEMENT:
+					localName = reader.getLocalName();
+					if (TAG_CAPABILITY.equals(localName)) {
+						resourceBuilder.addCapability(capReqBuilder.buildCapability());
+						capReqBuilder = null;
+					} else if (TAG_REQUIREMENT.equals(localName)) {
+						resourceBuilder.addRequirement(capReqBuilder.buildRequirement());
+						capReqBuilder = null;
+					} else if (TAG_RESOURCE.equals(localName)) {
+						R5Resource resource = resourceBuilder.build();
+						listener.processResource(resource);
+						resourceBuilder = null;
+					}
+					break;
+				}
+			}
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (Exception e) {
+				}
+			}
+		}
+	}
+	
+	private static int parseInt(String value) {
+		if (value == null || "".equals(value))
+			return 0;
+		return Integer.parseInt(value);
+	}
+	
+	private Object convertAttribute(String value, String type) {
+		// TODO just treat everything as String for now
+		return value;
 	}
 	
 	public boolean supportsGeneration() {
@@ -180,100 +246,6 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		
 		indexer.index(files, output, config);
 	}
-}
-
-class R5RepoSaxHandler extends DefaultHandler {
-	
-	private static final String TAG_RESOURCE = "resource";
-	
-	private static final String TAG_REFERRAL = "referral";
-	private static final String ATTR_REFERRAL_URL = "url";
-	private static final String ATTR_REFERRAL_DEPTH = "depth";
-	
-	private static final String TAG_CAPABILITY = "capability";
-	private static final String TAG_REQUIREMENT = "requirement";
-	private static final String ATTR_NAMESPACE = "namespace";
-	
-	private static final String TAG_ATTRIBUTE = "attribute";
-	private static final String TAG_DIRECTIVE = "directive";
-	private static final String ATTR_NAME = "name";
-	private static final String ATTR_VALUE = "value";
-	private static final String ATTR_TYPE = "type";
-
-	private final String baseUrl;
-	private final IRepositoryListener resourceListener;
-	
-	private R5Resource.Builder resourceBuilder = null;
-	private Builder capReqBuilder = null;
-	
-	private Referral referral = null;
-	private int currentDepth;
-	private int maxDepth;
-
-	public R5RepoSaxHandler(String baseUrl, IRepositoryListener listener) {
-		this.baseUrl = baseUrl;
-		this.resourceListener = listener;
-		this.currentDepth = 0;
-	}
-	
-	public R5RepoSaxHandler(String baseUrl, IRepositoryListener listener, int maxDepth, int currentDepth) {
-		this.baseUrl = baseUrl;
-		this.resourceListener = listener;
-		this.currentDepth = currentDepth;
-	}
-	
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (TAG_REFERRAL.equals(qName)) {
-			referral = new Referral(atts.getValue(ATTR_REFERRAL_URL), parseInt(atts.getValue(ATTR_REFERRAL_DEPTH)));
-		} else if (TAG_RESOURCE.equals(qName)) {
-			resourceBuilder = new R5Resource.Builder().setBaseUrl(baseUrl);
-		} else if (TAG_CAPABILITY.equals(qName) || TAG_REQUIREMENT.equals(qName)) {
-			capReqBuilder = new Builder().setNamespace(atts.getValue(ATTR_NAMESPACE));
-		} else if (TAG_ATTRIBUTE.equals(qName)) {
-			String name = atts.getValue(ATTR_NAME);
-			String valueStr = atts.getValue(ATTR_VALUE);
-			String type = atts.getValue(ATTR_TYPE);
-			capReqBuilder.addAttribute(name, convertAttribute(valueStr, type));
-		} else if (TAG_DIRECTIVE.equals(qName)) {
-			String name = atts.getValue(ATTR_NAME);
-			String valueStr = atts.getValue(ATTR_VALUE);
-			capReqBuilder.addDirective(name, valueStr);
-		}
-	}
-
-	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (TAG_CAPABILITY.equals(qName)) {
-			resourceBuilder.addCapability(capReqBuilder.buildCapability());
-			capReqBuilder = null;
-		} else if (TAG_REQUIREMENT.equals(qName)) {
-			resourceBuilder.addRequirement(capReqBuilder.buildRequirement());
-			capReqBuilder = null;
-		} else if (TAG_RESOURCE.equals(qName)) {
-			R5Resource resource = resourceBuilder.build();
-			resourceListener.processResource(resource);
-			resourceBuilder = null;
-		} else if (TAG_REFERRAL.equals(qName)) {
-			if (maxDepth == 0) {
-				maxDepth = referral.getDepth();
-			}
-			resourceListener.processReferral(baseUrl, referral, maxDepth, currentDepth + 1);
-			referral = null;
-		}
-	}
-
-	private Object convertAttribute(String value, String type) {
-		// TODO just treat everything as String for now
-		return value;
-	}
-	
-	private static int parseInt(String value) {
-		if (value == null || "".equals(value))
-			return 0;
-		return Integer.parseInt(value);
-	}
-
 }
 
 class R5Resource extends BaseResource {
