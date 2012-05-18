@@ -23,7 +23,6 @@ import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
-import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.configurable.*;
@@ -2382,17 +2381,25 @@ public class bnd extends Processor {
 	Jar getJar(String s) {
 
 		File f = getFile(s);
-		if (!f.isFile()) {
-			error("Not a file: %s", f);
+		if (f.isFile()) {
+			try {
+				return new Jar(f);
+			} catch (ZipException e) {
+				error("Not a jar/zip file: %s", f);
+			} catch (Exception e) {
+				error("Opening file: %s", e, f);
+			}
 			return null;
 		}
+		
 		try {
-			return new Jar(f);
-		} catch (ZipException e) {
-			error("Not a jar/zip file: %s", f);
+			URL url = new URL(s);
+			return new Jar(s, url.openStream());
 		} catch (Exception e) {
-			error("Opening file: %s", e, f);
+			// Ignore
 		}
+
+		error("Not a file or proper url: %s", f);
 		return null;
 	}
 

@@ -11,15 +11,13 @@ import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 
 public class DiffCommand {
-	bnd bnd;
-	
-	
+	bnd	bnd;
+
 	DiffCommand(bnd bnd) {
-		this.bnd=bnd;
+		this.bnd = bnd;
 	}
-	
-	@Arguments(arg={"newer file","[older file]"})
-	interface diffOptions extends Options {
+
+	@Arguments(arg = { "newer file", "[older file]" }) interface diffOptions extends Options {
 		@Config(description = "Print the API") boolean api();
 
 		@Config(description = "Print the Resources") boolean resources();
@@ -39,7 +37,7 @@ public class DiffCommand {
 
 		if (options._().size() == 1) {
 			bnd.trace("Show tree");
-			showTree(bnd,options);
+			showTree(bnd, options);
 			return;
 		}
 		if (options._().size() != 2) {
@@ -55,9 +53,15 @@ public class DiffCommand {
 		Instructions packageFilters = new Instructions(options.pack());
 
 		Iterator<String> it = options._().iterator();
-		Jar newer = new Jar(bnd.getFile(it.next()));
+		Jar newer = bnd.getJar(it.next());
+		if ( newer == null)
+			return;
+		
 		try {
-			Jar older = new Jar(bnd.getFile(it.next()));
+			Jar older = bnd.getJar(it.next());
+			if ( older == null)
+				return;
+			
 			try {
 				Differ di = new DiffPluginImpl();
 				Tree n = di.tree(newer);
@@ -107,7 +111,7 @@ public class DiffCommand {
 	 * @param options
 	 * @throws Exception
 	 */
-	
+
 	private static void showTree(bnd bnd, diffOptions options) throws Exception {
 		File fout = options.output();
 		PrintWriter pw;
