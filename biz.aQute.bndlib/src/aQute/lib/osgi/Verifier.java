@@ -360,7 +360,7 @@ public class Verifier extends Processor {
 				"uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN);
 		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN);
 		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME);
-		verifyDirectives("Fragment-Host", "resolution:", SYMBOLICNAME);
+		verifyDirectives("Fragment-Host", "extension:", SYMBOLICNAME);
 		verifyDirectives("Provide-Capability", "effective:|uses:", SYMBOLICNAME);
 		verifyDirectives("Require-Capability", "effective:|resolve:|filter:", SYMBOLICNAME);
 		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",
