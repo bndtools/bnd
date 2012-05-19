@@ -222,7 +222,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         if (delta == null)
             return;
 
-        if ((delta.getKind() & IResourceDelta.CHANGED) > 0 && (delta.getFlags() & IResourceDelta.MARKERS) > 0) {
+        if ((delta.getKind() & IResourceDelta.CHANGED) != 0 && (delta.getFlags() & IResourceDelta.MARKERS) != 0) {
             getEditorSite().getShell().getDisplay().asyncExec(new Runnable() {
                 public void run() {
                     loadProblems();

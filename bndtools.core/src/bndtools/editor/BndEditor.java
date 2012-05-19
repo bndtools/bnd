@@ -505,7 +505,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         // Close editor if file removed or switch to new location if file moved
         if (delta.getKind() == IResourceDelta.REMOVED) {
-            if ((delta.getFlags() & IResourceDelta.MOVED_TO) > 0) {
+            if ((delta.getFlags() & IResourceDelta.MOVED_TO) != 0) {
                 IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
                 final FileEditorInput newInput = new FileEditorInput(file);
 
