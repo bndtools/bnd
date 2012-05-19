@@ -1,0 +1,29 @@
+# General Options
+project.dependson       = ${p-dependson;:}
+project.bootclasspath   = ${p-bootclasspath;:}
+project.buildpath       = ${p-buildpath;:}
+project.sourcepath      = ${p-sourcepath;:}
+project.allsourcepath   = ${p-allsourcepath;:}
+project.output          = ${p-output}
+project.testpath        = ${p-testpath;:}
+
+-verbose:     true
+project:      ${basedir}
+src:          src
+bin:          bin
+target-dir:   generated
+target:       ${project}/${target-dir}
+build:        ${workspace}/cnf
+p:            ${basename;${project}}
+project.name: ${p}
+
+# Java Compiler Options
+java:         java
+javac:        javac
+javac.source: 1.5
+javac.target: 1.5
+javac.debug:  on
+
+# Bnd Options
+-sources:       true
+-sourcepath:    ${project}/src

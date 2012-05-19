@@ -1,0 +1,17 @@
+<project name="testing" default="test">
+  <target name="test">
+    <ant dir="levelone" target="clean"/>
+    <ant dir="dir/leveltwo" target="clean"/>
+    <ant dir="dir/deeper/levelthree" target="clean"/>
+
+    <ant dir="levelone" />
+    <ant dir="dir/leveltwo" />
+    <ant dir="dir/deeper/levelthree" />
+  </target>
+
+  <target name="clean">
+    <ant dir="levelone" target="clean"/>
+    <ant dir="dir/leveltwo" target="clean"/>
+    <ant dir="dir/deeper/levelthree" target="clean"/>
+  </target>
+</project>

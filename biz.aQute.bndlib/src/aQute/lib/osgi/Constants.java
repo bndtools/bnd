@@ -132,6 +132,10 @@ public interface Constants {
 	String								WABLIB										= "-wablib";
 	String								REQUIRE_BND									= "-require-bnd";
 
+	//[cs]
+	String								PROJECT_SEARCH								= "-projectsearch";
+	String								PROJECT_SEARCH_DEPTH						= "depth";
+	
 	// Deprecated
 	String								CLASSPATH									= "-classpath";
 	String								OUTPUT										= "-output";
@@ -143,7 +147,7 @@ public interface Constants {
 			SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,
 			RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE,
 			NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK,
-			RUNTRACE, TESTCONTINUOUS, SNAPSHOT										};
+			RUNTRACE, TESTCONTINUOUS, SNAPSHOT, PROJECT_SEARCH						};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
