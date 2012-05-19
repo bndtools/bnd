@@ -69,17 +69,17 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 
 	@Override
 	public void update(ViewerCell cell) {
-		if(cell.getElement() == IMPORTS_PLACEHOLDER) {
+		if(IMPORTS_PLACEHOLDER.equals(cell.getElement())) {
 			if(cell.getColumnIndex() == 0) {
 				cell.setImage(pkgFolderImg);
 				cell.setText("Import Packages");
 			}
-		} else if(cell.getElement() == EXPORTS_PLACEHOLDER) {
+		} else if(EXPORTS_PLACEHOLDER.equals(cell.getElement())) {
 			if(cell.getColumnIndex() == 0) {
 				cell.setImage(pkgFolderImg);
 				cell.setText("Export Packages");
 			}
-		} else if(cell.getElement() == REQUIRED_PLACEHOLDER) {
+		} else if(REQUIRED_PLACEHOLDER.equals(cell.getElement())) {
             if(cell.getColumnIndex() == 0) {
                 cell.setImage(bundleFolderImg);
                 cell.setText("Required Bundles");

@@ -34,11 +34,11 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
 	public Object[] getChildren(Object parentElement) {
 		Collection<?> result;
-		if(parentElement == IMPORTS_PLACEHOLDER)
+		if(IMPORTS_PLACEHOLDER.equals(parentElement))
 			result = importsAndExports != null ? importsAndExports.imports : Collections.emptyList();
-		else if(parentElement == EXPORTS_PLACEHOLDER)
+		else if(EXPORTS_PLACEHOLDER.equals(parentElement))
 			result = importsAndExports != null ? importsAndExports.exports : Collections.emptyList();
-		else if(parentElement == REQUIRED_PLACEHOLDER)
+		else if(REQUIRED_PLACEHOLDER.equals(parentElement))
 		    result = importsAndExports != null ? importsAndExports.requiredBundles : Collections.emptyList();
 		else if(parentElement instanceof ExportPackage) {
 			ExportPackage exportPackage = (ExportPackage) parentElement;
@@ -92,13 +92,13 @@ public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 	}
 
 	public boolean hasChildren(Object element) {
-		if(element == IMPORTS_PLACEHOLDER)
+		if(IMPORTS_PLACEHOLDER.equals(element))
 			return importsAndExports.imports != null && !importsAndExports.imports.isEmpty();
 
-		if(element == EXPORTS_PLACEHOLDER)
+		if(EXPORTS_PLACEHOLDER.equals(element))
 			return importsAndExports.imports != null && !importsAndExports.exports.isEmpty();
 
-		if(element == REQUIRED_PLACEHOLDER)
+		if(REQUIRED_PLACEHOLDER.equals(element))
 		    return importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty();
 
 		if(element instanceof ExportPackage) {

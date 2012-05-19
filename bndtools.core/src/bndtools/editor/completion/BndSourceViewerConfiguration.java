@@ -105,8 +105,8 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     @Override
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer,
             String contentType) {
-        if (IDocument.DEFAULT_CONTENT_TYPE == contentType
-                || SINGLELINE_COMMENT_TYPE == contentType) {
+        if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)
+                || SINGLELINE_COMMENT_TYPE.equals(contentType)) {
             return new String[] { "#", "//" };
         }
         return null;
