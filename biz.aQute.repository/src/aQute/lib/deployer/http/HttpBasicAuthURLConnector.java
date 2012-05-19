@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,7 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnector;
 import aQute.lib.base64.Base64;
+import aQute.lib.deployer.Constants;
 import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.Reporter;
@@ -143,7 +145,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		// Add the authorization string using HTTP Basic Auth
 		if (user != null && pass != null) {
 			String authString = user + ":" + pass;
-			String encoded = Base64.encodeBase64(authString.getBytes());
+			String encoded = Base64.encodeBase64(authString.getBytes(Constants.UTF8));
 			connection.setRequestProperty(HEADER_AUTHORIZATION, PREFIX_BASIC_AUTH + encoded);
 		}
 		

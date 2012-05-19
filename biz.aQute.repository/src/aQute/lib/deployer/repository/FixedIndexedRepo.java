@@ -97,7 +97,7 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	
 	@Override
 	public String getName() {
-		if (name != null && name != this.getClass().getName())
+		if (name != null && !name.equals(this.getClass().getName()))
 			return name;
 		
 		return locations;

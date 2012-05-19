@@ -26,7 +26,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 	public static final String NAME = "OBR";
 	
 	private static final String INDEX_NAME = "repository.xml";
-	private static final String EMPTY_REPO_TEMPLATE = "<?xml version='1.0' encoding='UTF-8'?>\n<repository name='%s' lastmodified='0'/>";
+	private static final String EMPTY_REPO_TEMPLATE = "<?xml version='1.0' encoding='UTF-8'?>%n<repository name='%s' lastmodified='0'/>";
 
 	public String getName() {
 		return NAME;
