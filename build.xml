@@ -22,8 +22,4 @@
 	<target name="junit">
 		<iterate target="junit"/>
 	</target>
-
-	<target name="findbugs">
-		<iterate target="findbugs"/>
-	</target>
 </project>

@@ -1,6 +1,5 @@
 *.class
 *.bak
-*.findbugs.xml
 /*/tmp
 /*/generated
 /*/bin

@@ -93,28 +93,6 @@
 		</junit>
 	</target>
 
-	<target name="findbugs" depends="build">
-		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
-			<classpath>
-				<fileset dir="${workspacedir}/cnf/findbugs/lib">
-					<include name="**/*.jar" />
-				</fileset>
-			</classpath>
-		</taskdef>
-
-		<findbugs home="${workspacedir}/cnf/findbugs" output="xml:withMessages" outputFile="${target}/${project.name}.findbugs.xml">
-			<sourcePath path="${project.sourcepath}" />
-
-			<!--
-			class and auxClasspath must be fixed:
-			process project.buildpath; put the project.output entry in <class>
-			and the other entries in <auxClasspath>
-			-->
-			<auxClasspath path="${project.bootclasspath}:${project.buildpath}:${project.testpath}" />
-			<class location="${target}" />
-		</findbugs>
-	</target>
-
 	<!--
 	     CLEAN
 	-->
