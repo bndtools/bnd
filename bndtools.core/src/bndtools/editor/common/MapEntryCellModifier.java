@@ -77,7 +77,7 @@ public class MapEntryCellModifier<K,V> implements ICellModifier {
 			V previous = map.put(key, newValue);
 
 			changed = (newValue == null && previous != null)
-					|| !newValue.equals(previous);
+					|| (newValue != null && !newValue.equals(previous));
 			viewer.refresh(key);
 		} else if(PROP_NAME.equals(property)) {
 			if(!element.equals(editResult)) {
