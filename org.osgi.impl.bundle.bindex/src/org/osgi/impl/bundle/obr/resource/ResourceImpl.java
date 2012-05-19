@@ -306,6 +306,10 @@ public class ResourceImpl implements Resource {
 	}
 
 	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
+
 		try {
 			ResourceImpl other = (ResourceImpl) o;
 			return symbolicName.equals(other.symbolicName)

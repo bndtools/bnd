@@ -43,6 +43,10 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 		return name.compareTo(o.name);
 	}
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+
 		if (this == obj) {
 			return true;
 		}
