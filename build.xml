@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build">
+
+	<macrodef name="iterate">
+		<attribute name="target" />
+		<sequential>
+			<subant target="@{target}">
+				<fileset dir="." includes="*/build.xml" excludes="cnf/*" />
+			</subant>
+		</sequential>
+	</macrodef>
+
+	<target name="p2">
+		<ant dir="bndtools.build" target="p2" />
+	</target>
+
+
+	<target name="build">
+		<iterate target="build" />
+	</target>
+
+	<target name="clean">
+		<iterate target="clean" />
+	</target>
+
+	<target name="findbugs">
+		<iterate target="findbugs" />
+	</target>
+</project>

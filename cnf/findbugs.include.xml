@@ -1,0 +1,26 @@
+<FindBugsFilter>
+     <Match>
+       <Package name="aQute.libg.glob" />
+     </Match>
+     <Match>
+       <Package name="test" />
+     </Match>
+     <Match>
+       <Package name="~bndtools(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~org\.apache\.felix\.bundlerepository\.impl(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~org\.bndtools(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~org\.osgi\.impl\.bundle(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~org\.osgi\.service\.bindex(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~test\.bndtools(|\..+)" />
+     </Match>
+</FindBugsFilter>

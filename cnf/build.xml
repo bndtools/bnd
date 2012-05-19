@@ -37,6 +37,20 @@
 			</classpath>
 		</taskdef>
 
+		<taskdef resource="net/sf/antcontrib/antlib.xml">
+			<classpath>
+				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar"/>
+			</classpath>
+		</taskdef>
+
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+			<classpath>
+				<fileset dir="${workspacedir}/cnf/findbugs/lib">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
 		<echo message="Enter project ${project.name}"/>
@@ -106,6 +120,26 @@
 			    </fileset>
 			</batchtest>
 		</junit>
+	</target>
+
+	<target name="findbugs" depends="init,build">
+		<propertyregex property="project.buildpath.adjusted"
+			input="${project.buildpath}"
+			defaultValue="${project.buildpath}"
+			regexp="(.*)(:${project.output}|${project.output}:)(.*)"
+			global="yes"
+			select="\1\3" />
+
+		<findbugs
+			home="${workspacedir}/cnf/findbugs"
+			includeFilter="${workspacedir}/cnf/findbugs.include.xml"
+			excludeFilter="${workspacedir}/cnf/findbugs.exclude.xml"
+			output="xml:withMessages"
+			outputFile="${target}/${project.name}.findbugs.xml">
+			<sourcePath path="${project.sourcepath}" />
+			<auxClasspath path="${project.bootclasspath}:${project.buildpath.adjusted}:${project.testpath}" />
+			<class location="${target}" />
+		</findbugs>
 	</target>
 
 	<!--
