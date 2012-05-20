@@ -5,7 +5,7 @@ import java.util.*;
 
 public interface IndexProvider {
 
-	List<URL> getIndexLocations() throws Exception;
+	List<URI> getIndexLocations() throws Exception;
 
 	Set<ResolutionPhase> getSupportedPhases();
 

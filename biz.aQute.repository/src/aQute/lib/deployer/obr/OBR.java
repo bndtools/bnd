@@ -37,7 +37,7 @@ public class OBR extends FixedIndexedRepo implements OBRIndexProvider {
 		super.setProperties(Conversions.convertConfig(map));
 	}
 
-	public Collection<URL> getOBRIndexes() throws IOException {
+	public Collection<URI> getOBRIndexes() throws IOException {
 		try {
 			return getIndexLocations();
 		}

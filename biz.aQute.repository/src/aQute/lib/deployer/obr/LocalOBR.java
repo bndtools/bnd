@@ -15,7 +15,7 @@ public class LocalOBR extends LocalIndexedRepo implements OBRIndexProvider {
 		super.setProperties(Conversions.convertConfig(map));
 	}
 
-	public Collection<URL> getOBRIndexes() throws IOException {
+	public Collection<URI> getOBRIndexes() throws IOException {
 		try {
 			return getIndexLocations();
 		}

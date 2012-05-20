@@ -59,19 +59,19 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	@Override
-	protected synchronized List<URL> loadIndexes() throws Exception {
-		Collection<URL> remotes = super.loadIndexes();
-		List<URL> indexes = new ArrayList<URL>(remotes.size() + generatingProviders.size());
+	protected synchronized List<URI> loadIndexes() throws Exception {
+		Collection<URI> remotes = super.loadIndexes();
+		List<URI> indexes = new ArrayList<URI>(remotes.size() + generatingProviders.size());
 
 		for (IRepositoryContentProvider contentProvider : generatingProviders) {
 			File indexFile = getIndexFile(contentProvider);
 			try {
 				if (indexFile.exists()) {
-					indexes.add(indexFile.toURI().toURL());
+					indexes.add(indexFile.toURI());
 				} else {
 					if (contentProvider.supportsGeneration()) {
 						generateIndex(indexFile, contentProvider);
-						indexes.add(indexFile.toURI().toURL());
+						indexes.add(indexFile.toURI());
 					}
 				}
 			}

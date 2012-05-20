@@ -6,7 +6,7 @@ import java.util.*;
 
 @Deprecated
 public interface OBRIndexProvider {
-	Collection<URL> getOBRIndexes() throws IOException;
+	Collection<URI> getOBRIndexes() throws IOException;
 
 	Set<OBRResolutionMode> getSupportedModes();
 }

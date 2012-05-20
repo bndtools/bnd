@@ -3,6 +3,8 @@ package aQute.lib.deployer.repository;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map.Entry;
 import java.util.regex.*;
 
@@ -56,7 +58,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	protected Set<ResolutionPhase>								supportedPhases					= EnumSet
 																										.allOf(ResolutionPhase.class);
 
-	private List<URL>											indexLocations;
+	private List<URI>											indexLocations;
 
 	private String												requestedContentProviderList	= null;
 
@@ -83,7 +85,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		bsnMap.clear();
 	}
 
-	protected abstract List<URL> loadIndexes() throws Exception;
+	protected abstract List<URI> loadIndexes() throws Exception;
 
 	protected synchronized void loadAllContentProviders() {
 		if (registry == null)
@@ -172,18 +174,19 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			};
 
 			// Parse the indexes
-			for (URL indexLocation : indexLocations) {
+			for (URI indexLocation : indexLocations) {
+				URL indexLocationURL = indexLocation.toURL();
+				String indexLocationURLExt = indexLocationURL.toExternalForm();
 				try {
-					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(),
-							null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocationURLExt, null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexFile.getName(), indexLocation.toExternalForm(), indexStream, listener);
+					readIndex(indexFile.getName(), indexLocationURLExt, indexStream, listener);
 				}
 				catch (Exception e) {
 					if (reporter != null)
-						reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
+						reporter.error("Unable to read index at URL '%s': %s", indexLocationURL, e);
 				}
 			}
 
@@ -191,7 +194,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 	}
 
-	public final List<URL> getIndexLocations() throws Exception {
+	public final List<URI> getIndexLocations() throws Exception {
 		init();
 		return Collections.unmodifiableList(indexLocations);
 	}
@@ -575,13 +578,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	 * @param locationsStr
 	 *            Comma-separated list of URLs
 	 * @throws MalformedURLException
+	 * @throws URISyntaxException 
 	 */
-	protected static List<URL> parseLocations(String locationsStr) throws MalformedURLException {
+	protected static List<URI> parseLocations(String locationsStr) throws MalformedURLException, URISyntaxException {
 		StringTokenizer tok = new StringTokenizer(locationsStr, ",");
-		List<URL> urls = new ArrayList<URL>(tok.countTokens());
+		List<URI> urls = new ArrayList<URI>(tok.countTokens());
 		while (tok.hasMoreTokens()) {
 			String urlStr = tok.nextToken().trim();
-			urls.add(new URL(urlStr));
+			urls.add(new URL(urlStr).toURI());
 		}
 		return urls;
 	}

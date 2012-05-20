@@ -52,7 +52,7 @@ public class OBRTest extends TestCase {
 		props.put("cache", this.obr.getCacheDirectory().getAbsolutePath());
 		obr2.setProperties(props);
 
-		Collection<URL> indexes = obr2.getOBRIndexes();
+		Collection<URI> indexes = obr2.getOBRIndexes();
 		assertEquals(1, indexes.size());
 		assertEquals(new File("testdata/fullobr.xml").toURI().toString(), indexes.iterator().next().toString());
 

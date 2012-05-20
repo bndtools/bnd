@@ -50,8 +50,8 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	}
 
 	@Override
-	protected List<URL> loadIndexes() throws Exception {
-		List<URL> result;
+	protected List<URI> loadIndexes() throws Exception {
+		List<URI> result;
 		try {
 			if (locations != null)
 				result = parseLocations(locations);
