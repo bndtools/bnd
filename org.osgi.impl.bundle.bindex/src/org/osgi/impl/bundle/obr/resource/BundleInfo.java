@@ -431,7 +431,7 @@ public class BundleInfo {
 					filter.append("(");
 					filter.append(attribute);
 					filter.append("=");
-					filter.append(attributes.get(attribute));
+					filter.append(value);
 					filter.append(")");
 					set.add(attribute);
 				}

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -39,6 +40,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Resource;
+import aQute.libg.header.Attrs;
 import aQute.libg.header.Parameters;
 import aQute.libg.version.VersionRange;
 
@@ -160,7 +162,8 @@ public class JarDiff {
 			}
 		}
 		
-		for (String packageName : projectImportedPackages.keySet()) {
+		for (Entry<String, Attrs> entry : projectImportedPackages.entrySet()) {
+			String packageName = entry.getKey();
 			// New or modified packages
 			PackageInfo pi = packages.get(packageName);
 			if (pi == null) {
@@ -168,7 +171,7 @@ public class JarDiff {
 				packages.put(packageName, pi);
 			}
 			pi.setImported(true);
-			Map<String, String> packageMap = projectImportedPackages.get(packageName);
+			Map<String, String> packageMap = entry.getValue();
 			String version = packageMap.get(VERSION);
 			VersionRange projectVersion = null;
 			if (version != null) {
