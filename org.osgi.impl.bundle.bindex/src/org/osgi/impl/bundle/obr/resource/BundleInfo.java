@@ -192,10 +192,11 @@ public class BundleInfo {
 			if (entry == null) {
 				System.err.println("Bad Service-Component header: "
 						+ serviceComponent + ", no such file " + parts[i]);
+			} else {
+				InputStream in = jar.getInputStream(entry);
+				// TODO parse declarative services files.
+				in.close();
 			}
-			InputStream in = jar.getInputStream(entry);
-			// TODO parse declarative services files.
-			in.close();
 		}
 	}
 

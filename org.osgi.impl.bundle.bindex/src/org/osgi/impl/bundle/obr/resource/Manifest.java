@@ -75,7 +75,9 @@ public class Manifest extends Hashtable<Object, Object> {
 			}
 			current = rdr.readLine();
 		}
-		entry(buffer);
+		if (buffer != null) {
+			entry(buffer);
+		}
 	}
 
 	int entry(String line) throws IOException {

@@ -97,7 +97,9 @@ public class ObrResolutionWizard extends Wizard {
             }
             model.setRunBundles(runBundles);
         } finally {
-            IO.close(pathsStream);
+            if (pathsStream != null) {
+                IO.close(pathsStream);
+            }
         }
 
         return true;

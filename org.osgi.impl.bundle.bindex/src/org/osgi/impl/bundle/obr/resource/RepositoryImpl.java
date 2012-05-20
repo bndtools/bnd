@@ -322,10 +322,12 @@ public class RepositoryImpl implements Repository {
 				} else {
 					in = url.openStream();
 				}
-				Reader reader = new InputStreamReader(in);
-				XmlPullParser parser = new KXmlParser();
-				parser.setInput(reader);
-				parseRepository(parser);
+				if (in != null) {
+					Reader reader = new InputStreamReader(in);
+					XmlPullParser parser = new KXmlParser();
+					parser.setInput(reader);
+					parseRepository(parser);
+				}
 			} catch( MalformedURLException e ) {
 				System.out.println("Cannot create connection to url");
 			}

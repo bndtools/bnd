@@ -72,6 +72,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             launcher = bndProject.getProjectLauncher();
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project launcher.", e));
+            return status;
         }
         
         // Init classpath and launch JAR
