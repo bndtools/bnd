@@ -305,12 +305,13 @@ public class RepositoryImpl implements Repository {
 			Exception {
 		if (!visited.contains(url)) {
 			visited.add(url);
+			InputStream in = null;
+			ZipInputStream zin = null;
 			try {
 				System.out.println("Visiting: " + url);
-				InputStream in = null;
 				
 				if ( url.getPath().endsWith(".zip")) {
-					ZipInputStream zin = new ZipInputStream( url.openStream() );
+					zin = new ZipInputStream( url.openStream() );
 					ZipEntry entry = zin.getNextEntry();
 					while ( entry != null ) {
 						if ( entry.getName().equals("repository.xml")) {
@@ -330,6 +331,13 @@ public class RepositoryImpl implements Repository {
 				}
 			} catch( MalformedURLException e ) {
 				System.out.println("Cannot create connection to url");
+			} finally {
+				if (zin != null) {
+					zin.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			}
 		}
 	}
