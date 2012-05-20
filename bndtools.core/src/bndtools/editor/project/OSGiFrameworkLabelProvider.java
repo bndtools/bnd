@@ -2,6 +2,8 @@ package bndtools.editor.project;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +15,7 @@ import org.eclipse.swt.widgets.Display;
 
 public class OSGiFrameworkLabelProvider extends LabelProvider {
 
-    private final Map<URL, Image> images = new HashMap<URL, Image>();
+    private final Map<URI, Image> images = new HashMap<URI, Image>();
 
     @Override
     public String getText(Object element) {
@@ -24,15 +26,21 @@ public class OSGiFrameworkLabelProvider extends LabelProvider {
     @Override
     public Image getImage(Object element) {
         OSGiFramework fwk = (OSGiFramework) element;
+        URL fwkIcon = fwk.getIcon();
+        URI fwkIconURI = null;
+        try {
+            fwkIconURI = fwkIcon.toURI();
+        } catch (URISyntaxException e1) {
+        }
 
         Image image = null;
 
-        if (fwk.getIcon() != null) {
-            image = images.get(fwk.getIcon());
+        if (fwkIcon != null && fwkIconURI != null) {
+                image = images.get(fwkIconURI);
             if (image == null) {
                 InputStream stream = null;
                 try {
-                    stream = fwk.getIcon().openStream();
+                    stream = fwkIcon.openStream();
                     image = new Image(Display.getCurrent(), stream);
                 } catch (IOException e) {
                 } finally {
@@ -41,9 +49,8 @@ public class OSGiFrameworkLabelProvider extends LabelProvider {
                     } catch (IOException e) {
                     }
                 }
-
                 if (image != null)
-                    images.put(fwk.getIcon(), image);
+                    images.put(fwkIconURI, image);
             }
         }
 
