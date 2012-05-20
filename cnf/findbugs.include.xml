@@ -1,0 +1,15 @@
+<FindBugsFilter>
+     <Match>
+       <Package name="" />
+     </Match>
+     <Match>
+       <Package name="com.example.demo" />
+     </Match>
+
+     <Match>
+       <Package name="~aQute(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~test(|\..+)" />
+     </Match>
+</FindBugsFilter>
