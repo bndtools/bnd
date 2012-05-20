@@ -101,7 +101,7 @@ public class Central {
                             // workspace /development/amf/workspaces/osgi
                             // false
 
-                            if (parent != null && parentIsWorkspace) {
+                            if (parentIsWorkspace) {
                                 // We now are on project level, we do not go
                                 // deeper
                                 // because projects/workspaces should check for

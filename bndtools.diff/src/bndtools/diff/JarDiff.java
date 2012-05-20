@@ -150,7 +150,7 @@ public class JarDiff {
 					}
 					if (previousClasses != null) {
 						for (ClassInfo prevCi : previousClasses) {
-							if (projectClasses != null && !projectClasses.contains(prevCi)) {
+							if (!projectClasses.contains(prevCi)) {
 								cis.add(prevCi);
 								prevCi.setChangeCode(ClassInfo.CHANGE_CODE_REMOVED);
 								pi.setChangeCode(PackageInfo.CHANGE_CODE_MODIFIED);
