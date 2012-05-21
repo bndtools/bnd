@@ -115,7 +115,7 @@ public class ProjectPom extends Pom {
 	
 	}
 
-	class Rover {
+	static class Rover {
 
 		public Rover(Rover rover, Dependency d) {
 			this.previous = rover;

@@ -49,6 +49,10 @@ public class Verifier extends Processor {
 			this.name = name;
 			this.target = target;
 		}
+		
+		public String toString() {
+			return name + "("+target+")";
+		}
 	}
 
 	final static EE[]			ees								= {

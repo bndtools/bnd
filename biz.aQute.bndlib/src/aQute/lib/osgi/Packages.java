@@ -69,7 +69,6 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 	public Attrs get(PackageRef key) {
-		assert key instanceof PackageRef;
 		if (map == null)
 			return null;
 
@@ -129,7 +128,6 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 	public Attrs remove(PackageRef var0) {
-		assert var0 instanceof PackageRef;
 		if (map == null)
 			return null;
 		return map.remove(var0);

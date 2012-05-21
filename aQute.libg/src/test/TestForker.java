@@ -47,7 +47,7 @@ public class TestForker extends TestCase {
 
 		assertTrue(result.containsAll(Arrays.asList(1, 2, 3, 4)));
 		Object[] q = result.toArray();
-		assertEquals(new Integer(4), q[q.length-1]);
+		assertEquals(Integer.valueOf(4), q[q.length-1]);
 	}
 
 	public void testInvalid() {

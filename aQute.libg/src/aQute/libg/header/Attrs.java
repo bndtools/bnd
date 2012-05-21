@@ -184,7 +184,6 @@ public class Attrs implements Map<String, String> {
 	}
 
 	public String remove(String var0) {
-		assert var0 instanceof String;
 		if (map == null)
 			return null;
 		return map.remove(var0);
@@ -236,8 +235,6 @@ public class Attrs implements Map<String, String> {
 		if (this == o)
 			return true;
 
-		if (!(o instanceof Attrs))
-			return false;
 		Attrs other = (Attrs) o;
 
 		if (size() != other.size())
@@ -281,7 +278,7 @@ public class Attrs implements Map<String, String> {
 			return null;
 		} else {
 			List<Object> list = new ArrayList<Object>();
-			String split[] = s.split("\\s(?!\\),\\s*");
+			String split[] = s.split("\\s*\\(\\?!\\),\\s*");
 			for (String p : split) {
 				p = p.replaceAll("\\\\", "");
 				list.add(convert(t.sub, p));

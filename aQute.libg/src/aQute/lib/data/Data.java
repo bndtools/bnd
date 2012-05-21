@@ -52,7 +52,8 @@ public class Data {
 									f.getName(), value, numericValidator.min(), numericValidator.max());
 						}
 					} catch (ClassCastException e) {
-						formatter.format("Value for %s=%s is not a number\n", f.getName(), value);
+						formatter.format("Value for %s=%s [%s,%s) is not a number\n", f.getName(), value,
+								numericValidator.min(), numericValidator.max());
 					}
 				}
 			}

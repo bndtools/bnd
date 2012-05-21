@@ -11,7 +11,7 @@ import aQute.libg.version.*;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 
-	public static String	NAME	= "name";
+	public final static String	NAME	= "name";
 
 	File					root;
 	Reporter				reporter;

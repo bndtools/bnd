@@ -83,10 +83,6 @@ public class Version implements Comparable<Version> {
         if (other == this)
             return 0;
 
-        if (!(other instanceof Version))
-            throw new IllegalArgumentException(
-                    "Can only compare versions to versions");
-
         Version o = (Version) other;
         if (major != o.major)
             return major - o.major;

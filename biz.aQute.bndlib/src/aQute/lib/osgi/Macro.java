@@ -330,7 +330,7 @@ public class Macro implements Replacer {
 		return new Date().toString();
 	}
 
-	public static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
+	public final static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
 
 	public String _fmodified(String args[]) throws Exception {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
@@ -453,7 +453,7 @@ public class Macro implements Replacer {
 		verifyCommand(args, _toclasspathHelp, null, 2, 3);
 		boolean cl = true;
 		if (args.length > 2)
-			cl = new Boolean(args[2]);
+			cl = Boolean.valueOf(args[2]);
 
 		Collection<String> names = Processor.split(args[1]);
 		Collection<String> paths = new ArrayList<String>(names.size());
@@ -947,7 +947,7 @@ public class Macro implements Replacer {
 		}
 	};
 
-	public static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
+	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
 
 	public String _osfile(String args[]) {
 		verifyCommand(args, _fileHelp, null, 3, 3);

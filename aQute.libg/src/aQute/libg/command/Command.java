@@ -153,7 +153,7 @@ public class Command {
 		}
 	}
 
-	class InputStreamHandler extends Thread {
+	static class InputStreamHandler extends Thread {
 		final InputStream	in;
 		final OutputStream	stdin;
 

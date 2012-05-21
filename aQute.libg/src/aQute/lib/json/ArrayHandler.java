@@ -6,11 +6,9 @@ import java.util.*;
 
 public class ArrayHandler extends Handler {
 	Type		componentType;
-	Class<?>	rawClass;
 
 	ArrayHandler(Class<?> rawClass, Type componentType) {
 		this.componentType = componentType;
-		this.rawClass = rawClass;
 	}
 
 	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)

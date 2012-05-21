@@ -10,8 +10,6 @@ import junit.framework.*;
 import org.osgi.framework.*;
 
 public class JUnitEclipseReport implements TestReporter {
-    int            port;
-    boolean        open;
     BufferedReader in;
     PrintWriter    out;
     long           startTime;

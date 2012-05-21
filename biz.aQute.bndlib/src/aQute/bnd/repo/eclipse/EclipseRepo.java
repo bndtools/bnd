@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
@@ -17,8 +18,8 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     String                           name;
     Parameters index;
 
-    public static String             LOCATION = "location";
-    public static String             NAME     = "name";
+    public final static String             LOCATION = "location";
+    public final static String             NAME     = "name";
 
     public void setProperties(Map<String, String> map) {
         String location = (String) map.get(LOCATION);
@@ -68,7 +69,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 
     private String read(File index) throws Exception {
         if (index.isFile()) {
-            BufferedReader fr = new BufferedReader(new FileReader(index));
+            BufferedReader fr = IO.reader(index);
             StringBuilder sb = new StringBuilder();
 
             try {
@@ -88,7 +89,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
             throws Exception {
         String s = Processor.printClauses(map);
         index.getParentFile().mkdirs();
-        FileWriter fw = new FileWriter(index);
+        PrintWriter fw = IO.writer(index);
         try {
             fw.write(s);
         } finally {

@@ -5,6 +5,8 @@ import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 
+import aQute.lib.io.*;
+
 public class ServiceMain extends Thread {
 	static File				lock;
 	static Date				last	= new Date();
@@ -64,7 +66,7 @@ public class ServiceMain extends Thread {
 					trace("Received message " + dp.getAddress());
 					if (dp.getAddress().isLoopbackAddress()) {
 
-						String s = new String(dp.getData(), dp.getOffset(), dp.getLength());
+						String s = new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
 						trace("Received message " + s);
 						String parts[] = s.split(":");
 						String reply;
@@ -94,7 +96,7 @@ public class ServiceMain extends Thread {
 						} else
 							reply = "404 UNKNOWN REQUEST " + s;
 
-						byte data[] = reply.getBytes();
+						byte data[] = reply.getBytes("UTF-8");
 						DatagramPacket p = new DatagramPacket(data, 0, data.length,
 								dp.getAddress(), dp.getPort());
 						trace("Sending reply message " + reply);
@@ -128,7 +130,7 @@ public class ServiceMain extends Thread {
 	}
 
 	private static void write(File f, String response) throws IOException {
-		FileWriter fw = new FileWriter(f);
+		PrintWriter fw = IO.writer(f);
 		try {
 			fw.append(response);
 		} finally {

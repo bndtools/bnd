@@ -115,10 +115,7 @@ public class MavenCommand extends Processor {
 			error("There is no settings file at '%s'", settings.getAbsolutePath());
 			return;
 		}
-
-		FileReader rdr = new FileReader(settings);
-
-		LineCollection lc = new LineCollection(new BufferedReader(rdr));
+		LineCollection lc = new LineCollection(IO.reader(settings));
 		while (lc.hasNext()) {
 			System.err.println(lc.next());
 		}
@@ -571,7 +568,7 @@ public class MavenCommand extends Processor {
 		}
 		
 		URI[] urls2 = urls.toArray(new URI[urls.size()]);
-		PrintWriter pw = new PrintWriter(out);
+		PrintWriter pw = IO.writer(out);
 		
 		while ( i < args.length) {
 			String ref = args[i++];

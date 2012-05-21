@@ -63,7 +63,7 @@ public class Service {
 		if ( port == -1 )
 			return "Invalid port";
 
-		byte data[] = m.getBytes();
+		byte data[] = m.getBytes("UTF-8");
 		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getByAddress(new byte[] {127,0,0,1}),
 				port);
 		DatagramSocket dsocket = new DatagramSocket();
@@ -74,7 +74,7 @@ public class Service {
 			byte[] buffer = new byte[1000];
 			DatagramPacket dp = new DatagramPacket(buffer, 1000);
 			dsocket.receive(dp);
-			return new String(dp.getData(), dp.getOffset(), dp.getLength());
+			return new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
 		} catch( SocketTimeoutException stoe) {
 			return "Timed out";
 		} finally {

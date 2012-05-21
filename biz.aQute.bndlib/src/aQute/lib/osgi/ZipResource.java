@@ -11,13 +11,13 @@ public class ZipResource implements Resource {
     long     lastModified;
     String   extra;
 
-    ZipResource(ZipFile zip, ZipEntry entry, long lastModified) {
+    ZipResource(ZipFile zip, ZipEntry entry, long lastModified) throws UnsupportedEncodingException {
         this.zip = zip;
         this.entry = entry;
         this.lastModified = lastModified;
         byte[] data = entry.getExtra();
         if (data != null)
-            this.extra = new String(data);
+            this.extra = new String(data, "UTF-8");
     }
 
     public InputStream openInputStream() throws IOException {

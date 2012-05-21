@@ -5,13 +5,16 @@ import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
 
+import javax.imageio.stream.*;
+
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
 	Reader				reader;
 	int					current;
 	MessageDigest		digest;
 	Map<String, Object>	extra;
-
+	String encoding = "UTF-8";
+	
 	boolean strict;
 
 	Decoder(JSONCodec codec) {
@@ -19,12 +22,16 @@ public class Decoder implements Closeable {
 	}
 
 	public Decoder from(File file) throws Exception {
-		return from(new FileReader(file));
+		return from(new FileInputStream(file));
 	}
 
 	public Decoder from(InputStream in) throws Exception {
-		return from(new InputStreamReader(in));
-
+		return from(new InputStreamReader(in, encoding));
+	}
+	
+	public Decoder charset(String encoding) {
+		this.encoding = encoding;
+		return this;
 	}
 	
 	public Decoder strict() {

@@ -10,6 +10,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	Appendable		app;
 	MessageDigest	digest;
 	boolean writeDefaults;
+	String encoding = "UTF-8";
 	
 	Encoder(JSONCodec codec) {
 		this.codec = codec;
@@ -43,11 +44,16 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 	
 	public Encoder to(File file) throws IOException {
-		return to(new FileWriter(file));
+		return to(new FileOutputStream(file));
+	}
+	
+	public Encoder charset(String encoding) {
+		this.encoding = encoding;
+		return this;
 	}
 
 	public Encoder to(OutputStream out) throws IOException {
-		return to(new OutputStreamWriter(out));
+		return to(new OutputStreamWriter(out, encoding));
 	}
 
 	public Encoder to(Appendable out) throws IOException {

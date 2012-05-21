@@ -266,15 +266,20 @@ public class IO {
 		return result;
 	}
 
-	public void copy(Collection<?> c, OutputStream out) {
-		PrintStream ps = new PrintStream(out);
+	public void copy(Collection<?> c, OutputStream out) throws IOException {
+		Writer w = new OutputStreamWriter(out,"UTF-8");
+		PrintWriter ps = new PrintWriter(w);
 		for (Object o : c) {
 			ps.println(o);
 		}
 		ps.flush();
+		w.flush();
 	}
 
 	public static Throwable close(Closeable in) {
+		if ( in == null)
+			return null;
+		
 		try {
 			in.close();
 			return null;
@@ -351,4 +356,34 @@ public class IO {
 		return new StringReader(s);
 	}
 
+
+	public static BufferedReader reader(File f, String encoding) throws IOException {
+		return reader( new FileInputStream(f), encoding);
+	}
+	
+	public static BufferedReader reader(File f) throws IOException {
+		return reader(f,"UTF-8");
+	}
+	
+	public static PrintWriter writer(File f, String encoding) throws IOException {
+		return writer( new FileOutputStream(f),encoding);
+	}
+	
+	public static PrintWriter writer(File f) throws IOException {
+		return writer(f, "UTF-8");
+	}
+	
+	public static PrintWriter writer(OutputStream out, String encoding) throws IOException {
+		return new PrintWriter( new OutputStreamWriter( out,encoding));
+	}
+	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
+		return new BufferedReader( new InputStreamReader(in, encoding));
+	}
+	
+	public static BufferedReader reader(InputStream in) throws IOException {
+		return reader(in, "UTF-8");
+	}
+	public static PrintWriter writer(OutputStream out) throws IOException {
+		return writer(out, "UTF-8");
+	}
 }

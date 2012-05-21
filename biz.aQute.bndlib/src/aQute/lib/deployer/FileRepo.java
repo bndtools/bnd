@@ -13,9 +13,9 @@ import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
-	public static String	LOCATION	= "location";
-	public static String	READONLY	= "readonly";
-	public static String	NAME		= "name";
+	public final static String	LOCATION	= "location";
+	public final static String	READONLY	= "readonly";
+	public final static String	NAME		= "name";
 
 	File[]					EMPTY_FILES	= new File[0];
 	protected File			root;

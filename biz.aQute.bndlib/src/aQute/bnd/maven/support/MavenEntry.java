@@ -207,11 +207,14 @@ public class MavenEntry implements Closeable {
 			properties = new Properties();
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
+				FileInputStream in = null;
 				try {
-					FileInputStream in = new FileInputStream(props);
+					in = new FileInputStream(props);
 					properties.load(in);
 				} catch (Exception e) {
 					// we ignore for now, will handle it on safe
+				} finally {
+					IO.close(in);
 				}
 			}
 		}

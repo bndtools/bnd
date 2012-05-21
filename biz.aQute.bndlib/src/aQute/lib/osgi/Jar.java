@@ -220,8 +220,11 @@ public class Jar implements Closeable {
 		check();
 		try {
 			OutputStream out = new FileOutputStream(file);
-			write(out);
-			out.close();
+			try {
+				write(out);
+			} finally {
+				IO.close(out);
+			}
 			return;
 
 		} catch (Exception t) {
@@ -363,7 +366,7 @@ public class Jar implements Closeable {
 	 */
 	private static void writeEntry(OutputStream out, String name, String value) throws IOException {
 		int n = write(out, 0, name + ": ");
-		n = write(out, n, value);
+		write(out, n, value);
 		write(out, 0, "\r\n");
 	}
 
@@ -485,7 +488,7 @@ public class Jar implements Closeable {
 		}
 		ze.setTime(lastModified);
 		if (resource.getExtra() != null)
-			ze.setExtra(resource.getExtra().getBytes());
+			ze.setExtra(resource.getExtra().getBytes("UTF-8"));
 		jout.putNextEntry(ze);
 		resource.write(jout);
 		jout.closeEntry();
@@ -770,7 +773,7 @@ public class Jar implements Closeable {
 	}
 
 	void check() {
-		if ( closed) 
+		if (closed)
 			throw new RuntimeException("Already closed " + name);
 	}
 }

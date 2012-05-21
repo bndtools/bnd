@@ -16,13 +16,60 @@ import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
+	@SuppressWarnings("unchecked") public class MESSAGE<T extends MESSAGE<T>> {
+		String	file;
+		String	header;
+		String	clause;
+		int		line;
+		int		code;
+
+		public T file(String file) {
+			this.file = file;
+			return (T) this;
+		}
+
+		public T header(String header) {
+			this.header = header;
+			return (T) this;
+		}
+
+		public T clause(String clause) {
+			this.clause = clause;
+			return (T) this;
+		}
+
+		public T line(int line) {
+			this.line = line;
+			return (T) this;
+		}
+
+		public T code(int code) {
+			this.code = code;
+			return (T) this;
+		}
+	}
+
+	public class WARNING extends MESSAGE<WARNING> {
+
+	}
+
+	public class ERROR extends MESSAGE<ERROR> {
+		Throwable	throwable;
+
+		ERROR exception(Throwable t) {
+			this.throwable = t;
+			return this;
+		}
+
+	}
+
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
 	static Random					random			= new Random();
 
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public static String			LIST_SPLITTER	= "\\s*,\\s*";
+	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
 	final List<String>				errors			= new ArrayList<String>();
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
@@ -277,7 +324,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String spe = getProperty(PLUGIN);
 			if (spe.equals(NONE))
 				return new LinkedHashSet<Object>();
-			
+
 			String pluginPath = getProperty(PLUGINPATH);
 			loadPlugins(list, spe, pluginPath);
 		}
@@ -292,7 +339,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	protected void loadPlugins(Set<Object> list, String spe, String pluginPath) {
 		Parameters plugins = new Parameters(spe);
 		CL loader = getLoader();
-		
+
 		// First add the plugin-specific paths from their path: directives
 		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String key = removeDuplicateMarker(entry.getKey());
@@ -305,11 +352,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						loader.add(f.toURI().toURL());
 					}
 				} catch (Exception e) {
-					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
+					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path,
+							key, e);
 				}
 			}
 		}
-		
+
 		// Next add -pluginpath entries
 		if (pluginPath != null && pluginPath.length() > 0) {
 			StringTokenizer tokenizer = new StringTokenizer(pluginPath, ",");
@@ -323,11 +371,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 		}
-		
+
 		// Load the plugins
 		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String key = (String) entry.getKey();
-			
+
 			try {
 				trace("Using plugin %s", key);
 
@@ -586,19 +634,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			addIncluded(file);
 			updateModified(file.lastModified(), file.toString());
 			InputStream in = new FileInputStream(file);
-			Properties sub;
-			if (file.getName().toLowerCase().endsWith(".mf")) {
-				sub = getManifestAsProperties(in);
-			} else
-				sub = loadProperties(in, file.getAbsolutePath());
+			try {
+				Properties sub;
+				if (file.getName().toLowerCase().endsWith(".mf")) {
+					sub = getManifestAsProperties(in);
+				} else
+					sub = loadProperties(in, file.getAbsolutePath());
 
-			in.close();
-
-			doIncludes(file.getParentFile(), sub);
-			// make sure we do not override properties
-			for (Map.Entry<?, ?> entry : sub.entrySet()) {
-				if (overwrite || !target.containsKey(entry.getKey()))
-					target.setProperty((String) entry.getKey(), (String) entry.getValue());
+				doIncludes(file.getParentFile(), sub);
+				// make sure we do not override properties
+				for (Map.Entry<?, ?> entry : sub.entrySet()) {
+					if (overwrite || !target.containsKey(entry.getKey()))
+						target.setProperty((String) entry.getKey(), (String) entry.getValue());
+				}
+			} finally {
+				IO.close(in);
 			}
 		}
 	}
@@ -762,9 +812,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public Properties loadProperties(File file) throws IOException {
 		updateModified(file.lastModified(), "Properties file: " + file);
 		InputStream in = new FileInputStream(file);
-		Properties p = loadProperties(in, file.getAbsolutePath());
-		in.close();
-		return p;
+		try {
+			Properties p = loadProperties(in, file.getAbsolutePath());
+			return p;
+		} finally {
+			in.close();
+		}
 	}
 
 	Properties loadProperties(InputStream in, String name) throws IOException {
@@ -1259,7 +1312,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					lastSlash = false;
 				}
 			}
-			
+
 			if (!lastSlash && sb.length() > 0) {
 				sb.append('/');
 				lastSlash = true;

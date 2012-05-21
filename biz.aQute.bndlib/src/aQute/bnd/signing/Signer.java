@@ -8,6 +8,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.lib.base64.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 
 /**
@@ -71,8 +72,9 @@ public class Signer extends Processor {
 
             KeyStore.PrivateKeyEntry privateKeyEntry = null;
 
+            java.io.FileInputStream keystoreInputStream = null;
             try {
-                java.io.FileInputStream keystoreInputStream = new java.io.FileInputStream(
+            	keystoreInputStream = new java.io.FileInputStream(
                         keystoreFile);
                 char[] pw = password == null ? new char[0]
                         : password.toCharArray();
@@ -85,6 +87,8 @@ public class Signer extends Processor {
                 error("No able to load the private key from the give keystore("+keystoreFile.getAbsolutePath()+") with alias "+alias+" : "
                         + e);
                 return;
+            } finally {
+            	IO.close(keystoreInputStream);
             }
             PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
@@ -111,9 +115,9 @@ public class Signer extends Processor {
     }
 
     private byte[] doSignatureFile(String[] digestNames,
-            MessageDigest[] algorithms, byte[] manbytes) {
+            MessageDigest[] algorithms, byte[] manbytes) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
+        PrintWriter ps = IO.writer(out);
         ps.print("Signature-Version: 1.0\r\n");
 
         for (int a = 0; a < algorithms.length; a++) {
@@ -135,7 +139,7 @@ public class Signer extends Processor {
             if (!METAINFDIR.matcher(name).matches()) {
                 out.write("\r\n".getBytes());
                 out.write("Name: ".getBytes());
-                out.write(name.getBytes());
+                out.write(name.getBytes("UTF-8"));
                 out.write("\r\n".getBytes());
 
                 digest(algorithms, entry.getValue());

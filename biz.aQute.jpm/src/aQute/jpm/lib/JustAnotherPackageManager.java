@@ -60,7 +60,6 @@ public class JustAnotherPackageManager {
 															Pattern.CASE_INSENSITIVE);
 	public final static String	MAINCLASS_PATTERN	= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*";
 
-	String						repository			= "http://repo.libsync.org";
 	File						repoDir;
 	File						homeDir;
 	File						commandDir;

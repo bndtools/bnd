@@ -196,9 +196,9 @@ public class ProjectTest extends TestCase {
 		assertTrue(s.matches("<<[^>]+>>"));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		s.endsWith("org.apache.felix.configadmin-1.1.0.jar");
+		assertTrue(s.endsWith("org.apache.felix.configadmin-1.2.0.jar"));
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
-		s.endsWith("org.apache.felix.configadmin-1.0.1.jar");
+		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
 	}
 
 	public void testClasspath() throws Exception {

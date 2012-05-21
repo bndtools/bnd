@@ -11,7 +11,6 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 	int					port	= -1;
 	String				host;
 	Project				project;
-	String				report;
 	boolean				prepared;
 
 	public ProjectTesterImpl(Project project) throws Exception {

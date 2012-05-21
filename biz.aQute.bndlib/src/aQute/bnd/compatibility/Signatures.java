@@ -52,7 +52,7 @@ public class Signatures {
 	/**
 	 * Helper class to track an index in a string.
 	 */
-	class Rover {
+	static class Rover {
 		final String	s;
 		int				i;
 

@@ -87,7 +87,7 @@ public class Clazz {
 
 	};
 
-	public static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
+	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
 															QUERY.IMPORTS, QUERY.NAMED,
 															QUERY.VERSION, QUERY.ANNOTATED);
 
@@ -520,7 +520,7 @@ public class Clazz {
 				if (cd != null)
 					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index]
 							.toString()));
-				descriptors.add(new Integer(descriptor_index));
+				descriptors.add(Integer.valueOf(descriptor_index));
 				doAttributes(in, ElementType.FIELD, false);
 			}
 
@@ -553,7 +553,7 @@ public class Clazz {
 				int access_flags = in.readUnsignedShort();
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
-				descriptors.add(new Integer(descriptor_index));
+				descriptors.add(Integer.valueOf(descriptor_index));
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
 				if (cd != null) {
@@ -631,7 +631,7 @@ public class Clazz {
 	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
-		descriptors.add(new Integer(descriptor_index));
+		descriptors.add(Integer.valueOf(descriptor_index));
 		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
 	}
 
@@ -664,7 +664,7 @@ public class Clazz {
 	 */
 	protected void constantClass(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
-		classes.add(new Integer(class_index));
+		classes.add(Integer.valueOf(class_index));
 		intPool[poolIndex] = class_index;
 		ClassConstant c = new ClassConstant(class_index);
 		pool[poolIndex] = c;
@@ -1101,7 +1101,7 @@ public class Clazz {
 		annotations.add(tr);
 
 		if (policy == RetentionPolicy.RUNTIME) {
-			descriptors.add(new Integer(type_index));
+			descriptors.add(Integer.valueOf(type_index));
 			hasRuntimeAnnotations = true;
 		} else {
 			hasClassAnnotations = true;
@@ -1151,14 +1151,14 @@ public class Clazz {
 		case 'e': // enum constant
 			int type_name_index = in.readUnsignedShort();
 			if (policy == RetentionPolicy.RUNTIME)
-				descriptors.add(new Integer(type_name_index));
+				descriptors.add(Integer.valueOf(type_name_index));
 			int const_name_index = in.readUnsignedShort();
 			return pool[const_name_index];
 
 		case 'c': // Class
 			int class_info_index = in.readUnsignedShort();
 			if (policy == RetentionPolicy.RUNTIME)
-				descriptors.add(new Integer(class_info_index));
+				descriptors.add(Integer.valueOf(class_info_index));
 			return pool[class_info_index];
 
 		case '@': // Annotation type

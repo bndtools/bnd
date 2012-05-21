@@ -9,6 +9,8 @@ import javax.xml.xpath.*;
 
 import org.w3c.dom.*;
 
+import aQute.lib.io.*;
+
 public abstract class Pom {
 	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf	= XPathFactory.newInstance();
@@ -38,7 +40,6 @@ public abstract class Pom {
 	String				artifactId;
 	String				version;
 	List<Dependency>	dependencies	= new ArrayList<Dependency>();
-	Exception			exception;
 	File				pomFile;
 	String				description="";
 	String				name;
@@ -193,7 +194,7 @@ public abstract class Pom {
 		return dependencies;
 	}
 
-	class Rover {
+	static class Rover {
 
 		public Rover(Rover rover, Dependency d) {
 			this.previous = rover;
@@ -311,9 +312,9 @@ public abstract class Pom {
 
 		file.delete();
 
-		Writer writer = new FileWriter(file);
-		doEntry(writer, this);
+		Writer writer = IO.writer(file);
 		try {
+			doEntry(writer, this);
 			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}

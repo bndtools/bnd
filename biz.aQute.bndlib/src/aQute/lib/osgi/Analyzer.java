@@ -652,14 +652,16 @@ public class Analyzer extends Processor {
 		synchronized (Analyzer.class) {
 			if (bndInfo == null) {
 				bndInfo = new Properties();
+				InputStream in = Analyzer.class.getResourceAsStream("bnd.info");
 				try {
-					InputStream in = Analyzer.class.getResourceAsStream("bnd.info");
 					if (in != null) {
 						bndInfo.load(in);
 						in.close();
 					}
 				} catch (IOException ioe) {
 					warning("Could not read bnd.info in " + Analyzer.class.getPackage() + ioe);
+				} finally {
+					IO.close(in);
 				}
 			}
 		}

@@ -3,7 +3,6 @@ package aQute.lib.osgi;
 import java.io.*;
 
 public abstract class WriteResource implements Resource {
-	long 	lastModified;
 	String	extra;
 	volatile long size = -1;
 	

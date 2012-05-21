@@ -35,8 +35,8 @@ public class Index implements Iterable<byte[]> {
 	private int							nextPage;
 
 	class Page {
-		final int				TYPE_OFFSET		= 0;
-		final int				COUNT_OFFSET	= 2;
+		final static int		TYPE_OFFSET		= 0;
+		final static int		COUNT_OFFSET	= 2;
 		final static int		START_OFFSET	= 4;
 		final int				number;
 		boolean					leaf;
@@ -46,7 +46,7 @@ public class Index implements Iterable<byte[]> {
 
 		Page(int number) throws IOException {
 			this.number = number;
-			buffer = file.map(MapMode.READ_WRITE, number * pageSize, pageSize);
+			buffer = file.map(MapMode.READ_WRITE, ((long) number) * pageSize, pageSize);
 			n = buffer.getShort(COUNT_OFFSET);
 			int type = buffer.getShort(TYPE_OFFSET);
 			leaf = type != 0;
@@ -56,7 +56,7 @@ public class Index implements Iterable<byte[]> {
 			this.number = number;
 			this.leaf = leaf;
 			this.n = 0;
-			buffer = file.map(MapMode.READ_WRITE, number * pageSize, pageSize);
+			buffer = file.map(MapMode.READ_WRITE, ((long) number) * pageSize, pageSize);
 		}
 
 		Iterator<byte[]> iterator() {
@@ -249,30 +249,31 @@ public class Index implements Iterable<byte[]> {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			try {
-				toString( sb, "");
+				toString(sb, "");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return sb.toString();
 		}
-		
-		public void toString( StringBuilder sb, String indent ) throws IOException {
+
+		public void toString(StringBuilder sb, String indent) throws IOException {
 			for (int i = 0; i < n; i++) {
-				sb.append(String.format("%s %02d:%02d %20s %s %d\n", indent, number, i, hex(k(i), 0, 4), leaf ? "==" : "->", c(i)));
-				if (! leaf ) {
+				sb.append(String.format("%s %02d:%02d %20s %s %d\n", indent, number, i,
+						hex(k(i), 0, 4), leaf ? "==" : "->", c(i)));
+				if (!leaf) {
 					long c = c(i);
-					Page sub = getPage((int)c);
-					sub.toString(sb,indent+" ");
+					Page sub = getPage((int) c);
+					sub.toString(sb, indent + " ");
 				}
 			}
 		}
 
 		private String hex(byte[] k, int i, int j) {
 			StringBuilder sb = new StringBuilder();
-			
-			while ( i < j) {
+
+			while (i < j) {
 				int b = 0xFF & k[i];
-				sb.append(nibble(b>>4));
+				sb.append(nibble(b >> 4));
 				sb.append(nibble(b));
 				i++;
 			}
@@ -281,7 +282,7 @@ public class Index implements Iterable<byte[]> {
 
 		private char nibble(int i) {
 			i = i & 0xF;
-			return (char) ( i >= 10 ? i + 'A' - 10 : i + '0');
+			return (char) (i >= 10 ? i + 'A' - 10 : i + '0');
 		}
 
 	}
@@ -340,7 +341,7 @@ public class Index implements Iterable<byte[]> {
 	public String toString() {
 		return root.toString();
 	}
-	
+
 	public void close() throws IOException {
 		file.close();
 		cache.clear();

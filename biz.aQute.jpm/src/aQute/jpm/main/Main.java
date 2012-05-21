@@ -23,7 +23,7 @@ import aQute.libg.version.*;
 @Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.") public class Main
 		extends ReporterAdapter {
 
-	public static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
+	public final static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
 	File					base		= new File(System.getProperty("user.dir"));
 
 	/**
@@ -348,7 +348,7 @@ import aQute.libg.version.*;
 					error("Failed to create service %s, due to %s", name, result);
 					return;
 				}
-				s = jpm.getService(name);
+				jpm.getService(name);
 			} else {
 				if (s.isRunning())
 					warning("Changes will not affect the currently running process");

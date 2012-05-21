@@ -18,7 +18,7 @@ import aQute.libg.version.*;
  */
 public class Baseline {
 
-	public class Info {
+	public static class Info {
 		public String				packageName;
 		public Diff					packageDiff;
 		public Collection<String>	providers;
@@ -33,7 +33,6 @@ public class Baseline {
 	}
 
 	final Differ	differ;
-	int				OFFSET	= 10;
 	final Reporter	bnd;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {

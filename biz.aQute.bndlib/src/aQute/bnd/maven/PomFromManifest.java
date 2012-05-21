@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 import aQute.libg.header.*;
@@ -74,7 +75,7 @@ public class PomFromManifest extends WriteResource {
 	}
 
 	@Override public void write(OutputStream out) throws IOException {
-		PrintWriter ps = new PrintWriter(out);
+		PrintWriter ps = IO.writer(out);
 
 		String name = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_NAME);
 

@@ -240,7 +240,7 @@ public class Project extends Processor {
 					for (String p : requiredProjectNames) {
 						Project required = getWorkspace().getProject(p);
 						if (required == null)
-							error("No such project " + required + " on " + Constants.DEPENDSON);
+							error("No such project " + p + " on " + Constants.DEPENDSON);
 						else {
 							dependencies.add(required);
 						}
@@ -1324,8 +1324,7 @@ public class Project extends Processor {
 
 		File f = new File(getTarget(), BUILDFILES);
 		if (f.isFile()) {
-			FileReader fin = new FileReader(f);
-			BufferedReader rdr = new BufferedReader(fin);
+			BufferedReader rdr = IO.reader(f);
 			try {
 				List<File> files = newList();
 				for (String s = rdr.readLine(); s != null; s = rdr.readLine()) {
@@ -1337,7 +1336,7 @@ public class Project extends Processor {
 						// the error is not noticed but 
 						// it seems better to correct,
 						// See #154
-						fin.close();
+						rdr.close();
 						f.delete();
 						break;
 					} else
@@ -1345,7 +1344,7 @@ public class Project extends Processor {
 				}
 				return this.files = files.toArray(new File[files.size()]);
 			} finally {
-				fin.close();
+				rdr.close();
 			}
 		}
 		if (buildIfAbsent)
@@ -1387,7 +1386,7 @@ public class Project extends Processor {
 
 			// Write out the filenames in the buildfiles file
 			// so we can get them later evenin another process
-			FileWriter fw = new FileWriter(bfs);
+			Writer fw = IO.writer(bfs);
 			try {
 				for (File f : files) {
 					fw.append(f.getAbsolutePath());
@@ -2026,8 +2025,7 @@ public class Project extends Processor {
 		if (newVersion.compareTo(oldVersion) == 0) {
 			return;
 		} else {
-			FileOutputStream fos = new FileOutputStream(file);
-			PrintWriter pw = new PrintWriter(fos);
+			PrintWriter pw = IO.writer(file);
 			pw.println("version " + newVersion);
 			pw.flush();
 			pw.close();
@@ -2054,7 +2052,7 @@ public class Project extends Processor {
 		}
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(packageInfoFile));
+			reader = IO.reader(packageInfoFile);
 			String line;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();

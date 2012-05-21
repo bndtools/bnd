@@ -37,8 +37,6 @@ import aQute.libg.version.*;
 	 * Map a string to a char[], Character[], or Collection<Character>
 	 */
 
-	public List<Character>	characters;
-
 	public void testCharacters() throws Exception {
 		assertTrue(Arrays.equals(new char[] { 'A', 'B', 'C' },
 				converter.convert(char[].class, "ABC")));

@@ -28,7 +28,7 @@ public class CommandTest extends TestCase {
 	interface xoptions extends Options {
 		boolean exceptions();
 	}
-	class X {
+	static class X {
 		public void _cmda(xoptions opts) {
 			
 		}
@@ -57,7 +57,7 @@ public class CommandTest extends TestCase {
 		
 	}
 	
-	public class C1 extends Assert {
+	public static class C1 extends Assert {
 		public String _c1(c1options x ) {
 			
 			assertEquals( true, x.flag());

@@ -26,12 +26,6 @@ public class JunitXmlReport implements TestReporter {
 	Bundle			bundle;
 	BasicTestReport	basic;
 
-	public class LogEntry {
-		String	clazz;
-		String	name;
-		String	message;
-	}
-
 	public JunitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
 		if (hostname == null)
 			hostname = InetAddress.getLocalHost().getHostName();

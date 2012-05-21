@@ -16,7 +16,6 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	BundleContext		context;
 	volatile boolean	active;
 	int					port		= -1;
-	String				reportPath;
 	boolean				continuous	= false;
 	boolean				trace		= false;
 	PrintStream			out			= System.err;
@@ -149,7 +148,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			Version v = bundle.getVersion();
 			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor()
 					+ "." + v.getMinor() + "." + v.getMicro() + ".xml");
-			return new FileWriter(f);
+			return new OutputStreamWriter( new FileOutputStream(f), "UTF-8");
 		}
 		return null;
 	}

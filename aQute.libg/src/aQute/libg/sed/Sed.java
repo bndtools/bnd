@@ -34,13 +34,13 @@ public class Sed {
 
     public int doIt() throws IOException {
     	int actions = 0;
-        BufferedReader brdr = new BufferedReader(new FileReader(file));
+        BufferedReader brdr = new BufferedReader(new InputStreamReader( new FileInputStream(file),"UTF-8"));
         File out;
         if (output != null)
             out = output;
         else
             out = new File(file.getAbsolutePath() + ".tmp");
-        PrintWriter pw = new PrintWriter(new FileWriter(out));
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter( new FileOutputStream(out),"UTF-8"));
         try {
             String line;
             while ((line = brdr.readLine()) != null) {

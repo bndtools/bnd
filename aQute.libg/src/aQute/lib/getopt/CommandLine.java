@@ -319,10 +319,6 @@ import aQute.libg.reporter.*;
 		Arguments patterns = specification.getAnnotation(Arguments.class);
 		Map<String, Method> options = getOptions(specification);
 
-		String specName = lastPart(specification.getName());
-		if (specName.endsWith("Options"))
-			specName = specName.substring(0, specName.length() - "Options".length());
-
 		String description = descr == null ? "" : descr.value();
 
 		f.format("NAME\n  %s - %s\n\n", cmd, description);

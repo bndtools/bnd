@@ -8,9 +8,9 @@ import java.util.regex.*;
 
 public class Crypto {
 	static final Pattern	RSA_PRIVATE	= Pattern
-												.compile("\\s*RSA.Private\\((\\p{XDigit})+:(\\p{XDigit})+\\)\\s*");
+												.compile("\\s*RSA\\.Private\\((\\p{XDigit})+:(\\p{XDigit})+\\)\\s*");
 	static final Pattern	RSA_PUBLIC	= Pattern
-												.compile("\\s*RSA.Public\\((\\p{XDigit})+:(\\p{XDigit})+\\)\\s*");
+												.compile("\\s*RSA\\.Public\\((\\p{XDigit})+:(\\p{XDigit})+\\)\\s*");
 
 	/**
 	 * 

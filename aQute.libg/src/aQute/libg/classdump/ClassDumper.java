@@ -31,7 +31,7 @@ public class ClassDumper {
     final static int ACC_ABSTRACT  = 0x0400; // Declared abstract; may not be
                                                 // instantiated.
     
-    final static protected class Assoc {
+    final static class Assoc {
         Assoc(byte tag, int a, int b) {
             this.tag = tag;
             this.a = a;
@@ -102,7 +102,7 @@ public class ClassDumper {
 
             case 3:
                 int i = in.readInt();
-                pool[poolIndex] = new Integer(i);
+                pool[poolIndex] = Integer.valueOf(i);
                 ps.printf("%30d tag(3) int %s\n", poolIndex, i);
                 break;
 
@@ -117,7 +117,7 @@ public class ClassDumper {
             // constant pool. See 4.4.5
             case 5:
                 long l = in.readLong();
-                pool[poolIndex] = new Long(l);
+                pool[poolIndex] = Long.valueOf(l);
                 ps.printf("%30d tag(5) long %s\n", poolIndex, l);
                 poolIndex++;
                 break;
@@ -131,14 +131,14 @@ public class ClassDumper {
 
             case 7:
                 int class_index = in.readUnsignedShort();
-                pool[poolIndex] = new Integer(class_index);
+                pool[poolIndex] = Integer.valueOf(class_index);
                 ps.printf("%30d tag(7) constant classs %d\n", poolIndex,
                         class_index);
                 break;
 
             case 8:
                 int string_index = in.readUnsignedShort();
-                pool[poolIndex] = new Integer(string_index);
+                pool[poolIndex] = Integer.valueOf(string_index);
                 ps.printf("%30d tag(8) constant string %d\n", poolIndex,
                         string_index);
                 break;

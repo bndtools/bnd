@@ -71,7 +71,6 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public Attrs get(String key) {
-		assert key instanceof String;
 		if (map == null)
 			return null;
 
@@ -123,7 +122,6 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public Attrs remove(String var0) {
-		assert var0 instanceof String;
 		if (map == null)
 			return null;
 		return map.remove(var0);

@@ -82,7 +82,6 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public Attrs get(Instruction key) {
-		assert key instanceof Instruction;
 		if (map == null)
 			return null;
 
@@ -125,7 +124,6 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public Attrs remove(Instruction var0) {
-		assert var0 instanceof Instruction;
 		if (map == null)
 			return null;
 		return map.remove(var0);

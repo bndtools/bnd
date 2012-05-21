@@ -79,7 +79,7 @@ public class MetatypeTest extends TestCase {
 		assertNull(config.port());
 		p.put("port", "10");
 		 config = Configurable.createConfigurable(C.class, p);
-		assertEquals( new Integer(10), config.port()); // property port is not set
+		assertEquals( Integer.valueOf(10), config.port()); // property port is not set
 	}
 
 	/**
@@ -361,7 +361,7 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
-			assertEquals(Arrays.asList(new Integer(55)), trt.rInts());
+			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
 			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
 			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
 			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());
@@ -392,7 +392,7 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
-			assertEquals(Arrays.asList(new Integer(55)), trt.rInts());
+			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
 			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
 			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
 			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());
@@ -424,7 +424,7 @@ public class MetatypeTest extends TestCase {
 			assertEquals((Boolean) true, trt.rBoolean());
 			assertEquals(new Byte((byte) 55), trt.rByte());
 			assertEquals(new Short((short) 55), trt.rShort());
-			assertEquals(new Integer(55), trt.rInt());
+			assertEquals(Integer.valueOf(55), trt.rInt());
 			assertEquals(new Long(55L), trt.rLong());
 			assertEquals(new Float(55F), trt.rFloat());
 			assertEquals(new Double(55), trt.rDouble());
@@ -440,7 +440,7 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
-			assertEquals(Arrays.asList(new Integer(55)), trt.rInts());
+			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
 			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
 			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
 			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());

@@ -63,7 +63,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * The basic test. This test will take an all default component and a
 	 * component that has all values set.
 	 */
-	@Component public class Defaults_basic implements Serializable, Runnable {
+	@Component public static class Defaults_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate void open() {
@@ -94,7 +94,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
-			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public class Explicit_basic
+			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public static class Explicit_basic
 			implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 

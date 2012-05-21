@@ -4,11 +4,9 @@ import java.util.*;
 
 
 public class Justif {
-	int width = 60;
 	int []tabs;
 	
 	public Justif(int width, int ... tabs) {
-		this.width = width;
 		this.tabs = tabs;
 	}
 
