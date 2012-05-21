@@ -299,7 +299,8 @@ public class BndEditModel implements IPersistableBndModel {
 		for(int i=0; i<lineCount; i++) {
 			IRegion lineRegion = document.getLineInformation(i);
 			String line = document.get(lineRegion.getOffset(), lineRegion.getLength());
-			if(line.startsWith(name)) {
+			String propertyKey = PropertiesParser.getPropertyKey(line);
+			if (name.equals(propertyKey)) {
 				entryStart = lineRegion.getOffset();
 				entryLength = lineRegion.getLength();
 
@@ -318,7 +319,7 @@ public class BndEditModel implements IPersistableBndModel {
 
 		return null;
 	}
-
+	
 	private static void updateDocument(IDocument document, String name, String value) {
 		String newEntry;
 		if(value != null) {
