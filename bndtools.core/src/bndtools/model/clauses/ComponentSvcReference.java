@@ -10,7 +10,7 @@
  *******************************************************************************/
 package bndtools.model.clauses;
 
-public class ComponentSvcReference {
+public class ComponentSvcReference implements Cloneable {
 
 	private String name;
 	private String bind;

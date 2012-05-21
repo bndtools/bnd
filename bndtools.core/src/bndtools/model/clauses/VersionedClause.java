@@ -16,6 +16,9 @@ public class VersionedClause extends HeaderClause implements Cloneable {
 	}
 	@Override
 	public VersionedClause clone() {
-		return new VersionedClause(this.name, new Attrs(this.attribs));
+	    VersionedClause clone = (VersionedClause) super.clone();
+	    clone.name = this.name;
+	    clone.attribs = new Attrs(this.attribs);
+		return clone;
 	}
 }

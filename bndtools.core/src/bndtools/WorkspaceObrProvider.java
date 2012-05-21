@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,6 +36,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Instruction;
 import aQute.lib.osgi.Jar;
@@ -75,7 +77,8 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
     }
 
     public synchronized void reset() throws Exception {
-        indexFile.delete();
+        if (indexFile.exists() && !indexFile.delete())
+            throw new IOException(String.format("Failed to reset Workspace OBR provider: could not delete index file ", indexFile));
     }
     
     private Set<File> gatherWorkspaceFiles(IProgressMonitor monitor) throws CoreException {
@@ -138,6 +141,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         
         // Do the generation
         File tempFile = null;
+        FileOutputStream out = null;
         try {
             // Needed because bindex relativizes the URIs to the repository root even if we don't want it to!
             AbsoluteizeContentFilter absoluteizeFilter = new AbsoluteizeContentFilter(workspace.getBase().getCanonicalFile().toURI().toURL().toString());
@@ -147,7 +151,8 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
             Map<String, String> config = new HashMap<String, String>();
             config.put(BundleIndexer.REPOSITORY_NAME, "Bndtools Workspace Repository");
             config.put(BundleIndexer.ROOT_URL, workspace.getBase().getCanonicalFile().toURI().toURL().toString());
-            indexer.index(jars, new FileOutputStream(tempFile), config);
+            out = new FileOutputStream(tempFile);
+            indexer.index(jars, out, config);
             
             pipeline.parse(new InputSource(new FileInputStream(tempFile)));
         } catch (Exception e) {
@@ -157,6 +162,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
             long timeTaken = System.currentTimeMillis() - startingTime;
             if (timeTaken >= WARNING_THRESHOLD_TIME)
                 logger.logWarning(String.format("Workspace OBR index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null);
+            if (out != null) IO.close(out);
             if (tempFile != null) tempFile.delete();
         }
     }
@@ -248,7 +254,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         if (files == null || files.length == 0)
             return null;
         if (files.length > 1)
-            throw new IllegalStateException(String.format("Bundle with BSN %s is available from multiple workspace locations: %s." + bsn, files.toString()));
+            throw new IllegalStateException(String.format("Bundle with BSN %s is available from multiple workspace locations: %s." + bsn, Arrays.toString(files)));
         return files[0];
     }
 
