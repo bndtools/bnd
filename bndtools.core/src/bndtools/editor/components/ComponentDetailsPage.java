@@ -233,7 +233,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 			// Ignore
 		}
 		ComponentNameProposalProvider proposalProvider = new ComponentNameProposalProvider(new FormPartJavaSearchContext(this));
-		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		proposalAdapter.addContentProposalListener(proposalProvider);
 		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		proposalAdapter.setAutoActivationDelay(1500);

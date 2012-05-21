@@ -61,7 +61,7 @@ public class SvcInterfaceSelectionDialog extends InputDialog {
 		decor.setShowOnlyOnFocus(true);
 		
 		SvcInterfaceProposalProvider proposalProvider = new SvcInterfaceProposalProvider(searchContext);
-		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(textField, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(textField, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		proposalAdapter.addContentProposalListener(proposalProvider);
 		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		proposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());

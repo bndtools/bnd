@@ -137,7 +137,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		ContentProposalAdapter activatorProposalAdapter = null;
 
 		ActivatorClassProposalProvider proposalProvider = new ActivatorClassProposalProvider();
-		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		activatorProposalAdapter.addContentProposalListener(proposalProvider);
 		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());

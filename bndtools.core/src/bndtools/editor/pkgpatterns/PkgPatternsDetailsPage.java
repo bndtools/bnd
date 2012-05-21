@@ -94,7 +94,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
 		decPattern.setShowOnlyOnFocus(true);
 
 		PkgPatternsProposalProvider proposalProvider = new PkgPatternsProposalProvider(new FormPartJavaSearchContext(this));
-		ContentProposalAdapter patternProposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter patternProposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		patternProposalAdapter.addContentProposalListener(proposalProvider);
 		patternProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);
 		patternProposalAdapter.setAutoActivationDelay(1000);

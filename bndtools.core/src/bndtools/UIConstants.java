@@ -18,10 +18,17 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.TextStyle;
 
 public class UIConstants {
-    public static final char[] AUTO_ACTIVATION_CLASSNAME = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._".toCharArray(); //$NON-NLS-1$
     public static final Styler ITALIC_QUALIFIER_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.QUALIFIER_COLOR, null);
     public static final Styler BOLD_STYLER = new BoldStyler(JFaceResources.DEFAULT_FONT, null, null);
     public static final Styler ERROR_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.ERROR_COLOR, null);
+    
+    private static final char[] AUTO_ACTIVATION_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._".toCharArray(); //$NON-NLS-1$
+    
+    public static final char[] autoActivationCharacters() {
+        char[] result = new char[AUTO_ACTIVATION_CHARS.length];
+        System.arraycopy(AUTO_ACTIVATION_CHARS, 0, result, 0, AUTO_ACTIVATION_CHARS.length);
+        return result;
+    }
 
     private static class ItalicStyler extends Styler {
         private final String fontName;

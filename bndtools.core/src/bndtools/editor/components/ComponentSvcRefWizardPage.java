@@ -109,7 +109,7 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		
 		// Add content proposal to svc interface field
 		SvcInterfaceProposalProvider proposalProvider = new SvcInterfaceProposalProvider(searchContext);
-		ContentProposalAdapter interfaceProposalAdapter = new ContentProposalAdapter(txtInterface, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter interfaceProposalAdapter = new ContentProposalAdapter(txtInterface, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		interfaceProposalAdapter.addContentProposalListener(proposalProvider);
 		interfaceProposalAdapter.setAutoActivationDelay(1500);
 		interfaceProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
@@ -124,7 +124,7 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		decorBind.setShowOnlyOnFocus(true);
 		
 		MethodProposalProvider bindProposalProvider = new MethodProposalProvider(searchContext);
-		ContentProposalAdapter bindProposalAdapter = new ContentProposalAdapter(txtBind, new TextContentAdapter(), bindProposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter bindProposalAdapter = new ContentProposalAdapter(txtBind, new TextContentAdapter(), bindProposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		bindProposalAdapter.addContentProposalListener(bindProposalProvider);
 		bindProposalAdapter.setAutoActivationDelay(1500);
 		bindProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
@@ -137,7 +137,7 @@ public class ComponentSvcRefWizardPage extends WizardPage {
 		decorUnbind.setDescriptionText("Content assist available");
 		decorUnbind.setShowHover(true);
 		decorUnbind.setShowOnlyOnFocus(true);
-		ContentProposalAdapter unbindProposalAdapter = new ContentProposalAdapter(txtUnbind, new TextContentAdapter(), bindProposalProvider, assistKeyStroke, UIConstants.AUTO_ACTIVATION_CLASSNAME);
+		ContentProposalAdapter unbindProposalAdapter = new ContentProposalAdapter(txtUnbind, new TextContentAdapter(), bindProposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
 		unbindProposalAdapter.addContentProposalListener(bindProposalProvider);
 		unbindProposalAdapter.setAutoActivationDelay(1500);
 		unbindProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
