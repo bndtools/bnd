@@ -29,13 +29,6 @@ public class Activator extends AbstractUIPlugin {
     BundleContext                   context;
     RepositoryListenerPluginTracker repoListenerTracker;
 
-    /**
-     * The constructor
-     */
-    public Activator() {
-        instance = this;
-    }
-
     /*
      * (non-Javadoc)
      *

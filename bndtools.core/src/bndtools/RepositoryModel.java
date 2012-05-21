@@ -75,25 +75,6 @@ public class RepositoryModel {
         }
     }
 
-    /**
-     *
-     * @param repo
-     * @param file
-     * @param monitor
-     *            the progress monitor to use for reporting progress to the
-     *            user. It is the caller's responsibility to call done() on the
-     *            given monitor. Accepts null, indicating that no progress
-     *            should be reported and that the operation cannot be cancelled.
-     *            * @throws IOException
-     * @throws CoreException
-     */
-    public void updateRepositoryBundle(RepositoryPlugin repo, File file, IProgressMonitor monitor) throws IOException, CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, file.getName(), 1);
-
-        Collection<Clazz> clazzes = analyseBundleFile(file);
-        int size = clazzes != null ? clazzes.size() : 0;
-    }
-
     Collection<Clazz> analyseBundleFile(File file) throws IOException, CoreException {
         Builder builder = new Builder();
         Jar jar = new Jar(file);
