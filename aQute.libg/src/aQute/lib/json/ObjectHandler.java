@@ -24,20 +24,26 @@ public class ObjectHandler extends Handler {
 		types = new Type[fields.length];
 		defaults = new Object[fields.length];
 
-		Object template = c.newInstance();
 		Field x = null;
-
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].getName().equals("__extra"))
 				x = fields[i];
 			types[i] = fields[i].getGenericType();
-			defaults[i] = fields[i].get(template);
 		}
-
 		if (x != null && Map.class.isAssignableFrom(x.getType()))
 			extra = x;
 		else
 			extra = null;
+		
+		try {
+			Object template = c.newInstance();
+
+			for (int i = 0; i < fields.length; i++) {
+				defaults[i] = fields[i].get(template);
+			}
+		} catch (Exception e) {
+			// Ignore
+		}
 	}
 
 	@Override void encode(Encoder app, Object object, Map<Object, Type> visited) throws Exception {
