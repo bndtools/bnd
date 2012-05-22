@@ -6,9 +6,27 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.lib.osgi.*;
+import aQute.libg.header.*;
 
 public class VerifierTest extends TestCase {
 	
+	public void testCapability() throws Exception {
+		
+		Parameters h = OSGiHeader.parseHeader("test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
+				+"double: Double=\"1.001\"; string:String =\"aString\";   "
+				+ "long.list : List <Long >=\"1, 2, 3, 4\";double.list: List< Double>= \"1.001, 1.002, 1.003\"; "
+				+ "string.list :List<String >= \"aString,bString,cString\"");
+		
+		assertEquals( Attrs.Type.VERSION, h.get("test").getType("version"));
+		assertEquals( Attrs.Type.LONG, h.get("test").getType("long"));
+		assertEquals( Attrs.Type.DOUBLE, h.get("test").getType("double"));
+		assertEquals( Attrs.Type.STRING, h.get("test").getType("string"));
+		assertEquals( Attrs.Type.STRING, h.get("test").getType("test"));
+		assertEquals( Attrs.Type.LONGS, h.get("test").getType("long.list"));
+		assertEquals( Attrs.Type.DOUBLES, h.get("test").getType("double.list"));
+		assertEquals( Attrs.Type.STRINGS, h.get("test").getType("string.list"));
+		assertEquals( Attrs.Type.VERSIONS, h.get("test").getType("version.list"));
+	}
 	
 	public void testFailedOSGiJar() throws Exception {
 		Jar jar = new Jar("jar/osgi.residential-4.3.0.jar");

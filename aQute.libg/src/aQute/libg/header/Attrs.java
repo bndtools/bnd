@@ -8,7 +8,7 @@ import aQute.libg.version.*;
 
 public class Attrs implements Map<String, String> {
 	public enum Type {
-		STRING(null), LONG(null), VERSION(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION);
+		STRING(null), LONG(null), VERSION(null), DOUBLE(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION), DOUBLES(DOUBLE);
 
 		Type	sub;
 
@@ -33,11 +33,10 @@ public class Attrs implements Map<String, String> {
 	 * ’List<’ scalar ’>’
 	 * </pre>
 	 */
-	static String					EXTENDED	= "[-a-zA-Z\\._]+";
-	static String					SCALAR		= "String|Version|Long";
-	static String					LIST		= "List<(" + SCALAR + ")>";
-	static Pattern					TYPED		= Pattern.compile("(" + EXTENDED + ")\\s*:\\s*("
-														+ SCALAR + "|" + LIST + ")\\s*");
+	static String					EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	static String					SCALAR		= "String|Version|Long|Double";
+	static String					LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
+	public static Pattern					TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*("+ SCALAR + "|" + LIST + ")\\s*");
 
 	private HashMap<String, String>	map;
 	private Map<String, Type>		types;
@@ -136,19 +135,25 @@ public class Attrs implements Map<String, String> {
 			String type = m.group(2);
 			Type t = Type.STRING;
 
-			if (type == null) {
+			if ( type.startsWith("List")) {
 				type = m.group(3);
-				if (type.equals("Long"))
-					t = Type.LONG;
-				else if (type.equals("Version"))
-					t = Type.VERSION;
-			} else {
-				if (type.equals("List<Long>"))
-					t = Type.LONGS;
-				else if (type.equals("List<Version>"))
-					t = Type.VERSION;
-				else
+				if ( "String".equals(type))
 					t = Type.STRINGS;
+				else if ( "Long".equals(type))
+					t = Type.LONGS;
+				else if ( "Double".equals(type))
+					t = Type.DOUBLES;
+				else if ( "Version".equals(type))
+					t = Type.VERSIONS;				
+			} else {
+				if ( "String".equals(type))
+					t = Type.STRING;
+				else if ( "Long".equals(type))
+					t = Type.LONG;
+				else if ( "Double".equals(type))
+					t = Type.DOUBLE;
+				else if ( "Version".equals(type))
+					t = Type.VERSION;
 			}
 			if (types == null)
 				types = new HashMap<String, Type>();
