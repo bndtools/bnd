@@ -73,7 +73,11 @@ public class Coverage {
 
     private static Map<MethodDef, List<MethodDef>> buildCatalog(
             Collection<Clazz> sources) throws Exception {
-        final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<MethodDef, List<MethodDef>>();
+        final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<MethodDef, List<MethodDef>>(new Comparator<MethodDef>() {
+			public int compare(MethodDef a, MethodDef b) {
+				return a.getName().compareTo(b.getName());
+			}
+		});
         for (final Clazz clazz : sources) {
             clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
