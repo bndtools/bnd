@@ -5,8 +5,6 @@ import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
 
-import javax.imageio.stream.*;
-
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
 	Reader				reader;
