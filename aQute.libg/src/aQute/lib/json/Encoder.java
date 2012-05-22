@@ -9,9 +9,9 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
 	Appendable		app;
 	MessageDigest	digest;
-	boolean writeDefaults;
-	String encoding = "UTF-8";
-	
+	boolean			writeDefaults;
+	String			encoding	= "UTF-8";
+
 	Encoder(JSONCodec codec) {
 		this.codec = codec;
 	}
@@ -39,14 +39,14 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder to() throws IOException {
-		to( new StringWriter());
+		to(new StringWriter());
 		return this;
 	}
-	
+
 	public Encoder to(File file) throws IOException {
 		return to(new FileOutputStream(file));
 	}
-	
+
 	public Encoder charset(String encoding) {
 		this.encoding = encoding;
 		return this;
@@ -98,15 +98,15 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
-	
+
 	public Encoder writeDefaults() {
 		writeDefaults = true;
 		return this;
 	}
-	
+
 	public void flush() throws IOException {
-		if ( app instanceof Flushable) {
-			((Flushable)app).flush();
+		if (app instanceof Flushable) {
+			((Flushable) app).flush();
 		}
 	}
 }
