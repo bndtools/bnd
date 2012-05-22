@@ -256,7 +256,7 @@ public class IO {
 		byte[] buffer = new byte[10000];
 		try {
 			int size = in.read(buffer);
-			while (size > 0) {
+			while (size >= 0) {
 				result += size;
 				size = in.read(buffer);
 			}
