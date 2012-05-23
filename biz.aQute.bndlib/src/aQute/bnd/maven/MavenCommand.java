@@ -169,11 +169,14 @@ public class MavenCommand extends Processor {
 			else if (option.equals("-nodelete"))
 				nodelete=true;
 			else if (option.startsWith("-properties")) {
-				InputStream in = new FileInputStream(args[i++]);
+				InputStream in = null;
 				try {
+					in = new FileInputStream(args[i++]);
 					properties.load(in);
 				} catch (Exception e) {
-					in.close();
+					if (in != null) {
+						in.close();
+					}
 				}
 			}
 		}

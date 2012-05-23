@@ -563,10 +563,12 @@ public class Launcher implements ServiceListener {
 			URL url = (URL) e.nextElement();
 			trace("found META-INF/services in %s", url);
 
-			InputStream in = url.openStream();
+			InputStream in = null;
+			BufferedReader rdr = null;
+			String line;
 			try {
-				BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-				String line;
+				in = url.openStream();
+				rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 				while ((line = rdr.readLine()) != null) {
 					trace(line);
 					line = line.trim();
@@ -575,7 +577,12 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			} finally {
-				in.close();
+				if (rdr != null) {
+					rdr.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			}
 		}
 		return factories;

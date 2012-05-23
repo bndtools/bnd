@@ -63,12 +63,20 @@ public class URLResource implements Resource {
 			// Forget this exception, we do it the hard way
 		}
 		InputStream in = openInputStream();
-		DataInputStream din = new DataInputStream(in);
-		long result = din.skipBytes(Integer.MAX_VALUE);
-		while( in.read() >= 0) {
-			result += din.skipBytes(Integer.MAX_VALUE);
+		DataInputStream din = null;
+		try {
+			din = new DataInputStream(in);
+			long result = din.skipBytes(Integer.MAX_VALUE);
+			while( in.read() >= 0) {
+				result += din.skipBytes(Integer.MAX_VALUE);
+			}
+			size = result;
+		} finally {
+			if (din != null) {
+				din.close();
+			}
 		}
-		return size=result;
+		return size;
 	}
 
 }

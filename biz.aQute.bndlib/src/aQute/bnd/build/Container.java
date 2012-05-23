@@ -157,11 +157,13 @@ public class Container {
 			// basically a specification clause per line.
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
-			InputStream in = new FileInputStream(file);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(in,
-					Constants.DEFAULT_CHARSET));
+			InputStream in = null;
+			BufferedReader rd = null;
+			String line;
 			try {
-				String line;
+				in = new FileInputStream(file);
+				rd = new BufferedReader(new InputStreamReader(in,
+						Constants.DEFAULT_CHARSET));
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
@@ -170,7 +172,12 @@ public class Container {
 					}
 				}
 			} finally {
-				in.close();
+				if (rd != null) {
+					rd.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			}
 		} else
 			result.add(this);

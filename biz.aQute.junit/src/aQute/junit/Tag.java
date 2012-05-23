@@ -258,9 +258,11 @@ public class Tag {
 
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
-			InputStream in = url.openStream();
-			BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
+			InputStream in = null;
+			BufferedReader rdr = null;
 			try {
+				in = url.openStream();
+				rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
 				String line = rdr.readLine();
 				if (line != null) {
 					while (line != null && line.trim().startsWith("<?"))
@@ -272,7 +274,12 @@ public class Tag {
 					}
 				}
 			} finally {
-				in.close();
+				if (rdr != null) {
+					rdr.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			}
 		} catch (Exception e) {
 			System.err.println("Problems copying extra XML");

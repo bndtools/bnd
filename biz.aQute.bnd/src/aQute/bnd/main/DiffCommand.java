@@ -44,63 +44,68 @@ public class DiffCommand {
 			throw new IllegalArgumentException("Requires 2 jar files input");
 		}
 		File fout = options.output();
-		PrintWriter pw;
-		if (fout == null)
-			pw = new PrintWriter(bnd.out);
-		else
-			pw = new PrintWriter(fout);
-
-		Instructions packageFilters = new Instructions(options.pack());
-
-		Iterator<String> it = options._().iterator();
-		Jar newer = bnd.getJar(it.next());
-		if ( newer == null)
-			return;
-		
+		PrintWriter pw = null;
 		try {
-			Jar older = bnd.getJar(it.next());
-			if ( older == null)
+			if (fout == null)
+				pw = new PrintWriter(bnd.out);
+			else
+				pw = new PrintWriter(fout);
+			
+			Instructions packageFilters = new Instructions(options.pack());
+			
+			Iterator<String> it = options._().iterator();
+			Jar newer = bnd.getJar(it.next());
+			if ( newer == null)
 				return;
 			
 			try {
-				Differ di = new DiffPluginImpl();
-				Tree n = di.tree(newer);
-				Tree o = di.tree(older);
-				Diff diff = n.diff(o);
-
-				boolean all = options.api() == false && options.resources() == false
-						&& options.manifest() == false;
-				if (!options.xml()) {
-					if (all || options.api())
-						for (Diff packageDiff : diff.get("<api>").getChildren()) {
-							if (packageFilters.matches(packageDiff.getName()))
-								show(pw, packageDiff, 0, !options.full());
-						}
-					if (all || options.manifest())
-						show(pw, diff.get("<manifest>"), 0, !options.full());
-					if (all || options.resources())
-						show(pw, diff.get("<resources>"), 0, !options.full());
-				} else {
-					Tag tag = new Tag("diff");
-					tag.addAttribute("date", new Date());
-					tag.addContent(getTagFrom("newer", newer));
-					tag.addContent(getTagFrom("older", older));
-					if (all || options.api())
-						tag.addContent(getTagFrom(diff.get("<api>"), !options.full()));
-					if (all || options.manifest())
-						tag.addContent(getTagFrom(diff.get("<manifest>"), !options.full()));
-					if (all || options.resources())
-						tag.addContent(getTagFrom(diff.get("<resources>"), !options.full()));
-
-					pw.println("<?xml version='1.0'?>");
-					tag.print(0, pw);
+				Jar older = bnd.getJar(it.next());
+				if ( older == null)
+					return;
+				
+				try {
+					Differ di = new DiffPluginImpl();
+					Tree n = di.tree(newer);
+					Tree o = di.tree(older);
+					Diff diff = n.diff(o);
+					
+					boolean all = options.api() == false && options.resources() == false
+							&& options.manifest() == false;
+					if (!options.xml()) {
+						if (all || options.api())
+							for (Diff packageDiff : diff.get("<api>").getChildren()) {
+								if (packageFilters.matches(packageDiff.getName()))
+									show(pw, packageDiff, 0, !options.full());
+							}
+						if (all || options.manifest())
+							show(pw, diff.get("<manifest>"), 0, !options.full());
+						if (all || options.resources())
+							show(pw, diff.get("<resources>"), 0, !options.full());
+					} else {
+						Tag tag = new Tag("diff");
+						tag.addAttribute("date", new Date());
+						tag.addContent(getTagFrom("newer", newer));
+						tag.addContent(getTagFrom("older", older));
+						if (all || options.api())
+							tag.addContent(getTagFrom(diff.get("<api>"), !options.full()));
+						if (all || options.manifest())
+							tag.addContent(getTagFrom(diff.get("<manifest>"), !options.full()));
+						if (all || options.resources())
+							tag.addContent(getTagFrom(diff.get("<resources>"), !options.full()));
+						
+						pw.println("<?xml version='1.0'?>");
+						tag.print(0, pw);
+					}
+				} finally {
+					older.close();
 				}
-				pw.close();
 			} finally {
-				older.close();
+				newer.close();
 			}
 		} finally {
-			newer.close();
+			if (pw != null) {
+				pw.close();
+			}
 		}
 	}
 
