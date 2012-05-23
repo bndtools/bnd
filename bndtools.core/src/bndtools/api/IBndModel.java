@@ -1,9 +1,11 @@
 package bndtools.api;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 
 import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ServiceComponent;
 import bndtools.model.clauses.VersionedClause;
 
@@ -74,5 +76,19 @@ public interface IBndModel {
     ResolveMode getResolveMode();
 
     void setResolveMode(ResolveMode mode);
+    
+    List<HeaderClause> getPlugins();
+    
+    void setPlugins(List<HeaderClause> plugins);
+    
+    List<String> getPluginPath();
+    
+    void setPluginPath(List<String> pluginPath);
+    
+    
 
+    void addPropertyChangeListener(String property, PropertyChangeListener listener);
+
+    void removePropertyChangeListener(String property, PropertyChangeListener listener);
+    
 }

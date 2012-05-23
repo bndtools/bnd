@@ -3,6 +3,9 @@ package bndtools.editor.pages;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -11,10 +14,9 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 import bndtools.api.IBndModel;
+import bndtools.editor.workspace.PluginPathPart;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
 import bndtools.model.clauses.HeaderClause;
@@ -68,33 +70,24 @@ public class WorkspacePage extends FormPage {
 
         WorkspaceMainPart linksPart = new WorkspaceMainPart(mainBuildFile, body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(linksPart);
+        
+        PluginPathPart pluginPathPart = new PluginPathPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION | Section.TWISTIE);
+        managedForm.addPart(pluginPathPart);
 
-        pluginsPart = new PluginsPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        pluginsPart = new PluginsPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION | Section.TWISTIE);
         managedForm.addPart(pluginsPart);
 
         // Layout
-        TableWrapLayout twl;
-        TableWrapData twd;
+        GridLayout layout = new GridLayout(1, false);
+        body.setLayout(layout);
+        
+        linksPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+        
+        pluginPathPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        pluginPathPart.getSection().addExpansionListener(new ResizeExpansionAdapter(pluginPathPart.getSection()));
 
-        twl = new TableWrapLayout();
-        body.setLayout(twl);
-
-        twd = new TableWrapData();
-        twd.align = TableWrapData.FILL;
-        twd.valign = TableWrapData.FILL;
-        twd.grabVertical = true;
-        twd.grabHorizontal = true;
-        twd.maxWidth = 200;
-        linksPart.getSection().setLayoutData(twd);
-
-        twd = new TableWrapData();
-        twd.align = TableWrapData.FILL;
-        twd.valign = TableWrapData.FILL;
-        twd.grabVertical = true;
-        twd.grabHorizontal = true;
-        twd.maxWidth = 200;
-        twd.heightHint = 300;
-        pluginsPart.getSection().setLayoutData(twd);
+        pluginsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        pluginsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(pluginsPart.getSection()));
 
     }
 

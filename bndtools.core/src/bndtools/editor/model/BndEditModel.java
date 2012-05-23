@@ -102,6 +102,7 @@ public class BndEditModel implements IPersistableBndModel {
 		BndConstants.TESTSUITES,
 		aQute.lib.osgi.Constants.TESTCASES,
 		aQute.lib.osgi.Constants.PLUGIN,
+		aQute.lib.osgi.Constants.PLUGINPATH,
 		BndConstants.RUNREQUIRE,
 		BndConstants.RUNEE,
 		BndConstants.RUNREPOS,
@@ -635,6 +636,15 @@ public class BndEditModel implements IPersistableBndModel {
     public void setPlugins(List<HeaderClause> plugins) {
         List<HeaderClause> old = getPlugins();
         doSetObject(aQute.lib.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
+    }
+    
+    public List<String> getPluginPath() {
+        return doGetObject(aQute.lib.osgi.Constants.PLUGINPATH, listConverter);
+    }
+    
+    public void setPluginPath(List<String> pluginPath) {
+        List<String> old = getPluginPath();
+        doSetObject(aQute.lib.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
     }
 
     public List<Requirement> getRunRequire() {
