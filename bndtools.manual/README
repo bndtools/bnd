@@ -1,3 +1,11 @@
+To setup:
+=========
+
+
+1. Install the Haskell Platform (http://hackage.haskell.org/platform/)
+2. Install Pandoc: `cabal install pandoc`
+3. Install Hakyll: `cabal install hakyll`
+
 To build the site:
 ==================
 
