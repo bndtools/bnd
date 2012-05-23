@@ -31,8 +31,8 @@ public class HttpConnectorTest extends TestCase {
 
 	private static final String LOCALHOST     = "127.0.0.1";
 	
-	private static final int HTTP_PORT        = 18081;
-	private static final int HTTPS_PORT       = 18443;
+	private static int HTTP_PORT              = 0;
+	private static int HTTPS_PORT             = 0;
 	
 	private static final String RESOURCE_BASE = "testdata/http";
 	private static final String SECURED_PATH  = "/securebundles/*";
@@ -41,13 +41,16 @@ public class HttpConnectorTest extends TestCase {
 	private static final String KEYSTORE_PATH = "testdata/example.keystore";
 	private static final String KEYSTORE_PASS = "opensesame";
 	
-	private static final String HTTP_URL_PREFIX       = "http://127.0.0.1:"  + HTTP_PORT     + "/";
-	private static final String HTTPS_URL_PREFIX      = "https://127.0.0.1:" + HTTPS_PORT    + "/";
-	
 	private static final String EXPECTED_ETAG = "64035a95";
 
 	private Server jetty;
 	
+	private String getUrl(boolean http) {
+		if (http) {
+			return "http://127.0.0.1:" + HTTP_PORT + "/";
+		}
+		return "https://127.0.0.1:" + HTTPS_PORT + "/";
+	}
 
 	@Override
 	protected void setUp() throws Exception {
@@ -72,12 +75,12 @@ public class HttpConnectorTest extends TestCase {
 		
 		// Start HTTP and HTTPS connectors
 		SelectChannelConnector httpConnector = new SelectChannelConnector();
-		httpConnector.setPort(HTTP_PORT);
+		httpConnector.setPort(0);
 		httpConnector.setHost(LOCALHOST);
 		server.addConnector(httpConnector);
 		
 		SslSelectChannelConnector sslConnector = new SslSelectChannelConnector();
-		sslConnector.setPort(HTTPS_PORT);
+		sslConnector.setPort(0);
 		sslConnector.setHost(LOCALHOST);
 		SslContextFactory contextFactory = sslConnector.getSslContextFactory();
 		contextFactory.setKeyStorePath(KEYSTORE_PATH);
@@ -111,13 +114,20 @@ public class HttpConnectorTest extends TestCase {
 		server.setHandler(securityHandler);
 		server.start();
 		
+		HTTP_PORT = httpConnector.getLocalPort();
+		HTTPS_PORT = sslConnector.getLocalPort();
+		assertNotSame(new Integer(0), new Integer(HTTP_PORT));
+		assertNotSame(new Integer(-1), new Integer(HTTP_PORT));
+		assertNotSame(new Integer(0), new Integer(HTTPS_PORT));
+		assertNotSame(new Integer(-1), new Integer(HTTPS_PORT));
+
 		return server;
 	}
 
 	public void testConnectTagged() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
-		TaggedData data = connector.connectTagged(new URL(HTTP_URL_PREFIX + "bundles/dummybundle.jar"));
+		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"));
 		assertNotNull("Data should be non-null because ETag not provided", data);
 		data.getInputStream().close();
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
@@ -126,14 +136,14 @@ public class HttpConnectorTest extends TestCase {
 	public void testConnectKnownTag() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
-		TaggedData data = connector.connectTagged(new URL(HTTP_URL_PREFIX + "bundles/dummybundle.jar"), EXPECTED_ETAG);
+		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"), EXPECTED_ETAG);
 		assertNull("Data should be null since ETag not modified.", data);
 	}
 
 	public void testConnectTagModified() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
-		TaggedData data = connector.connectTagged(new URL(HTTP_URL_PREFIX + "bundles/dummybundle.jar"), "00000000");
+		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"), "00000000");
 		assertNotNull("Data should be non-null because ETag was different", data);
 		data.getInputStream().close();
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
@@ -145,7 +155,7 @@ public class HttpConnectorTest extends TestCase {
 		config.put("disableServerVerify", "true");
 		connector.setProperties(config);
 		
-		InputStream stream = connector.connect(new URL(HTTPS_URL_PREFIX + "bundles/dummybundle.jar"));
+		InputStream stream = connector.connect(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 		assertNotNull(stream);
 		stream.close();
 	}
@@ -155,7 +165,7 @@ public class HttpConnectorTest extends TestCase {
 		
 		InputStream stream = null;
 		try {
-			stream = connector.connect(new URL(HTTPS_URL_PREFIX + "bundles/dummybundle.jar"));
+			stream = connector.connect(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 			fail ("Expected SSLHandsakeException");
 		} catch (SSLHandshakeException e) {
 			// expected
@@ -170,7 +180,7 @@ public class HttpConnectorTest extends TestCase {
 		config.put("disableServerVerify", "true");
 		connector.setProperties(config);
 		
-		TaggedData data = connector.connectTagged(new URL(HTTPS_URL_PREFIX + "bundles/dummybundle.jar"));
+		TaggedData data = connector.connectTagged(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 		assertNotNull(data);
 		data.getInputStream().close();
 	}
@@ -180,7 +190,7 @@ public class HttpConnectorTest extends TestCase {
 		
 		InputStream stream = null;
 		try {
-			connector.connectTagged(new URL(HTTPS_URL_PREFIX + "bundles/dummybundle.jar"));
+			connector.connectTagged(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 			fail ("Expected SSLHandsakeException");
 		} catch (SSLHandshakeException e) {
 			// expected
@@ -195,7 +205,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			connector.connect(new URL(HTTP_URL_PREFIX + "securebundles/dummybundle.jar"));
+			connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to missing auth");
 		} catch (IOException e) {
 			// expected
@@ -209,7 +219,7 @@ public class HttpConnectorTest extends TestCase {
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 		
-		InputStream stream = connector.connect(new URL(HTTP_URL_PREFIX + "securebundles/dummybundle.jar"));
+		InputStream stream = connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 		assertNotNull(stream);
 	}
 	
@@ -220,7 +230,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			connector.connect(new URL(HTTPS_URL_PREFIX + "securebundles/dummybundle.jar"));
+			connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
 			fail ("Should have thrown error: invalid server certificate");
 		} catch (IOException e) {
 			// expected
@@ -236,7 +246,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			InputStream stream = connector.connect(new URL(HTTPS_URL_PREFIX + "securebundles/dummybundle.jar"));
+			InputStream stream = connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
 			assertNotNull(stream);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -251,7 +261,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			connector.connect(new URL(HTTP_URL_PREFIX + "securebundles/dummybundle.jar"));
+			connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to incorrect auth");
 		} catch (IOException e) {
 			// expected
@@ -267,7 +277,7 @@ public class HttpConnectorTest extends TestCase {
 		connector.setProperties(config);
 		
 		try {
-			connector.connect(new URL(HTTPS_URL_PREFIX + "securebundles/dummybundle.jar"));
+			connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to incorrect auth");
 		} catch (IOException e) {
 			// expected
@@ -281,7 +291,7 @@ public class HttpConnectorTest extends TestCase {
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 		
-		TaggedData data = connector.connectTagged(new URL(HTTP_URL_PREFIX + "securebundles/dummybundle.jar"), EXPECTED_ETAG);
+		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "securebundles/dummybundle.jar"), EXPECTED_ETAG);
 		assertNull("Data should be null because resource not modified", data);
 	}
 	
