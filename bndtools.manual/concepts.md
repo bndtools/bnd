@@ -18,7 +18,6 @@ Bndtools uses *repositories* to supply dependencies to be used at build-time and
 Bndtools uses repositories in the following ways:
 
 * To look up bundles specified on the Build Path by Bundle Symbolic Name (BSN) and version;
-* To look up packages specified in `-buildpackages` using OBR filter syntax;
 * To resolve the Run Requirements list;
 * To look up bundles specified in the Run Bundles list by BSN and version.
 

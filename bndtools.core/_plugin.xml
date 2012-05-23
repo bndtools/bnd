@@ -671,14 +671,6 @@
       </renameParticipant>
    </extension>
    
-   <extension
-         point="org.eclipse.jdt.ui.quickFixProcessors">
-      <quickFixProcessor
-            class="bndtools.quickfix.ImportQuickFixProcessor"
-            id="bndtools.importQuickFixProcessor">
-      </quickFixProcessor>
-   </extension>
-   
    <extension point="bndtools.core.osgiFrameworks">
       <framework name="Apache Felix" bsn="org.apache.felix.framework" icon="icons/felix.gif"/>
       <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>

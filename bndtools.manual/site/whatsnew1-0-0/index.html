@@ -87,16 +87,6 @@ OBR is used to assist with setting up and maintaining Run Configurations. In mos
 	</div>
 </section>
 
-<section id="buildpackages">
-	<div class="page-header">
-		<h1>Build-time Package Dependencies</h1>
-	</div>
-	<div class="span16">
-		<p>Bndtools 1.0 enables a different style for build-time dependencies. Usually we specify libraries that are placed on our build path, referencing them by Bundle-SymbolicName (BSN) and version. Sometimes though we want to use a particular Java package in our code, but don’t care which specific repository library it comes from. Bndtools (and bnd when building offline) support this with a new <code>-buildpackages</code> instruction.
-This style of build dependencies can be used in conjunction with the existing BSN-based style. Currently only bundles in OBR repositories can be resolved this way, so the <code>-buildpackages</code> instruction may not work if you are using a plain file-based repository.</p>
-	</div>
-</section>
-
 <section id="editor">
 	<div class="page-header">
 		<h1>Bnd Editor Completion and Highlighting</h1>
