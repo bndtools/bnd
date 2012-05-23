@@ -174,6 +174,7 @@ public class MavenCommand extends Processor {
 					in = new FileInputStream(args[i++]);
 					properties.load(in);
 				} catch (Exception e) {
+				} finally {
 					if (in != null) {
 						in.close();
 					}
