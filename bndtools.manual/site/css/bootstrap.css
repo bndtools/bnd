@@ -1,4 +1,4 @@
-/*!
+a*!
  * Bootstrap v2.0.3
  *
  * Copyright 2012 Twitter, Inc
@@ -3596,7 +3596,8 @@ input[type="submit"].btn.btn-mini {
 .navbar .brand {
   display: block;
   float: left;
-  padding: 0px 20px 0px;
+  /* padding: 8px 20px 12px; */
+  padding: 4px 0px 7px 4px;
   margin-left: -20px;
   font-size: 20px;
   font-weight: 200;
