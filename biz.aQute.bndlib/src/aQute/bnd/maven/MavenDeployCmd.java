@@ -37,7 +37,8 @@ public class MavenDeployCmd extends Processor {
 			return;
 		}
 
-		@SuppressWarnings("unused") String cmd = args[i++];
+		/* skip first argument */
+		i++;
 		
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
