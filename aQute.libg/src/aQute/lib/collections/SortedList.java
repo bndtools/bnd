@@ -38,7 +38,10 @@ import java.util.*;
 			return n < end;
 		}
 
-		public T next() {
+		public T next() throws NoSuchElementException {
+			if (!hasNext()) {
+				throw new NoSuchElementException("");
+			}
 			return list[n++];
 		}
 
