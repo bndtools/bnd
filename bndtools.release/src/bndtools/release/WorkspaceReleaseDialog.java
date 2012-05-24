@@ -101,6 +101,5 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	}
 	
 	public void widgetDefaultSelected(SelectionEvent e) {
-		;
 	}
 }
