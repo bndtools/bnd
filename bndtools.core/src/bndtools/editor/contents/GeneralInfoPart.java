@@ -178,7 +178,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             activatorError = "Cannot validate activator class name, the bnd file is not in a Java project.";
                             activatorErrorLevel = IMessageProvider.WARNING;
                         } else {
-                            IType activatorType = javaProject != null ? javaProject.findType(activatorClassName) : null;
+                            IType activatorType = javaProject.findType(activatorClassName);
                             if (activatorType == null) {
                                 activatorError = "The activator class name is not known in this project.";
                                 activatorErrorLevel = IMessageProvider.ERROR;

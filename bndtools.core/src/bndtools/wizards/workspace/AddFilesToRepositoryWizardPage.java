@@ -144,8 +144,8 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
                         cell.setImage(errorImg);
                         cell.setText("Not a JAR file");
                     } else {
-                        String bsn = (bundleId != null) ? bundleId.getFirst() : null;
-                        String version = (bundleId != null) ? bundleId.getSecond() : null;
+                        String bsn = bundleId.getFirst();
+                        String version = bundleId.getSecond();
                         if(bsn == null) {
                             cell.setImage(warnImg);
                             cell.setText("Not a Bundle JAR");
