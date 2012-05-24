@@ -402,12 +402,12 @@ public class JarDiff {
 					clazz.setChangeCode(ClassInfo.CHANGE_CODE_NONE);
 				}
 			}
-		} else if (previousClass == null) {
+		} else if (clazz != null && previousClass == null) {
 			clazz.setChangeCode(ClassInfo.CHANGE_CODE_NEW);
 			if (severity == PKG_SEVERITY_NONE) {
 				severity = PKG_SEVERITY_MINOR;
 			}
-		} else if (clazz == null) {
+		} else if (clazz == null && previousClass != null) {
 			previousClass.setChangeCode(ClassInfo.CHANGE_CODE_REMOVED);
 			if (severity == PKG_SEVERITY_NONE) {
 				severity = PKG_SEVERITY_MAJOR;
