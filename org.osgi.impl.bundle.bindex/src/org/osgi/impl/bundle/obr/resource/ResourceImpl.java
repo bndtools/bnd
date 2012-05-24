@@ -290,7 +290,7 @@ public class ResourceImpl implements Resource {
 
 	public void setSize(long size) {
 		this.size = size;
-		map.put(SIZE, new Long(size));
+		map.put(SIZE, Long.valueOf(size));
 	}
 
 	public Collection<Requirement> getRequirementList() {
