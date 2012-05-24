@@ -114,7 +114,7 @@ public class NoUsesTest extends TestCase {
 			if ( clause == null )
 				return null;
 			
-			return (String) clause.get("uses:");			
+			return clause.get("uses:");			
 	}
 	
 	void assertOk(Analyzer bmaker) throws Exception {

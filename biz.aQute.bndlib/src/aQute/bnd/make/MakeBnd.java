@@ -13,11 +13,11 @@ public class MakeBnd implements MakePlugin, Constants {
 
     public Resource make(Builder builder, String destination,
             Map<String, String> argumentsOnMake) throws Exception {
-        String type = (String) argumentsOnMake.get("type");
+        String type = argumentsOnMake.get("type");
         if (!"bnd".equals(type))
             return null;
 
-        String recipe = (String) argumentsOnMake.get("recipe");
+        String recipe = argumentsOnMake.get("recipe");
         if (recipe == null) {
             builder.error("No recipe specified on a make instruction for "
                     + destination);
@@ -42,7 +42,7 @@ public class MakeBnd implements MakePlugin, Constants {
             if (builder.hasSources()) {
                 for (String key : jar.getResources().keySet()) {
                     if (key.startsWith("OSGI-OPT/src"))
-                        dot.putResource(key, (Resource) jar.getResource(key));
+                        dot.putResource(key, jar.getResource(key));
                 }
             }
             builder.getInfo(bchild, bndfile.getName() +": ");

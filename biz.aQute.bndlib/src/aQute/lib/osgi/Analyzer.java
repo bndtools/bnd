@@ -569,7 +569,7 @@ public class Analyzer extends Processor {
 		StringBuilder sb = new StringBuilder();
 		Map<String, Map<String, Resource>> map = bundle.getDirectories();
 		for (Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
-			String directory = (String) i.next();
+			String directory = i.next();
 			if (directory.equals("META-INF") || directory.startsWith("META-INF/"))
 				continue;
 			if (directory.equals("OSGI-OPT") || directory.startsWith("OSGI-OPT/"))
@@ -1481,7 +1481,7 @@ public class Analyzer extends Processor {
 		for (Iterator<Map.Entry<String, String>> i = additional.entrySet().iterator(); i.hasNext();) {
 			Map.Entry<String, String> entry = i.next();
 			if (force || getProperties().get(entry.getKey()) == null)
-				setProperty((String) entry.getKey(), (String) entry.getValue());
+				setProperty(entry.getKey(), entry.getValue());
 		}
 	}
 

@@ -143,7 +143,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		if (!this.root.isDirectory()) {
 			reporter.error("Maven repository did not get a proper URL to the repository %s", root);
 		}
-		name = (String) map.get(NAME);
+		name = map.get(NAME);
 
 	}
 

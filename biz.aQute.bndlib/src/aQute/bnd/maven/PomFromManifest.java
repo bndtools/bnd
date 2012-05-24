@@ -211,7 +211,7 @@ public class PomFromManifest extends WriteResource {
 	 */
 	private Tag tagFromMap(Tag parent, Map<String, String> values, String string, String tag,
 			String object) {
-		String value = (String) values.get(string);
+		String value = values.get(string);
 		if (value == null)
 			value = object;
 		if (value == null)

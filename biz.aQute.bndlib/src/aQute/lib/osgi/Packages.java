@@ -27,7 +27,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((PackageRef) name);
+		return map.containsKey(name);
 	}
 
 	@Deprecated public boolean containsKey(Object name) {

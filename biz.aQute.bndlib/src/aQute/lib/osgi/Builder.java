@@ -750,9 +750,9 @@ public class Builder extends Analyzer {
 			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination,
 					absentIsOk);
 		} else if (extra.containsKey("literal")) {
-			String literal = (String) extra.get("literal");
+			String literal = extra.get("literal");
 			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
-			String x = (String) extra.get("extra");
+			String x = extra.get("extra");
 			if (x != null)
 				r.setExtra(x);
 			jar.putResource(name, r);
@@ -1046,7 +1046,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 	public List<Builder> getSubBuilders() throws Exception {
-		String sub = (String) getProperty(SUB);
+		String sub = getProperty(SUB);
 		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
 			return Arrays.asList(this);
 

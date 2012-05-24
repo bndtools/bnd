@@ -41,7 +41,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public void setProperties(Map<String, String> map) {
-		String location = (String) map.get(LOCATION);
+		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
@@ -49,11 +49,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (!root.isDirectory())
 			throw new IllegalArgumentException("Repository is not a valid directory " + root);
 
-		String readonly = (String) map.get(READONLY);
+		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
 			canWrite = false;
 
-		name = (String) map.get(NAME);
+		name = map.get(NAME);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 		}
 
-		File[] files = (File[]) versions.values().toArray(EMPTY_FILES);
+		File[] files = versions.values().toArray(EMPTY_FILES);
 		if ("latest".equals(versionRange) && files.length > 0) {
 			return new File[] { files[files.length - 1] };
 		}

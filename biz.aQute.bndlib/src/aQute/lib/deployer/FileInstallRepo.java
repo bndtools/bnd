@@ -144,7 +144,7 @@ public class FileInstallRepo extends FileRepo {
                     versions.put(version, instances[i]);
             }
         }
-        return (File[]) versions.values().toArray(new File[versions.size()]);
+        return versions.values().toArray(new File[versions.size()]);
 	}
 
 }

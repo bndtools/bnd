@@ -1007,7 +1007,7 @@ public class ComponentTest extends TestCase {
 		b.setProperties(p);
 		b.build();
 		assertEquals(1, b.getErrors().size());
-		assertTrue(((String) b.getErrors().get(0)).indexOf("Unrecognized directive") >= 0);
+		assertTrue(b.getErrors().get(0).indexOf("Unrecognized directive") >= 0);
 		assertEquals(0, b.getWarnings().size());
 	}
 

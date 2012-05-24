@@ -175,7 +175,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : directory.entrySet()) {
 			String key = entry.getKey();
 			if (!key.endsWith(".java")) {
-				duplicates |= putResource(key, (Resource) entry.getValue(), overwrite);
+				duplicates |= putResource(key, entry.getValue(), overwrite);
 			}
 		}
 		return duplicates;
@@ -267,8 +267,8 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
 			if (!done.contains(entry.getKey()))
-				writeResource(jout, directories, (String) entry.getKey(),
-						(Resource) entry.getValue());
+				writeResource(jout, directories, entry.getKey(),
+						entry.getValue());
 		}
 		jout.finish();
 	}

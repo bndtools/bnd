@@ -68,14 +68,14 @@ public class SpringComponent implements AnalyzerPlugin {
 
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
 	    Jar jar = analyzer.getJar();
-	    Map<String, Resource> dir = (Map<String, Resource>) jar.getDirectories().get("META-INF/spring");
+	    Map<String, Resource> dir = jar.getDirectories().get("META-INF/spring");
 		if ( dir == null || dir.isEmpty())
 			return false;
 		
 		for (Iterator<Entry<String, Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
 			Entry<String, Resource> entry = i.next();
-			String path = (String) entry.getKey();
-			Resource resource = (Resource) entry.getValue();
+			String path = entry.getKey();
+			Resource resource = entry.getValue();
 			if (SPRING_SOURCE.matcher(path).matches()) {
 				try {
 				InputStream in = resource.openInputStream();

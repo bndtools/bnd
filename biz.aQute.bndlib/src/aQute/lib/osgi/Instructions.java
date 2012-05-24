@@ -40,7 +40,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((Instruction) name);
+		return map.containsKey(name);
 	}
 
 	@Deprecated public boolean containsKey(Object name) {

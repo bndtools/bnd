@@ -23,7 +23,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
     public final static String             NAME     = "name";
 
     public void setProperties(Map<String, String> map) {
-        String location = (String) map.get(LOCATION);
+        String location = map.get(LOCATION);
         if (location == null)
             throw new IllegalArgumentException(
                     "Location muse be set on a EclipseRepo plugin");
@@ -38,7 +38,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
                     "Repository is not a valid directory (no plugins directory)"
                             + root);
 
-        name = (String) map.get(NAME);
+        name = map.get(NAME);
 
         try {
             index = buildIndex();

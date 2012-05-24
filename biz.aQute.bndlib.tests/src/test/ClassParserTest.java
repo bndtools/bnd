@@ -153,7 +153,7 @@ public class ClassParserTest extends TestCase {
 			sb.append("L");
 			sb.append(c.getCanonicalName().replace('.', '/'));
 			if (c instanceof GenericDeclaration) {
-				GenericDeclaration gd = (GenericDeclaration) c;
+				GenericDeclaration gd = c;
 				if (gd.getTypeParameters().length != 0) {
 					sb.append("<");
 					for (Type arg : gd.getTypeParameters()) {

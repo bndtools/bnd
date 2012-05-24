@@ -654,7 +654,7 @@ public class Verifier extends Processor {
 			if (bsn.size() > 1)
 				error("More than one BSN specified " + bsn);
 
-			String name = (String) bsn.keySet().iterator().next();
+			String name = bsn.keySet().iterator().next();
 			if (!isBsn(name)) {
 				error("Symbolic Name has invalid format: " + name);
 			}
@@ -801,7 +801,7 @@ public class Verifier extends Processor {
 
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
 		for (Iterator<String> i = st.getTokenSet().iterator(); i.hasNext();) {
-			if (!verify((String) i.next(), regex)) {
+			if (!verify(i.next(), regex)) {
 				String msg = "Invalid value for " + name + ", " + value + " does not match "
 						+ regex.pattern();
 				if (error)

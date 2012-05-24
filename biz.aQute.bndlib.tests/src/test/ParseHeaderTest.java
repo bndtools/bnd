@@ -48,13 +48,13 @@ public class ParseHeaderTest extends TestCase {
 		if (expectedError != null) {
 			System.err.println(p.getErrors());
 			assertTrue(p.getErrors().size()>0);
-			assertTrue(((String) p.getErrors().get(0)).indexOf(expectedError) >= 0);
+			assertTrue(p.getErrors().get(0).indexOf(expectedError) >= 0);
 		} else
 			assertEquals(0, p.getErrors().size());
 		if (expectedWarning != null) {
 			System.err.println(p.getWarnings());
 			assertTrue(p.getWarnings().size()>0);
-			String w = (String) p.getWarnings().get(0);
+			String w = p.getWarnings().get(0);
 			assertTrue(w.startsWith(expectedWarning));
 		} else
 			assertEquals(0, p.getWarnings().size());

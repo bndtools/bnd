@@ -374,7 +374,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		// Load the plugins
 		for (Entry<String, Attrs> entry : plugins.entrySet()) {
-			String key = (String) entry.getKey();
+			String key = entry.getKey();
 
 			try {
 				trace("Using plugin %s", key);

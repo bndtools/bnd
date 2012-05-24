@@ -189,7 +189,7 @@ public class EclipseClasspath {
         if (m.matches()) {
             String var = m.group(1);
             String remainder = m.group(2);
-            String base = (String) properties.get(var);
+            String base = properties.get(var);
             if (base != null) {
                 File b = new File(base);
                 File f = new File(b, remainder.replace('/', File.separatorChar));
