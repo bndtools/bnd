@@ -244,7 +244,7 @@ public class Attrs implements Map<String, String> {
 		if (this == o)
 			return true;
 
-		Attrs other = (Attrs) o;
+		Attrs other = o;
 
 		if (size() != other.size())
 			return false;

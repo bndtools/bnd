@@ -48,7 +48,7 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>>{
 				}
 			}
 			for (Iterator<String> i = aliases.iterator(); i.hasNext();) {
-				String packageName = (String) i.next();
+				String packageName = i.next();
 				if (result.containsKey(packageName)) {
 					if (logger != null)
 						logger

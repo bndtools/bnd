@@ -65,10 +65,10 @@ import aQute.libg.version.*;
 		assertEquals((Integer) 1, converter.convert(Integer.class, "1"));
 		assertEquals((Long) 1L, converter.convert(long.class, "1"));
 		assertEquals((Long) 1L, converter.convert(Long.class, "1"));
-		assertEquals((Float) 1f, converter.convert(float.class, "1"));
-		assertEquals((Float) 1f, converter.convert(Float.class, "1"));
-		assertEquals((Double) 1d, converter.convert(double.class, "1"));
-		assertEquals((Double) 1d, converter.convert(double.class, "1"));
+		assertEquals(1f, converter.convert(float.class, "1"));
+		assertEquals(1f, converter.convert(Float.class, "1"));
+		assertEquals(1d, converter.convert(double.class, "1"));
+		assertEquals(1d, converter.convert(double.class, "1"));
 		assertEquals((Character) 'A', converter.convert(char.class, "A"));
 		assertEquals((Character) 'A', converter.convert(Character.class, "A"));
 	}

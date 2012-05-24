@@ -125,7 +125,7 @@ public class Tag {
 	 * Return the attribute value.
 	 */
 	public String getAttribute(String key) {
-		return (String) attributes.get(key);
+		return attributes.get(key);
 	}
 
 	/**

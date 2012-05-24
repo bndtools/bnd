@@ -83,7 +83,7 @@ public class Version implements Comparable<Version> {
         if (other == this)
             return 0;
 
-        Version o = (Version) other;
+        Version o = other;
         if (major != o.major)
             return major - o.major;
 

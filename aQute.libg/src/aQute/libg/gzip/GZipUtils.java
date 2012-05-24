@@ -39,7 +39,7 @@ public class GZipUtils {
      */
 	private static int readUShort(InputStream in) throws IOException {
 		int b = readUByte(in);
-		return ((int) readUByte(in) << 8) | b;
+		return (readUByte(in) << 8) | b;
 	}
     
     /*

@@ -187,12 +187,12 @@ public class JSONTest extends TestCase {
 		assertEquals(49, dec.from("49").get());
 		assertEquals((Integer) 49, dec.from("49").get(Integer.class));
 		assertEquals((Long) 49L, dec.from("49").get(Long.class));
-		assertEquals((Double) 49d, dec.from("49").get(Double.class));
-		assertEquals((Double) 49.3d, dec.from("49.3").get(Double.class));
+		assertEquals(49d, dec.from("49").get(Double.class));
+		assertEquals(49.3d, dec.from("49.3").get(Double.class));
 		assertEquals((Byte) (byte) 49, dec.from("49.3").get(Byte.class));
 		assertEquals((Byte) (byte) 49, dec.from("49.9999").get(Byte.class));
 		assertEquals((Short) (short) 49, dec.from("49.9999").get(Short.class));
-		assertEquals((Float) 49.9999f, dec.from("49.9999").get(Float.class));
+		assertEquals(49.9999f, dec.from("49.9999").get(Float.class));
 		assertEquals((Character) '0', dec.from("48").get(Character.class));
 		assertEquals((Boolean) true, dec.from("48").get(Boolean.class));
 		assertEquals((Boolean) false, dec.from("0").get(Boolean.class));
@@ -396,7 +396,7 @@ public class JSONTest extends TestCase {
 
 		// Check integers
 		assertEquals(1, d.integers.size());
-		assertEquals((Integer) 1, (Integer) d.integers.get("c"));
+		assertEquals((Integer) 1, d.integers.get("c"));
 
 		// Check map
 		assertEquals(1, d.map.size());
