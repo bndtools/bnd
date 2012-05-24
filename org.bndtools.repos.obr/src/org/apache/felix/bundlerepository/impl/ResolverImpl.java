@@ -244,11 +244,10 @@ public class ResolverImpl implements Resolver
         	if (optional) {
         		// previously resolved as optional, optional now too --> nothing to do
         		return true;
-        	} else {
-        		// previously resolved as optional, but now has to be resolved as required --> resolve!
-        		m_optionalSet.remove(resource);
-        		// continue with resolving
         	}
+			// previously resolved as optional, but now has to be resolved as required --> resolve!
+			m_optionalSet.remove(resource);
+			// continue with resolving
         }
 
         // Add to resolve map to avoid cycles.

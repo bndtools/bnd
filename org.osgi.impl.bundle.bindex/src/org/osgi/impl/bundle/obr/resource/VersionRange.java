@@ -109,7 +109,6 @@ public class VersionRange implements Comparable<VersionRange> {
 
 		if (ll)
 			return 0;
-		else
-			return 1;
+		return 1;
 	}
 }

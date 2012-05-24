@@ -269,18 +269,17 @@ public class ReleaseHelper {
 
 		if (file.exists() && equalsPackageInfoFileVersion(file, packageInfo.getSuggestedVersion())) {
 			return;
-		} else {
-			FileOutputStream fos = new FileOutputStream(file);
-			PrintWriter pw = new PrintWriter(fos);
-			pw.println("version " + packageInfo.getSuggestedVersion());
-			pw.flush();
-			pw.close();
-			ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
-	
-			File binary = IO.getFile(project.getOutput(), path);
-			IO.copy(file, binary);
-			ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
 		}
+		FileOutputStream fos = new FileOutputStream(file);
+		PrintWriter pw = new PrintWriter(fos);
+		pw.println("version " + packageInfo.getSuggestedVersion());
+		pw.flush();
+		pw.close();
+		ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
+
+		File binary = IO.getFile(project.getOutput(), path);
+		IO.copy(file, binary);
+		ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
 	}
 
 	private static boolean equalsPackageInfoFileVersion(File packageInfoFile, String version) throws IOException {

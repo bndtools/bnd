@@ -235,30 +235,29 @@ public class BundleInfo {
 		ManifestEntry entry = manifest.getHost();
 		if (entry == null) {
 			return;
-		} else {
-			// We are a fragment, create a requirement
-			// to our host.
-			RequirementImpl r = new RequirementImpl("bundle");
-			StringBuffer sb = new StringBuffer();
-			sb.append("(&(symbolicname=");
-			sb.append(entry.getName());
-			sb.append(")");
-			appendVersion(sb, entry.getVersion());
-			sb.append(")");
-			r.setFilter(sb.toString());
-			r.setComment("Required Host " + entry.getName());
-			r.setExtend(true);
-			r.setOptional(false);
-			r.setMultiple(false);
-			resource.addRequirement(r);
-
-			// And insert a capability that we are available
-			// as a fragment. ### Do we need that with extend?
-			CapabilityImpl capability = new CapabilityImpl("fragment");
-			capability.addProperty("host", entry.getName());
-			capability.addProperty("version", entry.getVersion());
-			resource.addCapability(capability);
 		}
+		// We are a fragment, create a requirement
+		// to our host.
+		RequirementImpl r = new RequirementImpl("bundle");
+		StringBuffer sb = new StringBuffer();
+		sb.append("(&(symbolicname=");
+		sb.append(entry.getName());
+		sb.append(")");
+		appendVersion(sb, entry.getVersion());
+		sb.append(")");
+		r.setFilter(sb.toString());
+		r.setComment("Required Host " + entry.getName());
+		r.setExtend(true);
+		r.setOptional(false);
+		r.setMultiple(false);
+		resource.addRequirement(r);
+
+		// And insert a capability that we are available
+		// as a fragment. ### Do we need that with extend?
+		CapabilityImpl capability = new CapabilityImpl("fragment");
+		capability.addProperty("host", entry.getName());
+		capability.addProperty("version", entry.getVersion());
+		resource.addCapability(capability);
 	}
 
 	void doRequires(ResourceImpl resource) {
@@ -492,10 +491,8 @@ public class BundleInfo {
 				if (key.equalsIgnoreCase("specification-version")
 						|| key.equalsIgnoreCase("version"))
 					continue;
-				else {
-					Object value = entry.getValue();
-					capability.addProperty(key, value);
-				}
+				Object value = entry.getValue();
+				capability.addProperty(key, value);
 			}
 		Map<String, String> directives = pack.getDirectives();
 		if (directives != null)

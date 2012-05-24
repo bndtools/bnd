@@ -290,8 +290,7 @@ public class Manifest extends Hashtable<Object, Object> {
 	public Object get(Object key) {
 		if (key instanceof String)
 			return super.get(((String) key).toLowerCase());
-		else
-			return null;
+		return null;
 	}
 
 	public String getValue(String key) {
@@ -302,16 +301,14 @@ public class Manifest extends Hashtable<Object, Object> {
 		String s = getValue(key);
 		if (s == null)
 			return deflt;
-		else
-			return s;
+		return s;
 	}
 
 	public String[] getRequiredExecutionEnvironments() {
 		String ees = getValue("Bundle-RequiredExecutionEnvironment");
 		if (ees != null)
 			return ees.trim().split("\\s*,\\s*");
-		else
-			return null;
+		return null;
 	}
 
 	public VersionRange getVersion() {
@@ -329,8 +326,7 @@ public class Manifest extends Hashtable<Object, Object> {
 				name = "Untitled-" + hashCode();
 			return name;
 		}
-		else
-			return bsn.getName();
+		return bsn.getName();
 	}
 
 	public String getManifestVersion() {
@@ -349,8 +345,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		String cats = getValue("Bundle-Category");
 		if (cats == null)
 			return new String[0];
-		else
-			return cats.split("\\s*,\\s*");
+		return cats.split("\\s*,\\s*");
 	}
 
 	public Native[] get_native() {

@@ -81,10 +81,9 @@ class ZipTreeNode implements IAdaptable {
 			if(nextSlash == -1) {
 				path.add(name.substring(index));
 				break;
-			} else {
-				path.add(name.substring(index, nextSlash + 1));
-				index = nextSlash + 1;
 			}
+			path.add(name.substring(index, nextSlash + 1));
+			index = nextSlash + 1;
 		}
 		
 		return path;

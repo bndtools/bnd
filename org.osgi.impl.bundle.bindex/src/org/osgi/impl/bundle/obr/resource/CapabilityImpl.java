@@ -114,9 +114,7 @@ public class CapabilityImpl implements Capability {
 			}
 			return buf.toString();
 		}
-		else {
-			return value.toString();
-		}
+		return value.toString();
 	}
 
 	public String getName() {

@@ -262,8 +262,7 @@ public class FilterImpl {
 						StringSet set = new StringSet(s);
 						if (op == SUBSET)
 							return set.containsAll((Collection<?>) obj);
-						else
-							return ((Collection<?>) obj).containsAll(set);
+						return ((Collection<?>) obj).containsAll(set);
 					}
 
 					for (Object element : ((Collection<?>)obj)) {
@@ -283,32 +282,29 @@ public class FilterImpl {
 							StringSet set = new StringSet(s);
 							if (op == SUPERSET)
 								return set.contains(obj);
-							else
-								return set.size() == 0
-										|| (set.size() == 1 && set.iterator()
-												.next().equals(obj));
+							return set.size() == 0
+									|| (set.size() == 1 && set.iterator()
+											.next().equals(obj));
 						}
-						else {
-							Constructor<? extends Object> constructor = numClass
-									.getConstructor(new Class[] {String.class});
-							Object instance = constructor
-									.newInstance(new Object[] {s});
-							switch (op) {
-								case EQ :
-									return obj.equals(instance);
-								case LESS :
-									return ((Comparable) obj)
-											.compareTo(instance) < 0;
-								case GREATER :
-									return ((Comparable) obj)
-											.compareTo(instance) > 0;
-								case LE :
-									return ((Comparable) obj)
-											.compareTo(instance) <= 0;
-								case GE :
-									return ((Comparable) obj)
-											.compareTo(instance) >= 0;
-							}
+						Constructor<? extends Object> constructor = numClass
+								.getConstructor(new Class[] {String.class});
+						Object instance = constructor
+								.newInstance(new Object[] {s});
+						switch (op) {
+							case EQ :
+								return obj.equals(instance);
+							case LESS :
+								return ((Comparable) obj)
+										.compareTo(instance) < 0;
+							case GREATER :
+								return ((Comparable) obj)
+										.compareTo(instance) > 0;
+							case LE :
+								return ((Comparable) obj)
+										.compareTo(instance) <= 0;
+							case GE :
+								return ((Comparable) obj)
+										.compareTo(instance) >= 0;
 						}
 					}
 					catch (Exception e) {
@@ -426,10 +422,8 @@ public class FilterImpl {
 				s = s.substring(1);
 			}
 		}
-		else {
-			if (s.length() == 0 || s.charAt(0) != pat.charAt(0))
-				return false;
-			return patSubstr(s.substring(1), pat.substring(1));
-		}
+		if (s.length() == 0 || s.charAt(0) != pat.charAt(0))
+			return false;
+		return patSubstr(s.substring(1), pat.substring(1));
 	}
 }

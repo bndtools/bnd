@@ -392,14 +392,12 @@ public class Tag {
 		if (mapping == null) {
 			return tn == sn || (sn != null && sn.equals(tn));
 		}
-		else {
-			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
-					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
-					: child.findRecursiveAttribute("xmlns:" + tn);
-			return turi == suri
-					|| (turi != null && suri != null && turi.equals(suri));
-		}
+		String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
+				.getAttribute("xmlns:" + sn);
+		String turi = tn == null ? child.findRecursiveAttribute("xmlns")
+				: child.findRecursiveAttribute("xmlns:" + tn);
+		return turi == suri
+				|| (turi != null && suri != null && turi.equals(suri));
 	}
 
 	public String getString(String path) {
@@ -446,8 +444,7 @@ public class Tag {
 			String ns = name.substring(0, index);
 			return findRecursiveAttribute("xmlns:" + ns);
 		}
-		else
-			return findRecursiveAttribute("xmlns");
+		return findRecursiveAttribute("xmlns");
 	}
 
 	public String findRecursiveAttribute(String name) {

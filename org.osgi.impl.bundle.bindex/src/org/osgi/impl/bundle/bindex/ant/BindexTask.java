@@ -198,9 +198,7 @@ public class BindexTask extends Task {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;
-		else {
-			return "no-symbolic-name";
-		}
+		return "no-symbolic-name";
 	}
 
 	void recurse(Set<ResourceImpl> resources, File path) throws Exception {

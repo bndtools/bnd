@@ -162,9 +162,7 @@ public class Index {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;
-		else {
-			return "no-symbolic-name";
-		}
+		return "no-symbolic-name";
 	}
 
 	void recurse(Set<ResourceImpl> resources, File path) throws Exception {
@@ -188,10 +186,9 @@ public class Index {
 				} catch (Exception e) {
 					if (ignoreFlag == false) {
 						throw e;
-					} else {
-						System.err.println("Ignoring: " + path.getName()
-								+ " with exception " + e.getMessage());
 					}
+					System.err.println("Ignoring: " + path.getName()
+							+ " with exception " + e.getMessage());
 
 				}
 			}
