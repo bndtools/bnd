@@ -208,9 +208,8 @@ public class Manifest extends Hashtable<Object, Object> {
 					aliases.add(parameter.key);
 				}
 				else {
-					if (parameter.type == Parameter.ATTRIBUTE)
-						p.addParameter(parameter);
-					else if ( parameter.type == Parameter.DIRECTIVE )
+					if ((parameter.type == Parameter.ATTRIBUTE)
+							|| (parameter.type == Parameter.DIRECTIVE))
 						p.addParameter(parameter);
 					else
 						p.addParameter(parameter);
