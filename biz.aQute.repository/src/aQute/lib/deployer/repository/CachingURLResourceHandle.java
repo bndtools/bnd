@@ -71,7 +71,6 @@ public class CachingURLResourceHandle implements ResourceHandle {
 	final File etagFile;
 	
 	final CachingMode mode;
-	boolean downloaded = false; // only used with mode=PreferRemote
 	
 	Reporter reporter;
 	
