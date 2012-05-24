@@ -264,7 +264,7 @@ public class Analyzer extends Processor {
 	 * @return
 	 */
 	protected String getImportPackages() {
-		return getProperty(IMPORT_PACKAGE);
+		return getProperty(IMPORT_PACKAGE, false);
 	}
 
 	/**
