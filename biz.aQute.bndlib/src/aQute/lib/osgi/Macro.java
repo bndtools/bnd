@@ -952,7 +952,7 @@ public class Macro implements Replacer {
 		} finally {
 			flattening = false;
 		}
-	};
+	}
 
 	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
 

@@ -16,7 +16,7 @@ import aQute.libg.reporter.*;
 public class Jar implements Closeable {
 	public enum Compression {
 		DEFLATE, STORE
-	};
+	}
 
 	public static final Object[]				EMPTY_ARRAY	= new Jar[0];
 	final Map<String, Resource>					resources	= new TreeMap<String, Resource>();

@@ -4,7 +4,7 @@ import java.io.*;
 
 public interface ResourceHandle {
 	
-	public enum Location { local, remote_cached, remote };
+	public enum Location { local, remote_cached, remote }
 	
 	String getName();
 	Location getLocation();

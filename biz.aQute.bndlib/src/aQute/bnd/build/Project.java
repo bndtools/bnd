@@ -1091,7 +1091,7 @@ public class Project extends Processor {
 	 */
 	public void deploy(String name, File file) throws Exception {
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		;
+
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite()) {

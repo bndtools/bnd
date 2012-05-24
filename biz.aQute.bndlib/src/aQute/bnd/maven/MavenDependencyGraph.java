@@ -19,7 +19,7 @@ public class MavenDependencyGraph {
 
 	enum Scope {
 		COMPILE, RUNTIME, TEST, PROVIDED, SYSTEM, IMPORT,
-	};
+	}
 
 	
 	public class Artifact {

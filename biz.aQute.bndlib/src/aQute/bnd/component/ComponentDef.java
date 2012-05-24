@@ -38,7 +38,7 @@ class ComponentDef {
 	Boolean							enabled;
 	String							xmlns;
 	String							configurationPid;
-	List<Tag>						propertyTags	= new ArrayList<Tag>();					;
+	List<Tag>						propertyTags	= new ArrayList<Tag>();
 
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the

@@ -80,12 +80,12 @@ public class Clazz {
 		public String getEE() {
 			return ee;
 		}
-	};
+	}
 
 	public static enum QUERY {
 		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS;
 
-	};
+	}
 
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
 															QUERY.IMPORTS, QUERY.NAMED,

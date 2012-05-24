@@ -31,7 +31,7 @@ public abstract class Pom {
 //				return false;
 //			}
 //		}
-	};
+	}
 
 	final Maven			maven;
 	final URI			home;

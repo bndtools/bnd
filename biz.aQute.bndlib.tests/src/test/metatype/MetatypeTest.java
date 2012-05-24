@@ -476,7 +476,7 @@ public class MetatypeTest extends TestCase {
 	@Meta.OCD public static interface Enums {
 		enum X {
 			requireConfiguration, optionalConfiguration, ignoreConfiguration
-		};
+		}
 
 		X r();
 
