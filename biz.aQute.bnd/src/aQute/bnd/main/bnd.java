@@ -47,8 +47,8 @@ import aQute.libg.version.*;
  */
 public class bnd extends Processor {
 	Settings			settings	= new Settings();
-	PrintStream			err			= System.err;
-	public PrintStream	out			= System.out;
+	final PrintStream	err			= System.err;
+	final public PrintStream out	= System.out;
 	Justif				justif		= new Justif(60);
 
 	static Pattern		JARCOMMANDS	= Pattern
@@ -1775,10 +1775,6 @@ public class bnd extends Processor {
 			}
 		}
 		err.print(sb);
-	}
-
-	public void setOut(PrintStream out) {
-		this.err = out;
 	}
 
 	/**
