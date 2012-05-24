@@ -27,7 +27,7 @@ public class WorkspacePage extends FormPage {
     private final IBndModel model;
     private PluginsPart pluginsPart;
 
-    public static IFormPageFactory MAIN_FACTORY = new IFormPageFactory() {
+    public static final IFormPageFactory MAIN_FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
         }
@@ -37,7 +37,7 @@ public class WorkspacePage extends FormPage {
         }
     };
 
-    public static IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
+    public static final IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
         }
