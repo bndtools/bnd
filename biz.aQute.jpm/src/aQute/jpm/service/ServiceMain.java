@@ -9,8 +9,8 @@ import aQute.lib.io.*;
 
 public class ServiceMain extends Thread {
 	static File				lock;
-	static Date				last	= new Date();
-	static String			message	= "<>";
+	Date					last	= new Date();
+	String					message	= "<>";
 	static DatagramSocket	socket;
 	static Class<?>			mainClass;
 	static Method			serviceMethod;
