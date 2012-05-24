@@ -61,6 +61,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsKey(name);
 	}
 
+	@SuppressWarnings("cast")
 	@Deprecated public boolean containsKey(Object name) {
 		assert name instanceof String;
 		if (map == null)
@@ -76,6 +77,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsValue(value);
 	}
 
+	@SuppressWarnings("cast")
 	@Deprecated public boolean containsValue(Object value) {
 		assert value instanceof String;
 		if (map == null)
@@ -91,6 +93,7 @@ public class Attrs implements Map<String, String> {
 		return map.entrySet();
 	}
 
+	@SuppressWarnings("cast")
 	@Deprecated public String get(Object key) {
 		assert key instanceof String;
 		if (map == null)
@@ -180,6 +183,7 @@ public class Attrs implements Map<String, String> {
 			put(e.getKey(), e.getValue());
 	}
 
+	@SuppressWarnings("cast")
 	@Deprecated public String remove(Object var0) {
 		assert var0 instanceof String;
 		if (map == null)

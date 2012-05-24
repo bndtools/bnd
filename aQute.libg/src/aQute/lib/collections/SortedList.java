@@ -99,10 +99,12 @@ import java.util.*;
 		this(x, 0, x.size(), cmp);
 	}
 
+	@SuppressWarnings("cast")
 	public SortedList(T... x) {
 		this((T[]) x.clone(), 0, x.length, (Comparator<T>) comparator);
 	}
 
+	@SuppressWarnings("cast")
 	public SortedList(Comparator<T> cmp, T... x) {
 		this((T[]) x.clone(), 0, x.length, cmp);
 	}
@@ -167,6 +169,7 @@ import java.util.*;
 		return start == end;
 	}
 
+	@SuppressWarnings("cast")
 	public boolean contains(Object o) {
 		assert type != null & type.isInstance(o);
 		return indexOf((T) o) >= 0;
