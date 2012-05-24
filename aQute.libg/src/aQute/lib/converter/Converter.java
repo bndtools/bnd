@@ -332,8 +332,8 @@ import aQute.lib.base64.*;
 					result.add(Array.get(o, i));
 				}
 				return result;
-			} else
-				return Arrays.asList((Object[]) o);
+			}
+			return Arrays.asList((Object[]) o);
 		}
 
 		return Arrays.asList(o);

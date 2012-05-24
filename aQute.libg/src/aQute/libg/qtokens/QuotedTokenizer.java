@@ -43,10 +43,8 @@ public class QuotedTokenizer {
 			if ( Character.isWhitespace(c)) {
 				if ( index == string.length())
 					break;
-				else {
-				    sb.append(c);
-					continue;
-				}
+				sb.append(c);
+				continue;
 			}
 			
 			if (separators.indexOf(c) >= 0) {

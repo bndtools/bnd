@@ -116,8 +116,7 @@ public class Configurable<T> {
 					double b = ((Number) o).doubleValue();
 					if (b == 0)
 						return false;
-					else
-						return true;
+					return true;
 				}
 				return true;
 
@@ -276,8 +275,8 @@ public class Configurable<T> {
 						result.add(Array.get(o, i));
 					}
 					return result;
-				} else
-					return Arrays.asList((Object[]) o);
+				}
+				return Arrays.asList((Object[]) o);
 			}
 
 			if (o instanceof String) {

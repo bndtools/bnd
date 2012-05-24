@@ -16,8 +16,7 @@ public class FileIterator implements Iterator<File> {
     public boolean hasNext() {
         if (next != null)
             return next.hasNext();
-        else
-            return n < dir.list().length;
+		return n < dir.list().length;
     }
 
     public File next() {
@@ -26,16 +25,15 @@ public class FileIterator implements Iterator<File> {
             if (!next.hasNext())
                 next = null;
             return answer;
-        } else {
-            File nxt = dir.listFiles()[n++];
-            if (nxt.isDirectory()) {
-                next = new FileIterator(nxt);
-                return nxt;
-            } else if (nxt.isFile()) {
-                return nxt;
-            } else
-                throw new IllegalStateException("File disappeared");
         }
+		File nxt = dir.listFiles()[n++];
+		if (nxt.isDirectory()) {
+		    next = new FileIterator(nxt);
+		    return nxt;
+		} else if (nxt.isFile()) {
+		    return nxt;
+		} else
+		    throw new IllegalStateException("File disappeared");
     }
 
     public void remove() {

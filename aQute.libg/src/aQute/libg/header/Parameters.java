@@ -102,11 +102,11 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public void putAll(Map<? extends String, ? extends Attrs> map) {
-		if (this.map == null)
+		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			else
-				this.map = new LinkedHashMap<String, Attrs>();
+			this.map = new LinkedHashMap<String, Attrs>();
+		}
 		this.map.putAll(map);
 	}
 	public void putAllIfAbsent(Map<String, ? extends Attrs> map) {

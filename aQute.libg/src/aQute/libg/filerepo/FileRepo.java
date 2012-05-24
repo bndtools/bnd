@@ -92,8 +92,8 @@ public class FileRepo {
 
 		if (strategy < 0) {
 			return files[0];
-		} else
-			return files[files.length - 1];
+		}
+		return files[files.length - 1];
 	}
 
 	public File put(String bsn, Version version) {

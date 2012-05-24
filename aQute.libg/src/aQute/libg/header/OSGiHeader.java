@@ -126,11 +126,11 @@ public class OSGiHeader {
 			}
 			result.put(key, value);
 		}
-		if (del != 0)
+		if (del != 0) {
 			if (logger == null)
 				throw new IllegalArgumentException("Invalid syntax for properties: " + input);
-			else
-				logger.error("Invalid syntax for properties: " + input);
+			logger.error("Invalid syntax for properties: " + input);
+		}
 
 		return result;
 	}

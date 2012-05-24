@@ -125,8 +125,8 @@ import aQute.libg.reporter.*;
 			m.setAccessible(true);
 			m.invoke(target, options);
 			return null;
-		} else
-			return help(target, cmd, optionClass);
+		}
+		return help(target, cmd, optionClass);
 	}
 
 	private String help(Object target, String cmd, Class<? extends Options> type) throws Exception {
@@ -366,8 +366,7 @@ import aQute.libg.reporter.*;
 		Matcher m = LAST_PART.matcher(name);
 		if (m.matches())
 			return m.group(1);
-		else
-			return name;
+		return name;
 	}
 
 	/**

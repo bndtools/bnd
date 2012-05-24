@@ -113,8 +113,7 @@ public class Attrs implements Map<String, String> {
 		String s = get(key);
 		if (s == null)
 			return deflt;
-		else
-			return s;
+		return s;
 	}
 
 	public boolean isEmpty() {
@@ -174,8 +173,7 @@ public class Attrs implements Map<String, String> {
 		Type t = types.get(key);
 		if (t == null)
 			return Type.STRING;
-		else
-			return t;
+		return t;
 	}
 
 	public void putAll(Map<? extends String, ? extends String> map) {
@@ -285,14 +283,13 @@ public class Attrs implements Map<String, String> {
 				return Version.parseVersion(s);
 			}
 			return null;
-		} else {
-			List<Object> list = new ArrayList<Object>();
-			String split[] = s.split("\\s*\\(\\?!\\),\\s*");
-			for (String p : split) {
-				p = p.replaceAll("\\\\", "");
-				list.add(convert(t.sub, p));
-			}
-			return list;
 		}
+		List<Object> list = new ArrayList<Object>();
+		String split[] = s.split("\\s*\\(\\?!\\),\\s*");
+		for (String p : split) {
+			p = p.replaceAll("\\\\", "");
+			list.add(convert(t.sub, p));
+		}
+		return list;
 	}
 }

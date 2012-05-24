@@ -76,13 +76,11 @@ public class Index implements Iterable<byte[]> {
 					try {
 						if (leaf)
 							return rover < n;
-						else {
-							while (i == null || i.hasNext() == false) {
-								int c = (int) c(rover++);
-								i = getPage(c).iterator();
-							}
-							return i.hasNext();
+						while (i == null || i.hasNext() == false) {
+							int c = (int) c(rover++);
+							i = getPage(c).iterator();
 						}
+						return i.hasNext();
 					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
@@ -150,13 +148,11 @@ public class Index implements Iterable<byte[]> {
 			if (leaf) {
 				if (cmp != 0)
 					return -1;
-				else
-					return c(i);
-			} else {
-				long value = c(i);
-				Page child = getPage((int) value);
-				return child.search(k);
+				return c(i);
 			}
+			long value = c(i);
+			Page child = getPage((int) value);
+			return child.search(k);
 		}
 
 		void insert(byte[] k, long v) throws IOException {

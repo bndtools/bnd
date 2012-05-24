@@ -264,11 +264,11 @@ import java.util.*;
 
 	public SortedList<T> headSet(T toElement) {
 		int i = indexOf(toElement);
-		if (i < 0)
+		if (i < 0) {
 			if (isSubSet())
 				throw new IllegalArgumentException("This list is a subset");
-			else
-				i = end;
+			i = end;
+		}
 
 		if (i == end)
 			return this;
@@ -278,11 +278,11 @@ import java.util.*;
 
 	public SortedSet<T> tailSet(T fromElement) {
 		int i = indexOf(fromElement);
-		if (i < 0)
+		if (i < 0) {
 			if (isSubSet())
 				throw new IllegalArgumentException("This list is a subset");
-			else
-				i = start;
+			i = start;
+		}
 
 		return subList(i, end);
 	}

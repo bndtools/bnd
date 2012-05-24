@@ -430,12 +430,10 @@ public class JSONCodec {
 		}
 		if (d)
 			return Double.parseDouble(sb.toString());
-		else {
-			long l = Long.parseLong(sb.toString());
-			if (l > Integer.MAX_VALUE || l < Integer.MIN_VALUE)
-				return l;
-			return (int) l;
-		}
+		long l = Long.parseLong(sb.toString());
+		if (l > Integer.MAX_VALUE || l < Integer.MIN_VALUE)
+			return l;
+		return (int) l;
 	}
 
 	void parseArray(Collection<Object> list, Type componentType, Decoder r) throws Exception {

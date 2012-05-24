@@ -233,8 +233,7 @@ public class IO {
 		}
 		if (file.equals(".."))
 			return f.getParentFile();
-		else
-			return new File(f, file).getAbsoluteFile();
+		return new File(f, file).getAbsoluteFile();
 	}
 
 	public static void delete(File f) {

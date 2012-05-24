@@ -95,8 +95,7 @@ public class MultiMap<K,V> extends HashMap<K,List<V>> {
 		List<V> set = get(key);
 		if ( set == null)
 			return EMPTY.iterator();
-		else
-			return set.iterator();
+		return set.iterator();
 	}
 	
 	public Iterator<V> all() {

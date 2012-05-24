@@ -173,20 +173,18 @@ public class BER implements Types {
         if (n > 0) {
             // short form
             return n;
-        } else {
-            // long form
-            int count = (int) (n & 0x7F);
-            if (count == 0) {
-                // indefinite form
-                return 0;
-            } else {
-                n = 0;
-                while (count-- > 0) {
-                    n = n * 256 + read();
-                }
-                return n;
-            }
         }
+		// long form
+		int count = (int) (n & 0x7F);
+		if (count == 0) {
+		    // indefinite form
+		    return 0;
+		}
+		n = 0;
+		while (count-- > 0) {
+		    n = n * 256 + read();
+		}
+		return n;
     }
 
     private int readByte() throws IOException {

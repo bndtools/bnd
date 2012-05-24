@@ -335,10 +335,9 @@ public class Filter {
 					return false;
 				s = s.substring(1);
 			}
-		} else {
-			if (s.length() == 0 || s.charAt(0) != pat.charAt(0))
-				return false;
-			return patSubstr(s.substring(1), pat.substring(1));
 		}
+		if (s.length() == 0 || s.charAt(0) != pat.charAt(0))
+			return false;
+		return patSubstr(s.substring(1), pat.substring(1));
 	}
 }
