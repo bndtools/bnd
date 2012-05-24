@@ -39,7 +39,7 @@ public class Annotation {
 		return name + ":" + member + ":" + policy + ":" + elements;
 	}
 
-	@SuppressWarnings("unchecked") public <T> T get(String string) {
+	public <T> T get(String string) {
 		if (elements == null)
 			return null;
 
@@ -59,7 +59,7 @@ public class Annotation {
 		
 		return elements.keySet();
 	}
-	@SuppressWarnings("unchecked") public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
+	public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
 		String cname = name.getFQN();
 		Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
 		return getAnnotation(c);

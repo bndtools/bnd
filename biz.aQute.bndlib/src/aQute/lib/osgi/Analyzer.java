@@ -1347,7 +1347,7 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked") void setPackageInfo(PackageRef packageRef, Resource r,
+	void setPackageInfo(PackageRef packageRef, Resource r,
 			Packages classpathExports) throws Exception {
 		if (r == null)
 			return;
