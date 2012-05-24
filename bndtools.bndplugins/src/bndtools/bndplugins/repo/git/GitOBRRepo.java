@@ -365,10 +365,15 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	static class Mapping {
 		Glob urlPattern;
 		String user;
-		String pass;
+		char[] pass;
 		Mapping(Glob urlPattern, String user, String pass) {
-			this.urlPattern = urlPattern; this.user = user; this.pass = pass;
+			this.urlPattern = urlPattern;
+			this.user = user;
+			if (pass != null) {
+				this.pass = pass.toCharArray();
+			} else {
+				this.pass = new char[0];
+			}
 		}
 	}
-
 }

@@ -38,12 +38,12 @@ public class GitCredentialsProvider extends CredentialsProvider {
 					continue;
 				}
 				if (item instanceof CredentialItem.Password) {
-					((CredentialItem.Username) item).setValue(mapping.pass);
+					((CredentialItem.Password) item).setValue(mapping.pass);
 					continue;
 				}
 				// Usually Passphrase
 				if (item instanceof CredentialItem.StringType && item.isValueSecure()) {
-					((CredentialItem.Username) item).setValue(mapping.pass);
+					((CredentialItem.StringType) item).setValue(new String(mapping.pass));
 					continue;
 				}
 			}
