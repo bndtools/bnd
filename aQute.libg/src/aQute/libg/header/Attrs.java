@@ -36,7 +36,7 @@ public class Attrs implements Map<String, String> {
 	static String					EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
 	static String					SCALAR		= "String|Version|Long|Double";
 	static String					LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static Pattern					TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*("+ SCALAR + "|" + LIST + ")\\s*");
+	public static final Pattern		TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*("+ SCALAR + "|" + LIST + ")\\s*");
 
 	private HashMap<String, String>	map;
 	private Map<String, Type>		types;
