@@ -98,8 +98,8 @@ import aQute.libg.version.*;
 	}
 
 	JustAnotherPackageManager	jpm;
-	PrintStream					err	= System.err;
-	PrintStream					out	= System.out;
+	final PrintStream			err	= System.err;
+	final PrintStream			out	= System.out;
 	File						sm;
 
 	/**
