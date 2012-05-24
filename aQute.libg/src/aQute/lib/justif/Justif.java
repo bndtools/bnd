@@ -80,7 +80,7 @@ public class Justif {
 				linelength = 100000; // force a break
 				lastSpace = r-1;
 
-				// FALL THROUGH!
+				//$FALL-THROUGH$
 
 			default:
 				linelength++;
