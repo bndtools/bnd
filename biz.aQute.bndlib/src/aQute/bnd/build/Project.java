@@ -1969,7 +1969,7 @@ public class Project extends Processor {
 		if (!lock.tryLock(5, TimeUnit.SECONDS)) {
 			error("Could not acquire lock for %s, was locked by %s for %s", reason, lockingThread,
 					lockingReason);
-			System.err.printf("Could not acquire lock for %s, was locked by %s for %s\n", reason,
+			System.err.printf("Could not acquire lock for %s, was locked by %s for %s%n", reason,
 					lockingThread, lockingReason);
 			System.err.flush();
 			return false;

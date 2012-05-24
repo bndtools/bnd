@@ -124,7 +124,7 @@ public class RepoCommand {
 			} catch (Throwable e) {
 				// Ignore
 			}
-			bnd.out.printf("%03d: %-20s %4s %-20s %s\n", n++, repo.getName(),
+			bnd.out.printf("%03d: %-20s %4s %-20s %s%n", n++, repo.getName(),
 					repo.canWrite() ? "r/w" : "r/o",
 					Descriptors.getShortName(repo.getClass().getName()), location);
 		}
@@ -161,7 +161,7 @@ public class RepoCommand {
 						versions.addAll(result);
 				}
 			}
-			bnd.out.printf("%-40s %s\n", bsn, versions);
+			bnd.out.printf("%-40s %s%n", bsn, versions);
 		}
 	}
 
@@ -216,7 +216,7 @@ public class RepoCommand {
 
 		SortedList<Version> l = new SortedList<Version>(index.keySet());
 		if ( l.isEmpty() ) {
-			bnd.out.printf("No versions found for %s\n", bsn);
+			bnd.out.printf("No versions found for %s%n", bsn);
 			return;
 		}
 		

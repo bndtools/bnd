@@ -1385,22 +1385,22 @@ public class Analyzer extends Processor {
 	public void close() {
 		if (diagnostics) {
 			PrintStream out = System.err;
-			out.printf("Current directory            : %s\n", new File("").getAbsolutePath());
+			out.printf("Current directory            : %s%n", new File("").getAbsolutePath());
 			out.println("Classpath used");
 			for (Jar jar : getClasspath()) {
-				out.printf("File                                : %s\n", jar.getSource());
-				out.printf("File abs path                       : %s\n", jar.getSource()
+				out.printf("File                                : %s%n", jar.getSource());
+				out.printf("File abs path                       : %s%n", jar.getSource()
 						.getAbsolutePath());
-				out.printf("Name                                : %s\n", jar.getName());
+				out.printf("Name                                : %s%n", jar.getName());
 				Map<String, Map<String, Resource>> dirs = jar.getDirectories();
 				for (Map.Entry<String, Map<String, Resource>> entry : dirs.entrySet()) {
 					Map<String, Resource> dir = entry.getValue();
 					String name = entry.getKey().replace('/', '.');
 					if (dir != null) {
-						out.printf("                                      %-30s %d\n", name,
+						out.printf("                                      %-30s %d%n", name,
 								dir.size());
 					} else {
-						out.printf("                                      %-30s <<empty>>\n", name);
+						out.printf("                                      %-30s <<empty>>%n", name);
 					}
 				}
 			}

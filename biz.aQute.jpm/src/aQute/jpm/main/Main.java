@@ -269,7 +269,7 @@ import aQute.libg.version.*;
 		});
 
 		for (ArtifactData artifact : ads)
-			out.printf("%-40s %s\n", artifact.bsn, artifact.version);
+			out.printf("%-40s %s%n", artifact.bsn, artifact.version);
 	}
 
 	public void _service(serviceOptions opts) throws Exception {
@@ -364,14 +364,14 @@ import aQute.libg.version.*;
 	}
 
 	private void print(ServiceData sd) throws Exception {
-		out.printf("%-40s %s-%s (%s) %s\n", sd.name, sd.bsn, sd.version, jpm.getService(sd.name)
+		out.printf("%-40s %s-%s (%s) %s%n", sd.name, sd.bsn, sd.version, jpm.getService(sd.name)
 				.isRunning(), sd.args);
 	}
 
 	public void _command(commandOptions opts) throws Exception {
 		if (opts._().isEmpty()) {
 			for (CommandData sd : jpm.getCommands())
-				out.printf("%-40s %s-%s (%s)\n", sd.name, sd.bsn, sd.version, sd.repoFile);
+				out.printf("%-40s %s-%s (%s)%n", sd.name, sd.bsn, sd.version, sd.repoFile);
 			return;
 		}
 	}
@@ -767,7 +767,7 @@ import aQute.libg.version.*;
 				exception(e, "could not fetch status information from service %s, due to %s", s,
 						e.getMessage());
 			}
-			out.printf("%-40s %8s %s\n", s, runs, status);
+			out.printf("%-40s %8s %s%n", s, runs, status);
 		}
 	}
 

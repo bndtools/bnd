@@ -80,10 +80,10 @@ public class BaselineCommands {
 			}
 		});
 
-		bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s\n", "Package", "Delta", "New", "Old",
+		bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old",
 				"Suggest", "If Prov.");
 		for (Info info : sorted) {
-			bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ',
+			bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
 					info.packageName, info.packageDiff.getDelta(), info.newerVersion,
 					info.olderVersion, info.suggestedVersion,
 					info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);

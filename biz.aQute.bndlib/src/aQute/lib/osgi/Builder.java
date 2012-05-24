@@ -1400,7 +1400,7 @@ public class Builder extends Analyzer {
 		if (diffs.isEmpty())
 			return;
 
-		System.err.printf("baseline %s\n", diffs);
+		System.err.printf("baseline %s%n", diffs);
 
 		Baseline baseline = new Baseline(this, differ);
 

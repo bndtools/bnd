@@ -454,7 +454,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
 		if (p.trace) {
-			System.err.printf("# " + msg + "\n", parms);
+			System.err.printf("# " + msg + "%n", parms);
 		}
 	}
 

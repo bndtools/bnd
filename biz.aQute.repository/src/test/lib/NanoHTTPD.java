@@ -356,7 +356,7 @@ public class NanoHTTPD
 		}
 		catch( Exception ioe )
 		{
-			System.err.println( "Couldn't start server:\n" + ioe );
+			System.err.println( "Couldn't start server:%n" + ioe );
 			System.exit( -1 );
 		}
 

@@ -286,7 +286,7 @@ public class bnd extends Processor {
 		String manifest = options.manifest();
 		if (manifest != null) {
 			if (options.verbose())
-				err.printf("Adding manifest from %s\n", manifest);
+				err.printf("Adding manifest from %s%n", manifest);
 
 			jar.setManifest(getFile(manifest));
 		}
@@ -339,7 +339,7 @@ public class bnd extends Processor {
 		else
 			f = getFile(base, path);
 
-		err.printf("Adding: %s\n", path);
+		err.printf("Adding: %s%n", path);
 
 		if (f.isFile()) {
 			jar.putResource(path, new FileResource(f));
@@ -394,7 +394,7 @@ public class bnd extends Processor {
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
-					System.err.printf("%8s: %s\n", compression.toString().toLowerCase(), path);
+					System.err.printf("%8s: %s%n", compression.toString().toLowerCase(), path);
 
 				File f = getFile(store, path);
 				f.getParentFile().mkdirs();
@@ -439,9 +439,9 @@ public class bnd extends Processor {
 			for (String path : selected) {
 				if (opts.verbose()) {
 					Resource r = jar.getResource(path);
-					err.printf("%8s %-32s %s\n", r.size(), new Date(r.lastModified()), path);
+					err.printf("%8s %-32s %s%n", r.size(), new Date(r.lastModified()), path);
 				} else
-					err.printf("%s\n", path);
+					err.printf("%s%n", path);
 			}
 		} finally {
 			jar.close();
@@ -509,11 +509,11 @@ public class bnd extends Processor {
 
 		List<String> l = new ArrayList<String>(options._());
 		if (l.isEmpty()) {
-			err.printf("Name         %s\n", project.getName());
-			err.printf("Actions      %s\n", project.getActions().keySet());
-			err.printf("Directory    %s\n", project.getBase());
-			err.printf("Depends on   %s\n", project.getDependson());
-			err.printf("Sub builders %s\n", project.getSubBuilders());
+			err.printf("Name         %s%n", project.getName());
+			err.printf("Actions      %s%n", project.getActions().keySet());
+			err.printf("Directory    %s%n", project.getBase());
+			err.printf("Depends on   %s%n", project.getDependson());
+			err.printf("Sub builders %s%n", project.getSubBuilders());
 			return;
 		}
 
@@ -858,7 +858,7 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			err.printf("%-40s %8s  %s\n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
+			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
 					c.getFile());
 		}
 		getInfo(project);
@@ -979,9 +979,9 @@ public class bnd extends Processor {
 			String first = "";
 			if (row.hasNext())
 				first = row.next().getFQN();
-			err.printf("%40s > %s\n", element.getFQN(), first);
+			err.printf("%40s > %s%n", element.getFQN(), first);
 			while (row.hasNext()) {
-				err.printf("%40s   %s\n", "", row.next().getFQN());
+				err.printf("%40s   %s%n", "", row.next().getFQN());
 			}
 		}
 	}
@@ -2363,7 +2363,7 @@ public class bnd extends Processor {
 				out.print("=");
 				Processor.quote(out, attrs.get(name));
 			}
-			del = ", \\\n  ";
+			del = ", \\%n  ";
 		}
 		out.println();
 	}
@@ -2427,17 +2427,17 @@ public class bnd extends Processor {
 					} catch (Exception ee) {
 						// Ignore
 					}
-					out.printf("%-40s %s\n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
+					out.printf("%-40s %s%n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
 					if (lastModified > 0)
-						out.printf("%-40s %s\n", "From", new Date(lastModified));
+						out.printf("%-40s %s%n", "From", new Date(lastModified));
 					Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
 					for (String l : p.keySet())
-						out.printf("%-40s %s\n", "License", p.get(l).get("description"));
-					out.printf("%-40s %s\n", "Copyright",
+						out.printf("%-40s %s%n", "License", p.get(l).get("description"));
+					out.printf("%-40s %s%n", "Copyright",
 							attrs.getValue(Constants.BUNDLE_COPYRIGHT));
-					out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
-					out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
-					out.printf("%-40s %s\n", "Sources", attrs.getValue("Bundle-SCM"));
+					out.printf("%-40s %s%n", "Git-SHA", attrs.getValue("Git-SHA"));
+					out.printf("%-40s %s%n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
+					out.printf("%-40s %s%n", "Sources", attrs.getValue("Bundle-SCM"));
 				} else
 					out.println(m.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
 				return;

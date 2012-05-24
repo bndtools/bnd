@@ -78,22 +78,22 @@ public class MavenCommand extends Processor {
 	}
 
 	private void help() {
-		System.err.println("Usage:\n");
+		System.err.println("Usage:%n");
 		System.err
-				.println("  maven \n" //
-						+ "  [-temp <dir>]            use as temp directory\n" //
-						+ "  settings                 show maven settings\n" //
-						+ "  bundle                   turn a bundle into a maven bundle\n" //
-						+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...\n"
-						+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated\n" //
-						+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src\n" //
-						+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM\n" //
-						+ "    [-url <url>]           required project url in pom\n" //
-						+ "    [-bsn bsn]             overrides bsn\n" //
-						+ "    [-version <version>]   overrides version\n" //
-						+ "    [-developer <email>]   developer email\n" //
-						+ "    [-nodelete]            do not delete temp files\n" //
-						+ "    [-passphrase <gpgp passphrase>] signer password\n"//
+				.println("  maven %n" //
+						+ "  [-temp <dir>]            use as temp directory%n" //
+						+ "  settings                 show maven settings%n" //
+						+ "  bundle                   turn a bundle into a maven bundle%n" //
+						+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
+						+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
+						+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
+						+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
+						+ "    [-url <url>]           required project url in pom%n" //
+						+ "    [-bsn bsn]             overrides bsn%n" //
+						+ "    [-version <version>]   overrides version%n" //
+						+ "    [-developer <email>]   developer email%n" //
+						+ "    [-nodelete]            do not delete temp files%n" //
+						+ "    [-passphrase <gpgp passphrase>] signer password%n"//
 						+ "        <file|url> ");
 	}
 
@@ -590,7 +590,7 @@ public class MavenCommand extends Processor {
 				a.setProperty("Private-Package", "*");
 				Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
 				for ( Pom dep : dependencies ) {
-					System.err.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+					System.err.printf( "%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 					a.addClasspath(dep.getArtifact());
 				}
 				pw.println(a.getClasspath());

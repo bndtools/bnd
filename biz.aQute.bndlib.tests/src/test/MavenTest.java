@@ -35,7 +35,7 @@ public class MavenTest extends TestCase {
 		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
 		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
 		for ( Pom dep : dependencies ) {
-			System.err.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+			System.err.printf( "%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 		}
 		
 	}
