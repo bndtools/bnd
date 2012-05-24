@@ -30,7 +30,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
-import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 
 public class BundleReleaseDialog extends Dialog {

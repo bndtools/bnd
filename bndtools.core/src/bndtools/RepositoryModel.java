@@ -17,12 +17,8 @@ import org.ardverk.collection.PatriciaTrie;
 import org.ardverk.collection.StringKeyAnalyzer;
 import org.ardverk.collection.Trie;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Clazz;
 import aQute.lib.osgi.Jar;

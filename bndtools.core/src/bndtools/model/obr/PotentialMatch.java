@@ -1,8 +1,6 @@
 package bndtools.model.obr;
 
 import java.util.Collection;
-import java.util.List;
-
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resource;
 

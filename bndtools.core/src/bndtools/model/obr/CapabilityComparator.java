@@ -1,6 +1,5 @@
 package bndtools.model.obr;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Capability;

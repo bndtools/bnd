@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;

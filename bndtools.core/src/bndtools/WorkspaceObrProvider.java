@@ -20,7 +20,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import net.jcip.annotations.ThreadSafe;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
