@@ -286,14 +286,9 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                 int bytesRead = stream.read(buffer, 0, 1024);
                 if(bytesRead < 0) break;
 
-                byte ch;
                 for(int i=0; i<bytesRead; i++) {
-                    ch = (byte) (buffer[i] & 0xf0); // strip off high nibble
-                    ch = (byte) (ch >>> 4); // shift bits down
-                    ch = (byte) (ch & 0x0f);
-                    out.write(pseudo[ch]); // Convert to a string character
-                    ch = (byte) (buffer[i] & 0x0F); // Strip off low nibble
-                    out.write(pseudo[ch]); // convert the nibble to a String Character
+                    out.write(pseudo[(buffer[i] & 0xf0) >>> 4]); // Convert to a string character
+                    out.write(pseudo[(buffer[i] & 0x0f)]); // convert the nibble to a String Character
                     out.write(' ');
                     charsWritten += 3;
                     if(charsWritten % 75 == 0) out.write('\n');
