@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import aQute.bnd.main.bnd.scriptOptions;
 
@@ -29,8 +30,8 @@ public class ScriptCommand {
 	}
 
 	public Object copy(Map<Object, Object> from, Map<Object, Object> to) {
-		for ( Object key : from.keySet()) {
-			to.put(key,from.get(key));
+		for (Entry<Object, Object> entry : from.entrySet()) {
+			to.put(entry.getKey(), entry.getValue());
 		}
 		return to;
 	}

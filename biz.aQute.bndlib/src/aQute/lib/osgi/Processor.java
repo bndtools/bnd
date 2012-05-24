@@ -892,10 +892,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Iterator<?> i = exports.keySet().iterator(); i.hasNext();) {
-			Object o = i.next();
-			String name = o.toString();
-			Map<?, ?> clause = exports.get(o);
+		for (Entry<?, ? extends Map<?, ?>> entry : exports.entrySet()) {
+			String name = entry.getKey().toString();
+			Map<?, ?> clause = entry.getValue();
 
 			// We allow names to be duplicated in the input
 			// by ending them with '~'. This is necessary to use
@@ -913,13 +912,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
 
-		for (Object key : map.keySet()) {
+		for (Entry<?, ?> entry : map.entrySet()) {
+			Object key = entry.getKey();
 			// Skip directives we do not recognize
 			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
 					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
 				continue;
 
-			String value = ((String) map.get(key)).trim();
+			String value = ((String) entry.getValue()).trim();
 			sb.append(";");
 			sb.append(key);
 			sb.append("=");

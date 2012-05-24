@@ -2,6 +2,7 @@ package aQute.bnd.signing;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 import aQute.bnd.service.*;
@@ -109,9 +110,10 @@ public class JartoolSigner implements Plugin, SignerPlugin {
         builder.addClose(signed);
 
         Map<String, Resource> dir = signed.getDirectories().get("META-INF");
-        for (String path : dir.keySet()) {
+        for (Entry<String, Resource> entry : dir.entrySet()) {
+            String path = entry.getKey();
             if (path.matches(".*\\.(DSA|RSA|SF|MF)$")) {
-                jar.putResource(path, dir.get(path));
+                jar.putResource(path, entry.getValue());
             }
         }
         jar.setDoNotTouchManifest();

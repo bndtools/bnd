@@ -2,6 +2,7 @@ package aQute.bnd.repo.eclipse;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 
 import aQute.bnd.service.*;
@@ -141,10 +142,9 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 
         List<File> result = Create.list();
 
-        for (String version : instances.keySet()) {
-            Version v = new Version(version);
-            if (r.includes(v)) {
-                File f = new File(instances.get(version));
+        for (Entry<String, String> entry : instances.entrySet()) {
+            if (r.includes(new Version(entry.getKey()))) {
+                File f = new File(entry.getValue());
                 if (f.isFile()) {
                     result.add(f);
                 }

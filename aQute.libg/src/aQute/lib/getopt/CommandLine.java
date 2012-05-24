@@ -185,11 +185,11 @@ import aQute.libg.reporter.*;
 
 						char optionChar = option.charAt(j);
 
-						for (String s : options.keySet()) {
-							if (s.charAt(0) == optionChar) {
-								Method m = options.get(s);
+						for (Entry<String, Method> entry : options.entrySet()) {
+							if (entry.getKey().charAt(0) == optionChar) {
 								boolean last = (j + 1) >= option.length();
-								assignOptionValue(values, m, arguments, last);
+								assignOptionValue(values, entry.getValue(),
+										arguments, last);
 								continue charloop;
 							}
 						}

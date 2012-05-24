@@ -416,10 +416,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		Dictionary<String, String> dict = new Hashtable<String, String>();
 		dict.put("package", pkgName);
 		
-		for (Version version : versionMap.keySet()) {
-			dict.put("version", version.toString());
+		for (Entry<Version, BaseResource> entry : versionMap.entrySet()) {
+			dict.put("version", entry.getKey().toString());
 			if (filter.match(dict))
-				result.add(versionMap.get(version));
+				result.add(entry.getValue());
 		}
 		
 		return result;
@@ -438,9 +438,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				versionMap = versionMap.tailMap(range.getLow());
 			
 			result = new ArrayList<BaseResource>(versionMap.size());
-			for (Version version : versionMap.keySet()) {
+			for (Entry<Version, BaseResource>  entry : versionMap.entrySet()) {
+				Version version = entry.getKey();
 				if (range == null || range.includes(version))
-					result.add(versionMap.get(version));
+					result.add(entry.getValue());
 				
 				// optimisation: skip versions definitely higher than the range
 				if (range != null && range.isRange() && version.compareTo(range.getHigh()) >= 0)
