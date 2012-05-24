@@ -1,2 +1,7 @@
 <FindBugsFilter>
+	<Match>
+		<Class name="~aQute\.jpm\.platform\.(MacOS|Unix)" />
+		<Method name="getGlobal" />
+		<Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+	</Match>
 </FindBugsFilter>
