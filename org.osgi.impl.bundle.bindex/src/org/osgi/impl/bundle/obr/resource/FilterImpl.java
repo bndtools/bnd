@@ -23,16 +23,16 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class FilterImpl {
-	final char		WILDCARD	= 65535;
+	static final char		WILDCARD	= 65535;
 
-	final int		EQ			= 0;
-	final int		LE			= 1;
-	final int		GE			= 2;
-	final int		APPROX		= 3;
-	final int		LESS		= 4;
-	final int		GREATER		= 5;
-	final int		SUBSET		= 6;
-	final int		SUPERSET	= 7;
+	static final int		EQ			= 0;
+	static final int		LE			= 1;
+	static final int		GE			= 2;
+	static final int		APPROX		= 3;
+	static final int		LESS		= 4;
+	static final int		GREATER		= 5;
+	static final int		SUBSET		= 6;
+	static final int		SUPERSET	= 7;
 
 	private String	filter;
 
