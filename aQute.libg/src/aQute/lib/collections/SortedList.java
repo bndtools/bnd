@@ -2,31 +2,48 @@ package aQute.lib.collections;
 
 import java.util.*;
 
+/**
+ * An immutbale list that sorts objects by their natural order or through a
+ * comparator. It has convenient methods/constructors to create it from
+ * collections and iterators.
+ * 
+ * Why not maintain the lists in their sorted form? Well, TreeMaps are quite
+ * expensive ... I once profiled bnd and was shocked how much memory the Jar
+ * class took due to the TreeMaps. I could not easily change it unfortunately.
+ * The other reason is that Parameters uses a LinkedHashMap because the
+ * preferred order should be the declaration order. However, sometimes you need
+ * to sort the keys by name.
+ * 
+ * Last, and most important reason, is that sometimes you do not know what
+ * collection you have or it is not available in a sort ordering (MultiMap for
+ * example) ... I found myself sorting these things over and over again and
+ * decided to just make an immutable SortedList that is easy to slice and dice
+ * 
+ * @param <T>
+ */
 @SuppressWarnings("unchecked") public class SortedList<T> implements SortedSet<T>, List<T> {
-	static SortedList<?>					empty		= new SortedList<Object>();
+	static SortedList<?>		empty		= new SortedList<Object>();
 
-	final T[]								list;
-	final int								start;
-	final int								end;
-	final Comparator<T>						cmp;
-	Class<?>								type;
+	final T[]					list;
+	final int					start;
+	final int					end;
+	final Comparator<T>			cmp;
+	Class<?>					type;
 	static Comparator<Object>	comparator	= //
 
-		new Comparator<Object>() {
-			public int compare(
-					Object o1,
-					Object o2) {
+											new Comparator<Object>() {
+												public int compare(Object o1, Object o2) {
 
-				if (o1 == o2)
-					return 0;
+													if (o1 == o2)
+														return 0;
 
-				if (o1.equals(o2))
-					return 0;
+													if (o1.equals(o2))
+														return 0;
 
-				return ((Comparable<Object>)o1).compareTo(o2);
-			}
-		};
-	
+													return ((Comparable<Object>) o1).compareTo(o2);
+												}
+											};
+
 	class It implements ListIterator<T> {
 		int	n;
 
@@ -74,9 +91,8 @@ import java.util.*;
 		}
 	}
 
-	
 	public SortedList(Collection<? extends Comparable<?>> x) {
-		this((Collection<T>) x, 0, x.size(), (Comparator<T>)comparator);
+		this((Collection<T>) x, 0, x.size(), (Comparator<T>) comparator);
 	}
 
 	public SortedList(Collection<T> x, Comparator<T> cmp) {
@@ -152,7 +168,7 @@ import java.util.*;
 	}
 
 	public boolean contains(Object o) {
-		assert type !=null & type.isInstance(o);
+		assert type != null & type.isInstance(o);
 		return indexOf((T) o) >= 0;
 	}
 
@@ -234,8 +250,8 @@ import java.util.*;
 	}
 
 	public int indexOf(Object o) {
-		assert type !=null && type.isInstance(o);
-		
+		assert type != null && type.isInstance(o);
+
 		int n = Arrays.binarySearch(list, (T) o, cmp);
 		if (n >= start && n < end)
 			return n - start;
@@ -338,18 +354,14 @@ import java.util.*;
 
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
-	
-	@Deprecated
-	public boolean equals(Object other) {
+
+	@Deprecated public boolean equals(Object other) {
 		return super.equals(other);
 	}
-	
-	@Deprecated
-	public int hashCode() {
+
+	@Deprecated public int hashCode() {
 		return super.hashCode();
 	}
-	
-
 
 	public boolean isEqual(SortedList<T> list) {
 		if (size() != list.size())
@@ -374,35 +386,35 @@ import java.util.*;
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
 		String del = "";
-		for ( T s : list) {
+		for (T s : list) {
 			sb.append(del);
 			sb.append(s);
 			del = ", ";
 		}
-			
+
 		sb.append("]");
 		return sb.toString();
 	}
 
 	public boolean hasDuplicates() {
-		if ( list.length < 2)
+		if (list.length < 2)
 			return false;
-		
+
 		T prev = list[0];
-		for ( int i =1; i<list.length; i++) {
-			if ( prev.equals( list[i]))
+		for (int i = 1; i < list.length; i++) {
+			if (prev.equals(list[i]))
 				return true;
 		}
 		return false;
 	}
-	
-	
-	public static <T extends Comparable<?>> SortedList<T> fromIterator( Iterator<T> it) {
+
+	public static <T extends Comparable<?>> SortedList<T> fromIterator(Iterator<T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l);
 	}
-	public static <T> SortedList<T> fromIterator( Iterator<T> it, Comparator<T> cmp) {
+
+	public static <T> SortedList<T> fromIterator(Iterator<T> it, Comparator<T> cmp) {
 		IteratorList<T> l = new IteratorList<T>(it);
-		return new SortedList<T>(l,cmp);
+		return new SortedList<T>(l, cmp);
 	}
 }
