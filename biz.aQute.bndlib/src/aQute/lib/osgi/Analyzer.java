@@ -1447,6 +1447,7 @@ public class Analyzer extends Processor {
 		switch (args.length) {
 		case 3:
 			replace = args[2];
+			//$FALL-THROUGH$
 		case 2:
 			regexp = args[1];
 		}
