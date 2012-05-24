@@ -78,7 +78,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
 
     public synchronized void reset() throws Exception {
         if (indexFile.exists() && !indexFile.delete())
-            throw new IOException(String.format("Failed to reset Workspace OBR provider: could not delete index file ", indexFile));
+            throw new IOException(String.format("Failed to reset Workspace OBR provider: could not delete index file %s", indexFile));
     }
     
     private Set<File> gatherWorkspaceFiles(IProgressMonitor monitor) throws CoreException {
