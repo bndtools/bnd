@@ -217,10 +217,11 @@ public class JarDiff {
 				}
 			}
 		}
-		for (String packageName : previousImportedPackages.keySet()) {
+		for (Entry<String, Attrs> entry : previousImportedPackages.entrySet()) {
+			String packageName = entry.getKey();
 			if (!projectImportedPackages.containsKey(packageName)) {
 				// Removed Packages
-				Map<String, String> prevPackageMap = previousImportedPackages.get(packageName);
+				Map<String, String> prevPackageMap = entry.getValue();
 				String previousVersion = prevPackageMap.get(VERSION);
 
 				PackageInfo pi = packages.get(packageName);
@@ -235,7 +236,8 @@ public class JarDiff {
 			}
 		}
 
-		for (String packageName : projectExportedPackages.keySet()) {
+		for (Entry<String, Attrs> entry : projectExportedPackages.entrySet()) {
+			String packageName = entry.getKey();
 			// New or modified packages
 			PackageInfo pi = packages.get(packageName);
 			if (pi == null) {
@@ -244,7 +246,7 @@ public class JarDiff {
 			}
 			pi.setExported(true);
 
-			Map<String, String> packageMap = projectExportedPackages.get(packageName);
+			Map<String, String> packageMap = entry.getValue();
 			String packageVersion = removeVersionQualifier(packageMap.get(VERSION));
 			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, packageVersion);
 
