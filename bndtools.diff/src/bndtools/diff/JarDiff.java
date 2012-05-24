@@ -248,6 +248,8 @@ public class JarDiff {
 
 			Map<String, String> packageMap = entry.getValue();
 			String packageVersion = removeVersionQualifier(packageMap.get(VERSION));
+
+			/* can't be null */
 			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, packageVersion);
 
 			Set<ClassInfo> cis = pi.getClasses();
@@ -305,7 +307,7 @@ public class JarDiff {
 			if (previousClasses != null) {
 				pi.setCurrentVersion(previousVersion);
 				for (ClassInfo prevCi : previousClasses) {
-					if (projectClasses != null && !projectClasses.contains(prevCi)) {
+					if (!projectClasses.contains(prevCi)) {
 						int severity = getModificationSeverity(null, prevCi);
 						cis.add(prevCi);
 						if (severity > PKG_SEVERITY_NONE) {
