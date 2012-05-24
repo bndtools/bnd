@@ -16,7 +16,7 @@ public class ServiceMain extends Thread {
 	static Method			serviceMethod;
 	static Thread			mainThread;
 	static final UUID		uuid	= UUID.randomUUID();
-	private static boolean	trace = false;
+	private boolean			trace	= false;
 
 	public static void main(String args[]) throws Exception, SecurityException,
 			NoSuchMethodException {
@@ -26,11 +26,12 @@ public class ServiceMain extends Thread {
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
 
 		socket = new DatagramSocket();
-		trace("Port " + socket.getLocalPort());
+		ServiceMain main = new ServiceMain();
+
+		main.trace("Port " + socket.getLocalPort());
 
 		write(lock, socket.getLocalPort() + ":" + System.getProperty("pid") + ":" + uuid.toString());
 
-		ServiceMain main = new ServiceMain();
 		main.start();
 
 		mainClass = ServiceMain.class.getClassLoader().loadClass(args[1]);
@@ -124,7 +125,7 @@ public class ServiceMain extends Thread {
 		}
 	}
 
-	private static void trace(String string) {
+	private void trace(String string) {
 		if (trace)
 			System.err.println("JPM: " + string);
 	}
@@ -138,7 +139,7 @@ public class ServiceMain extends Thread {
 		}
 	}
 
-	public synchronized static void setMessage(String m) {
+	public synchronized void setMessage(String m) {
 		trace(m);
 		last = new Date();
 		message = m;
