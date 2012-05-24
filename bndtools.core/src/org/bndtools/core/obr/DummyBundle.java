@@ -37,21 +37,28 @@ public class DummyBundle implements Bundle {
         this.context = context;
         this.jar = jar;
 
-        JarInputStream stream = new JarInputStream(new FileInputStream(jar));
-        Manifest manifest = stream.getManifest();
+        JarInputStream stream = null; 
+        try {
+            stream = new JarInputStream(new FileInputStream(jar));
+            Manifest manifest = stream.getManifest();
 
-        props = new Properties() {
-            @Override
-            public Object get(Object key) {
-                Object value = super.get(key);
-                if (DEBUG) System.out.println("=== getHeaders --> " + key + " = " + value);
-                return value;
+            props = new Properties() {
+                @Override
+                public Object get(Object key) {
+                    Object value = super.get(key);
+                    if (DEBUG) System.out.println("=== getHeaders --> " + key + " = " + value);
+                    return value;
+                }
+            };
+            Attributes attribs = manifest.getMainAttributes();
+            for (Object key : attribs.keySet()) {
+                String name = key.toString();
+                props.put(name, attribs.getValue(name));
             }
-        };
-        Attributes attribs = manifest.getMainAttributes();
-        for (Object key : attribs.keySet()) {
-            String name = key.toString();
-            props.put(name, attribs.getValue(name));
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
         }
     }
 
