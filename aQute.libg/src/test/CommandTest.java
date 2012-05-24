@@ -51,7 +51,7 @@ public class CommandTest extends TestCase {
 		int a();
 		String bb();
 		Collection<File> input();
-	};
+	}
 	
 	interface c2options extends Options {
 		

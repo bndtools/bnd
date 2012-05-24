@@ -16,7 +16,7 @@ public class Attrs implements Map<String, String> {
 			this.sub = sub;
 		}
 
-	};
+	}
 
 	/**
 	 * <pre>
