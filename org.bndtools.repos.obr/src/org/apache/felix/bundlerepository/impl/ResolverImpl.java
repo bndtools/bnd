@@ -486,7 +486,7 @@ public class ResolverImpl implements Resolver
                     }
                     // If the current resource version is equal to the
                     // best
-                    else if ((bestVersion != null) && (bestVersion.compareTo(v) == 0))
+                    else if (bestVersion.compareTo(v) == 0)
                     {
                         // If the symbolic name is the same, use the highest
                         // bundle version.
@@ -642,22 +642,19 @@ public class ResolverImpl implements Resolver
                     // limit OBR's ability to manipulate bundle versions. Instead,
                     // use a unique timestamp as the bundle location.
                     URL url = new URL(deployResources[i].getURI());
-                    if (url != null)
-                    {
-                        Bundle bundle = m_context.installBundle(
-                            "obr://"
-                            + deployResources[i].getSymbolicName()
-                            + "/-" + System.currentTimeMillis(),
-                            FileUtil.openURL(url));
+                    Bundle bundle = m_context.installBundle(
+                        "obr://"
+                        + deployResources[i].getSymbolicName()
+                        + "/-" + System.currentTimeMillis(),
+                        FileUtil.openURL(url));
 
-                        // If necessary, save the installed bundle to be
-                        // started later.
-                        if ((flags & START) != 0)
+                    // If necessary, save the installed bundle to be
+                    // started later.
+                    if ((flags & START) != 0)
+                    {
+                        if (!isFragmentBundle(bundle))
                         {
-                            if (!isFragmentBundle(bundle))
-                            {
-                                startList.add(bundle);
-                            }
+                            startList.add(bundle);
                         }
                     }
                 }
