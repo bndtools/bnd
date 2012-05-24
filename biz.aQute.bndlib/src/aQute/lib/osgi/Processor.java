@@ -456,6 +456,10 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return getProperty(key, null);
 	}
 
+    public String getProperty(String key, boolean replaceEnabled) {
+        return getProperty(key, null, replaceEnabled);
+    }
+
 	public void mergeProperties(File file, boolean override) {
 		if (file.isFile()) {
 			try {
@@ -672,14 +676,27 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		return !"false".equalsIgnoreCase(value);
 	}
 
+
+    /**
+     * Get a property with a proper default
+     *
+     * @param headerName
+     * @param deflt
+     * @return
+     */
+    public String getProperty(String key, String deflt) {
+        return getProperty(key, deflt, true);
+    }
+
 	/**
 	 * Get a property with a proper default
 	 * 
 	 * @param headerName
 	 * @param deflt
+     * @param replaceEnabled
 	 * @return
 	 */
-	public String getProperty(String key, String deflt) {
+	public String getProperty(String key, String deflt, boolean replaceEnabled) {
 		String value = null;
 		Processor source = this;
 
@@ -696,9 +713,17 @@ public class Processor implements Reporter, Registry, Constants, Closeable {
 		}
 
 		if (value != null)
-			return getReplacer().process(value, source);
+            if (replaceEnabled) {
+			    return getReplacer().process(value, source);
+            } else {
+                return value;
+            }
 		else if (deflt != null)
-			return getReplacer().process(deflt, this);
+            if (replaceEnabled) {
+			    return getReplacer().process(deflt, this);
+            } else {
+                return deflt;
+            }
 		else
 			return null;
 	}
