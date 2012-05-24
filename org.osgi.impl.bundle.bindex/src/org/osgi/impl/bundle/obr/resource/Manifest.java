@@ -46,7 +46,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		parse(in);
 	}
 
-	public Object put(Object header, Object value) {
+	public synchronized Object put(Object header, Object value) {
 		if (containsKey(header)) {
 			if (!((String) header).equalsIgnoreCase("comment"))
 				duplicates.add(header + ":" + value);
@@ -287,7 +287,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return _native;
 	}
 
-	public Object get(Object key) {
+	public synchronized Object get(Object key) {
 		if (key instanceof String)
 			return super.get(((String) key).toLowerCase());
 		return null;

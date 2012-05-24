@@ -81,7 +81,7 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	private final List<Mapping> mappings = Collections.synchronizedList(new LinkedList<Mapping>());
 
 	@Override
-	public void setReporter(Reporter reporter) {
+	public synchronized void setReporter(Reporter reporter) {
 		super.setReporter(reporter);
 		storageRepo.setReporter(reporter);
 	}
