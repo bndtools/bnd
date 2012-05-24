@@ -405,15 +405,16 @@ public class Jar implements Closeable {
 	 *             if something fails
 	 */
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
+		int w = width;
 		for (int i = 0; i < bytes.length; i++) {
-			if (width >= 72) { // we need to add the \n\r!
+			if (w >= 72) { // we need to add the \n\r!
 				out.write(CONTINUE);
-				width = 1;
+				w = 1;
 			}
 			out.write(bytes[i]);
-			width++;
+			w++;
 		}
-		return width;
+		return w;
 	}
 
 	/**

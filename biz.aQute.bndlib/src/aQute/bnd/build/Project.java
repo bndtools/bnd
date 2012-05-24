@@ -1044,14 +1044,15 @@ public class Project extends Processor {
 	 * @return
 	 */
 	protected Container toContainer(String bsn, String range, Map<String, String> attrs, File result) {
-		if (result == null) {
+		File f = result;
+		if (f == null) {
 			error("Result file for toContainer is unexpectedly null, not sure what to do");
-			result = new File("was null");
+			f = new File("was null");
 		}
-		if (result.getName().endsWith("lib"))
-			return new Container(this, bsn, range, Container.TYPE.LIBRARY, result, null, attrs);
+		if (f.getName().endsWith("lib"))
+			return new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs);
 		else
-			return new Container(this, bsn, range, Container.TYPE.REPO, result, null, attrs);
+			return new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs);
 	}
 
 	/**

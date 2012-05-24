@@ -1243,10 +1243,11 @@ public class Clazz {
 	 * @return the last index processed, one character after the delimeter
 	 */
 	int parseReferences(String descriptor, int rover, char delimiter) {
-		while (rover < descriptor.length() && descriptor.charAt(rover) != delimiter) {
-			rover = parseReference(descriptor, rover);
+		int r = rover;
+		while (r < descriptor.length() && descriptor.charAt(r) != delimiter) {
+			r = parseReference(descriptor, r);
 		}
-		return rover;
+		return r;
 	}
 
 	/**
@@ -1260,27 +1261,27 @@ public class Clazz {
 	 * @return The return index after the reference
 	 */
 	int parseReference(String descriptor, int rover) {
-
-		char c = descriptor.charAt(rover);
+		int r = rover;
+		char c = descriptor.charAt(r);
 		while (c == '[')
-			c = descriptor.charAt(++rover);
+			c = descriptor.charAt(++r);
 
 		if (c == '<') {
-			rover = parseReferences(descriptor, rover + 1, '>');
+			r = parseReferences(descriptor, r + 1, '>');
 		} else if (c == 'T') {
 			// Type variable name
-			rover++;
-			while (descriptor.charAt(rover) != ';')
-				rover++;
+			r++;
+			while (descriptor.charAt(r) != ';')
+				r++;
 		} else if (c == 'L') {
 			StringBuilder sb = new StringBuilder();
-			rover++;
-			while ((c = descriptor.charAt(rover)) != ';') {
+			r++;
+			while ((c = descriptor.charAt(r)) != ';') {
 				if (c == '<') {
-					rover = parseReferences(descriptor, rover + 1, '>');
+					r = parseReferences(descriptor, r + 1, '>');
 				} else
 					sb.append(c);
-				rover++;
+				r++;
 			}
 			TypeRef ref = analyzer.getTypeRef(sb.toString());
 			if (cd != null)
@@ -1295,7 +1296,7 @@ public class Clazz {
 		// this skips a lot of characters
 		// [, *, +, -, B, etc.
 
-		return rover + 1;
+		return r + 1;
 	}
 
 	public Set<PackageRef> getReferred() {
