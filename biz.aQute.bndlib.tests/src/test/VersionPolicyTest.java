@@ -305,10 +305,12 @@ public class VersionPolicyTest extends TestCase {
     public void testImportMicroNotTruncated() throws Exception {
         Builder b = new Builder();
         b.addClasspath(new File("jar/osgi.jar"));
-        b.setProperty("Import-Package", "org.osgi.service.event;version=${@}");
+        b.setProperty("Import-Package", "org.osgi.service.event;version=${@}, org.osgi.service.log;version=\"${range;[==,=+)}\"");
         b.build();
         String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+        String l = b.getImports().getByFQN("org.osgi.service.log").get("version");
         assertEquals("1.0.1", s);
+        assertEquals("[1.3,1.4)", l);
     }
 
 }

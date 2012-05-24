@@ -769,7 +769,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a property with a proper default
+	 * Get a property without preprocessing it with a proper default
+	 * 
+	 * @param headerName
+	 * @param deflt
+	 * @return
+	 */
+	
+	public String getUnprocessedProperty(String key, String deflt) {
+		return getProperties().getProperty(key, deflt);
+	}
+	
+	/**
+	 * Get a property with preprocessing it with a proper default
 	 * 
 	 * @param headerName
 	 * @param deflt

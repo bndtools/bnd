@@ -316,10 +316,10 @@ public class Macro implements Replacer {
 	public String _if(String args[]) {
 		verifyCommand(args, _ifHelp, null, 3, 4);
 		String condition = args[1].trim();
-		if ( !condition.equalsIgnoreCase("false"))
+		if (!condition.equalsIgnoreCase("false"))
 			if (condition.length() != 0)
 				return args[2];
-		
+
 		if (args.length > 3)
 			return args[3];
 		else
@@ -739,7 +739,12 @@ public class Macro implements Replacer {
 		Version version = null;
 		if (args.length >= 3)
 			version = new Version(args[2]);
-
+		else {
+			String v = domain.getProperty("@");
+			if (v == null)
+				return null;
+			version = new Version(v);
+		}
 		String spec = args[1];
 
 		Matcher m = RANGE_MASK.matcher(spec);
@@ -749,11 +754,13 @@ public class Macro implements Replacer {
 		String ceilingMask = m.group(3);
 		String ceiling = m.group(4);
 
+		String left = version(version, floorMask);
+		String right = version(version, ceilingMask);
 		StringBuilder sb = new StringBuilder();
 		sb.append(floor);
-		sb.append(version(version, floorMask));
+		sb.append(left);
 		sb.append(",");
-		sb.append(version(version, ceilingMask));
+		sb.append(right);
 		sb.append(ceiling);
 
 		String s = sb.toString();
@@ -792,9 +799,9 @@ public class Macro implements Replacer {
 
 		String s = IO.collect(process.getInputStream(), "UTF-8");
 		int exitValue = process.waitFor();
-		if ( exitValue != 0)
-			return exitValue+"";
-		
+		if (exitValue != 0)
+			return exitValue + "";
+
 		if (!allowFail && (exitValue != 0)) {
 			domain.error("System command " + command + " failed with " + exitValue);
 		}
