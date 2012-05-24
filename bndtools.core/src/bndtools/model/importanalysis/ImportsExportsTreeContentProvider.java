@@ -25,9 +25,9 @@ import aQute.lib.osgi.Descriptors.PackageRef;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
-	static final Object IMPORTS_PLACEHOLDER = new String("_1_imports_placeholder");
-	static final Object EXPORTS_PLACEHOLDER = new String("_3_exports_placeholder");
-	static final Object REQUIRED_PLACEHOLDER = new String("_2_requires_placeholder");
+	static final Object IMPORTS_PLACEHOLDER = "_1_imports_placeholder";
+	static final Object EXPORTS_PLACEHOLDER = "_3_exports_placeholder";
+	static final Object REQUIRED_PLACEHOLDER = "_2_requires_placeholder";
 
 	private final Set<String> exportNames = new HashSet<String>();
 	private ImportsExportsAnalysisResult importsAndExports = null;
