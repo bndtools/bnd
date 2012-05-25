@@ -68,7 +68,7 @@ import java.io.FileOutputStream;
  * See the end of the source file for distribution license
  * (Modified BSD licence)
  */
-public class NanoHTTPD
+@SuppressWarnings("unchecked") public class NanoHTTPD
 {
 	// ==================================================
 	// API parts
@@ -601,7 +601,7 @@ public class NanoHTTPD
 		/**
 		 * Find the byte positions where multipart boundaries start.
 		**/
-		public int[] getBoundaryPositions(byte[] b, byte[] boundary)
+		 public int[] getBoundaryPositions(byte[] b, byte[] boundary)
 		{
 			int matchcount = 0;
 			int matchbyte = -1;
@@ -809,7 +809,7 @@ public class NanoHTTPD
 	 * URL-encodes everything between "/"-characters.
 	 * Encodes spaces as '%20' instead of '+'.
 	 */
-	private String encodeUri( String uri )
+	@SuppressWarnings("deprecation") private String encodeUri( String uri )
 	{
 		String newUri = "";
 		StringTokenizer st = new StringTokenizer( uri, "/ ", true );
