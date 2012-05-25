@@ -15,7 +15,8 @@ check absenceOfPackageCycles > 1 in [all]
 check [util] independentOf [non-util]
 
 # Exported packages should not depend on private packages
-check [exports] independentOf [non-exports]
+# TEMPORARILY DISABLE -- issue 411
+# check [exports] independentOf [non-exports]
 
 # No dependency on internal Eclipse APIs (disabled this check for now, still a few remaining).
 # check [all] independentOf [eclipse-internals]

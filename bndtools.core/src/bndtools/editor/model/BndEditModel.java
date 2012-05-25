@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import org.apache.felix.bundlerepository.DataModelHelper;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
+import org.bndtools.core.utils.parse.properties.LineType;
+import org.bndtools.core.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -291,35 +293,19 @@ public class BndEditModel implements IPersistableBndModel {
 		}
 	}
 
-	private static IRegion findEntry(IDocument document, String name) throws BadLocationException {
-		int lineCount = document.getNumberOfLines();
-
-		int entryStart = -1;
-		int entryLength = 0;
-
-		for(int i=0; i<lineCount; i++) {
-			IRegion lineRegion = document.getLineInformation(i);
-			String line = document.get(lineRegion.getOffset(), lineRegion.getLength());
-			String propertyKey = PropertiesParser.getPropertyKey(line);
-			if (name.equals(propertyKey)) {
-				entryStart = lineRegion.getOffset();
-				entryLength = lineRegion.getLength();
-
-				// Handle continuation lines, where the current line ends with a blackslash.
-				while(document.getChar(lineRegion.getOffset() + lineRegion.getLength() - 1) == '\\') {
-					if(++i >= lineCount) {
-						break;
-					}
-					lineRegion = document.getLineInformation(i);
-					entryLength += lineRegion.getLength() + 1; // Extra 1 is required for the newline
-				}
-
-				return new Region(entryStart, entryLength);
-			}
-		}
-
-		return null;
-	}
+    private static IRegion findEntry(IDocument document, String name) throws Exception {
+        PropertiesLineReader reader = new PropertiesLineReader(document);
+        LineType type = reader.next();
+        while (type != LineType.eof) {
+            if (type == LineType.entry) {
+                String key = reader.key();
+                if (name.equals(key))
+                    return reader.region();
+            }
+            type = reader.next();
+        }
+        return null;
+    }
 	
 	private static void updateDocument(IDocument document, String name, String value) {
 		String newEntry;
@@ -353,7 +339,7 @@ public class BndEditModel implements IPersistableBndModel {
 					newEntry = "\n" + newEntry;
 				document.replace(document.getLength(), 0, newEntry);
 			}
-		} catch (BadLocationException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
