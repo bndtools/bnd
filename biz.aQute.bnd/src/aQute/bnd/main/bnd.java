@@ -2411,6 +2411,11 @@ public class bnd extends Processor {
 	}
 
 	public void _version(versionOptions o) throws IOException {
+		if ( !o.xtra()) {
+			Analyzer a = new Analyzer();
+			out.println(a.getBndVersion());
+			return;
+		}
 		Enumeration<URL> e = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
 		while (e.hasMoreElements()) {
 			URL u = e.nextElement();
@@ -2419,7 +2424,6 @@ public class bnd extends Processor {
 			String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 			if (bsn != null && bsn.equals("biz.aQute.bnd")) {
 				Attributes attrs = m.getMainAttributes();
-				if (o.xtra()) {
 
 					long lastModified = 0;
 					try {
@@ -2438,8 +2442,6 @@ public class bnd extends Processor {
 					out.printf("%-40s %s%n", "Git-SHA", attrs.getValue("Git-SHA"));
 					out.printf("%-40s %s%n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
 					out.printf("%-40s %s%n", "Sources", attrs.getValue("Bundle-SCM"));
-				} else
-					out.println(m.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
 				return;
 			}
 		}
