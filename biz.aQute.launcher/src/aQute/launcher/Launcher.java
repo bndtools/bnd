@@ -143,6 +143,7 @@ public class Launcher implements ServiceListener {
 				Hashtable<String, Object> argprops = new Hashtable<String, Object>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
+				argprops.put(Constants.SERVICE_RANKING, -1000);
 				systemBundle.getBundleContext().registerService( new String[] {Object.class.getName(), Launcher.class.getName()}, this,
 						argprops);
 				trace("registered launcher with arguments for syncing");
