@@ -29,14 +29,14 @@ public class MavenTest extends TestCase {
 	 * @throws URISyntaxException 
 	 */
 	public void testRemote() throws URISyntaxException, Exception {
-		URI repo = new URI("http://repo1.maven.org/maven2");
-		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects"	, "3.0.5.RELEASE");
-		entry.remove();
-		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
-		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
-		for ( Pom dep : dependencies ) {
-			System.err.printf( "%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
-		}
+//		URI repo = new URI("http://repo1.maven.org/maven2");
+//		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects"	, "3.0.5.RELEASE");
+//		entry.remove();
+//		CachedPom pom = maven.getPom("org.springframework", "spring-aspects"	, "3.0.5.RELEASE", repo);
+//		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
+//		for ( Pom dep : dependencies ) {
+//			System.err.printf( "%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+//		}
 		
 	}
 	
