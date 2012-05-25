@@ -136,6 +136,9 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
      */
     private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
         final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
+        if (targetResource == null)
+            return;
+        
         final IPath bndbndPath;
         try {
             bndbndPath = Central.toPath(project.getPropertiesFile());

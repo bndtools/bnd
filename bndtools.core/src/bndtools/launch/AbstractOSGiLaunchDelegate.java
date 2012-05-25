@@ -59,6 +59,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         BndPreferences prefs = new BndPreferences();
         if (prefs.getWarnExistingLaunches()) {
             IResource launchResource = LaunchUtils.getTargetResource(configuration);
+            if (launchResource == null)
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified or does not exist.", null));
+            
             int processCount = 0;
             for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
                 // ... is it the same launch resource?

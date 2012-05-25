@@ -25,12 +25,13 @@ public final class LaunchUtils {
     static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
         String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
         if(target == null || target.length() == 0) {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified", null));
+            return null;
         }
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
         if(targetResource == null)
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target \"{0}\" does not exist.", target), null));
+            return null;
+        
         return targetResource;
     }
 
@@ -51,6 +52,8 @@ public final class LaunchUtils {
     
     static Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
         IResource targetResource = getTargetResource(configuration);
+        if (targetResource == null)
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified, or does not exist.", null));
         return getBndProject(targetResource);
     }
     
