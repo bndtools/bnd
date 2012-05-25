@@ -1110,7 +1110,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperties(p);
 		b.setPedantic(true);
 		b.build();
-		assertTrue(b.check("Imports that lack version ranges","Invalid package name"));
+		assertTrue(b.check("Imports that lack version ranges", "Invalid package name"));
 	}
 
 	/**

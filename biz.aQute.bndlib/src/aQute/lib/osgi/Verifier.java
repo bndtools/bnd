@@ -49,9 +49,9 @@ public class Verifier extends Processor {
 			this.name = name;
 			this.target = target;
 		}
-		
+
 		public String toString() {
-			return name + "("+target+")";
+			return name + "(" + target + ")";
 		}
 	}
 
@@ -361,14 +361,14 @@ public class Verifier extends Processor {
 	public void verify() throws Exception {
 		verifyHeaders();
 		verifyDirectives("Export-Package",
-				"uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN);
-		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN);
-		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME);
-		verifyDirectives("Fragment-Host", "extension:", SYMBOLICNAME);
-		verifyDirectives("Provide-Capability", "effective:|uses:", SYMBOLICNAME);
-		verifyDirectives("Require-Capability", "effective:|resolve:|filter:", SYMBOLICNAME);
+				"uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN, "package");
+		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN, "package");
+		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME, "bsn");
+		verifyDirectives("Fragment-Host", "extension:", SYMBOLICNAME, "bsn");
+		verifyDirectives("Provide-Capability", "effective:|uses:", null, null);
+		verifyDirectives("Require-Capability", "effective:|resolution:|filter:", null,null);
 		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",
-				SYMBOLICNAME);
+				SYMBOLICNAME,"bsn");
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -516,18 +516,20 @@ public class Verifier extends Processor {
 	 * @param header
 	 * @param directives
 	 */
-	private void verifyDirectives(String header, String directives, Pattern namePattern) {
+	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) {
 		Pattern pattern = Pattern.compile(directives);
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(header));
 		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
-			if (!namePattern.matcher(pname).matches())
-				if (isPedantic())
-					error("Invalid package name: '%s'", pname);
-				else
-					warning("Invalid package name: '%s'", pname);
-
+			if (namePattern != null) {
+				if (!namePattern.matcher(pname).matches())
+					if (isPedantic())
+						error("Invalid %s name: '%s'", type, pname);
+					else
+						warning("Invalid %s name: '%s'", type, pname);
+			}
+			
 			for (String key : entry.getValue().keySet()) {
 				if (key.endsWith(":")) {
 					if (!key.startsWith("x-")) {
@@ -910,7 +912,7 @@ public class Verifier extends Processor {
 		for (String path : dot.getResources().keySet()) {
 			if (path.equals("META-INF/MANIFEST.MF"))
 				continue;
-			
+
 			Attributes a = m.getAttributes(path);
 			String digest = a.getValue("SHA1-Digest");
 			if (digest == null) {
