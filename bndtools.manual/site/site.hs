@@ -59,7 +59,7 @@ main = hakyll $ do
     match (list ["topbar.html", "sidebar.html", "footer.html"]) $ compile readPageCompiler
 
     -- Html-sourced pages
-    match (list ["index.html", "installation.html", "training.html", "licence.html" ]) $ do
+    match (list ["index.html", "installation.html", "training.html", "licence.html", "acknowledge.html", "community.html" ]) $ do
         route idRoute
         compile $ readPageCompiler >>> processPage
 
