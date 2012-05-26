@@ -155,7 +155,7 @@ public class BndTask extends BaseTask {
 			
 			project.action(command);
 
-			if (report(project))
+			if (report(project.getWorkspace()))
 				throw new BuildException("Command " + command + " failed");
 		} catch (Throwable e) {
 			if (exceptions)

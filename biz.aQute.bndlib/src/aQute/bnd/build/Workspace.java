@@ -350,5 +350,25 @@ public class Workspace extends Processor {
 		list.add(maven);
 		list.add(new CachedFileRepo());
 	}
+	
+	@Override
+	public List<String> getWarnings() {
+		LinkedList<String> ret = new LinkedList<String>();
+		ret.addAll(super.getWarnings());
+		for (Project project : getCurrentProjects()) {
+			ret.addAll(project.getWarnings());
+		}
+		return ret;
+	}
+
+	@Override
+	public List<String> getErrors() {
+		LinkedList<String> ret = new LinkedList<String>();
+		ret.addAll(super.getErrors());
+		for (Project project : getCurrentProjects()) {
+			ret.addAll(project.getErrors());
+		}
+		return ret;
+	}
 
 }
