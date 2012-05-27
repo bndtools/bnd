@@ -82,7 +82,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 					}
 				}
 			} catch (Exception e) {
-				logService.log(LogService.LOG_ERROR, String.format("Unable to load/generate index file '%s' for repository type %s", contentProvider.getName()), e);
+				logService.log(LogService.LOG_ERROR, String.format("Unable to load/generate index file '%s' for repository type %s", indexFile, contentProvider.getName()), e);
 			}
 		}
 		
@@ -98,8 +98,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	
 	private synchronized void regenerateAllIndexes() {
 		for (IRepositoryContentProvider provider : generatingProviders) {
-			if (!provider.supportsGeneration())
+			if (!provider.supportsGeneration()) {
+				logService.log(LogService.LOG_WARNING, String.format("Repository type '%s' does not support index generation.", provider.getName()));
 				continue;
+			}
 			File indexFile = getIndexFile(provider);
 			try {
 				generateIndex(indexFile, provider);
