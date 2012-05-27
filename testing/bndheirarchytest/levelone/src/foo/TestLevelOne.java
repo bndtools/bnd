@@ -9,7 +9,7 @@ import aQute.bnd.annotation.component.Component;
 public class TestLevelOne {
   @Activate
   public void start() {
-    System.out.println("Top2test2 started!");
+    System.out.println("TestLevelOne started!");
   }
   public TestLevelTwo get2() {
     return null;

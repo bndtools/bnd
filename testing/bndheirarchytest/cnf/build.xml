@@ -41,9 +41,14 @@
 
 	<!--
 	     Test
-	-->
 	<target name="test" depends="compile">
 		<bnd command="test" exceptions="true" basedir="${project}" />
+	</target>
+	-->
+
+	<target name="test" depends="compile">
+		<!--<bndtest files="bnd.bnd"/>-->
+		<bndtest/>
 	</target>
 
 	<!--
@@ -52,7 +57,7 @@
 	-->
 	<target name="compile" depends="dependencies" if="project.sourcepath">
 		<mkdir dir="${project.output}"/>
-		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="1.7" source="1.7" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
 		<!-- 
 		  The eclipse compiler copies resources but the Javac compiler does not
 		  If ${src} == ${bin} then this is not necessary, but unfortunately, now 
@@ -156,7 +161,9 @@
 		<fail message="This ant script should never be directly called." />
 	</target>
 
-	<target name="run" depends="init">
+	<property name="genlaunchprop.source" value="run.bndrun" />
+	<target name="gen" depends="init">
+	    <echo message="Generating launch.properties based on ${genlaunchprop.source}"/>
 	    <bnd command="run" 
 	    	exceptions="true" 
 	    	basedir="${project}" 
@@ -164,7 +171,7 @@
 		genlaunchprop="true">
 		<bndfiles>
 			<fileset dir=".">
-				<include name="run.bndrun" />
+				<include name="${genlaunchprop.source}" />
 			</fileset>
 		</bndfiles>
 	    </bnd>

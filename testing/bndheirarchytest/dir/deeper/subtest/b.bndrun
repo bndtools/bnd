@@ -4,8 +4,7 @@
 
 -runbundles: org.apache.felix.scr;version='[1.6.0,1.6.1)',\
         org.apache.felix.configadmin;version='[1.2.8,1.2.9)',\
-	levelthree;version=latest,\
-	leveltwo;version=latest,\
-	levelone;version=latest
+	subtest.b;version=latest
 
 -runtimeout: 1001
+
