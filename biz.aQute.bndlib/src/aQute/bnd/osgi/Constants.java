@@ -290,7 +290,7 @@ public interface Constants {
 	public final static String		COMPONENT_ACTIVATE							= "activate:";
 	public final static String		COMPONENT_DEACTIVATE						= "deactivate:";
 
-	public final static String			COMPONENT_NAMESPACE				 			= "namespace:";
+	public final static String			COMPONENT_NAMESPACE				 		= "xmlns:";
 
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
@@ -299,7 +299,7 @@ public interface Constants {
 			COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES, COMPONENT_IMPLEMENTATION,
 			COMPONENT_SERVICEFACTORY, COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
 			COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS, COMPONENT_DESIGNATE,
-			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY
+			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
 																				};
 
 	public final static Set<String>	SET_COMPONENT_DIRECTIVES					= new HashSet<String>(

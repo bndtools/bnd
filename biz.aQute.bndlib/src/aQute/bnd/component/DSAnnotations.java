@@ -23,13 +23,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (sc != null && sc.trim().length() > 0)
 			names.add(sc);
 
-		for (Iterator<Clazz> i = list.iterator(); i.hasNext();) {
+		for (Clazz c: list) {
 			for (Instruction instruction : instructions.keySet()) {
-				Clazz c = i.next();
 
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
-						i.remove();
+						break;
 					else {
 						ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
 						if (definition != null) {

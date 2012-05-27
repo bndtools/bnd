@@ -62,5 +62,11 @@ public class XmlTester {
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o);
 	}
+	
+	public void assertNamespace(String namespace) {
+		Element element = document.getDocumentElement();
+		String xmlns = element.getNamespaceURI();
+		Assert.assertEquals(namespace, xmlns);
+	}
 
 }

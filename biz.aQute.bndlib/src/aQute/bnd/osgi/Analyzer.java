@@ -306,7 +306,9 @@ public class Analyzer extends Processor {
 	void doPlugins() {
 		for (AnalyzerPlugin plugin : getPlugins(AnalyzerPlugin.class)) {
 			try {
+				Processor previous = beginHandleErrors(plugin.toString());
 				boolean reanalyze = plugin.analyzeJar(this);
+				endHandleErrors(previous);
 				if (reanalyze) {
 					classspace.clear();
 					analyzeBundleClasspath();

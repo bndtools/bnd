@@ -1841,7 +1841,7 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperty("Export-Package", "test.activator");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
-		assertEquals("[test/activator/Activator.class]",
+		assertEquals("[test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class]",
 				new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
 	}
 

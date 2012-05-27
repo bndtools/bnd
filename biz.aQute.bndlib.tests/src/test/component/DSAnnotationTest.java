@@ -20,8 +20,9 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Property test
 	 */
 
-	@Component(property = {
-			"  x : Integer =3.0", "a                   =1", "                       a=2", " b =1", "boolean          :            Boolean   \n\t      =true", "byte:Byte=1", "char:Character=1",
+	@Component(xmlns= "http://www.osgi.org/xmlns/scr/v1.1.0", 
+			property = {
+			"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
 			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
 			"string:String=%", "wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	})
@@ -63,9 +64,15 @@ public class DSAnnotationTest extends BndTestCase {
 
 	/**
 	 * The basic test. This test will take an all default component and a
+<<<<<<< HEAD
+	 * component that has all values set. It looks like the xml tester needs a namspace, so we set one.
+||||||| parent of 4d94861... fix more tests to reflect slightly changed behavior. still one mysterious error
 	 * component that has all values set.
+=======
+	 * component that has all values set.  It looks like the sml tester needs a namspace, so we set one.
+>>>>>>> 4d94861... fix more tests to reflect slightly changed behavior. still one mysterious error
 	 */
-	@Component
+	@Component(xmlns = "http://www.osgi.org/xmlns/scr/v1.1.0")
 	public static class Defaults_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -551,6 +558,25 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("unbindLogService", "scr:component/reference[1]/@unbind");
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
 
+	}
+	
+	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
+	public class TestConfigPolicy {}
+	
+	public void testConfigPolicySetsNamespace() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*TestConfigPolicy");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		Resource r = jar.getResource("OSGI-INF/testConfigPolicy.xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
+		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.1.0");
 	}
 
 }

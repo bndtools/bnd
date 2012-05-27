@@ -24,7 +24,7 @@ class ComponentDef {
 	final MultiMap<String,String>	property		= new MultiMap<String,String>();
 	final Map<String,ReferenceDef>	references		= new TreeMap<String,ReferenceDef>();
 
-	Version							version			= AnnotationReader.V1_1;
+	Version							version			= AnnotationReader.V1_0;
 	String							name;
 	String							factory;
 	Boolean							immediate;
@@ -72,6 +72,8 @@ class ComponentDef {
 		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
+		if (configurationPolicy != null)
+			version = ReferenceDef.max(version, AnnotationReader.V1_1);
 		if (configurationPid != null)
 			version = ReferenceDef.max(version, AnnotationReader.V1_2);
 
@@ -115,11 +117,12 @@ class ComponentDef {
 	 * @return a component element
 	 */
 	Tag getTag() {
-		Tag component = new Tag("scr:component");
+		String xmlns = this.xmlns;
+		if (xmlns == null && version != AnnotationReader.V1_0)
+			xmlns = NAMESPACE_STEM + "/v" + version;
+		Tag component = new Tag(xmlns == null? "component": "scr:component");
 		if (xmlns != null)
 			component.addAttribute("xmlns:scr", xmlns);
-		else
-			component.addAttribute("xmlns:scr", NAMESPACE_STEM + "/v" + version);
 
 		component.addAttribute("name", name);
 

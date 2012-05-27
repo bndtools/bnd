@@ -29,6 +29,7 @@ public class AnnotationReader extends ClassDataCollector {
 	final static Pattern		PROPERTY_PATTERN		= Pattern
 																.compile("\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
 
+	public static final Version	V1_0					= new Version("1.0.0");																												// "1.1.0"
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
 	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
@@ -247,7 +248,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (component.implementation != null)
 			return;
 
-		component.version = V1_1;
+		component.version = V1_0;
 		component.implementation = clazz.getClassName();
 		component.name = comp.name();
 		component.factory = comp.factory();
