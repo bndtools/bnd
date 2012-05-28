@@ -28,7 +28,7 @@ public class ReleaseTask extends BaseTask {
 			Project project = Workspace.getProject(getProject().getBaseDir());
 			project.release(releaseRepo);
 
-			if (report(project))
+			if (report(project.getWorkspace()))
 				throw new BuildException("Release failed");
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -24,7 +24,7 @@ public class ProjectTask extends BaseTask {
 
             Project project = Workspace.getProject(basedir);
             project.build(underTest);
-            report(project);
+            report(project.getWorkspace());
         } catch (Exception e) {
             e.printStackTrace();
             throw new BuildException(e);
