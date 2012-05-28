@@ -10,7 +10,6 @@ import aQute.bnd.build.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.maven.support.Pom.Dependency;
-import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;

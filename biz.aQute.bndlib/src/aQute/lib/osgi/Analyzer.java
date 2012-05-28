@@ -193,11 +193,7 @@ public class Analyzer extends Processor {
 				Packages referredAndExported = new Packages(referred);
 				referredAndExported.putAll(doExportsToImports(exports));
 
-				// Remove any matching a dynamic import package instruction
-				Instructions dynamicImports = new Instructions(getDynamicImportPackage());
-				Collection<PackageRef> dynamic = dynamicImports.select(
-						referredAndExported.keySet(), false);
-				referredAndExported.keySet().removeAll(dynamic);
+				removeDynamicImports(referredAndExported);
 
 				// Remove any Java references ... where are the closures???
 				for (Iterator<PackageRef> i = referredAndExported.keySet().iterator(); i.hasNext();) {
@@ -244,6 +240,19 @@ public class Analyzer extends Processor {
 			}
 
 		}
+	}
+
+	/**
+	 * Discussed with BJ and decided to kill the .
+	 * @param referredAndExported
+	 */
+	void removeDynamicImports(Packages referredAndExported) {
+		
+//		// Remove any matching a dynamic import package instruction
+//		Instructions dynamicImports = new Instructions(getDynamicImportPackage());
+//		Collection<PackageRef> dynamic = dynamicImports.select(
+//				referredAndExported.keySet(), false);
+//		referredAndExported.keySet().removeAll(dynamic);
 	}
 
 	protected Jar getExtra() throws Exception {
@@ -1363,7 +1372,7 @@ public class Analyzer extends Processor {
 		if (map == null) {
 			classpathExports.put(packageRef, map = new Attrs());
 		}
-		for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+		for (@SuppressWarnings("unchecked") Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 			String key = t.nextElement();
 			String value = map.get(key);
 			if (value == null) {

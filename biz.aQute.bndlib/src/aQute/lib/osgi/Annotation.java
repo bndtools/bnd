@@ -6,7 +6,7 @@ import java.util.*;
 import aQute.bnd.annotation.metatype.*;
 import aQute.lib.osgi.Descriptors.TypeRef;
 
-public class Annotation {
+@SuppressWarnings("unchecked") public class Annotation {
 	TypeRef				name;
 	Map<String, Object>	elements;
 	ElementType			member;

@@ -237,7 +237,7 @@ public class VerifierTest extends TestCase {
         
         Manifest m = jar.getManifest();
         m.write(System.err);
-        assertFalse(m.getMainAttributes().getValue("Import-Package").indexOf(
+        assertTrue(m.getMainAttributes().getValue("Import-Package").indexOf(
                 "org.slf4j") >= 0);
         assertTrue(m.getMainAttributes().getValue("DynamicImport-Package")
                 .indexOf("org.slf4j") >= 0);
