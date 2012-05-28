@@ -30,10 +30,12 @@ public class ReporterLogService implements LogService {
 			message += " [" + t + "]";
 		
 		if (reporter != null) {
-			if (level <= LOG_DEBUG)
+			if (level <= LOG_ERROR)
 				reporter.error(message);
 			else if (level == LOG_WARNING)
 				reporter.warning(message);
+			else if (level == LOG_INFO || level == LOG_DEBUG)
+				reporter.trace(message);
 		}
 	}
 
