@@ -4,6 +4,13 @@
 
    <extension point="bndtools.core.cnfTemplates">
       <template
+         name="Default Configuration"
+         doc="templateDocs/DefaultConfig.xml"
+         paths="templates/cnfs/default"
+         priority="15"
+         managed="ext,plugins"
+      />
+      <template
          name="Standard Configuration"
          doc="templateDocs/standardConfig.xml"
          paths="templates/cnfs/shared,templates/cnfs/standard"
