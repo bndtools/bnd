@@ -1,5 +1,9 @@
 package bndtools.model.repo;
 
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -10,6 +14,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -17,7 +22,8 @@ import bndtools.WorkspaceObrProvider;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
 
-    Image repoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/fldr_obj.gif").createImage();
+    Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
+    Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
     Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
     Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
@@ -35,13 +41,22 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
         if (element instanceof RepositoryPlugin) {
             if (index == 0) {
-                String name = ((RepositoryPlugin) element).getName();
-                cell.setText(name);
+                RepositoryPlugin repo = (RepositoryPlugin) element;
+                StyledString label = new StyledString(repo.getName());
+                if (!(element instanceof WorkspaceObrProvider))
+                    label.append(" " + repo.getLocation(), StyledString.QUALIFIER_STYLER);
 
-                Image image = repoImg;
-                if (element instanceof WorkspaceObrProvider) {
+                cell.setText(label.getString());
+                cell.setStyleRanges(label.getStyleRanges());
+
+                Image image;
+                if (element instanceof WorkspaceObrProvider)
                     image = projectImg;
-                }
+                else if (isRemoteRepo((RepositoryPlugin) element))
+                    image = remoteRepoImg;
+                else
+                    image = localRepoImg;
+                
                 cell.setImage(image);
             }
         } else if (element instanceof Project) {
@@ -71,11 +86,31 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             }
         }
     }
+    
+    private boolean isRemoteRepo(RepositoryPlugin repository) {
+        List<URL> locations = Collections.emptyList();
+        if (repository instanceof IndexProvider) {
+            try {
+                locations = ((IndexProvider) repository).getIndexLocations();
+            } catch (Exception e) {
+                Plugin.getDefault().getLogger().logError("Unable to get repository index list", e);
+            }
+        }
+        
+        for (URL location : locations) {
+            String protocol = location.getProtocol();
+            if ("http".equals(protocol) || "https".equals(protocol))
+                return true;
+        }
+        
+        return false;
+    }
 
     @Override
     public void dispose() {
         super.dispose();
-        repoImg.dispose();
+        localRepoImg.dispose();
+        remoteRepoImg.dispose();
         bundleImg.dispose();
     }
 
@@ -90,7 +125,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         if (element == workspace) {
             return projectImg;
         } else if (element instanceof RepositoryPlugin) {
-            return repoImg;
+            return isRemoteRepo((RepositoryPlugin) element) ? remoteRepoImg : localRepoImg;
         } else if (element instanceof Project) {
             return projectImg;
         } else if (element instanceof ProjectBundle) {

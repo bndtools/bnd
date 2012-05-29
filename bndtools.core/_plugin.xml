@@ -140,7 +140,7 @@
       <view
             category="bndtools.viewCategory"
             class="bndtools.views.RepositoriesView"
-            icon="icons/bundlefolder.png"
+            icon="icons/database.png"
             id="bndtools.repositoriesView"
             name="Repositories"
             restorable="true">
