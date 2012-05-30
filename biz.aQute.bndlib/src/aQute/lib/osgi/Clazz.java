@@ -87,9 +87,10 @@ public class Clazz {
 
 	}
 
-	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS,
-															QUERY.IMPORTS, QUERY.NAMED,
-															QUERY.VERSION, QUERY.ANNOTATED);
+	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS,
+																QUERY.EXTENDS, QUERY.IMPORTS,
+																QUERY.NAMED, QUERY.VERSION,
+																QUERY.ANNOTATED);
 
 	/**
 	 * <pre>
@@ -105,34 +106,34 @@ public class Clazz {
 	 * 
 	 * @param mod
 	 */
-	final static int				ACC_PUBLIC		= 0x0001;									// Declared
+	final static int					ACC_PUBLIC		= 0x0001;					// Declared
 	// public;
 	// may
 	// be
 	// accessed
 	// from outside its package.
-	final static int				ACC_FINAL		= 0x0010;									// Declared
+	final static int					ACC_FINAL		= 0x0010;					// Declared
 	// final;
 	// no
 	// subclasses
 	// allowed.
-	final static int				ACC_SUPER		= 0x0020;									// Treat
+	final static int					ACC_SUPER		= 0x0020;					// Treat
 	// superclass
 	// methods
 	// specially when invoked by the
 	// invokespecial instruction.
-	final static int				ACC_INTERFACE	= 0x0200;									// Is
+	final static int					ACC_INTERFACE	= 0x0200;					// Is
 	// an
 	// interface,
 	// not
 	// a
 	// classs
-	final static int				ACC_ABSTRACT	= 0x0400;									// Declared
+	final static int					ACC_ABSTRACT	= 0x0400;					// Declared
 
 	// a thing not in the source code
-	final static int				ACC_SYNTHETIC	= 0x1000;
-	final static int				ACC_ANNOTATION	= 0x2000;
-	final static int				ACC_ENUM		= 0x4000;
+	final static int					ACC_SYNTHETIC	= 0x1000;
+	final static int					ACC_ANNOTATION	= 0x2000;
+	final static int					ACC_ENUM		= 0x4000;
 
 	static protected class Assoc {
 		Assoc(byte tag, int a, int b) {
@@ -903,12 +904,12 @@ public class Clazz {
 
 		// s.println("Signature " + signature );
 
-		// The type signature is kind of weird,
-		// lets skip it for now. Seems to be some kind of
-		// type variable name index but it does not seem to
-		// conform to the language specification.
-		if (member != ElementType.TYPE)
-			parseDescriptor(signature);
+		// // The type signature is kind of weird,
+		// // lets skip it for now. Seems to be some kind of
+		// // type variable name index but it does not seem to
+		// // conform to the language specification.
+		// if (member != ElementType.TYPE)
+		parseDescriptor(signature);
 
 		if (last != null)
 			last.signature = signature;
@@ -1096,7 +1097,7 @@ public class Clazz {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<TypeRef>();
-		
+
 		TypeRef tr = analyzer.getTypeRef(pool[type_index].toString());
 		annotations.add(tr);
 
@@ -1219,10 +1220,11 @@ public class Clazz {
 	public void parseDescriptor(String descriptor) {
 		// Some descriptors are weird, they start with a generic
 		// declaration that contains ':', not sure what they mean ...
-		if (descriptor.charAt(0) == '<')
-			return;
-
 		int rover = 0;
+		if (descriptor.charAt(0) == '<') {
+			rover = parseFormalTypeParameters(descriptor, rover);
+		}
+
 		if (descriptor.charAt(rover) == '(') {
 			rover = parseReferences(descriptor, rover + 1, ')');
 			rover++;
@@ -1297,6 +1299,42 @@ public class Clazz {
 		// [, *, +, -, B, etc.
 
 		return r + 1;
+	}
+
+/**
+	 * FormalTypeParameters
+	 *     
+	 * @param descriptor
+	 * @param index
+	 * @return
+	 */
+	private int parseFormalTypeParameters(String descriptor, int index) {
+		index++;
+		while (descriptor.charAt(index) != '>') {
+			// Skip IDENTIFIER
+			index = descriptor.indexOf(':', index) + 1;
+			if (index == 0)
+				throw new IllegalArgumentException("Expected IDENTIFIER: " + descriptor);
+
+			// ClassBound? InterfaceBounds
+			
+			char c = descriptor.charAt(index);
+			
+			// Class Bound?
+			if (c == 'L' || c == 'T') {
+				index = parseReference(descriptor, index); // class reference
+				c = descriptor.charAt(index);
+			}
+
+			// Interface Bounds
+			while (c == ':') {
+				index++;
+				index = parseReference(descriptor, index);
+				c = descriptor.charAt(index);
+			} // for each interface
+
+		} // for each formal parameter
+		return index + 1; // skip >
 	}
 
 	public Set<PackageRef> getReferred() {

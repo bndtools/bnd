@@ -11,8 +11,20 @@ import aQute.libg.header.*;
 
 public class BuilderTest extends BndTestCase {
 
-	
-	
+	/**
+	 * FELIX-3407 Utterly confusing example that states that 
+	 * generic references are not picked up
+	 */
+	public void testGenericPickup() throws Exception{
+		Builder b = new Builder();
+		b.setPrivatePackage("test.genericinterf.a");
+		b.addClasspath(new File("bin"));
+		b.build();
+		assertTrue(b.check());
+		System.out.println(b.getImports());
+		assertTrue(b.getImports().containsFQN("test.genericinterf.b"));
+		assertTrue(b.getImports().containsFQN("test.genericinterf.c"));
+	}
 	
 	/**
 	 * Github #130 Consider the following descriptor file:
