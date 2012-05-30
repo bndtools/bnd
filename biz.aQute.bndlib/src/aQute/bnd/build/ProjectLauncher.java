@@ -214,7 +214,7 @@ public abstract class ProjectLauncher {
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
 		try {
-			int result = java.execute(System.in, System.err, System.err);
+			int result = java.execute((InputStream)null, System.err, System.err);
 			if (result == Integer.MIN_VALUE)
 				return TIMEDOUT;
 			reportResult(result);
@@ -250,7 +250,7 @@ public abstract class ProjectLauncher {
 			project.warning("Launch had a warning %s", java);
 			break;
 		default:
-			project.warning("Unknown code %d from launcher: %s", result, java);
+			project.error("Exit code remote process %d: %s", result, java);
 			break;
 		}
 	}

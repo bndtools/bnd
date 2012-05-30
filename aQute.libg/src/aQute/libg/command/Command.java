@@ -70,6 +70,9 @@ public class Command {
 					handler.start();
 
 				result = process.waitFor();
+				if (reporter != null)
+					reporter.trace("exited process.waitFor, %s", result);
+				
 			} finally {
 				err.close();
 			}
@@ -130,6 +133,7 @@ public class Command {
 		public Collector(InputStream inputStream, Appendable sb) {
 			this.in = inputStream;
 			this.sb = sb;
+			setDaemon(true);
 		}
 
 		public void run() {
@@ -160,6 +164,7 @@ public class Command {
 		public InputStreamHandler(InputStream in, OutputStream stdin) {
 			this.stdin = stdin;
 			this.in = in;
+			setDaemon(true);
 		}
 
 		public void run() {
@@ -174,6 +179,12 @@ public class Command {
 				// Ignore here
 			} catch (Exception e) {
 				// Who cares?
+			} finally {
+				try {
+					stdin.close();
+				} catch (IOException e) {
+					// Who cares?
+				}
 			}
 		}
 	}
