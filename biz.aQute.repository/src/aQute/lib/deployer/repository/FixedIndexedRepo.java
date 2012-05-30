@@ -35,6 +35,8 @@ import aQute.bnd.service.RepositoryPlugin;
  */
 public class FixedIndexedRepo extends AbstractIndexedRepo {
 	
+	private static final String EMPTY_LOCATION = "";
+	
 	public static final String PROP_LOCATIONS = "locations";
 	@Deprecated
 	public static final String PROP_CACHE = "cache";
@@ -105,7 +107,7 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 
 	public String getLocation() {
 		if ( locations == null)
-			return "[]";
+			return EMPTY_LOCATION;
 		else
 			return locations.toString();
 	}

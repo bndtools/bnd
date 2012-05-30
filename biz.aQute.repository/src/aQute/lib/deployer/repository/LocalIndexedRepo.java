@@ -235,4 +235,17 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 		}
 	}
+
+	@Override
+	public String getLocation() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(storageDir.getAbsolutePath());
+		
+		String otherPaths = super.getLocation();
+		if (otherPaths != null && otherPaths.length() > 0)
+			builder.append(", ").append(otherPaths);
+		
+		return builder.toString();
+	}
+
 }
