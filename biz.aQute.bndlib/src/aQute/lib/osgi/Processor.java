@@ -471,7 +471,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static <K, V> Map<K, V> newHashMap() {
-		return new HashMap<K, V>();
+		return new LinkedHashMap<K, V>();
 	}
 
 	public <T> List<T> newList(Collection<T> t) {

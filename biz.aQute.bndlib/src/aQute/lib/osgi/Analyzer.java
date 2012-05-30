@@ -2230,6 +2230,8 @@ public class Analyzer extends Processor {
 	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
 		Packages result = new Packages();
 		List<PackageRef> refs = new ArrayList<PackageRef>(source.keySet());
+		Collections.sort(refs);
+		
 		List<Instruction> filters = new ArrayList<Instruction>(instructions.keySet());
 		if (nomatch == null)
 			nomatch = Create.set();

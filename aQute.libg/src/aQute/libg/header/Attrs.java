@@ -38,7 +38,7 @@ public class Attrs implements Map<String, String> {
 	static String					LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
 	public static final Pattern		TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*("+ SCALAR + "|" + LIST + ")\\s*");
 
-	private HashMap<String, String>	map;
+	private LinkedHashMap<String, String>	map;
 	private Map<String, Type>		types;
 	static Map<String, String>		EMPTY		= Collections.emptyMap();
 
@@ -129,7 +129,7 @@ public class Attrs implements Map<String, String> {
 
 	public String put(String key, String value) {
 		if (map == null)
-			map = new HashMap<String, String>();
+			map = new LinkedHashMap<String, String>();
 
 		Matcher m = TYPED.matcher(key);
 		if (m.matches()) {
@@ -158,7 +158,7 @@ public class Attrs implements Map<String, String> {
 					t = Type.VERSION;
 			}
 			if (types == null)
-				types = new HashMap<String, Type>();
+				types = new LinkedHashMap<String, Type>();
 			types.put(key, t);
 
 			// TODO verify value?
