@@ -10,6 +10,33 @@ import aQute.lib.osgi.Descriptors.PackageRef;
 public class ClazzTest extends TestCase {
 
 	/**
+	 * Complaint from Groovy that the dynamic instruction fails.
+	 * <pre>
+	 * [bndwrap] java.lang.ArrayIndexOutOfBoundsException: 15
+	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:387)
+	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:308)
+	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFileWithCollector(Clazz.java:297)
+	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:286)
+	 * [bndwrap]     at aQute.lib.osgi.Analyzer.analyzeJar(Analyzer.java:1489)
+	 * [bndwrap]     at aQute.lib.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1387)
+	 * [bndwrap] Invalid class file: groovy/inspect/swingui/AstNodeToScriptVisitor.class
+	 * [bndwrap] Exception: 15
+	 * </pre>
+	 */
+	public void testDynamicInstr() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a, "", null);
+		c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"),
+				new ClassDataCollector() {
+				});
+		Set<PackageRef> referred = c.getReferred();
+		Descriptors d = new Descriptors();
+		assertFalse(referred.contains(d.getPackageRef("")));
+		System.out.println(referred);
+	}
+	
+	
+	/**
 	 * Check if the class is not picking up false references when the
 	 * CLass.forName name is constructed. The DeploymentAdminPermission.1.jclass
 	 * turned out to use Class.forName with a name that was prefixed with a

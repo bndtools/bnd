@@ -302,7 +302,8 @@ public class Clazz {
 
 	}
 
-	final static byte	SkipTable[]	= { 0, // 0 non existent
+	final static byte	SkipTable[]	= { //
+									0, // 0 non existent
 			-1, // 1 CONSTANT_utf8 UTF 8, handled in
 			// method
 			-1, // 2
@@ -316,6 +317,12 @@ public class Clazz {
 			4, // 10 CONSTANT_MethodRef
 			4, // 11 CONSTANT_InterfaceMethodRef
 			4, // 12 CONSTANT_NameAndType
+			-1, // 13 Not defined
+			-1, // 14 Not defined
+			3, // 15 CONSTANT_MethodHandle
+			2, // 16 CONSTANT_MethodType
+			-1, // 17 Not defined
+			4, // 18 CONSTANT_InvokeDynamic
 									};
 
 	boolean				hasRuntimeAnnotations;
@@ -536,7 +543,7 @@ public class Clazz {
 						"(Ljava/lang/String;)Ljava/lang/Class;");
 				class$ = findMethodReference(className.getBinary(), "class$",
 						"(Ljava/lang/String;)Ljava/lang/Class;");
-			} else if (major == 48) {
+			} else if (major == 48 ) {
 				forName = findMethodReference("java/lang/Class", "forName",
 						"(Ljava/lang/String;)Ljava/lang/Class;");
 				if (forName > 0) {
@@ -545,6 +552,12 @@ public class Clazz {
 							"(Ljava/lang/String;)Ljava/lang/Class;");
 				}
 			}
+			
+			// There are some serious changes in the
+			// class file format. So we do not do any crawling
+			// it has also become less important
+			if ( major >= JAVA.OpenJDK7.major )
+				crawl = false;
 
 			//
 			// Handle the methods
@@ -1301,9 +1314,9 @@ public class Clazz {
 		return r + 1;
 	}
 
-/**
+	/**
 	 * FormalTypeParameters
-	 *     
+	 * 
 	 * @param descriptor
 	 * @param index
 	 * @return
@@ -1317,9 +1330,9 @@ public class Clazz {
 				throw new IllegalArgumentException("Expected IDENTIFIER: " + descriptor);
 
 			// ClassBound? InterfaceBounds
-			
+
 			char c = descriptor.charAt(index);
-			
+
 			// Class Bound?
 			if (c == 'L' || c == 'T') {
 				index = parseReference(descriptor, index); // class reference
@@ -1455,6 +1468,9 @@ public class Clazz {
 	 * 
 	 */
 	void getMethodDef(int access, int methodRefPoolIndex) {
+		if ( methodRefPoolIndex == 0)
+			return;
+		
 		Object o = pool[methodRefPoolIndex];
 		if (o != null && o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
