@@ -262,7 +262,13 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				String method = fqn.substring(n + 1);
 				fqn = fqn.substring(0, n);
 				Class<?> clazz = loadClass(tfw, fqn);
-				addTest(tfw, suite, clazz, testResult, method);
+				if ( clazz != null)
+					addTest(tfw, suite, clazz, testResult, method);
+				else {
+					System.err.println("Can not create test case for: " + fqn + ", class might not be included in your test bundle?");
+					testResult.addError(suite, new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
+				}
+					
 			} else {
 				Class<?> clazz = loadClass(tfw, fqn);
 				addTest(tfw, suite, clazz, testResult, null);
