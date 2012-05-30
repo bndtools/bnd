@@ -13,7 +13,7 @@ public class Command {
 	List<String>		arguments	= new ArrayList<String>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
-	static Timer		timer		= new Timer();
+	static Timer		timer		= new Timer("Command watchdog timer", true);
 	Process				process;
 	volatile boolean	timedout;
 

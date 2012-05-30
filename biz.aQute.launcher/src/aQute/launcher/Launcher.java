@@ -123,7 +123,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			};
-			new Timer().scheduleAtFixedRate(watchdog, 5000, 1000);
+			new Timer("Launcher watchdog timer", true).scheduleAtFixedRate(watchdog, 5000, 1000);
 		}
 	}
 
