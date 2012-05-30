@@ -56,7 +56,8 @@ public class Project extends Processor {
 	File						files[];
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
-
+	boolean						genlaunchprop			= false;
+	
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
@@ -1993,6 +1994,7 @@ public class Project extends Processor {
 	 */
 	public void setDelayRunDependencies(boolean x) {
 		delayRunDependencies = x;
+		this.runbundles.clear();
 	}
 
 	/**
@@ -2088,5 +2090,13 @@ public class Project extends Processor {
 	
 	public Collection<Container> getClasspath() {
 		return classpath;
+	}
+
+	public boolean isGenLaunchProp() {
+		return genlaunchprop;
+	}
+
+	public void setGenLaunchProp(boolean genlaunchprop) {
+		this.genlaunchprop = genlaunchprop;
 	}
 }

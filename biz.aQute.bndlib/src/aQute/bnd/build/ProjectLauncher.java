@@ -250,7 +250,7 @@ public abstract class ProjectLauncher {
 			project.warning("Launch had a warning %s", java);
 			break;
 		default:
-			project.warning("Unknown code %d from launcher: %s", result, java);
+			project.error("Unknown code %d from launcher: %s", result, java);
 			break;
 		}
 	}
