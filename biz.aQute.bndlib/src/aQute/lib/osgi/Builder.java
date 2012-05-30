@@ -361,7 +361,7 @@ public class Builder extends Analyzer {
 						for (int j = 0; j < fixed.length; j++) {
 							File ff = getFile(bdir, fixed[j]);
 							if (ff.isFile()) {
-								String name = "OSGI-OPT/src/" + packagePath + fixed[j];
+								String name = "OSGI-OPT/src/" + packagePath + "/" + fixed[j];
 								dot.putResource(name, new FileResource(ff));
 							}
 						}
