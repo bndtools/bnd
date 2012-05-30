@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build"> 
+    <property name="workspacedir" value=".."/>
+    <import file="../cnf/build.xml"/>
+
+  <target name="dotest">
+    <delete file="launch.properties"/>
+
+    <echo message="Verifying launch.properties files can be created..."/>
+    <ant target="gen" />
+
+    <echo message="Verifying launch.properties files can be used..."/>
+    <exec executable="cmd" outputproperty="levelone.output">
+	    <arg value="/c"/>
+	    <arg value="run.bat"/>
+    </exec>
+    <echo message="levelone.output=${levelone.output}"/>
+    <condition property="levelone.output.good">
+	    <equals arg1="${levelone.output}"
+		    arg2="TestLevelOne started!"/>
+    </condition>
+    <echo message="levelone.output.good=${levelone.output.good}"/>
+    <fail unless="levelone.output.good"/>
+  </target>
+
+</project>

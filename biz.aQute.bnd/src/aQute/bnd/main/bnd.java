@@ -70,7 +70,7 @@ public class bnd extends Processor {
 		@Description("Trace progress") boolean trace();
 
 		@Description("Error/Warning ignore patterns") String[] ignore();
-
+		
 	}
 
 	public static void main(String args[]) throws Exception {
@@ -498,6 +498,9 @@ public class bnd extends Processor {
 		String project();
 
 		boolean info();
+
+		@Description("bnd or bndrun file to run") String runfile();
+
 	}
 
 	public void _project(projectOptions options) throws Exception {
@@ -525,6 +528,14 @@ public class bnd extends Processor {
 		if (!l.isEmpty())
 			arg = l.remove(0);
 
+		//[cs] process --runfile
+		if (arg.compareTo("--runfile") == 0) {
+			arg = l.remove(0);
+			project.setDelayRunDependencies(true);
+			project.setProperty(Constants.RUNBUILDS, "false");
+			project.doIncludeFile(getFile(arg), true, project.getProperties());
+		}
+		
 		if (!l.isEmpty()) {
 			error("Extra arguments %s", options._());
 			return;

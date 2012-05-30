@@ -1,0 +1,10 @@
+#repo					= ${workspace}/../cnf/repo
+repo					= ${workspace}/../../../repo/jars
+releaserepo				= ${workspace}/../../../repo/bundles
+
+-plugin	            	= \
+	aQute.lib.deployer.FileRepo;name='Main';location=${repo},\
+	aQute.lib.deployer.FileRepo;name='BNDrepo';location=${workspace}/../../cnf/repo,\
+	aQute.lib.deployer.FileRepo;name='Release';location=${releaserepo}
+
+-releaserepo:   Release

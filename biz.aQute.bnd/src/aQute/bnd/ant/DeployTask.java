@@ -37,7 +37,7 @@ public class DeployTask extends BaseTask {
                     }
                 }
             }
-            report(project);
+            report(project.getWorkspace());
             if (project.getErrors().size() > 0)
                 throw new BuildException("Deploy failed");
         } catch (Throwable t) {

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="junittest" default="build"> 
+	<property name="workspacedir" value=".."/>
+	<import file="${workspacedir}/cnf/build.xml"/>
+
+  <target name="dotest">
+    <exec executable="cmd" resultproperty="junittestpass.result">
+	    <arg value="/c"/>
+	    <arg value="${ant.home}/bin/ant.bat"/>
+	    <arg value="test"/>
+    </exec>
+    <echo message="junittestpass.result=${junittestpass.result} (0=pass, which is what we are expecting)"/>
+    <condition property="junittestpass.passed">
+	    <equals arg1="${junittestpass.result}"
+		    arg2="0"/>
+    </condition>
+    <fail unless="junittestpass.passed"/>
+  </target>
+
+</project>
