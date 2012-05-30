@@ -267,8 +267,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
 			if (!done.contains(entry.getKey()))
-				writeResource(jout, directories, entry.getKey(),
-						entry.getValue());
+				writeResource(jout, directories, entry.getKey(), entry.getValue());
 		}
 		jout.finish();
 	}
@@ -358,6 +357,7 @@ public class Jar implements Closeable {
 			writeEntry(out, "Name", key);
 			attributes(manifest.getAttributes(key), out);
 		}
+		out.flush();
 	}
 
 	/**
@@ -479,20 +479,23 @@ public class Jar implements Closeable {
 			Resource resource) throws Exception {
 		if (resource == null)
 			return;
-
-		createDirectories(directories, jout, path);
-		ZipEntry ze = new ZipEntry(path);
-		ze.setMethod(ZipEntry.DEFLATED);
-		long lastModified = resource.lastModified();
-		if (lastModified == 0L) {
-			lastModified = System.currentTimeMillis();
+		try {
+			createDirectories(directories, jout, path);
+			ZipEntry ze = new ZipEntry(path);
+			ze.setMethod(ZipEntry.DEFLATED);
+			long lastModified = resource.lastModified();
+			if (lastModified == 0L) {
+				lastModified = System.currentTimeMillis();
+			}
+			ze.setTime(lastModified);
+			if (resource.getExtra() != null)
+				ze.setExtra(resource.getExtra().getBytes("UTF-8"));
+			jout.putNextEntry(ze);
+			resource.write(jout);
+			jout.closeEntry();
+		} catch (Exception e) {
+			throw new Exception("Problem writing resource " + path, e);
 		}
-		ze.setTime(lastModified);
-		if (resource.getExtra() != null)
-			ze.setExtra(resource.getExtra().getBytes("UTF-8"));
-		jout.putNextEntry(ze);
-		resource.write(jout);
-		jout.closeEntry();
 	}
 
 	void createDirectories(Set<String> directories, ZipOutputStream zip, String name)
