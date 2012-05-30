@@ -46,30 +46,38 @@ import aQute.libg.version.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	Settings			settings	= new Settings();
-	final PrintStream	err			= System.err;
-	final public PrintStream out	= System.out;
-	Justif				justif		= new Justif(60);
+	Settings settings = new Settings();
+	final PrintStream err = System.err;
+	final public PrintStream out = System.out;
+	Justif justif = new Justif(60);
 
-	static Pattern		JARCOMMANDS	= Pattern
-											.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern JARCOMMANDS = Pattern
+			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern		COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern COMMAND = Pattern.compile("\\w[\\w\\d]+");
 
-	@Description("OSGi Bundle Tool") interface bndOptions extends Options {
-		@Description("Turns errors into warnings so command always succeeds") boolean failok();
+	@Description("OSGi Bundle Tool")
+	interface bndOptions extends Options {
+		@Description("Turns errors into warnings so command always succeeds")
+		boolean failok();
 
-		@Description("Report errors pedantically") boolean pedantic();
+		@Description("Report errors pedantically")
+		boolean pedantic();
 
-		@Description("Print out stack traces when there is an unexpected exception") boolean exceptions();
+		@Description("Print out stack traces when there is an unexpected exception")
+		boolean exceptions();
 
-		@Description("Redirect output") File output();
+		@Description("Redirect output")
+		File output();
 
-		@Description("Use as base directory") String base();
+		@Description("Use as base directory")
+		String base();
 
-		@Description("Trace progress") boolean trace();
+		@Description("Trace progress")
+		boolean trace();
 
-		@Description("Error/Warning ignore patterns") String[] ignore();
+		@Description("Error/Warning ignore patterns")
+		String[] ignore();
 
 	}
 
@@ -229,29 +237,40 @@ public class bnd extends Processor {
 	 * Options for the jar create command.
 	 * 
 	 */
-	@Description("Equivalent jar command c[v0mf] command (supports the jar tool's syntax). Will wrap the bundle unless --wrapnot is specified") interface createOptions
-			extends Options {
-		@Description("Verbose (v option)") boolean verbose();
+	@Description("Equivalent jar command c[v0mf] command (supports the jar tool's syntax). Will wrap the bundle unless --wrapnot is specified")
+	interface createOptions extends Options {
+		@Description("Verbose (v option)")
+		boolean verbose();
 
-		@Description("No compression (0 option)") boolean nocompression();
+		@Description("No compression (0 option)")
+		boolean nocompression();
 
-		@Description("No manifest (M option)") boolean Manifest();
+		@Description("No manifest (M option)")
+		boolean Manifest();
 
-		@Description("Use manifest (m option)") String manifest();
+		@Description("Use manifest (m option)")
+		String manifest();
 
-		@Description("Jar file (f option)") String file();
+		@Description("Jar file (f option)")
+		String file();
 
-		@Description("Directory (-C option)") String Cdir();
+		@Description("Directory (-C option)")
+		String Cdir();
 
-		@Description("Wrap") boolean wrap();
+		@Description("Wrap")
+		boolean wrap();
 
-		@Description("Properties for wrapping") String properties();
+		@Description("Properties for wrapping")
+		String properties();
 
-		@Description("Bundle Symbolic Name for wrap") String bsn();
+		@Description("Bundle Symbolic Name for wrap")
+		String bsn();
 
-		@Description("Bundle Version for wrap") Version version();
+		@Description("Bundle Version for wrap")
+		Version version();
 
-		@Description("Force write event if there are errors") boolean force();
+		@Description("Force write event if there are errors")
+		boolean force();
 	}
 
 	/**
@@ -361,13 +380,16 @@ public class bnd extends Processor {
 	 * Extract a file from the JAR
 	 */
 
-	@Description("Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)") interface extractOptions
-			extends Options {
-		@Description("Verbose (v option)") boolean verbose();
+	@Description("Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)")
+	interface extractOptions extends Options {
+		@Description("Verbose (v option)")
+		boolean verbose();
 
-		@Description("Jar file (f option)") String file();
+		@Description("Jar file (f option)")
+		String file();
 
-		@Description("Directory where to store") String CDir();
+		@Description("Directory where to store")
+		String CDir();
 	}
 
 	public void _extract(extractOptions opts) throws Exception {
@@ -385,7 +407,8 @@ public class bnd extends Processor {
 		}
 		try {
 			Instructions instructions = new Instructions(opts._());
-			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			Collection<String> selected = instructions.select(jar
+					.getResources().keySet(), true);
 			File store = getBase();
 			if (opts.CDir() != null)
 				store = getFile(opts.CDir());
@@ -394,7 +417,8 @@ public class bnd extends Processor {
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
-					System.err.printf("%8s: %s%n", compression.toString().toLowerCase(), path);
+					System.err.printf("%8s: %s%n", compression.toString()
+							.toLowerCase(), path);
 
 				File f = getFile(store, path);
 				f.getParentFile().mkdirs();
@@ -410,11 +434,13 @@ public class bnd extends Processor {
 	 * List the contents of the JAR
 	 */
 
-	@Description("List files int a JAR file, equivalent jar command t[vf] (syntax supported)") interface typeOptions
-			extends Options {
-		@Description("Verbose (v option)") boolean verbose();
+	@Description("List files int a JAR file, equivalent jar command t[vf] (syntax supported)")
+	interface typeOptions extends Options {
+		@Description("Verbose (v option)")
+		boolean verbose();
 
-		@Description("Jar file (f option)") String file();
+		@Description("Jar file (f option)")
+		String file();
 
 	}
 
@@ -434,12 +460,14 @@ public class bnd extends Processor {
 
 		try {
 			Instructions instructions = new Instructions(opts._());
-			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			Collection<String> selected = instructions.select(jar
+					.getResources().keySet(), true);
 
 			for (String path : selected) {
 				if (opts.verbose()) {
 					Resource r = jar.getResource(path);
-					err.printf("%8s %-32s %s%n", r.size(), new Date(r.lastModified()), path);
+					err.printf("%8s %-32s %s%n", r.size(),
+							new Date(r.lastModified()), path);
 				} else
 					err.printf("%s%n", path);
 			}
@@ -458,11 +486,13 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)") interface dooptions
-			extends Options {
-		@Description("The output file") String output();
+	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
+	interface dooptions extends Options {
+		@Description("The output file")
+		String output();
 
-		@Description("Force even when there are errors") boolean force();
+		@Description("Force even when there are errors")
+		boolean force();
 	}
 
 	public void _do(dooptions options) throws Exception {
@@ -481,8 +511,8 @@ public class bnd extends Processor {
 				b.close();
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
-				File file = getFile(path);
-				doPrint(file, MANIFEST);
+				Jar jar = getJar(path);
+				doPrint(jar, MANIFEST);
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
 				doRun(path);
 			else
@@ -641,7 +671,8 @@ public class bnd extends Processor {
 		project.clean();
 	}
 
-	@Arguments(arg = { "header|instruction", "..." }) interface syntaxOptions extends Options {
+	@Arguments(arg = { "header|instruction", "..." })
+	interface syntaxOptions extends Options {
 	}
 
 	public void _syntax(syntaxOptions opts) throws Exception {
@@ -693,7 +724,8 @@ public class bnd extends Processor {
 		File projectDir = file.getParentFile();
 		File workspaceDir = projectDir.getParentFile();
 		if (workspaceDir == null) {
-			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
+			workspaceDir = new File(System.getProperty("user.home")
+					+ File.separator + ".bnd");
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
 
@@ -722,9 +754,11 @@ public class bnd extends Processor {
 	 * @param path
 	 * @throws Exception
 	 */
-	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar") @Arguments(arg = {
-			"bnd|bndrun", "[...]" }) interface packageOptions extends Options {
-		@Description("Where to store the resulting file") String output();
+	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
+	@Arguments(arg = { "bnd|bndrun", "[...]" })
+	interface packageOptions extends Options {
+		@Description("Where to store the resulting file")
+		String output();
 	}
 
 	public void _package(packageOptions opts) throws Exception {
@@ -765,7 +799,8 @@ public class bnd extends Processor {
 
 				Workspace ws = project.getWorkspace();
 				project = new Project(ws, getBase(), file);
-				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
+				pack(project, output, path.replaceAll(".bnd(run)?$", "")
+						+ ".jar");
 			}
 		}
 	}
@@ -774,9 +809,10 @@ public class bnd extends Processor {
 	 * Pack the project (could be a bndrun file) and save it on disk. Report
 	 * errors if they happen.
 	 */
-	static List<String>	ignore	= new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
+	static List<String> ignore = new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
 
-	private void pack(Project project, File output, String path) throws Exception {
+	private void pack(Project project, File output, String path)
+			throws Exception {
 		Collection<? extends Builder> subBuilders = project.getSubBuilders();
 
 		if (subBuilders.size() != 1) {
@@ -796,7 +832,8 @@ public class bnd extends Processor {
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();
 			for (String key : project.getPropertyKeys(true)) {
-				if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
+				if (Character.isUpperCase(key.charAt(0))
+						&& !ignore.contains(key)) {
 					main.putValue(key, project.getProperty(key));
 				}
 			}
@@ -819,7 +856,8 @@ public class bnd extends Processor {
 				out = new File(output, path);
 			jar.write(out);
 		} catch (Exception e) {
-			error("Failed to created executable from project %s to %s", e, project, path);
+			error("Failed to created executable from project %s to %s", e,
+					project, path);
 		}
 		getInfo(project);
 	}
@@ -858,8 +896,8 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
-					c.getFile());
+			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(),
+					v.getWithoutQualifier(), c.getFile());
 		}
 		getInfo(project);
 	}
@@ -947,7 +985,8 @@ public class bnd extends Processor {
 				File file = new File(arg);
 				Jar jar = new Jar(file.getName(), file);
 				try {
-					for (Map.Entry<String, Resource> entry : jar.getResources().entrySet()) {
+					for (Map.Entry<String, Resource> entry : jar.getResources()
+							.entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
@@ -997,7 +1036,8 @@ public class bnd extends Processor {
 			dir = getFile(options.dir());
 
 		if (!dir.isDirectory())
-			error("Eclipse requires a path to a directory: " + dir.getAbsolutePath());
+			error("Eclipse requires a path to a directory: "
+					+ dir.getAbsolutePath());
 
 		if (options._().size() != 0)
 			error("Unnecessary arguments %s", options._());
@@ -1007,9 +1047,11 @@ public class bnd extends Processor {
 
 		File cp = new File(dir, ".classpath");
 		if (!cp.exists()) {
-			error("Cannot find .classpath in project directory: " + dir.getAbsolutePath());
+			error("Cannot find .classpath in project directory: "
+					+ dir.getAbsolutePath());
 		} else {
-			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
+			EclipseClasspath eclipse = new EclipseClasspath(this,
+					dir.getParentFile(), dir);
 			err.println("Classpath    " + eclipse.getClasspath());
 			err.println("Dependents   " + eclipse.getDependents());
 			err.println("Sourcepath   " + eclipse.getSourcepath());
@@ -1021,9 +1063,9 @@ public class bnd extends Processor {
 	/**
 	 * Buildx
 	 */
-	final static int	BUILD_SOURCES	= 1;
-	final static int	BUILD_POM		= 2;
-	final static int	BUILD_FORCE		= 4;
+	final static int BUILD_SOURCES = 1;
+	final static int BUILD_POM = 2;
+	final static int BUILD_FORCE = 4;
 
 	interface buildxOptions extends Options {
 		String output();
@@ -1075,8 +1117,8 @@ public class bnd extends Processor {
 				b.setSources(true);
 
 			if (options.eclipse()) {
-				EclipseClasspath ep = new EclipseClasspath(this, getBase().getParentFile(),
-						getBase());
+				EclipseClasspath ep = new EclipseClasspath(this, getBase()
+						.getParentFile(), getBase());
 
 				b.addClasspath(ep.getClasspath());
 				b.addClasspath(ep.getBootclasspath());
@@ -1113,8 +1155,8 @@ public class bnd extends Processor {
 	// Find the build order
 	// by recursively passing
 	// through the builders.
-	private void prebuild(List<String> set, List<String> order, List<Builder> builders, String s)
-			throws IOException {
+	private void prebuild(List<String> set, List<String> order,
+			List<Builder> builders, String s) throws IOException {
 		if (order.contains(s)) // Already done
 			return;
 
@@ -1175,7 +1217,8 @@ public class bnd extends Processor {
 			args.add("*");
 
 		Instructions instructions = new Instructions(args);
-		Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+		Collection<String> selected = instructions.select(jar.getResources()
+				.keySet(), true);
 		for (String selection : selected) {
 			Resource r = jar.getResource(selection);
 
@@ -1183,10 +1226,12 @@ public class bnd extends Processor {
 				Manifest m = new Manifest(r.openInputStream());
 				printManifest(m);
 			} else if (selection.endsWith(".class")) {
-				ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
+				ClassDumper clsd = new ClassDumper(selection,
+						r.openInputStream());
 				clsd.dump(err);
 			} else {
-				InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
+				InputStreamReader isr = new InputStreamReader(
+						r.openInputStream(), charset);
 				IO.copy(isr, err);
 			}
 		}
@@ -1370,20 +1415,20 @@ public class bnd extends Processor {
 	 * Print out a JAR
 	 */
 
-	final static int	VERIFY		= 1;
+	final static int VERIFY = 1;
 
-	final static int	MANIFEST	= 2;
+	final static int MANIFEST = 2;
 
-	final static int	LIST		= 4;
+	final static int LIST = 4;
 
-	final static int	ECLIPSE		= 8;
-	final static int	IMPEXP		= 16;
-	final static int	USES		= 32;
-	final static int	USEDBY		= 64;
-	final static int	COMPONENT	= 128;
-	final static int	METATYPE	= 256;
+	final static int ECLIPSE = 8;
+	final static int IMPEXP = 16;
+	final static int USES = 32;
+	final static int USEDBY = 64;
+	final static int COMPONENT = 128;
+	final static int METATYPE = 256;
 
-	static final int	HEX			= 0;
+	static final int HEX = 0;
 
 	interface printOptions extends Options {
 		boolean verify();
@@ -1409,11 +1454,6 @@ public class bnd extends Processor {
 
 	public void _print(printOptions options) throws Exception {
 		for (String s : options._()) {
-			File file = getFile(s);
-			if (!file.isFile()) {
-				error("File %s does not exist", file);
-				continue;
-			}
 			int opts = 0;
 			if (options.verify())
 				opts |= VERIFY;
@@ -1445,13 +1485,18 @@ public class bnd extends Processor {
 			if (opts == 0)
 				opts = MANIFEST;
 
-			doPrint(file, opts);
+			Jar jar = getJar(s);
+			try {
+				doPrint(jar, opts);
+			} finally {
+				jar.close();
+			}
 		}
 	}
 
-	private void doPrint(File file, int options) throws ZipException, IOException, Exception {
+	private void doPrint(Jar jar, int options) throws ZipException,
+			IOException, Exception {
 
-		Jar jar = new Jar(file.getName(), file);
 		try {
 			if ((options & VERIFY) != 0) {
 				Verifier verifier = new Verifier(jar);
@@ -1462,7 +1507,7 @@ public class bnd extends Processor {
 			if ((options & MANIFEST) != 0) {
 				Manifest manifest = jar.getManifest();
 				if (manifest == null)
-					warning("JAR has no manifest " + file);
+					warning("JAR has no manifest " + jar);
 				else {
 					err.println("[MANIFEST " + jar.getName() + "]");
 					printManifest(manifest);
@@ -1481,7 +1526,8 @@ public class bnd extends Processor {
 						if (imports.containsKey(p)) {
 							Attrs attrs = imports.get(p);
 							if (attrs.containsKey(VERSION_ATTRIBUTE)) {
-								exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
+								exports.get(p).put("imported-as",
+										attrs.get(VERSION_ATTRIBUTE));
 							}
 						}
 					}
@@ -1518,8 +1564,8 @@ public class bnd extends Processor {
 
 			if ((options & LIST) != 0) {
 				err.println("[LIST]");
-				for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
-						.entrySet()) {
+				for (Map.Entry<String, Map<String, Resource>> entry : jar
+						.getDirectories().entrySet()) {
 					String name = entry.getKey();
 					Map<String, Resource> contents = entry.getValue();
 					err.println(name);
@@ -1538,7 +1584,8 @@ public class bnd extends Processor {
 								String extra = r.getExtra();
 								if (extra != null) {
 
-									err.print(" extra='" + escapeUnicode(extra) + "'");
+									err.print(" extra='" + escapeUnicode(extra)
+											+ "'");
 								}
 							}
 							err.println();
@@ -1602,16 +1649,18 @@ public class bnd extends Processor {
 			return;
 		}
 
-		String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
+		String componentHeader = manifest.getMainAttributes().getValue(
+				Constants.SERVICE_COMPONENT);
 		Parameters clauses = new Parameters(componentHeader);
 		for (String path : clauses.keySet()) {
 			out.println(path);
 
 			Resource r = jar.getResource(path);
 			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r.openInputStream(),
+				InputStreamReader ir = new InputStreamReader(
+						r.openInputStream(), Constants.DEFAULT_CHARSET);
+				OutputStreamWriter or = new OutputStreamWriter(out,
 						Constants.DEFAULT_CHARSET);
-				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
 					IO.copy(ir, or);
 				} finally {
@@ -1639,7 +1688,8 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Map<String, Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
+		Map<String, Resource> map = jar.getDirectories().get(
+				"OSGI-INF/metatype");
 		if (map != null) {
 			for (Map.Entry<String, Resource> entry : map.entrySet()) {
 				out.println(entry.getKey());
@@ -1650,7 +1700,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	<T extends Comparable<?>> void printMultiMap(Map<T, ? extends Collection<?>> map) {
+	<T extends Comparable<?>> void printMultiMap(
+			Map<T, ? extends Collection<?>> map) {
 		SortedList<Object> keys = new SortedList<Object>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
@@ -1739,7 +1790,8 @@ public class bnd extends Processor {
 					c = string.charAt(i++);
 				}
 				if (c != 's') {
-					throw new IllegalArgumentException("Invalid sprintf format:  " + string);
+					throw new IllegalArgumentException(
+							"Invalid sprintf format:  " + string);
 				}
 
 				if (s.length() > width)
@@ -1799,7 +1851,8 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Run OSGi tests and create report") interface runtestsOptions extends Options {
+	@Description("Run OSGi tests and create report")
+	interface runtestsOptions extends Options {
 		String reportdir();
 
 		String title();
@@ -1828,7 +1881,8 @@ public class bnd extends Processor {
 		reportDir.mkdirs();
 
 		if (!reportDir.isDirectory())
-			error("reportdir must be a directory %s (tried to create it ...)", reportDir);
+			error("reportdir must be a directory %s (tried to create it ...)",
+					reportDir);
 
 		if (opts.title() != null)
 			summary.addAttribute("title", opts.title());
@@ -1897,7 +1951,8 @@ public class bnd extends Processor {
 	/**
 	 * Help function to run the tests
 	 */
-	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
+	private int runtTest(File testFile, Workspace ws, File reportDir,
+			Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
 		tmpDir.mkdirs();
 		tmpDir.deleteOnExit();
@@ -1907,11 +1962,12 @@ public class bnd extends Processor {
 		if (!testFile.isFile()) {
 			error("No bnd file: %s", testFile);
 			test.addAttribute("exception", "No bnd file found");
-			throw new FileNotFoundException("No bnd file found for " + testFile.getAbsolutePath());
+			throw new FileNotFoundException("No bnd file found for "
+					+ testFile.getAbsolutePath());
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
-				testFile.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile()
+				.getParentFile(), testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
 
@@ -1920,8 +1976,9 @@ public class bnd extends Processor {
 		getInfo(project, project.toString() + ": ");
 
 		if (!isOk())
-			throw new IllegalStateException("Errors found while creating the bnd test project "
-					+ testFile.getAbsolutePath());
+			throw new IllegalStateException(
+					"Errors found while creating the bnd test project "
+							+ testFile.getAbsolutePath());
 
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
@@ -1995,7 +2052,8 @@ public class bnd extends Processor {
 
 	private void doPerReport(Tag report, File file) throws Exception {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
 			factory.setNamespaceAware(true); // never forget this!
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(file);
@@ -2011,14 +2069,17 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doCoverage(Tag report, Document doc, XPath xpath) throws XPathExpressionException {
-		int bad = Integer.parseInt(xpath.evaluate("count(//method[count(ref)<2])", doc));
+	private void doCoverage(Tag report, Document doc, XPath xpath)
+			throws XPathExpressionException {
+		int bad = Integer.parseInt(xpath.evaluate(
+				"count(//method[count(ref)<2])", doc));
 		int all = Integer.parseInt(xpath.evaluate("count(//method)", doc));
 		report.addAttribute("coverage-bad", bad);
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(Tag report, File file, Document doc, XPath xpath) throws Exception {
+	private void doHtmlReport(Tag report, File file, Document doc, XPath xpath)
+			throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
@@ -2034,8 +2095,10 @@ public class bnd extends Processor {
 		} else {
 			FileWriter out = new FileWriter(html);
 			try {
-				Transformer transformer = fact.newTransformer(new StreamSource(in));
-				transformer.transform(new DOMSource(doc), new StreamResult(out));
+				Transformer transformer = fact.newTransformer(new StreamSource(
+						in));
+				transformer
+						.transform(new DOMSource(doc), new StreamResult(out));
 				trace("Transformed");
 			} finally {
 				in.close();
@@ -2078,10 +2141,13 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Merge a binary jar with its sources. It is possible to specify  source path")//
-	@Arguments(arg = { "jar file", "source file" })//
+	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
+	//
+	@Arguments(arg = { "jar file", "source file" })
+	//
 	interface sourceOptions extends Options {
-		@Description("The output file") String output();
+		@Description("The output file")
+		String output();
 	}
 
 	public void _source(sourceOptions opts) throws Exception {
@@ -2110,7 +2176,8 @@ public class bnd extends Processor {
 			Jar src = new Jar(sourceFile);
 			try {
 				for (String path : src.getResources().keySet())
-					bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+					bin.putResource("OSGI-OPT/src/" + path,
+							src.getResource(path));
 				bin.write(tmp);
 			} finally {
 				src.close();
@@ -2191,11 +2258,14 @@ public class bnd extends Processor {
 	/**
 	 * Convert files
 	 */
-	@Description("Converter to different formats") @Arguments(arg = { "from", "to" }) interface convertOptions
-			extends Options {
-		@Config(description = "Convert a manifest to a properties files") boolean m2p();
+	@Description("Converter to different formats")
+	@Arguments(arg = { "from", "to" })
+	interface convertOptions extends Options {
+		@Config(description = "Convert a manifest to a properties files")
+		boolean m2p();
 
-		@Config(description = "Save as xml") boolean xml();
+		@Config(description = "Save as xml")
+		boolean xml();
 	}
 
 	public void _convert(convertOptions opts) throws IOException {
@@ -2232,17 +2302,23 @@ public class bnd extends Processor {
 	 * 
 	 * bnd select -h Bundle-SymbolicName --where (...) *
 	 */
-	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.") @Arguments(arg = { "..." }) interface selectOptions
-			extends Options {
-		@Description("A simple assertion on a manifest header or an OSGi filter. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted.") String where();
+	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.")
+	@Arguments(arg = { "..." })
+	interface selectOptions extends Options {
+		@Description("A simple assertion on a manifest header or an OSGi filter. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted.")
+		String where();
 
-		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ") Collection<String> header();
+		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ")
+		Collection<String> header();
 
-		@Description("Print the key before the value") boolean key();
+		@Description("Print the key before the value")
+		boolean key();
 
-		@Description("Print the file name before the value") boolean name();
+		@Description("Print the file name before the value")
+		boolean name();
 
-		@Description("Print the file path before the value") boolean path();
+		@Description("Print the file path before the value")
+		boolean path();
 	}
 
 	public void _select(selectOptions opts) throws Exception {
@@ -2284,7 +2360,8 @@ public class bnd extends Processor {
 			}
 
 			Set<Instruction> unused = new HashSet<Instruction>();
-			Collection<String> select = instructions.select(realNames, unused, true);
+			Collection<String> select = instructions.select(realNames, unused,
+					true);
 			for (String h : select) {
 				if (opts.path()) {
 					out.print(jar.getSource().getAbsolutePath() + ":");
@@ -2336,7 +2413,8 @@ public class bnd extends Processor {
 					if (v != null) {
 						v = v.trim();
 						for (String pname : p.keySet()) {
-							System.err.println("Add " + augment + " to " + pname + " v=" + v);
+							System.err.println("Add " + augment + " to "
+									+ pname + " v=" + v);
 							Attrs attrs = p.get(pname);
 							attrs.put(augment, v);
 						}
@@ -2387,7 +2465,7 @@ public class bnd extends Processor {
 			}
 			return null;
 		}
-		
+
 		try {
 			URL url = new URL(s);
 			return new Jar(s, url.openStream());
@@ -2405,43 +2483,52 @@ public class bnd extends Processor {
 	 * @throws IOException
 	 */
 
-	@Description("Show version information about bnd") public interface versionOptions extends
-			Options {
-		@Description("Show licensing, copyright, sha, scm, etc") boolean xtra();
+	@Description("Show version information about bnd")
+	public interface versionOptions extends Options {
+		@Description("Show licensing, copyright, sha, scm, etc")
+		boolean xtra();
 	}
 
 	public void _version(versionOptions o) throws IOException {
-		if ( !o.xtra()) {
+		if (!o.xtra()) {
 			Analyzer a = new Analyzer();
 			out.println(a.getBndVersion());
 			return;
 		}
-		Enumeration<URL> e = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+		Enumeration<URL> e = getClass().getClassLoader().getResources(
+				"META-INF/MANIFEST.MF");
 		while (e.hasMoreElements()) {
 			URL u = e.nextElement();
 
 			Manifest m = new Manifest(u.openStream());
-			String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			String bsn = m.getMainAttributes().getValue(
+					Constants.BUNDLE_SYMBOLICNAME);
 			if (bsn != null && bsn.equals("biz.aQute.bnd")) {
 				Attributes attrs = m.getMainAttributes();
 
-					long lastModified = 0;
-					try {
-						lastModified = Long.parseLong(attrs.getValue("Bnd-LastModified"));
-					} catch (Exception ee) {
-						// Ignore
-					}
-					out.printf("%-40s %s%n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
-					if (lastModified > 0)
-						out.printf("%-40s %s%n", "From", new Date(lastModified));
-					Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
-					for (String l : p.keySet())
-						out.printf("%-40s %s%n", "License", p.get(l).get("description"));
-					out.printf("%-40s %s%n", "Copyright",
-							attrs.getValue(Constants.BUNDLE_COPYRIGHT));
-					out.printf("%-40s %s%n", "Git-SHA", attrs.getValue("Git-SHA"));
-					out.printf("%-40s %s%n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
-					out.printf("%-40s %s%n", "Sources", attrs.getValue("Bundle-SCM"));
+				long lastModified = 0;
+				try {
+					lastModified = Long.parseLong(attrs
+							.getValue("Bnd-LastModified"));
+				} catch (Exception ee) {
+					// Ignore
+				}
+				out.printf("%-40s %s%n", "Version",
+						attrs.getValue(Constants.BUNDLE_VERSION));
+				if (lastModified > 0)
+					out.printf("%-40s %s%n", "From", new Date(lastModified));
+				Parameters p = OSGiHeader.parseHeader(attrs
+						.getValue(Constants.BUNDLE_LICENSE));
+				for (String l : p.keySet())
+					out.printf("%-40s %s%n", "License",
+							p.get(l).get("description"));
+				out.printf("%-40s %s%n", "Copyright",
+						attrs.getValue(Constants.BUNDLE_COPYRIGHT));
+				out.printf("%-40s %s%n", "Git-SHA", attrs.getValue("Git-SHA"));
+				out.printf("%-40s %s%n", "Git-Descriptor",
+						attrs.getValue("Git-Descriptor"));
+				out.printf("%-40s %s%n", "Sources",
+						attrs.getValue("Bundle-SCM"));
 				return;
 			}
 		}
