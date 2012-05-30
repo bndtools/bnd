@@ -14,3 +14,6 @@ Import-Package: org.apache.tools.ant.*;resolution:=optional,\
 Main-Class: 					aQute.bnd.main.bnd
 JPM-Command:					bnd
 Bundle-Version:					${^Bundle-Version}
+
+-namesection: 					*;MD5-Digest='${md5;${@}}';SHA1-Digest='${sha1;${@}}'
+
