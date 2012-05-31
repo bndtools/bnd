@@ -14,7 +14,7 @@ import aQute.lib.base64.*;
  * @author aqute
  * 
  */
-@SuppressWarnings({ "unchecked" }) public class Converter {
+@SuppressWarnings({ "unchecked", "rawtypes" }) public class Converter {
 	boolean	fatal	= true;
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {

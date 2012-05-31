@@ -11,7 +11,7 @@ import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.version.*;
 
-@SuppressWarnings("unchecked") public class ConverterTest extends TestCase {
+@SuppressWarnings({"unchecked","rawtypes"}) public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
 	/**

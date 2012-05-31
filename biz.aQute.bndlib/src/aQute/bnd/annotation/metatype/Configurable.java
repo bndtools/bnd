@@ -4,7 +4,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class Configurable<T> {
+@SuppressWarnings( { "unchecked", "rawtypes" }) public class Configurable<T> {
 	
 	public static <T> T createConfigurable(Class<T> c, Map<?, ?> properties) {
 		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] { c },
@@ -65,7 +65,7 @@ public class Configurable<T> {
 			return convert(method.getGenericReturnType(), o);
 		}
 
-		@SuppressWarnings( { "unchecked" }) public Object convert(Type type, Object o)
+		public Object convert(Type type, Object o)
 				throws Exception {
 			if (type instanceof ParameterizedType) {
 				ParameterizedType pType = (ParameterizedType) type;
@@ -157,7 +157,7 @@ public class Configurable<T> {
 					+ actualType + " value " + o);
 		}
 
-		@SuppressWarnings("unchecked") private Object convert(ParameterizedType pType, Object o) throws InstantiationException,
+		private Object convert(ParameterizedType pType, Object o) throws InstantiationException,
 				IllegalAccessException, Exception {
 			Class<?> resultType = (Class<?>) pType.getRawType();
 			if (Collection.class.isAssignableFrom(resultType)) {

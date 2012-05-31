@@ -459,6 +459,7 @@ public class JSONCodec {
 		r.read(); // skip closing
 	}
 
+	@SuppressWarnings("rawtypes")
 	Class<?> getRawClass(Type type) {
 		if (type instanceof Class)
 			return (Class) type;

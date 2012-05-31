@@ -5,6 +5,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class EnumHandler extends Handler {
+	@SuppressWarnings("rawtypes")
 	final Class				type;
 
 	public EnumHandler(Class<?> type) {

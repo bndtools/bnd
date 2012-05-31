@@ -4,6 +4,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class ObjectHandler extends Handler {
+	@SuppressWarnings("rawtypes")
 	final Class		rawClass;
 	final Field		fields[];
 	final Type		types[];

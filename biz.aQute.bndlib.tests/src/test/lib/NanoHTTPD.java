@@ -68,7 +68,7 @@ import java.io.FileOutputStream;
  * See the end of the source file for distribution license
  * (Modified BSD licence)
  */
-@SuppressWarnings("unchecked") public class NanoHTTPD
+public class NanoHTTPD
 {
 	// ==================================================
 	// API parts
@@ -89,7 +89,7 @@ import java.io.FileOutputStream;
 	{
 		myOut.println( method + " '" + uri + "' " );
 
-		Enumeration e = header.propertyNames();
+		Enumeration< ? > e = header.propertyNames();
 		while ( e.hasMoreElements())
 		{
 			String value = (String)e.nextElement();
@@ -605,7 +605,7 @@ import java.io.FileOutputStream;
 		{
 			int matchcount = 0;
 			int matchbyte = -1;
-			Vector matchbytes = new Vector();
+			Vector<Integer> matchbytes = new Vector<Integer>();
 			for (int i=0; i<b.length; i++)
 			{
 				if (b[i] == boundary[matchcount])
@@ -766,7 +766,7 @@ import java.io.FileOutputStream;
 
 				if ( header != null )
 				{
-					Enumeration e = header.keys();
+					Enumeration<Object> e = header.keys();
 					while ( e.hasMoreElements())
 					{
 						String key = (String)e.nextElement();
@@ -1040,7 +1040,7 @@ import java.io.FileOutputStream;
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
 	 */
-	private static Hashtable theMimeTypes = new Hashtable();
+	private static Hashtable<String, String> theMimeTypes = new Hashtable<String,String>();
 	static
 	{
 		StringTokenizer st = new StringTokenizer(

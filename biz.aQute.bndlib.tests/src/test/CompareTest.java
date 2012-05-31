@@ -76,7 +76,7 @@ public class CompareTest<O extends Serializable> extends TestCase {
 	
 	public A1<Collection<String>[]> a1;
 	
-	<X extends A1> A1<? extends X> bar() { return null; }
+	<Y,X extends A1<Y>> A1<? extends X> bar() { return null; }
 	
 	
 	public void testSimple() throws IOException {
