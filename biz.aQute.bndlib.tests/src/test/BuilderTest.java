@@ -1,10 +1,15 @@
 package test;
 
 import java.io.*;
+import java.security.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 
+import test.genericinterf.a.*;
+
 import aQute.bnd.test.*;
+import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
@@ -13,7 +18,8 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * FELIX-3407 Utterly confusing example that states that 
-	 * generic references are not picked up
+	 * generic references are not picked up. The classes under
+	 * test are in {@link A},{@link B}, and {@link C}. 
 	 */
 	public void testGenericPickup() throws Exception{
 		Builder b = new Builder();
@@ -150,6 +156,60 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	/**
+	 * Test the digests
+	 */
+
+	public void testDigests() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setProperty(Constants.DIGESTS,"MD5, SHA1");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "*");
+		Jar build = b.build();
+		assertOk(b);
+
+		Manifest m = build.getManifest();
+		assertEquals( 261, build.getResources().size());
+		
+		for ( Entry<String, Resource> e : build.getResources().entrySet()) {
+			System.out.println("Path " + e.getKey());
+			
+			Attributes attrs = m.getAttributes(e.getKey());
+			assertNotNull( e.getKey(), attrs);
+			boolean md5=false, sha1=false;
+			
+			for ( Entry<Object, Object> ee : attrs.entrySet()) {
+				String name = ee.getKey().toString().toLowerCase();
+				if ( name.endsWith("-digest")) {
+					String value = ee.getValue().toString().trim();
+					assertNotNull("original digest", value);
+					
+					byte[] original = Base64.decodeBase64(value);
+					assertNotNull("original digest", original);
+					
+					String alg = name.substring(0, name.length()-7);
+					if ( alg.equals("md5"))
+						md5 =true;
+					if ( alg.equals("sha1"))
+						sha1 =true;
+					
+					MessageDigest md = MessageDigest.getInstance(alg);
+					InputStream in = e.getValue().openInputStream();
+					byte[] buffer = new byte[8000];
+					int size = in.read(buffer);
+					while ( size > 0 ) {
+						md.update(buffer,0,size);
+						size = in.read(buffer);
+					}
+					byte calculated[] = md.digest();
+					assertTrue("comparing digests " + e.getKey() + " " + value + " " + Base64.encodeBase64(calculated), Arrays.equals(original, calculated));
+				}
+			}
+			assertTrue("expected md5", md5);
+			assertTrue("expected sha1", sha1);			
+		}
+	}
+
+	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-
 	 * directives in the import/export clauses but strips other ones.
 	 * 
@@ -195,7 +255,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 
 		Set<String> names = b.getJar().getResources().keySet();
-		assertEquals(8, names.size());
+		assertEquals(7, names.size());
 		assertTrue(names.contains("AnnotationWithJSR14.jclass"));
 		assertTrue(names.contains("mandatorynoversion.bnd"));
 		assertTrue(names.contains("mina.bar"));

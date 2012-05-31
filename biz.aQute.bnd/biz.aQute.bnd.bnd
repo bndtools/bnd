@@ -15,5 +15,5 @@ Main-Class: 					aQute.bnd.main.bnd
 JPM-Command:					bnd
 Bundle-Version:					${^Bundle-Version}
 
--namesection: 					*;MD5-Digest='${md5;${@}}';SHA1-Digest='${sha1;${@}}'
+-digests: MD5, SHA1
 

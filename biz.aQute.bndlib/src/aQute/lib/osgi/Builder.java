@@ -119,12 +119,26 @@ public class Builder extends Analyzer {
 		dot.setName(getBsn());
 
 		sign(dot);
-
+		doDigests(dot);
 		doSaveManifest(dot);
 
 		doDiff(dot); // check if need to diff this bundle
 		doBaseline(dot); // check for a baseline
 		return dot;
+	}
+
+	/**
+	 * Check if we need to calculate any checksums.
+	 * 
+	 * @param dot
+	 * @throws Exception
+	 */
+	private void doDigests(Jar dot) throws Exception {
+		Parameters ps = OSGiHeader.parseHeader(getProperty(DIGESTS));
+		if ( ps.isEmpty())
+			return;
+		String[] digests = ps.keySet().toArray( new String[ps.size()]);
+		dot.calcChecksums(digests);
 	}
 
 	/**

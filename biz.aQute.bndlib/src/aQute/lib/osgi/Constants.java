@@ -73,6 +73,7 @@ public interface Constants {
 	String								DEPENDSON									= "-dependson";
 	String								DEPLOY										= "-deploy";
 	String								DEPLOYREPO									= "-deployrepo";
+	String								DIGESTS									= "-digests";
 	String								DONOTCOPY									= "-donotcopy";
 	String								DEBUG										= "-debug";
 	String								EXPORT_CONTENTS								= "-exportcontents";
@@ -143,7 +144,7 @@ public interface Constants {
 			SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,
 			RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE,
 			NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK,
-			RUNTRACE, TESTCONTINUOUS, SNAPSHOT										};
+			RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS										};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
