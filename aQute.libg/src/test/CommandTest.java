@@ -7,6 +7,7 @@ import junit.framework.*;
 import aQute.lib.collections.*;
 import aQute.lib.getopt.*;
 import aQute.lib.justif.*;
+import aQute.libg.command.*;
 import aQute.libg.reporter.*;
 
 public class CommandTest extends TestCase {

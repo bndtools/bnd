@@ -6,15 +6,78 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
 
+import test.CompareTest.B;
+import test.CompareTest.B.C;
 import test.genericinterf.a.*;
-
 import aQute.bnd.test.*;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
+import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 
 public class BuilderTest extends BndTestCase {
+		
+	/**
+	 * Test the Include-Resource facility to generate
+	 * resources on the fly. This is a a case
+	 * where multiple resources and up in a single
+	 * combined resource.
+	 */
+	
+	public void testOnTheFlyMerge() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
+		b.setProperty("-resourceonly","true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("count");
+		assertNotNull(r);
+		
+		String s = IO.collect(r.openInputStream());
+		assertEquals("YES_1\nYES_2\nYES_3\n", s);
+	}
+	
+	/**
+	 * Test the Include-Resource facility to generate
+	 * resources on the fly. This is a simple case
+	 * of one resource.
+	 */
+	
+	public void testOnTheFlySingle() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("test/ls;cmd='ls /etc | grep hosts'");
+		b.setProperty("-resourceonly","true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("test/ls");
+		assertNotNull(r);
+		String s = IO.collect(r.openInputStream());
+		assertTrue(s.contains("hosts"));
+	}
+	
+	/**
+	 * Test the Include-Resource facility to generate
+	 * resources on the fly. This is a a case
+	 * where multiple resources and up in a single
+	 * combined resource.
+	 */
+	
+	public void testOnTheFlyMultiple() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("count/${@};for='1,2,3';cmd='echo YES_${@}'");
+		b.setProperty("-resourceonly","true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		assertNotNull(jar.getResource("count/1"));
+		Resource r = jar.getResource("count/2");
+		assertNotNull(jar.getResource("count/3"));
+		
+		String s = IO.collect(r.openInputStream());
+		assertEquals("YES_2\n", s);
+	}
+	
+	
 
 	/**
 	 * FELIX-3407 Utterly confusing example that states that 

@@ -2,6 +2,7 @@ package aQute.libg.command;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 import aQute.libg.reporter.*;
@@ -11,11 +12,20 @@ public class Command {
 	boolean				trace;
 	Reporter			reporter;
 	List<String>		arguments	= new ArrayList<String>();
+	Map<String, String>	variables	= new LinkedHashMap<String, String>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
 	static Timer		timer		= new Timer();
 	Process				process;
 	volatile boolean	timedout;
+	String				fullCommand;
+
+	public Command(String fullCommand) {
+		this.fullCommand = fullCommand;
+	}
+
+	public Command() {
+	}
 
 	public int execute(Appendable stdout, Appendable stderr) throws Exception {
 		return execute((InputStream) null, stdout, stderr);
@@ -33,8 +43,16 @@ public class Command {
 		}
 
 		String args[] = arguments.toArray(new String[arguments.size()]);
+		String vars[] = new String[variables.size()];
+		int i = 0;
+		for (Entry<String, String> s : variables.entrySet()) {
+			vars[i++] = s.getKey() + "=" + s.getValue();
+		}
 
-		process = Runtime.getRuntime().exec(args, null, cwd);
+		if (fullCommand == null)
+			process = Runtime.getRuntime().exec(args, vars.length == 0 ? null : vars, cwd);
+		else
+			process = Runtime.getRuntime().exec(fullCommand, vars.length == 0 ? null : vars, cwd);
 
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
@@ -47,7 +65,7 @@ public class Command {
 		TimerTask timer = null;
 		OutputStream stdin = process.getOutputStream();
 		final InputStreamHandler handler = in != null ? new InputStreamHandler(in, stdin) : null;
-		
+
 		if (timeout != 0) {
 			timer = new TimerTask() {
 				public void run() {
@@ -65,18 +83,20 @@ public class Command {
 			InputStream err = process.getErrorStream();
 			try {
 				new Collector(out, stdout).start();
-				new Collector(err, stdout).start();
+				new Collector(err, stderr).start();
 				if (handler != null)
 					handler.start();
 
 				result = process.waitFor();
 				if (reporter != null)
 					reporter.trace("exited process.waitFor, %s", result);
-				
-			} finally {
+
+			}
+			finally {
 				err.close();
 			}
-		} finally {
+		}
+		finally {
 			out.close();
 			if (timer != null)
 				timer.cancel();
@@ -88,7 +108,7 @@ public class Command {
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s", arguments, result,
 					stdout, stderr);
 
-		if( timedout )
+		if (timedout)
 			return Integer.MIN_VALUE;
 		byte exitValue = (byte) process.exitValue();
 		return exitValue;
@@ -130,7 +150,7 @@ public class Command {
 		final InputStream	in;
 		final Appendable	sb;
 
-		public Collector(InputStream inputStream, Appendable sb) {
+		Collector(InputStream inputStream, Appendable sb) {
 			this.in = inputStream;
 			this.sb = sb;
 			setDaemon(true);
@@ -143,12 +163,17 @@ public class Command {
 					sb.append((char) c);
 					c = in.read();
 				}
-			} catch (Exception e) {
+			}
+			catch( IOException e) {
+				// We assume the socket is closed
+			}
+			catch (Exception e) {
 				try {
 					sb.append("\n**************************************\n");
 					sb.append(e.toString());
 					sb.append("\n**************************************\n");
-				} catch (IOException e1) {
+				}
+				catch (IOException e1) {
 				}
 				if (reporter != null) {
 					reporter.trace("cmd exec: %s", e);
@@ -161,7 +186,7 @@ public class Command {
 		final InputStream	in;
 		final OutputStream	stdin;
 
-		public InputStreamHandler(InputStream in, OutputStream stdin) {
+		InputStreamHandler(InputStream in, OutputStream stdin) {
 			this.stdin = stdin;
 			this.in = in;
 			setDaemon(true);
@@ -175,18 +200,48 @@ public class Command {
 					stdin.flush();
 					c = in.read();
 				}
-			} catch (InterruptedIOException e) {
+			}
+			catch (InterruptedIOException e) {
 				// Ignore here
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// Who cares?
-			} finally {
+			}
+			finally {
 				try {
 					stdin.close();
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					// Who cares?
 				}
 			}
 		}
+	}
+
+	public Command var(String name, String value) {
+		variables.put(name, value);
+		return this;
+	}
+
+	public Command arg(String... args) {
+		add(args);
+		return this;
+	}
+
+	public Command full(String full) {
+		fullCommand = full;
+		return this;
+	}
+
+	public void inherit() {
+		ProcessBuilder pb = new ProcessBuilder();
+		for (Entry<String, String> e : pb.environment().entrySet()) {
+			var(e.getKey(), e.getValue());
+		}
+	}
+
+	public String var(String name) {
+		return variables.get(name);
 	}
 
 	public String toString() {
