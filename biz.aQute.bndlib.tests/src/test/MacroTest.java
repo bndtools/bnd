@@ -9,6 +9,48 @@ import aQute.lib.osgi.*;
 
 public class MacroTest extends TestCase {
 	
+	
+	/**
+	 * Test replacement of ./ with cwd
+	 */
+	
+	public void testCurrentWorkingDirectory() {
+		Processor top = new Processor();
+		top.setProperty("cwd.1", "./"); // empty
+		top.setProperty("cwd.2", " ./"); // empty
+		top.setProperty("cwd.3", "./ "); // empty
+		top.setProperty("cwd.4", " ./ "); // empty
+		top.setProperty("cwd.5", "|./|"); // empty
+		top.setProperty("cwd.6", "/.//"); // empty
+		top.setProperty("cwd.7", "."); // empty
+		top.setProperty("cwd.8", " . "); // empty
+		top.setProperty("cwd.9", " . /"); // empty
+		top.setProperty("cwd.10", " ."); // empty
+		top.setProperty("cwd.11", "| ./|"); // empty
+		top.setProperty("cwd.12", "|\t./|"); // empty
+		top.setProperty("cwd.13", "|\r./|"); // empty
+		top.setProperty("cwd.14", "|\n./|"); // empty
+		
+		String cwd = top.getBase().getAbsolutePath() +"/";
+		
+		assertEquals( " . ", top.getProperty("cwd.8"));
+		assertEquals( cwd, top.getProperty("cwd.1"));
+		assertEquals( " " + cwd, top.getProperty("cwd.2"));
+		assertEquals( cwd+" ", top.getProperty("cwd.3"));
+		assertEquals( " " + cwd + " ", top.getProperty("cwd.4"));
+		assertEquals( "|./|", top.getProperty("cwd.5"));
+		assertEquals( "/.//", top.getProperty("cwd.6"));
+		assertEquals( ".", top.getProperty("cwd.7"));
+		assertEquals( " . /", top.getProperty("cwd.9"));
+		assertEquals( " .", top.getProperty("cwd.10"));
+		assertEquals( "| "+cwd+"|", top.getProperty("cwd.11"));
+		assertEquals( "|\t"+cwd+"|", top.getProperty("cwd.12"));
+		assertEquals( "|\r"+cwd+"|", top.getProperty("cwd.13"));
+		assertEquals( "|\n"+cwd+"|", top.getProperty("cwd.14"));
+	}	
+	
+	
+	
 	/**
 	 * Test if $if accepts isdir
 	 */
@@ -227,7 +269,7 @@ public class MacroTest extends TestCase {
 		String a = macro.process("${lsr;" + new File("src/test").getAbsolutePath() + ";*.java}");
 		assertTrue(a.contains("MacroTest.java"));
 		assertTrue(a.contains("ManifestTest.java"));
-		assertFalse(a.contains(".classpath"));
+		assertTrue(a.contains(".classpath"));
 		assertFalse(a.contains("src/test/MacroTest.java"));
 		assertFalse(a.contains("src/test/ManifestTest.java"));
 
