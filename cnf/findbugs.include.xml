@@ -3,30 +3,237 @@
        <Package name="aQute.libg.glob" />
      </Match>
      <Match>
-       <Package name="test" />
+       <Package name="bndtools" />
      </Match>
      <Match>
-       <Package name="~bndtools(|\..+)" />
+       <Package name="bndtools.api" />
+     </Match>
+     <Match>
+       <Package name="bndtools.bindex" />
+     </Match>
+     <Match>
+       <Package name="bndtools.bndplugins.repo" />
+     </Match>
+     <Match>
+       <Package name="bndtools.bndplugins.repo.git" />
+     </Match>
+     <Match>
+       <Package name="bndtools.builder" />
+     </Match>
+     <Match>
+       <Package name="bndtools.classpath" />
+     </Match>
+     <Match>
+       <Package name="bndtools.classpath.ui" />
+     </Match>
+     <Match>
+       <Package name="bndtools.diff" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.common" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.completion" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.components" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.contents" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.exports" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.imports" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.model" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.model.conversions" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.pages" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.pkgpatterns" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.project" />
+     </Match>
+     <Match>
+       <Package name="bndtools.editor.workspace" />
+     </Match>
+     <Match>
+       <Package name="bndtools.internal.libs" />
+     </Match>
+     <Match>
+       <Package name="bndtools.internal.pkgselection" />
+     </Match>
+     <Match>
+       <Package name="bndtools.internal.testcaseselection" />
+     </Match>
+     <Match>
+       <Package name="bndtools.jareditor.internal" />
+     </Match>
+     <Match>
+       <Package name="bndtools.javamodel" />
+     </Match>
+     <Match>
+       <Package name="bndtools.launch" />
+     </Match>
+     <Match>
+       <Package name="bndtools.launch.ui" />
+     </Match>
+     <Match>
+       <Package name="bndtools.model.clauses" />
+     </Match>
+     <Match>
+       <Package name="bndtools.model.importanalysis" />
+     </Match>
+     <Match>
+       <Package name="bndtools.model.obr" />
+     </Match>
+     <Match>
+       <Package name="bndtools.model.repo" />
+     </Match>
+     <Match>
+       <Package name="bndtools.perspective" />
+     </Match>
+     <Match>
+       <Package name="bndtools.preferences" />
+     </Match>
+     <Match>
+       <Package name="bndtools.preferences.ui" />
+     </Match>
+     <Match>
+       <Package name="bndtools.refactor" />
+     </Match>
+     <Match>
+       <Package name="bndtools.release" />
+     </Match>
+     <Match>
+       <Package name="bndtools.release.api" />
+     </Match>
+     <Match>
+       <Package name="bndtools.release.nl" />
+     </Match>
+     <Match>
+       <Package name="bndtools.services" />
+     </Match>
+     <Match>
+       <Package name="bndtools.shared" />
+     </Match>
+     <Match>
+       <Package name="bndtools.tasks" />
+     </Match>
+     <Match>
+       <Package name="bndtools.templates" />
+     </Match>
+     <Match>
+       <Package name="bndtools.types" />
+     </Match>
+     <Match>
+       <Package name="bndtools.utils" />
+     </Match>
+     <Match>
+       <Package name="bndtools.views" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.bndfile" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.obr" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.project" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.repo" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.shared" />
+     </Match>
+     <Match>
+       <Package name="bndtools.wizards.workspace" />
      </Match>
      <Match>
        <Package name="org.apache.felix.bundlerepository.impl" />
      </Match>
      <Match>
-       <Package name="~org\.bndtools(|\..+)" />
+       <Package name="org.bndtools.build.api" />
      </Match>
      <Match>
-       <Package name="~org\.osgi\.impl\.bundle\.bindex(|\..+)" />
+       <Package name="org.bndtools.core.actions" />
      </Match>
      <Match>
-       <Package name="org.osgi.service.bindex" />
+       <Package name="org.bndtools.core.build.validate" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.jobs.newproject" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.obr" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.obr.model" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.repository" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.ui" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.collections" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.dnd" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.filters" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.jface" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.parse" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.parse.properties" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.swt" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.workspace" />
+     </Match>
+     <Match>
+       <Package name="org.osgi.impl.bundle.bindex" />
+     </Match>
+     <Match>
+       <Package name="org.osgi.impl.bundle.bindex.ant" />
      </Match>
      <Match>
        <Package name="org.osgi.impl.bundle.obr.resource" />
      </Match>
      <Match>
-       <Package name="~test\.bndtools(|\..+)" />
+       <Package name="org.osgi.service.bindex" />
      </Match>
      <Match>
-       <Package name="~test\.org\.bndtools(|\..+)" />
+       <Package name="test" />
+     </Match>
+     <Match>
+       <Package name="test.bndtools.bndplugins.repo.git" />
+     </Match>
+     <Match>
+       <Package name="test.bndtools.diff" />
+     </Match>
+     <Match>
+       <Package name="test.bndtools.diff.util" />
      </Match>
 </FindBugsFilter>
