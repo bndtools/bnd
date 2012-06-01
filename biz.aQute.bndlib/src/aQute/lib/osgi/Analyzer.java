@@ -80,8 +80,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Specifically for Maven
 	 * 
-	 * @param properties
-	 *            the properties
+	 * @param properties the properties
 	 */
 
 	public static Properties getManifest(File dirOrJar) throws Exception {
@@ -99,7 +98,8 @@ public class Analyzer extends Processor {
 				result.put(name.toString(), m.getMainAttributes().getValue(name));
 			}
 			return result;
-		} finally {
+		}
+		finally {
 			analyzer.close();
 		}
 	}
@@ -244,15 +244,17 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Discussed with BJ and decided to kill the .
+	 * 
 	 * @param referredAndExported
 	 */
 	void removeDynamicImports(Packages referredAndExported) {
-		
-//		// Remove any matching a dynamic import package instruction
-//		Instructions dynamicImports = new Instructions(getDynamicImportPackage());
-//		Collection<PackageRef> dynamic = dynamicImports.select(
-//				referredAndExported.keySet(), false);
-//		referredAndExported.keySet().removeAll(dynamic);
+
+		// // Remove any matching a dynamic import package instruction
+		// Instructions dynamicImports = new
+		// Instructions(getDynamicImportPackage());
+		// Collection<PackageRef> dynamic = dynamicImports.select(
+		// referredAndExported.keySet(), false);
+		// referredAndExported.keySet().removeAll(dynamic);
 	}
 
 	protected Jar getExtra() throws Exception {
@@ -270,7 +272,8 @@ public class Analyzer extends Processor {
 					classspace.clear();
 					analyzeBundleClasspath();
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				error("Analyzer Plugin %s failed %s", plugin, e);
 			}
 		}
@@ -320,7 +323,8 @@ public class Analyzer extends Processor {
 		// Remove all the Java packages from the imports
 		if (!imports.isEmpty()) {
 			main.putValue(IMPORT_PACKAGE, printClauses(imports));
-		} else {
+		}
+		else {
 			main.remove(IMPORT_PACKAGE);
 		}
 
@@ -340,7 +344,7 @@ public class Analyzer extends Processor {
 
 		doNamesection(dot, manifest);
 
-		for (Enumeration<?> h = getProperties().propertyNames(); h.hasMoreElements();) {
+		for (Enumeration< ? > h = getProperties().propertyNames(); h.hasMoreElements();) {
 			String header = (String) h.nextElement();
 			if (header.trim().length() == 0) {
 				warning("Empty property set with value: " + getProperties().getProperty(header));
@@ -370,12 +374,14 @@ public class Analyzer extends Processor {
 				if (value != null && main.getValue(header) == null) {
 					if (value.trim().length() == 0)
 						main.remove(header);
-					else if (value.trim().equals(EMPTY_HEADER))
-						main.putValue(header, "");
 					else
-						main.putValue(header, value);
+						if (value.trim().equals(EMPTY_HEADER))
+							main.putValue(header, "");
+						else
+							main.putValue(header, value);
 				}
-			} else {
+			}
+			else {
 				// TODO should we report?
 			}
 		}
@@ -479,7 +485,8 @@ public class Analyzer extends Processor {
 							try {
 								String processed = getReplacer().process(property.getValue());
 								attrs.putValue(property.getKey(), processed);
-							} finally {
+							}
+							finally {
 								unsetProperty("@");
 							}
 						}
@@ -525,7 +532,8 @@ public class Analyzer extends Processor {
 				manifest.getEntries().put(path, attrs);
 			}
 			attrs.putValue(name, getProperty(header));
-		} else {
+		}
+		else {
 			warning("Invalid header (starts with @ but does not seem to be for the Name section): %s",
 					header);
 		}
@@ -546,11 +554,13 @@ public class Analyzer extends Processor {
 			String projectName = getBase().getName();
 			if (value == null || value.equals("bnd.bnd")) {
 				value = projectName;
-			} else if (value.endsWith(".bnd")) {
-				value = value.substring(0, value.length() - 4);
-				if (!value.startsWith(getBase().getName()))
-					value = projectName + "." + value;
 			}
+			else
+				if (value.endsWith(".bnd")) {
+					value = value.substring(0, value.length() - 4);
+					if (!value.startsWith(getBase().getName()))
+						value = projectName + "." + value;
+				}
 		}
 
 		if (value == null)
@@ -569,8 +579,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Calculate an export header solely based on the contents of a JAR file
 	 * 
-	 * @param bundle
-	 *            The jar file to analyze
+	 * @param bundle The jar file to analyze
 	 * @return
 	 */
 	public String calculateExportsFromContents(Jar bundle) {
@@ -652,7 +661,8 @@ public class Analyzer extends Processor {
 		String time = getBndInfo("modified", "0");
 		try {
 			return Long.parseLong(time);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 		}
 		return 0;
 	}
@@ -667,9 +677,11 @@ public class Analyzer extends Processor {
 						bndInfo.load(in);
 						in.close();
 					}
-				} catch (IOException ioe) {
+				}
+				catch (IOException ioe) {
 					warning("Could not read bnd.info in " + Analyzer.class.getPackage() + ioe);
-				} finally {
+				}
+				finally {
 					IO.close(in);
 				}
 			}
@@ -681,8 +693,7 @@ public class Analyzer extends Processor {
 	 * Merge the existing manifest with the instructions but do not override
 	 * existing properties.
 	 * 
-	 * @param manifest
-	 *            The manifest to merge with
+	 * @param manifest The manifest to merge with
 	 * @throws IOException
 	 */
 	public void mergeManifest(Manifest manifest) throws IOException {
@@ -718,7 +729,8 @@ public class Analyzer extends Processor {
 			if (classpath[i].exists()) {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
-			} else {
+			}
+			else {
 				error("Missing file on classpath: %s", classpath[i]);
 			}
 		}
@@ -787,10 +799,8 @@ public class Analyzer extends Processor {
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
 	 * the classpath name part of their files.
 	 * 
-	 * @param name
-	 *            URL or filename relative to the base
-	 * @param from
-	 *            Message identifying the caller for errors
+	 * @param name URL or filename relative to the base
+	 * @param from Message identifying the caller for errors
 	 * @return null or a Jar with the contents for the name
 	 */
 	Jar getJarFromName(String name, String from) {
@@ -803,7 +813,8 @@ public class Analyzer extends Processor {
 				Jar jar = new Jar(file);
 				addClose(jar);
 				return jar;
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				error("Exception in parsing jar file for " + from + ": " + name + " " + e);
 			}
 		// It is not a file ...
@@ -821,7 +832,8 @@ public class Analyzer extends Processor {
 			EmbeddedResource.build(jar, in, lastModified);
 			in.close();
 			return jar;
-		} catch (IOException ee) {
+		}
+		catch (IOException ee) {
 			// Check if we have files on the classpath
 			// that have the right name, allows us to specify those
 			// names instead of the full path.
@@ -879,8 +891,7 @@ public class Analyzer extends Processor {
 	 * not using an invalid case. We do allow this to set headers that should
 	 * not be processed by us but should be used by the framework.
 	 * 
-	 * @param properties
-	 *            Properties to verify.
+	 * @param properties Properties to verify.
 	 */
 
 	void verifyManifestHeadersCase(Properties properties) {
@@ -1021,7 +1032,8 @@ public class Analyzer extends Processor {
 					}
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			warning("Erroneous Manifest for " + jar + " " + e);
 		}
 	}
@@ -1052,7 +1064,8 @@ public class Analyzer extends Processor {
 				if (exportVersion == null) {
 					// TODO Should check if the source is from a bundle.
 
-				} else {
+				}
+				else {
 
 					//
 					// Version Policy - Import version substitution. We
@@ -1074,10 +1087,12 @@ public class Analyzer extends Processor {
 						if (importRange != null) {
 							importRange = cleanupVersion(importRange);
 							importRange = getReplacer().process(importRange);
-						} else
+						}
+						else
 							importRange = getVersionPolicy(provider);
 
-					} finally {
+					}
+					finally {
 						unsetProperty("@");
 					}
 					importAttributes.put(VERSION_ATTRIBUTE, importRange);
@@ -1104,7 +1119,8 @@ public class Analyzer extends Processor {
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
 				if (result == null)
 					noimports.add(packageRef);
-			} finally {
+			}
+			finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 		}
@@ -1178,7 +1194,8 @@ public class Analyzer extends Processor {
 				fixupAttributes(attributes);
 				removeAttributes(attributes);
 
-			} finally {
+			}
+			finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 		}
@@ -1229,17 +1246,16 @@ public class Analyzer extends Processor {
 	/**
 	 * Calculate a version from a version policy.
 	 * 
-	 * @param version
-	 *            The actual exported version
-	 * @param impl
-	 *            true for implementations and false for clients
+	 * @param version The actual exported version
+	 * @param impl true for implementations and false for clients
 	 */
 
 	String calculateVersionRange(String version, boolean impl) {
 		setProperty("@", version);
 		try {
 			return getVersionPolicy(impl);
-		} finally {
+		}
+		finally {
 			unsetProperty("@");
 		}
 	}
@@ -1261,7 +1277,8 @@ public class Analyzer extends Processor {
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
 				doUses(packageRef, exports, uses, imports);
-			} finally {
+			}
+			finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 
@@ -1311,7 +1328,8 @@ public class Analyzer extends Processor {
 				setProperty(CURRENT_USES, sb.toString());
 				override = getReplacer().process(override);
 				unsetProperty(CURRENT_USES);
-			} else
+			}
+			else
 				// This is for backward compatibility 0.0.287
 				// can be deprecated over time
 				override = override.replaceAll(USES_USES, Matcher.quoteReplacement(sb.toString()))
@@ -1356,8 +1374,8 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	void setPackageInfo(PackageRef packageRef, Resource r,
-			Packages classpathExports) throws Exception {
+	void setPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports)
+			throws Exception {
 		if (r == null)
 			return;
 
@@ -1365,14 +1383,16 @@ public class Analyzer extends Processor {
 		InputStream in = r.openInputStream();
 		try {
 			p.load(in);
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 		Attrs map = classpathExports.get(packageRef);
 		if (map == null) {
 			classpathExports.put(packageRef, map = new Attrs());
 		}
-		for (@SuppressWarnings("unchecked") Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+		for (@SuppressWarnings("unchecked")
+		Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 			String key = t.nextElement();
 			String value = map.get(key);
 			if (value == null) {
@@ -1408,7 +1428,8 @@ public class Analyzer extends Processor {
 					if (dir != null) {
 						out.printf("                                      %-30s %d%n", name,
 								dir.size());
-					} else {
+					}
+					else {
 						out.printf("                                      %-30s <<empty>>%n", name);
 					}
 				}
@@ -1454,11 +1475,11 @@ public class Analyzer extends Processor {
 		String replace = null;
 
 		switch (args.length) {
-		case 3:
-			replace = args[2];
-			//$FALL-THROUGH$
-		case 2:
-			regexp = args[1];
+			case 3 :
+				replace = args[2];
+				//$FALL-THROUGH$
+			case 2 :
+				regexp = args[1];
 		}
 		StringBuilder sb = new StringBuilder();
 		String del = "";
@@ -1519,17 +1540,19 @@ public class Analyzer extends Processor {
 		classpath.add(jar);
 	}
 
-	public void addClasspath(Collection<?> jars) throws IOException {
+	public void addClasspath(Collection< ? > jars) throws IOException {
 		for (Object jar : jars) {
 			if (jar instanceof Jar)
 				addClasspath((Jar) jar);
-			else if (jar instanceof File)
-				addClasspath((File) jar);
-			else if (jar instanceof String)
-				addClasspath(getFile((String) jar));
 			else
-				error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String",
-						jar);
+				if (jar instanceof File)
+					addClasspath((File) jar);
+				else
+					if (jar instanceof String)
+						addClasspath(getFile((String) jar));
+					else
+						error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String",
+								jar);
 		}
 	}
 
@@ -1554,7 +1577,8 @@ public class Analyzer extends Processor {
 
 		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true);
-		} else {
+		}
+		else {
 			boolean okToIncludeDirs = true;
 
 			for (String path : bcp.keySet()) {
@@ -1585,10 +1609,12 @@ public class Analyzer extends Processor {
 						addClose(jar);
 						EmbeddedResource.build(jar, resource);
 						analyzeJar(jar, "", true);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						warning("Invalid bundle classpath entry: " + path + " " + e);
 					}
-				} else {
+				}
+				else {
 					if (dot.getDirectories().containsKey(path)) {
 						// if directories are used, we should not have dot as we
 						// would have the classes in these directories on the
@@ -1597,7 +1623,8 @@ public class Analyzer extends Processor {
 							warning("Bundle-ClassPath uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", true);
-					} else {
+					}
+					else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory " + path);
 					}
@@ -1663,14 +1690,17 @@ public class Analyzer extends Processor {
 								// package-info can contain an Export annotation
 								info = new Attrs();
 								parsePackageInfoClass(clazz, info);
-							} else {
+							}
+							else {
 								// Otherwise we just parse it simply
 								clazz.parseClassFile();
 							}
-						} finally {
+						}
+						finally {
 							in.close();
 						}
-					} catch (Throwable e) {
+					}
+					catch (Throwable e) {
 						error("Invalid class file %s (%s)", e, relativePath, e);
 						e.printStackTrace();
 						continue next;
@@ -1682,7 +1712,8 @@ public class Analyzer extends Processor {
 						// warning
 						if (okToIncludeDirs) // assume already reported
 							mismatched.put(clazz.getAbsolutePath(), clazz);
-					} else {
+					}
+					else {
 						classspace.put(clazz.getClassName(), clazz);
 						PackageRef packageRef = clazz.getClassName().getPackageRef();
 
@@ -1723,7 +1754,8 @@ public class Analyzer extends Processor {
 
 	private void parsePackageInfoClass(final Clazz clazz, final Attrs info) throws Exception {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
-			@Override public void annotation(Annotation a) {
+			@Override
+			public void annotation(Annotation a) {
 				String name = a.name.getFQN();
 				if (aQute.bnd.annotation.Version.class.getName().equals(name)) {
 
@@ -1738,7 +1770,8 @@ public class Analyzer extends Processor {
 								error("Export annotation in %s has invalid version info: %s",
 										clazz, version);
 						}
-					} else {
+					}
+					else {
 						// Verify this matches with packageinfo
 						String presentVersion = info.get(VERSION_ATTRIBUTE);
 						try {
@@ -1748,75 +1781,78 @@ public class Analyzer extends Processor {
 								error("Version from annotation for %s differs with packageinfo or Manifest",
 										clazz.getClassName().getFQN());
 							}
-						} catch (Exception e) {
+						}
+						catch (Exception e) {
 							// Ignore
 						}
 					}
-				} else if (name.equals(Export.class.getName())) {
-
-					// Check mandatory attributes
-					Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz,
-							getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-						info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
-					}
-
-					// Check optional attributes
-					attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-					}
-
-					// Check Included classes
-					Object[] included = a.get(Export.INCLUDE);
-					if (included != null && included.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : included) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
-							if (m.matches()) {
-								sb.append(del);
-								sb.append(m.group(2));
-								del = ",";
-							}
-						}
-						info.put(INCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Excluded classes
-					Object[] excluded = a.get(Export.EXCLUDE);
-					if (excluded != null && excluded.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : excluded) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
-							if (m.matches()) {
-								sb.append(del);
-								sb.append(m.group(2));
-								del = ",";
-							}
-						}
-						info.put(EXCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Uses
-					Object[] uses = a.get(Export.USES);
-					if (uses != null && uses.length > 0) {
-						String old = info.get(USES_DIRECTIVE);
-						if (old == null)
-							old = "";
-						StringBuilder sb = new StringBuilder(old);
-						String del = sb.length() == 0 ? "" : ",";
-
-						for (Object use : uses) {
-							sb.append(del);
-							sb.append(use);
-							del = ",";
-						}
-						info.put(USES_DIRECTIVE, sb.toString());
-					}
 				}
+				else
+					if (name.equals(Export.class.getName())) {
+
+						// Check mandatory attributes
+						Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz,
+								getReplacer());
+						if (!attrs.isEmpty()) {
+							info.putAll(attrs);
+							info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
+						}
+
+						// Check optional attributes
+						attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+						if (!attrs.isEmpty()) {
+							info.putAll(attrs);
+						}
+
+						// Check Included classes
+						Object[] included = a.get(Export.INCLUDE);
+						if (included != null && included.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							String del = "";
+							for (Object i : included) {
+								Matcher m = OBJECT_REFERENCE.matcher((String) i);
+								if (m.matches()) {
+									sb.append(del);
+									sb.append(m.group(2));
+									del = ",";
+								}
+							}
+							info.put(INCLUDE_DIRECTIVE, sb.toString());
+						}
+
+						// Check Excluded classes
+						Object[] excluded = a.get(Export.EXCLUDE);
+						if (excluded != null && excluded.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							String del = "";
+							for (Object i : excluded) {
+								Matcher m = OBJECT_REFERENCE.matcher((String) i);
+								if (m.matches()) {
+									sb.append(del);
+									sb.append(m.group(2));
+									del = ",";
+								}
+							}
+							info.put(EXCLUDE_DIRECTIVE, sb.toString());
+						}
+
+						// Check Uses
+						Object[] uses = a.get(Export.USES);
+						if (uses != null && uses.length > 0) {
+							String old = info.get(USES_DIRECTIVE);
+							if (old == null)
+								old = "";
+							StringBuilder sb = new StringBuilder(old);
+							String del = sb.length() == 0 ? "" : ",";
+
+							for (Object use : uses) {
+								sb.append(del);
+								sb.append(use);
+								del = ",";
+							}
+							info.put(USES_DIRECTIVE, sb.toString());
+						}
+					}
 			}
 
 		});
@@ -1856,7 +1892,8 @@ public class Analyzer extends Processor {
 			String last = m.group(3);
 			String suffix = m.group(4);
 			return prefix + cleanupVersion(first) + "," + cleanupVersion(last) + suffix;
-		} else {
+		}
+		else {
 			m = fuzzyVersion.matcher(version);
 			if (m.matches()) {
 				StringBuilder result = new StringBuilder();
@@ -1877,14 +1914,18 @@ public class Analyzer extends Processor {
 								result.append(".");
 								cleanupModifier(result, qualifier);
 							}
-						} else if (qualifier != null) {
-							result.append(".0.");
+						}
+						else
+							if (qualifier != null) {
+								result.append(".0.");
+								cleanupModifier(result, qualifier);
+							}
+					}
+					else
+						if (qualifier != null) {
+							result.append(".0.0.");
 							cleanupModifier(result, qualifier);
 						}
-					} else if (qualifier != null) {
-						result.append(".0.0.");
-						cleanupModifier(result, qualifier);
-					}
 					return result.toString();
 				}
 			}
@@ -1918,7 +1959,8 @@ public class Analyzer extends Processor {
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
-	@SuppressWarnings("deprecation") public String getVersionPolicy(boolean implemented) {
+	@SuppressWarnings("deprecation")
+	public String getVersionPolicy(boolean implemented) {
 		if (implemented) {
 			String s = getProperty(PROVIDER_POLICY);
 			if (s != null)
@@ -1929,7 +1971,8 @@ public class Analyzer extends Processor {
 				return s;
 
 			return getProperty(VERSIONPOLICY, DEFAULT_PROVIDER_POLICY);
-		} else {
+		}
+		else {
 			String s = getProperty(CONSUMER_POLICY);
 			if (s != null)
 				return s;
@@ -1982,10 +2025,12 @@ public class Analyzer extends Processor {
 			String typeName = args[i];
 			if (typeName.equalsIgnoreCase("extending"))
 				typeName = "extends";
-			else if (typeName.equalsIgnoreCase("importing"))
-				typeName = "imports";
-			else if (typeName.equalsIgnoreCase("implementing"))
-				typeName = "implements";
+			else
+				if (typeName.equalsIgnoreCase("importing"))
+					typeName = "imports";
+				else
+					if (typeName.equalsIgnoreCase("implementing"))
+						typeName = "implements";
 
 			Clazz.QUERY type = Clazz.QUERY.valueOf(typeName.toUpperCase());
 
@@ -2036,8 +2081,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Locate a resource on the class path.
 	 * 
-	 * @param path
-	 *            Path of the reosurce
+	 * @param path Path of the reosurce
 	 * @return A resource or <code>null</code>
 	 */
 	public Resource findResource(String path) {
@@ -2123,7 +2167,8 @@ public class Analyzer extends Processor {
 				if (f.match(map))
 					continue;
 				error("%s fails %s", REQUIRE_BND, require.get(filter));
-			} catch (Exception t) {
+			}
+			catch (Exception t) {
 				error("%s with value %s throws exception", t, REQUIRE_BND, require);
 			}
 		}
@@ -2137,7 +2182,7 @@ public class Analyzer extends Processor {
 
 	public String _md5(String args[]) throws Exception {
 		Macro.verifyCommand(args, _md5Help,
-				new Pattern[] { null, null, Pattern.compile("base64|hex") }, 2, 3);
+				new Pattern[] {null, null, Pattern.compile("base64|hex")}, 2, 3);
 
 		Digester<MD5> digester = MD5.getDigester();
 		Resource r = dot.getResource(args[1]);
@@ -2160,7 +2205,7 @@ public class Analyzer extends Processor {
 
 	public String _sha1(String args[]) throws Exception {
 		Macro.verifyCommand(args, _sha1Help,
-				new Pattern[] { null, null, Pattern.compile("base64|hex") }, 2, 3);
+				new Pattern[] {null, null, Pattern.compile("base64|hex")}, 2, 3);
 		Digester<SHA1> digester = SHA1.getDigester();
 		Resource r = dot.getResource(args[1]);
 		if (r == null)
@@ -2219,10 +2264,8 @@ public class Analyzer extends Processor {
 	 * Enough rope to hang the average developer I would say.
 	 * 
 	 * 
-	 * @param instructions
-	 *            the instructions with patterns.
-	 * @param source
-	 *            the actual found packages, contains no duplicates
+	 * @param instructions the instructions with patterns.
+	 * @param source the actual found packages, contains no duplicates
 	 * 
 	 * @return Only the packages that were filtered by the given instructions
 	 */
@@ -2231,7 +2274,7 @@ public class Analyzer extends Processor {
 		Packages result = new Packages();
 		List<PackageRef> refs = new ArrayList<PackageRef>(source.keySet());
 		Collections.sort(refs);
-		
+
 		List<Instruction> filters = new ArrayList<Instruction>(instructions.keySet());
 		if (nomatch == null)
 			nomatch = Create.set();
@@ -2336,8 +2379,7 @@ public class Analyzer extends Processor {
 	 * Untitled-[n]
 	 * </pre>
 	 * 
-	 * @param output
-	 *            may be null, otherwise a file path relative to base
+	 * @param output may be null, otherwise a file path relative to base
 	 */
 	public File getOutputFile(String output) {
 
@@ -2352,7 +2394,8 @@ public class Analyzer extends Processor {
 				outputDir = outputFile;
 			else
 				return outputFile;
-		} else
+		}
+		else
 			outputDir = getBase();
 
 		if (getBundleSymbolicName() != null) {
@@ -2370,7 +2413,8 @@ public class Analyzer extends Processor {
 			return new File(outputDir, outputName);
 		}
 
-		error("Cannot establish an output name from %s, nor bsn, nor source file name, using Untitled");
+		error("Cannot establish an output name from %s, nor bsn, nor source file name, using Untitled",
+				output);
 		int n = 0;
 		File f = getFile(outputDir, "Untitled");
 		while (f.isFile()) {
@@ -2384,11 +2428,9 @@ public class Analyzer extends Processor {
 	 * source file has the same path as the output. It will also only save if
 	 * the file was modified or the force flag is true
 	 * 
-	 * @param output
-	 *            the output file, if null {@link #getOutputFile(String)} is
-	 *            used.
-	 * @param force
-	 *            if it needs to be overwritten
+	 * @param output the output file, if null {@link #getOutputFile(String)} is
+	 *        used.
+	 * @param force if it needs to be overwritten
 	 * @throws Exception
 	 */
 
@@ -2399,23 +2441,33 @@ public class Analyzer extends Processor {
 		Jar jar = getJar();
 		File source = jar.getSource();
 
+		trace("check for modified build=%s file=%s, diff=%s", jar.lastModified(),
+				output.lastModified(), jar.lastModified() - output.lastModified());
+
 		if (!output.exists() || output.lastModified() <= jar.lastModified() || force) {
 			output.getParentFile().mkdirs();
 			if (source != null && output.getCanonicalPath().equals(source.getCanonicalPath())) {
 				File bak = new File(source.getParentFile(), source.getName() + ".bak");
 				if (!source.renameTo(bak)) {
 					error("Could not create backup file %s", bak);
-				} else
+				}
+				else
 					source.delete();
 			}
 			try {
+				trace("Saving jar to %s", output);
 				getJar().write(output);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
+				output.delete();
 				error("Cannot write JAR file to %s due to %s", e, output, e.getMessage());
 			}
 			return true;
-		} else
+		}
+		else {
+			trace("Not modified %s", output);
 			return false;
+		}
 	}
 
 	/**
