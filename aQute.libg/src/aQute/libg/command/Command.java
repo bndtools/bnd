@@ -15,7 +15,7 @@ public class Command {
 	Map<String, String>	variables	= new LinkedHashMap<String, String>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
-	static Timer		timer		= new Timer();
+	static Timer		timer		= new Timer(Command.class.getName(), true);
 	Process				process;
 	volatile boolean	timedout;
 	String				fullCommand;
@@ -54,6 +54,7 @@ public class Command {
 		else
 			process = Runtime.getRuntime().exec(fullCommand, vars.length == 0 ? null : vars, cwd);
 
+		
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
 			public void run() {
