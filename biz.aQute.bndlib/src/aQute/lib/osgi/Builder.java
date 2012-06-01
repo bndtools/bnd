@@ -54,6 +54,7 @@ public class Builder extends Analyzer {
 	}
 
 	public Jar build() throws Exception {
+		trace("build");
 		init();
 		if (isTrue(getProperty(NOBUNDLES)))
 			return null;
@@ -141,6 +142,7 @@ public class Builder extends Analyzer {
 		Parameters ps = OSGiHeader.parseHeader(getProperty(DIGESTS));
 		if (ps.isEmpty())
 			return;
+		trace("digests %s", ps);
 		String[] digests = ps.keySet().toArray(new String[ps.size()]);
 		dot.calcChecksums(digests);
 	}
@@ -171,6 +173,7 @@ public class Builder extends Analyzer {
 		if (wab == null && wablib == null)
 			return dot;
 
+		trace("wab %s %s", wab, wablib);
 		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
 		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
@@ -869,9 +872,9 @@ public class Builder extends Analyzer {
 
 		if (!destination.contains("${@}")) {
 			cr = new CombinedResource();
-			jar.putResource(destination, cr);
 		}
-
+		trace("last modified requires %s", lastModified);
+		
 		for (String item : items) {
 			setProperty("@", item);
 			try {
@@ -880,7 +883,7 @@ public class Builder extends Analyzer {
 				File file = getFile(item);
 
 				Resource r = new CommandResource(command, this, Math.max(lastModified,
-						file.lastModified()));
+						file.exists() ? file.lastModified():0L));
 
 				if (preprocess)
 					r = new PreprocessResource(this, r);
@@ -894,6 +897,11 @@ public class Builder extends Analyzer {
 				unsetProperty("@");
 			}
 		}
+		
+		// Add last so the correct modification date is used
+		// to update the modified time.
+		if ( cr != null)
+			jar.putResource(destination, cr);
 	}
 
 	private String doResourceDirectory(Jar jar, Map<String, String> extra, boolean preprocess,

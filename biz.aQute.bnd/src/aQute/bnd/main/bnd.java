@@ -499,14 +499,21 @@ public class bnd extends Processor {
 		for (String path : options._()) {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				Builder b = new Builder();
+				b.setTrace(isTrace());
+				b.setPedantic(isPedantic());
+				
 				File f = getFile(path);
 				b.setProperties(f);
 				b.build();
 
 				File out = b.getOutputFile(options.output());
-				getInfo(b, f.getName());
+				getInfo(b, f.getName()+": ");
 				if (isOk()) {
 					b.save(out, options.force());
+				}
+				getInfo(b, f.getName()+": "); // pickup any save errors
+				if (!isOk()) {
+					out.delete();
 				}
 				b.close();
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
