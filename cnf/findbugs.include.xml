@@ -9,18 +9,24 @@
        <Package name="~bndtools(|\..+)" />
      </Match>
      <Match>
-       <Package name="~org\.apache\.felix\.bundlerepository\.impl(|\..+)" />
+       <Package name="org.apache.felix.bundlerepository.impl" />
      </Match>
      <Match>
        <Package name="~org\.bndtools(|\..+)" />
      </Match>
      <Match>
-       <Package name="~org\.osgi\.impl\.bundle(|\..+)" />
+       <Package name="~org\.osgi\.impl\.bundle\.bindex(|\..+)" />
      </Match>
      <Match>
-       <Package name="~org\.osgi\.service\.bindex(|\..+)" />
+       <Package name="org.osgi.service.bindex" />
+     </Match>
+     <Match>
+       <Package name="org.osgi.impl.bundle.obr.resource" />
      </Match>
      <Match>
        <Package name="~test\.bndtools(|\..+)" />
+     </Match>
+     <Match>
+       <Package name="~test\.org\.bndtools(|\..+)" />
      </Match>
 </FindBugsFilter>
