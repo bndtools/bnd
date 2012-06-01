@@ -16,52 +16,6 @@ import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	@SuppressWarnings("unchecked") public class MESSAGE<T extends MESSAGE<T>> {
-		String	file;
-		String	header;
-		String	clause;
-		int		line;
-		int		code;
-
-		public T file(String file) {
-			this.file = file;
-			return (T) this;
-		}
-
-		public T header(String header) {
-			this.header = header;
-			return (T) this;
-		}
-
-		public T clause(String clause) {
-			this.clause = clause;
-			return (T) this;
-		}
-
-		public T line(int line) {
-			this.line = line;
-			return (T) this;
-		}
-
-		public T code(int code) {
-			this.code = code;
-			return (T) this;
-		}
-	}
-
-	public class WARNING extends MESSAGE<WARNING> {
-
-	}
-
-	public class ERROR extends MESSAGE<ERROR> {
-		Throwable	throwable;
-
-		ERROR exception(Throwable t) {
-			this.throwable = t;
-			return this;
-		}
-
-	}
 
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
