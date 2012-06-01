@@ -37,25 +37,27 @@ public class CommandResource extends WriteResource {
 		StringBuilder errors = new StringBuilder();
 		StringBuilder stdout = new StringBuilder();
 		try {
+			domain.trace("executing command %s", command);
 			Command cmd = new Command("sh -l");
 			cmd.inherit();
 			String oldpath = cmd.var("PATH");
 			
-			String path = domain.getProperty("PATH");
+			String path = domain.getProperty("-PATH");
 			if (path != null) {
 				path = path.replaceAll("\\s*,\\s*",File.pathSeparator);
-				path.replaceAll("\\$\\{@\\}", oldpath);
+				path = path.replaceAll("\\$\\{@\\}", oldpath);
 				cmd.var("PATH", path);
+				domain.trace("PATH: %s", path);
 			}
 			OutputStreamWriter osw = new OutputStreamWriter(out);
 			int result = cmd.execute(command,stdout, errors);
 			osw.append(stdout);
 			osw.flush();
 			if ( result != 0) {
-				domain.error("Failed to create resource from system command %s, error %s: %s", command, result, errors);
+				domain.error("executing command failed %s %s", command, stdout + "\n" + errors);
 			}
 		} catch( Exception e) {
-			domain.error("Failed to create resource from system command %s, error %s: %s", command, e.getMessage(), errors);
+			domain.error("executing command failed %s %s", command, e.getMessage());
 		}
 	}
 
