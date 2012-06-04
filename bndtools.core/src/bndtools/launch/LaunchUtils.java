@@ -71,13 +71,10 @@ public final class LaunchUtils {
             File runFile = targetResource.getLocation().toFile();
             File bndbnd = new File(runFile.getParentFile(), Project.BNDFILE);
             try {
-                if (bndbnd.isFile()) {
-                    Project parent = new Project(Central.getWorkspace(), projectDir, bndbnd);
-                    result = new Project(Central.getWorkspace(), projectDir, runFile);
+                Project parent = new Project(Central.getWorkspace(), projectDir, bndbnd);
+                result = new Project(Central.getWorkspace(), projectDir, runFile);
+                if (bndbnd.isFile())
                     result.setParent(parent);
-                } else {
-                    result = new Project(Central.getWorkspace(), projectDir, runFile);
-                }
             } catch (Exception e) {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(), project.getName()), e));
             }
