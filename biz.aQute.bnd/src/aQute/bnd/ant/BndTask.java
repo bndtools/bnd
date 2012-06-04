@@ -155,7 +155,10 @@ public class BndTask extends BaseTask {
 			
 			project.action(command);
 
-			if (report(project))
+			for ( Project p : ws.getCurrentProjects())
+				ws.getInfo(p, p +":");
+			
+			if (report(ws))
 				throw new BuildException("Command " + command + " failed");
 		} catch (Throwable e) {
 			if (exceptions)
