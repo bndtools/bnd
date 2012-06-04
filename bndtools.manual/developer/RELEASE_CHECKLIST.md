@@ -5,7 +5,7 @@ Update Versions
 ---------------
 
 1.	Update `base-version` in `cnf/build.bnd`.
-2.	Update version in `bndtools.build/feature/feature.xml`
+2.	Update versionss in `bndtools.build/feature/main/feature.xml` AND `../jarviewer/feature.xml`.
 3.	Update version in `bndtools.build/feature/category.xml`
 
 Git Tag
