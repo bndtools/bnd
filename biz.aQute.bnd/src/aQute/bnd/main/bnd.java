@@ -1905,6 +1905,7 @@ public class bnd extends Processor {
 		boolean hadOne = false;
 		try {
 			for (String arg : opts._()) {
+				trace("will run test %s", arg);
 				File f = getFile(arg);
 				errors += runtTest(f, ws, reportDir, summary);
 				hadOne = true;
@@ -1969,8 +1970,9 @@ public class bnd extends Processor {
 		if (!testFile.isFile()) {
 			error("No bnd file: %s", testFile);
 			test.addAttribute("exception", "No bnd file found");
-			throw new FileNotFoundException("No bnd file found for "
-					+ testFile.getAbsolutePath());
+			error( "No bnd file found for %s"
+					, testFile.getAbsolutePath());
+			return 1;
 		}
 
 		Project project = new Project(ws, testFile.getAbsoluteFile()
@@ -1980,12 +1982,11 @@ public class bnd extends Processor {
 
 		ProjectTester tester = project.getProjectTester();
 
-		getInfo(project, project.toString() + ": ");
 
-		if (!isOk())
-			throw new IllegalStateException(
-					"Errors found while creating the bnd test project "
-							+ testFile.getAbsolutePath());
+		if (!project.isOk()) {			
+			getInfo(project, project.toString() + ": " + testFile.getName() + ":");
+			return 1; // Indicate failure but do not abort
+		}
 
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
@@ -2040,12 +2041,13 @@ public class bnd extends Processor {
 					return errors;
 				} else {
 					test.addAttribute("failed", "unknown reason");
-					return 1;
+					return errors;
 				}
 			}
 		} catch (Exception e) {
 			test.addAttribute("failed", e);
-			throw e;
+			error("Exception in run %s", e);
+			return 1;
 		} finally {
 			long duration = System.currentTimeMillis() - start;
 			test.addAttribute("duration", (duration + 500) / 1000);
