@@ -4,23 +4,13 @@
 
    <extension point="bndtools.core.cnfTemplates">
       <template
+         id="default"
          name="Default Configuration"
          doc="templateDocs/DefaultConfig.xml"
          paths="templates/cnfs/default"
          priority="15"
-         managed="ext,plugins"
-      />
-      <template
-         name="Standard Configuration"
-         doc="templateDocs/standardConfig.xml"
-         paths="templates/cnfs/shared,templates/cnfs/standard"
-         priority="10"
-      />
-      <template
-         name="Lightweight Configuration"
-         doc="templateDocs/lightweightConfig.xml"
-         paths="templates/cnfs/shared,templates/cnfs/lightweight"
-         priority="5"
+         managed="ext/.*,plugins/.*,build-template.xml"
+         version="0"
       />
    </extension>
 
@@ -40,32 +30,6 @@
    
    <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
-   
-      <!--
-      <plugin
-         class="aQute.lib.repository.FixedIndexedRepo"
-         rank="15"
-         icon="icons/database.png"
-         name="Indexed Repository (Fixed Content)"
-         path="${build}/repo/biz.aQute.repository/biz.aQute.repository-0.0.0.jar">
-         <property name="name" type="string" description="Name of the repository"/>
-         <property name="locations" type="string" description="Index locations (comma-separated list of URLs)."/>
-         <property name="phase" type="string" description="Resolution Phase (build, runtime or any)"/>
-      </plugin>
-      
-      <plugin
-         class="aQute.lib.repository.LocalIndexedRepo"
-         rank="15"
-         icon="icons/database.png"
-         name="Indexed Repository with Local Storage"
-         path="${build}/repo/biz.aQute.repository/biz.aQute.repository-0.0.0.jar">
-         <property name="name" type="string" description="Name of the repository"/>
-         <property name="local" type="string" description="Local directory path"/>
-         <property name="phase" type="string" description="Resolution Phase (build, runtime or any)"/>
-         <property name="pretty" type="boolean" description="Use pretty-printed XML index"/>
-      </plugin>
-      -->
-      
       <plugin
          class="org.osgi.impl.bundle.bindex.BundleIndexerImpl"
          icon="icons/cog.png"
