@@ -3,8 +3,6 @@ repo:         ${workspace}/../repo
 # Eclipse Repo
 eclipse-version:  3.5.2
 eclipse-repo:     ${build}/eclipse-${eclipse-version}/repository.xml
-#eclipse-version:  3.7.1
-#eclipse-repo:     /Users/njbartlett/Eclipse/Bndtools-IndigoSR1/eclipse
 
 -pluginpath: ${workspace}/cnf/repo/biz.aQute.repository/biz.aQute.repository-1.0.0.jar
 common-plugins: aQute.lib.deployer.obr.OBR;locations='file:${eclipse-repo}';name=Eclipse-${eclipse-version}

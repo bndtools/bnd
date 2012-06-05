@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 
 import aQute.bnd.build.Project;
@@ -34,7 +35,7 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
     private InputStream initialContents = null;
 
 	public NewBndFileWizardPage(String pageName, IStructuredSelection selection) {
-		super(pageName, selection);
+		super(pageName, selection != null ? selection : StructuredSelection.EMPTY);
 		setTitle(Messages.NewBndFileWizardPage_title);
 	}
 
