@@ -52,6 +52,11 @@ public interface Constants {
 	String							CREATED_BY									= "Created-By";
 	String							TOOL										= "Tool";
 	String							TESTCASES									= "Test-Cases";
+        /**
+         * @deprecated Use {@link Constants#TESTCASES}.
+         */
+        @Deprecated
+        String                                                  TESTSUITES                                                                      = "Test-Suites";
 	String							SIGNATURE_TEST								= "-signaturetest";
 
 	String							headers[]									= {
