@@ -124,6 +124,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         this.removeItemTool = createRemoveItemTool(toolbar);
     }
 
+    @SuppressWarnings("static-method")
     protected IBaseLabelProvider getLabelProvider() {
         return new VersionedClauseLabelProvider();
     }
@@ -312,6 +313,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         return false;
     }
 
+    @SuppressWarnings("static-method")
     protected int getTableHeightHint() {
 	    return SWT.DEFAULT;
 	}

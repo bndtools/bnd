@@ -65,6 +65,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 	 * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
 	 * @param monitor
 	 */
+    @SuppressWarnings("static-method")
 	protected BndEditModel generateBndModel(IProgressMonitor monitor) {
 	    return new BndEditModel();
 	}
@@ -73,6 +74,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * Allows for an IProjectTemplate to modify the new Bnd project
      * @param monitor
      */
+    @SuppressWarnings("static-method")
     protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
         return new BndProject(project);
     }

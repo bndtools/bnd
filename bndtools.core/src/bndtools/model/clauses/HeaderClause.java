@@ -111,6 +111,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
         }
     }
 
+    @SuppressWarnings("static-method")
     protected boolean newlinesBetweenAttributes() {
         return false;
     }
