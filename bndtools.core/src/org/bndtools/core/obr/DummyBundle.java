@@ -62,15 +62,15 @@ public class DummyBundle implements Bundle {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static boolean copy(Attributes from, @SuppressWarnings("rawtypes") Dictionary to, String name) {
-        String value = from.getValue(name);
-        if (value != null) {
-            to.put(name, value);
-            return true;
-        }
-        return false;
-    }
+//    @SuppressWarnings("unchecked")
+//    private static boolean copy(Attributes from, @SuppressWarnings("rawtypes") Dictionary to, String name) {
+//        String value = from.getValue(name);
+//        if (value != null) {
+//            to.put(name, value);
+//            return true;
+//        }
+//        return false;
+//    }
 
     public Enumeration findEntries(String arg0, String arg1, boolean arg2) {
         if (DEBUG) System.out.println("=== findEntries");

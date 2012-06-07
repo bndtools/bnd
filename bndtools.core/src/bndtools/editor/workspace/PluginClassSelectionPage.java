@@ -122,15 +122,15 @@ public class PluginClassSelectionPage extends WizardPage {
         propSupport.firePropertyChange("selectedElement", old, selectedElement);
     }
     
-    private void updateDescription() {
-        String description = null;
-        if (selectedElement != null)
-            description = selectedElement.getValue();
-        
-        if (description == null)
-            description = "";
-        txtDescription.setText(description);
-    }
+//    private void updateDescription() {
+//        String description = null;
+//        if (selectedElement != null)
+//            description = selectedElement.getValue();
+//
+//        if (description == null)
+//            description = "";
+//        txtDescription.setText(description);
+//    }
 
     private void validate() {
         String warning = null;

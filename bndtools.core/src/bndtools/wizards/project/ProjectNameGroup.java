@@ -61,11 +61,6 @@ public class ProjectNameGroup {
         return projectName;
     }
 
-    private void updateUI() {
-        if (txtProjectName != null && !txtProjectName.isDisposed())
-            txtProjectName.setText(projectName);
-    }
-
     public void addPropertyChangeListener(PropertyChangeListener var0) {
         propSupport.addPropertyChangeListener(var0);
     }
