@@ -198,7 +198,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         return args;
     }
     @SuppressWarnings("deprecation")
-    protected boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
+    protected static boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
         boolean trace = configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
         String logLevelStr = configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, (String) null);
         if (logLevelStr != null) {
@@ -210,7 +210,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         return trace;
     }
 
-    protected MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {
+    protected static MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, message, null);
 
         for (String error : errors) {

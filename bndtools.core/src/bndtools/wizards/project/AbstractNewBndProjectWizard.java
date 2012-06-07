@@ -116,7 +116,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
     }
 
-    protected IFile importResource(IProject project, String fullPath, URL url, IProgressMonitor monitor) throws CoreException {
+    protected static IFile importResource(IProject project, String fullPath, URL url, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
 
         IFile p = project.getFile(fullPath);

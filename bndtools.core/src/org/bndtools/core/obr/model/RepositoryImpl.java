@@ -137,7 +137,7 @@ public class RepositoryImpl implements Repository
      * Default setter method when setting parsed data from the XML file,
      * which currently ignores everything.
      **/
-    protected Object put(Object key, Object value)
+    protected static Object put(Object key, Object value)
     {
         // Ignore everything for now.
         return null;

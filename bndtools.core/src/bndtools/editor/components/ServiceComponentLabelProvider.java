@@ -47,7 +47,7 @@ public class ServiceComponentLabelProvider extends LabelProvider {
         return result;
 	}
 
-	protected String toPattern(Object element) {
+	protected static String toPattern(Object element) {
 		String pattern;
 		if(element instanceof String) {
 			pattern = (String) element;
