@@ -35,7 +35,6 @@ import org.osgi.framework.*;
 
 public class ResolverImpl implements Resolver
 {
-	private static class MARKER { }
     private final BundleContext m_context;
     private final Logger m_logger;
     private final Repository[] m_repositories;
