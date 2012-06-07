@@ -227,7 +227,7 @@ public class Plugin extends AbstractUIPlugin {
             }
         });
     }
-    void async(Runnable run) {
+    static void async(Runnable run) {
         if (Display.getCurrent() == null) {
             Display.getDefault().asyncExec(run);
         } else

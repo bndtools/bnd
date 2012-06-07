@@ -218,7 +218,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
     }
 
-    URLConnector getConnector() throws Exception {
+    static URLConnector getConnector() throws Exception {
         URLConnector connector = Central.getWorkspace().getPlugin(URLConnector.class);
         if (connector == null) {
             connector = new SimpleURLConnector();

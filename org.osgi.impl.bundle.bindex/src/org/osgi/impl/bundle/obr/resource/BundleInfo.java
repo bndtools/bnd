@@ -167,7 +167,7 @@ public class BundleInfo {
 			resource.setSource(toURL(location, source));
 	}
 
-	URL toURL(URL location, String source) {
+	static URL toURL(URL location, String source) {
 		try {
 			return new URL(location, source);
 		} catch (Exception e) {
@@ -337,7 +337,7 @@ public class BundleInfo {
 			resource.addRequirement(r);
 	}
 
-	String createServiceFilter(ManifestEntry pack) {
+	static String createServiceFilter(ManifestEntry pack) {
 		StringBuffer filter = new StringBuffer();
 		filter.append("(service=");
 		filter.append(pack.getName());
@@ -345,7 +345,7 @@ public class BundleInfo {
 		return filter.toString();
 	}
 
-	void createImportFilter(RequirementImpl req, String name, ManifestEntry pack) {
+	static void createImportFilter(RequirementImpl req, String name, ManifestEntry pack) {
 		StringBuffer filter = new StringBuffer();
 		filter.append("(&(");
 		filter.append(name);
@@ -411,7 +411,7 @@ public class BundleInfo {
 		}
 	}
 
-	Set<String> doImportPackageAttributes(RequirementImpl req, StringBuffer filter,
+	static Set<String> doImportPackageAttributes(RequirementImpl req, StringBuffer filter,
 			Map<String, String> attributes) {
 		HashSet<String> set = new HashSet<String>();
 
@@ -474,13 +474,13 @@ public class BundleInfo {
 			resource.addCapability(c);
 	}
 
-	CapabilityImpl createServiceCapability(ManifestEntry pack) {
+	static CapabilityImpl createServiceCapability(ManifestEntry pack) {
 		CapabilityImpl capability = new CapabilityImpl("service");
 		capability.addProperty("service", pack.getName());
 		return capability;
 	}
 
-	CapabilityImpl createCapability(String name, ManifestEntry pack) {
+	static CapabilityImpl createCapability(String name, ManifestEntry pack) {
 		CapabilityImpl capability = new CapabilityImpl(name);
 		capability.addProperty(name, pack.getName());
 		capability.addProperty("version", pack.getVersion());

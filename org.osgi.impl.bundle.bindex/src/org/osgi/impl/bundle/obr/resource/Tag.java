@@ -243,7 +243,7 @@ public class Tag {
 	 * Convenience method to print a string nicely and does character conversion
 	 * to entities.
 	 */
-	void formatted(PrintWriter pw, int left, int width, String s) {
+	static void formatted(PrintWriter pw, int left, int width, String s) {
 		int pos = width + 1;
 		s = s.trim();
 
@@ -279,7 +279,7 @@ public class Tag {
 	/**
 	 * Escape a string, do entity conversion.
 	 */
-	String escape(String s) {
+	static String escape(String s) {
 		if  ( s == null )
 			return "?null?";
 		
@@ -307,7 +307,7 @@ public class Tag {
 	/**
 	 * Make spaces.
 	 */
-	void spaces(PrintWriter pw, int n) {
+	static void spaces(PrintWriter pw, int n) {
 		while (n-- > 0)
 			pw.print(' ');
 	}

@@ -276,7 +276,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         btnMoveDown.setEnabled(enable);
     }
 
-    boolean isAvailableRepo(Object repoObj) {
+    static boolean isAvailableRepo(Object repoObj) {
         if (repoObj instanceof OBRIndexProvider) {
             return ((OBRIndexProvider) repoObj).getSupportedModes().contains(OBRResolutionMode.runtime);
         }

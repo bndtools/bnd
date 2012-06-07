@@ -172,7 +172,7 @@ public class AnalyseBundleResolutionJob extends Job {
 			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd analysis failed", e));
 		}
 	}
-	void mergeCapabilities(Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
+	static void mergeCapabilities(Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
 		if (jar == null)
 		    return;
@@ -242,7 +242,7 @@ public class AnalyseBundleResolutionJob extends Job {
         return result;
     }
 
-    void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy,
+    static void mergeRequirements(Map<String, List<ImportPackage>> imports, Map<String, List<ExportPackage>> exports, MultiMap<String, String> usedBy,
 	        Map<String, List<RequiredBundle>> requiredBundles, Map<String, Set<Version>> bundleVersions, Builder builder) throws Exception {
 		Jar jar = builder.getJar();
 		if (jar == null)

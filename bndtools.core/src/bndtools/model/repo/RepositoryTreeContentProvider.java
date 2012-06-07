@@ -154,7 +154,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    ProjectBundle[] getProjectBundles(Project project) {
+    static ProjectBundle[] getProjectBundles(Project project) {
         ProjectBundle[] result = null;
         try {
             Collection<? extends Builder> builders = project.getSubBuilders();
@@ -171,7 +171,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
+    static RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
         RepositoryBundleVersion[] result = null;
 
         List<Version> versions = null;
@@ -190,7 +190,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    RepositoryBundle[] getRepositoryBundles(RepositoryPlugin repo) {
+    static RepositoryBundle[] getRepositoryBundles(RepositoryPlugin repo) {
         RepositoryBundle[] result = null;
 
         List<String> bsns = null;

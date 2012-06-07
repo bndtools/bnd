@@ -554,7 +554,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return built.length > 0;
     }
 
-    List<IValidator> loadValidators() {
+    static List<IValidator> loadValidators() {
         List<IValidator> validators = null;
         IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "validators");
         if (validatorElems != null && validatorElems.length > 0) {

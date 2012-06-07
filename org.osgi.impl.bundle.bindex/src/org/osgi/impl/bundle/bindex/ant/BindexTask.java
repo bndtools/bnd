@@ -194,7 +194,7 @@ public class BindexTask extends Task {
 
 	}
 
-	String getName(ResourceImpl impl) {
+	static String getName(ResourceImpl impl) {
 		String s = impl.getSymbolicName();
 		if (s != null)
 			return s;

@@ -182,7 +182,7 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
 		}
 	}
 
-	String formatAttribs(Map<String, String> attribs) {
+	static String formatAttribs(Map<String, String> attribs) {
 	    StringBuilder builder = new StringBuilder();
 	    boolean first = true;
 	    for (Entry<String,String> attribEntry : attribs.entrySet()) {

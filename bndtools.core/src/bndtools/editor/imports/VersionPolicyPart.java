@@ -226,7 +226,7 @@ public class VersionPolicyPart extends SectionPart implements
 		btnCustomize.setSelection(policy != null);
 	}
 	
-	VersionPolicy createDefaultVersionPolicy() {
+	static VersionPolicy createDefaultVersionPolicy() {
 		return new VersionPolicy(LowerVersionMatchType.Minor, UpperVersionMatchType.NextMajor, false);
 	}
 	

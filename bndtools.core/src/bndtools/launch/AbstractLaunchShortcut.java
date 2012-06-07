@@ -164,7 +164,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         return wc;
     }
 
-    IProject getProject(ISelection selection) {
+    static IProject getProject(ISelection selection) {
         if(selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
             if(element instanceof IResource)
@@ -178,7 +178,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         return null;
     }
 
-    IProject getProject(IEditorPart editorPart) {
+    static IProject getProject(IEditorPart editorPart) {
         IResource resource = ResourceUtil.getResource(editorPart);
         return resource != null
             ? resource.getProject()

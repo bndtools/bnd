@@ -77,11 +77,11 @@ public class BndHover implements ITextHover {
         return null;
     }
 
-    boolean isWordChar(char c) {
+    static boolean isWordChar(char c) {
         return Character.isJavaIdentifierPart(c) || c == '-' || c == '.';
     }
 
-    String wrap(String text, int width) {
+    static String wrap(String text, int width) {
         StringBuilder sb = new StringBuilder();
         int n = 0;
         int r = 0;

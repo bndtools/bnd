@@ -41,7 +41,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         model.setRunVMArgs("-ea");
     }
 
-	VersionedClause createBundleRef(String bsn, String version) {
+	static VersionedClause createBundleRef(String bsn, String version) {
 		Attrs attribs = new Attrs();
 		if (version != null)
 			attribs.put(Constants.VERSION_ATTRIBUTE, version);

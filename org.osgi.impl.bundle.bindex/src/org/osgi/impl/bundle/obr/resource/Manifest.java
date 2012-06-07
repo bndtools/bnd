@@ -139,15 +139,15 @@ public class Manifest extends Hashtable<Object, Object> {
 		return 0;
 	}
 
-	void error(String msg) throws IOException {
+	static void error(String msg) throws IOException {
 		System.err.println("Reading manifest: " + msg);
 	}
 
-	void warning(String msg) throws IOException {
+	static void warning(String msg) throws IOException {
 		System.err.println("Reading manifest: " + msg);
 	}
 
-	StreamTokenizer getStreamTokenizer(String line) {
+	static StreamTokenizer getStreamTokenizer(String line) {
 		StreamTokenizer st = new StreamTokenizer(new StringReader(line));
 		st.resetSyntax();
 		st.wordChars('a', 'z');
@@ -160,7 +160,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return st;
 	}
 
-	String word(StreamTokenizer st) throws IOException {
+	static String word(StreamTokenizer st) throws IOException {
 		switch (st.nextToken()) {
 			case '"' :
 			case StreamTokenizer.TT_WORD :
@@ -171,7 +171,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return null;
 	}
 
-	Parameter getParameter(StreamTokenizer st) throws IOException {
+	static Parameter getParameter(StreamTokenizer st) throws IOException {
 
 		Parameter parameter = new Parameter();
 		parameter.key = word(st);
@@ -223,7 +223,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return v;
 	}
 
-	Native[] getNative(String line) throws IOException {
+	static Native[] getNative(String line) throws IOException {
 		Vector<Native> v = new Vector<Native>();
 		StreamTokenizer st = getStreamTokenizer(line);
 		do {
@@ -255,7 +255,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return result;
 	}
 
-	String[] getClasspath(String line) throws IOException {
+	static String[] getClasspath(String line) throws IOException {
 		StringTokenizer st = new StringTokenizer(line, " \t,");
 		String result[] = new String[st.countTokens()];
 		for (int i = 0; i < result.length; i++)

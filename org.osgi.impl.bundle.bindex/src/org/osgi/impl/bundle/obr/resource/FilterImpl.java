@@ -371,7 +371,7 @@ public class FilterImpl {
 		}
 	}
 
-	boolean compareSign(int op, int cmp) {
+	static boolean compareSign(int op, int cmp) {
 		switch (op) {
 			case LE :
 				return cmp >= 0;
@@ -384,7 +384,7 @@ public class FilterImpl {
 		}
 	}
 
-	String fixupString(String s) {
+	static String fixupString(String s) {
 		StringBuffer sb = new StringBuffer();
 		int len = s.length();
 		boolean isStart = true;

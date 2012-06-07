@@ -137,7 +137,7 @@ public class ComponentNameProposalProvider extends CachingContentProposalProvide
 		return result;
 	}
 
-	ILabelProvider createLabelProvider() {
+	static ILabelProvider createLabelProvider() {
 		return new ClassOrResourceLabelProvider();
 	}
 

@@ -118,7 +118,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
     }
 
-    Pair<String, String> getFileAndProject(IEditorInput input) {
+    static Pair<String, String> getFileAndProject(IEditorInput input) {
         String path;
         String projectName;
         if (input instanceof IFileEditorInput) {

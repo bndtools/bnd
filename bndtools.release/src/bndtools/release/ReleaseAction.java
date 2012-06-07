@@ -94,6 +94,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 	}
 
 	@SuppressWarnings("unchecked")
+	static
 	IFile[] getLocations(ISelection selection) {
 		if (selection != null && (selection instanceof StructuredSelection)) {
 			StructuredSelection ss = (StructuredSelection) selection;

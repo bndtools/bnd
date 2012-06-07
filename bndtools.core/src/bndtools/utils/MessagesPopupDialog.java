@@ -150,7 +150,7 @@ public class MessagesPopupDialog extends PopupDialog {
 		return new Point(linkBounds.x, linkBounds.y + linkBounds.height);
 	}
 	
-	Image getMessageImage(int messageType) {
+	static Image getMessageImage(int messageType) {
 		switch (messageType) {
 		case IMessageProvider.INFORMATION:
 			return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);

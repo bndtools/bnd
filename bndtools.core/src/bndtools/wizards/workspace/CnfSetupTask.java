@@ -159,7 +159,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
     }
 
-    void rebuildWorkspace(IProgressMonitor monitor) throws CoreException {
+    static void rebuildWorkspace(IProgressMonitor monitor) throws CoreException {
         ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
     }
 

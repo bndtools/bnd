@@ -161,7 +161,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         }
     }
 
-    List<IProject> loadProjects() {
+    static List<IProject> loadProjects() {
         Collection<Project> projects;
         try {
             Workspace workspace = Central.getWorkspace();
