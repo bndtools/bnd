@@ -26,7 +26,7 @@ public class DummyBundle implements Bundle {
 
     private final long id;
     private final BundleContext context;
-    private final File jar;
+//    private final File jar;
 
     private Properties props;
 
@@ -35,7 +35,7 @@ public class DummyBundle implements Bundle {
     DummyBundle(long id, BundleContext context, File jar) throws IOException {
         this.id = id;
         this.context = context;
-        this.jar = jar;
+//        this.jar = jar;
 
         JarInputStream stream = null; 
         try {

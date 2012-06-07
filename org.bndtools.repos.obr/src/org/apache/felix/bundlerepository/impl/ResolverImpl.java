@@ -50,7 +50,7 @@ public class ResolverImpl implements Resolver
     private boolean m_resolved = false;
     private long m_resolveTimeStamp;
     private int m_resolutionFlags;
-    private int m_deployFlags;
+//    private int m_deployFlags;
 
     public ResolverImpl(BundleContext context, Repository[] repositories, Logger logger)
     {
@@ -528,7 +528,7 @@ public class ResolverImpl implements Resolver
 
     public synchronized void deploy(int flags)
     {
-        m_deployFlags = flags;
+//        m_deployFlags = flags;
         // Must resolve if not already resolved.
         if (!m_resolved && !resolve(flags))
         {

@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.forms.widgets.ScrolledFormText;
 
 import bndtools.Plugin;
 
@@ -31,7 +30,7 @@ public class PluginClassSelectionPage extends WizardPage {
 
     private Table table;
     private TableViewer viewer;
-    private ScrolledFormText txtDescription;
+//    private ScrolledFormText txtDescription;
 
     private IConfigurationElement selectedElement;
     private boolean programmaticChange = false;
