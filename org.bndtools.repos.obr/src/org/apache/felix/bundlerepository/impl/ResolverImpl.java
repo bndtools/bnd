@@ -39,15 +39,15 @@ public class ResolverImpl implements Resolver
     private final BundleContext m_context;
     private final Logger m_logger;
     private final Repository[] m_repositories;
-    private final Set m_addedSet = new HashSet();
-    private final Set m_addedRequirementSet = new HashSet();
-    private final Set m_globalCapabilities = new HashSet();
-    private final Set m_failedSet = new HashSet();
-    private final Set m_resolveSet = new HashSet();
-    private final Set m_requiredSet = new HashSet();
-    private final Set m_optionalSet = new HashSet();
-    private final Map m_reasonMap = new HashMap();
-    private final Set m_unsatisfiedSet = new HashSet();
+    private final Set<Resource> m_addedSet = new HashSet<Resource>();
+    private final Set<Requirement> m_addedRequirementSet = new HashSet<Requirement>();
+    private final Set<Capability> m_globalCapabilities = new HashSet<Capability>();
+    private final Set<Resource> m_failedSet = new HashSet<Resource>();
+    private final Set<Resource> m_resolveSet = new HashSet<Resource>();
+    private final Set<Resource> m_requiredSet = new HashSet<Resource>();
+    private final Set<Resource> m_optionalSet = new HashSet<Resource>();
+    private final Map<Resource, List<Reason>> m_reasonMap = new HashMap<Resource, List<Reason>>();
+    private final Set<Reason> m_unsatisfiedSet = new HashSet<Reason>();
     private boolean m_resolved = false;
     private long m_resolveTimeStamp;
     private int m_resolutionFlags;
@@ -68,7 +68,7 @@ public class ResolverImpl implements Resolver
 
     public synchronized Resource[] getAddedResources()
     {
-        return (Resource[]) m_addedSet.toArray(new Resource[m_addedSet.size()]);
+        return m_addedSet.toArray(new Resource[m_addedSet.size()]);
     }
 
     public synchronized void add(Requirement requirement)
@@ -79,7 +79,7 @@ public class ResolverImpl implements Resolver
 
     public synchronized Requirement[] getAddedRequirements()
     {
-        return (Requirement[]) m_addedRequirementSet.toArray(new Requirement[m_addedRequirementSet.size()]);
+        return m_addedRequirementSet.toArray(new Requirement[m_addedRequirementSet.size()]);
     }
 
     public void addGlobalCapability(Capability capability)
@@ -89,14 +89,14 @@ public class ResolverImpl implements Resolver
 
     public Capability[] getGlobalCapabilities()
     {
-        return (Capability[]) m_globalCapabilities.toArray(new Capability[m_globalCapabilities.size()]);
+        return m_globalCapabilities.toArray(new Capability[m_globalCapabilities.size()]);
     }
 
     public synchronized Resource[] getRequiredResources()
     {
         if (m_resolved)
         {
-            return (Resource[]) m_requiredSet.toArray(new Resource[m_requiredSet.size()]);
+            return m_requiredSet.toArray(new Resource[m_requiredSet.size()]);
         }
         throw new IllegalStateException("The resources have not been resolved.");
     }
@@ -105,7 +105,7 @@ public class ResolverImpl implements Resolver
     {
         if (m_resolved)
         {
-            return (Resource[]) m_optionalSet.toArray(new Resource[m_optionalSet.size()]);
+            return m_optionalSet.toArray(new Resource[m_optionalSet.size()]);
         }
         throw new IllegalStateException("The resources have not been resolved.");
     }
@@ -114,7 +114,7 @@ public class ResolverImpl implements Resolver
     {
         if (m_resolved)
         {
-            List l = (List) m_reasonMap.get(resource);
+            List<Reason> l = m_reasonMap.get(resource);
             return l != null ? (Reason[]) l.toArray(new Reason[l.size()]) : null;
         }
         throw new IllegalStateException("The resources have not been resolved.");
@@ -124,14 +124,14 @@ public class ResolverImpl implements Resolver
     {
         if (m_resolved)
         {
-            return (Reason[]) m_unsatisfiedSet.toArray(new Reason[m_unsatisfiedSet.size()]);
+            return m_unsatisfiedSet.toArray(new Reason[m_unsatisfiedSet.size()]);
         }
         throw new IllegalStateException("The resources have not been resolved.");
     }
 
     private Resource[] getResources(boolean local)
     {
-        List resources = new ArrayList();
+        List<Resource> resources = new ArrayList<Resource>();
         for (int repoIdx = 0; (m_repositories != null) && (repoIdx < m_repositories.length); repoIdx++)
         {
             boolean isLocal = m_repositories[repoIdx] instanceof LocalRepositoryImpl;
@@ -151,7 +151,7 @@ public class ResolverImpl implements Resolver
                 }
             }
         }
-        return (Resource[]) resources.toArray(new Resource[resources.size()]);
+        return resources.toArray(new Resource[resources.size()]);
     }
 
     public synchronized boolean resolve()
@@ -188,14 +188,14 @@ public class ResolverImpl implements Resolver
         if (!m_addedRequirementSet.isEmpty() || !m_globalCapabilities.isEmpty())
         {
             ResourceImpl fake = new ResourceImpl();
-            for (Iterator iter = m_globalCapabilities.iterator(); iter.hasNext();)
+            for (Iterator<Capability> iter = m_globalCapabilities.iterator(); iter.hasNext();)
             {
-                Capability cap = (Capability) iter.next();
+                Capability cap = iter.next();
                 fake.addCapability(cap);
             }
-            for (Iterator iter = m_addedRequirementSet.iterator(); iter.hasNext();)
+            for (Iterator<Requirement> iter = m_addedRequirementSet.iterator(); iter.hasNext();)
             {
-                Requirement req = (Requirement) iter.next();
+                Requirement req = iter.next();
                 fake.addRequire(req);
             }
             if (!resolve(fake, locals, remotes, false))
@@ -205,9 +205,9 @@ public class ResolverImpl implements Resolver
         }
 
         // Loop through each resource in added list and resolve.
-        for (Iterator iter = m_addedSet.iterator(); iter.hasNext(); )
+        for (Iterator<Resource> iter = m_addedSet.iterator(); iter.hasNext(); )
         {
-            if (!resolve((Resource) iter.next(), locals, remotes, false))
+            if (!resolve(iter.next(), locals, remotes, false))
             {
                 // If any resource does not resolve, then the
                 // entire result will be false.
@@ -290,7 +290,7 @@ public class ResolverImpl implements Resolver
                 }
                 if (candidate == null)
                 {
-                    List candidateCapabilities = searchResources(reqs[reqIdx], locals);
+                    List<ResourceCapability> candidateCapabilities = searchResources(reqs[reqIdx], locals);
                     candidateCapabilities.addAll(searchResources(reqs[reqIdx], remotes));
 
                     // Determine the best candidate available that
@@ -346,10 +346,10 @@ public class ResolverImpl implements Resolver
                         System.out.println(">>optional: " + m_optionalSet);
 
                         // Add the reason why the candidate was selected.
-                        List reasons = (List) m_reasonMap.get(candidate);
+                        List<Reason> reasons = m_reasonMap.get(candidate);
                         if (reasons == null)
                         {
-                            reasons = new ArrayList();
+                            reasons = new ArrayList<Reason>();
                             m_reasonMap.put(candidate, reasons);
                         }
                         reasons.add(new ReasonImpl(resource, reqs[reqIdx]));
@@ -380,12 +380,12 @@ public class ResolverImpl implements Resolver
 		return false;
 	}
 
-	private Resource searchResources(Requirement req, Set resourceSet)
+	private Resource searchResources(Requirement req, Set<Resource> resourceSet)
     {
-        for (Iterator iter = resourceSet.iterator(); iter.hasNext(); )
+        for (Iterator<Resource> iter = resourceSet.iterator(); iter.hasNext(); )
         {
             checkInterrupt();
-            Resource resource = (Resource) iter.next();
+            Resource resource = iter.next();
             Capability[] caps = resource.getCapabilities();
             for (int capIdx = 0; (caps != null) && (capIdx < caps.length); capIdx++)
             {
@@ -407,9 +407,9 @@ public class ResolverImpl implements Resolver
      * @param resources list of resources to look at
      * @return all resources meeting the given requirement
      */
-    private List searchResources(Requirement req, Resource[] resources)
+    private List<ResourceCapability> searchResources(Requirement req, Resource[] resources)
     {
-        List matchingCapabilities = new ArrayList();
+        List<ResourceCapability> matchingCapabilities = new ArrayList<ResourceCapability>();
 
         for (int resIdx = 0; (resources != null) && (resIdx < resources.length); resIdx++)
         {
@@ -439,7 +439,7 @@ public class ResolverImpl implements Resolver
      * @param caps
      * @return
      */
-    private ResourceCapability getBestCandidate(List caps)
+    private ResourceCapability getBestCandidate(List<ResourceCapability> caps)
     {
         Version bestVersion = null;
         ResourceCapability best = null;
@@ -447,7 +447,7 @@ public class ResolverImpl implements Resolver
 
         for(int capIdx = 0; capIdx < caps.size(); capIdx++)
         {
-            ResourceCapability current = (ResourceCapability) caps.get(capIdx);
+            ResourceCapability current = caps.get(capIdx);
             boolean isCurrentLocal = current.getResource().isLocal();
 
             if (best == null)
@@ -551,7 +551,7 @@ public class ResolverImpl implements Resolver
         }
 
         // Eliminate duplicates from target, required, optional resources.
-        Map deployMap = new HashMap();
+        Map<Resource, Resource> deployMap = new HashMap<Resource, Resource>();
         Resource[] resources = getAddedResources();
         for (int i = 0; (resources != null) && (i < resources.length); i++)
         {
@@ -570,11 +570,10 @@ public class ResolverImpl implements Resolver
                 deployMap.put(resources[i], resources[i]);
             }
         }
-        Resource[] deployResources = (Resource[])
-            deployMap.keySet().toArray(new Resource[deployMap.size()]);
+        Resource[] deployResources = deployMap.keySet().toArray(new Resource[deployMap.size()]);
 
         // List to hold all resources to be started.
-        List startList = new ArrayList();
+        List<Bundle> startList = new ArrayList<Bundle>();
 
         // Deploy each resource, which will involve either finding a locally
         // installed resource to update or the installation of a new version
@@ -673,13 +672,13 @@ public class ResolverImpl implements Resolver
         {
             try
             {
-                ((Bundle) startList.get(i)).start();
+                startList.get(i).start();
             }
             catch (BundleException ex)
             {
                 m_logger.log(
                     Logger.LOG_ERROR,
-                    "Resolver: Start error - " + ((Bundle) startList.get(i)).getSymbolicName(),
+                    "Resolver: Start error - " + startList.get(i).getSymbolicName(),
                     ex);
             }
         }
@@ -731,7 +730,7 @@ public class ResolverImpl implements Resolver
     {
         Resource[] localResources = getResources(true);
 
-        List matchList = new ArrayList();
+        List<Resource> matchList = new ArrayList<Resource>();
         for (int i = 0; i < localResources.length; i++)
         {
             String localSymName = localResources[i].getSymbolicName();
@@ -740,7 +739,7 @@ public class ResolverImpl implements Resolver
                 matchList.add(localResources[i]);
             }
         }
-        return (Resource[]) matchList.toArray(new Resource[matchList.size()]);
+        return matchList.toArray(new Resource[matchList.size()]);
     }
 
     private boolean isResourceUpdatable(
@@ -792,7 +791,7 @@ public class ResolverImpl implements Resolver
         Capability[] caps = resource.getCapabilities();
         if ((caps != null) && (caps.length > 0))
         {
-            List reqList = new ArrayList();
+            List<Requirement> reqList = new ArrayList<Requirement>();
             for (int capIdx = 0; capIdx < caps.length; capIdx++)
             {
                 boolean added = false;
@@ -811,7 +810,7 @@ public class ResolverImpl implements Resolver
                     }
                 }
             }
-            return (Requirement[]) reqList.toArray(new Requirement[reqList.size()]);
+            return reqList.toArray(new Requirement[reqList.size()]);
         }
         return null;
     }
