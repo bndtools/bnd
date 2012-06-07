@@ -60,7 +60,6 @@ public class ClassPathPart extends SectionPart implements PropertyChangeListener
 	private final Image imgAddFolder = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/folder_add.gif").createImage();
 
 	private List<IPath> classPath;
-	private boolean refreshing;
 
 	private TableViewer viewer;
 	private BndEditModel model;
@@ -207,7 +206,6 @@ public class ClassPathPart extends SectionPart implements PropertyChangeListener
 	@Override
 	public void refresh() {
 		try {
-			this.refreshing = true;
 			List<String> temp = model.getClassPath();
 			classPath = new ArrayList<IPath>(temp != null ? temp.size() : 5);
 			if(temp != null) {
@@ -217,7 +215,6 @@ public class ClassPathPart extends SectionPart implements PropertyChangeListener
 			}
 			viewer.setInput(classPath);
 		} finally {
-			this.refreshing = false;
 		}
 		super.refresh();
 	}

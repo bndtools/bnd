@@ -437,7 +437,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
     private Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
-    private Image testImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/test.gif").createImage();
+//    private Image testImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/test.gif").createImage();
     
     @Override
     public void update(ViewerCell cell) {

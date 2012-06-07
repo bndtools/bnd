@@ -23,8 +23,6 @@ public class ComponentSvcRefWizard extends Wizard {
 	private final ComponentSvcRefWizardPage mainPage;
 	
 	private final ComponentSvcReference serviceRef;
-	private final IJavaProject javaProject;
-	private final String componentClassName;
 	
 	// Store a copy of the unedited object to restore from in case of cancellation.
 	private final ComponentSvcReference pristine;
@@ -35,8 +33,6 @@ public class ComponentSvcRefWizard extends Wizard {
 	
 	public ComponentSvcRefWizard(ComponentSvcReference serviceRef, Set<String> existingNames, IJavaProject javaProject, String componentClassName) {
 		this.serviceRef = serviceRef;
-		this.javaProject = javaProject;
-		this.componentClassName = componentClassName;
 		
 		this.pristine = serviceRef.clone();
 		this.mainPage = new ComponentSvcRefWizardPage(serviceRef, "main", existingNames, javaProject, componentClassName);

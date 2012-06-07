@@ -36,7 +36,6 @@ public class CollectionUtils {
      */
     public static <T> boolean moveDown(List<T> list, int[] selectionIndexes) {
         boolean moved = false;
-        int resultPos = 0;
 
         int size = list.size();
         for (int i = 0; i < size; i++) {
@@ -58,7 +57,6 @@ public class CollectionUtils {
                     list.set(nextUnselected, item);
                     moved = true;
                 }
-                resultPos++;
             }
         }
         return moved;
@@ -76,7 +74,6 @@ public class CollectionUtils {
      */
     public static <T> boolean moveUp(List<T> list, int[] selectionIndexes) {
         boolean moved = false;
-        int resultPos = 0;
 
         int size = list.size();
         for (int i = size - 1; i >= 0; i--) {
@@ -98,7 +95,6 @@ public class CollectionUtils {
                     list.set(nextUnselected, item);
                     moved = true;
                 }
-                resultPos++;
             }
         }
         return moved;

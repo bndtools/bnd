@@ -29,6 +29,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
+        @SuppressWarnings("unused")
         WorkspaceObrProvider workspaceObr;
         try {
             workspaceObr = Central.getWorkspaceObrProvider();

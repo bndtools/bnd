@@ -81,7 +81,6 @@ import bndtools.utils.ModificationLock;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 
-	private static final String BND_SUFFIX = ".bnd";
     private static final String[] EDITABLE_PROPERTIES = new String[] {
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,

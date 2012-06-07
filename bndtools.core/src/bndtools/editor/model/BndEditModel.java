@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.felix.bundlerepository.DataModelHelper;
-import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.bndtools.core.utils.parse.properties.LineType;
 import org.bndtools.core.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IResource;
@@ -113,7 +111,6 @@ public class BndEditModel implements IPersistableBndModel {
 
 	private final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
 	private final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
-	private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 	private final Properties properties = new Properties();;

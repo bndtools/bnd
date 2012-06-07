@@ -23,7 +23,8 @@ import org.eclipse.ui.IWorkbenchPart;
 public class AddBndProjectNatureAction implements IObjectActionDelegate {
 
 	private ISelection selection;
-	private IWorkbenchPart targetPart;
+	@SuppressWarnings("unused")
+    private IWorkbenchPart targetPart;
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 		this.targetPart = targetPart;
@@ -34,7 +35,8 @@ public class AddBndProjectNatureAction implements IObjectActionDelegate {
 			Iterator<?> iter = ((IStructuredSelection) selection).iterator();
 			while(iter.hasNext()) {
 				Object element = iter.next();
-				IProject project = null;
+				@SuppressWarnings("unused")
+                IProject project = null;
 				
 				if(element instanceof IProject)
 					project = null;

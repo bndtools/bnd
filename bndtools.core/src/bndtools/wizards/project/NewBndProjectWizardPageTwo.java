@@ -35,12 +35,10 @@ import bndtools.builder.BndProjectNature;
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
 	private final WizardPage previousPage;
-	private final NewJavaProjectWizardPageOne pageOne;
 
 	public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
 		super(pageOne);
 		this.previousPage = previousPage;
-		this.pageOne = pageOne;
 	}
 	@Override
 	public void setVisible(boolean visible) {

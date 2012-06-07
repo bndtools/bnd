@@ -52,9 +52,6 @@ import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public class RepositoriesView extends FilteredViewPart implements RepositoryListenerPlugin {
-
-    private static final String CACHE_REPO = "cache";
-
     private TreeViewer viewer;
 
     private Action collapseAllAction;

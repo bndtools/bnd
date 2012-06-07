@@ -46,6 +46,7 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
 
     @Override
     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+        @SuppressWarnings("unused")
         SubMonitor progress = SubMonitor.convert(monitor);
 
         if (!project.exists() || !project.isOpen())

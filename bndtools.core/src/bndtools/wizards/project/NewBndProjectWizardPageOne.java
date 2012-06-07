@@ -57,6 +57,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
+    @SuppressWarnings("unused")
     private final Validator fValidator;
 
     NewBndProjectWizardPageOne() {
@@ -183,6 +184,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             }
 
             // check whether the project name is valid
+            @SuppressWarnings("unused")
             final IStatus nameStatus= workspace.validateName(name, IResource.PROJECT);
             if (!nameStatus.isOK()) {
                 setErrorMessage(nameStatus.getMessage());

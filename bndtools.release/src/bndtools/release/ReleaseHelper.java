@@ -416,10 +416,10 @@ public class ReleaseHelper {
 			}
 			projectDiff.setReleaseRepository(repo);
 			projectDiff.setDefaultReleaseRepository(repo);
-			for (JarDiff jarDiff : projectDiff.getJarDiffs()) {
+//			for (JarDiff jarDiff : projectDiff.getJarDiffs()) {
 				//TODO: decide which projects to release
-				
-			}
+//				
+//			}
 		}
 	}
 }

@@ -9,7 +9,6 @@ package bndtools.editor.model.conversions;
  */
 public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 
-    private final Class<E> enumType;
     private final E defaultValue;
 
     /**
@@ -38,7 +37,6 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
     }
 
     private EnumFormatter(Class<E> enumType, E defaultValue) {
-        this.enumType = enumType;
         this.defaultValue = defaultValue;
     }
 

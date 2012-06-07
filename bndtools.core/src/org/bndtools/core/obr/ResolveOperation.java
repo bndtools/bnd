@@ -81,6 +81,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     public void run(IProgressMonitor monitor) {
+        @SuppressWarnings("unused")
         SubMonitor progress = SubMonitor.convert(monitor, "Resolving...", 0);
 
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems during OBR resolution", null);
@@ -145,6 +146,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         Resolver resolver = repoAdmin.resolver(repos.toArray(new Repository[repos.size()]));
 
         // Add project builders
+        @SuppressWarnings("unused")
         Set<Resource> projectBuildResources = addProjectBuildBundles(resolver);
 
         // Add EE capabilities

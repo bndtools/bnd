@@ -5,8 +5,6 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IResource;
@@ -31,8 +29,6 @@ import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
-    private static final Map<String, ProjectLauncher> launcherMap = new ConcurrentHashMap<String, ProjectLauncher>();
-    
     protected Project model;
     
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;

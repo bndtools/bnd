@@ -65,9 +65,6 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	protected File storageDir;
 	protected File localIndex;
 
-	// @GuardedBy("newFilesInCoordination")
-	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
-
 	protected Repository repository;
 
 	protected String gitUri;

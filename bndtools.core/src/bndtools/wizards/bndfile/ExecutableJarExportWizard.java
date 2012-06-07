@@ -29,7 +29,6 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
     
     private final ExecutableJarWizardPage destinationPage = new ExecutableJarWizardPage();
 
-    private IBndModel model;
     private Project bndProject;
     
     public ExecutableJarExportWizard() {
@@ -37,7 +36,6 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
     }
     
     public void setBndModel(IBndModel model, Project bndProject) {
-        this.model = model;
         this.bndProject = bndProject;
     }
 

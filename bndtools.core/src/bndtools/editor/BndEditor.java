@@ -153,9 +153,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
         requiredPageIds.add(SOURCE_PAGE);
 
-        IFormPage activePage = getActivePageInstance();
-        String currentPageId = activePage != null ? activePage.getId() : null;
-
         // Remove pages no longer required and remember the rest in a map
         int i = 0;
         Map<String, IFormPage> pageCache = new HashMap<String, IFormPage>(requiredPageIds.size());

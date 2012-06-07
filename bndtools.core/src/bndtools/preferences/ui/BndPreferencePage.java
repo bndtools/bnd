@@ -5,7 +5,6 @@ import java.text.MessageFormat;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,7 +33,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
 	private final ModificationLock lock = new ModificationLock();
 
-	private IPreferenceStore store;
 	private String enableSubs;
 	private boolean noAskPackageInfo = false;
 	private boolean noCheckCnf = false;

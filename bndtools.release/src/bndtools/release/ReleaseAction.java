@@ -31,6 +31,7 @@ import aQute.bnd.build.Workspace;
 
 public class ReleaseAction implements IObjectActionDelegate {
 
+	@SuppressWarnings("unused")
 	private IWorkbenchPart targetPart;
 
 	private Map<Project, List<File>> bndFiles;

@@ -33,7 +33,8 @@ public class BundleSettingsWizardPage extends WizardPage {
 
 	private Text txtSymbolicName;
 	private Text txtVersion;
-	private Text txtActivator;
+	@SuppressWarnings("unused")
+    private Text txtActivator;
 
 
 	protected BundleSettingsWizardPage(String pageName,

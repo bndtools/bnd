@@ -7,7 +7,9 @@ import bndtools.api.IBndModel;
 
 public class AbstractRunDescriptionExportWizard extends Wizard implements IRunDescriptionExportWizard {
 
+    @SuppressWarnings("unused")
     private IBndModel model;
+    @SuppressWarnings("unused")
     private Project bndProject;
 
     public void setBndModel(IBndModel model, Project bndProject) {
