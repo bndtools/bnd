@@ -234,7 +234,7 @@ public class AnalyseBundleResolutionJob extends Job {
         }
 	}
 
-    private List<String> getFQNList(List<PackageRef> pkgRefs) {
+    private static List<String> getFQNList(List<PackageRef> pkgRefs) {
         List<String> result = new ArrayList<String>(pkgRefs.size());
         for (PackageRef pkgRef : pkgRefs) {
             result.add(pkgRef.getFQN());

@@ -348,7 +348,7 @@ public class JarDiff {
 		}
 	}
 
-	private int getModificationSeverity(ClassInfo clazz, ClassInfo previousClass) {
+	private static int getModificationSeverity(ClassInfo clazz, ClassInfo previousClass) {
 
 		int severity = PKG_SEVERITY_NONE;
 		if (clazz != null) {
@@ -417,7 +417,7 @@ public class JarDiff {
 		return severity;
 	}
 
-	private MethodInfo findMethod(ClassInfo info, MethodInfo methodToFind) {
+	private static MethodInfo findMethod(ClassInfo info, MethodInfo methodToFind) {
 		if (info == null) {
 			return null;
 		}
@@ -433,7 +433,7 @@ public class JarDiff {
 		return null;
 	}
 
-	private FieldInfo findField(ClassInfo info, FieldInfo fieldToFind) {
+	private static FieldInfo findField(ClassInfo info, FieldInfo fieldToFind) {
 		if (info == null) {
 			return null;
 		}
@@ -790,7 +790,7 @@ public class JarDiff {
 		}
 	}
 	
-	private boolean suggestVersionOne(String version) {
+	private static boolean suggestVersionOne(String version) {
 		aQute.libg.version.Version aQuteVersion = new aQute.libg.version.Version(version);
 		if (aQuteVersion.compareTo(new aQute.libg.version.Version("1.0.0")) < 0) {
 			return true;
@@ -799,7 +799,7 @@ public class JarDiff {
 	}
 
 	// From aQute.libg.version.Macro _version. Without dependencies on project and properties
-	private String _version(String[] args) {
+	private static String _version(String[] args) {
 		String mask = args[1];
 
 		aQute.libg.version.Version version = new aQute.libg.version.Version(args[2]);

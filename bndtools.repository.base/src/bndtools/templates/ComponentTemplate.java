@@ -52,7 +52,7 @@ public class ComponentTemplate implements IProjectTemplate {
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
     }
 
-    private void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
+    private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred)
             requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));

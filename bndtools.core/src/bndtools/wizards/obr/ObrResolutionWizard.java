@@ -105,7 +105,7 @@ public class ObrResolutionWizard extends Wizard {
         return true;
     }
 
-    private VersionedClause resourceToRunBundle(Resource resource) {
+    private static VersionedClause resourceToRunBundle(Resource resource) {
         String bsn = resource.getSymbolicName();
 
         // Map version range string, using "latest" for any workspace resources
@@ -123,7 +123,7 @@ public class ObrResolutionWizard extends Wizard {
 
     }
 
-    private boolean isWorkspace(Resource resource) {
+    private static boolean isWorkspace(Resource resource) {
         String[] categories = resource.getCategories();
         for (String category : categories) {
             if (WorkspaceObrProvider.CATEGORY_WORKSPACE.equals(category))
@@ -132,7 +132,7 @@ public class ObrResolutionWizard extends Wizard {
         return false;
     }
 
-    private VersionRange createVersionRange(Version version) {
+    private static VersionRange createVersionRange(Version version) {
         Version base = new Version(version.getMajor(), version.getMinor(), version.getMicro());
         Version next = new Version(version.getMajor(), version.getMinor(), version.getMicro() + 1);
 

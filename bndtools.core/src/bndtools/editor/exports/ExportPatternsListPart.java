@@ -172,7 +172,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         return result;
     }
 
-    private void generatePackageInfos(final Collection<? extends File> pkgDirs) throws CoreException {
+    private static void generatePackageInfos(final Collection<? extends File> pkgDirs) throws CoreException {
         final IWorkspaceRunnable wsOperation = new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
                 SubMonitor progress = SubMonitor.convert(monitor, pkgDirs.size());

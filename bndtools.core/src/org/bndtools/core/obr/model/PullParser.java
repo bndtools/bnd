@@ -168,7 +168,7 @@ public class PullParser {
         return repository;
     }
 
-    private void sanityCheckEndElement(XmlPullParser reader, int event, String element)
+    private static void sanityCheckEndElement(XmlPullParser reader, int event, String element)
     {
         if (event != XmlPullParser.END_TAG || !element.equals(reader.getName()))
         {

@@ -198,7 +198,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         return result;
     }
 
-    private boolean matchVersion(String range, String version, boolean exact) {
+    private static boolean matchVersion(String range, String version, boolean exact) {
         if (range == null || range.trim().length() == 0)
             return true;
         if (RANGE_PROJECT.equals(range) || RANGE_LATEST.equals(range) || RANGE_SNAPSHOT.equals(range))
@@ -236,7 +236,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         }
     }
     
-    private Builder getSubBuilder(Project project, String bsn) throws Exception {
+    private static Builder getSubBuilder(Project project, String bsn) throws Exception {
         for (Builder sub : project.getSubBuilders()) {
             if (sub.getBsn().equals(bsn))
                 return sub;
@@ -244,7 +244,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         return null;
     }
     
-    private File getOutputFile(Project project, String bsn) throws Exception {
+    private static File getOutputFile(Project project, String bsn) throws Exception {
         return new File(project.getTarget(), bsn + ".jar");
     }
 

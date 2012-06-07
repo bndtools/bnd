@@ -22,7 +22,7 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
     private Image serviceImg;
     private Image javaImg;
 
-    private Matcher findValueRegion(String name, String filter) throws IllegalArgumentException {
+    private static Matcher findValueRegion(String name, String filter) throws IllegalArgumentException {
         String pattern = "\\(" + name + "=([^\\)]*)\\)";
         Pattern regex = Pattern.compile(pattern);
         return regex.matcher(filter);

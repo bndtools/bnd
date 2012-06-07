@@ -54,7 +54,7 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
         }
     }
     
-    private boolean isRoot(Resource resource) {
+    private static boolean isRoot(Resource resource) {
         return resource == null || resource.getId() == null;
     }
     

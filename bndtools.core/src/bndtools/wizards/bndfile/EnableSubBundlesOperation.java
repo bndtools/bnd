@@ -123,7 +123,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         newBundleInputStream  = new ByteArrayInputStream(newBundleDocument.get().getBytes());
     }
 
-    private List<String> calculateProjectOnlyHeaders(List<String> allPropertyNames) {
+    private static List<String> calculateProjectOnlyHeaders(List<String> allPropertyNames) {
         List<String> result = new ArrayList<String>(allPropertyNames.size());
 
         for (String propertyName : allPropertyNames) {
@@ -153,7 +153,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         }
     }
 
-    private CoreException newCoreException(String message, Throwable cause) {
+    private static CoreException newCoreException(String message, Throwable cause) {
         return new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, cause));
     }
 

@@ -38,7 +38,7 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private ICompletionProposal[] proposals(String prefix, int offset) {
+    private static ICompletionProposal[] proposals(String prefix, int offset) {
         ArrayList<ICompletionProposal> results = new ArrayList<ICompletionProposal>(Syntax.HELP.size());
         for (Syntax s : Syntax.HELP.values()) {
             if (prefix == null || s.getHeader().startsWith(prefix)) {

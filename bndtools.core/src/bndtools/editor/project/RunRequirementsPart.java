@@ -204,7 +204,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         });
     }
 
-    private Requirement createRequirement(Object elem) {
+    private static Requirement createRequirement(Object elem) {
         String bsn = null;
         Version version = null;
 

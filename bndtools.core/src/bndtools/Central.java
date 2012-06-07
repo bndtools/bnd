@@ -304,7 +304,7 @@ public class Central {
             jp.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
-    private String toLocal(File f) throws Exception {
+    private static String toLocal(File f) throws Exception {
         String root = getWorkspace().getBase().getAbsolutePath();
         String path = f.getAbsolutePath().substring(root.length());
         return path;

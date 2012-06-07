@@ -124,7 +124,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 
 
-    private void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
+    private static void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
         IClasspathEntry[] entries = new IClasspathEntry[0];
         Project model;
         try {

@@ -375,7 +375,7 @@ public class BundleInfo {
 		req.setFilter(filter.toString());
 	}
 
-	private void appendVersion(StringBuffer filter, VersionRange version) {
+	private static void appendVersion(StringBuffer filter, VersionRange version) {
 		if (version != null) {
 			if (version.isRange()) {
 				if (version.includeLow()) {

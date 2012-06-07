@@ -109,7 +109,7 @@ public class Plugin extends AbstractUIPlugin {
         runStartupParticipants();
     }
 
-    private void registerWorkspaceServiceFactory(BundleContext context) {
+    private static void registerWorkspaceServiceFactory(BundleContext context) {
         Properties props = new Properties();
         props.put("name", "bndtools");
 

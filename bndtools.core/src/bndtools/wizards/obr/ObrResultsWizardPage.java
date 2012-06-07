@@ -459,7 +459,7 @@ public class ObrResultsWizardPage extends WizardPage {
         reresolve();
     }
 
-    private Requirement resourceToRequirement(Resource resource) {
+    private static Requirement resourceToRequirement(Resource resource) {
         StringBuilder filterBuilder = new StringBuilder();
 
         filterBuilder.append("(&");
@@ -567,7 +567,7 @@ public class ObrResultsWizardPage extends WizardPage {
         }
     }
 
-    private String getClipboardContent(Object element) {
+    private static String getClipboardContent(Object element) {
         String label;
         if (element instanceof Reason) {
             Reason reason = (Reason) element;
@@ -591,7 +591,7 @@ public class ObrResultsWizardPage extends WizardPage {
         return label;
     }
     
-    private String getClipboardContent(Resource resource) { 
+    private static String getClipboardContent(Resource resource) { 
         String bsn;
         Version version;
         if (resource == null || resource.getId() == null) {
@@ -605,7 +605,7 @@ public class ObrResultsWizardPage extends WizardPage {
         return bsn + " " + version;
     }
     
-    private String getClipboardContent(org.apache.felix.bundlerepository.Requirement requirement) {
+    private static String getClipboardContent(org.apache.felix.bundlerepository.Requirement requirement) {
         return String.format("%s:%s\toptional=%s", requirement.getName(), requirement.getFilter(), requirement.isOptional());
     }
 

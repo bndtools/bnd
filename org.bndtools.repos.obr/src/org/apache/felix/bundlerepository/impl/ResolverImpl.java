@@ -373,14 +373,14 @@ public class ResolverImpl implements Resolver
         return result;
     }
 
-    private boolean isSubstitutableExport(Requirement req, Capability[] caps) {
+    private static boolean isSubstitutableExport(Requirement req, Capability[] caps) {
     	for (Capability capability : caps) {
 			if (req.isSatisfied(capability)) return true;
 		}
 		return false;
 	}
 
-	private Resource searchResources(Requirement req, Set<Resource> resourceSet)
+	private static Resource searchResources(Requirement req, Set<Resource> resourceSet)
     {
         for (Iterator<Resource> iter = resourceSet.iterator(); iter.hasNext(); )
         {
@@ -519,7 +519,7 @@ public class ResolverImpl implements Resolver
         return (best == null) ? null : best;
     }
 
-    private void checkInterrupt()
+    private static void checkInterrupt()
     {
         if (Thread.interrupted())
         {
@@ -690,7 +690,7 @@ public class ResolverImpl implements Resolver
      * @param bundle bundle to check
      * @return flag indicating if the given bundle is a fragement
      */
-    private boolean isFragmentBundle(Bundle bundle)
+    private static boolean isFragmentBundle(Bundle bundle)
     {
         return bundle.getHeaders().get(Constants.FRAGMENT_HOST) != null;
     }
@@ -742,7 +742,7 @@ public class ResolverImpl implements Resolver
         return matchList.toArray(new Resource[matchList.size()]);
     }
 
-    private boolean isResourceUpdatable(
+    private static boolean isResourceUpdatable(
         Resource oldVersion, Resource newVersion, Resource[] resources)
     {
         // Get all of the local resolvable requirements for the old
@@ -783,7 +783,7 @@ public class ResolverImpl implements Resolver
         return true;
     }
 
-    private Requirement[] getResolvableRequirements(Resource resource, Resource[] resources)
+    private static Requirement[] getResolvableRequirements(Resource resource, Resource[] resources)
     {
         // For the specified resource, find all requirements that are
         // satisfied by any of its capabilities in the specified resource

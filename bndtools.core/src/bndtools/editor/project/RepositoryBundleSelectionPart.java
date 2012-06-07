@@ -295,7 +295,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 		table.setLayoutData(gd);
 	}
 
-    private boolean isRemovable(ISelection selection) {
+    private static boolean isRemovable(ISelection selection) {
         if (selection.isEmpty())
             return false;
 

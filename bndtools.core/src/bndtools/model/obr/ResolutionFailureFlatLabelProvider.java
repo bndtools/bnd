@@ -25,7 +25,7 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
         cell.setStyleRanges(label.getStyleRanges());
     }
 
-    private StyledString getLabel(Resource resource) {
+    private static StyledString getLabel(Resource resource) {
         StyledString label;
         if (resource == null || resource.getId() == null) {
             label = new StyledString(LABEL_INITIAL, UIConstants.BOLD_STYLER);

@@ -97,7 +97,7 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
         return Status.OK_STATUS;
     }
 
-    private Set<String> getInstalledUrls() throws Exception {
+    private static Set<String> getInstalledUrls() throws Exception {
         Set<String> urls = new HashSet<String>();
 
         List<OBRIndexProvider> providers = Central.getWorkspace().getPlugins(OBRIndexProvider.class);

@@ -134,7 +134,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     }
 
     @SuppressWarnings("deprecation")
-    private boolean enableKeepAlive(ILaunchConfiguration configuration) throws CoreException {
+    private static boolean enableKeepAlive(ILaunchConfiguration configuration) throws CoreException {
         boolean keepAlive = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
         if (keepAlive == LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE) {
             keepAlive = configuration.getAttribute(LaunchConstants.ATTR_OLD_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);

@@ -87,7 +87,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         }
     }
     
-    private boolean isRemoteRepo(RepositoryPlugin repository) {
+    private static boolean isRemoteRepo(RepositoryPlugin repository) {
         List<URL> locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
             try {

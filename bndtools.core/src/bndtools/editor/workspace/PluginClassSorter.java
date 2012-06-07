@@ -25,23 +25,23 @@ public class PluginClassSorter extends ViewerSorter {
         return sortName(elem1, elem2);
     }
 
-    private int sortDeprecation(IConfigurationElement elem1, IConfigurationElement elem2) {
+    private static int sortDeprecation(IConfigurationElement elem1, IConfigurationElement elem2) {
         if (isDeprecated(elem1))
             return isDeprecated(elem2) ? 0 : 1;
         return isDeprecated(elem2) ? -1 : 0;
     }
 
-    private boolean isDeprecated(IConfigurationElement elem) {
+    private static boolean isDeprecated(IConfigurationElement elem) {
         return elem.getAttribute("deprecated") != null;
     }
     
-    private int sortByRank(IConfigurationElement elem1, IConfigurationElement elem2) {
+    private static int sortByRank(IConfigurationElement elem1, IConfigurationElement elem2) {
         int r1 = getRank(elem1);
         int r2 = getRank(elem2);
         return r2 - r1;
     }
 
-    private int getRank(IConfigurationElement elem1) {
+    private static int getRank(IConfigurationElement elem1) {
         String rankStr = elem1.getAttribute("rank");
         int rank = 0;
         try {
@@ -52,7 +52,7 @@ public class PluginClassSorter extends ViewerSorter {
         return rank;
     }
 
-    private int sortName(IConfigurationElement elem1, IConfigurationElement elem2) {
+    private static int sortName(IConfigurationElement elem1, IConfigurationElement elem2) {
         String name1 = elem1.getAttribute("name");
         String name2 = elem2.getAttribute("name");
         

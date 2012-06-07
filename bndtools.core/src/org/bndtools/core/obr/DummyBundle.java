@@ -63,7 +63,7 @@ public class DummyBundle implements Bundle {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean copy(Attributes from, @SuppressWarnings("rawtypes") Dictionary to, String name) {
+    private static boolean copy(Attributes from, @SuppressWarnings("rawtypes") Dictionary to, String name) {
         String value = from.getValue(name);
         if (value != null) {
             to.put(name, value);

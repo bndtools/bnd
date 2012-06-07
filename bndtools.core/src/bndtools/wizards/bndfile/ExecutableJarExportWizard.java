@@ -100,7 +100,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         return status;
     }
     
-    private void generateLauncherJar(ProjectLauncher launcher, File folder, MultiStatus status) {
+    private static void generateLauncherJar(ProjectLauncher launcher, File folder, MultiStatus status) {
         Jar launcherJar = new Jar("launch");
         
         // Merge in the classpath JARs
@@ -128,7 +128,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         }
     }
 
-    private void copyRunBundles(ProjectLauncher launcher, File folder, MultiStatus status) {
+    private static void copyRunBundles(ProjectLauncher launcher, File folder, MultiStatus status) {
         Collection<String> bundles = launcher.getRunBundles();
         List<String> names = new ArrayList<String>(bundles.size());
         

@@ -211,14 +211,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     }
 
-    private boolean isMainWorkspaceConfig(String path, String projectName) {
+    private static boolean isMainWorkspaceConfig(String path, String projectName) {
         if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
             return Workspace.BUILDFILE.equals(path);
         }
         return false;
     }
 
-    private boolean isExtWorkspaceConfig(String path, String projectName) {
+    private static boolean isExtWorkspaceConfig(String path, String projectName) {
         if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
             return path.startsWith("ext/") && path.endsWith(".bnd");
         }

@@ -150,7 +150,7 @@ public class CnfSetupWizard extends Wizard {
         return new BndPreferences().getHideInitCnfWizard();
     }
 
-    private void setDisabled(boolean disabled) {
+    private static void setDisabled(boolean disabled) {
         new BndPreferences().setHideInitCnfWizard(disabled);
     }
     

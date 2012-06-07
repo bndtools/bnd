@@ -72,7 +72,7 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
         return reconciler;
     }
 
-    private void configureReconciler(PresentationReconciler reconciler,
+    private static void configureReconciler(PresentationReconciler reconciler,
             String partitionType, ITokenScanner scanner) {
         DefaultDamagerRepairer dr;
         dr = new DefaultDamagerRepairer(scanner);

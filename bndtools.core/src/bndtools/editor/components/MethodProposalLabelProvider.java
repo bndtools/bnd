@@ -28,7 +28,7 @@ public class MethodProposalLabelProvider extends StyledCellLabelProvider impleme
 	public String getText(Object element) {
 		return getStyledString(element).getString();
 	}
-	private StyledString getStyledString(Object element) {
+	private static StyledString getStyledString(Object element) {
 		MethodContentProposal proposal = (MethodContentProposal) element;
 		
 		IMethod method = proposal.getMethod();

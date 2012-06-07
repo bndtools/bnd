@@ -56,7 +56,7 @@ public class BndProjectNature implements IProjectNature {
         updateProject(desc, false);
     }
 
-    private void addBuilder(IProjectDescription desc) {
+    private static void addBuilder(IProjectDescription desc) {
         ICommand[] commands = desc.getBuildSpec();
         for (ICommand command : commands) {
             if (command.getBuilderName().equals(NewBuilder.BUILDER_ID))
@@ -72,7 +72,7 @@ public class BndProjectNature implements IProjectNature {
         desc.setBuildSpec(nu);
     }
 
-    private void removeBuilder(IProjectDescription desc) {
+    private static void removeBuilder(IProjectDescription desc) {
         ICommand[] commands = desc.getBuildSpec();
         List<ICommand> nu = new ArrayList<ICommand>();
         for (ICommand command : commands) {

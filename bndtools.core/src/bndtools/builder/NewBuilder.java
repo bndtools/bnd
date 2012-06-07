@@ -648,7 +648,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    private File getFileForPath(IPath path) {
+    private static File getFileForPath(IPath path) {
         File file;
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (resource != null && resource.exists())

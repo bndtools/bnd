@@ -20,7 +20,7 @@ public class PriorityConfigurationElementCompator implements Comparator<IConfigu
         return result;
     }
 
-    private int getPriority(IConfigurationElement elem) {
+    private static int getPriority(IConfigurationElement elem) {
         String string = elem.getAttribute("priority");
         if (string == null)
             string = "0";

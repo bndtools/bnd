@@ -75,7 +75,7 @@ public class GitCredentialsProvider extends CredentialsProvider {
 		return true;
 	}
 	
-	private JComponent[] getSwingUI(CredentialItem... items) {
+	private static JComponent[] getSwingUI(CredentialItem... items) {
 		List<JComponent> components = new ArrayList<JComponent>();
 		
 		for (CredentialItem item : items) {
@@ -120,7 +120,7 @@ public class GitCredentialsProvider extends CredentialsProvider {
 		return components.toArray(new JComponent[components.size()]);
 	}
 	
-	private void updateCredentialItems(JComponent[] components) {
+	private static void updateCredentialItems(JComponent[] components) {
 		for (JComponent component : components) {
 			CredentialItem item = (CredentialItem) component.getClientProperty(CRED_ITEM);
 			if (item == null) {

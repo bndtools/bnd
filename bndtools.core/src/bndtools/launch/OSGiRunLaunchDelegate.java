@@ -66,7 +66,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
     }
 
-    private String validateClasspath(Collection<String> classpath) {
+    private static String validateClasspath(Collection<String> classpath) {
         for (String fileName : classpath) {
             Jar jar = null;
             try {

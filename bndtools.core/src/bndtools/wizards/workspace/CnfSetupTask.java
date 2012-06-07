@@ -101,7 +101,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
     }
 
-    private void openProject(IProgressMonitor monitor) throws CoreException {
+    private static void openProject(IProgressMonitor monitor) throws CoreException {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
         project.open(monitor);
     }

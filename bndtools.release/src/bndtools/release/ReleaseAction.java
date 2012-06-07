@@ -61,7 +61,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 		}
 	}
 
-	private boolean isBndBndSelected(List<File> files) {
+	private static boolean isBndBndSelected(List<File> files) {
 		for (File file : files) {
 			if (Project.BNDFILE.equals(file.getName())) {
 				return true;

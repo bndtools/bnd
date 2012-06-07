@@ -314,7 +314,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         }
     }
 
-    private Collection<File> getFilesFromSelection(ISelection selection) {
+    private static Collection<File> getFilesFromSelection(ISelection selection) {
         if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return Collections.emptyList();
         }

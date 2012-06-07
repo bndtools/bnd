@@ -64,7 +64,7 @@ public class ProjectLocationGroup {
         this.title = title;
     }
 
-    private IPath findWorkspaceLocation() {
+    private static IPath findWorkspaceLocation() {
         IPath p = Platform.getLocation();
 
         Workspace ws;

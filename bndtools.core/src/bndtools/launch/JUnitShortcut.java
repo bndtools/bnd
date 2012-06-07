@@ -37,7 +37,7 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
         DebugUITools.launch(config, mode);
     }
 
-    private void customise(IJavaElement element, ILaunchConfigurationWorkingCopy config) throws JavaModelException {
+    private static void customise(IJavaElement element, ILaunchConfigurationWorkingCopy config) throws JavaModelException {
         String className = null;
         String methodName = null;
 

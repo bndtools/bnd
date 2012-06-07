@@ -226,7 +226,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         return connector;
     }
 
-    private ObrResolutionResult createErrorResult(MultiStatus status) {
+    private static ObrResolutionResult createErrorResult(MultiStatus status) {
         return new ObrResolutionResult(null, false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList());
     }
 

@@ -59,7 +59,7 @@ public class JARPrintPage extends FormPage {
         }
     }
 
-    private String print(File file) throws Exception {
+    private static String print(File file) throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(bos);
         Printer printer = new Printer();
