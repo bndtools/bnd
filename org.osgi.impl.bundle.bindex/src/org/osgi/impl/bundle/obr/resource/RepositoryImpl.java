@@ -354,7 +354,7 @@ public class RepositoryImpl implements Repository {
 	}
 
 	public Resource[] getResources() {
-		return (Resource[]) getResourceList().toArray(EMPTY_RESOURCE);
+		return getResourceList().toArray(EMPTY_RESOURCE);
 	}
 
 	public String getName() {

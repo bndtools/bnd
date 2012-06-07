@@ -105,7 +105,7 @@ public class Manifest extends Hashtable<Object, Object> {
 				error("No value for manifest header " + header);
 			if (section == 0) {
 				if (header.equals("bundle-symbolicname")) {
-					bsn = (ManifestEntry) getEntries(value).get(0);
+					bsn = getEntries(value).get(0);
 				}
 				if (header.equals("bundle-version")) {
 					try {
@@ -118,7 +118,7 @@ public class Manifest extends Hashtable<Object, Object> {
 					}
 				}
 				if (header.equals("fragment-host"))
-					host = (ManifestEntry) getEntries(value).get(0);
+					host = getEntries(value).get(0);
 				if (header.equals("require-bundle"))
 					require = getEntries(value);
 				if (header.equals("import-package"))

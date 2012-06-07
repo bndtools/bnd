@@ -69,8 +69,8 @@ public class BundleIndexerImpl extends Index implements BundleIndexer {
 		List<ResourceImpl> sorted = new ArrayList<ResourceImpl>(resources);
 		Collections.sort(sorted, new Comparator<ResourceImpl>() {
 			public int compare(ResourceImpl r1, ResourceImpl r2) {
-				String s1 = getName((ResourceImpl) r1);
-				String s2 = getName((ResourceImpl) r2);
+				String s1 = getName(r1);
+				String s2 = getName(r2);
 				return s1.compareTo(s2);
 			}
 		});

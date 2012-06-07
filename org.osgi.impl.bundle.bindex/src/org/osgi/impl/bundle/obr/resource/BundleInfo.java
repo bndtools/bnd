@@ -272,7 +272,7 @@ public class BundleInfo {
 			String version = "0";
 			if (attrs != null) {
 				if (attrs.containsKey("bundle-version"))
-					version = (String) attrs.get("bundle-version");
+					version = attrs.get("bundle-version");
 				else
 					version = "0";
 			}
@@ -288,7 +288,7 @@ public class BundleInfo {
 
 			r.setComment("Require Bundle " + entry.getName() + "; " + v);
 			if (entry.directives != null
-					&& "optional".equalsIgnoreCase((String) entry.directives
+					&& "optional".equalsIgnoreCase(entry.directives
 							.get("resolution")))
 				r.setOptional(true);
 			else

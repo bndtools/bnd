@@ -129,7 +129,7 @@ public class ResourceImpl implements Resource {
 	}
 
 	public Capability[] getCapabilities() {
-		return (Capability[]) capabilities.toArray(new Capability[capabilities
+		return capabilities.toArray(new Capability[capabilities
 				.size()]);
 	}
 
@@ -142,7 +142,7 @@ public class ResourceImpl implements Resource {
 	}
 
 	public Requirement[] getRequirements() {
-		return (Requirement[]) requirements
+		return requirements
 				.toArray(new Requirement[requirements.size()]);
 	}
 
@@ -321,7 +321,7 @@ public class ResourceImpl implements Resource {
 	}
 
 	public String[] getCategories() {
-		return (String[]) categories.toArray(new String[categories.size()]);
+		return categories.toArray(new String[categories.size()]);
 	}
 
 	public Map<String, Object> getProperties() {
