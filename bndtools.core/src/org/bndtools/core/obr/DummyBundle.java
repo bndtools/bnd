@@ -43,6 +43,8 @@ public class DummyBundle implements Bundle {
             Manifest manifest = stream.getManifest();
 
             props = new Properties() {
+                private static final long serialVersionUID = 5052119501163411765L;
+
                 @Override
                 public Object get(Object key) {
                     Object value = super.get(key);
