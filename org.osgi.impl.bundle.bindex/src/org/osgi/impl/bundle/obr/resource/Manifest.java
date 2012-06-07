@@ -194,7 +194,7 @@ public class Manifest extends Hashtable<Object, Object> {
 		return parameter;
 	}
 
-	public List<ManifestEntry> getEntries(String line) throws IOException {
+	public static List<ManifestEntry> getEntries(String line) throws IOException {
 		List<ManifestEntry> v = new Vector<ManifestEntry>();
 		Set<String> aliases = new HashSet<String>();
 

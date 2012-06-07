@@ -106,7 +106,7 @@ public class Activator extends AbstractUIPlugin {
         getLog().log(s);
     }
 
-    public void error(List<String> errors) {
+    public static void error(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);
@@ -122,7 +122,7 @@ public class Activator extends AbstractUIPlugin {
         });
     }
 
-    public void message(final String msg) {
+    public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
                 MessageDialog.openInformation(null, "Bnd", msg);
@@ -130,7 +130,7 @@ public class Activator extends AbstractUIPlugin {
         });
     }
 
-    public void warning(List<String> errors) {
+    public static void warning(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);
@@ -152,13 +152,13 @@ public class Activator extends AbstractUIPlugin {
             run.run();
     }
 
-    public boolean getReportDone() {
+    public static boolean getReportDone() {
         return true;
         // return
         // getPreferenceStore().getBoolean(PreferenceConstants.P_REPORT_DONE);
     }
 
-    public File getCopy() {
+    public static File getCopy() {
         return null;
 
         // String path =
@@ -173,7 +173,7 @@ public class Activator extends AbstractUIPlugin {
         // return file;
     }
 
-    public boolean isPedantic() {
+    public static boolean isPedantic() {
         return false;
         // IPreferenceStore store = getPreferenceStore();
         // return store.getBoolean(PreferenceConstants.P_PEDANTIC);
@@ -183,7 +183,7 @@ public class Activator extends AbstractUIPlugin {
         return context;
     }
 
-    public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
+    public static void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
         if (reporter.getErrors().size() > 0
                 || (warnings && reporter.getWarnings().size() > 0)) {
             final StringBuffer sb = new StringBuffer();

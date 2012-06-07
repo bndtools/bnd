@@ -28,7 +28,7 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
         return regex.matcher(filter);
     }
 
-    public StyledString getLabel(Requirement requirement) {
+    public static StyledString getLabel(Requirement requirement) {
         String filter = requirement.getFilter();
         StyledString label = new StyledString(filter, StyledString.QUALIFIER_STYLER);
 

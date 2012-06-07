@@ -106,7 +106,7 @@ public class Activator extends AbstractUIPlugin {
         } else
             run.run();
     }
-    public void message(final String msg) {
+    public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
                 MessageDialog.openInformation(null, "Release Bundle", msg);
@@ -478,7 +478,7 @@ public class Activator extends AbstractUIPlugin {
 			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Activator.PLUGIN_ID));
 		}
 	}
-    public void error(List<String> errors) {
+    public static void error(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);

@@ -235,7 +235,7 @@ public class Central {
         listeners.remove(m);
     }
 
-    public IJavaProject getJavaProject(Project model) {
+    public static IJavaProject getJavaProject(Project model) {
         for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
             if (iproj.getName().equals(model.getName())) {
                 IJavaProject ij = JavaCore.create(iproj);
@@ -280,7 +280,7 @@ public class Central {
         }
     }
 
-    public void refreshPlugins() throws Exception {
+    public static void refreshPlugins() throws Exception {
         List<Refreshable> rps = getWorkspace().getPlugins(Refreshable.class);
         for (Refreshable rp : rps) {
             if (rp.refresh()) {
@@ -290,7 +290,7 @@ public class Central {
         }
     }
 
-    public void refreshFile(File f) throws Exception {
+    public static void refreshFile(File f) throws Exception {
         String path = toLocal(f);
         IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
         if (r != null) {
@@ -298,7 +298,7 @@ public class Central {
         }
     }
 
-    public void refresh(Project p) throws Exception {
+    public static void refresh(Project p) throws Exception {
         IJavaProject jp = getJavaProject(p);
         if (jp != null)
             jp.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);

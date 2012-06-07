@@ -7,7 +7,7 @@ import static org.bndtools.core.utils.parse.properties.LineType.*;
 
 public class TestPropertiesLineReader extends TestCase {
 
-    public void testEmpty() throws Exception {
+    public static void testEmpty() throws Exception {
         String input =
                 "\n" +
                 "  \n" +
@@ -26,7 +26,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals(eof, reader.next());
     }
     
-    public void testRegionAfterEOF() throws Exception {
+    public static void testRegionAfterEOF() throws Exception {
         PropertiesLineReader reader = new PropertiesLineReader("");
         assertEquals(blank, reader.next());
         assertEquals(new Region(0, 0), reader.region());
@@ -39,7 +39,7 @@ public class TestPropertiesLineReader extends TestCase {
         }
     }
 
-    public void testComment() throws Exception {
+    public static void testComment() throws Exception {
         String input = "# comment";
         PropertiesLineReader reader = new PropertiesLineReader(input);
         assertEquals(comment, reader.next());
@@ -47,7 +47,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals(eof, reader.next());
     }
     
-    public void testCommentLines() throws Exception {
+    public static void testCommentLines() throws Exception {
         String input = "# comment1\n" +
         		"# comment2\n" +
         		"   # comment3\n" +
@@ -72,7 +72,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals(eof, reader.next());
     }
     
-    public void testCommentsDontContinue() throws Exception {
+    public static void testCommentsDontContinue() throws Exception {
         // first comment ends with backslash but this shouldn't continue the line
         String input = "# comment\\\n# comment";
         
@@ -86,7 +86,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals(eof, reader.next());
     }
     
-    public void testEntryLines() throws Exception {
+    public static void testEntryLines() throws Exception {
         String input = "foo=bar\n" +
         		"foo2:bar2\n" +
         		"   foo3:bar3";
@@ -105,7 +105,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals("foo3", reader.key());
     }
     
-    public void testContinuedLine() throws Exception {
+    public static void testContinuedLine() throws Exception {
         String input =
                 "foo=bar,\\\n" +
                 "  baz";
@@ -116,7 +116,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals("foo", reader.key());
     }
     
-    public void testTrailingWhitespaceAfterKey() throws Exception {
+    public static void testTrailingWhitespaceAfterKey() throws Exception {
         String input = "   hello  :world";
         PropertiesLineReader reader = new PropertiesLineReader(input);
         
@@ -125,7 +125,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals("hello", reader.key());
     }
 
-    public void testEscapedCharsInKey() throws Exception {
+    public static void testEscapedCharsInKey() throws Exception {
         String input =
                 "hel\\ \\ lo: world\n" +
         		"hell\\=o\\:world=foo";
@@ -140,7 +140,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals("hell=o:world", reader.key());
     }
     
-    public void testEmptyValue() throws Exception {
+    public static void testEmptyValue() throws Exception {
         String input = "cheeses";
         PropertiesLineReader reader = new PropertiesLineReader(input);
         
@@ -149,7 +149,7 @@ public class TestPropertiesLineReader extends TestCase {
         assertEquals("cheeses", reader.key());
     }
     
-    public void testCarriageReturnAndLineFeed() throws Exception {
+    public static void testCarriageReturnAndLineFeed() throws Exception {
         String input = "line1=foo\r\n" +
         		"line2=foo,\\\r\n" +
         		"  bar";

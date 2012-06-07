@@ -187,7 +187,7 @@ public class Plugin extends AbstractUIPlugin {
         return repositoryModel;
     }
 
-    public void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
+    public static void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
         if (reporter.getErrors().size() > 0
                 || (warnings && reporter.getWarnings().size() > 0)) {
             final StringBuffer sb = new StringBuffer();
@@ -220,7 +220,7 @@ public class Plugin extends AbstractUIPlugin {
             message(title+ " : ok");
         }
     }
-    public void message(final String msg) {
+    public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
                 MessageDialog.openInformation(null, "Bnd", msg);
@@ -233,7 +233,7 @@ public class Plugin extends AbstractUIPlugin {
         } else
             run.run();
     }
-    public void error(List<String> errors) {
+    public static void error(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);
@@ -264,7 +264,7 @@ public class Plugin extends AbstractUIPlugin {
             }
         });
     }
-    public void warning(List<String> errors) {
+    public static void warning(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);

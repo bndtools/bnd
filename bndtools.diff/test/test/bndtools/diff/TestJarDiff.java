@@ -24,7 +24,7 @@ import bndtools.diff.JarDiff;
 
 public class TestJarDiff extends TestCase {
 
-	public void testCompare() throws Exception{
+	public static void testCompare() throws Exception{
 		
 		JarDiff diff = buildTestJarDiff();
 		

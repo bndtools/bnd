@@ -104,7 +104,7 @@ public class MapEntryCellModifier<K,V> implements ICellModifier {
 			col.setWidth(120);
 		}
 	}
-	public String[] getColumnProperties() {
+	public static String[] getColumnProperties() {
 		return PROPS;
 	}
 	public void addCellEditorsToViewer() {

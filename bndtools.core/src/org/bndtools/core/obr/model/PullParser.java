@@ -56,7 +56,7 @@ public class PullParser {
     {
     }
 
-    public RepositoryImpl parseRepository(InputStream is) throws Exception
+    public static RepositoryImpl parseRepository(InputStream is) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(is, null);
@@ -68,7 +68,7 @@ public class PullParser {
         return parse(reader);
     }
 
-    public RepositoryImpl parseRepository(Reader r) throws Exception
+    public static RepositoryImpl parseRepository(Reader r) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
@@ -80,7 +80,7 @@ public class PullParser {
         return parse(reader);
     }
 
-    public ResourceImpl parseResource(Reader r) throws Exception
+    public static ResourceImpl parseResource(Reader r) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
@@ -92,7 +92,7 @@ public class PullParser {
         return parseResource(reader);
     }
 
-    public CapabilityImpl parseCapability(Reader r) throws Exception
+    public static CapabilityImpl parseCapability(Reader r) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
@@ -104,7 +104,7 @@ public class PullParser {
         return parseCapability(reader);
     }
 
-    public PropertyImpl parseProperty(Reader r) throws Exception
+    public static PropertyImpl parseProperty(Reader r) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
@@ -116,7 +116,7 @@ public class PullParser {
         return parseProperty(reader);
     }
 
-    public RequirementImpl parseRequirement(Reader r) throws Exception
+    public static RequirementImpl parseRequirement(Reader r) throws Exception
     {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
@@ -128,7 +128,7 @@ public class PullParser {
         return parseRequire(reader);
     }
 
-    public RepositoryImpl parse(XmlPullParser reader) throws Exception
+    public static RepositoryImpl parse(XmlPullParser reader) throws Exception
     {
         RepositoryImpl repository = new RepositoryImpl();
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -176,7 +176,7 @@ public class PullParser {
         }
     }
 
-    public Referral parseReferral(XmlPullParser reader) throws Exception
+    public static Referral parseReferral(XmlPullParser reader) throws Exception
     {
         Referral referral = new Referral();
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -196,7 +196,7 @@ public class PullParser {
         return referral;
     }
 
-    public ResourceImpl parseResource(XmlPullParser reader) throws Exception
+    public static ResourceImpl parseResource(XmlPullParser reader) throws Exception
     {
         ResourceImpl resource = new ResourceImpl();
         try
@@ -262,7 +262,7 @@ public class PullParser {
         }
     }
 
-    public String parseCategory(XmlPullParser reader) throws IOException, XmlPullParserException
+    public static String parseCategory(XmlPullParser reader) throws IOException, XmlPullParserException
     {
         String id = null;
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -276,7 +276,7 @@ public class PullParser {
         return id;
     }
 
-    public CapabilityImpl parseCapability(XmlPullParser reader) throws Exception
+    public static CapabilityImpl parseCapability(XmlPullParser reader) throws Exception
     {
         CapabilityImpl capability = new CapabilityImpl();
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -307,7 +307,7 @@ public class PullParser {
         return capability;
     }
 
-    public PropertyImpl parseProperty(XmlPullParser reader) throws Exception
+    public static PropertyImpl parseProperty(XmlPullParser reader) throws Exception
     {
         String n = null, t = null, v = null;
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -333,7 +333,7 @@ public class PullParser {
         return prop;
     }
 
-    public RequirementImpl parseRequire(XmlPullParser reader) throws Exception
+    public static RequirementImpl parseRequire(XmlPullParser reader) throws Exception
     {
         RequirementImpl requirement = new RequirementImpl();
         for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
@@ -387,7 +387,7 @@ public class PullParser {
         return requirement;
     }
 
-    public void ignoreTag(XmlPullParser reader) throws IOException, XmlPullParserException {
+    public static void ignoreTag(XmlPullParser reader) throws IOException, XmlPullParserException {
         int level = 1;
         while (level > 0)
         {

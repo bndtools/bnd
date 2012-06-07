@@ -134,7 +134,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         return result;
     }
 
-    public List<String> calculateBundleSpecificHeaders(Collection<String> propertyNames) {
+    public static List<String> calculateBundleSpecificHeaders(Collection<String> propertyNames) {
         List<String> result = new ArrayList<String>(propertyNames.size());
 
         for (String propertyName : propertyNames) {
@@ -145,7 +145,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         return result;
     }
 
-    public void moveBundleContentProperties(IBndModel sourceModel, IBndModel destModel, List<String> properties) {
+    public static void moveBundleContentProperties(IBndModel sourceModel, IBndModel destModel, List<String> properties) {
         for (String property : properties) {
             Object value = sourceModel.genericGet(property);
             destModel.genericSet(property, value);

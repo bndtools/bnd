@@ -367,7 +367,7 @@ public class Tag {
 		}
 	}
 
-	public boolean match(String search, Tag child, Tag mapping) {
+	public static boolean match(String search, Tag child, Tag mapping) {
 		String target = child.getName();
 		String sn = null;
 		String tn = null;

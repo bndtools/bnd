@@ -25,7 +25,7 @@ import org.osgi.impl.bundle.obr.resource.*;
 
 public class TestVersionImpl extends TestCase {
 	
-	public void testVersion() {
+	public static void testVersion() {
 		tv("[0.0.0,1.1.1]");
 		tv("(0.0.0,1.1.1)");
 		tv("[0.0.0,1.1.1)");
