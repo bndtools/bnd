@@ -31,10 +31,8 @@ import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.bndtools.core.utils.parse.properties.LineType;
 import org.bndtools.core.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Region;
 import org.osgi.framework.Constants;
 
 import aQute.libg.header.Attrs;
