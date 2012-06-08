@@ -957,7 +957,7 @@ public class BuilderTest extends BndTestCase {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("Export-Package",
-				"org.objectweb.asm;version=1.1, org.objectweb.asm;version=1.2, org.objectweb.asm;version=1.3");
+				"org.objectweb.asm;version=1.1, org.objectweb.asm;version=1.2, org.objectweb.asm;version=2.3");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
@@ -968,7 +968,7 @@ public class BuilderTest extends BndTestCase {
 		String ip = m.getMainAttributes().getValue("Export-Package");
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.1\"") >= 0);
 		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
-		assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.3\"") >= 0);
+		assertTrue(ip.indexOf("org.objectweb.asm;version=\"2.3\"") >= 0);
 	}
 
 	public void testBsnAssignmentNoFile() throws Exception {
