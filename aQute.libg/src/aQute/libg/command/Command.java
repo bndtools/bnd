@@ -37,7 +37,6 @@ public class Command {
 	}
 
 	public int execute(InputStream in, Appendable stdout, Appendable stderr) throws Exception {
-		int result;
 		if (reporter != null) {
 			reporter.trace("executing cmd: %s", arguments);
 		}
@@ -65,15 +64,12 @@ public class Command {
 		Runtime.getRuntime().addShutdownHook(hook);
 		TimerTask timer = null;
 		OutputStream stdin = process.getOutputStream();
-		final InputStreamHandler handler = in != null ? new InputStreamHandler(in, stdin) : null;
 
 		if (timeout != 0) {
 			timer = new TimerTask() {
 				public void run() {
 					timedout = true;
 					process.destroy();
-					if (handler != null)
-						handler.interrupt();
 				}
 			};
 			Command.timer.schedule(timer, timeout);
@@ -83,15 +79,36 @@ public class Command {
 		try {
 			InputStream err = process.getErrorStream();
 			try {
-				new Collector(out, stdout).start();
-				new Collector(err, stderr).start();
-				if (handler != null)
-					handler.start();
-
-				result = process.waitFor();
+				Collector cout = new Collector(out, stdout);
+				cout.start();
+				Collector cerr = new Collector(err, stderr);
+				cerr.start();
+	
+				try {
+					int c = in.read();
+					while (c >= 0) {
+						stdin.write(c);
+						if ( c == '\n')
+							stdin.flush();
+						c = in.read();
+					}
+				}
+				catch (InterruptedIOException e) {
+					// Ignore here
+				}
+				catch (Exception e) {
+					// Who cares?
+				} finally {
+					stdin.close();
+				}
+				
 				if (reporter != null)
-					reporter.trace("exited process.waitFor, %s", result);
-
+					reporter.trace("exited process");
+				
+				cerr.join();
+				cout.join();
+				if (reporter != null)
+					reporter.trace("stdout/stderr streams have finished");
 			}
 			finally {
 				err.close();
@@ -102,16 +119,16 @@ public class Command {
 			if (timer != null)
 				timer.cancel();
 			Runtime.getRuntime().removeShutdownHook(hook);
-			if (handler != null)
-				handler.interrupt();
 		}
+		
+		byte exitValue = (byte) process.waitFor();
 		if (reporter != null)
-			reporter.trace("cmd %s executed with result=%d, result: %s/%s", arguments, result,
-					stdout, stderr);
+			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue,
+					stdout, stderr, timedout);
 
 		if (timedout)
 			return Integer.MIN_VALUE;
-		byte exitValue = (byte) process.exitValue();
+		
 		return exitValue;
 	}
 
@@ -178,42 +195,6 @@ public class Command {
 				}
 				if (reporter != null) {
 					reporter.trace("cmd exec: %s", e);
-				}
-			}
-		}
-	}
-
-	static class InputStreamHandler extends Thread {
-		final InputStream	in;
-		final OutputStream	stdin;
-
-		InputStreamHandler(InputStream in, OutputStream stdin) {
-			this.stdin = stdin;
-			this.in = in;
-			setDaemon(true);
-		}
-
-		public void run() {
-			try {
-				int c = in.read();
-				while (c >= 0) {
-					stdin.write(c);
-					stdin.flush();
-					c = in.read();
-				}
-			}
-			catch (InterruptedIOException e) {
-				// Ignore here
-			}
-			catch (Exception e) {
-				// Who cares?
-			}
-			finally {
-				try {
-					stdin.close();
-				}
-				catch (IOException e) {
-					// Who cares?
 				}
 			}
 		}
