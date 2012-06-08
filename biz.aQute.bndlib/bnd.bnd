@@ -35,3 +35,5 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	ee.j2se;version='[1.5,1.6)'
 
 Bundle-Version: 1.53.2
+Import-Package: junit.framework;resolution:=optional,\
+	*
