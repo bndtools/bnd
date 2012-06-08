@@ -17,6 +17,8 @@ public class InstructionTest extends TestCase {
 	
 	
 	public void testWildcard() {
+		assertTrue( new Instruction("a|b").matches("a"));
+		assertTrue( new Instruction("a|b").matches("b"));
 		assertTrue( new Instruction("com.foo.*").matches("com.foo"));
 		assertTrue( new Instruction("com.foo.*").matches("com.foo.bar"));
 		assertTrue( new Instruction("com.foo.*").matches("com.foo.bar.baz"));

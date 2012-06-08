@@ -4,24 +4,27 @@ import java.io.*;
 import java.util.regex.*;
 
 public class Instruction {
-	
+
 	public static class Filter implements FileFilter {
 
-		private Instruction instruction;
-		private boolean recursive;
-		private Pattern doNotCopy;
-		
-		public Filter (Instruction instruction, boolean recursive, Pattern doNotCopy) {
+		private Instruction	instruction;
+		private boolean		recursive;
+		private Pattern		doNotCopy;
+
+		public Filter(Instruction instruction, boolean recursive, Pattern doNotCopy) {
 			this.instruction = instruction;
 			this.recursive = recursive;
 			this.doNotCopy = doNotCopy;
 		}
-		public Filter (Instruction instruction, boolean recursive) {
+
+		public Filter(Instruction instruction, boolean recursive) {
 			this(instruction, recursive, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
 		}
+
 		public boolean isRecursive() {
 			return recursive;
 		}
+
 		public boolean accept(File pathname) {
 			if (doNotCopy != null && doNotCopy.matcher(pathname.getName()).matches()) {
 				return false;
@@ -30,7 +33,7 @@ public class Instruction {
 			if (pathname.isDirectory() && isRecursive()) {
 				return true;
 			}
-			
+
 			if (instruction == null) {
 				return true;
 			}
@@ -47,83 +50,89 @@ public class Instruction {
 	final boolean		duplicate;
 	final boolean		literal;
 	final boolean		any;
-	
+
 	public Instruction(String input) {
 		this.input = input;
-			
+
 		String s = Processor.removeDuplicateMarker(input);
 		duplicate = !s.equals(input);
-		
+
 		if (s.startsWith("!")) {
 			negated = true;
 			s = s.substring(1);
-		} else
+		}
+		else
 			negated = false;
 
-		if ( input.equals("*")) {
+		if (input.equals("*")) {
 			any = true;
-			literal= false;
-			match= null;
+			literal = false;
+			match = null;
 			return;
 		}
-		
+
 		any = false;
 		if (s.startsWith("=")) {
 			match = s.substring(1);
 			literal = true;
-		} else  {
+		}
+		else {
 			boolean wildcards = false;
-			
+
 			StringBuilder sb = new StringBuilder();
 			loop: for (int c = 0; c < s.length(); c++) {
 				switch (s.charAt(c)) {
-				case '.':
-					// If we end in a wildcard .* then we need to
-					// also include the last full package. I.e.
-					// com.foo.* includes com.foo (unlike OSGi)
-					if ( c == s.length()-2 && '*'==s.charAt(c+1)) {
-						sb.append("(\\..*)?");
-						wildcards=true;
-						break loop;
-					}
-					else
-						sb.append("\\.");
-						
-					break;
-				case '*':
-					sb.append(".*");
-					wildcards=true;
-					break;
-				case '$':
-					sb.append("\\$");
-					break;
-				case '?':
-					sb.append(".?");
-					wildcards=true;
-					break;
-				default:
-					sb.append(s.charAt(c));
-					break;
+					case '.' :
+						// If we end in a wildcard .* then we need to
+						// also include the last full package. I.e.
+						// com.foo.* includes com.foo (unlike OSGi)
+						if (c == s.length() - 2 && '*' == s.charAt(c + 1)) {
+							sb.append("(\\..*)?");
+							wildcards = true;
+							break loop;
+						}
+						else
+							sb.append("\\.");
+
+						break;
+					case '*' :
+						sb.append(".*");
+						wildcards = true;
+						break;
+					case '$' :
+						sb.append("\\$");
+						break;
+					case '?' :
+						sb.append(".?");
+						wildcards = true;
+						break;
+					case '|' :
+						sb.append('|');
+						wildcards = true;
+						break;
+					default :
+						sb.append(s.charAt(c));
+						break;
 				}
 			}
-			
-			if ( !wildcards ) {
+
+			if (!wildcards) {
 				literal = true;
 				match = s;
-			} else {
+			}
+			else {
 				literal = false;
 				match = sb.toString();
 			}
 		}
 
-		
 	}
 
 	public boolean matches(String value) {
 		if (any)
 			return true;
-		
-		if (literal )
+
+		if (literal)
 			return match.equals(value);
 		else
 			return getMatcher(value).matches();
@@ -159,7 +168,6 @@ public class Instruction {
 	public boolean isOptional() {
 		return optional;
 	}
-
 
 	public boolean isLiteral() {
 		return literal;
