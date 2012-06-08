@@ -14,10 +14,14 @@ import aQute.lib.base64.*;
  * @author aqute
  * 
  */
-@SuppressWarnings({ "unchecked", "rawtypes" }) public class Converter {
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class Converter {
 	boolean	fatal	= true;
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
+		// Is it a compatible type?
+		if (type.isAssignableFrom(o.getClass()))
+			return (T) o;
 		return (T) convert((Type) type, o);
 	}
 
@@ -26,10 +30,7 @@ import aQute.lib.base64.*;
 			return null; // compatible with any
 
 		Class resultType = getRawClass(type);
-		Class<?> actualType = o.getClass();
-		// Is it a compatible type?
-		if (resultType.isAssignableFrom(actualType))
-			return o;
+		Class< ? > actualType = o.getClass();
 
 		// We can always make a string
 
@@ -80,13 +81,17 @@ import aQute.lib.base64.*;
 					if (m.getReturnType() == byte[].class)
 						return m.invoke(o);
 
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// Ignore
 				}
 			}
 
 			return array(resultType.getComponentType(), o);
 		}
+
+		if (resultType.isAssignableFrom(o.getClass()))
+			return o;
 
 		// Simple type coercion
 
@@ -98,47 +103,61 @@ import aQute.lib.base64.*;
 				return n.longValue() == 0 ? false : true;
 
 			resultType = Boolean.class;
-		} else if (resultType == byte.class || resultType == Byte.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.byteValue();
-			resultType = Byte.class;
-		} else if (resultType == char.class || resultType == Character.class) {
-			Number n = number(o);
-			if (n != null)
-				return (char) n.shortValue();
-			resultType = Character.class;
-		} else if (resultType == short.class || resultType == Short.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.shortValue();
-
-			resultType = Short.class;
-		} else if (resultType == int.class || resultType == Integer.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.intValue();
-
-			resultType = Integer.class;
-		} else if (resultType == long.class || resultType == Long.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.longValue();
-
-			resultType = Long.class;
-		} else if (resultType == float.class || resultType == Float.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.floatValue();
-
-			resultType = Float.class;
-		} else if (resultType == double.class || resultType == Double.class) {
-			Number n = number(o);
-			if (n != null)
-				return n.doubleValue();
-
-			resultType = Double.class;
 		}
+		else
+			if (resultType == byte.class || resultType == Byte.class) {
+				Number n = number(o);
+				if (n != null)
+					return n.byteValue();
+				resultType = Byte.class;
+			}
+			else
+				if (resultType == char.class || resultType == Character.class) {
+					Number n = number(o);
+					if (n != null)
+						return (char) n.shortValue();
+					resultType = Character.class;
+				}
+				else
+					if (resultType == short.class || resultType == Short.class) {
+						Number n = number(o);
+						if (n != null)
+							return n.shortValue();
+
+						resultType = Short.class;
+					}
+					else
+						if (resultType == int.class || resultType == Integer.class) {
+							Number n = number(o);
+							if (n != null)
+								return n.intValue();
+
+							resultType = Integer.class;
+						}
+						else
+							if (resultType == long.class || resultType == Long.class) {
+								Number n = number(o);
+								if (n != null)
+									return n.longValue();
+
+								resultType = Long.class;
+							}
+							else
+								if (resultType == float.class || resultType == Float.class) {
+									Number n = number(o);
+									if (n != null)
+										return n.floatValue();
+
+									resultType = Float.class;
+								}
+								else
+									if (resultType == double.class || resultType == Double.class) {
+										Number n = number(o);
+										if (n != null)
+											return n.doubleValue();
+
+										resultType = Double.class;
+									}
 
 		assert !resultType.isPrimitive();
 
@@ -158,15 +177,17 @@ import aQute.lib.base64.*;
 			}
 
 			try {
-				Constructor<?> c = resultType.getConstructor(String.class);
+				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 			}
 			try {
 				Method m = resultType.getMethod("valueOf", String.class);
 				if (Modifier.isStatic(m.getModifiers()))
 					return m.invoke(null, o.toString());
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 			}
 
 			if (resultType == Character.class && input.length() == 1)
@@ -181,11 +202,41 @@ import aQute.lib.base64.*;
 					int nn = n.intValue();
 					if (nn > 0 && nn < vs.length)
 						return vs[nn];
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// Ignore
 				}
 			}
 		}
+
+		// Translate arrays with length 1 by picking the single element
+		if ( actualType.isArray() && Array.getLength(o)==1) {
+			return convert(type,Array.get(o, 0));
+		}
+		
+		// Translate collections with size 1 by picking the single element
+		if ( o instanceof Collection) {
+			Collection col = (Collection) o;
+			if ( col.size() == 1)
+				return convert(type,col.iterator().next());
+		}
+		
+		if ( o instanceof Map) {
+			try {
+				Map<Object,Object> map = (Map) o;
+				Object instance = resultType.newInstance();
+				for ( Map.Entry e : map.entrySet()) {
+					String key = (String) e.getKey();
+					Field f = resultType.getField(key);
+					Object value = convert(f.getGenericType(), e.getValue());
+					f.set(instance, value);
+				}
+				return instance;
+			} catch(Exception e) {
+				// fall through
+			}
+		}
+		
 		return error("No conversion found for " + o.getClass() + " to " + type);
 	}
 
@@ -203,35 +254,43 @@ import aQute.lib.base64.*;
 			String s = (String) o;
 			try {
 				return Double.parseDouble(s);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// Ignore
 			}
 		}
 		return null;
 	}
 
-	private Collection collection(Type collectionType, Class<? extends Collection> rawClass,
+	private Collection collection(Type collectionType, Class< ? extends Collection> rawClass,
 			Object o) throws Exception {
 		Collection collection;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(ArrayList.class))
 				collection = new ArrayList();
-			else if (rawClass.isAssignableFrom(HashSet.class))
-				collection = new HashSet();
-			else if (rawClass.isAssignableFrom(TreeSet.class))
-				collection = new TreeSet();
-			else if (rawClass.isAssignableFrom(LinkedList.class))
-				collection = new LinkedList();
-			else if (rawClass.isAssignableFrom(Vector.class))
-				collection = new Vector();
-			else if (rawClass.isAssignableFrom(Stack.class))
-				collection = new Stack();
-			else if (rawClass.isAssignableFrom(ConcurrentLinkedQueue.class))
-				collection = new ConcurrentLinkedQueue();
 			else
-				return (Collection) error("Cannot find a suitable collection for the collection interface "
-						+ rawClass);
-		} else
+				if (rawClass.isAssignableFrom(HashSet.class))
+					collection = new HashSet();
+				else
+					if (rawClass.isAssignableFrom(TreeSet.class))
+						collection = new TreeSet();
+					else
+						if (rawClass.isAssignableFrom(LinkedList.class))
+							collection = new LinkedList();
+						else
+							if (rawClass.isAssignableFrom(Vector.class))
+								collection = new Vector();
+							else
+								if (rawClass.isAssignableFrom(Stack.class))
+									collection = new Stack();
+								else
+									if (rawClass.isAssignableFrom(ConcurrentLinkedQueue.class))
+										collection = new ConcurrentLinkedQueue();
+									else
+										return (Collection) error("Cannot find a suitable collection for the collection interface "
+												+ rawClass);
+		}
+		else
 			collection = rawClass.newInstance();
 
 		Type subType = Object.class;
@@ -248,21 +307,25 @@ import aQute.lib.base64.*;
 		return collection;
 	}
 
-	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
+	private Map map(Type mapType, Class< ? extends Map< ? , ? >> rawClass, Object o)
+			throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(HashMap.class))
 				result = new HashMap();
-			else if (rawClass.isAssignableFrom(TreeMap.class))
-				result = new TreeMap();
-			else if (rawClass.isAssignableFrom(ConcurrentHashMap.class))
-				result = new ConcurrentHashMap();
 			else
-				return (Map) error("Cannot find suitable map for map interface " + rawClass);
-		} else
+				if (rawClass.isAssignableFrom(TreeMap.class))
+					result = new TreeMap();
+				else
+					if (rawClass.isAssignableFrom(ConcurrentHashMap.class))
+						result = new ConcurrentHashMap();
+					else
+						return (Map) error("Cannot find suitable map for map interface " + rawClass);
+		}
+		else
 			result = rawClass.newInstance();
 
-		Map<?, ?> input = toMap(o);
+		Map< ? , ? > input = toMap(o);
 
 		Type keyType = Object.class;
 		Type valueType = Object.class;
@@ -272,20 +335,21 @@ import aQute.lib.base64.*;
 			valueType = ptype.getActualTypeArguments()[1];
 		}
 
-		for (Map.Entry<?, ?> entry : input.entrySet()) {
+		for (Map.Entry< ? , ? > entry : input.entrySet()) {
 			Object key = convert(keyType, entry.getKey());
 			Object value = convert(valueType, entry.getValue());
-			if (value == null)
-				return (Map) error("Key for map must not be null");
-			result.put(key, value);
+			if (key == null)
+				error("Key for map must not be null: " + input);
+			else
+				result.put(key, value);
 		}
 
 		return result;
 	}
 
 	public Object array(Type type, Object o) throws Exception {
-		Collection<?> input = toCollection(o);
-		Class<?> componentClass = getRawClass(type);
+		Collection< ? > input = toCollection(o);
+		Class< ? > componentClass = getRawClass(type);
 		Object array = Array.newInstance(componentClass, input.size());
 
 		int i = 0;
@@ -295,12 +359,12 @@ import aQute.lib.base64.*;
 		return array;
 	}
 
-	private Class<?> getRawClass(Type type) {
+	private Class< ? > getRawClass(Type type) {
 		if (type instanceof Class)
-			return (Class<?>) type;
+			return (Class< ? >) type;
 
 		if (type instanceof ParameterizedType)
-			return (Class<?>) ((ParameterizedType) type).getRawType();
+			return (Class< ? >) ((ParameterizedType) type).getRawType();
 
 		if (type instanceof GenericArrayType) {
 			Type componentType = ((GenericArrayType) type).getGenericComponentType();
@@ -320,9 +384,9 @@ import aQute.lib.base64.*;
 		return Object.class;
 	}
 
-	public Collection<?> toCollection(Object o) {
+	public Collection< ? > toCollection(Object o) {
 		if (o instanceof Collection)
-			return (Collection<?>) o;
+			return (Collection< ? >) o;
 
 		if (o.getClass().isArray()) {
 			if (o.getClass().getComponentType().isPrimitive()) {
@@ -339,9 +403,9 @@ import aQute.lib.base64.*;
 		return Arrays.asList(o);
 	}
 
-	public Map<?, ?> toMap(Object o) throws Exception {
+	public Map< ? , ? > toMap(Object o) throws Exception {
 		if (o instanceof Map)
-			return (Map<?, ?>) o;
+			return (Map< ? , ? >) o;
 		Map result = new HashMap();
 		Field fields[] = o.getClass().getFields();
 		for (Field f : fields)

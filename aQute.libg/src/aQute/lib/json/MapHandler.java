@@ -68,7 +68,8 @@ public class MapHandler extends Handler {
 
 			c = r.next();
 			Object value = r.codec.decode(valueType, r);
-			map.put(key, value);
+			if ( value != null || !r.codec.ignorenull)
+				map.put(key, value);
 
 			c = r.skipWs();
 			

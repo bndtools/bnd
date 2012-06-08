@@ -95,7 +95,8 @@ public class ObjectHandler extends Handler {
 			if (f != null) {
 				// We have a field and thus a type
 				Object value = r.codec.decode(f.getGenericType(), r);
-				f.set(targetObject, value);
+				if ( value != null || !r.codec.ignorenull)
+					f.set(targetObject, value);
 			} else {
 				// No field, but may extra is defined
 				if (extra == null) {

@@ -53,6 +53,9 @@ public class JSONCodec {
 	private static FileHandler						fh					= new FileHandler();
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
+	boolean ignorenull;
+	
+
 	/**
 	 * Create a new Encoder with the state and appropriate API.
 	 * 
@@ -79,7 +82,8 @@ public class JSONCodec {
 		// Get the null out of the way
 
 		if (object == null) {
-			app.append("null");
+			if ( !ignorenull)
+				app.append("null");
 			return;
 		}
 
@@ -476,6 +480,20 @@ public class JSONCodec {
 		throw new IllegalArgumentException(
 				"Does not support generics beyond Parameterized Type  and GenericArrayType, got "
 						+ type);
+	}
+
+	/**
+	 * Ignore null values in output and input
+	 * @param ignorenull
+	 * @return
+	 */
+	public JSONCodec setIgnorenull(boolean ignorenull) {
+		this.ignorenull = ignorenull;
+		return this;
+	}
+
+	public boolean isIgnorenull() {
+		return ignorenull;
 	}
 
 }

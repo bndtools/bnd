@@ -14,6 +14,24 @@ import aQute.libg.version.*;
 @SuppressWarnings({"unchecked","rawtypes"}) public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
+	
+	/**
+	 * Test map to object
+	 */
+	
+	public class DD {
+		
+	}
+	public class D {
+		int n;
+		String s;
+		
+	}
+	public void testMap2Object() throws Exception {
+		
+	}
+	
+	
 	/**
 	 * Digests as byte[]
 	 * 
