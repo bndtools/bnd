@@ -40,7 +40,6 @@ import aQute.libg.glob.Glob;
 import aQute.libg.reporter.Reporter;
 import aQute.libg.sax.SAXUtil;
 import aQute.libg.sax.filters.MergeContentFilter;
-import aQute.libg.tuple.Pair;
 
 public class GitOBRRepo extends AbstractIndexedRepo {
 
