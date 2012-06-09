@@ -22,11 +22,19 @@ declare -a packages=( $( \
 echo "<FindBugsFilter>" > "${excludeFile}"
 
 for package in "${packages[@]}"; do
-  cat >> "${excludeFile}" << EOF
+ if [[ "${package}" == "org.apache.felix.bundlerepository.impl" ]]; then
+   cat >> "${excludeFile}" << EOF
+     <Match>
+       <Class name="${package}.ResolverImpl" />
+     </Match>
+EOF
+ else
+   cat >> "${excludeFile}" << EOF
      <Match>
        <Package name="${package}" />
      </Match>
 EOF
+ fi
 done
 
 echo "</FindBugsFilter>" >> "${excludeFile}"

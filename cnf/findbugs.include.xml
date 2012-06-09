@@ -162,7 +162,7 @@
        <Package name="bndtools.wizards.workspace" />
      </Match>
      <Match>
-       <Package name="org.apache.felix.bundlerepository.impl" />
+       <Class name="org.apache.felix.bundlerepository.impl.ResolverImpl" />
      </Match>
      <Match>
        <Package name="org.bndtools.build.api" />
