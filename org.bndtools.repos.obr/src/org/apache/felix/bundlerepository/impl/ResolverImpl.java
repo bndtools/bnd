@@ -471,7 +471,6 @@ public class ResolverImpl implements Resolver
                 {
                     best = current;
                     bestLocal = isCurrentLocal;
-                    bestVersion = null;
                 }
                 else if ((v != null) && (v instanceof Version))
                 {
