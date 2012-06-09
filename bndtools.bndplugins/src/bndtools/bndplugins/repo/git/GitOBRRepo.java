@@ -160,11 +160,11 @@ public class GitOBRRepo extends AbstractIndexedRepo {
 	
 	
 	private static String escape(String url) {
-		url = url.replace('/', '-');
-		url = url.replace(':', '-');
-		url = url.replace('@', '-');
-		url = url.replace('\\', '-');
-		return url;
+		String urli = url.replace('/', '-');
+		urli = urli.replace(':', '-');
+		urli = urli.replace('@', '-');
+		urli = urli.replace('\\', '-');
+		return urli;
 	}
 
 	@Override
