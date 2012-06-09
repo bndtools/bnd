@@ -53,9 +53,9 @@ public class BundleRelease {
 
 	private Composite container;
 
-	private TreeViewer treeViewer;
+	protected TreeViewer treeViewer;
 
-	private TreeContentProvider treeProvider = new TreeContentProvider();
+	protected TreeContentProvider treeProvider = new TreeContentProvider();
 
 	public BundleRelease() {
 	}
@@ -534,7 +534,7 @@ public class BundleRelease {
 
 	static class InlineComboEditingSupport extends EditingSupport {
 
-		private ComboBoxCellEditor editor;
+		protected ComboBoxCellEditor editor;
 		
 		public InlineComboEditingSupport(ColumnViewer viewer) {
 			super(viewer);

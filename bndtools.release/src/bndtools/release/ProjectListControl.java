@@ -15,7 +15,7 @@ public class ProjectListControl {
 
 	private Table projects;
 	private String[] releaseRepos;
-	private final SelectionListener selectionListener;
+	protected final SelectionListener selectionListener;
 	
 	public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
 		this.selectionListener = selectionListener;

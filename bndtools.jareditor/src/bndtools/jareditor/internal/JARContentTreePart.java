@@ -46,7 +46,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentTreePart extends AbstractFormPart {
 
-	private final IManagedForm managedForm;
+	protected final IManagedForm managedForm;
 
 	private final Tree tree;
 	private final TreeViewer viewer;

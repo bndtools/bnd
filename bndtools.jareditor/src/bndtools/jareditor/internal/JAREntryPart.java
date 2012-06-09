@@ -52,12 +52,12 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
     private Font textFont;
     private Text text;
-    private ZipEntry zipEntry = null;
+    protected ZipEntry zipEntry = null;
     private Job displayJob = null;
 
-    private boolean showAsText = true;
-    private final String[] charsets;
-    private int selectedCharset;
+    protected boolean showAsText = true;
+    protected final String[] charsets;
+    protected int selectedCharset;
 
     public JAREntryPart(IEditorPart editor, Composite composite, FormToolkit toolkit) {
         this.editor = editor;

@@ -35,8 +35,8 @@ import bndtools.release.nl.Messages;
 
 public class ReleaseDialogJob extends Job {
 
-	private final Shell shell;
-	private final Project project;
+	protected final Shell shell;
+	protected final Project project;
 	private final List<File> subBundles;
 	
 	public ReleaseDialogJob(Project project, List<File> subBundles) {

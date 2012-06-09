@@ -37,7 +37,7 @@ import bndtools.release.nl.Messages;
 
 public class WorkspaceAnalyserJob extends Job {
 
-	private final Shell shell;
+	protected final Shell shell;
 
 	public WorkspaceAnalyserJob() {
 		super(Messages.workspaceReleaseJob);

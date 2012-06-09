@@ -34,7 +34,7 @@ public class FilterImpl {
 	static final int		SUBSET		= 6;
 	static final int		SUPERSET	= 7;
 
-	private String	filter;
+	protected String	filter;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";
