@@ -2,6 +2,7 @@ package bndtools.launch.ui;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 
 import org.bndtools.core.utils.jface.StatusLabelProvider;
 import org.bndtools.core.utils.jface.StatusTreeContentProvider;
@@ -105,16 +106,20 @@ public class LaunchStatusDialog extends TitleAreaDialog {
                 String detail = "";
                 if (status != null) {
                     ByteArrayOutputStream messageBuffer = new ByteArrayOutputStream();
-                    PrintStream printer = new PrintStream(messageBuffer);
+                    PrintStream printer = null;
+                    try {
+                        printer = new PrintStream(messageBuffer, false, "UTF-8");
+                        printer.println(status.toString());
 
-                    printer.println(status.toString());
+                        Throwable e = status.getException();
+                        if (e != null)
+                            e.printStackTrace(printer);
 
-                    Throwable e = status.getException();
-                    if (e != null)
-                        e.printStackTrace(printer);
-
-                    printer.flush();
-                    detail = messageBuffer.toString();
+                        printer.flush();
+                        detail = messageBuffer.toString("UTF-8");
+                    } catch (UnsupportedEncodingException e1) {
+                        /* just ignore this, should not happen */
+                    }
                 }
                 txtDetails.setText(detail);
             }

@@ -12,6 +12,7 @@ package bndtools.editor.exports;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,11 +183,13 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
                     if (locations != null && locations.length > 0) {
                         IFile pkgInfoFile = locations[0].getFile(new Path(PACKAGEINFO));
 
-                        ByteArrayInputStream input = new ByteArrayInputStream("version 1.0".getBytes());
                         try {
+                            ByteArrayInputStream input = new ByteArrayInputStream("version 1.0".getBytes("UTF-8"));
                             pkgInfoFile.create(input, false, progress.newChild(1, 0));
                         } catch (CoreException e) {
                             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating file " + pkgInfoFile.getFullPath(), e));
+                        } catch (UnsupportedEncodingException e) {
+                            /* just ignore, should never happen */
                         }
                     }
                 }

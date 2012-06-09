@@ -182,7 +182,7 @@ public class BindexTask extends Task {
 
 			if (!quiet) {
 				PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-						System.out));
+						System.out, "UTF-8"));
 				tag.print(0, pw);
 				pw.close();
 			}

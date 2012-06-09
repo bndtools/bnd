@@ -12,6 +12,7 @@ package bndtools.wizards.bndfile;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -140,7 +141,11 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 		       .append(Constants.VERSION_ATTRIBUTE).append('=')
 		       .append("${").append(Constants.BUNDLE_VERSION).append("}\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
-		return new ByteArrayInputStream(builder.toString().getBytes());
+		try {
+            return new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
 	}
 
 }

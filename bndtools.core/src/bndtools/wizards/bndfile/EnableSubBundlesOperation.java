@@ -3,6 +3,7 @@ package bndtools.wizards.bndfile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,7 +121,11 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         Document newBundleDocument = new Document();
         newBundleModel.saveChangesTo(newBundleDocument);
 
-        newBundleInputStream  = new ByteArrayInputStream(newBundleDocument.get().getBytes());
+        try {
+            newBundleInputStream  = new ByteArrayInputStream(newBundleDocument.get().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            newBundleInputStream = null;
+        }
     }
 
     private static List<String> calculateProjectOnlyHeaders(List<String> allPropertyNames) {

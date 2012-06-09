@@ -13,6 +13,7 @@ package bndtools.wizards.project;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -93,7 +94,12 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         bndModel.saveChangesTo(document);
         progress.worked(1);
 
-        ByteArrayInputStream bndInput = new ByteArrayInputStream(document.get().getBytes());
+        ByteArrayInputStream bndInput;
+        try {
+            bndInput = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
         IFile bndBndFile = project.getFile(Project.BNDFILE);
         if (bndBndFile.exists()) {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));

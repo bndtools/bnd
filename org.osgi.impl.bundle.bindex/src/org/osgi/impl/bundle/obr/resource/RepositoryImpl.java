@@ -324,7 +324,7 @@ public class RepositoryImpl implements Repository {
 					in = url.openStream();
 				}
 				if (in != null) {
-					Reader reader = new InputStreamReader(in);
+					Reader reader = new InputStreamReader(in, "UTF-8");
 					XmlPullParser parser = new KXmlParser();
 					parser.setInput(reader);
 					parseRepository(parser);

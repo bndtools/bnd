@@ -12,9 +12,10 @@ package bndtools.release;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -270,8 +271,7 @@ public class ReleaseHelper {
 		if (file.exists() && equalsPackageInfoFileVersion(file, packageInfo.getSuggestedVersion())) {
 			return;
 		}
-		FileOutputStream fos = new FileOutputStream(file);
-		PrintWriter pw = new PrintWriter(fos);
+		PrintWriter pw = new PrintWriter(file, "UTF-8");
 		pw.println("version " + packageInfo.getSuggestedVersion());
 		pw.flush();
 		pw.close();
@@ -287,7 +287,7 @@ public class ReleaseHelper {
 		if (packageInfoFile.exists()) {
 			BufferedReader reader = null;
 			try {
-				reader = new BufferedReader(new FileReader(packageInfoFile));
+				reader = new BufferedReader(new InputStreamReader(new FileInputStream(packageInfoFile), "UTF-8"));
 				String line;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();

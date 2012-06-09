@@ -61,7 +61,7 @@ public class JARPrintPage extends FormPage {
 
     private static String print(File file) throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos);
+        PrintStream ps = new PrintStream(bos, false, "UTF-8");
         Printer printer = new Printer();
         printer.setOut(ps);
 
@@ -69,7 +69,7 @@ public class JARPrintPage extends FormPage {
         int options = 255;
         printer.doPrint(file.getAbsolutePath(), options);
         ps.close();
-        return new String( bos.toByteArray());
+        return new String(bos.toByteArray(), "UTF-8");
     }
 
 }

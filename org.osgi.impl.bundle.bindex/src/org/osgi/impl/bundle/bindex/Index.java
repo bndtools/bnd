@@ -149,7 +149,7 @@ public class Index {
 		}
 
 		if (!quiet) {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"));
 			pw.println("<?xml version='1.0' encoding='utf-8'?>");
 			pw.println("<?xml-stylesheet type='text/xsl' href='" + stylesheet
 					+ "'?>");

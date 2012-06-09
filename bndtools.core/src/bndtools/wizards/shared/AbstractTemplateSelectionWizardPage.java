@@ -155,7 +155,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                     URL htmlUrl = bundle.getResource(htmlAttr);
                     try {
                         byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-                        browserText = new String(bytes);
+                        browserText = new String(bytes, "UTF-8");
                     } catch (IOException e) {
                         Plugin.logError("Error reading template description document.", e);
                     }

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -69,7 +70,12 @@ public class FileUtils {
 		}
 	}
 	public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream(document.get().getBytes());
+		ByteArrayInputStream inputStream;
+        try {
+            inputStream = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
 		if(file.exists()) {
 			file.setContents(inputStream, false, true, null);
 		} else {
