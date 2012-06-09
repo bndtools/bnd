@@ -57,6 +57,7 @@ public abstract class ExtendedFormEditor extends FormEditor {
 
     @Override
     public void dispose() {
+        super.dispose();
         if (baseImageDescriptor != null)
             JFaceResources.getResources().destroyImage(baseImageDescriptor);
         if (overlaidTitleImageDescriptor != null)
