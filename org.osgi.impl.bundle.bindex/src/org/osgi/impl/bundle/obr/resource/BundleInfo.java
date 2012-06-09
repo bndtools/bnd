@@ -418,11 +418,12 @@ public class BundleInfo {
 		if (attributes != null)
 			for (Map.Entry<String, String> entry : attributes.entrySet()) {
 				String attribute = entry.getKey();
-				String value = entry.getValue();
 				if (attribute.equalsIgnoreCase("specification-version")
 						|| attribute.equalsIgnoreCase("version"))
 					continue;
-				else if (attribute.equalsIgnoreCase("resolution:")) {
+
+				String value = entry.getValue();
+				if (attribute.equalsIgnoreCase("resolution:")) {
 					req.setOptional(value.equalsIgnoreCase("optional"));
 				}
 				if (attribute.endsWith(":")) {
@@ -491,15 +492,12 @@ public class BundleInfo {
 				if (key.equalsIgnoreCase("specification-version")
 						|| key.equalsIgnoreCase("version"))
 					continue;
-				Object value = entry.getValue();
-				capability.addProperty(key, value);
+				capability.addProperty(key, entry.getValue());
 			}
 		Map<String, String> directives = pack.getDirectives();
 		if (directives != null)
 			for (Map.Entry<String, String> entry : directives.entrySet()) {
-				String key = entry.getKey();
-				String value = entry.getValue();
-				capability.addProperty(key, value);
+				capability.addProperty(entry.getKey(), entry.getValue());
 			}
 		return capability;
 	}
