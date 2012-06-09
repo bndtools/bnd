@@ -153,7 +153,10 @@ public class TestErrorDialog {
 	}
 	
 	private static class TestError extends Error {
-		
+		public TestError() {
+			super();
+		}
+
 		public void setHeaders(String... headers) {
 			super.headers = headers;
 		}

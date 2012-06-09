@@ -108,7 +108,11 @@ public class JARContentTreePart extends AbstractFormPart {
         private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
         private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
 
-        @Override
+		public JARTreeLabelProvider() {
+			super();
+		}
+
+		@Override
         public void update(ViewerCell cell) {
             ZipTreeNode node = (ZipTreeNode) cell.getElement();
 
@@ -141,6 +145,10 @@ public class JARContentTreePart extends AbstractFormPart {
 	private class JARTreeContentProvider implements ITreeContentProvider {
 
 		Map<String, ZipTreeNode> entryMap;
+
+		public JARTreeContentProvider() {
+			super();
+		}
 
 		public Object[] getChildren(Object parentElement) {
 			ZipTreeNode parentNode = (ZipTreeNode) parentElement;

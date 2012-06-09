@@ -103,7 +103,9 @@ public class ReleaseContext {
 		
 		private List<Error> errors = new LinkedList<Error>();
 		
-		private ErrorHandler() {}
+		protected ErrorHandler() {
+			super();
+		}
 		
 		public void error(String message) {
 			Error error = new Error();

@@ -224,6 +224,9 @@ public class ErrorList {
 	}
 	
 	private static class ArrayLabelProvider extends LabelProvider implements ITableLabelProvider {
+		public ArrayLabelProvider() {
+			super();
+		}
 
 		public Image getColumnImage(Object element, int columnIndex) {
 			return null;
@@ -236,6 +239,9 @@ public class ErrorList {
 	}
 
 	private static class ArrayContentProvider implements IStructuredContentProvider {
+		public ArrayContentProvider() {
+			super();
+		}
 
 		public Object[] getElements(Object inputElement) {
 			String[][] table = (String[][]) inputElement;
