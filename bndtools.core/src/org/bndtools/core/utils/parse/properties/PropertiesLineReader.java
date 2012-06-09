@@ -17,7 +17,6 @@ public class PropertiesLineReader {
     
     private IRegion lastRegion = null;
     private String lastKey = null;
-    private String lastValue = null;
 
     public PropertiesLineReader(IDocument document) {
         this.document = document;
@@ -119,11 +118,5 @@ public class PropertiesLineReader {
         if (lastKey == null)
             throw new IllegalStateException("Last key not available: either before state or after end of document, or last line type was not 'entry'.");
         return lastKey;
-    }
-    
-    public String value() {
-        if (lastValue == null)
-            throw new IllegalStateException("Last value not available: either before state or after end of document, or last line type was not 'entry'.");
-        return lastValue;
     }
 }
