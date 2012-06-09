@@ -176,7 +176,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         throw new IllegalArgumentException("Unknown charset name: " + selectedCharsetName);
     }
 
-    private void loadContent() {
+    protected void loadContent() {
         if(displayJob != null && displayJob.getState() != Job.NONE)
             displayJob.cancel();
 
@@ -224,7 +224,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         }
     }
 
-    private void setContent(String content) {
+    protected void setContent(String content) {
         if (text != null && !text.isDisposed()) {
             text.setText(content);
             text.setFont(textFont);
@@ -245,7 +245,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         return progress;
     }
 
-    private static void readAsText(ZipFile zipFile, ZipEntry entry, String encoding, Writer out, long limit, IProgressMonitor monitor) throws IOException {
+    protected static void readAsText(ZipFile zipFile, ZipEntry entry, String encoding, Writer out, long limit, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
         InputStream stream = zipFile.getInputStream(entry);
         try {
@@ -271,7 +271,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         }
     }
 
-    private static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, IProgressMonitor monitor) throws IOException {
+    protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
 
         InputStream stream = zipFile.getInputStream(entry);

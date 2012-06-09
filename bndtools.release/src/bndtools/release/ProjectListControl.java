@@ -61,7 +61,7 @@ public class ProjectListControl {
 		tableCol.setWidth(50);
 	}
 
-	private void handleTableSelection(SelectionEvent e) {
+	protected void handleTableSelection(SelectionEvent e) {
 
 	}
 	
