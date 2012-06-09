@@ -33,8 +33,8 @@ public class VersionRange implements Comparable<VersionRange> {
 			+ ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
-		string = string.trim();
-		Matcher m = RANGE.matcher(string);
+		String stringi = string.trim();
+		Matcher m = RANGE.matcher(stringi);
 		if (m.matches()) {
 			start = m.group(1).charAt(0);
 			low = new Version(m.group(2));
@@ -46,7 +46,7 @@ public class VersionRange implements Comparable<VersionRange> {
 								+ high);
 
 		} else
-			high = low = new Version(string);
+			high = low = new Version(stringi);
 	}
 
 	public boolean isRange() {

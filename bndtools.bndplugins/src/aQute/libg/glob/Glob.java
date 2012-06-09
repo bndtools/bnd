@@ -23,21 +23,21 @@ public class Glob {
 	}
 
 	private static String convertGlobToRegEx(String line) {
-		line = line.trim();
-		int strLen = line.length();
+		String linei = line.trim();
+		int strLen = linei.length();
 		StringBuilder sb = new StringBuilder(strLen);
 		// Remove beginning and ending * globs because they're useless
-		if (line.startsWith("*")) {
-			line = line.substring(1);
+		if (linei.startsWith("*")) {
+			linei = linei.substring(1);
 			strLen--;
 		}
-		if (line.endsWith("*")) {
-			line = line.substring(0, strLen - 1);
+		if (linei.endsWith("*")) {
+			linei = linei.substring(0, strLen - 1);
 			strLen--;
 		}
 		boolean escaping = false;
 		int inCurlies = 0;
-		for (char currentChar : line.toCharArray()) {
+		for (char currentChar : linei.toCharArray()) {
 			switch (currentChar) {
 			case '*':
 				if (escaping)

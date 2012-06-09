@@ -41,8 +41,9 @@ public class ClassBuilder implements Opcodes {
 	public static void addMethod(String className, ClassWriter cw, Class<?> returnType, String methodName,
 			Class<?>... params) {
 
-		if (returnType == null) {
-			returnType = void.class;
+		Class<?> returnTypei = returnType;
+		if (returnTypei == null) {
+			returnTypei = void.class;
 		}
 
 		StringBuilder sb = new StringBuilder("(");
@@ -50,7 +51,7 @@ public class ClassBuilder implements Opcodes {
 			sb.append(Type.getDescriptor(param));
 		}
 		sb.append(")");
-		sb.append(Type.getDescriptor(returnType));
+		sb.append(Type.getDescriptor(returnTypei));
 
 		MethodVisitor mv;
 		mv = cw.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, methodName, sb.toString(), null, null);

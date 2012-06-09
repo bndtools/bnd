@@ -505,11 +505,12 @@ public class BundleInfo {
 	}
 
 	String translate(String s) {
-		if (s == null)
+		String si = s;
+		if (si == null)
 			return null;
 
-		if (!s.startsWith("%")) {
-			return s;
+		if (!si.startsWith("%")) {
+			return si;
 		}
 
 		if (localization == null)
@@ -526,8 +527,8 @@ public class BundleInfo {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		s = s.substring(1);
-		return localization.getProperty(s, s);
+		si = si.substring(1);
+		return localization.getProperty(si, si);
 	}
 
 	File getZipFile() {

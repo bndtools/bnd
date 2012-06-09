@@ -408,22 +408,23 @@ public class FilterImpl {
 	}
 
 	boolean patSubstr(String s, String pat) {
-		if (s == null)
+		String si = s;
+		if (si == null)
 			return false;
 		if (pat.length() == 0)
-			return s.length() == 0;
+			return si.length() == 0;
 		if (pat.charAt(0) == WILDCARD) {
-			pat = pat.substring(1);
+			String pati = pat.substring(1);
 			for (;;) {
-				if (patSubstr(s, pat))
+				if (patSubstr(si, pati))
 					return true;
-				if (s.length() == 0)
+				if (si.length() == 0)
 					return false;
-				s = s.substring(1);
+				si = si.substring(1);
 			}
 		}
-		if (s.length() == 0 || s.charAt(0) != pat.charAt(0))
+		if (si.length() == 0 || si.charAt(0) != pat.charAt(0))
 			return false;
-		return patSubstr(s.substring(1), pat.substring(1));
+		return patSubstr(si.substring(1), pat.substring(1));
 	}
 }

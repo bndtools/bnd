@@ -46,13 +46,14 @@ public class Printer extends Processor {
     }
 
     public void doPrint(String string, int options) throws Exception {
+    	int optionsi = options;
         File file = new File(string);
         if (!file.exists())
             error("File to print not found: " + string);
         else {
-            if (options == 0)
-                options = VERIFY | MANIFEST | IMPEXP | USES;
-            doPrint(file, options);
+            if (optionsi == 0)
+                optionsi = VERIFY | MANIFEST | IMPEXP | USES;
+            doPrint(file, optionsi);
         }
     }
 
@@ -217,7 +218,8 @@ public class Printer extends Processor {
 
 	private static String pad(int i) {
 		StringBuilder sb = new StringBuilder();
-		while (i-- > 0)
+		int ii = i;
+		while (ii-- > 0)
 			sb.append(' ');
 		return sb.toString();
 	}

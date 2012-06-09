@@ -245,10 +245,10 @@ public class Tag {
 	 */
 	static void formatted(PrintWriter pw, int left, int width, String s) {
 		int pos = width + 1;
-		s = s.trim();
+		String si = s.trim();
 
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
+		for (int i = 0; i < si.length(); i++) {
+			char c = si.charAt(i);
 			if (i == 0 || (Character.isWhitespace(c) && pos > width - 3)) {
 				pw.print("\n");
 				spaces(pw, left);
@@ -371,14 +371,15 @@ public class Tag {
 		String target = child.getName();
 		String sn = null;
 		String tn = null;
+		String searchi = search;
 
-		if (search.equals("*"))
+		if (searchi.equals("*"))
 			return true;
 
-		int s = search.indexOf(':');
+		int s = searchi.indexOf(':');
 		if (s > 0) {
-			sn = search.substring(0, s);
-			search = search.substring(s + 1);
+			sn = searchi.substring(0, s);
+			searchi = searchi.substring(s + 1);
 		}
 		int t = target.indexOf(':');
 		if (t > 0) {
@@ -386,7 +387,7 @@ public class Tag {
 			target = target.substring(t + 1);
 		}
 
-		if (!search.equals(target)) // different tag names
+		if (!searchi.equals(target)) // different tag names
 			return false;
 
 		if (mapping == null) {
@@ -402,19 +403,20 @@ public class Tag {
 
 	public String getString(String path) {
 		String attribute = null;
-		int index = path.indexOf("@");
+		String pathi = path;
+		int index = pathi.indexOf("@");
 		if (index >= 0) {
 			// attribute
-			attribute = path.substring(index + 1);
+			attribute = pathi.substring(index + 1);
 
 			if (index > 0) {
 				// prefix path
-				path = path.substring(index - 1); // skip -1
+				pathi = pathi.substring(index - 1); // skip -1
 			}
 			else
-				path = "";
+				pathi = "";
 		}
-		Tag tags[] = select(path);
+		Tag tags[] = select(pathi);
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < tags.length; i++) {
 			if (attribute == null)
