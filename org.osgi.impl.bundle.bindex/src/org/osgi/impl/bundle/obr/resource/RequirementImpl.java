@@ -29,7 +29,6 @@ import org.xmlpull.v1.XmlPullParser;
  * @version $Revision: 44 $
  */
 public class RequirementImpl implements Requirement {
-	int		id;
 	String	name;
 	String	filter="()";
 	FilterImpl	_filter;

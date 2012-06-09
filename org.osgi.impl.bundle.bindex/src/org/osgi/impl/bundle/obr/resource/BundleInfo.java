@@ -36,7 +36,6 @@ public class BundleInfo {
 	Manifest manifest;
 	File bundleJar;
 	ZipFile jar;
-	String license;
 	Properties localization;
 	RepositoryImpl repository;
 
@@ -147,8 +146,6 @@ public class BundleInfo {
 		String license = translated("Bundle-License");
 		if (license != null)
 			resource.setLicense(toURL(location, license));
-		else if (this.license != null)
-			resource.setLicense(toURL(location, this.license));
 
 		String description = translated("Bundle-Description");
 		if (description != null)

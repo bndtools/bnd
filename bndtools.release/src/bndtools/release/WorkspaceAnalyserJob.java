@@ -178,7 +178,4 @@ public class WorkspaceAnalyserJob extends Job {
 			}
 		}
 	}
-
-	static Workspace ws;
-
 }

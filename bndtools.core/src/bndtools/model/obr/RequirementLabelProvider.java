@@ -18,7 +18,6 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
 
     private Image pkgImg;
     private Image bundleImg;
-    private Image errorImg;
     private Image serviceImg;
     private Image javaImg;
 
@@ -114,7 +113,6 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
         super.dispose();
         if (pkgImg != null && !pkgImg.isDisposed()) pkgImg.dispose();
         if (bundleImg != null && !bundleImg.isDisposed()) bundleImg.dispose();
-        if (errorImg != null && !bundleImg.isDisposed()) errorImg.dispose();
     }
 
 }
