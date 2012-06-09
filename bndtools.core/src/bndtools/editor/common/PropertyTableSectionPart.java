@@ -73,7 +73,7 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
 		modifierProperties.addColumnsToTable();
 
 		viewer.setUseHashlookup(true);
-		viewer.setColumnProperties(modifierProperties.getColumnProperties());
+		viewer.setColumnProperties(MapEntryCellModifier.getColumnProperties());
 		modifierProperties.addCellEditorsToViewer();
 		viewer.setCellModifier(modifierProperties);
 

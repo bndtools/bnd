@@ -82,7 +82,7 @@ public class ReleaseJob  extends Job {
 					sb.append(context.getReleaseRepository().getName());
 				}
 				if (showMessage) {
-					Activator.getDefault().message(sb.toString());
+					Activator.message(sb.toString());
 				}
 			}
 

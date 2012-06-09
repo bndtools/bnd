@@ -148,7 +148,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     public void modelChanged(Project model) throws Exception {
-        IJavaProject project = central.getJavaProject(model);
+        IJavaProject project = Central.getJavaProject(model);
         if (model == null || project == null) {
             System.out.println("Help! No IJavaProject for " + model);
         } else {

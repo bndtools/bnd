@@ -203,7 +203,7 @@ public class BundleInfo {
 	void doImportExportServices(ResourceImpl resource) throws IOException {
 		String importServices = manifest.getValue("import-service");
 		if (importServices != null) {
-			List<ManifestEntry> entries = manifest.getEntries(importServices);
+			List<ManifestEntry> entries = Manifest.getEntries(importServices);
 			for (ManifestEntry entry : entries) {
 				RequirementImpl ri = new RequirementImpl("service");
 				ri.setFilter(createServiceFilter(entry));
@@ -218,7 +218,7 @@ public class BundleInfo {
 
 		String exportServices = manifest.getValue("export-service");
 		if (exportServices != null) {
-			List<ManifestEntry> entries = manifest.getEntries(exportServices);
+			List<ManifestEntry> entries = Manifest.getEntries(exportServices);
 			for (ManifestEntry entry : entries) {
 				CapabilityImpl cap = createServiceCapability(entry);
 				resource.addCapability(cap);

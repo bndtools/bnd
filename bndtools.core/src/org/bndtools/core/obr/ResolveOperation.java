@@ -203,8 +203,7 @@ public class ResolveOperation implements IRunnableWithProgress {
             handle.setReporter(Central.getWorkspace());
             File file = handle.request();
 
-            PullParser repoParser = new PullParser();
-            RepositoryImpl repo = repoParser.parseRepository(new FileInputStream(file));
+            RepositoryImpl repo = PullParser.parseRepository(new FileInputStream(file));
             repo.setURI(index.toExternalForm());
             repos.add(repo);
 

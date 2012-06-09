@@ -237,7 +237,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		proposalAdapter.addContentProposalListener(proposalProvider);
 		proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		proposalAdapter.setAutoActivationDelay(1500);
-		proposalAdapter.setLabelProvider(proposalProvider.createLabelProvider());
+		proposalAdapter.setLabelProvider(ComponentNameProposalProvider.createLabelProvider());
 
 		toolkit.createLabel(composite, ""); // Spacer
 		btnEnabled = toolkit.createButton(composite, "Enabled", SWT.CHECK);
@@ -304,7 +304,7 @@ public class ComponentDetailsPage extends AbstractFormPart implements IDetailsPa
 		modifierProperties.addColumnsToTable();
 
 		viewerProperties.setUseHashlookup(true);
-		viewerProperties.setColumnProperties(modifierProperties.getColumnProperties());
+		viewerProperties.setColumnProperties(MapEntryCellModifier.getColumnProperties());
 		modifierProperties.addCellEditorsToViewer();
 		viewerProperties.setCellModifier(modifierProperties);
 
