@@ -322,10 +322,11 @@ public class JarDiff {
 			}
 		}
 
-		for (String packageName : previousExportedPackages.keySet()) {
+		for (Entry<String, Attrs> entry : previousExportedPackages.entrySet()) {
+			String packageName = entry.getKey();
 			if (!projectExportedPackages.containsKey(packageName)) {
 				// Removed Packages
-				Map<String, String> prevPackageMap = previousExportedPackages.get(packageName);
+				Attrs prevPackageMap = entry.getValue();
 				String previousVersion = prevPackageMap.get(VERSION);
 
 				PackageInfo pi = packages.get(packageName);
