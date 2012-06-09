@@ -3,27 +3,6 @@ package bndtools.editor.completion;
 import org.eclipse.jface.text.*;
 
 public class BndHover implements ITextHover {
-    static class DocString implements CharSequence {
-        IDocument doc;
-
-        public char charAt(int index) {
-            try {
-                return doc.getChar(index);
-            } catch (BadLocationException e) {
-                throw new IndexOutOfBoundsException();
-            }
-        }
-
-        public int length() {
-            return doc.getLength();
-        }
-
-        public CharSequence subSequence(int start, int end) {
-            return doc.get().subSequence(start, end);
-        }
-
-    };
-
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         if (hoverRegion != null) {
             IDocument doc = textViewer.getDocument();
