@@ -74,7 +74,7 @@ public class DummyBundle implements Bundle {
 //        return false;
 //    }
 
-    public Enumeration findEntries(String arg0, String arg1, boolean arg2) {
+    public Enumeration<?> findEntries(String arg0, String arg1, boolean arg2) {
         if (DEBUG) System.out.println("=== findEntries");
         return null;
     }
@@ -94,17 +94,17 @@ public class DummyBundle implements Bundle {
         return null;
     }
 
-    public Enumeration getEntryPaths(String arg0) {
+    public Enumeration<?> getEntryPaths(String arg0) {
         if (DEBUG) System.out.println("=== getEntryPaths");
         return null;
     }
 
-    public Dictionary getHeaders() {
+    public Dictionary<?, ?> getHeaders() {
         if (DEBUG) System.out.println("=== getHeaders");
         return props;
     }
 
-    public Dictionary getHeaders(String arg0) {
+    public Dictionary<?, ?> getHeaders(String arg0) {
         if (DEBUG) System.out.println("=== getHeaders(String)");
         return props;
     }
@@ -129,7 +129,7 @@ public class DummyBundle implements Bundle {
         return null;
     }
 
-    public Enumeration getResources(String arg0) throws IOException {
+    public Enumeration<?> getResources(String arg0) throws IOException {
         if (DEBUG) System.out.println("=== getResources");
         return null;
     }
@@ -154,7 +154,7 @@ public class DummyBundle implements Bundle {
         return true;
     }
 
-    public Class loadClass(String arg0) throws ClassNotFoundException {
+    public Class<?> loadClass(String arg0) throws ClassNotFoundException {
         if (DEBUG) System.out.println("=== loadClass(String)");
         return null;
     }
@@ -187,7 +187,7 @@ public class DummyBundle implements Bundle {
         if (DEBUG) System.out.println("=== update(InputStream)");
     }
 
-    public Map getSignerCertificates(int arg0) {
+    public Map<?, ?> getSignerCertificates(int arg0) {
         return null;
     }
 
