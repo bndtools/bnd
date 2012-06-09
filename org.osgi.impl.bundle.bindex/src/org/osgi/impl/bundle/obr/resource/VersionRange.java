@@ -18,11 +18,14 @@
 
 package org.osgi.impl.bundle.obr.resource;
 
+import java.io.Serializable;
 import java.util.regex.*;
 
 import org.osgi.framework.*;
 
-public class VersionRange implements Comparable<VersionRange> {
+public class VersionRange implements Comparable<VersionRange>, Serializable {
+	private static final long serialVersionUID = -4288482980340394198L;
+
 	Version high;
 	Version low;
 	char start = '[';

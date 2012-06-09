@@ -17,10 +17,13 @@
  */
 package org.osgi.impl.bundle.obr.resource;
 
+import java.io.Serializable;
 import java.util.*;
 
 
-public class ManifestEntry implements Comparable<ManifestEntry> {
+public class ManifestEntry implements Comparable<ManifestEntry>, Serializable {
+	private static final long serialVersionUID = -8666616780590587227L;
+
 	String		name;
 	VersionRange	version;
 	Map<String, String>			attributes;

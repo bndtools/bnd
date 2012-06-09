@@ -386,7 +386,9 @@ public class Manifest extends Hashtable<Object, Object> {
 
 }
 
-class Native {
+class Native implements Serializable {
+	private static final long serialVersionUID = -3632527727711367117L;
+
 	String	filter;
 	int		index	= -1;
 	String	paths[];
