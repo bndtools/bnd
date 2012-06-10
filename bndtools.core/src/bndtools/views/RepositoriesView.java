@@ -1,6 +1,9 @@
 package bndtools.views;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -13,6 +16,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -44,6 +48,8 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
 import bndtools.Activator;
 import bndtools.Plugin;
+import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
@@ -78,7 +84,22 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
                 boolean valid = false;
                 if(target instanceof RepositoryPlugin) {
-                    valid = ((RepositoryPlugin) target).canWrite();
+                    if (((RepositoryPlugin) target).canWrite()) {
+                        if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
+                            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                            if (selection instanceof IStructuredSelection) {
+                                for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
+                                    Object element = iter.next();
+                                    if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion) {
+                                        valid = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            valid = true;
+                        }
+                    }
                 }
                 return valid;
             }
@@ -104,6 +125,10 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                         files[i] = resources[i].getLocation().toFile();
                     }
                     copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), files);
+                } else if (data instanceof IStructuredSelection) {
+                    File[] files = convertSelectionToFiles((IStructuredSelection) data);
+                    if (files != null && files.length > 0)
+                        copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), files);
                 }
                 return copied;
             }
@@ -111,7 +136,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
 
-        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance(), ResourceTransfer.getInstance() }, dropAdapter);
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer() }, dropAdapter);
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, new SelectionDragAdapter(viewer));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -163,6 +188,27 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
+    }
+
+    private File[] convertSelectionToFiles(ISelection selection) {
+        if (!(selection instanceof IStructuredSelection))
+            return new File[0];
+        
+        IStructuredSelection structSel = (IStructuredSelection) selection;
+        List<File> files = new ArrayList<File>(structSel.size());
+        
+        for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
+            Object element = iter.next();
+            if (element instanceof IFile)
+                files.add(((IFile) element).getLocation().toFile());
+            else if (element instanceof IAdaptable) {
+                IFile ifile = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+                if (ifile != null)
+                    files.add(ifile.getLocation().toFile());
+            }
+        }
+        
+        return files.toArray(new File[files.size()]);
     }
 
     @Override

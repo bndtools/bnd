@@ -31,8 +31,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSourceAdapter;
 import org.eclipse.swt.dnd.DragSourceEvent;
-import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -116,9 +116,8 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                 getManagedForm().fireSelectionChanged(BundleCalculatedImportsPart.this, event.getSelection());
             }
         });
-        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
-            public void dragStart(DragSourceEvent event) {
-            }
+        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceAdapter() {
+            @Override
             public void dragSetData(DragSourceEvent event) {
                 if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                     StringBuilder builder = new StringBuilder();
@@ -135,8 +134,6 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                     }
                     event.data = builder.toString();
                 }
-            }
-            public void dragFinished(DragSourceEvent event) {
             }
         });
         viewer.addOpenListener(new IOpenListener() {
