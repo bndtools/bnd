@@ -1,5 +1,11 @@
 repo:         ${workspace}/../repo
 
+#
+# For offline builds:
+# - comment out 'Remote OBR'
+# - uncomment 'Local OBR'
+
+
 # Eclipse Repo
 eclipse-version:  3.5.2
 eclipse-repo:     ${build}/eclipse-${eclipse-version}/repository.xml
