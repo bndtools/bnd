@@ -4,7 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,70 +13,46 @@ import org.bndtools.core.obr.ObrResolutionResult;
 import org.bndtools.core.obr.ResolveOperation;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
-import org.bndtools.core.utils.jface.StatusLabelProvider;
-import org.bndtools.core.utils.jface.StatusTreeContentProvider;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.Requirement;
-import bndtools.model.obr.PotentialMatch;
 import bndtools.model.obr.ReasonSorter;
-import bndtools.model.obr.ResolutionFailureFlatContentProvider;
-import bndtools.model.obr.ResolutionFailureFlatLabelProvider;
-import bndtools.model.obr.ResolutionFailureTreeContentProvider;
-import bndtools.model.obr.ResolutionFailureTreeLabelProvider;
-import bndtools.model.obr.ResolutionFailureTreeSorter;
-import bndtools.model.obr.SorterComparatorAdapter;
 import bndtools.wizards.workspace.ReasonLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
@@ -85,34 +60,24 @@ public class ObrResultsWizardPage extends WizardPage {
 
     public static final String PROP_RESULT = "result";
 
-    private final Image clipboardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png").createImage();
-    private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif").createImage();
-    private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
-    
     private final IBndModel model;
     private final IFile file;
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
-
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
 
+    private final ResolutionFailurePanel resolutionFailurePanel = new ResolutionFailurePanel();
+    
     private TabFolder tabFolder;
-
     private TabItem tbtmResults;
-    private Table tblRequired;
-    private Table tblOptional;
-    private Table tblReasons;
+    private TabItem tbtmErrors;
+    
+    
     private TableViewer requiredViewer;
     private CheckboxTableViewer optionalViewer;
     private TableViewer reasonsViewer;
     private Button btnAddResolveOptional;
 
-    private TabItem tbtmErrors;
-    private TableViewer processingErrorsViewer;
-    private Tree treeUnresolved;
-    private TreeViewer unresolvedViewer;
-
     private ObrResolutionResult result;
-    private boolean failureTreeMode = true;
 
     /**
      * Create the wizard.
@@ -141,19 +106,28 @@ public class ObrResultsWizardPage extends WizardPage {
 
         tabFolder = new TabFolder(container, SWT.NONE);
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-
+        
         tbtmResults = new TabItem(tabFolder, SWT.NONE);
         tbtmResults.setText("Results");
+        tbtmResults.setControl(createResultsTabControl(tabFolder));
 
-        Composite compResults = new Composite(tabFolder, SWT.NONE);
-        tbtmResults.setControl(compResults);
-        compResults.setLayout(new GridLayout(1, false));
+        tbtmErrors = new TabItem(tabFolder, SWT.NONE);
+        tbtmErrors.setText("Errors");
+        tbtmErrors.setControl(resolutionFailurePanel.createControl(tabFolder));
 
-        Label lblRequired = new Label(compResults, SWT.NONE);
+        updateUi();
+    }
+
+    protected Control createResultsTabControl(TabFolder tabFolder) {
+        Composite composite = new Composite(tabFolder, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+
+        Label lblRequired = new Label(composite, SWT.NONE);
         lblRequired.setText("Required Resources");
 
-        tblRequired = new Table(compResults, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Table tblRequired = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblRequired = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_tblRequired.minimumHeight = 50;
         gd_tblRequired.heightHint = 100;
         tblRequired.setLayoutData(gd_tblRequired);
 
@@ -179,17 +153,17 @@ public class ObrResultsWizardPage extends WizardPage {
             }
         });
 
-        Label lblOptional = new Label(compResults, SWT.NONE);
+        Label lblOptional = new Label(composite, SWT.NONE);
         lblOptional.setText("Optional Resources");
 
-        Composite compResultsOptional = new Composite(compResults, SWT.NONE);
+        Composite compResultsOptional = new Composite(composite, SWT.NONE);
         compResultsOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         GridLayout gl_compResultsOptional = new GridLayout(2, false);
         gl_compResultsOptional.marginWidth = 0;
         gl_compResultsOptional.marginHeight = 0;
         compResultsOptional.setLayout(gl_compResultsOptional);
 
-        tblOptional = new Table(compResultsOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Table tblOptional = new Table(compResultsOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
 
         optionalViewer = new CheckboxTableViewer(tblOptional);
@@ -247,17 +221,17 @@ public class ObrResultsWizardPage extends WizardPage {
 
         new Label(compResultsOptional, SWT.NONE);
 
-        Label lblReason = new Label(compResults, SWT.NONE);
+        Label lblReason = new Label(composite, SWT.NONE);
         lblReason.setText("Reasons");
 
-        Composite compResultsReasons = new Composite(compResults, SWT.NONE);
+        Composite compResultsReasons = new Composite(composite, SWT.NONE);
         compResultsReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         GridLayout gl_compResultsReasons = new GridLayout(1, false);
         gl_compResultsReasons.marginWidth = 0;
         gl_compResultsReasons.marginHeight = 0;
         compResultsReasons.setLayout(gl_compResultsReasons);
 
-        tblReasons = new Table(compResultsReasons, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Table tblReasons = new Table(compResultsReasons, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
         reasonsViewer = new TableViewer(tblReasons);
@@ -281,137 +255,8 @@ public class ObrResultsWizardPage extends WizardPage {
                 }
             }
         });
-
-        tbtmErrors = new TabItem(tabFolder, SWT.NONE);
-        tbtmErrors.setText("Errors");
         
-        SashForm sashForm = new SashForm(tabFolder, SWT.VERTICAL);
-        sashForm.setSashWidth(5);
-        tbtmErrors.setControl(sashForm);
-
-        Composite cmpProcessingErrors = new Composite(sashForm, SWT.NONE);
-        GridLayout gl_processingErrors = new GridLayout(1, false);
-        gl_processingErrors.marginRight = 7;
-        cmpProcessingErrors.setLayout(gl_processingErrors);
-        Label lblProcessingErrors = new Label(cmpProcessingErrors, SWT.NONE);
-        lblProcessingErrors.setText("Processing Errors:");
-
-        Table tblProcessingErrors = new Table(cmpProcessingErrors, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_tblProcessingErrors.heightHint = 80;
-        tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
-
-        processingErrorsViewer = new TableViewer(tblProcessingErrors);
-
-        ControlDecoration controlDecoration = new ControlDecoration(tblProcessingErrors, SWT.RIGHT | SWT.TOP);
-        controlDecoration.setMarginWidth(2);
-        controlDecoration.setDescriptionText("Double-click to view details");
-        controlDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
-        processingErrorsViewer.setContentProvider(new StatusTreeContentProvider());
-        processingErrorsViewer.setLabelProvider(new StatusLabelProvider());
-
-        processingErrorsViewer.addOpenListener(new IOpenListener() {
-            public void open(OpenEvent event) {
-                IStatus status = (IStatus) ((IStructuredSelection) event.getSelection()).getFirstElement();
-                ErrorDialog.openError(getShell(), "Processing Errors", null, status);
-            }
-        });
-        
-        Composite cmpUnresolved = new Composite(sashForm, SWT.NONE);
-        GridLayout gl_unresolved = new GridLayout(2, false);
-        gl_unresolved.marginRight = 7;
-        cmpUnresolved.setLayout(gl_unresolved);
-
-        Label lblUnresolvedResources = new Label(cmpUnresolved, SWT.NONE);
-        lblUnresolvedResources.setBounds(0, 0, 59, 14);
-        lblUnresolvedResources.setText("Unresolved Requirements:");
-        
-        createUnresolvedViewToolBar(cmpUnresolved);
-
-        treeUnresolved = new Tree(cmpUnresolved, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd_tblUnresolved.heightHint = 80;
-        treeUnresolved.setLayoutData(gd_tblUnresolved);
-
-        unresolvedViewer = new TreeViewer(treeUnresolved);
-        setFailureViewMode();
-
-        /*
-        unresolvedViewer.addTreeListener(new ITreeViewerListener() {
-            public void treeExpanded(TreeExpansionEvent ev) {
-                Object expanded = ev.getElement();
-                if (expanded instanceof PotentialMatch) {
-                    unresolvedViewer.expandToLevel(expanded, 2);
-                }
-            }
-            public void treeCollapsed(TreeExpansionEvent ev) {
-            }
-        });
-        */
-
-        updateUi();
-    }
-    
-    private void setFailureViewMode() {
-        if (failureTreeMode) {
-            unresolvedViewer.setContentProvider(new ResolutionFailureTreeContentProvider());
-            unresolvedViewer.setLabelProvider(new ResolutionFailureTreeLabelProvider());
-            unresolvedViewer.setSorter(new ResolutionFailureTreeSorter());
-        } else {
-            unresolvedViewer.setContentProvider(new ResolutionFailureFlatContentProvider());
-            unresolvedViewer.setLabelProvider(new ResolutionFailureFlatLabelProvider());
-            unresolvedViewer.setSorter(new ReasonSorter());
-        }
-    }
-
-    private void switchFailureViewMode() {
-        Object input = unresolvedViewer.getInput();
-        unresolvedViewer.setInput(null);
-        setFailureViewMode();
-        unresolvedViewer.setInput(input);
-        unresolvedViewer.expandToLevel(2);
-    }
-
-    private void createUnresolvedViewToolBar(Composite parent) {
-        ToolBar unresolvedToolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
-        GridData gd_unresolvedToolBar = new GridData(SWT.RIGHT, SWT.FILL, true, false);
-        unresolvedToolBar.setLayoutData(gd_unresolvedToolBar);
-
-        final ToolItem treeViewToggle = new ToolItem(unresolvedToolBar, SWT.RADIO);
-        treeViewToggle.setImage(treeViewImg);
-        treeViewToggle.setToolTipText("Tree View");
-        treeViewToggle.setSelection(failureTreeMode);
-
-        final ToolItem flatViewToggle = new ToolItem(unresolvedToolBar, SWT.RADIO);
-        flatViewToggle.setImage(flatViewImg);
-        flatViewToggle.setToolTipText("Flat View");
-        flatViewToggle.setSelection(!failureTreeMode);
-
-        new ToolItem(unresolvedToolBar, SWT.SEPARATOR);
-
-        ToolItem toolErrorsToClipboard = new ToolItem(unresolvedToolBar, SWT.PUSH);
-        toolErrorsToClipboard.setImage(clipboardImg);
-        toolErrorsToClipboard.setToolTipText("Copy to Clipboard");
-
-        SelectionListener modeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean newTreeMode = treeViewToggle.getSelection();
-                if (newTreeMode != failureTreeMode) {
-                    failureTreeMode = newTreeMode;
-                    switchFailureViewMode();
-                }
-            }
-        };
-        treeViewToggle.addSelectionListener(modeListener);
-        flatViewToggle.addSelectionListener(modeListener);
-
-        toolErrorsToClipboard.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                copyUnresolvedToClipboard();
-            }
-        });
+        return composite;
     }
 
     public ObrResolutionResult getResult() {
@@ -478,10 +323,7 @@ public class ObrResultsWizardPage extends WizardPage {
     private void updateUi() {
         requiredViewer.setInput(result != null ? result.getRequired() : null);
         optionalViewer.setInput(result != null ? result.getOptional() : null);
-        unresolvedViewer.setInput(result != null ? result.getResolver() : null);
-        processingErrorsViewer.setInput(result != null ? result.getStatus() : null);
-        
-        unresolvedViewer.expandToLevel(2);
+        resolutionFailurePanel.setInput(result);
 
         boolean resolved = result != null && result.isResolved() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
 
@@ -508,106 +350,6 @@ public class ObrResultsWizardPage extends WizardPage {
     }
 
 
-    private void copyUnresolvedToClipboard() {
-        StringBuilder builder = new StringBuilder();
-        
-        Object input = unresolvedViewer.getInput();
-        if (input == null)
-            return;
-        
-        ITreeContentProvider contentProvider = (ITreeContentProvider) unresolvedViewer.getContentProvider();
-        Object[] roots = contentProvider.getElements(input);
-        
-        ViewerSorter sorter = unresolvedViewer.getSorter();
-        if (sorter != null)
-            Arrays.sort(roots, new SorterComparatorAdapter(unresolvedViewer, sorter));
-        for (Object root : roots) {
-            
-            appendLabels(root, contentProvider, builder, 0);
-        }
-        
-        /* TODO
-        if (result != null) {
-            StringBuilder buffer = new StringBuilder();
-            List<Reason> unresolved = result.getUnresolved();
-
-            if (unresolved != null) for (Iterator<Reason> iter = unresolved.iterator(); iter.hasNext(); ) {
-                Reason reason = iter.next();
-                buffer.append(unresolvedLabelProvider.getLabel(reason.getRequirement()).getString());
-                buffer.append('\t');
-                buffer.append(unresolvedLabelProvider.getLabel(reason.getResource()));
-
-                if (iter.hasNext())
-                    buffer.append('\n');
-            }
-
-        }
-        */
-        
-        Clipboard clipboard = new Clipboard(getShell().getDisplay());
-        TextTransfer transfer = TextTransfer.getInstance();
-        clipboard.setContents(new Object[] { builder.toString() }, new Transfer[] { transfer });
-        clipboard.dispose();
-    }
-    
-    private void appendLabels(Object unresolvedTreeElem, ITreeContentProvider contentProvider, StringBuilder builder, int indent) {
-        for (int i = 0; i < indent; i++)
-            builder.append("..");
-        
-        builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
-
-        Object[] children = contentProvider.getChildren(unresolvedTreeElem);
-        if (children == null)
-            return;
-        ViewerSorter sorter = unresolvedViewer.getSorter();
-        if (sorter != null)
-            Arrays.sort(children, new SorterComparatorAdapter(unresolvedViewer, sorter));
-        for (Object child : children) {
-            appendLabels(child, contentProvider, builder, indent + 1);
-        }
-    }
-
-    private static String getClipboardContent(Object element) {
-        String label;
-        if (element instanceof Reason) {
-            Reason reason = (Reason) element;
-            label = getClipboardContent(reason.getResource()) + "\trequires\t" + getClipboardContent(reason.getRequirement());
-        } else if (element instanceof Resource) {
-            Resource resource = (Resource) element;
-            label = getClipboardContent(resource);
-        } else if (element instanceof PotentialMatch) {
-            PotentialMatch match = (PotentialMatch) element;
-            String count;
-            if (match.getResources().isEmpty())
-                count = "UNMATCHED";
-            else if (match.getResources().size() == 1)
-                count = "1 potential match";
-            else
-                count = match.getResources().size() + " potential matches";
-            label = getClipboardContent(match.getRequirement()) + "\t" + count;
-        } else {
-            label = "ERROR";
-        }
-        return label;
-    }
-    
-    private static String getClipboardContent(Resource resource) { 
-        String bsn;
-        Version version;
-        if (resource == null || resource.getId() == null) {
-            bsn = "INITIAL";
-            version = Version.emptyVersion;
-        } else {
-            bsn = resource.getSymbolicName();
-            version = resource.getVersion();
-            if (version == null) version = Version.emptyVersion;
-        }
-        return bsn + " " + version;
-    }
-    
-    private static String getClipboardContent(org.apache.felix.bundlerepository.Requirement requirement) {
-        return String.format("%s:%s\toptional=%s", requirement.getName(), requirement.getFilter(), requirement.isOptional());
-    }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
@@ -628,9 +370,7 @@ public class ObrResultsWizardPage extends WizardPage {
     @Override
     public void dispose() {
         super.dispose();
-        clipboardImg.dispose();
-        treeViewImg.dispose();
-        flatViewImg.dispose();
+        resolutionFailurePanel.dispose();
     }
 
     private static class BundleSorter extends ViewerSorter {
