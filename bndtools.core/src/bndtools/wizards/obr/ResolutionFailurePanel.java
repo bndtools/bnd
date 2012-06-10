@@ -7,6 +7,7 @@ import org.apache.felix.bundlerepository.Resource;
 import org.bndtools.core.obr.ObrResolutionResult;
 import org.bndtools.core.utils.jface.StatusLabelProvider;
 import org.bndtools.core.utils.jface.StatusTreeContentProvider;
+import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -54,10 +55,14 @@ public class ResolutionFailurePanel {
     private final Image clipboardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png").createImage();
     private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif").createImage();
     private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
-    
+
     private SashForm sashForm;
+    
     private TableViewer processingErrorsViewer;
+    private SashFormPanelMaximiser processingErrorsMaximiser;
+    
     private TreeViewer unresolvedViewer;
+    private SashFormPanelMaximiser unresolvedMaximiser;
 
     private boolean failureTreeMode = true;
 
@@ -66,14 +71,16 @@ public class ResolutionFailurePanel {
         sashForm.setSashWidth(5);
 
         Composite cmpProcessingErrors = new Composite(sashForm, SWT.NONE);
-        GridLayout gl_processingErrors = new GridLayout(1, false);
+        GridLayout gl_processingErrors = new GridLayout(2, false);
         gl_processingErrors.marginRight = 7;
         cmpProcessingErrors.setLayout(gl_processingErrors);
         Label lblProcessingErrors = new Label(cmpProcessingErrors, SWT.NONE);
         lblProcessingErrors.setText("Processing Errors:");
+        
+        createProcessingErrorsToolBar(cmpProcessingErrors);
 
         Table tblProcessingErrors = new Table(cmpProcessingErrors, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd_tblProcessingErrors.heightHint = 80;
         tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
 
@@ -143,9 +150,20 @@ public class ResolutionFailurePanel {
         clipboardImg.dispose();
         treeViewImg.dispose();
         flatViewImg.dispose();
+        
+        processingErrorsMaximiser.dispose();
+        unresolvedMaximiser.dispose();
     }
 
-    private void createUnresolvedViewToolBar(Composite parent) {
+    private void createProcessingErrorsToolBar(Composite parent) {
+        ToolBar toolbar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
+        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
+        
+        processingErrorsMaximiser = new SashFormPanelMaximiser(sashForm);
+        processingErrorsMaximiser.createToolItem(parent, toolbar);
+    }
+
+    private void createUnresolvedViewToolBar(final Composite parent) {
         ToolBar unresolvedToolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
         GridData gd_unresolvedToolBar = new GridData(SWT.RIGHT, SWT.FILL, true, false);
         unresolvedToolBar.setLayoutData(gd_unresolvedToolBar);
@@ -165,7 +183,10 @@ public class ResolutionFailurePanel {
         ToolItem toolErrorsToClipboard = new ToolItem(unresolvedToolBar, SWT.PUSH);
         toolErrorsToClipboard.setImage(clipboardImg);
         toolErrorsToClipboard.setToolTipText("Copy to Clipboard");
-
+        
+        unresolvedMaximiser = new SashFormPanelMaximiser(sashForm);
+        unresolvedMaximiser.createToolItem(parent, unresolvedToolBar);
+        
         SelectionListener modeListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -185,6 +206,7 @@ public class ResolutionFailurePanel {
                 copyUnresolvedToClipboard();
             }
         });
+        
     }
 
     private void setFailureViewMode() {

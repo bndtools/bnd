@@ -14,6 +14,7 @@ import org.bndtools.core.obr.ResolveOperation;
 import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
 import org.bndtools.core.utils.swt.SWTUtil;
+import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,6 +34,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -46,6 +48,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.ToolBar;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
@@ -71,8 +74,9 @@ public class ObrResultsWizardPage extends WizardPage {
     private TabItem tbtmResults;
     private TabItem tbtmErrors;
     
-    
+    private SashFormPanelMaximiser requiredMaximiser;
     private TableViewer requiredViewer;
+    private SashFormPanelMaximiser optionalMaximiser;
     private CheckboxTableViewer optionalViewer;
     private TableViewer reasonsViewer;
     private Button btnAddResolveOptional;
@@ -118,15 +122,21 @@ public class ObrResultsWizardPage extends WizardPage {
         updateUi();
     }
 
-    protected Control createResultsTabControl(TabFolder tabFolder) {
-        Composite composite = new Composite(tabFolder, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
-
-        Label lblRequired = new Label(composite, SWT.NONE);
+    private Control createResultsTabControl(Composite parent) {
+        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+        
+        Composite cmpRequired = new Composite(sashForm, SWT.NONE);
+        cmpRequired.setLayout(new GridLayout(2, false));
+        Label lblRequired = new Label(cmpRequired, SWT.NONE);
         lblRequired.setText("Required Resources");
+        
+        ToolBar requiredToolbar = new ToolBar(cmpRequired, SWT.FLAT | SWT.HORIZONTAL);
+        requiredToolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
+        requiredMaximiser = new SashFormPanelMaximiser(sashForm);
+        requiredMaximiser.createToolItem(cmpRequired, requiredToolbar);
 
-        Table tblRequired = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblRequired = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        Table tblRequired = new Table(cmpRequired, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        GridData gd_tblRequired = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd_tblRequired.minimumHeight = 50;
         gd_tblRequired.heightHint = 100;
         tblRequired.setLayoutData(gd_tblRequired);
@@ -153,18 +163,20 @@ public class ObrResultsWizardPage extends WizardPage {
             }
         });
 
-        Label lblOptional = new Label(composite, SWT.NONE);
+        Composite cmpOptional = new Composite(sashForm, SWT.NONE);
+        cmpOptional.setLayout(new GridLayout(2, false));
+        
+        Label lblOptional = new Label(cmpOptional, SWT.NONE);
         lblOptional.setText("Optional Resources");
-
-        Composite compResultsOptional = new Composite(composite, SWT.NONE);
-        compResultsOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        GridLayout gl_compResultsOptional = new GridLayout(2, false);
-        gl_compResultsOptional.marginWidth = 0;
-        gl_compResultsOptional.marginHeight = 0;
-        compResultsOptional.setLayout(gl_compResultsOptional);
-
-        Table tblOptional = new Table(compResultsOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
+        lblOptional.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        ToolBar optionalToolbar = new ToolBar(cmpOptional, SWT.FLAT | SWT.HORIZONTAL);
+        optionalToolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
+        optionalMaximiser = new SashFormPanelMaximiser(sashForm);
+        optionalMaximiser.createToolItem(cmpOptional, optionalToolbar);
+        
+        Table tblOptional = new Table(cmpOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         optionalViewer = new CheckboxTableViewer(tblOptional);
         optionalViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -182,10 +194,27 @@ public class ObrResultsWizardPage extends WizardPage {
                 updateUi();
             }
         });
+        
+        Composite cmpOptionalButtons = new Composite(cmpOptional, SWT.NONE);
+        cmpOptionalButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        GridLayout gl_cmpOptionalButtons = new GridLayout(3, false);
+        gl_cmpOptionalButtons.marginHeight = 0;
+        gl_cmpOptionalButtons.marginWidth = 0;
+        cmpOptionalButtons.setLayout(gl_cmpOptionalButtons);
 
-        Button btnAllOptional = new Button(compResultsOptional, SWT.NONE);
-        btnAllOptional.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
-        btnAllOptional.setText("All");
+        btnAddResolveOptional = new Button(cmpOptionalButtons, SWT.NONE);
+        btnAddResolveOptional.setEnabled(false);
+        btnAddResolveOptional.setText("Add and Resolve");
+        btnAddResolveOptional.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAddResolve();
+            }
+        });
+        btnAddResolveOptional.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false));
+
+        Button btnAllOptional = new Button(cmpOptionalButtons, SWT.NONE);
+        btnAllOptional.setText("Select All");
         btnAllOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -196,10 +225,10 @@ public class ObrResultsWizardPage extends WizardPage {
                 updateUi();
             }
         });
-
-        Button btnClearOptional = new Button(compResultsOptional, SWT.NONE);
-        btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
-        btnClearOptional.setText("Clear");
+        btnAllOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+        
+        Button btnClearOptional = new Button(cmpOptionalButtons, SWT.NONE);
+        btnClearOptional.setText("Clear All");
         btnClearOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -208,30 +237,15 @@ public class ObrResultsWizardPage extends WizardPage {
                 updateUi();
             }
         });
+        btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 
-        btnAddResolveOptional = new Button(compResultsOptional, SWT.NONE);
-        btnAddResolveOptional.setEnabled(false);
-        btnAddResolveOptional.setText("Add and Resolve");
-        btnAddResolveOptional.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doAddResolve();
-            }
-        });
-
-        new Label(compResultsOptional, SWT.NONE);
-
-        Label lblReason = new Label(composite, SWT.NONE);
+        Composite cmpReason = new Composite(sashForm, SWT.NONE);
+        Label lblReason = new Label(cmpReason, SWT.NONE);
         lblReason.setText("Reasons");
 
-        Composite compResultsReasons = new Composite(composite, SWT.NONE);
-        compResultsReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        GridLayout gl_compResultsReasons = new GridLayout(1, false);
-        gl_compResultsReasons.marginWidth = 0;
-        gl_compResultsReasons.marginHeight = 0;
-        compResultsReasons.setLayout(gl_compResultsReasons);
+        cmpReason.setLayout(new GridLayout(1, false));
 
-        Table tblReasons = new Table(compResultsReasons, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Table tblReasons = new Table(cmpReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
         reasonsViewer = new TableViewer(tblReasons);
@@ -256,7 +270,8 @@ public class ObrResultsWizardPage extends WizardPage {
             }
         });
         
-        return composite;
+        sashForm.setWeights(new int[] { 3, 3, 1 });
+        return sashForm;
     }
 
     public ObrResolutionResult getResult() {
@@ -370,7 +385,11 @@ public class ObrResultsWizardPage extends WizardPage {
     @Override
     public void dispose() {
         super.dispose();
+        
         resolutionFailurePanel.dispose();
+        
+        requiredMaximiser.dispose();
+        optionalMaximiser.dispose();
     }
 
     private static class BundleSorter extends ViewerSorter {
