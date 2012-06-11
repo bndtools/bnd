@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="junittest" default="build"> 
+	<property name="workspacedir" value=".."/>
+	<import file="${workspacedir}/cnf/build.xml"/>
+
+	<target name="ant-test-windows" if="${windows}">
+		<macro.runant.windows result="junittestpass.result"/>
+	</target>
+	<target name="ant-test-linux" if="${linux}">
+		<macro.runant.linux result="junittestpass.result"/>
+	</target>
+  <target name="dotest" depends="ant-test-windows, ant-test-linux">
+
+    <echo message="junittestpass.result=${junittestpass.result} (0=pass, which is what we are expecting)"/>
+    <condition property="junittestpass.passed">
+	    <equals arg1="${junittestpass.result}"
+		    arg2="0"/>
+    </condition>
+    <fail unless="junittestpass.passed"/>
+  </target>
+
+</project>

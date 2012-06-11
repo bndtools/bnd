@@ -1,0 +1,34 @@
+<project name="testing" default="full">
+  <target name="build-test">
+    <ant dir="levelone" />
+    <ant dir="dir/leveltwo" />
+    <ant dir="dir/deeper/levelthree" />
+    <ant dir="junittest"/>
+    <ant dir="junittestpass"/>
+    <ant dir="dir/junittestpass_leveltwo"/>
+    <ant dir="dir/deeper/subtest"/>
+    <ant dir="junit4test"/>
+  </target>
+
+  <target name="clean">
+    <ant dir="levelone" target="clean"/>
+    <ant dir="dir/leveltwo" target="clean"/>
+    <ant dir="dir/deeper/levelthree" target="clean"/>
+    <ant dir="junittest" target="clean"/>
+    <ant dir="junittestpass" target="clean"/>
+    <ant dir="dir/junittestpass_leveltwo" target="clean"/>
+    <ant dir="dir/deeper/subtest" target="clean"/>
+    <ant dir="junit4test" target="clean"/>
+  </target>
+
+  <target name="dotest">
+	  <ant dir="levelone" target="dotest"/>
+	  <ant dir="junittest" target="dotest"/>
+	  <ant dir="junittestpass" target="dotest"/>
+	  <ant dir="dir/junittestpass_leveltwo" target="dotest"/>
+	  <ant dir="dir/deeper/subtest" target="dotest"/>
+	  <ant dir="junit4test" target="dotest"/>
+  </target>
+
+  <target name="full" depends="clean,build-test,dotest"/>
+</project>

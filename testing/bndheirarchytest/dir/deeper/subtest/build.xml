@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build"> 
+	<property name="workspacedir" value="../../.."/>
+	<import file="${workspacedir}/cnf/build.xml"/>
+
+	<macrodef name="subtest">
+		<attribute name="lower"/>
+		<attribute name="upper"/>
+		<sequential>
+
+            <delete file="@{lower}.jar" />
+            <ant target="package">
+              <property name="package.file" value="@{lower}.bndrun" />
+            </ant>
+            <java jar="./@{lower}.jar" fork="true" outputproperty="@{lower}.output" />
+
+			<echo message="@{lower}.output=${@{lower}.output}"/>
+			<condition property="@{lower}.output.good">
+				<equals arg1="${@{lower}.output}"
+					arg2="Class@{upper} started"/>
+			</condition>
+			<echo message="@{lower}.output.good=${@{lower}.output.good}"/>
+			<fail unless="@{lower}.output.good"/>
+		</sequential>
+	</macrodef>
+
+	<target name="dotest">
+		<subtest lower="a" upper="A"/>	
+		<subtest lower="b" upper="B"/>	
+	</target>
+	
+</project>

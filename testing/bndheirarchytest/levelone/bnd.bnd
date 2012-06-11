@@ -1,0 +1,9 @@
+Private-Package: foo
+-buildpath: leveltwo;version=latest,levelthree;version=latest,\
+	biz.aQute.bnd.annotation
+-runfw: org.apache.felix.framework;version='[2.0.5,2.0.5]'
+-runee: JavaSE-1.6
+
+-runbundles: levelthree;version=latest 
+Service-Component: *
+Include-Resources test.cnf

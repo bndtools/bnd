@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="master" default="none">
+
+	<!-- 
+	     INIT
+	     The target is a dependent of all other targets.
+	     It's purpose is to set up the environment only once
+	     and avoid it being repeatedly done for each antcall.
+	-->
+
+	<target name="init" unless="initialized">
+		<tstamp>
+			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
+		</tstamp>
+		
+		<dirname property="projectdir" file="${ant.file}" />
+		<!--<dirname property="workspacedir" file="${projectdir}" />-->
+		<taskdef resource="aQute/bnd/ant/taskdef.properties">
+			<classpath>
+				<!--<path location="${workspacedir}/../repo/bundles/biz.aQute.bnd/biz.aQute.bnd-1.52.3.jar"/>-->
+				<path location="${workspacedir}/../../biz.aQute.bnd/generated/biz.aQute.bnd.jar"/>
+			</classpath>
+		</taskdef>
+
+		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+
+		<!-- mark init has been run -->
+		<property name="initialized" value="set" />
+		<echo message="Enter project ${project.name}"/>
+	</target>
+
+	<!-- 
+		DEPENDENCIES
+		Build project dependencies.
+	-->
+	<target name="dependencies" depends="init" if="project.dependson" unless="donotrecurse">
+		<subant target="build" inheritAll="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true" />
+		</subant>
+	</target>
+
+	<!--
+	     Test
+	<target name="test" depends="compile">
+		<bnd command="test" exceptions="true" basedir="${project}" />
+	</target>
+	-->
+
+	<target name="test" depends="compile">
+		<!--<bndtest files="bnd.bnd"/>-->
+		<bndtest/>
+	</target>
+
+	<!--
+	     COMPILE
+	     Compile the sources. 
+	-->
+	<target name="compile" depends="dependencies" if="project.sourcepath">
+		<mkdir dir="${project.output}"/>
+		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+		<!-- 
+		  The eclipse compiler copies resources but the Javac compiler does not
+		  If ${src} == ${bin} then this is not necessary, but unfortunately, now 
+		  it is. 
+		-->
+		<copy todir="${project.output}" verbose="${verbose}" preservelastmodified="true">
+			<fileset dir="${project.sourcepath}">
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- 
+		JARS
+		Iterate of the jars to build.
+	-->
+	<target name="build" depends="compile">
+		<mkdir dir="${target}"/>
+		<bnd command="build" exceptions="true" basedir="${project}" />
+	</target>
+	
+	<target name="release" depends="build">
+		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+			<property name="donotrecurse" value="true" />
+		</subant>
+		<bnd command="release" exceptions="true" basedir="${project}"/>
+	</target>
+
+	<target name="junit" depends="build">
+		<junit printsummary="true">			
+			<classpath path="${project.buildpath}" />
+			<formatter type="xml"/>
+			<batchtest todir="tmp" >
+			    <fileset dir="${src}">
+			      <include name="test/**.java"/>
+			    </fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<!--
+	     CLEAN
+	-->
+	<target name="deepclean" depends="init,clean" if="project.dependson">
+		<subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
+	</target>
+
+	<target name="clean" depends="init">
+		<bnd command="clean" exceptions="true" basedir="${project}" />
+		<delete dir="bin"/>
+		<delete dir="bin_test"/>
+		<delete dir="${target}"/>
+		
+		<delete dir="${workspacedir}/cnf/tmp"/>
+		<delete dir="${workspacedir}/cnf/p2target"/>
+	</target>
+
+	<!--
+	     ECHO
+	-->
+	<target name="echo" depends="init">
+		<echo>verbose:                ${verbose}</echo>
+		<echo>project.name:           ${project.name}</echo>
+		<echo>Bundle-Version:         ${Bundle-Version}</echo>
+		<echo>project.output:         ${project.output}</echo>
+		<echo>project.sourcepath:     ${project.sourcepath}</echo>
+		<echo>project.allsourcepath:  ${project.allsourcepath}</echo>
+		<echo>project.buildpath:      ${project.buildpath}</echo>
+		<echo>project.testpath:       ${project.testpath}</echo>
+		<echo>project.dependson:      ${project.dependson}</echo>
+		<echo>project.bootclasspath:  ${project.bootclasspath}</echo>
+		<echo>javac:                  ${javac}</echo>
+		<echo>javac.debug:            ${javac.debug}</echo>
+		<echo>javac.source:           ${javac.source}</echo>
+		<echo>javac.target:           ${javac.target}</echo>
+		<echo>p:                      ${p}</echo>
+		<echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
+		<echo>btool.analyse:          ${btool.analyse}</echo>
+		<echo>btool.showmanifest:     ${btool.showmanifest}</echo>
+		<echo>btool.noversion:     	  ${btool.noversion}</echo>
+		<echo>btool.sources:     	  ${btool.sources}</echo>
+		<echo>btool.noextraheaders:   ${btool.noextraheaders}</echo>
+		<echo>jars.compile.order:     ${jars.compile.order}</echo>
+		<echo>bin.includes:           ${bin.includes}</echo>
+		<echo>base.modfied:           ${base.modified} (${base.modified.readable})</echo>
+		<echo>target:                 ${target}</echo>
+		<echo>release.target:         ${release.target}</echo>
+		<echo>licensed repo:          ${licensed-repo}</echo>
+		<echo>repo:                   ${repo}</echo>
+		<echo>use.bnd:                ${use.bnd}</echo>
+		<echo>nodeploy:               ${nodeploy}</echo>
+		<echo>-dependson:             ${-dependson}</echo>
+
+	</target>
+	
+	<!--
+	     Default Target
+	-->
+	<target name="none">
+		<fail message="This ant script should never be directly called." />
+	</target>
+
+    <target name="package" depends="init">
+      <property name="package.file" value="run.bndrun" />
+      <java jar="${workspacedir}/../../biz.aQute.bnd/generated/biz.aQute.bnd.jar" fork="true">
+        <arg value="package" />
+        <arg value="${package.file}" />
+      </java>
+    </target>
+    <condition property="windows" value="true">
+	    <os family="windows" />
+    </condition>
+
+    <condition property="linux" value="true">
+	    <os family="unix" />
+    </condition>
+
+    <macrodef name="macro.runant.windows">
+	    <attribute name="result" />
+	    <sequential>
+		    <exec executable="cmd"
+			    resultproperty="@{result}">
+			    <arg value="/c"/>
+			    <arg value="${ant.home}/bin/ant.bat"/>
+			    <arg value="test"/>
+		    </exec>
+	    </sequential>
+    </macrodef>
+    <macrodef name="macro.runant.linux">
+	    <attribute name="result" />
+	    <sequential>
+		    <exec executable="ant"
+			    resultproperty="@{result}">
+			    <arg value="test"/>
+		    </exec>
+	    </sequential>
+    </macrodef>
+</project>

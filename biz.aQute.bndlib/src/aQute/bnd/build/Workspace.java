@@ -83,6 +83,9 @@ public class Workspace extends Processor {
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
+		//[cs] allow searching up the tree for the workspace directory.
+		File lastDir = workspaceDir;
+		
 		// the cnf directory can actually be a
 		// file that redirects
 		while (workspaceDir.isDirectory()) {
@@ -99,8 +102,18 @@ public class Workspace extends Processor {
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
 				workspaceDir = test;
 			}
-			if (!test.exists())
-				throw new IllegalArgumentException("No Workspace found from: " + parent);
+			if (!test.exists()) {
+				// if parent of lastDir is lastDir, then we've reached the top of the tree
+				if (lastDir.getParentFile().equals(lastDir)) {
+					throw new IllegalArgumentException("No Workspace found from: " + parent);
+				} else {
+					workspaceDir = lastDir.getParentFile();
+					lastDir=workspaceDir;
+					//TODO -- figure out how to inform user we are "looking for workspace at ..."
+					// I would use the warn() method, but this is a static context...
+				}
+			}
+				
 		}
 
 		synchronized (cache) {
@@ -137,18 +150,123 @@ public class Workspace extends Processor {
 
 	}
 
+	private File findProject(String lookingfor, File path, int depth) {
+		if (!path.isDirectory()) return null;
+		
+		File bndfile = new File(path, Project.BNDFILE);
+		
+		if (path.getName().compareTo(lookingfor) == 0 && bndfile.isFile()) {
+			return path;
+		}
+		if (depth <= 0) { 
+			return null;
+		} else {
+			File[] files = path.listFiles();
+			for(File f : files) {
+				File found = findProject(lookingfor, f, depth-1);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
+	
+	private class ProjectSearchEntry {
+		public ProjectSearchEntry(String dir, int dep) {
+			this.directory = dir;
+			this.depth = dep;
+		}
+		public String directory;
+		public int depth;
+	}
+	
+	List<ProjectSearchEntry> getProjectSearchEntries() {
+		List<ProjectSearchEntry> ret = new LinkedList<Workspace.ProjectSearchEntry>();
+		
+		//[cs] Provide project search parameters
+		String search = this.getProperty(PROJECT_SEARCH);
+		if (search != null) {
+			Collection<String> dirs = split(search);
+			for(String d : dirs) {
+				String[] chunks = d.split(";");
+				String dir= chunks.length > 0 ? chunks[0] : "";
+				int depth=0;
+				// process parameters
+				if (chunks.length > 1) {
+					for(int i=1; i < chunks.length; i++) {
+						String[] kv= chunks[i].split("=");
+						if (kv.length==2) {
+							if (kv[0].compareTo(PROJECT_SEARCH_DEPTH) == 0) {
+								depth = Integer.parseInt(kv[1]);
+							}
+						}
+					}
+				}
+				ret.add(new ProjectSearchEntry(dir, depth));
+			}
+		} else {
+			// If none provided, default is:
+			ret.add(new ProjectSearchEntry(".", 1));
+		}
+		
+		return ret;
+	}
+	
 	public Project getProject(String bsn) throws Exception {
 		synchronized (models) {
-			Project project = models.get(bsn);
-			if (project != null)
+			if (models.containsKey(bsn)) {
+				Project project = models.get(bsn);
 				return project;
+			}
 
-			File projectDir = getFile(bsn);
-			project = new Project(this, projectDir);
-			if (!project.isValid())
+			File projectDir=null;
+			
+			//[cs] use project search parameters
+			List<ProjectSearchEntry> ps = getProjectSearchEntries();
+			
+			// create list of potential bsns to try
+			List<String> bsns = new ArrayList<String>();
+			bsns.add(bsn);
+			int index=0;
+			String curbsn = bsn;
+			while((index = curbsn.lastIndexOf('.')) != -1) {
+				curbsn = curbsn.substring(0, index);
+				bsns.add(curbsn);
+				
+				// if we find a project we know about here, let's remember it.
+				// Otherwise we could end up with duplicate project instances
+				if (models.containsKey(curbsn)) {
+					Project project = models.get(curbsn);
+					models.put(bsn, project);
+					return project;
+				}
+			}
+			
+			String bsnfound=bsn;
+			for (String b : bsns) {
+				for(ProjectSearchEntry p : ps) {
+					projectDir = findProject(b, getFile(p.directory), p.depth);
+					// break after the first matching project directory.
+					// This is potentially too simple a matching mechanism.
+					if (projectDir != null) {
+						bsnfound=b;
+						break;
+					}
+				}
+				if (projectDir != null) break;
+			}
+			//[cs] If no project directory was found, return null
+			if (projectDir == null) {
+				models.put(bsn, null);
 				return null;
+			}
+			Project project = new Project(this, projectDir);
+			if (!project.isValid()) {
+				models.put(bsn, null);
+				return null;
+			}
 
 			models.put(bsn, project);
+			models.put(bsnfound, project);
 			return project;
 		}
 	}
@@ -158,7 +276,11 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getCurrentProjects() {
-		return models.values();
+		ArrayList<Project> ret = new ArrayList<Project>();
+		for (Project p : models.values()) {
+			if (p != null) ret.add(p);
+		}
+		return ret;
 	}
 
 	@Override
@@ -210,11 +332,45 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
+	void addToListOfProjects(Hashtable<File,Boolean> listOfProjects, File path, int depth) {
+		if (depth >= 0) 
+			listOfProjects.put(path, true);
+		if (depth <= 0)
+			return;
+		if (path.isDirectory()) {
+			for(File f : path.listFiles()) {
+				if (f.isDirectory()) {
+					addToListOfProjects(listOfProjects, f, depth-1);
+				}
+			}
+		}
+	}
+	
 	public Collection<Project> getAllProjects() throws Exception {
 		List<Project> projects = new ArrayList<Project>();
-		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile())
-				projects.add(getProject(file));
+		
+		//[cs] Use project search parameters if provided
+		String search = this.getProperty(PROJECT_SEARCH);
+		if (search != null) {
+			Hashtable<File,Boolean> projectDirs = new Hashtable<File,Boolean>();
+			
+			List<ProjectSearchEntry> ps = getProjectSearchEntries();
+			for(ProjectSearchEntry p : ps) {
+				addToListOfProjects(projectDirs, getFile(p.directory), p.depth);
+			}
+			
+			// NOTE: This is unordered
+			for(File file : projectDirs.keySet()) {
+				if (new File(file, Project.BNDFILE).isFile())
+					projects.add(getProject(file));
+			}
+			
+		} else {
+		
+			for (File file : getBase().listFiles()) {
+				if (new File(file, Project.BNDFILE).isFile())
+					projects.add(getProject(file));
+			}
 		}
 		return projects;
 	}
