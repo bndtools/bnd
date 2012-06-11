@@ -1,12 +1,17 @@
 package org.bndtools.core.obr;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.eclipse.core.runtime.IStatus;
+
+import bndtools.model.obr.ReasonComparator;
+import bndtools.model.obr.RequirementComparator;
+import bndtools.model.obr.ResourceComparator;
 
 public class ObrResolutionResult {
 
@@ -45,19 +50,19 @@ public class ObrResolutionResult {
     }
 
     public Reason[] getReason(Resource resource) {
-        if (resolver == null) {
+        if (resolver == null)
             return new Reason[0];
-        }
+        
         Reason[] reasons = resolver.getReason(resource);
-        if (reasons == null) {
-            return new Reason[0];
-        }
-        List<Reason> tmp = new ArrayList<Reason>();
+        
+        if (reasons == null)
+            reasons = new Reason[0];
+        
+        // De-dupe. The resolver returns two copies of everything...?!
+        Set<Reason> set = new TreeSet<Reason>(new ReasonComparator(new ResourceComparator(), new RequirementComparator()));
         for (Reason reason : reasons) {
-            if (required.contains(reason.getResource())) {
-                tmp.add(reason);
-            }
+            set.add(reason);
         }
-        return tmp.toArray(new Reason[tmp.size()]);
+        return set.toArray(new Reason[set.size()]);
     }
 }

@@ -8,10 +8,13 @@ import org.bndtools.core.obr.ObrResolutionResult;
 import org.bndtools.core.utils.jface.StatusLabelProvider;
 import org.bndtools.core.utils.jface.StatusTreeContentProvider;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
+import org.bndtools.core.utils.swt.SashHighlightForm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -20,13 +23,13 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,7 +40,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.framework.Version;
 
 import bndtools.Plugin;
@@ -56,7 +61,7 @@ public class ResolutionFailurePanel {
     private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif").createImage();
     private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
 
-    private SashForm sashForm;
+    private SashHighlightForm sashForm;
     
     private TableViewer processingErrorsViewer;
     private SashFormPanelMaximiser processingErrorsMaximiser;
@@ -67,8 +72,12 @@ public class ResolutionFailurePanel {
     private boolean failureTreeMode = true;
 
     public Control createControl(final Composite parent) {
-        sashForm = new SashForm(parent, SWT.VERTICAL);
-        sashForm.setSashWidth(5);
+        sashForm = new SashHighlightForm(parent, SWT.VERTICAL);
+        sashForm.setSashWidth(6);
+
+        Color sashColor = JFaceResources.getColorRegistry().get(EditorsUI.PLUGIN_ID + "." + AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE_COLOR);
+        sashForm.setSashBackground(sashColor);
+        sashForm.setSashForeground(sashColor);
 
         Composite cmpProcessingErrors = new Composite(sashForm, SWT.NONE);
         GridLayout gl_processingErrors = new GridLayout(2, false);
@@ -119,18 +128,6 @@ public class ResolutionFailurePanel {
         unresolvedViewer = new TreeViewer(treeUnresolved);
         setFailureViewMode();
 
-        /*
-        unresolvedViewer.addTreeListener(new ITreeViewerListener() {
-            public void treeExpanded(TreeExpansionEvent ev) {
-                Object expanded = ev.getElement();
-                if (expanded instanceof PotentialMatch) {
-                    unresolvedViewer.expandToLevel(expanded, 2);
-                }
-            }
-            public void treeCollapsed(TreeExpansionEvent ev) {
-            }
-        });
-        */
         return sashForm;
     }
     

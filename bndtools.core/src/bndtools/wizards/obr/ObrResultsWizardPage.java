@@ -15,11 +15,15 @@ import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
+import org.bndtools.core.utils.swt.SashHighlightForm;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -34,9 +38,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -49,6 +53,8 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.framework.Version;
 
 import aQute.libg.version.VersionRange;
@@ -56,7 +62,7 @@ import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.Requirement;
 import bndtools.model.obr.ReasonSorter;
-import bndtools.wizards.workspace.ReasonLabelProvider;
+import bndtools.model.obr.ResolutionFailureFlatLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
 
 public class ObrResultsWizardPage extends WizardPage {
@@ -123,7 +129,13 @@ public class ObrResultsWizardPage extends WizardPage {
     }
 
     private Control createResultsTabControl(Composite parent) {
-        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+        SashHighlightForm sashForm = new SashHighlightForm(parent, SWT.VERTICAL);
+        sashForm.setSashWidth(6);
+
+        ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+        Color sashColor = colorRegistry.get("org.eclipse.ui.workbench.ACTIVE_TAB_HIGHLIGHT_START");
+        sashForm.setSashBackground(sashColor);
+        sashForm.setSashForeground(sashColor);
         
         Composite cmpRequired = new Composite(sashForm, SWT.NONE);
         cmpRequired.setLayout(new GridLayout(2, false));
@@ -146,22 +158,15 @@ public class ObrResultsWizardPage extends WizardPage {
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
         requiredViewer.setSorter(new BundleSorter());
 
-        requiredViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        ISelectionChangedListener reasonSelectionListener = new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection sel = (IStructuredSelection) requiredViewer.getSelection();
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
                 Resource resource = (Resource) sel.getFirstElement();
-                if(resource != null){
-                    List<Reason> reasons = new ArrayList<Reason>();
-                    for (Reason reason : result.getReason(resource)) {
-                        reasons.add(reason);
-                    }
-                    reasonsViewer.setInput(reasons.toArray(new Reason[reasons.size()]));
-                }
-                else{
-                    reasonsViewer.setInput(new Reason[0]);
-                }
+                Reason[] reasons = (resource != null) ? result.getReason(resource) : new Reason[0];
+                reasonsViewer.setInput(reasons);
             }
-        });
+        };
+        requiredViewer.addSelectionChangedListener(reasonSelectionListener);
 
         Composite cmpOptional = new Composite(sashForm, SWT.NONE);
         cmpOptional.setLayout(new GridLayout(2, false));
@@ -194,6 +199,7 @@ public class ObrResultsWizardPage extends WizardPage {
                 updateUi();
             }
         });
+        optionalViewer.addSelectionChangedListener(reasonSelectionListener);
         
         Composite cmpOptionalButtons = new Composite(cmpOptional, SWT.NONE);
         cmpOptionalButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
@@ -251,7 +257,7 @@ public class ObrResultsWizardPage extends WizardPage {
         reasonsViewer = new TableViewer(tblReasons);
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
         reasonsViewer.setSorter(new ReasonSorter());
-        reasonsViewer.setLabelProvider(new ReasonLabelProvider());
+        reasonsViewer.setLabelProvider(new ResolutionFailureFlatLabelProvider());
         reasonsViewer.addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) event.getSelection();
@@ -390,6 +396,7 @@ public class ObrResultsWizardPage extends WizardPage {
         
         requiredMaximiser.dispose();
         optionalMaximiser.dispose();
+
     }
 
     private static class BundleSorter extends ViewerSorter {
