@@ -7,6 +7,7 @@ import java.util.concurrent.*;
 
 import junit.framework.*;
 import aQute.lib.converter.*;
+import aQute.lib.converter.Converter.Hook;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.version.*;
@@ -14,6 +15,22 @@ import aQute.libg.version.*;
 @SuppressWarnings({"unchecked","rawtypes"}) public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
+	
+	
+	public void hookTest() throws Exception {
+		Converter	converter	= new Converter().hook(File.class, new Hook() {
+
+			public Object convert(Type dest, Object o) {
+				if ( o instanceof String ) {
+					return IO.getFile(new File(""), o.toString());
+				}
+				return null;
+			}
+			
+		});
+		assertEquals( new Integer(6), converter.convert(Integer.class,"6"));
+		assertEquals( new File("src").getAbsoluteFile(), converter.convert(File.class,"src"));
+	}
 	
 	/**
 	 * Test map to object
