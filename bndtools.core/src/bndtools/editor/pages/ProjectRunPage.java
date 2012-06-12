@@ -111,7 +111,6 @@ public class ProjectRunPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-//        reposPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
         reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
         
         AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);

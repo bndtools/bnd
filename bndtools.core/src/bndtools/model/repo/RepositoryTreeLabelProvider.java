@@ -22,10 +22,16 @@ import bndtools.WorkspaceObrProvider;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
 
-    Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
-    Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
-    Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
-    Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
+    final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
+    final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+    final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    
+    private final boolean showRepoId;
+    
+    public RepositoryTreeLabelProvider(boolean showRepoId) {
+        this.showRepoId = showRepoId;
+    }
 
     @Override
     public void update(ViewerCell cell) {
@@ -43,12 +49,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         if (element instanceof RepositoryPlugin) {
             if (index == 0) {
                 RepositoryPlugin repo = (RepositoryPlugin) element;
-                StyledString label = new StyledString(repo.getName());
-                if (!(element instanceof WorkspaceObrProvider))
-                    label.append(" " + repo.getLocation(), StyledString.QUALIFIER_STYLER);
-
-                cell.setText(label.getString());
-                cell.setStyleRanges(label.getStyleRanges());
+                cell.setText(repo.getName());
 
                 Image image;
                 if (element instanceof WorkspaceObrProvider)
@@ -63,19 +64,32 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         } else if (element instanceof Project) {
             if (index == 0) {
                 Project project = (Project) element;
-                cell.setText(project.getName());
+                StyledString label = new StyledString(project.getName());
+                if (showRepoId)
+                    label.append("  [Workspace]", StyledString.QUALIFIER_STYLER);
+                
+                cell.setText(label.getString());
+                cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(projectImg);
             }
         } else if (element instanceof ProjectBundle) {
             if (index == 0) {
-                String name = ((ProjectBundle) element).getBsn();
-                cell.setText(name);
+                StyledString label = new StyledString(((ProjectBundle) element).getBsn());
+                if (showRepoId)
+                    label.append("  [Workspace]", StyledString.QUALIFIER_STYLER);
+
+                cell.setText(label.getString());
+                cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(bundleImg);
             }
         } else if (element instanceof RepositoryBundle) {
             if (index == 0) {
                 RepositoryBundle bundle = (RepositoryBundle) element;
-                cell.setText(bundle.getBsn());
+                StyledString label = new StyledString(bundle.getBsn());
+                if (showRepoId)
+                    label.append("  [" + bundle.getRepo().getName() + "]", StyledString.QUALIFIER_STYLER);
+                cell.setText(label.getString());
+                cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(bundleImg);
             }
         } else if (element instanceof RepositoryBundleVersion) {

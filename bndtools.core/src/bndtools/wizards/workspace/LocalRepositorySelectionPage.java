@@ -50,7 +50,7 @@ class LocalRepositorySelectionPage extends WizardPage {
 
         final TableViewer viewer = new TableViewer(table);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
-        viewer.setLabelProvider(new RepositoryTreeLabelProvider());
+        viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         viewer.setFilters(new ViewerFilter[] {
                 new ViewerFilter() {
                     @Override

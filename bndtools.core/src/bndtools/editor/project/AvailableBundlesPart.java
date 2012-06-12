@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.service.IndexProvider;
+import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import bndtools.BndConstants;
 import bndtools.Plugin;
@@ -55,14 +57,22 @@ public class AvailableBundlesPart extends BndEditorPart {
     private final ViewerFilter includedRepoFilter = new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            boolean select;
-            if (element instanceof RepositoryBundle)
-                select = includedRepos == null || includedRepos.contains(((RepositoryBundle) element).getRepo().getName());
-            else
+            boolean select = false;
+            if (element instanceof RepositoryBundle) {
+                RepositoryBundle repoBundle = (RepositoryBundle) element;
+                if (repoBundle.getRepo() instanceof OBRIndexProvider || repoBundle.getRepo() instanceof IndexProvider) {
+                    if (includedRepos == null || includedRepos.contains(repoBundle.getRepo().getName())) {
+                        select = true;
+                    }
+                }
+            } else {
                 select = true;
+            }
             return select;
         }
     };
+    
+    
     
     private final Runnable updateFilterTask = new Runnable() {
         public void run() {
@@ -116,7 +126,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(OBRResolutionMode.runtime);
         contentProvider.setShowRepos(false);
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new RepositoryTreeLabelProvider());
+        viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
         viewer.setFilters(new ViewerFilter[] { includedRepoFilter });
         
         txtSearch.addModifyListener(new ModifyListener() {

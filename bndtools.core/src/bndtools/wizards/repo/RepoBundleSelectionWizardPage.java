@@ -110,7 +110,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	    final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 	    availableViewer = new TreeViewer(availableTree);
-	    availableViewer.setLabelProvider(new RepositoryTreeLabelProvider());
+	    availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
 	    availableViewer.setContentProvider(new RepositoryTreeContentProvider());
 	    availableViewer.setAutoExpandLevel(2);
 

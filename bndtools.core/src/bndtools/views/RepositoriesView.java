@@ -73,7 +73,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
 
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
-        viewer.setLabelProvider(new RepositoryTreeLabelProvider());
+        viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         getViewSite().setSelectionProvider(viewer);
 
         createActions();
