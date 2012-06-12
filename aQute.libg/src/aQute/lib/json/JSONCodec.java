@@ -82,8 +82,7 @@ public class JSONCodec {
 		// Get the null out of the way
 
 		if (object == null) {
-			if ( !ignorenull)
-				app.append("null");
+			app.append("null");
 			return;
 		}
 
@@ -151,7 +150,7 @@ public class JSONCodec {
 
 			if (Enum.class.isAssignableFrom(clazz))
 				h = new EnumHandler(clazz);
-			else if (Collection.class.isAssignableFrom(clazz)) // A Non Generic
+			else if (Iterable.class.isAssignableFrom(clazz)) // A Non Generic
 																// collection
 
 				h = dch;
@@ -192,7 +191,7 @@ public class JSONCodec {
 				Type rawType = pt.getRawType();
 				if (rawType instanceof Class) {
 					Class<?> rawClass = (Class<?>) rawType;
-					if (Collection.class.isAssignableFrom(rawClass))
+					if (Iterable.class.isAssignableFrom(rawClass))
 						h = new CollectionHandler(rawClass, pt.getActualTypeArguments()[0]);
 					else if (Map.class.isAssignableFrom(rawClass))
 						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0],

@@ -14,6 +14,28 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	
+	
+	/**
+	 * Test conversion of iterable
+	 * @throws Exception 
+	 * @throws IOException 
+	 */
+	
+	public void testIterable() throws IOException, Exception {
+		final List<String> l = Arrays.asList("a", "b", "c");
+		Iterable<String> i = new Iterable<String>() {
+			
+			public Iterator<String> iterator() {
+				return l.iterator();
+			}
+		};
+		
+		String s = codec.enc().to().put(i).toString();
+		assertEquals("[\"a\",\"b\",\"c\"]", s);
+	}
+	
+	
 	/**
 	 * Test missing field
 	 */
