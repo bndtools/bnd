@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import aQute.libg.header.Attrs;
 
+@Deprecated
 public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	// v1.0.0 attributes

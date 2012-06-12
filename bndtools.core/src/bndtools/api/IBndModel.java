@@ -49,8 +49,16 @@ public interface IBndModel {
 
     List<String> getTestSuites();
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     void setServiceComponents(List<? extends ServiceComponent> components);
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     List<ServiceComponent> getServiceComponents();
 
     void setPrivatePackages(List<? extends String> packages);
