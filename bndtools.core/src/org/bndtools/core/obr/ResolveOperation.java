@@ -82,16 +82,16 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     public void run(IProgressMonitor monitor) {
         @SuppressWarnings("unused")
-        SubMonitor progress = SubMonitor.convert(monitor, "Resolving...", 0);
+        SubMonitor progress = SubMonitor.convert(monitor, Messages.ResolveOperation_progressLabel, 0);
 
-        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Problems during OBR resolution", null);
+        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
         // Get the repositories
         List<OBRIndexProvider> indexProviders;
         try {
             indexProviders = loadIndexProviders();
         } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading OBR indexes.", e));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorLoadingIndexes, e));
             result = createErrorResult(status);
             return;
         }
@@ -106,7 +106,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         try {
             bundleContext = new DummyBundleContext(frameworkFile);
         } catch (IOException e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading system bundle manifest.", e));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorReadingSystemBundleManifest, e));
             result = createErrorResult(status);
             return;
         }
@@ -135,7 +135,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                     addRepository(indexUrl, repos, cacheDir);
                 }
             } catch (Exception e) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error processing index for repository " + repoName, e));
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorProcessingIndex + repoName, e));
             }
         }
 
@@ -152,7 +152,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         // Add EE capabilities
         EE ee = model.getEE();
         if (ee == null)
-            ee = EE.JavaSE_1_6; // TODO: read default from the workbench
+            ee = EE.JavaSE_1_6;
         resolver.addGlobalCapability(createEeCapability(ee));
         for (EE compat : ee.getCompatible()) {
             resolver.addGlobalCapability(createEeCapability(compat));
@@ -162,13 +162,13 @@ public class ResolveOperation implements IRunnableWithProgress {
         try {
             addJREPackageCapabilities(resolver, ee);
         } catch (IOException e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding JRE package capabilities", e));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorAddingPackageCaps, e));
             result = createErrorResult(status);
             return;
         }
 
         // HACK: add capabilities for usual framework services (not all frameworks declare these statically)
-        String[] frameworkServices = new String[] { "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin" };
+        String[] frameworkServices = new String[] { "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         for (String frameworkService : frameworkServices) {
             Map<String, String> props = new HashMap<String, String>();
             props.put(ObrConstants.FILTER_SERVICE, frameworkService);
@@ -234,9 +234,9 @@ public class ResolveOperation implements IRunnableWithProgress {
     private void addJREPackageCapabilities(Resolver resolver, EE ee) throws IOException {
         // EE Package Capabilities
         Properties pkgProps = new Properties();
-        URL pkgsResource = ResolveOperation.class.getResource(ee.name() + ".properties");
+        URL pkgsResource = ResolveOperation.class.getResource(ee.name() + ".properties"); //$NON-NLS-1$
         if (pkgsResource == null)
-            throw new IOException(String.format("No JRE package definition available for Execution Env %s.", ee.getEEName()));
+            throw new IOException(String.format(Messages.ResolveOperation_missingJrePackageDefinition, ee.getEEName()));
 
         InputStream stream = null;
         try {
@@ -285,7 +285,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
             Project model = Workspace.getProject(runFile.getProject().getLocation().toFile());
             for (Builder builder : model.getSubBuilders()) {
-                File file = new File(model.getTarget(), builder.getBsn() + ".jar");
+                File file = new File(model.getTarget(), builder.getBsn() + ".jar"); //$NON-NLS-1$
                 if (file.isFile()) {
                     JarInputStream stream = null;
                     try {
@@ -296,14 +296,14 @@ public class ResolveOperation implements IRunnableWithProgress {
                         result.add(resource);
                         resolver.add(resource);
                     } catch (IOException e) {
-                        Plugin.logError("Error reading project bundle " + file, e);
+                        Plugin.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
                     } finally {
                         if (stream != null) stream.close();
                     }
                 }
             }
         } catch (Exception e) {
-            Plugin.logError("Error getting builders for project: " + runFile.getProject(), e);
+            Plugin.logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
         }
         return result;
     }
@@ -356,7 +356,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         String runFramework = model.getRunFramework();
         Parameters header = new Parameters(runFramework);
         if (header.size() != 1) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Invalid format for " + BndConstants.RUNFRAMEWORK + " header", null));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format(Messages.ResolveOperation_invalidHeaderFormat, BndConstants.RUNFRAMEWORK), null));
             return null;
         }
 
@@ -370,12 +370,12 @@ public class ResolveOperation implements IRunnableWithProgress {
         try {
             Container container = getProject().getBundle(clause.getName(), versionRange, Strategy.HIGHEST, null);
             if (container.getType() == TYPE.ERROR) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to find specified OSGi framework: " + container.getError(), null));
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_missingFramework + container.getError(), null));
                 return null;
             }
             return container.getFile();
         } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error while trying to find the specified OSGi framework.", e));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorFindingFramework, e));
             return null;
         }
     }
@@ -384,7 +384,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         File file = runFile.getLocation().toFile();
 
         Project result;
-        if ("bndrun".equals(runFile.getFileExtension())) {
+        if ("bndrun".equals(runFile.getFileExtension())) { //$NON-NLS-1$
             result = new Project(Central.getWorkspace(), file.getParentFile(), file);
 
             File bndbnd = new File(file.getParentFile(), Project.BNDFILE);
@@ -395,7 +395,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         } else if (Project.BNDFILE.equals(runFile.getName())) {
             result = Workspace.getProject(file.getParentFile());
         } else {
-            throw new Exception("Invalid run file: " + runFile.getLocation());
+            throw new Exception(Messages.ResolveOperation_invalidRunFile + runFile.getLocation());
         }
         return result;
     }

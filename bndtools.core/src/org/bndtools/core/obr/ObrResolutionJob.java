@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import bndtools.Plugin;
+import bndtools.api.EE;
 import bndtools.api.IBndModel;
 
 public class ObrResolutionJob extends Job {
@@ -17,7 +18,7 @@ public class ObrResolutionJob extends Job {
     private ObrResolutionResult result;
 
     public ObrResolutionJob(IFile runFile, IBndModel model) {
-        super("OBR Resolution");
+        super(Messages.ObrResolutionJob_jobName);
         this.runFile = runFile;
         this.model = model;
     }
@@ -25,7 +26,11 @@ public class ObrResolutionJob extends Job {
     public IStatus validateBeforeRun() {
         String runFramework = model.getRunFramework();
         if (runFramework == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "The OSGi framework must be specified for resolution.", null);
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ObrResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+
+        EE ee = model.getEE();
+        if (ee == null)
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ObrResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
         return Status.OK_STATUS;
     }
