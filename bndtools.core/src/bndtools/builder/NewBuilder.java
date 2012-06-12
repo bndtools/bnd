@@ -103,6 +103,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         if (model == null)
             return null;
         this.model = model;
+        model.setDelayRunDependencies(true);
 
         // Main build section
         try {
