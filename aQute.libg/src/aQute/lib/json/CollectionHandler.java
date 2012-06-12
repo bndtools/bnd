@@ -37,7 +37,7 @@ public class CollectionHandler extends Handler {
 
 	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)
 			throws IOException, Exception {
-		Collection<?> collection = (Collection<?>) object;
+		Iterable<?> collection = (Iterable<?>) object;
 
 		app.append("[");
 		String del = "";
