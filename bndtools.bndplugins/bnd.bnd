@@ -7,6 +7,7 @@
 	org.eclipse.jgit,\
 	junit.osgi,\
 	biz.aQute.repository,\
+	org.osgi.impl.bundle.bindex,\
 	ee.j2se;version=${javac.ee}
 
 -sub: *.bnd
