@@ -2,11 +2,16 @@ package bndtools.editor.workspace;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -35,7 +40,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Constants;
+import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
@@ -168,24 +175,46 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
     }
     
     void doAdd() {
-        IFile file = getEditorFile();
-        
-        FileDialog dialog = new FileDialog(getManagedForm().getForm().getShell());
-        if (file != null)
-            dialog.setFilterPath(file.getParent().getLocation().toString());
-        dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
-        String res = dialog.open();
-        if (res != null) {
-            String[] fileNames = dialog.getFileNames();
-            if (fileNames != null && fileNames.length > 0) {
-                for (String fileName : fileNames)
-                    data.add(fileName);
-                viewer.add(fileNames);
-                markDirty();
+        FileDialog dialog = new FileDialog(getManagedForm().getForm().getShell(), SWT.OPEN | SWT.MULTI);
+        try {
+            File wsdir = Central.getWorkspace().getBase();
+            File cnfdir = new File(wsdir, Workspace.CNFDIR);
+            dialog.setFilterPath(cnfdir.getAbsolutePath());
+            dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
+            
+            String res = dialog.open();
+            if (res != null) {
+                File baseDir = new File(dialog.getFilterPath());
+                String[] fileNames = dialog.getFileNames();
+                if (fileNames != null && fileNames.length > 0) {
+                    for (String fileName : fileNames) {
+                        File file = new File(fileName);
+                        if (!file.isAbsolute())
+                            file = new File(baseDir, fileName);
+                        String addingPath = makeWorkspaceRelative(wsdir, file);
+                        data.add(addingPath);
+                        viewer.add(addingPath);
+                    }
+                    markDirty();
+                }
             }
+        } catch (Exception e) {
+            ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding plugin path.", e));
+            return;
         }
+
     }
     
+    private String makeWorkspaceRelative(File wsdir, File file) throws IOException {
+        String wspath = wsdir.getCanonicalPath();
+        String path = file.getCanonicalPath();
+        
+        if (path.startsWith(wspath))
+            path = "${workspace}" + path.substring(wspath.length());
+        
+        return path;
+    }
+
     void doRemove() {
         IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 
