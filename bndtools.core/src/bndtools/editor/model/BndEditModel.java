@@ -88,6 +88,7 @@ public class BndEditModel implements IPersistableBndModel {
 		aQute.lib.osgi.Constants.SOURCES,
 		aQute.lib.osgi.Constants.VERSIONPOLICY,
 		aQute.lib.osgi.Constants.SERVICE_COMPONENT,
+		aQute.lib.osgi.Constants.DSANNOTATIONS,
 		aQute.lib.osgi.Constants.CLASSPATH,
 		aQute.lib.osgi.Constants.BUILDPATH,
 		aQute.lib.osgi.Constants.BUILDPACKAGES,
@@ -480,6 +481,15 @@ public class BndEditModel implements IPersistableBndModel {
 		exports.add(export);
 		setExportedPackages(exports);
 	}
+	
+    public List<String> getDSAnnotationPatterns() {
+        return doGetObject(aQute.lib.osgi.Constants.DSANNOTATIONS, listConverter);
+    }
+
+    public void setDSAnnotationPatterns(List<? extends String> patterns) {
+        List<String> oldValue = getDSAnnotationPatterns();
+        doSetObject(aQute.lib.osgi.Constants.DSANNOTATIONS, oldValue, patterns, stringListFormatter);
+    }
 
     @Deprecated
     public List<ServiceComponent> getServiceComponents() {

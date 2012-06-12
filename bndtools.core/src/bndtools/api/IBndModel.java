@@ -48,6 +48,10 @@ public interface IBndModel {
     void setTestSuites(List<String> suites);
 
     List<String> getTestSuites();
+    
+    List<String> getDSAnnotationPatterns();
+    
+    void setDSAnnotationPatterns(List<? extends String> patterns);
 
     /**
      * @deprecated
