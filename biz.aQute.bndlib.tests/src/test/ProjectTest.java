@@ -15,6 +15,34 @@ import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
 
+	/**
+	 * Test 2 equal bsns but diff. versions
+	 */
+	
+	public void testSameBsnRunBundles() throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project top = ws.getProject("p1");
+		top.setProperty("-runbundles", "org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
+		Collection<Container> runbundles = top.getRunbundles();
+		assertTrue(top.check());
+		assertNotNull(runbundles);
+		assertEquals(2, runbundles.size());
+	}
+	
+	/**
+	 * Duplicates in runbundles gave a bad error, should be ignored
+	 */
+	
+	public void testRunbundleDuplicates() throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project top = ws.getProject("p1");
+		top.clear();
+		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
+		Collection<Container> runbundles = top.getRunbundles();
+		assertTrue(top.check("Multiple bundles with the same final URL"));
+		assertNotNull(runbundles);
+		assertEquals(1, runbundles.size());
+	}
 	
 	
 	/**

@@ -386,7 +386,7 @@ public class Project extends Processor {
 		try {
 			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet().iterator(); i.hasNext();) {
 				Entry<String, Attrs> entry = i.next();
-				String bsn = entry.getKey();
+				String bsn = removeDuplicateMarker(entry.getKey());
 				Map<String, String> attrs = entry.getValue();
 
 				Container found = null;
@@ -432,9 +432,9 @@ public class Project extends Processor {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
 						if (result.contains(cc))
-							warning("Multiple bundles with the same final URL: " + cc);
-
-						result.add(cc);
+							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+						else
+							result.add(cc);
 					}
 				} else {
 					// Oops, not a bundle in sight :-(
