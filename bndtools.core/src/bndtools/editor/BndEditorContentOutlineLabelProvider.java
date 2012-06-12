@@ -19,7 +19,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import bndtools.Plugin;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
-import bndtools.model.clauses.ServiceComponent;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
 
@@ -38,8 +37,6 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 				cell.setText("Build");
 			} else if(BndEditor.PROJECT_RUN_PAGE.equals(element)) {
 			    cell.setText("Run");
-			} else if(BndEditor.COMPONENTS_PAGE.equals(element)) {
-				cell.setText("Components");
 			} else if(BndEditorContentOutlineProvider.EXPORTS.equals(element)) {
 				cell.setText("Exports");
 			} else if(BndEditorContentOutlineProvider.PRIVATE_PKGS.equals(element)) {
@@ -52,10 +49,6 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
                 cell.setText("Plugins");
 			}
 			cell.setImage(pageImg);
-		} else if(element instanceof ServiceComponent) {
-			ServiceComponent component = (ServiceComponent) element;
-			cell.setText(component.getName());
-			cell.setImage(brickImg);
 		} else if(element instanceof ExportedPackage) {
 			cell.setText(((ExportedPackage) element).getName());
 			cell.setImage(packageImg);

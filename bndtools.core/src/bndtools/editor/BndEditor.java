@@ -67,7 +67,6 @@ import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
-import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
@@ -86,7 +85,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     static final String CONTENT_PAGE = "__content_page";
     static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
-    static final String COMPONENTS_PAGE = "__components_page";
     static final String TEST_SUITES_PAGE = "__test_suites_page";
     static final String SOURCE_PAGE = "__source_page";
 
@@ -103,7 +101,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
-        pageFactories.put(COMPONENTS_PAGE, ComponentsPage.FACTORY);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
         
         IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");

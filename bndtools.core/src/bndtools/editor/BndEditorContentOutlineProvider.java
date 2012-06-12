@@ -27,7 +27,6 @@ import bndtools.launch.LaunchConstants;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.model.clauses.ImportPattern;
-import bndtools.model.clauses.ServiceComponent;
 
 public class BndEditorContentOutlineProvider implements ITreeContentProvider, PropertyChangeListener {
 
@@ -45,13 +44,13 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 	public Object[] getElements(Object inputElement) {
 		Object[] result;
 		if(model.isProjectFile()) {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
 		} else if(model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
 		    result = new String[] { BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
 		} else if (Workspace.BUILDFILE.equals(model.getBndResource().getName())) {
 		    result = new String[] { PLUGINS, BndEditor.SOURCE_PAGE };
 		} else {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.COMPONENTS_PAGE, BndEditor.SOURCE_PAGE };
+			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.SOURCE_PAGE };
 		}
 		return result;
 	}
@@ -72,11 +71,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         Object[] result = new Object[0];
 
         if (parentElement instanceof String) {
-            if (BndEditor.COMPONENTS_PAGE.equals(parentElement)) {
-                Collection<ServiceComponent> components = model.getServiceComponents();
-                if (components != null)
-                    result = components.toArray(new ServiceComponent[components.size()]);
-            } else if (EXPORTS.equals(parentElement)) {
+            if (EXPORTS.equals(parentElement)) {
                 List<ExportedPackage> exports = model.getExportedPackages();
                 if (exports != null)
                     result = exports.toArray(new Object[exports.size()]);
@@ -112,10 +107,6 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
 
     public boolean hasChildren(Object element) {
         if (element instanceof String) {
-            if (BndEditor.COMPONENTS_PAGE.equals(element)) {
-                Collection<ServiceComponent> components = model.getServiceComponents();
-                return components != null && !components.isEmpty();
-            }
             if (EXPORTS.equals(element)) {
                 List<ExportedPackage> exports = model.getExportedPackages();
                 return exports != null && !exports.isEmpty();
@@ -136,10 +127,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         return false;
     }
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(Constants.SERVICE_COMPONENT.equals(evt.getPropertyName())) {
-			viewer.refresh(BndEditor.COMPONENTS_PAGE);
-			viewer.expandToLevel(BndEditor.COMPONENTS_PAGE, 1);
-		} else if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
+		if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
 			viewer.refresh(EXPORTS);
 			viewer.expandToLevel(EXPORTS, 1);
 		} else if(Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {

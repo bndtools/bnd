@@ -20,7 +20,6 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
-import bndtools.editor.pages.ComponentsPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
@@ -61,11 +60,6 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
                     } else {
                         editor.setActivePage((String) element);
                     }
-				} else if(element instanceof ServiceComponent) {
-					ComponentsPage componentsPage = (ComponentsPage) editor.setActivePage(BndEditor.COMPONENTS_PAGE);
-					if(componentsPage != null) {
-						componentsPage.setSelectedComponent((ServiceComponent) element);
-					}
 				} else if(element instanceof ExportedPackage) {
                     BundleContentPage contentsPage = (BundleContentPage) editor.setActivePage(BndEditor.CONTENT_PAGE);
                     if (contentsPage != null) {

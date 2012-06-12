@@ -480,13 +480,18 @@ public class BndEditModel implements IPersistableBndModel {
 		exports.add(export);
 		setExportedPackages(exports);
 	}
-	public List<ServiceComponent> getServiceComponents() {
-		return doGetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
-	}
-	public void setServiceComponents(List<? extends ServiceComponent> components) {
-		List<ServiceComponent> oldValue = getServiceComponents();
-		doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components, headerClauseListFormatter);
-	}
+
+    @Deprecated
+    public List<ServiceComponent> getServiceComponents() {
+        return doGetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
+    }
+
+    @Deprecated
+    public void setServiceComponents(List<? extends ServiceComponent> components) {
+        List<ServiceComponent> oldValue = getServiceComponents();
+        doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components, headerClauseListFormatter);
+    }
+
 	public List<ImportPattern> getImportPatterns() {
 		return doGetObject(Constants.IMPORT_PACKAGE, importPatternConverter);
 	}
