@@ -77,6 +77,8 @@ public class Builder extends Analyzer {
 		doIncludeResources(dot);
 		doWab(dot);
 
+		doBndInfo(dot);
+		
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
 		// we need to have analyzed the classpath.
@@ -130,6 +132,21 @@ public class Builder extends Analyzer {
 		doDiff(dot); // check if need to diff this bundle
 		doBaseline(dot); // check for a baseline
 		return dot;
+	}
+	
+	
+	/**
+	 * Make sure any bnd.info files are properly processed
+	 * @param jar
+	 */
+
+	private void doBndInfo(Jar jar) {
+		for ( Entry<String, Resource> e : jar.getResources().entrySet()) {
+			if ( e.getKey().endsWith("/bnd.info")) {
+				PreprocessResource pp = new PreprocessResource(this, e.getValue());
+				e.setValue(pp);
+			}
+		}
 	}
 
 	/**
@@ -625,11 +642,6 @@ public class Builder extends Analyzer {
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
 		dest.copy(srce, path, overwrite);
-
-		String key = path + "/bnd.info";
-		Resource r = dest.getResource(key);
-		if (r != null)
-			dest.putResource(key, new PreprocessResource(this, r));
 
 		if (hasSources()) {
 			String srcPath = "OSGI-OPT/src/" + path;
