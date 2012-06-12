@@ -62,7 +62,7 @@ public interface Constants {
 			BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE,
 			IMPORT_SERVICE, EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES,
-			SIGNATURE_TEST, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY															};
+			SIGNATURE_TEST, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY					};
 
 	String								BUILDPATH									= "-buildpath";
 	String								BUILDPACKAGES								= "-buildpackages";
@@ -73,7 +73,8 @@ public interface Constants {
 	String								DEPENDSON									= "-dependson";
 	String								DEPLOY										= "-deploy";
 	String								DEPLOYREPO									= "-deployrepo";
-	String								DIGESTS									= "-digests";
+	String								DIGESTS										= "-digests";
+	String								DSANNOTATIONS								= "-dsannotations";
 	String								DONOTCOPY									= "-donotcopy";
 	String								DEBUG										= "-debug";
 	String								EXPORT_CONTENTS								= "-exportcontents";
@@ -89,7 +90,8 @@ public interface Constants {
 	String								NOEXTRAHEADERS								= "-noextraheaders";
 	String								NOMANIFEST									= "-nomanifest";
 	String								NOUSES										= "-nouses";
-	@Deprecated String					NOPE										= "-nope";
+	@Deprecated
+	String								NOPE										= "-nope";
 	String								NOBUNDLES									= "-nobundles";
 	String								PEDANTIC									= "-pedantic";
 	String								PLUGIN										= "-plugin";
@@ -124,11 +126,14 @@ public interface Constants {
 	String								TESTCONTINUOUS								= "-testcontinuous";
 	String								UNDERTEST									= "-undertest";
 	String								VERBOSE										= "-verbose";
-	@Deprecated String					VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
-	@Deprecated String					VERSIONPOLICY_USES							= "-versionpolicy-uses";
+	@Deprecated
+	String								VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
+	@Deprecated
+	String								VERSIONPOLICY_USES							= "-versionpolicy-uses";
 	String								PROVIDER_POLICY								= "-provider-policy";
 	String								CONSUMER_POLICY								= "-consumer-policy";
-	@Deprecated String					VERSIONPOLICY								= "-versionpolicy";
+	@Deprecated
+	String								VERSIONPOLICY								= "-versionpolicy";
 	String								WAB											= "-wab";
 	String								WABLIB										= "-wablib";
 	String								REQUIRE_BND									= "-require-bnd";
@@ -137,14 +142,14 @@ public interface Constants {
 	String								CLASSPATH									= "-classpath";
 	String								OUTPUT										= "-output";
 
-	String								options[]									= { BUILDPATH,
+	String								options[]									= {BUILDPATH,
 			BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
 			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
 			PEDANTIC, PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES,
 			SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,
 			RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE,
 			NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK,
-			RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS										};
+			RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS				};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
@@ -152,7 +157,7 @@ public interface Constants {
 			INCLUDE_RESOURCE, BUNDLE_ACTIVATOR, BUNDLE_CLASSPATH, BUNDLE_NAME, BUNDLE_NATIVECODE,
 			BUNDLE_SYMBOLICNAME, IMPORT_PACKAGE, EXPORT_PACKAGE, DYNAMICIMPORT_PACKAGE,
 			FRAGMENT_HOST, REQUIRE_BUNDLE, PRIVATE_PACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST,
-			SIGNATURE_TEST, WAB, WABLIB, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY											};
+			SIGNATURE_TEST, WAB, WABLIB, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY		};
 
 	char								DUPLICATE_MARKER							= '~';
 	String								SPECIFICATION_VERSION						= "specification-version";
@@ -223,7 +228,7 @@ public interface Constants {
 	String								DEFAULT_JAR_EXTENSION						= ".jar";
 	String								DEFAULT_BAR_EXTENSION						= ".bar";
 	String								DEFAULT_BNDRUN_EXTENSION					= ".bndrun";
-	String[]							METAPACKAGES								= { "META-INF",
+	String[]							METAPACKAGES								= {"META-INF",
 			"OSGI-INF", "OSGI-OPT"													};
 
 	String								CURRENT_VERSION								= "@";
