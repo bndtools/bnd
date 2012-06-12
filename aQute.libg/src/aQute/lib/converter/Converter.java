@@ -16,7 +16,12 @@ import aQute.lib.base64.*;
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class Converter {
-	boolean	fatal	= true;
+	public interface Hook {
+		Object convert(Type dest, Object o) throws Exception;
+	}
+
+	boolean			fatal	= true;
+	Map<Type, Hook>	hooks = new HashMap<Type, Converter.Hook>();
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
@@ -29,6 +34,14 @@ public class Converter {
 		if (o == null)
 			return null; // compatible with any
 
+		
+		Hook hook = hooks.get(type);
+		if ( hook != null ) {
+			Object value = hook.convert(type, o);
+			if ( value != null)
+				return value;
+		}
+		
 		Class resultType = getRawClass(type);
 		Class< ? > actualType = o.getClass();
 
@@ -210,33 +223,34 @@ public class Converter {
 		}
 
 		// Translate arrays with length 1 by picking the single element
-		if ( actualType.isArray() && Array.getLength(o)==1) {
-			return convert(type,Array.get(o, 0));
+		if (actualType.isArray() && Array.getLength(o) == 1) {
+			return convert(type, Array.get(o, 0));
 		}
-		
+
 		// Translate collections with size 1 by picking the single element
-		if ( o instanceof Collection) {
+		if (o instanceof Collection) {
 			Collection col = (Collection) o;
-			if ( col.size() == 1)
-				return convert(type,col.iterator().next());
+			if (col.size() == 1)
+				return convert(type, col.iterator().next());
 		}
-		
-		if ( o instanceof Map) {
+
+		if (o instanceof Map) {
 			try {
-				Map<Object,Object> map = (Map) o;
+				Map<Object, Object> map = (Map) o;
 				Object instance = resultType.newInstance();
-				for ( Map.Entry e : map.entrySet()) {
+				for (Map.Entry e : map.entrySet()) {
 					String key = (String) e.getKey();
 					Field f = resultType.getField(key);
 					Object value = convert(f.getGenericType(), e.getValue());
 					f.set(instance, value);
 				}
 				return instance;
-			} catch(Exception e) {
+			}
+			catch (Exception e) {
 				// fall through
 			}
 		}
-		
+
 		return error("No conversion found for " + o.getClass() + " to " + type);
 	}
 
@@ -424,5 +438,11 @@ public class Converter {
 
 	public void setFatalIsException(boolean b) {
 		fatal = b;
+	}
+	
+	
+	public Converter hook(Type type, Hook hook) {
+		this.hooks.put(type, hook);
+		return this;
 	}
 }
