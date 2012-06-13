@@ -233,7 +233,6 @@ public class ResolverImpl implements Resolver
 
     private boolean resolve(Resource resource, Resource[] locals, Resource[] remotes, boolean optional)
     {
-    	System.out.println("resolving: " + resource.getId());
         boolean result = true;
 
         // Check for cycles.
@@ -328,21 +327,15 @@ public class ResolverImpl implements Resolver
                         // as either optional or required.
                         if (optional || reqs[reqIdx].isOptional())
                         {
-                        	System.out.println(".adding to optional " + candidate);
                             m_optionalSet.add(candidate);
                             m_resolveSet.remove(candidate);
                         }
                         else
                         {
-                        	System.out.println(".adding to required " + candidate);
                             m_requiredSet.add(candidate);
                             m_optionalSet.remove(candidate);
                             m_resolveSet.remove(candidate);
                         }
-                        
-                        System.out.println(">internal var status:");
-                        System.out.println(">>required: " + m_requiredSet);
-                        System.out.println(">>optional: " + m_optionalSet);
 
                         // Add the reason why the candidate was selected.
                         List<Reason> reasons = m_reasonMap.get(candidate);
