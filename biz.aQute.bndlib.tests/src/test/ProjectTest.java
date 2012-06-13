@@ -14,6 +14,21 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
+	
+	/**
+	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
+	 */
+	public void testRunBundlesContainsSelf() throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project top = ws.getProject("p1");
+		top.setProperty("-runbundles", "p1;version=latest");
+		top.setChanged();
+		top.isStale();
+		Collection<Container> runbundles = top.getRunbundles();
+		assertTrue(top.check("Circular dependency"));
+		assertNotNull(runbundles);
+		assertEquals(0, runbundles.size());
+	}
 
 	/**
 	 * Test 2 equal bsns but diff. versions

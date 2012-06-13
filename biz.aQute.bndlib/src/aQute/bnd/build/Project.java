@@ -448,7 +448,7 @@ public class Project extends Processor {
 			String message = e.getMessage();
 			if (source != null)
 				message = String.format("%s (from property: %s)", message, source);
-			error("Circular dependency detected from project %s: %s", e, getName(), message);
+			error("Circular dependency detected from project %s: %s", getName(), message);
 		} catch (Exception e) {
 			error("Unexpected error while trying to get the bundles from " + spec, e);
 			e.printStackTrace();
@@ -1269,10 +1269,22 @@ public class Project extends Processor {
 	 * 
 	 */
 	public boolean isStale() throws Exception {
+		Set<Project> visited = new HashSet<Project>();
+		return isStale(visited);
+	}
+	
+	boolean isStale(Set<Project> visited) throws Exception {
 		// When we do not generate anything ...
 		if (isNoBundles())
 			return false;
 
+		if ( visited.contains(this)) {
+			error("Cyclic dependency, %s, cycle: %s ", this, visited);
+			return false;
+		}
+
+		visited.add(this);
+		
 		long buildTime = 0;
 
 		files = getBuildFiles(false);
@@ -1288,6 +1300,9 @@ public class Project extends Processor {
 		}
 
 		for (Project dependency : getDependson()) {
+			if (dependency == this)
+				continue;
+
 			if (dependency.isStale())
 				return true;
 
