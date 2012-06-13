@@ -261,8 +261,7 @@ public class BndTask extends BaseTask {
 							output = getFile(this.output, path);
 					} else if (output.isFile()) {
 						if (files.size() > 1)
-							error("Output is a file but there are multiple input files, these files will overwrite the output file: "
-									+ output.getAbsolutePath());
+							messages.GotFileNeedDir_(output.getAbsoluteFile());
 					}
 
 					String msg = "";
@@ -301,7 +300,7 @@ public class BndTask extends BaseTask {
 			if (f.exists())
 				list.add(f);
 			else
-				error("Can not find bnd file to process: " + f.getAbsolutePath());
+				messages.NoSuchFile_(f.getAbsoluteFile());
 		}
 	}
 

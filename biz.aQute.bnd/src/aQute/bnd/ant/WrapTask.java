@@ -129,7 +129,7 @@ public class WrapTask extends BaseTask implements Reporter {
 			if (f.exists())
 				list.add(f);
 			else
-				error("Can not find bnd file to process: " + f.getAbsolutePath());
+				messages.NoSuchFile_(f.getAbsoluteFile());
 		}
 	}
 

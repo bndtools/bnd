@@ -15,6 +15,7 @@ import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
 import aQute.lib.getopt.*;
+import aQute.lib.getopt.Description;
 import aQute.lib.io.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;

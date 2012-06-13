@@ -5,7 +5,6 @@ import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 import java.util.jar.*;
 
@@ -19,6 +18,7 @@ import aQute.lib.osgi.*;
 import aQute.lib.osgi.eclipse.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
+import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
 import aQute.libg.version.*;
 
@@ -56,6 +56,8 @@ public class Project extends Processor {
 	File						files[];
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
+	final ProjectMessages		msgs					= ReporterMessages.base(this,
+																ProjectMessages.class);
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -76,7 +78,7 @@ public class Project extends Processor {
 			File f = getFile("build.properties");
 			if (f.isFile()) {
 				Properties p = loadProperties(f);
-				for (Enumeration<?> e = p.propertyNames(); e.hasMoreElements();) {
+				for (Enumeration< ? > e = p.propertyNames(); e.hasMoreElements();) {
 					String key = (String) e.nextElement();
 					String newkey = key;
 					if (key.indexOf('$') >= 0) {
@@ -85,7 +87,8 @@ public class Project extends Processor {
 					setProperty(newkey, p.getProperty(key));
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -107,8 +110,8 @@ public class Project extends Processor {
 	 * Return a new builder that is nicely setup for this project. Please close
 	 * this builder after use.
 	 * 
-	 * @param parent
-	 *            The project builder to use as parent, use this project if null
+	 * @param parent The project builder to use as parent, use this project if
+	 *        null
 	 * @return
 	 * @throws Exception
 	 */
@@ -196,7 +199,8 @@ public class Project extends Processor {
 					if (src.isDirectory()) {
 						sourcepath.add(src);
 						allsourcepath.add(src);
-					} else
+					}
+					else
 						sourcepath.add(getBase());
 
 					// Set default bin directory
@@ -206,7 +210,7 @@ public class Project extends Processor {
 						getWorkspace().changedFile(output);
 					}
 					if (!output.isDirectory())
-						error("Can not find output directory: " + output);
+						msgs.NoOutputDirectory_(output);
 					else {
 						Container c = new Container(this, output);
 						if (!buildpath.contains(c))
@@ -240,7 +244,7 @@ public class Project extends Processor {
 					for (String p : requiredProjectNames) {
 						Project required = getWorkspace().getProject(p);
 						if (required == null)
-							error("No such project " + p + " on " + Constants.DEPENDSON);
+							msgs.MissingDependson_(p);
 						else {
 							dependencies.add(required);
 						}
@@ -279,11 +283,13 @@ public class Project extends Processor {
 					}
 					if (isOk())
 						preparedPaths = true;
-				} finally {
+				}
+				finally {
 					inPrepare = false;
 				}
 			}
-		} finally {
+		}
+		finally {
 			trail.remove(this);
 		}
 	}
@@ -308,12 +314,9 @@ public class Project extends Processor {
 	 * Iterate over the entries and place the projects on the projects list and
 	 * all the files of the entries on the resultpath.
 	 * 
-	 * @param resultpath
-	 *            The list that gets all the files
-	 * @param projects
-	 *            The list that gets any projects that are entries
-	 * @param entries
-	 *            The input list of classpath entries
+	 * @param resultpath The list that gets all the files
+	 * @param projects The list that gets any projects that are entries
+	 * @param entries The input list of classpath entries
 	 */
 	private void doPath(Collection<Container> resultpath, Collection<Project> projects,
 			Collection<Container> entries, Collection<Container> bootclasspath) {
@@ -371,10 +374,8 @@ public class Project extends Processor {
 	 * output directory is calculated. The default directory ${bin} can be
 	 * overridden with the output attribute.
 	 * 
-	 * @param strategy
-	 *            STRATEGY_LOWEST or STRATEGY_HIGHEST
-	 * @param spec
-	 *            The header
+	 * @param strategy STRATEGY_LOWEST or STRATEGY_HIGHEST
+	 * @param spec The header
 	 * @return
 	 */
 
@@ -406,37 +407,43 @@ public class Project extends Processor {
 							File f = project.getOutput();
 							found = new Container(project, bsn, versionRange,
 									Container.TYPE.PROJECT, f, null, attrs);
-						} else {
-							error("Reference to project that does not exist in workspace\n"
-									+ "  Project       %s\n" + "  Specification %s", bsn, spec);
+						}
+						else {
+							msgs.NoSuchProject(bsn, spec);
 							continue;
 						}
-					} else if (versionRange != null && versionRange.equals("file")) {
-						File f = getFile(bsn);
-						String error = null;
-						if (!f.exists())
-							error = "File does not exist: " + f.getAbsolutePath();
-						if (f.getName().endsWith(".lib")) {
-							found = new Container(this, bsn, "file", Container.TYPE.LIBRARY, f,
-									error, attrs);
-						} else {
-							found = new Container(this, bsn, "file", Container.TYPE.EXTERNAL, f,
-									error, attrs);
-						}
-					} else {
-						found = getBundle(bsn, versionRange, strategyx, attrs);
 					}
+					else
+						if (versionRange != null && versionRange.equals("file")) {
+							File f = getFile(bsn);
+							String error = null;
+							if (!f.exists())
+								error = "File does not exist: " + f.getAbsolutePath();
+							if (f.getName().endsWith(".lib")) {
+								found = new Container(this, bsn, "file", Container.TYPE.LIBRARY, f,
+										error, attrs);
+							}
+							else {
+								found = new Container(this, bsn, "file", Container.TYPE.EXTERNAL,
+										f, error, attrs);
+							}
+						}
+						else {
+							found = getBundle(bsn, versionRange, strategyx, attrs);
+						}
 				}
 
 				if (found != null) {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
 						if (result.contains(cc))
-							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+							warning("Multiple bundles with the same final URL: %s, dropped duplicate",
+									cc);
 						else
 							result.add(cc);
 					}
-				} else {
+				}
+				else {
 					// Oops, not a bundle in sight :-(
 					Container x = new Container(this, bsn, versionRange, Container.TYPE.ERROR,
 							null, bsn + ";version=" + versionRange + " not found", attrs);
@@ -444,14 +451,15 @@ public class Project extends Processor {
 					warning("Can not find URL for bsn " + bsn);
 				}
 			}
-		} catch (CircularDependencyException e) {
+		}
+		catch (CircularDependencyException e) {
 			String message = e.getMessage();
 			if (source != null)
 				message = String.format("%s (from property: %s)", message, source);
-			error("Circular dependency detected from project %s: %s", getName(), message);
-		} catch (Exception e) {
-			error("Unexpected error while trying to get the bundles from " + spec, e);
-			e.printStackTrace();
+			msgs.CircularDependencyContext_Message_(getName(), message);
+		}
+		catch (Exception e) {
+			msgs.Unexpected_Error_(spec, e);
 		}
 		return result;
 	}
@@ -470,10 +478,8 @@ public class Project extends Processor {
 	 * Calculates the containers required to fulfil the {@code -buildpackages}
 	 * instruction, and appends them to the existing list of containers.
 	 * 
-	 * @param strategyx
-	 *            The package-version disambiguation strategy.
-	 * @param spec
-	 *            The value of the @{code -buildpackages} instruction.
+	 * @param strategyx The package-version disambiguation strategy.
+	 * @param spec The value of the @{code -buildpackages} instruction.
 	 * @throws Exception
 	 */
 	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles,
@@ -502,7 +508,8 @@ public class Project extends Processor {
 				if (resolvedBundles.contains(found)) {
 					// Don't add his bundle because it was already included
 					// using -buildpath
-				} else {
+				}
+				else {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
 						Container existing = pkgResolvedBundles.get(cc.file);
@@ -518,7 +525,8 @@ public class Project extends Processor {
 							queue.addAll(0, new Parameters(importUses).entrySet());
 					}
 				}
-			} else {
+			}
+			else {
 				// Unable to resolve
 				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR, null,
 						"package " + pkgName + ";version=" + versionRange + " not found", attrs);
@@ -565,14 +573,10 @@ public class Project extends Processor {
 	/**
 	 * Find a container to fulfil a package requirement
 	 * 
-	 * @param packageName
-	 *            The package required
-	 * @param range
-	 *            The package version range required
-	 * @param strategyx
-	 *            The package-version disambiguation strategy
-	 * @param attrs
-	 *            Other attributes specified by the search.
+	 * @param packageName The package required
+	 * @param range The package version range required
+	 * @param strategyx The package-version disambiguation strategy
+	 * @param attrs Other attributes specified by the search.
 	 * @return
 	 * @throws Exception
 	 */
@@ -601,7 +605,8 @@ public class Project extends Processor {
 						return new Container(this, result.getName(), range, Container.TYPE.REPO,
 								result, null, attrs);
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// Ignore... lots of repos will fail here
 			}
 		}
@@ -617,10 +622,12 @@ public class Project extends Processor {
 		if (overrideStrategy != null) {
 			if ("highest".equalsIgnoreCase(overrideStrategy))
 				useStrategy = Strategy.HIGHEST;
-			else if ("lowest".equalsIgnoreCase(overrideStrategy))
-				useStrategy = Strategy.LOWEST;
-			else if ("exact".equalsIgnoreCase(overrideStrategy))
-				useStrategy = Strategy.EXACT;
+			else
+				if ("lowest".equalsIgnoreCase(overrideStrategy))
+					useStrategy = Strategy.LOWEST;
+				else
+					if ("exact".equalsIgnoreCase(overrideStrategy))
+						useStrategy = Strategy.EXACT;
 		}
 		if ("latest".equals(versionRange))
 			useStrategy = Strategy.HIGHEST;
@@ -631,20 +638,16 @@ public class Project extends Processor {
 	 * The user selected pom in a path. This will place the pom as well as its
 	 * dependencies on the list
 	 * 
-	 * @param strategyx
-	 *            the strategy to use.
-	 * @param result
-	 *            The list of result containers
-	 * @param attrs
-	 *            The attributes
-	 * @throws Exception
-	 *             anything goes wrong
+	 * @param strategyx the strategy to use.
+	 * @param result The list of result containers
+	 * @param attrs The attributes
+	 * @throws Exception anything goes wrong
 	 */
 	public void doMavenPom(Strategy strategyx, List<Container> result, String action)
 			throws Exception {
 		File pomFile = getFile("pom.xml");
 		if (!pomFile.isFile())
-			error("Specified to use pom.xml but the project directory does not contain a pom.xml file");
+			msgs.MissingPom();
 		else {
 			ProjectPom pom = getWorkspace().getMaven().createProjectModel(pomFile);
 			if (action == null)
@@ -758,7 +761,7 @@ public class Project extends Processor {
 		return list(args, toFiles(getDependson()));
 	}
 
-	private Collection<?> toFiles(Collection<Project> projects) {
+	private Collection< ? > toFiles(Collection<Project> projects) {
 		List<File> files = new ArrayList<File>();
 		for (Project p : projects) {
 			files.add(p.getBase());
@@ -792,7 +795,7 @@ public class Project extends Processor {
 		return getOutput().getAbsolutePath();
 	}
 
-	private String list(String[] args, Collection<?> list) {
+	private String list(String[] args, Collection< ? > list) {
 		if (args.length > 3)
 			throw new IllegalArgumentException("${" + args[0]
 					+ "[;<separator>]} can only take a separator as argument, has "
@@ -808,7 +811,7 @@ public class Project extends Processor {
 	}
 
 	protected Object[] getMacroDomains() {
-		return new Object[] { workspace };
+		return new Object[] {workspace};
 	}
 
 	public File release(Jar jar) throws Exception {
@@ -819,8 +822,7 @@ public class Project extends Processor {
 	/**
 	 * Release
 	 * 
-	 * @param name
-	 *            The repository name
+	 * @param name The repository name
 	 * @param jar
 	 * @return
 	 * @throws Exception
@@ -836,26 +838,31 @@ public class Project extends Processor {
 			if (name == null) {
 				rp = plugin;
 				break;
-			} else if (name.equals(plugin.getName())) {
-				rp = plugin;
-				break;
 			}
+			else
+				if (name.equals(plugin.getName())) {
+					rp = plugin;
+					break;
+				}
 		}
 
 		if (rp != null) {
 			try {
 				File file = rp.put(jar);
 				trace("Released %s to file %s in repository %s", jar.getName(), file, rp);
-			} catch (Exception e) {
-				error("Deploying " + jar.getName() + " on " + rp.getName(), e);
-			} finally {
+			}
+			catch (Exception e) {
+				msgs.Release_Into_Exception_(jar,rp, e);
+			}
+			finally {
 				jar.close();
 			}
-		} else if (name == null)
-			error("There is no writable repository (no repo name specified)");
+		}
 		else
-			error("Cannot find a writeable repository with the name %s from the repositiories %s",
-					name, plugins);
+			if (name == null)
+				msgs.NoNameForReleaseRepository();
+			else
+				msgs.ReleaseRepository_NotFoundIn_(name, plugins);
 
 		return null;
 
@@ -869,10 +876,8 @@ public class Project extends Processor {
 	/**
 	 * Release
 	 * 
-	 * @param name
-	 *            The respository name
-	 * @param test
-	 *            Run testcases
+	 * @param name The respository name
+	 * @param test Run testcases
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
@@ -888,7 +893,8 @@ public class Project extends Processor {
 			Jar j = new Jar(jar);
 			try {
 				release(name, j);
-			} finally {
+			}
+			finally {
 				j.close();
 			}
 		}
@@ -900,15 +906,11 @@ public class Project extends Processor {
 	 * required we just return the first repository found (in declaration order
 	 * in the build.bnd file).
 	 * 
-	 * @param bsn
-	 *            The bundle symbolic name
-	 * @param range
-	 *            The version range
-	 * @param lowest
-	 *            set to LOWEST or HIGHEST
+	 * @param bsn The bundle symbolic name
+	 * @param range The version range
+	 * @param lowest set to LOWEST or HIGHEST
 	 * @return the file object that points to the bundle or null if not found
-	 * @throws Exception
-	 *             when something goes wrong
+	 * @throws Exception when something goes wrong
 	 */
 
 	public Container getBundle(String bsn, String range, Strategy strategy,
@@ -945,7 +947,8 @@ public class Project extends Processor {
 				if (result != null)
 					return toContainer(bsn, range, attrs, result);
 			}
-		} else {
+		}
+		else {
 			VersionRange versionRange = "latest".equals(range) ? new VersionRange("0")
 					: new VersionRange(range);
 
@@ -964,7 +967,8 @@ public class Project extends Processor {
 								versions.put(v, plugin);
 						}
 					}
-				} catch (UnsupportedOperationException ose) {
+				}
+				catch (UnsupportedOperationException ose) {
 					// We have a plugin that cannot list versions, try
 					// if it has this specific version
 					// The main reaosn for this code was the Maven Remote
@@ -987,13 +991,13 @@ public class Project extends Processor {
 				Version provider = null;
 
 				switch (useStrategy) {
-				case HIGHEST:
-					provider = versions.lastKey();
-					break;
+					case HIGHEST :
+						provider = versions.lastKey();
+						break;
 
-				case LOWEST:
-					provider = versions.firstKey();
-					break;
+					case LOWEST :
+						provider = versions.firstKey();
+						break;
 				}
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
@@ -1001,9 +1005,9 @@ public class Project extends Processor {
 					File result = repo.get(bsn, version, Strategy.EXACT, attrs);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result);
-				} else
-					error("Unexpected, found versions %s but then not provider for startegy %s?",
-							versions, useStrategy);
+				}
+				else
+					msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
 			}
 		}
 
@@ -1027,10 +1031,12 @@ public class Project extends Processor {
 			if (overrideStrategy != null) {
 				if ("highest".equalsIgnoreCase(overrideStrategy))
 					useStrategy = Strategy.HIGHEST;
-				else if ("lowest".equalsIgnoreCase(overrideStrategy))
-					useStrategy = Strategy.LOWEST;
-				else if ("exact".equalsIgnoreCase(overrideStrategy))
-					useStrategy = Strategy.EXACT;
+				else
+					if ("lowest".equalsIgnoreCase(overrideStrategy))
+						useStrategy = Strategy.LOWEST;
+					else
+						if ("exact".equalsIgnoreCase(overrideStrategy))
+							useStrategy = Strategy.EXACT;
 			}
 		}
 		return useStrategy;
@@ -1046,7 +1052,7 @@ public class Project extends Processor {
 	protected Container toContainer(String bsn, String range, Map<String, String> attrs, File result) {
 		File f = result;
 		if (f == null) {
-			error("Result file for toContainer is unexpectedly null, not sure what to do");
+			msgs.ConfusedNoContainerFile();
 			f = new File("was null");
 		}
 		if (f.getName().endsWith("lib"))
@@ -1059,10 +1065,8 @@ public class Project extends Processor {
 	 * Look for the bundle in the workspace. The premise is that the bsn must
 	 * start with the project name.
 	 * 
-	 * @param bsn
-	 *            The bsn
-	 * @param attrs
-	 *            Any attributes
+	 * @param bsn The bsn
+	 * @param attrs Any attributes
 	 * @return
 	 * @throws Exception
 	 */
@@ -1085,10 +1089,8 @@ public class Project extends Processor {
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
 	 * 
-	 * @param name
-	 *            The repository name
-	 * @param file
-	 *            bundle
+	 * @param name The repository name
+	 * @param file bundle
 	 */
 	public void deploy(String name, File file) throws Exception {
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
@@ -1101,10 +1103,12 @@ public class Project extends Processor {
 			if (name == null) {
 				rp = plugin;
 				break;
-			} else if (name.equals(plugin.getName())) {
-				rp = plugin;
-				break;
 			}
+			else
+				if (name.equals(plugin.getName())) {
+					rp = plugin;
+					break;
+				}
 		}
 
 		if (rp != null) {
@@ -1112,9 +1116,11 @@ public class Project extends Processor {
 			try {
 				rp.put(jar);
 				return;
-			} catch (Exception e) {
-				error("Deploying " + file + " on " + rp.getName(), e);
-			} finally {
+			}
+			catch (Exception e) {
+				msgs.DeployingFile_On_Exception_(file, rp.getName(), e);
+			}
+			finally {
 				jar.close();
 			}
 			return;
@@ -1126,8 +1132,7 @@ public class Project extends Processor {
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
 	 * 
-	 * @param file
-	 *            bundle
+	 * @param file bundle
 	 */
 	public void deploy(File file) throws Exception {
 		String name = getProperty(Constants.DEPLOYREPO);
@@ -1154,12 +1159,13 @@ public class Project extends Processor {
 					try {
 						if (d.deploy(this, jar))
 							trace("deployed %s successfully to %s", output, d);
-					} catch (Exception e) {
-						error("Error while deploying %s, %s", this, e);
-						e.printStackTrace();
+					}
+					catch (Exception e) {
+						msgs.Deploying(e);
 					}
 				}
-			} finally {
+			}
+			finally {
 				jar.close();
 			}
 		}
@@ -1171,10 +1177,13 @@ public class Project extends Processor {
 	 * ${repo;<bsn>[;<version>[;<low|high>]]}
 	 */
 
+	static String	_repoHelp	= "${repo ';'<bsn> [ ; <version> [; ('HIGHEST'|'LOWEST')]}";
+
 	public String _repo(String args[]) throws Exception {
-		if (args.length < 2)
-			throw new IllegalArgumentException(
-					"Too few arguments for repo, syntax=: ${repo ';'<bsn> [ ; <version> [; ('HIGHEST'|'LOWEST')]}");
+		if (args.length < 2) {
+			msgs.RepoTooFewArguments(_repoHelp, args);
+			return null;
+		}
 
 		String bsns = args[1];
 		String version = null;
@@ -1185,13 +1194,14 @@ public class Project extends Processor {
 			if (args.length == 4) {
 				if (args[3].equalsIgnoreCase("HIGHEST"))
 					strategy = Strategy.HIGHEST;
-				else if (args[3].equalsIgnoreCase("LOWEST"))
-					strategy = Strategy.LOWEST;
-				else if (args[3].equalsIgnoreCase("EXACT"))
-					strategy = Strategy.EXACT;
 				else
-					error("${repo;<bsn>;<version>;<'highest'|'lowest'|'exact'>} macro requires a strategy of 'highest' or 'lowest', and is "
-							+ args[3]);
+					if (args[3].equalsIgnoreCase("LOWEST"))
+						strategy = Strategy.LOWEST;
+					else
+						if (args[3].equalsIgnoreCase("EXACT"))
+							strategy = Strategy.EXACT;
+						else
+							msgs.InvalidStrategy(_repoHelp, args);
 			}
 		}
 
@@ -1211,7 +1221,8 @@ public class Project extends Processor {
 			for (Container sub : members) {
 				add(paths, sub);
 			}
-		} else {
+		}
+		else {
 			if (container.getError() == null)
 				paths.add(container.getFile().getAbsolutePath());
 			else {
@@ -1272,19 +1283,19 @@ public class Project extends Processor {
 		Set<Project> visited = new HashSet<Project>();
 		return isStale(visited);
 	}
-	
+
 	boolean isStale(Set<Project> visited) throws Exception {
 		// When we do not generate anything ...
 		if (isNoBundles())
 			return false;
 
-		if ( visited.contains(this)) {
-			error("Cyclic dependency, %s, cycle: %s ", this, visited);
+		if (visited.contains(this)) {
+			msgs.CircularDependencyContext_Message_( this.getName(), visited.toString());
 			return false;
 		}
 
 		visited.add(this);
-		
+
 		long buildTime = 0;
 
 		files = getBuildFiles(false);
@@ -1349,17 +1360,19 @@ public class Project extends Processor {
 					if (!ff.isFile()) {
 						// Originally we warned the user
 						// but lets just rebuild. That way
-						// the error is not noticed but 
+						// the error is not noticed but
 						// it seems better to correct,
 						// See #154
 						rdr.close();
 						f.delete();
 						break;
-					} else
+					}
+					else
 						files.add(ff);
 				}
 				return this.files = files.toArray(new File[files.size()]);
-			} finally {
+			}
+			finally {
 				rdr.close();
 			}
 		}
@@ -1408,12 +1421,14 @@ public class Project extends Processor {
 					fw.append(f.getAbsolutePath());
 					fw.append("\n");
 				}
-			} finally {
+			}
+			finally {
 				fw.close();
 			}
 			getWorkspace().changedFile(bfs);
 			return files;
-		} else
+		}
+		else
 			return null;
 	}
 
@@ -1439,12 +1454,14 @@ public class Project extends Processor {
 				jar.write(f);
 
 				getWorkspace().changedFile(f);
-			} else {
+			}
+			else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
 			}
 			trace(jar.getName() + " (" + f.getName() + ") " + jar.getResources().size() + " " + msg);
 			return f;
-		} finally {
+		}
+		finally {
 			jar.close();
 		}
 	}
@@ -1523,7 +1540,8 @@ public class Project extends Processor {
 				// TODO check for the type
 				action = new ScriptAction(entry.getValue().get("type"), entry.getValue().get(
 						"script"));
-			} else {
+			}
+			else {
 				action = new ReflectAction(key);
 			}
 			String label = entry.getValue().get("label");
@@ -1538,8 +1556,7 @@ public class Project extends Processor {
 	/**
 	 * Release.
 	 * 
-	 * @param name
-	 *            The repository name
+	 * @param name The repository name
 	 * @throws Exception
 	 */
 	public void release(String name) throws Exception {
@@ -1579,11 +1596,13 @@ public class Project extends Processor {
 		int errors = tester.test();
 		if (errors == 0) {
 			System.err.println("No Errors");
-		} else {
+		}
+		else {
 			if (errors > 0) {
 				System.err.println(errors + " Error(s)");
 
-			} else
+			}
+			else
 				System.err.println("Error " + errors);
 		}
 	}
@@ -1608,7 +1627,8 @@ public class Project extends Processor {
 		try {
 			Jar jar = new Jar(url.getFile().replace('/', '.'), in, System.currentTimeMillis());
 			return getValidJar(jar, url.toString());
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -1623,23 +1643,26 @@ public class Project extends Processor {
 			b.setProperty(Constants.EXPORT_PACKAGE, "*");
 			b.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
 			jar = b.build();
-		} else if (manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
-			trace("Not a release 4 bundle, wrapping with manifest as source");
-			Builder b = new Builder(this);
-			b.addClasspath(jar);
-			b.setProperty(Constants.PRIVATE_PACKAGE, "*");
-			b.mergeManifest(manifest);
-			String imprts = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
-			if (imprts == null)
-				imprts = "";
-			else
-				imprts += ",";
-			imprts += "*;resolution=optional";
-
-			b.setProperty(Constants.IMPORT_PACKAGE, imprts);
-			b.setProperty("Bnd-Message", "Wrapped from " + id + "because had incomplete manifest");
-			jar = b.build();
 		}
+		else
+			if (manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
+				trace("Not a release 4 bundle, wrapping with manifest as source");
+				Builder b = new Builder(this);
+				b.addClasspath(jar);
+				b.setProperty(Constants.PRIVATE_PACKAGE, "*");
+				b.mergeManifest(manifest);
+				String imprts = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+				if (imprts == null)
+					imprts = "";
+				else
+					imprts += ",";
+				imprts += "*;resolution=optional";
+
+				b.setProperty(Constants.IMPORT_PACKAGE, imprts);
+				b.setProperty("Bnd-Message", "Wrapped from " + id
+						+ "because had incomplete manifest");
+				jar = b.build();
+			}
 		return jar;
 	}
 
@@ -1653,8 +1676,7 @@ public class Project extends Processor {
 	 * contain a version, then check ALL the sub builders. If not, add a version
 	 * to the main bnd file.
 	 * 
-	 * @param mask
-	 *            the mask for bumping, see {@link Macro#_version(String[])}
+	 * @param mask the mask for bumping, see {@link Macro#_version(String[])}
 	 * @throws Exception
 	 */
 	public void bump(String mask) throws Exception {
@@ -1696,7 +1718,8 @@ public class Project extends Processor {
 				bndfile += "\n# Added by by bump\nBundle-Version: 0.0.0\n";
 				IO.store(bndfile, getPropertiesFile());
 			}
-		} finally {
+		}
+		finally {
 			forceRefresh();
 		}
 	}
@@ -1721,7 +1744,8 @@ public class Project extends Processor {
 		before(this, command);
 		try {
 			a.execute(this, command);
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			after(this, command, t);
 			throw t;
 		}
@@ -1766,7 +1790,8 @@ public class Project extends Processor {
 				if (f.isFile()) {
 					if (instr.matches(sub) && !instr.isNegated())
 						list.add(path + sub);
-				} else
+				}
+				else
 					tree(list, f, path + sub, instr);
 			}
 		}
@@ -1777,14 +1802,16 @@ public class Project extends Processor {
 		refresh();
 	}
 
-	@SuppressWarnings("unchecked") public void script(String type, String script) throws Exception {
+	@SuppressWarnings("unchecked")
+	public void script(String type, String script) throws Exception {
 		// TODO check tyiping
 		List<Scripter> scripters = getPlugins(Scripter.class);
 		if (scripters.isEmpty()) {
-			error("Can not execute script because there are no scripters registered: %s", script);
+			msgs.NoScripters_(script);
 			return;
 		}
-		@SuppressWarnings("rawtypes") Map x = (Map) getProperties();
+		@SuppressWarnings("rawtypes")
+		Map x = (Map) getProperties();
 		scripters.get(0).eval((Map<String, Object>) x, new StringReader(script));
 	}
 
@@ -1831,7 +1858,7 @@ public class Project extends Processor {
 	 */
 	public Collection<Container> getDeliverables() throws Exception {
 		List<Container> result = new ArrayList<Container>();
-		Collection<? extends Builder> builders = getSubBuilders();
+		Collection< ? extends Builder> builders = getSubBuilders();
 
 		for (Builder builder : builders) {
 			Container c = new Container(this, builder.getBsn(), builder.getVersion(),
@@ -1849,8 +1876,7 @@ public class Project extends Processor {
 	 * This method figures out if the bndFile is actually one of the bnd files
 	 * of a deliverable.
 	 * 
-	 * @param bndFile
-	 *            A file pointing to a bnd file.
+	 * @param bndFile A file pointing to a bnd file.
 	 * @return null or the builder for a sub file.
 	 * @throws Exception
 	 */
@@ -1862,7 +1888,7 @@ public class Project extends Processor {
 		if (!bndFile.getAbsolutePath().startsWith(base.getAbsolutePath()))
 			return null;
 
-		Collection<? extends Builder> builders = getSubBuilders();
+		Collection< ? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
 			File propertiesFile = sub.getPropertiesFile();
 			if (propertiesFile != null) {
@@ -1878,13 +1904,12 @@ public class Project extends Processor {
 	/**
 	 * Answer the container associated with a given bsn.
 	 * 
-	 * @param bndFile
-	 *            A file pointing to a bnd file.
+	 * @param bndFile A file pointing to a bnd file.
 	 * @return null or the builder for a sub file.
 	 * @throws Exception
 	 */
 	public Container getDeliverable(String bsn, Map<String, String> attrs) throws Exception {
-		Collection<? extends Builder> builders = getSubBuilders();
+		Collection< ? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
 			if (sub.getBsn().equals(bsn))
 				return new Container(this, getOutputFile(bsn));
@@ -1901,7 +1926,7 @@ public class Project extends Processor {
 	 * @return A list of builders.
 	 * @throws Exception
 	 */
-	public Collection<? extends Builder> getSubBuilders() throws Exception {
+	public Collection< ? extends Builder> getSubBuilders() throws Exception {
 		return getBuilder(null).getSubBuilders();
 	}
 
@@ -1946,7 +1971,7 @@ public class Project extends Processor {
 
 	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header,
 			String defaultHandler) throws Exception {
-		Class<? extends T> handlerClass = target;
+		Class< ? extends T> handlerClass = target;
 
 		// Make sure we find at least one handler, but hope to find an earlier
 		// one
@@ -1961,14 +1986,14 @@ public class Project extends Processor {
 			if (manifest != null) {
 				String launcher = manifest.getMainAttributes().getValue(header);
 				if (launcher != null) {
-					Class<?> clz = getClass(launcher, c.getFile());
+					Class< ? > clz = getClass(launcher, c.getFile());
 					if (clz != null) {
 						if (!target.isAssignableFrom(clz)) {
-							error("Found a %s class in %s but it is not compatible with: %s", clz,
-									c, target);
-						} else {
+							msgs.IncompatibleHandler_For_(launcher, defaultHandler);
+						}
+						else {
 							handlerClass = clz.asSubclass(target);
-							Constructor<? extends T> constructor = handlerClass
+							Constructor< ? extends T> constructor = handlerClass
 									.getConstructor(Project.class);
 							return constructor.newInstance(this);
 						}
@@ -1979,25 +2004,6 @@ public class Project extends Processor {
 
 		throw new IllegalArgumentException("Default handler for " + header + " not found in "
 				+ defaultHandler);
-	}
-
-	public synchronized boolean lock(String reason) throws InterruptedException {
-		if (!lock.tryLock(5, TimeUnit.SECONDS)) {
-			error("Could not acquire lock for %s, was locked by %s for %s", reason, lockingThread,
-					lockingReason);
-			System.err.printf("Could not acquire lock for %s, was locked by %s for %s%n", reason,
-					lockingThread, lockingReason);
-			System.err.flush();
-			return false;
-		}
-		this.lockingReason = reason;
-		this.lockingThread = Thread.currentThread();
-		return true;
-	}
-
-	public void unlock() {
-		lockingReason = null;
-		lock.unlock();
 	}
 
 	/**
@@ -2013,16 +2019,15 @@ public class Project extends Processor {
 	/**
 	 * Sets the package version on an exported package
 	 * 
-	 * @param packageName
-	 *            The package name
-	 * @param version
-	 *            The new package version
+	 * @param packageName The package name
+	 * @param version The new package version
 	 */
 	public void setPackageInfo(String packageName, Version version) {
 		try {
 			updatePackageInfoFile(packageName, version);
-		} catch (Exception e) {
-			error(e.getMessage(), e);
+		}
+		catch (Exception e) {
+			msgs.SettingPackageInfoException_(e);
 		}
 	}
 
@@ -2040,7 +2045,8 @@ public class Project extends Processor {
 
 		if (newVersion.compareTo(oldVersion) == 0) {
 			return;
-		} else {
+		}
+		else {
 			PrintWriter pw = IO.writer(file);
 			pw.println("version " + newVersion);
 			pw.flush();
@@ -2076,7 +2082,8 @@ public class Project extends Processor {
 					return Version.parseVersion(line.substring(8));
 				}
 			}
-		} finally {
+		}
+		finally {
 			if (reader != null) {
 				IO.close(reader);
 			}
@@ -2088,19 +2095,19 @@ public class Project extends Processor {
 	 * bnd maintains a class path that is set by the environment, i.e. bnd is
 	 * not in charge of it.
 	 */
-	
-	public void addClasspath( File f) {
-		if ( !f.isFile()) {
-			error("Adding non existent file to the classpath %s", f);
+
+	public void addClasspath(File f) {
+		if (!f.isFile()) {
+			msgs.AddingNonExistentFileToClassPath_(f);
 		}
 		Container container = new Container(f);
 		classpath.add(container);
 	}
-	
+
 	public void clearClasspath() {
 		classpath.clear();
 	}
-	
+
 	public Collection<Container> getClasspath() {
 		return classpath;
 	}

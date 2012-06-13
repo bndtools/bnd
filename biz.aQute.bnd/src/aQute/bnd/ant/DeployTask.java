@@ -31,9 +31,9 @@ public class DeployTask extends BaseTask {
                             if (deployRepo != null) project.deploy(deployRepo, file);
                             else project.deploy(file);
                         } else
-                            error("Not a jar file: " + file);
+                            messages.NotAJarFile_(file);
                     } catch (Exception e) {
-                        error("Failed to deploy " + file + " : " + e);
+                        messages.FailedToDeploy_Exception_(file,e);
                     }
                 }
             }

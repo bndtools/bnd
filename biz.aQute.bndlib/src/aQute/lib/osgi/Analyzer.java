@@ -42,6 +42,7 @@ import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
+import aQute.libg.reporter.*;
 import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
@@ -69,6 +70,9 @@ public class Analyzer extends Processor {
 	private boolean									analyzed				= false;
 	private boolean									diagnostics				= false;
 	private boolean									inited					= false;
+	final protected AnalyzerMessages							msgs					= ReporterMessages
+																					.base(this,
+																							AnalyzerMessages.class);
 
 	public Analyzer(Processor parent) {
 		super(parent);

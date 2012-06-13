@@ -17,7 +17,7 @@ public class BaseTask extends Task implements Reporter {
     String onfail;
 	final List<Property> properties = new LinkedList<Property>();
 	final List<Property> workspaceProps = new LinkedList<Property>();
-
+	final AntMessages messages = ReporterMessages.base(this, AntMessages.class);
     
     public void error(String s, Object... args ) {
         errors.add(String.format(s, args));

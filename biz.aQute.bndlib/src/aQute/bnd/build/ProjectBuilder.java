@@ -61,7 +61,7 @@ public class ProjectBuilder extends Builder {
 
             }
         } catch (Exception e) {
-            error("init project builder fails", e);
+            msgs.Unexpected_Error_("ProjectBuilder init", e);
         }
     }
 

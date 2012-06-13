@@ -165,7 +165,7 @@ public class BaselineCommands {
 		for (String spec : opts._()) {
 			File f = bnd.getFile(spec);
 			if (!f.isFile()) {
-				bnd.error("No such file: %s", f);
+				bnd.messages.NoSuchFile_(f);
 			} else {
 
 				// For each specification jar we found

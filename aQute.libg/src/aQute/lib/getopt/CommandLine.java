@@ -24,9 +24,11 @@ import aQute.libg.reporter.*;
 	static Pattern	ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
 	Reporter		reporter;
 	Justif			justif = new Justif(60);
+	CommandLineMessages msg;
 	
 	public CommandLine(Reporter reporter) {
 		this.reporter = reporter;
+		msg = ReporterMessages.base(reporter, CommandLineMessages.class);
 	}
 
 	/**
@@ -60,7 +62,7 @@ import aQute.libg.reporter.*;
 
 		Method m = commands.get(cmd);
 		if (m == null) {
-			reporter.error("No such command %s\n", cmd);
+			msg.NoSuchCommand_(cmd);
 			return help(target, null, null);
 		}
 
@@ -85,7 +87,7 @@ import aQute.libg.reporter.*;
 			// Check for commands without any arguments
 
 			if (patterns.length == 0 && arguments.size() > 0) {
-				reporter.error("This command takes no arguments but found %s\n", arguments);
+				msg.TooManyArguments_(arguments);
 				return help(target, cmd, null);
 			}
 
@@ -108,7 +110,7 @@ import aQute.libg.reporter.*;
 
 				if (i > arguments.size()) {
 					if (!optional)
-						reporter.error("Missing argument %s\n", patterns[i]);
+						msg.MissingArgument_(patterns[i]);
 					return help(target, cmd, optionClass);
 				}
 			}
@@ -116,8 +118,7 @@ import aQute.libg.reporter.*;
 			// Check if we have unconsumed arguments left
 
 			if (i < arguments.size()) {
-				reporter.error("Too many arguments specified %s, expecting %s\n", arguments,
-						Arrays.asList(patterns));
+				msg.TooManyArguments_(arguments);
 				return help(target, cmd, optionClass);
 			}
 		}
@@ -173,7 +174,7 @@ import aQute.libg.reporter.*;
 					String name = option.substring(2);
 					Method m = options.get(name);
 					if (m == null)
-						reporter.error("Unrecognized option %s\n", name);
+						msg.UnrecognizedOption_(name);
 					else
 						assignOptionValue(values, m, arguments, true);
 
@@ -193,7 +194,7 @@ import aQute.libg.reporter.*;
 								continue charloop;
 							}
 						}
-						reporter.error("No such option -%s\n", optionChar);
+						msg.UnrecognizedOption_(optionChar+"");
 					}
 				}
 			} else {
@@ -211,7 +212,7 @@ import aQute.libg.reporter.*;
 			Method m = entry.getValue();
 			String name = entry.getKey();
 			if (!values.containsKey(name) && isMandatory(m))
-				reporter.error("Required option --%s not set", name);
+				msg.OptionNotSet_(name);
 		}
 
 		values.put(".", arguments);
@@ -274,15 +275,13 @@ import aQute.libg.reporter.*;
 			// The option is followed by an argument
 
 			if (!last) {
-				reporter.error(
-						"Option --%s not last in a set of 1-letter options (%s) but it requires an argument of type ",
+				msg.Option__WithArgumentNotLastInAvvreviation_(
 						name, name.charAt(0), getTypeDescriptor(type));
 				return;
 			}
 
 			if (args.isEmpty()) {
-				reporter.error("Missing argument %s for option --%s, -%s ",
-						getTypeDescriptor(type), name, name.charAt(0));
+				msg.MissingArgument__( name, name.charAt(0));
 				return;
 			}
 
@@ -301,7 +300,7 @@ import aQute.libg.reporter.*;
 			} else {
 
 				if (options.containsKey(name)) {
-					reporter.error("The option %s can only occur once", name);
+					msg.OptionCanOnlyOccurOnce_(name);
 					return;
 				}
 
