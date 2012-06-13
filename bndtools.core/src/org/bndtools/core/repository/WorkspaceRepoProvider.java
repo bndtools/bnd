@@ -3,7 +3,7 @@ package org.bndtools.core.repository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -123,9 +123,9 @@ public class WorkspaceRepoProvider implements IndexProvider {
         return jars;
     }
 
-    public List<URL> getIndexLocations() throws IOException {
+    public List<URI> getIndexLocations() throws IOException {
         initialise();
-        return Collections.singletonList(indexFile.toURI().toURL());
+        return Collections.singletonList(indexFile.toURI());
     }
 
     public Set<ResolutionPhase> getSupportedPhases() {

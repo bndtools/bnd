@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -131,8 +132,8 @@ public class ResolveOperation implements IRunnableWithProgress {
             }
 
             try {
-                for (URL indexUrl : prov.getOBRIndexes()) {
-                    addRepository(indexUrl, repos, cacheDir);
+                for (URI indexUrl : prov.getOBRIndexes()) {
+                    addRepository(indexUrl.toURL(), repos, cacheDir);
                 }
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorProcessingIndex + repoName, e));

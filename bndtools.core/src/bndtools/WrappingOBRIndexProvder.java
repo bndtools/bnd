@@ -1,7 +1,7 @@
 package bndtools;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
@@ -16,7 +16,7 @@ public class WrappingOBRIndexProvder implements OBRIndexProvider {
         this.delegate = delegate;
     }
 
-    public Collection<URL> getOBRIndexes() throws IOException {
+    public Collection<URI> getOBRIndexes() throws IOException {
         return delegate.getOBRIndexes();
     }
 

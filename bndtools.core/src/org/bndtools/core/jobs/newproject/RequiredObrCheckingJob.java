@@ -1,6 +1,6 @@
 package org.bndtools.core.jobs.newproject;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -103,8 +103,8 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
 
         List<OBRIndexProvider> providers = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
         for (OBRIndexProvider provider : providers) {
-            Collection<URL> indexes = provider.getOBRIndexes();
-            for (URL index : indexes) {
+            Collection<URI> indexes = provider.getOBRIndexes();
+            for (URI index : indexes) {
                 urls.add(index.toString());
             }
         }

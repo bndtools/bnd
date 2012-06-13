@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -106,9 +106,9 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         return jars;
     }
     
-    public synchronized Collection<URL> getOBRIndexes() throws IOException {
+    public synchronized Collection<URI> getOBRIndexes() throws IOException {
         regenerateIndex();
-        return Collections.singletonList(indexFile.getAbsoluteFile().toURI().toURL());
+        return Collections.singletonList(indexFile.getAbsoluteFile().toURI());
     }
     
     private synchronized boolean needsRegeneration() {

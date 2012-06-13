@@ -1,6 +1,7 @@
 package bndtools.model.repo;
 
-import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -103,7 +104,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
     
     private static boolean isRemoteRepo(RepositoryPlugin repository) {
-        List<URL> locations = Collections.emptyList();
+        List<URI> locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
             try {
                 locations = ((IndexProvider) repository).getIndexLocations();
@@ -112,10 +113,14 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             }
         }
         
-        for (URL location : locations) {
-            String protocol = location.getProtocol();
-            if ("http".equals(protocol) || "https".equals(protocol))
-                return true;
+        for (URI location : locations) {
+            try {
+                String protocol = location.toURL().getProtocol();
+                if ("http".equals(protocol) || "https".equals(protocol))
+                    return true;
+            } catch (MalformedURLException e) {
+                return false;
+            }
         }
         
         return false;

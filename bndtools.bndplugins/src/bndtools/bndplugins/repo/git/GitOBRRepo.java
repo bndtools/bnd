@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -197,10 +197,10 @@ public class GitOBRRepo extends LocalIndexedRepo {
 	}
 	
 	@Override
-	protected synchronized List<URL> loadIndexes() throws Exception {
-		List<URL> indexes = super.loadIndexes();
+	protected synchronized List<URI> loadIndexes() throws Exception {
+		List<URI> indexes = super.loadIndexes();
 		if (gitRepoXmlUri != null) {
-			URL gitRepo = new URL(gitRepoXmlUri);
+			URI gitRepo = new URI(gitRepoXmlUri);
 			indexes.add(gitRepo);
 		}
 		return indexes;
