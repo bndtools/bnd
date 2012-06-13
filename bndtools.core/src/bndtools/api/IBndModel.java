@@ -17,6 +17,10 @@ public interface IBndModel {
 
     void genericSet(String propertyName, Object value);
 
+    String getBundleActivator();
+
+    void setBundleActivator(String bundleActivator);
+
     List<VersionedClause> getBuildPath();
 
     void setBuildPath(List<? extends VersionedClause> paths);
