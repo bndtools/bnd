@@ -188,7 +188,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
 		return gitUri;
 	}
 
-	public File getCacheDirectory() {
+	public synchronized File getCacheDirectory() {
 		return null;
 	}
 
@@ -197,7 +197,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
 	}
 	
 	@Override
-	protected List<URL> loadIndexes() throws Exception {
+	protected synchronized List<URL> loadIndexes() throws Exception {
 		List<URL> indexes = super.loadIndexes();
 		if (gitRepoXmlUri != null) {
 			URL gitRepo = new URL(gitRepoXmlUri);
