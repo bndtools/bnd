@@ -23,7 +23,6 @@ import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.model.clauses.ExportedPackage;
 import bndtools.model.clauses.ImportPattern;
-import bndtools.model.clauses.ServiceComponent;
 
 public class BndEditorContentOutlinePage extends ContentOutlinePage {
 
