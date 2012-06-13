@@ -205,7 +205,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
     }
     
-    private String makeWorkspaceRelative(File wsdir, File file) throws IOException {
+    private static String makeWorkspaceRelative(File wsdir, File file) throws IOException {
         String wspath = wsdir.getCanonicalPath();
         String path = file.getCanonicalPath();
         
