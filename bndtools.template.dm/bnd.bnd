@@ -1,0 +1,20 @@
+-dependson: bndtools.repository.base
+
+-buildpath:\
+	ee.j2se;version='[1.5,1.6)',\
+	bndtools.core;version=snapshot,\
+	bndtools.repository.base;version=snapshot,\
+	osgi.core,\
+	${bndlib}
+
+Bundle-SymbolicName: bndtools.template.dm;singleton:=true
+Bundle-Vendor: Bndtools
+Bundle-Version: ${master-version}
+
+Include-Resource:\
+	plugin.xml=_plugin.xml,\
+	templateDocs/=templateDocs,\
+
+Private-Package: bndtools.templates.dm
+
+-removeheaders: Private-Package

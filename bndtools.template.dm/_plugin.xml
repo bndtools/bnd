@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Component Development (Apache Felix Dependency Manager)"
+         priority="100"
+         class="bndtools.templates.dm.DependencyManagerTemplate"
+         doc="templateDocs/dependencyManagerTemplate.xml"/>
+   </extension>
+</plugin>
