@@ -9,9 +9,8 @@ public class VersionRange {
 	char			start	= '[';
 	char			end		= ']';
 
-	static Pattern	RANGE	= Pattern.compile("(\\(|\\[)\\s*(" +
-									Version.VERSION_STRING + ")\\s*,\\s*(" +
-									Version.VERSION_STRING + ")\\s*(\\)|\\])");
+	static Pattern	RANGE	= Pattern.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*("
+									+ Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
 		string = string.trim();
@@ -24,9 +23,7 @@ public class VersionRange {
 			high = new Version(v2);
 			end = m.group(18).charAt(0);
 			if (low.compareTo(high) > 0)
-				throw new IllegalArgumentException(
-						"Low Range is higher than High Range: " + low + "-" +
-								high);
+				throw new IllegalArgumentException("Low Range is higher than High Range: " + low + "-" + high);
 
 		} else
 			high = low = new Version(string);
@@ -66,8 +63,8 @@ public class VersionRange {
 	}
 
 	public boolean includes(Version v) {
-		if ( !isRange() ) {
-			return low.compareTo(v) <=0;
+		if (!isRange()) {
+			return low.compareTo(v) <= 0;
 		}
 		if (includeLow()) {
 			if (v.compareTo(low) < 0)
@@ -80,17 +77,17 @@ public class VersionRange {
 				return false;
 		} else if (v.compareTo(high) >= 0)
 			return false;
-		
+
 		return true;
 	}
-	
-	public Iterable<Version> filter( final Iterable<Version> versions) {
+
+	public Iterable<Version> filter(final Iterable<Version> versions) {
 		List<Version> list = new ArrayList<Version>();
-		for ( Version v : versions) {
-			if ( includes(v))
+		for (Version v : versions) {
+			if (includes(v))
 				list.add(v);
 		}
 		return list;
 	}
-	
+
 }

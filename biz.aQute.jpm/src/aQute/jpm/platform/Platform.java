@@ -8,11 +8,11 @@ import aQute.libg.reporter.*;
 
 public abstract class Platform {
 	static Platform	platform;
-	static Runtime runtime = Runtime.getRuntime();
-	Reporter reporter;
-	
+	static Runtime	runtime	= Runtime.getRuntime();
+	Reporter		reporter;
+
 	public static Platform getPlatform(Reporter reporter) {
-		
+
 		if (platform == null) {
 
 			String osName = System.getProperty("os.name").toLowerCase();
@@ -28,10 +28,11 @@ public abstract class Platform {
 	}
 
 	public abstract File getGlobal();
+
 	public abstract File getLocal();
 
 	abstract public void shell(String initial) throws Exception;
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		Formatter formatter = new Formatter(sb);
@@ -42,17 +43,19 @@ public abstract class Platform {
 	}
 
 	abstract public String getName();
-	
+
 	abstract public void uninstall();
 
 	public int run(String args) throws Exception {
 		return runtime.exec(args).waitFor();
 	}
 
-
 	public abstract String createCommand(CommandData data) throws Exception;
+
 	public abstract String createService(ServiceData data) throws Exception;
+
 	public abstract String remove(CommandData data) throws Exception;
+
 	public abstract String remove(ServiceData data) throws Exception;
 
 	public abstract int launchService(ServiceData data) throws Exception;

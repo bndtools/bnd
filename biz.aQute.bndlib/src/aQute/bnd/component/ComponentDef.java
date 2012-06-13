@@ -21,8 +21,8 @@ import aQute.libg.version.*;
 class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final List<String>				properties		= new ArrayList<String>();
-	final MultiMap<String, String>	property		= new MultiMap<String, String>();
-	final Map<String, ReferenceDef>	references		= new TreeMap<String, ReferenceDef>();
+	final MultiMap<String,String>	property		= new MultiMap<String,String>();
+	final Map<String,ReferenceDef>	references		= new TreeMap<String,ReferenceDef>();
 
 	Version							version			= AnnotationReader.V1_1;
 	String							name;
@@ -75,7 +75,7 @@ class ComponentDef {
 		if (configurationPid != null)
 			version = ReferenceDef.max(version, AnnotationReader.V1_2);
 
-		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
+		for (Map.Entry<String,List<String>> kvs : property.entrySet()) {
 			Tag property = new Tag("property");
 			String name = kvs.getKey();
 			String type = null;
@@ -127,8 +127,7 @@ class ComponentDef {
 			component.addAttribute("servicefactory", servicefactory);
 
 		if (configurationPolicy != null)
-			component.addAttribute("configuration-policy", configurationPolicy.toString()
-					.toLowerCase());
+			component.addAttribute("configuration-policy", configurationPolicy.toString().toLowerCase());
 
 		if (enabled != null)
 			component.addAttribute("enabled", enabled);
@@ -185,7 +184,7 @@ class ComponentDef {
 			return v;
 
 		try {
-			Class<?> c = Class.forName("java.lang." + type);
+			Class< ? > c = Class.forName("java.lang." + type);
 			if (c == String.class)
 				return v;
 
@@ -194,13 +193,17 @@ class ComponentDef {
 				c = Integer.class;
 			Method m = c.getMethod("valueOf", String.class);
 			m.invoke(null, v);
-		} catch (ClassNotFoundException e) {
+		}
+		catch (ClassNotFoundException e) {
 			analyzer.error("Invalid data type %s", type);
-		} catch (NoSuchMethodException e) {
+		}
+		catch (NoSuchMethodException e) {
 			analyzer.error("Cannot convert data %s to type %s", v, type);
-		} catch (NumberFormatException e) {
+		}
+		catch (NumberFormatException e) {
 			analyzer.error("Not a valid number %s for %s, %s", v, type, e.getMessage());
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			analyzer.error("Cannot convert data %s to type %s", v, type);
 		}
 		return v;

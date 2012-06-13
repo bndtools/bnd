@@ -9,22 +9,22 @@ import aQute.lib.osgi.*;
 
 public class ClasspathTest extends TestCase {
 
-    /**
-     * Test if we can refer to the jars on the classpath by their file name (
-     * ignoring the path)
-     * 
-     * @throws Exception
-     */
-    public void testBundleClasspath() throws Exception {
-        Builder b = new Builder();
-        b.setProperty("Include-Resource", "bin=bin");
-        b.setProperty("Bundle-Classpath", "bin");
+	/**
+	 * Test if we can refer to the jars on the classpath by their file name (
+	 * ignoring the path)
+	 * 
+	 * @throws Exception
+	 */
+	public void testBundleClasspath() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Include-Resource", "bin=bin");
+		b.setProperty("Bundle-Classpath", "bin");
 
-        Jar jar = b.build();
-        assertNotNull(jar.getResource("bin/test/activator/Activator.class")); // from
-                                                                    // test.jar
-    }
-    
+		Jar jar = b.build();
+		assertNotNull(jar.getResource("bin/test/activator/Activator.class")); // from
+		// test.jar
+	}
+
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
 	 * ignoring the path)
@@ -36,8 +36,9 @@ public class ClasspathTest extends TestCase {
 		p.put("Include-Resource", "tb1.jar, @test.jar");
 
 		Builder b = new Builder();
-		b.setClasspath(new String[] { "src", "src/test/test.jar",
-				"src/test/tb1.jar" });
+		b.setClasspath(new String[] {
+				"src", "src/test/test.jar", "src/test/tb1.jar"
+		});
 		b.setProperties(p);
 		Jar jar = b.build();
 		assertNotNull(jar.getResource("aQute/lib/aim/AIM.class")); // from
@@ -57,7 +58,9 @@ public class ClasspathTest extends TestCase {
 		p.put("Private-Package", "test.refer");
 
 		Builder b = new Builder();
-		b.setClasspath(new String[] { "bin" });
+		b.setClasspath(new String[] {
+			"bin"
+		});
 		b.setProperties(p);
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();

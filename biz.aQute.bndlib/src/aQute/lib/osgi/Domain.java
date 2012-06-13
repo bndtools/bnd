@@ -13,7 +13,6 @@ import aQute.libg.version.*;
  * This class abstracts domains that have properties holding OSGi meta data. It
  * provides access to the keys, the set method and the get method. It then
  * provides convenient methods to access these properties via semantic methods.
- * 
  */
 public abstract class Domain implements Iterable<String> {
 
@@ -38,15 +37,18 @@ public abstract class Domain implements Iterable<String> {
 	public static Domain domain(final Attributes attrs) {
 		return new Domain() {
 
-			@Override public String get(String key) {
+			@Override
+			public String get(String key) {
 				return attrs.getValue(key);
 			}
 
-			@Override public void set(String key, String value) {
+			@Override
+			public void set(String key, String value) {
 				attrs.putValue(key, value);
 			}
 
-			@Override public Iterator<String> iterator() {
+			@Override
+			public Iterator<String> iterator() {
 				final Iterator<Object> it = attrs.keySet().iterator();
 
 				return new Iterator<String>() {
@@ -70,19 +72,23 @@ public abstract class Domain implements Iterable<String> {
 	public static Domain domain(final Processor processor) {
 		return new Domain() {
 
-			@Override public String get(String key) {
+			@Override
+			public String get(String key) {
 				return processor.getProperty(key);
 			}
 
-			@Override public String get(String key, String deflt) {
+			@Override
+			public String get(String key, String deflt) {
 				return processor.getProperty(key, deflt);
 			}
 
-			@Override public void set(String key, String value) {
+			@Override
+			public void set(String key, String value) {
 				processor.setProperty(key, value);
 			}
 
-			@Override public Iterator<String> iterator() {
+			@Override
+			public Iterator<String> iterator() {
 				final Iterator<String> it = processor.getPropertyKeys(true).iterator();
 
 				return new Iterator<String>() {
@@ -104,18 +110,21 @@ public abstract class Domain implements Iterable<String> {
 		};
 	}
 
-	public static Domain domain(final Map<String, String> map) {
+	public static Domain domain(final Map<String,String> map) {
 		return new Domain() {
 
-			@Override public String get(String key) {
+			@Override
+			public String get(String key) {
 				return map.get(key);
 			}
 
-			@Override public void set(String key, String value) {
+			@Override
+			public void set(String key, String value) {
 				map.put(key, value);
 			}
 
-			@Override public Iterator<String> iterator() {
+			@Override
+			public Iterator<String> iterator() {
 				return map.keySet().iterator();
 			}
 		};
@@ -155,7 +164,7 @@ public abstract class Domain implements Iterable<String> {
 
 	public Parameters getIncludeResource() {
 		Parameters ic = getParameters(INCLUDE_RESOURCE);
-		ic.putAll( getParameters(INCLUDERESOURCE));
+		ic.putAll(getParameters(INCLUDERESOURCE));
 		return ic;
 	}
 
@@ -232,24 +241,24 @@ public abstract class Domain implements Iterable<String> {
 	public void setBundleSymbolicName(String s) {
 		set(BUNDLE_SYMBOLICNAME, s);
 	}
-	
+
 	public String getBundleVersion() {
 		return get(BUNDLE_VERSION);
 	}
 
 	public void setBundleVersion(String version) {
 		Version v = new Version(version);
-		set(BUNDLE_VERSION,v.toString());
+		set(BUNDLE_VERSION, v.toString());
 	}
 
 	public void setBundleVersion(Version version) {
-		set(BUNDLE_VERSION,version.toString());
+		set(BUNDLE_VERSION, version.toString());
 	}
 
 	public void setFailOk(boolean b) {
-		set(FAIL_OK, b+"");
+		set(FAIL_OK, b + "");
 	}
-	
+
 	public boolean isFailOk() {
 		return Processor.isTrue(get(FAIL_OK));
 	}

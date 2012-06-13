@@ -15,9 +15,8 @@ public class OSGiHeader {
 	/**
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
-	 * value )
-	 * 
-	 * This is mapped to a Map { name => Map { attr|directive => value } }
+	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
+	 * }
 	 * 
 	 * @param value
 	 *            A string
@@ -56,10 +55,8 @@ public class OSGiHeader {
 					if ((del = qt.getSeparator()) != '=') {
 						if (hadAttribute)
 							if (logger != null) {
-								logger.error("Header contains name field after attribute or directive: "
-										+ adname
-										+ " from "
-										+ value
+								logger.error("Header contains name field after attribute or directive: " + adname
+										+ " from " + value
 										+ ". Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4");
 							}
 						if (adname != null && adname.length() > 0)
@@ -68,8 +65,7 @@ public class OSGiHeader {
 						String advalue = qt.nextToken();
 						if (clause.containsKey(adname)) {
 							if (logger != null && logger.isPedantic())
-								logger.warning("Duplicate attribute/directive name " + adname
-										+ " in " + value
+								logger.warning("Duplicate attribute/directive name " + adname + " in " + value
 										+ ". This attribute/directive will be ignored");
 						}
 						if (advalue == null) {

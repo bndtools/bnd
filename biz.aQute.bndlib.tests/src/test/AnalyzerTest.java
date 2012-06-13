@@ -8,30 +8,22 @@ import aQute.bnd.test.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 
-class T0 {
-}
+class T0 {}
 
-abstract class T1 extends T0 {
-}
+abstract class T1 extends T0 {}
 
-class T2 extends T1 {
-}
+class T2 extends T1 {}
 
-class T3 extends T2 {
-}
+class T3 extends T2 {}
 
 public class AnalyzerTest extends BndTestCase {
 
-	
-
-	
-	
 	/**
 	 * Test basic functionality of he BCP
 	 */
-	
+
 	public void testBundleClasspath() throws Exception {
-		Builder		b = new Builder();
+		Builder b = new Builder();
 		b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
 		b.setProperty(Constants.INCLUDE_RESOURCE, "foo/test/refer=bin/test/refer");
 		b.setProperty(Constants.EXPORT_CONTENTS, "test.refer");
@@ -40,56 +32,51 @@ public class AnalyzerTest extends BndTestCase {
 		assertTrue(b.check());
 		m.write(System.err);
 	}
-	
-	
-	
 
 	/**
 	 * Very basic sanity test
 	 */
-	
+
 	public void testSanity() throws Exception {
 		Builder b = new Builder();
 		b.set("Export-Package", "thinlet;version=1.0");
 		b.addClasspath(new File("jar/thinlet.jar"));
 		b.build();
 		assertTrue(b.check());
-		assertEquals( "version=1.0", b.getExports().getByFQN("thinlet").toString());
-		assertTrue( b.getJar().getDirectories().containsKey("thinlet"));
-		assertTrue( b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
+		assertEquals("version=1.0", b.getExports().getByFQN("thinlet").toString());
+		assertTrue(b.getJar().getDirectories().containsKey("thinlet"));
+		assertTrue(b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
 	}
-	
-	
-	
+
 	/**
 	 * Fastest way to create a manifest
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void testGenerateManifest() throws Exception {
 		Analyzer analyzer = new Analyzer();
-		Jar bin = new Jar( new File("jar/osgi.jar"));
+		Jar bin = new Jar(new File("jar/osgi.jar"));
 		bin.setManifest(new Manifest());
-		analyzer.setJar( bin );
-		analyzer.addClasspath( new File("jar/spring.jar"));
-		analyzer.setProperty("Bundle-SymbolicName","org.osgi.core");
-		analyzer.setProperty("Export-Package","org.osgi.framework,org.osgi.service.event");
-		analyzer.setProperty("Bundle-Version","1.0.0.x");
-		analyzer.setProperty("Import-Package","*");
+		analyzer.setJar(bin);
+		analyzer.addClasspath(new File("jar/spring.jar"));
+		analyzer.setProperty("Bundle-SymbolicName", "org.osgi.core");
+		analyzer.setProperty("Export-Package", "org.osgi.framework,org.osgi.service.event");
+		analyzer.setProperty("Bundle-Version", "1.0.0.x");
+		analyzer.setProperty("Import-Package", "*");
 		Manifest manifest = analyzer.calcManifest();
 		assertTrue(analyzer.check());
 		manifest.write(System.err);
 		Domain main = Domain.domain(manifest);
 		Parameters export = main.getExportPackage();
-		Parameters expected = new Parameters("org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
+		Parameters expected = new Parameters(
+				"org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
 		assertTrue(expected.isEqual(export));
-		assertEquals("1.0.0.x",manifest.getMainAttributes().getValue("Bundle-Version"));
+		assertEquals("1.0.0.x", manifest.getMainAttributes().getValue("Bundle-Version"));
 	}
-	
+
 	/**
-	 * 
 	 * Make sure packages from embedded directories referenced from
-	 * 
 	 * Bundle-Classpath are considered during import/export calculation.
 	 */
 
@@ -102,7 +89,7 @@ public class AnalyzerTest extends BndTestCase {
 		b.setProperty("-exportcontents", "test.refer");
 		b.build();
 		assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
-		assertTrue(b.getImports().toString(), b.getImports().getByFQN("org.osgi.service.event")!=null);
+		assertTrue(b.getImports().toString(), b.getImports().getByFQN("org.osgi.service.event") != null);
 	}
 
 	/**
@@ -118,9 +105,9 @@ public class AnalyzerTest extends BndTestCase {
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		Jar jar = b.build();
 		assertTrue(b.check());
-		
+
 		assertNotNull(jar.getResource("org/osgi/service/event/EventAdmin.class"));
-		
+
 		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 		System.err.println(exports);
 		assertTrue(exports.contains("uses:=\"org.osgi.framework\""));
@@ -266,11 +253,13 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Import-Package", "*");
 		p.put("Private-Package", "org.apache.mina.management.*");
-		a.setClasspath(new Jar[] { new Jar(new File("jar/mandatorynoversion.jar")) });
+		a.setClasspath(new Jar[] {
+			new Jar(new File("jar/mandatorynoversion.jar"))
+		});
 		a.setProperties(p);
 		Jar jar = a.build();
-		assertTrue( a.check());
-		
+		assertTrue(a.check());
+
 		String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
 		System.err.println(imports);
 		assertTrue(imports.indexOf("x=1") >= 0);
@@ -288,7 +277,9 @@ public class AnalyzerTest extends BndTestCase {
 		p.put("Import-Package", "*");
 		p.put("Private-Package", "org.objectweb.*");
 		p.put("Bundle-Activator", "org.objectweb.asm.Item");
-		a.setClasspath(new Jar[] { new Jar(new File("jar/asm.jar")) });
+		a.setClasspath(new Jar[] {
+			new Jar(new File("jar/asm.jar"))
+		});
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -313,12 +304,13 @@ public class AnalyzerTest extends BndTestCase {
 		p.put("Import-Package", "!org.osgi.framework,*");
 		p.put("Private-Package", "org.objectweb.*");
 		p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
-		a.setClasspath(new Jar[] { new Jar(new File("jar/asm.jar")),
-				new Jar(new File("jar/osgi.jar")) });
+		a.setClasspath(new Jar[] {
+				new Jar(new File("jar/asm.jar")), new Jar(new File("jar/osgi.jar"))
+		});
 		a.setProperties(p);
 		a.build();
 		assertTrue(a.check("Bundle-Activator not found"));
-		Manifest manifest = a.getJar().getManifest();		
+		Manifest manifest = a.getJar().getManifest();
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		assertNull(imports);
 	}
@@ -333,8 +325,9 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "org.objectweb.*");
 		p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
-		a.setClasspath(new Jar[] { new Jar(new File("jar/asm.jar")),
-				new Jar(new File("jar/osgi.jar")) });
+		a.setClasspath(new Jar[] {
+				new Jar(new File("jar/asm.jar")), new Jar(new File("jar/osgi.jar"))
+		});
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -395,7 +388,6 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * asm is a simple library with two packages. No imports are done.
-	 * 
 	 */
 	public void testAsm() throws Exception {
 		Properties base = new Properties();
@@ -407,12 +399,12 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.setProperties(base);
 		analyzer.calcManifest().write(System.err);
 		assertTrue(analyzer.check());
-		
-		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm.signature")!=null);
-		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm")!=null);
-		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm.signature")!=null);
-		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm")!=null);
-		
+
+		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm.signature") != null);
+		assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm") != null);
+		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm.signature") != null);
+		assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm") != null);
+
 		assertEquals("Expected size", 2, analyzer.getExports().size());
 	}
 
@@ -424,18 +416,16 @@ public class AnalyzerTest extends BndTestCase {
 	public void testAsm2() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE,
-				"org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
+		base.put(Analyzer.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
 		Analyzer h = new Analyzer();
 		h.setJar(new File("jar/asm.jar"));
 		h.setProperties(base);
 		h.calcManifest().write(System.err);
 		assertTrue(h.check());
 		Packages exports = h.getExports();
-		assertTrue( exports.getByFQN("org.objectweb.asm.signature") != null);
-		assertTrue( exports.getByFQN("org.objectweb.asm")!=null);
-		assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(
-				h.getImports().keySet()) == false);
+		assertTrue(exports.getByFQN("org.objectweb.asm.signature") != null);
+		assertTrue(exports.getByFQN("org.objectweb.asm") != null);
+		assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(h.getImports().keySet()) == false);
 		assertEquals("Expected size", 2, h.getExports().size());
 		assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
 		assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
@@ -452,14 +442,13 @@ public class AnalyzerTest extends BndTestCase {
 		analyzer.calcManifest().write(System.err);
 		assertTrue(analyzer.check());
 		assertPresent(analyzer.getImports().keySet(), "org.osgi.service.packageadmin, "
-				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
-				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
-				+ " org.osgi.util.tracker, " + "org.osgi.service.component, "
-				+ "org.osgi.service.cm");
+				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers," + " org.xml.sax.helpers,"
+				+ " org.osgi.framework," + " org.eclipse.osgi.util," + " org.osgi.util.tracker, "
+				+ "org.osgi.service.component, " + "org.osgi.service.cm");
 		assertPresent(analyzer.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, " + "org.eclipse.equinox.ds.instance, "
+				+ "org.eclipse.equinox.ds.model, " + "org.eclipse.equinox.ds.resolver, "
+				+ "org.eclipse.equinox.ds.workqueue");
 
 	}
 
@@ -472,16 +461,15 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		h.calcManifest().write(System.err);
-		assertPresent(h.getImports().keySet(), "org.xml.sax, " + " javax.xml.parsers,"
-				+ " org.xml.sax.helpers," + " org.eclipse.osgi.util");
+		assertPresent(h.getImports().keySet(), "org.xml.sax, " + " javax.xml.parsers," + " org.xml.sax.helpers,"
+				+ " org.eclipse.osgi.util");
 
 		System.err.println("IMports " + h.getImports());
-		assertNotPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
-				+ "org.osgi.service.log," + " org.osgi.framework," + " org.osgi.util.tracker, "
-				+ "org.osgi.service.component, " + "org.osgi.service.cm");
-		assertPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+		assertNotPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, " + "org.osgi.service.log,"
+				+ " org.osgi.framework," + " org.osgi.util.tracker, " + "org.osgi.service.component, "
+				+ "org.osgi.service.cm");
+		assertPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, "
+				+ "org.eclipse.equinox.ds, " + "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 	}
 
@@ -494,15 +482,13 @@ public class AnalyzerTest extends BndTestCase {
 		h.setJar(tmp);
 		h.setProperties(base);
 		h.calcManifest().write(System.err);
-		assertPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
-				+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
-				+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
-				+ " org.osgi.util.tracker, " + "org.osgi.service.component, "
-				+ "org.osgi.service.cm");
+		assertPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log,"
+				+ " javax.xml.parsers," + " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
+				+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
 		assertNotPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-				+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+				+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, " + "org.eclipse.equinox.ds.instance, "
+				+ "org.eclipse.equinox.ds.model, " + "org.eclipse.equinox.ds.resolver, "
+				+ "org.eclipse.equinox.ds.workqueue");
 		System.err.println(h.getUnreachable());
 	}
 
@@ -515,7 +501,9 @@ public class AnalyzerTest extends BndTestCase {
 		Analyzer h = new Analyzer();
 		h.setJar(tmp);
 		h.setProperties(base);
-		h.setClasspath(new File[] { osgi });
+		h.setClasspath(new File[] {
+			osgi
+		});
 		h.calcManifest().write(System.err);
 		assertEquals("Version from osgi.jar", "[1.2,2)",
 				get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
@@ -545,17 +533,17 @@ public class AnalyzerTest extends BndTestCase {
 		Manifest m = h.calcManifest();
 		m.write(System.err);
 		assertTrue(h.check( //
-				"Unused Export-Package instructions: \\[baz.*\\]", // 
+				"Unused Export-Package instructions: \\[baz.*\\]", //
 				"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
-		assertTrue(h.getImports().getByFQN("com.foo")!=null);
-		assertTrue(h.getExports().getByFQN("com.bar")!=null);
+		assertTrue(h.getImports().getByFQN("com.foo") != null);
+		assertTrue(h.getExports().getByFQN("com.bar") != null);
 	}
 
-	void assertNotPresent(Collection<?> map, String string) {
+	void assertNotPresent(Collection< ? > map, String string) {
 		Collection<String> ss = new HashSet<String>();
-		for ( Object o : map)
-			ss.add(o+"");
-		
+		for (Object o : map)
+			ss.add(o + "");
+
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
 			String member = st.nextToken();
@@ -563,11 +551,11 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	void assertPresent(Collection<?> map, String string) {
+	void assertPresent(Collection< ? > map, String string) {
 		Collection<String> ss = new HashSet<String>();
-		for ( Object o : map)
-			ss.add(o+"");
-		
+		for (Object o : map)
+			ss.add(o + "");
+
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
 			String member = st.nextToken();
@@ -575,8 +563,8 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	<K,V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
-		Map<String, V> clauses = headers.get(key);
+	<K, V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
+		Map<String,V> clauses = headers.get(key);
 		if (clauses == null)
 			return null;
 		return clauses.get(attr);

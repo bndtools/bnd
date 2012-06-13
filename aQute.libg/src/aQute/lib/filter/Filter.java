@@ -51,18 +51,18 @@ public class Filter {
 			boolean val;
 
 			switch (tail.charAt(0)) {
-			case '&':
-				val = doAnd();
-				break;
-			case '|':
-				val = doOr();
-				break;
-			case '!':
-				val = doNot();
-				break;
-			default:
-				val = doSimple();
-				break;
+				case '&' :
+					val = doAnd();
+					break;
+				case '|' :
+					val = doOr();
+					break;
+				case '!' :
+					val = doNot();
+					break;
+				default :
+					val = doSimple();
+					break;
 			}
 
 			if (!prefix(")"))
@@ -131,15 +131,15 @@ public class Filter {
 			int ix = 0;
 			label: for (; ix < len; ix++) {
 				switch (tail.charAt(ix)) {
-				case '(':
-				case ')':
-				case '<':
-				case '>':
-				case '=':
-				case '~':
-				case '*':
-				case '\\':
-					break label;
+					case '(' :
+					case ')' :
+					case '<' :
+					case '>' :
+					case '=' :
+					case '~' :
+					case '*' :
+					case '\\' :
+						break label;
 				}
 			}
 			String attr = tail.substring(0, ix).toLowerCase();
@@ -156,20 +156,20 @@ public class Filter {
 			label: for (; ix < len; ix++) {
 				char c = tail.charAt(ix);
 				switch (c) {
-				case '(':
-				case ')':
-					break label;
-				case '*':
-					sb.append(WILDCARD);
-					break;
-				case '\\':
-					if (ix == len - 1)
+					case '(' :
+					case ')' :
 						break label;
-					sb.append(tail.charAt(++ix));
-					break;
-				default:
-					sb.append(c);
-					break;
+					case '*' :
+						sb.append(WILDCARD);
+						break;
+					case '\\' :
+						if (ix == len - 1)
+							break label;
+						sb.append(tail.charAt(++ix));
+						break;
+					default :
+						sb.append(c);
+						break;
 				}
 			}
 			tail = tail.substring(ix);
@@ -184,7 +184,7 @@ public class Filter {
 			if (obj == null)
 				return false;
 			try {
-				Class<?> numClass = obj.getClass();
+				Class< ? > numClass = obj.getClass();
 				if (numClass == String.class) {
 					return compareString((String) obj, op, s);
 				} else if (numClass == Character.class) {
@@ -211,8 +211,8 @@ public class Filter {
 					return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
 				} else if (numClass == BigDecimal.class) {
 					return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
-				} else if (obj instanceof Collection<?>) {
-					for (Object x : (Collection<?>) obj)
+				} else if (obj instanceof Collection< ? >) {
+					for (Object x : (Collection< ? >) obj)
 						if (compare(x, op, s))
 							return true;
 				} else if (numClass.isArray()) {
@@ -221,16 +221,16 @@ public class Filter {
 						if (compare(Array.get(obj, i), op, s))
 							return true;
 				}
-			} catch (Exception e) {
 			}
+			catch (Exception e) {}
 			return false;
 		}
 	}
 
 	class DictQuery extends Query {
-		private Dictionary<?, ?>	dict;
+		private Dictionary< ? , ? >	dict;
 
-		DictQuery(Dictionary<?, ?> dict) {
+		DictQuery(Dictionary< ? , ? > dict) {
 			this.dict = dict;
 		}
 
@@ -246,18 +246,20 @@ public class Filter {
 			throw new IllegalArgumentException("Null query");
 	}
 
-	public boolean match(Dictionary<?, ?> dict) {
+	public boolean match(Dictionary< ? , ? > dict) {
 		try {
 			return new DictQuery(dict).match();
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			return false;
 		}
 	}
 
 	public String verify() {
 		try {
-			new DictQuery(new Hashtable<Object, Object>()).match();
-		} catch (IllegalArgumentException e) {
+			new DictQuery(new Hashtable<Object,Object>()).match();
+		}
+		catch (IllegalArgumentException e) {
 			return e.getMessage();
 		}
 		return null;
@@ -277,25 +279,25 @@ public class Filter {
 
 	boolean compareString(String s1, int op, String s2) {
 		switch (op) {
-		case EQ:
-			return patSubstr(s1, s2);
-		case APPROX:
-			return fixupString(s2).equals(fixupString(s1));
-		default:
-			return compareSign(op, s2.compareTo(s1));
+			case EQ :
+				return patSubstr(s1, s2);
+			case APPROX :
+				return fixupString(s2).equals(fixupString(s1));
+			default :
+				return compareSign(op, s2.compareTo(s1));
 		}
 	}
 
 	boolean compareSign(int op, int cmp) {
 		switch (op) {
-		case LE:
-			return cmp >= 0;
-		case GE:
-			return cmp <= 0;
-		case EQ:
-			return cmp == 0;
-		default: /* APPROX */
-			return cmp == 0;
+			case LE :
+				return cmp >= 0;
+			case GE :
+				return cmp <= 0;
+			case EQ :
+				return cmp == 0;
+			default : /* APPROX */
+				return cmp == 0;
 		}
 	}
 

@@ -22,18 +22,20 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	static Pattern				ACTIVATEDESCRIPTOR		= Pattern
 																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
 	static Pattern				OLDACTIVATEDESCRIPTOR	= Pattern
-	.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
-	
-	
+																.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
+
 	static Pattern				OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
 	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
 																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
 	static String[]				ACTIVATE_ARGUMENTS		= {
-		"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext",
-		Map.class.getName(), "org.osgi.framework.BundleContext" };
-	static String[]				OLD_ACTIVATE_ARGUMENTS	= { "org.osgi.service.component.ComponentContext" };
-	
+			"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext", Map.class.getName(),
+			"org.osgi.framework.BundleContext"
+														};
+	static String[]				OLD_ACTIVATE_ARGUMENTS	= {
+															"org.osgi.service.component.ComponentContext"
+														};
+
 	Reporter					reporter				= new Processor();
 	MethodDef					method;
 	TypeRef						className;
@@ -43,7 +45,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	Set<String>					optional				= new HashSet<String>();
 	Set<String>					dynamic					= new HashSet<String>();
 
-	Map<String, String>			map						= new TreeMap<String, String>();
+	Map<String,String>			map						= new TreeMap<String,String>();
 	Set<String>					descriptors				= new HashSet<String>();
 	List<String>				properties				= new ArrayList<String>();
 	String						version					= null;
@@ -62,11 +64,11 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return this.reporter;
 	}
 
-	public static Map<String, String> getDefinition(Clazz c) throws Exception {
+	public static Map<String,String> getDefinition(Clazz c) throws Exception {
 		return getDefinition(c, new Processor());
 	}
 
-	public static Map<String, String> getDefinition(Clazz c, Reporter reporter) throws Exception {
+	public static Map<String,String> getDefinition(Clazz c, Reporter reporter) throws Exception {
 		ComponentAnnotationReader r = new ComponentAnnotationReader(c);
 		r.setReporter(reporter);
 		c.parseClassFileWithCollector(r);
@@ -76,7 +78,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	public void annotation(Annotation annotation) {
 		String fqn = annotation.getName().getFQN();
-		
+
 		if (fqn.equals(Component.class.getName())) {
 			set(COMPONENT_NAME, annotation.get(Component.NAME), "<>");
 			set(COMPONENT_FACTORY, annotation.get(Component.FACTORY), false);
@@ -296,9 +298,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * Skip L and ; and replace / for . in an object descriptor.
-	 * 
-	 * A string like Lcom/acme/Foo; becomes com.acme.Foo
+	 * Skip L and ; and replace / for . in an object descriptor. A string like
+	 * Lcom/acme/Foo; becomes com.acme.Foo
 	 * 
 	 * @param string
 	 * @return
@@ -315,15 +316,18 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return sb.toString();
 	}
 
-	@Override public void classBegin(int access, TypeRef name) {
+	@Override
+	public void classBegin(int access, TypeRef name) {
 		className = name;
 	}
 
-	@Override public void implementsInterfaces(TypeRef[] interfaces) {
+	@Override
+	public void implementsInterfaces(TypeRef[] interfaces) {
 		this.interfaces = interfaces;
 	}
 
-	@Override public void method(Clazz.MethodDef method) {
+	@Override
+	public void method(Clazz.MethodDef method) {
 		this.method = method;
 		descriptors.add(method.getName());
 	}

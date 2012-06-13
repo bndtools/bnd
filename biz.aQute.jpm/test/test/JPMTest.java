@@ -12,29 +12,34 @@ public class JPMTest extends TestCase {
 
 	class PLF extends Unix {
 
-		@Override public void shell(String initial) throws Exception {
-		}
+		@Override
+		public void shell(String initial) throws Exception {}
 
-		@Override public String getName() {
+		@Override
+		public String getName() {
 			return "Test Platform";
 		}
 
-		@Override public void uninstall() {
-		}
+		@Override
+		public void uninstall() {}
 
-		@Override public File getGlobal() {
+		@Override
+		public File getGlobal() {
 			return new File(cwd, "global").getAbsoluteFile();
 		}
 
-		@Override public File getLocal() {
+		@Override
+		public File getLocal() {
 			return new File(cwd, "local").getAbsoluteFile();
 		}
 
-		@Override public String createCommand(CommandData data) throws Exception {
+		@Override
+		public String createCommand(CommandData data) throws Exception {
 			return null;
 		}
 
-		@Override public String createService(ServiceData data) throws Exception {
+		@Override
+		public String createService(ServiceData data) throws Exception {
 			return null;
 		}
 	};

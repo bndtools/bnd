@@ -14,14 +14,13 @@ public class MavenDependencyGraph {
 	final List<Artifact>				dependencies	= new ArrayList<Artifact>();
 	final List<URL>						repositories	= new ArrayList<URL>();
 	final XPath							xpath			= xpathFactory.newXPath();
-	final Map<URL, Artifact>			cache			= new HashMap<URL, Artifact>();
-	Artifact						root;
+	final Map<URL,Artifact>				cache			= new HashMap<URL,Artifact>();
+	Artifact							root;
 
 	enum Scope {
 		COMPILE, RUNTIME, TEST, PROVIDED, SYSTEM, IMPORT,
 	}
 
-	
 	public class Artifact {
 
 		String			groupId;
@@ -49,33 +48,27 @@ public class MavenDependencyGraph {
 				if (scope != null && scope.length() > 0) {
 					this.scope = Scope.valueOf(scope.toUpperCase());
 				}
-				NodeList evaluate = (NodeList) xpath.evaluate("//dependencies/dependency", doc,
-						XPathConstants.NODESET);
+				NodeList evaluate = (NodeList) xpath.evaluate("//dependencies/dependency", doc, XPathConstants.NODESET);
 
 				for (int i = 0; i < evaluate.getLength(); i++) {
 					Node childNode = evaluate.item(i);
-					Artifact artifact = getArtifact(xpath.evaluate("groupId", childNode), xpath
-							.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
+					Artifact artifact = getArtifact(xpath.evaluate("groupId", childNode),
+							xpath.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
 					add(artifact);
 				}
 			}
 		}
-		
-		
 
 		public void add(Artifact artifact) {
 			dependencies.add(artifact);
 		}
-
-
 
 		public String toString() {
 			return groupId + "." + artifactId + "-" + version + "[" + scope + "," + optional + "]";
 		}
 
 		public String getPath() throws URISyntaxException {
-			return groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + artifactId
-					+ "-" + version;
+			return groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version;
 		}
 
 	}
@@ -102,7 +95,8 @@ public class MavenDependencyGraph {
 				} else {
 					return new Artifact(url);
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				System.err.println("Failed to get " + artifactId + " from " + repository);
 			}
 		}
@@ -127,13 +121,10 @@ public class MavenDependencyGraph {
 		return null;
 	}
 
-	
-	
-	public void addArtifact( Artifact artifact ) throws Exception {
-		if ( root == null)
+	public void addArtifact(Artifact artifact) throws Exception {
+		if (root == null)
 			root = new Artifact(null);
 		root.add(artifact);
 	}
-	
-	
+
 }

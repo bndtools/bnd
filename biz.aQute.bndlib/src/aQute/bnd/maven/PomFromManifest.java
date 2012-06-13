@@ -70,11 +70,13 @@ public class PomFromManifest extends WriteResource {
 		this.manifest = manifest;
 	}
 
-	@Override public long lastModified() {
+	@Override
+	public long lastModified() {
 		return 0;
 	}
 
-	@Override public void write(OutputStream out) throws IOException {
+	@Override
+	public void write(OutputStream out) throws IOException {
 		PrintWriter ps = IO.writer(out);
 
 		String name = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_NAME);
@@ -148,8 +150,7 @@ public class PomFromManifest extends WriteResource {
 				String xname = email;
 				String organization = null;
 
-				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)")
-						.matcher(email);
+				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)").matcher(email);
 				if (m.matches()) {
 					xname = m.group(1);
 					organization = m.group(2);
@@ -167,8 +168,7 @@ public class PomFromManifest extends WriteResource {
 			Tag ls = new Tag(project, "licenses");
 
 			Parameters map = Processor.parseHeader(licenses, null);
-			for (Iterator<Entry<String, Attrs>> e = map.entrySet().iterator(); e
-					.hasNext();) {
+			for (Iterator<Entry<String,Attrs>> e = map.entrySet().iterator(); e.hasNext();) {
 
 				// Bundle-License:
 				// http://www.opensource.org/licenses/apache2.0.php; \
@@ -182,9 +182,9 @@ public class PomFromManifest extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Entry<String, Attrs> entry = e.next();
+				Entry<String,Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
-				Map<String, String> values = entry.getValue();
+				Map<String,String> values = entry.getValue();
 				String url = entry.getKey();
 
 				if (values.containsKey("description"))
@@ -209,8 +209,7 @@ public class PomFromManifest extends WriteResource {
 	 * @param tag
 	 * @param object
 	 */
-	private Tag tagFromMap(Tag parent, Map<String, String> values, String string, String tag,
-			String object) {
+	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
 		String value = values.get(string);
 		if (value == null)
 			value = object;

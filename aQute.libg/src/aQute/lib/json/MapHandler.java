@@ -5,11 +5,11 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class MapHandler extends Handler {
-	final Class<?>	rawClass;
-	final Type		keyType;
-	final Type		valueType;
+	final Class< ? >	rawClass;
+	final Type			keyType;
+	final Type			valueType;
 
-	MapHandler(Class<?> rawClass, Type keyType, Type valueType) {
+	MapHandler(Class< ? > rawClass, Type keyType, Type valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
 		if (rawClass.isInterface()) {
@@ -27,13 +27,13 @@ public class MapHandler extends Handler {
 		this.rawClass = rawClass;
 	}
 
-	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)
-			throws IOException, Exception {
-		Map<?, ?> map = (Map<?, ?>) object;
+	@Override
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+		Map< ? , ? > map = (Map< ? , ? >) object;
 
 		app.append("{");
 		String del = "";
-		for (Map.Entry<?, ?> e : map.entrySet()) {
+		for (Map.Entry< ? , ? > e : map.entrySet()) {
 			app.append(del);
 			String key;
 			if (e.getKey() != null && (keyType == String.class || keyType == Object.class))
@@ -49,31 +49,33 @@ public class MapHandler extends Handler {
 		app.append("}");
 	}
 
-	@SuppressWarnings("unchecked") @Override Object decodeObject(Decoder r) throws Exception {
+	@SuppressWarnings("unchecked")
+	@Override
+	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
-		
-		Map<Object, Object> map = (Map<Object, Object>) rawClass.newInstance();
-		
+
+		Map<Object,Object> map = (Map<Object,Object>) rawClass.newInstance();
+
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
 			Object key = r.codec.parseString(r);
-			if ( !(keyType == null || keyType == Object.class)) {
+			if (!(keyType == null || keyType == Object.class)) {
 				Handler h = r.codec.getHandler(keyType);
-				key = h.decode((String)key);
+				key = h.decode((String) key);
 			}
-			
+
 			c = r.skipWs();
-			if ( c != ':')
+			if (c != ':')
 				throw new IllegalArgumentException("Expected ':' but got " + (char) c);
 
 			c = r.next();
 			Object value = r.codec.decode(valueType, r);
-			if ( value != null || !r.codec.ignorenull)
+			if (value != null || !r.codec.ignorenull)
 				map.put(key, value);
 
 			c = r.skipWs();
-			
-			if (c == '}') 
+
+			if (c == '}')
 				break;
 
 			if (c == ',') {
@@ -81,8 +83,8 @@ public class MapHandler extends Handler {
 				continue;
 			}
 
-			throw new IllegalArgumentException(
-					"Invalid character in parsing list, expected } or , but found " + (char) c);
+			throw new IllegalArgumentException("Invalid character in parsing list, expected } or , but found "
+					+ (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing

@@ -18,21 +18,21 @@ public class Jar implements Closeable {
 		DEFLATE, STORE
 	}
 
-	public static final Object[]				EMPTY_ARRAY	= new Jar[0];
-	final Map<String, Resource>					resources	= new TreeMap<String, Resource>();
-	final Map<String, Map<String, Resource>>	directories	= new TreeMap<String, Map<String, Resource>>();
-	Manifest									manifest;
-	boolean										manifestFirst;
-	String										name;
-	File										source;
-	ZipFile										zipFile;
-	long										lastModified;
-	String										lastModifiedReason;
-	Reporter									reporter;
-	boolean										doNotTouchManifest;
-	boolean										nomanifest;
-	Compression									compression	= Compression.DEFLATE;
-	boolean										closed;
+	public static final Object[]			EMPTY_ARRAY	= new Jar[0];
+	final Map<String,Resource>				resources	= new TreeMap<String,Resource>();
+	final Map<String,Map<String,Resource>>	directories	= new TreeMap<String,Map<String,Resource>>();
+	Manifest								manifest;
+	boolean									manifestFirst;
+	String									name;
+	File									source;
+	ZipFile									zipFile;
+	long									lastModified;
+	String									lastModifiedReason;
+	Reporter								reporter;
+	boolean									doNotTouchManifest;
+	boolean									nomanifest;
+	Compression								compression	= Compression.DEFLATE;
+	boolean									closed;
 
 	public Jar(String name) {
 		this.name = name;
@@ -46,8 +46,7 @@ public class Jar implements Closeable {
 		else if (dirOrFile.isFile()) {
 			zipFile = ZipResource.build(this, dirOrFile);
 		} else {
-			throw new IllegalArgumentException("A Jar can only accept a valid file or directory: "
-					+ dirOrFile);
+			throw new IllegalArgumentException("A Jar can only accept a valid file or directory: " + dirOrFile);
 		}
 	}
 
@@ -119,9 +118,9 @@ public class Jar implements Closeable {
 				manifestFirst = true;
 		}
 		String dir = getDirectory(path);
-		Map<String, Resource> s = directories.get(dir);
+		Map<String,Resource> s = directories.get(dir);
 		if (s == null) {
-			s = new TreeMap<String, Resource>();
+			s = new TreeMap<String,Resource>();
 			directories.put(dir, s);
 			int n = dir.lastIndexOf('/');
 			while (n > 0) {
@@ -156,23 +155,23 @@ public class Jar implements Closeable {
 		return path.substring(0, n);
 	}
 
-	public Map<String, Map<String, Resource>> getDirectories() {
+	public Map<String,Map<String,Resource>> getDirectories() {
 		check();
 		return directories;
 	}
 
-	public Map<String, Resource> getResources() {
+	public Map<String,Resource> getResources() {
 		check();
 		return resources;
 	}
 
-	public boolean addDirectory(Map<String, Resource> directory, boolean overwrite) {
+	public boolean addDirectory(Map<String,Resource> directory, boolean overwrite) {
 		check();
 		boolean duplicates = false;
 		if (directory == null)
 			return false;
 
-		for (Map.Entry<String, Resource> entry : directory.entrySet()) {
+		for (Map.Entry<String,Resource> entry : directory.entrySet()) {
 			String key = entry.getKey();
 			if (!key.endsWith(".java")) {
 				duplicates |= putResource(key, entry.getValue(), overwrite);
@@ -211,7 +210,8 @@ public class Jar implements Closeable {
 		try {
 			Manifest m = new Manifest(fin);
 			setManifest(m);
-		} finally {
+		}
+		finally {
 			fin.close();
 		}
 	}
@@ -222,12 +222,14 @@ public class Jar implements Closeable {
 			OutputStream out = new FileOutputStream(file);
 			try {
 				write(out);
-			} finally {
+			}
+			finally {
 				IO.close(out);
 			}
 			return;
 
-		} catch (Exception t) {
+		}
+		catch (Exception t) {
 			file.delete();
 			throw t;
 		}
@@ -240,16 +242,15 @@ public class Jar implements Closeable {
 
 	public void write(OutputStream out) throws Exception {
 		check();
-		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out)
-				: new JarOutputStream(out);
+		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out) : new JarOutputStream(out);
 
 		switch (compression) {
-		case STORE:
-			jout.setMethod(ZipOutputStream.DEFLATED);
-			break;
+			case STORE :
+				jout.setMethod(ZipOutputStream.DEFLATED);
+				break;
 
-		default:
-			// default is DEFLATED
+			default :
+				// default is DEFLATED
 		}
 
 		Set<String> done = new HashSet<String>();
@@ -264,7 +265,7 @@ public class Jar implements Closeable {
 		} else
 			doManifest(done, jout);
 
-		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
+		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
 			if (!done.contains(entry.getKey()))
 				writeResource(jout, directories, entry.getKey(), entry.getValue());
@@ -309,11 +310,8 @@ public class Jar implements Closeable {
 	/**
 	 * Unfortunately we have to write our own manifest :-( because of a stupid
 	 * bug in the manifest code. It tries to handle UTF-8 but the way it does it
-	 * it makes the bytes platform dependent.
-	 * 
-	 * So the following code outputs the manifest.
-	 * 
-	 * A Manifest consists of
+	 * it makes the bytes platform dependent. So the following code outputs the
+	 * manifest. A Manifest consists of
 	 * 
 	 * <pre>
 	 *   'Manifest-Version: 1.0\r\n'
@@ -328,11 +326,12 @@ public class Jar implements Closeable {
 	 * 
 	 * Lines in the manifest should not exceed 72 bytes (! this is where the
 	 * manifest screwed up as well when 16 bit unicodes were used).
-	 * 
 	 * <p>
 	 * As a bonus, we can now sort the manifest!
 	 */
-	static byte[]	CONTINUE	= new byte[] { '\r', '\n', ' ' };
+	static byte[]	CONTINUE	= new byte[] {
+			'\r', '\n', ' '
+								};
 
 	/**
 	 * Main function to output a manifest properly in UTF-8.
@@ -362,7 +361,6 @@ public class Jar implements Closeable {
 
 	/**
 	 * Write out an entry, handling proper unicode and line length constraints
-	 * 
 	 */
 	private static void writeEntry(OutputStream out, String name, String value) throws IOException {
 		int n = write(out, 0, name + ": ");
@@ -428,15 +426,15 @@ public class Jar implements Closeable {
 	 *             when something fails
 	 */
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
-		TreeMap<String, String> map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-		for (Map.Entry<Object, Object> entry : value.entrySet()) {
+		TreeMap<String,String> map = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
+		for (Map.Entry<Object,Object> entry : value.entrySet()) {
 			map.put(entry.getKey().toString(), entry.getValue().toString());
 		}
 
 		map.remove("Manifest-Version"); // get rid of
 		// manifest
 		// version
-		for (Map.Entry<String, String> entry : map.entrySet()) {
+		for (Map.Entry<String,String> entry : map.entrySet()) {
 			writeEntry(out, entry.getKey(), entry.getValue());
 		}
 	}
@@ -444,7 +442,7 @@ public class Jar implements Closeable {
 	private static Manifest clean(Manifest org) {
 
 		Manifest result = new Manifest();
-		for (Map.Entry<?, ?> entry : org.getMainAttributes().entrySet()) {
+		for (Map.Entry< ? , ? > entry : org.getMainAttributes().entrySet()) {
 			String nice = clean((String) entry.getValue());
 			result.getMainAttributes().put(entry.getKey(), nice);
 		}
@@ -455,7 +453,7 @@ public class Jar implements Closeable {
 				result.getEntries().put(name, attrs);
 			}
 
-			for (Map.Entry<?, ?> entry : org.getAttributes(name).entrySet()) {
+			for (Map.Entry< ? , ? > entry : org.getAttributes(name).entrySet()) {
 				String nice = clean((String) entry.getValue());
 				attrs.put((Attributes.Name) entry.getKey(), nice);
 			}
@@ -475,8 +473,8 @@ public class Jar implements Closeable {
 		return sb.toString();
 	}
 
-	private void writeResource(ZipOutputStream jout, Set<String> directories, String path,
-			Resource resource) throws Exception {
+	private void writeResource(ZipOutputStream jout, Set<String> directories, String path, Resource resource)
+			throws Exception {
 		if (resource == null)
 			return;
 		try {
@@ -493,13 +491,13 @@ public class Jar implements Closeable {
 			jout.putNextEntry(ze);
 			resource.write(jout);
 			jout.closeEntry();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new Exception("Problem writing resource " + path, e);
 		}
 	}
 
-	void createDirectories(Set<String> directories, ZipOutputStream zip, String name)
-			throws IOException {
+	void createDirectories(Set<String> directories, ZipOutputStream zip, String name) throws IOException {
 		int index = name.lastIndexOf('/');
 		if (index > 0) {
 			String path = name.substring(0, index);
@@ -545,8 +543,7 @@ public class Jar implements Closeable {
 				continue;
 
 			if (filter == null || filter.matches(name) != filter.isNegated())
-				dupl |= putResource(Processor.appendPath(destination, name), sub.getResource(name),
-						true);
+				dupl |= putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
 		}
 		return dupl;
 	}
@@ -556,7 +553,8 @@ public class Jar implements Closeable {
 		if (zipFile != null)
 			try {
 				zipFile.close();
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				// Ignore
 			}
 		resources.clear();
@@ -589,7 +587,7 @@ public class Jar implements Closeable {
 		check();
 		List<String> list = new ArrayList<String>(directories.size());
 
-		for (Map.Entry<String, Map<String, Resource>> i : directories.entrySet()) {
+		for (Map.Entry<String,Map<String,Resource>> i : directories.entrySet()) {
 			if (i.getValue() != null) {
 				String path = i.getKey();
 				String pack = path.replace('/', '.');
@@ -622,7 +620,7 @@ public class Jar implements Closeable {
 		check();
 		Resource resource = resources.remove(path);
 		String dir = getDirectory(path);
-		Map<String, Resource> mdir = directories.get(dir);
+		Map<String,Resource> mdir = directories.get(dir);
 		// must be != null
 		mdir.remove(path);
 		return resource;
@@ -644,7 +642,9 @@ public class Jar implements Closeable {
 	public void calcChecksums(String algorithms[]) throws Exception {
 		check();
 		if (algorithms == null)
-			algorithms = new String[] { "SHA", "MD5" };
+			algorithms = new String[] {
+					"SHA", "MD5"
+			};
 
 		Manifest m = getManifest();
 		if (m == null) {
@@ -659,7 +659,7 @@ public class Jar implements Closeable {
 
 		byte buffer[] = new byte[30000];
 
-		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
+		for (Map.Entry<String,Resource> entry : resources.entrySet()) {
 
 			// Skip the manifest
 			if (entry.getKey().equals("META-INF/MANIFEST.MF"))
@@ -681,7 +681,8 @@ public class Jar implements Closeable {
 						d.update(buffer, 0, size);
 					size = in.read(buffer);
 				}
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 			for (MessageDigest d : digests)
@@ -737,7 +738,7 @@ public class Jar implements Closeable {
 			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
 		}
 
-		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
+		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
 			File f = getFile(dir, entry.getKey());
 			f.getParentFile().mkdirs();
 			IO.copy(entry.getValue().openInputStream(), f);

@@ -4,7 +4,6 @@ import test.versionpolicy.api.*;
 
 public class MajorImplemented implements EventHandler {
 
-    public void listen(Object o) {
-    }
+	public void listen(Object o) {}
 
 }

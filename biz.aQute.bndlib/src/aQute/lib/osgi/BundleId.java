@@ -1,9 +1,7 @@
 package aQute.lib.osgi;
 
-
 /**
  * Holds the bundle bsn + version pair
- * 
  */
 public class BundleId implements Comparable<BundleId> {
 	final String	bsn;
@@ -29,16 +27,16 @@ public class BundleId implements Comparable<BundleId> {
 	public boolean equals(Object o) {
 		return this == o || ((o instanceof BundleId) && compareTo((BundleId) o) == 0);
 	}
-	
+
 	public int hashCode() {
 		return bsn.hashCode() ^ version.hashCode();
 	}
 
 	public int compareTo(BundleId other) {
 		int result = bsn.compareTo(other.bsn);
-		if ( result != 0)
+		if (result != 0)
 			return result;
-		
+
 		return version.compareTo(other.version);
 	}
 }

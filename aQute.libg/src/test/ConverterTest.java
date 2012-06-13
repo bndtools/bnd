@@ -12,43 +12,45 @@ import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.version.*;
 
-@SuppressWarnings({"unchecked","rawtypes"}) public class ConverterTest extends TestCase {
+@SuppressWarnings({
+		"unchecked", "rawtypes"
+})
+public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
-	
-	
 	public void hookTest() throws Exception {
-		Converter	converter	= new Converter().hook(File.class, new Hook() {
+		Converter converter = new Converter().hook(File.class, new Hook() {
 
 			public Object convert(Type dest, Object o) {
-				if ( o instanceof String ) {
+				if (o instanceof String) {
 					return IO.getFile(new File(""), o.toString());
 				}
 				return null;
 			}
-			
+
 		});
-		assertEquals( new Integer(6), converter.convert(Integer.class,"6"));
-		assertEquals( new File("src").getAbsoluteFile(), converter.convert(File.class,"src"));
+		assertEquals(new Integer(6), converter.convert(Integer.class, "6"));
+		assertEquals(new File("src").getAbsoluteFile(), converter.convert(File.class, "src"));
 	}
-	
+
 	/**
 	 * Test map to object
 	 */
-	
+
 	public class DD {
-		
+
 	}
+
 	public class D {
-		int n;
-		String s;
-		
+		int		n;
+		String	s;
+
 	}
+
 	public void testMap2Object() throws Exception {
-		
+
 	}
-	
-	
+
 	/**
 	 * Digests as byte[]
 	 * 
@@ -61,10 +63,10 @@ import aQute.libg.version.*;
 		SHA1 digest = digester.digest();
 		byte[] out = converter.convert(byte[].class, digest);
 		assertTrue(Arrays.equals(digest.digest(), out));
-		
+
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		bout.write( "Hello World".getBytes());
-		assertTrue( Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class,bout)));
+		bout.write("Hello World".getBytes());
+		assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
 
 	}
 
@@ -73,9 +75,12 @@ import aQute.libg.version.*;
 	 */
 
 	public void testCharacters() throws Exception {
-		assertTrue(Arrays.equals(new char[] { 'A', 'B', 'C' },
-				converter.convert(char[].class, "ABC")));
-		assertEquals("ABC", converter.convert(String.class, new char[] { 'A', 'B', 'C' }));
+		assertTrue(Arrays.equals(new char[] {
+				'A', 'B', 'C'
+		}, converter.convert(char[].class, "ABC")));
+		assertEquals("ABC", converter.convert(String.class, new char[] {
+				'A', 'B', 'C'
+		}));
 
 	}
 
@@ -114,11 +119,12 @@ import aQute.libg.version.*;
 	 * @throws Exception
 	 */
 	public void testWrappers() throws Exception {
-		Object[] types = { Boolean.FALSE, (byte) 0, '\u0000', (short) 0, 0, 0L, 0f, 0d };
+		Object[] types = {
+				Boolean.FALSE, (byte) 0, '\u0000', (short) 0, 0, 0L, 0f, 0d
+		};
 		for (int i = 0; i < types.length; i++) {
 			for (int j = 0; j < types.length; j++) {
-				assertEquals("" + i + " " + j, types[i],
-						converter.convert(types[i].getClass(), types[j]));
+				assertEquals("" + i + " " + j, types[i], converter.convert(types[i].getClass(), types[j]));
 			}
 		}
 	}
@@ -131,8 +137,12 @@ import aQute.libg.version.*;
 	public void testPrimitives() throws Exception {
 		assertPrimitives1(1);
 		assertPrimitives(0);
-		assertPrimitives(new Object[] { 0, 1, 2 });
-		assertPrimitives1(new Object[] { 1, 2 });
+		assertPrimitives(new Object[] {
+				0, 1, 2
+		});
+		assertPrimitives1(new Object[] {
+				1, 2
+		});
 		assertPrimitives(false);
 		assertPrimitives1(true);
 		assertPrimitives('\u0000');
@@ -229,11 +239,11 @@ import aQute.libg.version.*;
 	 * @throws Exception
 	 */
 	public static class GM {
-		public Map<String, Integer>					strings;
-		public SortedMap<String, Integer>			sorted;
-		public TreeMap<String, Integer>				tree;
-		public ConcurrentHashMap<String, Integer>	concurrenthash;
-		public ConcurrentMap<String, Integer>		concurrent;
+		public Map<String,Integer>					strings;
+		public SortedMap<String,Integer>			sorted;
+		public TreeMap<String,Integer>				tree;
+		public ConcurrentHashMap<String,Integer>	concurrenthash;
+		public ConcurrentMap<String,Integer>		concurrent;
 		public Map									map;
 	}
 
@@ -248,7 +258,7 @@ import aQute.libg.version.*;
 		GM gSemiMap = xx.newInstance();
 
 		GT semiMap = new GT();
-		Map map = new HashMap<String, Integer>();
+		Map map = new HashMap<String,Integer>();
 		map.put("a", 1);
 		map.put("b", 2);
 
@@ -263,8 +273,9 @@ import aQute.libg.version.*;
 	}
 
 	void assertPrimitives(Object source) throws Exception {
-		Class[] types = { byte.class, boolean.class, char.class, short.class, int.class,
-				long.class, float.class, double.class };
+		Class[] types = {
+				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
+		};
 		for (Class c : types) {
 			Class at = Array.newInstance(c, 1).getClass();
 			Object parray = converter.convert(at, 0);
@@ -313,8 +324,9 @@ import aQute.libg.version.*;
 	}
 
 	void assertPrimitives1(Object source) throws Exception {
-		Class[] types = { byte.class, boolean.class, char.class, short.class, int.class,
-				long.class, float.class, double.class };
+		Class[] types = {
+				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
+		};
 		for (Class c : types) {
 			Class at = Array.newInstance(c, 1).getClass();
 			Object parray = converter.convert(at, source);

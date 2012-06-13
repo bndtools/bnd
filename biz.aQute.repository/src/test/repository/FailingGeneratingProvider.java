@@ -1,18 +1,12 @@
 package test.repository;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import org.osgi.service.log.LogService;
+import org.osgi.service.log.*;
 
-import aQute.bnd.service.Registry;
-import aQute.lib.deployer.repository.api.CheckResult;
-import aQute.lib.deployer.repository.api.Decision;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryListener;
+import aQute.bnd.service.*;
+import aQute.lib.deployer.repository.api.*;
 
 class FailingGeneratingProvider implements IRepositoryContentProvider {
 
@@ -20,8 +14,8 @@ class FailingGeneratingProvider implements IRepositoryContentProvider {
 		return "Fail";
 	}
 
-	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log) throws Exception {
-	}
+	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log)
+			throws Exception {}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		return new CheckResult(Decision.accept, "I accept anything but create nothing!", null);
@@ -31,7 +25,8 @@ class FailingGeneratingProvider implements IRepositoryContentProvider {
 		return true;
 	}
 
-	public void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty, Registry registry, LogService log) throws Exception {
+	public void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty,
+			Registry registry, LogService log) throws Exception {
 		throw new UnsupportedOperationException("This always breaks");
 	}
 

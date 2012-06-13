@@ -5,8 +5,7 @@ import aQute.lib.osgi.*;
 
 /**
  * Deploy this artifact to maven.
- * 
  */
-public interface Deploy {	
+public interface Deploy {
 	boolean deploy(Project project, Jar jar) throws Exception;
 }

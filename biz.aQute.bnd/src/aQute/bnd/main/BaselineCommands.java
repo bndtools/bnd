@@ -28,18 +28,20 @@ public class BaselineCommands {
 	final bnd					bnd;
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
-	final Collection<String>	SKIP_HEADERS		= Arrays.asList("Created-By",
-															Constants.BND_LASTMODIFIED,
-															Constants.BUNDLE_MANIFESTVERSION,
-															"Manifest-Version", "Tool");
+	final Collection<String>	SKIP_HEADERS		= Arrays.asList("Created-By", Constants.BND_LASTMODIFIED,
+															Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version",
+															"Tool");
 
 	BaselineCommands(bnd bnd) throws IOException {
 		this.bnd = bnd;
 		this.baseline = new Baseline(bnd, differ);
 	}
 
-	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice") @Arguments(arg = {
-			"newer jar", "older jar" }) interface baseLineOptions extends Options {
+	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
+	@Arguments(arg = {
+			"newer jar", "older jar"
+	})
+	interface baseLineOptions extends Options {
 		String fixup();
 	}
 
@@ -80,12 +82,11 @@ public class BaselineCommands {
 			}
 		});
 
-		bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old",
-				"Suggest", "If Prov.");
+		bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old", "Suggest",
+				"If Prov.");
 		for (Info info : sorted) {
-			bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
-					info.packageName, info.packageDiff.getDelta(), info.newerVersion,
-					info.olderVersion, info.suggestedVersion,
+			bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ', info.packageName,
+					info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
 					info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 		}
 
@@ -96,7 +97,7 @@ public class BaselineCommands {
 			if (manifest == null)
 				manifest = new Manifest();
 
-			for (Map.Entry<Object, Object> e : manifest.getMainAttributes().entrySet()) {
+			for (Map.Entry<Object,Object> e : manifest.getMainAttributes().entrySet()) {
 				String key = e.getKey().toString();
 
 				if (!SKIP_HEADERS.contains(key)) {
@@ -115,13 +116,11 @@ public class BaselineCommands {
 
 	/**
 	 * Print out the packages from spec jars and check in which ees they appear.
-	 * 
 	 * Example
 	 * 
 	 * <pre>
 	 * package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar
 	 * </pre>
-	 * 
 	 */
 	interface schemaOptions extends Options {
 		Collection<Instruction> filter();
@@ -158,7 +157,7 @@ public class BaselineCommands {
 	 * @throws Exception
 	 */
 	public void _schema(schemaOptions opts) throws Exception {
-		MultiMap<String, PSpec> map = new MultiMap<String, PSpec>();
+		MultiMap<String,PSpec> map = new MultiMap<String,PSpec>();
 
 		Tag top = new Tag("jschema");
 		int n = 1000;
@@ -185,16 +184,14 @@ public class BaselineCommands {
 				specTag.addAttribute("id", n);
 				specTag.addContent(main.getValue(Constants.BUNDLE_DESCRIPTION));
 
-				Parameters exports = OSGiHeader.parseHeader(m.getMainAttributes().getValue(
-						Constants.EXPORT_PACKAGE));
+				Parameters exports = OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 
 				// Create a map with versions. Ensure import ranges overwrite
 				// the
 				// exported versions
 				Parameters versions = new Parameters();
 				versions.putAll(exports);
-				versions.putAll(OSGiHeader.parseHeader(m.getMainAttributes().getValue(
-						Constants.IMPORT_PACKAGE)));
+				versions.putAll(OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE)));
 
 				Analyzer analyzer = new Analyzer();
 				analyzer.setJar(jar);
@@ -202,7 +199,7 @@ public class BaselineCommands {
 
 				Tree tree = differ.tree(analyzer);
 
-				for (Entry<String, Attrs> entry : exports.entrySet()) {
+				for (Entry<String,Attrs> entry : exports.entrySet()) {
 
 					// For each exported package in the specification JAR
 
@@ -278,8 +275,8 @@ public class BaselineCommands {
 
 					bnd.trace(" newer=%s older=%s", newerExport, olderExport);
 
-					Set<Info> infos = baseline.baseline(newer.tree, newerExport, older.tree,
-							olderExport, new Instructions(pname));
+					Set<Info> infos = baseline.baseline(newer.tree, newerExport, older.tree, olderExport,
+							new Instructions(pname));
 
 					for (Info info : infos) {
 						Tag tag = getTag(info);
@@ -297,7 +294,7 @@ public class BaselineCommands {
 				// XRef, show the used packages for this package
 				//
 
-				for (Entry<String, String> uses : newer.uses.entrySet()) {
+				for (Entry<String,String> uses : newer.uses.entrySet()) {
 					Tag reference = new Tag(pack, "import");
 					reference.addAttribute("name", uses.getKey());
 					reference.addAttribute("version", uses.getValue());
@@ -317,10 +314,12 @@ public class BaselineCommands {
 			try {
 				pw.println("<?xml version='1.0'?>");
 				top.print(0, pw);
-			} finally {
+			}
+			finally {
 				pw.close();
 			}
-		} finally {
+		}
+		finally {
 			fw.close();
 		}
 
@@ -336,10 +335,10 @@ public class BaselineCommands {
 			bnd.trace("xslt %s %s %s %s", xslt, of, html, html.exists());
 			FileOutputStream out = new FileOutputStream(html);
 			try {
-				Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt
-						.openStream()));
+				Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt.openStream()));
 				transformer.transform(new StreamSource(of), new StreamResult(out));
-			} finally {
+			}
+			finally {
 				out.close();
 			}
 		}
@@ -400,7 +399,7 @@ public class BaselineCommands {
 			out.printf("\\\n  ");
 			out.append(info.packageName);
 			info.attributes.put(Constants.VERSION_ATTRIBUTE, info.suggestedVersion.toString());
-			for (Map.Entry<String, String> clause : info.attributes.entrySet()) {
+			for (Map.Entry<String,String> clause : info.attributes.entrySet()) {
 				if (clause.getKey().equals(Constants.USES_DIRECTIVE))
 					continue;
 

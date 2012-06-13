@@ -29,5 +29,4 @@ public interface AntMessages extends Messages {
 
 	ERROR GotFileNeedDir_(File absoluteFile);
 
-	
 }

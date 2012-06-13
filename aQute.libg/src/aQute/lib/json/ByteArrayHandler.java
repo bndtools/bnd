@@ -8,12 +8,13 @@ import aQute.lib.base64.*;
 
 public class ByteArrayHandler extends Handler {
 
-	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)
-			throws IOException, Exception {
+	@Override
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		StringHandler.string(app, Base64.encodeBase64((byte[]) object));
 	}
 
-	@Override Object decodeArray(Decoder r) throws Exception {
+	@Override
+	Object decodeArray(Decoder r) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		ArrayList<Object> list = new ArrayList<Object>();
@@ -24,7 +25,8 @@ public class ByteArrayHandler extends Handler {
 		return out.toByteArray();
 	}
 
-	@Override Object decode(String s) throws Exception {
+	@Override
+	Object decode(String s) throws Exception {
 		return Base64.decodeBase64(s);
 	}
 }

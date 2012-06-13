@@ -17,9 +17,9 @@ public class JunitXmlReport implements TestReporter {
 	long			startTime;
 	long			testStartTime;
 	int				tests		= 0;
-	int					failures	= 0;
-	int					errors		= 0;
-	int					skipped     = 0;
+	int				failures	= 0;
+	int				errors		= 0;
+	int				skipped		= 0;
 	PrintWriter		out;
 	boolean			finished;
 	boolean			progress;
@@ -56,7 +56,7 @@ public class JunitXmlReport implements TestReporter {
 		Tag properties = new Tag("properties");
 		testsuite.addContent(properties);
 
-		for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
+		for (Map.Entry<Object,Object> entry : System.getProperties().entrySet()) {
 			Tag property = new Tag(properties, "property");
 			property.addAttribute("name", entry.getKey());
 			property.addAttribute("value", entry.getValue());
@@ -112,8 +112,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
-	public void begin(List<Test> classNames, int realcount) {
-	}
+	public void begin(List<Test> classNames, int realcount) {}
 
 	public void end() {
 		if (!finished) {
@@ -122,8 +121,7 @@ public class JunitXmlReport implements TestReporter {
 			testsuite.addAttribute("failures", failures);
 			testsuite.addAttribute("errors", errors);
 			testsuite.addAttribute("skipped", skipped);
-			testsuite.addAttribute("time",
-					getFraction(System.currentTimeMillis() - startTime, 1000));
+			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
 			testsuite.addAttribute("timestamp", df.format(new Date()));
 			testsuite.print(0, out);
 			out.close();
@@ -153,8 +151,7 @@ public class JunitXmlReport implements TestReporter {
 		progress(name);
 	}
 
-	public void setTests(List<Test> flattened) {
-	}
+	public void setTests(List<Test> flattened) {}
 
 	// <testcase classname="test.AnalyzerTest" name="testMultilevelInheritance"
 	// time="0.772">
@@ -176,8 +173,7 @@ public class JunitXmlReport implements TestReporter {
 		errors++;
 	}
 
-	private void progress(String s) {
-	}
+	private void progress(String s) {}
 
 	private String getTrace(Throwable t) {
 		StringWriter sw = new StringWriter();

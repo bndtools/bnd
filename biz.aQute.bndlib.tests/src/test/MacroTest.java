@@ -8,12 +8,11 @@ import junit.framework.*;
 import aQute.lib.osgi.*;
 
 public class MacroTest extends TestCase {
-	
-	
+
 	/**
 	 * Test replacement of ./ with cwd
 	 */
-	
+
 	public void testCurrentWorkingDirectory() {
 		Processor top = new Processor();
 		top.setProperty("cwd.1", "./"); // empty
@@ -30,45 +29,43 @@ public class MacroTest extends TestCase {
 		top.setProperty("cwd.12", "|\t./|"); // empty
 		top.setProperty("cwd.13", "|\r./|"); // empty
 		top.setProperty("cwd.14", "|\n./|"); // empty
-		
-		String cwd = top.getBase().getAbsolutePath() +"/";
-		
-		assertEquals( " . ", top.getProperty("cwd.8"));
-		assertEquals( cwd, top.getProperty("cwd.1"));
-		assertEquals( " " + cwd, top.getProperty("cwd.2"));
-		assertEquals( cwd+" ", top.getProperty("cwd.3"));
-		assertEquals( " " + cwd + " ", top.getProperty("cwd.4"));
-		assertEquals( "|./|", top.getProperty("cwd.5"));
-		assertEquals( "/.//", top.getProperty("cwd.6"));
-		assertEquals( ".", top.getProperty("cwd.7"));
-		assertEquals( " . /", top.getProperty("cwd.9"));
-		assertEquals( " .", top.getProperty("cwd.10"));
-		assertEquals( "| "+cwd+"|", top.getProperty("cwd.11"));
-		assertEquals( "|\t"+cwd+"|", top.getProperty("cwd.12"));
-		assertEquals( "|\r"+cwd+"|", top.getProperty("cwd.13"));
-		assertEquals( "|\n"+cwd+"|", top.getProperty("cwd.14"));
-	}	
-	
-	
-	
+
+		String cwd = top.getBase().getAbsolutePath() + "/";
+
+		assertEquals(" . ", top.getProperty("cwd.8"));
+		assertEquals(cwd, top.getProperty("cwd.1"));
+		assertEquals(" " + cwd, top.getProperty("cwd.2"));
+		assertEquals(cwd + " ", top.getProperty("cwd.3"));
+		assertEquals(" " + cwd + " ", top.getProperty("cwd.4"));
+		assertEquals("|./|", top.getProperty("cwd.5"));
+		assertEquals("/.//", top.getProperty("cwd.6"));
+		assertEquals(".", top.getProperty("cwd.7"));
+		assertEquals(" . /", top.getProperty("cwd.9"));
+		assertEquals(" .", top.getProperty("cwd.10"));
+		assertEquals("| " + cwd + "|", top.getProperty("cwd.11"));
+		assertEquals("|\t" + cwd + "|", top.getProperty("cwd.12"));
+		assertEquals("|\r" + cwd + "|", top.getProperty("cwd.13"));
+		assertEquals("|\n" + cwd + "|", top.getProperty("cwd.14"));
+	}
+
 	/**
 	 * Test if $if accepts isdir
 	 */
-	
+
 	public void testifDir() {
 		Processor top = new Processor();
 		top.setProperty("presentd", "${if;${isdir;jar};YES;NO}");
 		top.setProperty("absentd", "${if;${isdir;xxx};YES;NO}");
 		top.setProperty("wrongd", "${if;${isdir;bnd.bnd};YES;NO}");
-		assertEquals( "YES", top.getProperty("presentd"));
-		assertEquals( "NO", top.getProperty("wrongd"));
-		assertEquals( "NO", top.getProperty("absentd"));
+		assertEquals("YES", top.getProperty("presentd"));
+		assertEquals("NO", top.getProperty("wrongd"));
+		assertEquals("NO", top.getProperty("absentd"));
 		top.setProperty("presentf", "${if;${isfile;bnd.bnd};YES;NO}");
 		top.setProperty("absentf", "${if;${isfile;xxx};YES;NO}");
 		top.setProperty("wrongf", "${if;${isfile;jar};YES;NO}");
-		assertEquals( "YES", top.getProperty("presentf"));
-		assertEquals( "NO", top.getProperty("absentf"));
-		assertEquals( "NO", top.getProperty("wrongf"));
+		assertEquals("YES", top.getProperty("presentf"));
+		assertEquals("NO", top.getProperty("absentf"));
+		assertEquals("NO", top.getProperty("wrongf"));
 	}
 
 	/**
@@ -164,8 +161,7 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
-		assertTrue(macro.process("${system;wc;Hello World}").matches(
-				"\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
+		assertTrue(macro.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
 	public void testSystemFail() throws Exception {
@@ -387,7 +383,9 @@ public class MacroTest extends TestCase {
 		Properties p = new Properties();
 		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
 		builder.setProperties(p);
-		builder.setClasspath(new File[] { new File("jar/asm.jar") });
+		builder.setClasspath(new File[] {
+			new File("jar/asm.jar")
+		});
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
 		String export = manifest.getMainAttributes().getValue("Export-Package");
@@ -424,13 +422,11 @@ public class MacroTest extends TestCase {
 		Macro m = new Macro(p);
 		assertEquals("com.acme.test.Test", m.process("${toclassname;com/acme/test/Test.class}"));
 		assertEquals("Test", m.process("$<toclassname;Test.class>"));
-		assertEquals("Test,com.acme.test.Test",
-				m.process("${toclassname;Test.class, com/acme/test/Test.class}"));
+		assertEquals("Test,com.acme.test.Test", m.process("${toclassname;Test.class, com/acme/test/Test.class}"));
 		assertEquals("", m.process("$(toclassname;Test)"));
 		assertEquals("com/acme/test/Test.class", m.process("$[toclasspath;com.acme.test.Test]"));
 		assertEquals("Test.class", m.process("${toclasspath;Test}"));
-		assertEquals("Test.class,com/acme/test/Test.class",
-				m.process("${toclasspath;Test,com.acme.test.Test}"));
+		assertEquals("Test.class,com/acme/test/Test.class", m.process("${toclasspath;Test,com.acme.test.Test}"));
 	}
 
 	public void testFindPath() throws IOException {
@@ -440,8 +436,7 @@ public class MacroTest extends TestCase {
 
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
-		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf(
-				"org/objectweb/asm/AnnotationVisitor.class,") >= 0);
+		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
 		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf(
 				"org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
 		assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
@@ -477,8 +472,7 @@ public class MacroTest extends TestCase {
 		System.err.println(p.getWarnings());
 		assertEquals("xx1.2.3xx", value);
 
-		assertEquals("xx1.222.3xx",
-				m.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
+		assertEquals("xx1.222.3xx", m.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
 
 		p.setProperty("a", "aaaa");
 		assertEquals("[cac]", m.process("$[replace;acaca;a(.*)a;[$1]]"));

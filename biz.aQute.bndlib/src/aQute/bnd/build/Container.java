@@ -18,12 +18,12 @@ public class Container {
 	final String				version;
 	final String				error;
 	final Project				project;
-	volatile Map<String, String>	attributes;
+	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
-			Map<String, String> attributes) {
+			Map<String,String> attributes) {
 		this.bsn = bsn;
 		this.version = version;
 		this.type = type;
@@ -57,32 +57,32 @@ public class Container {
 	 */
 	public boolean contributeFiles(List<File> files, Processor reporter) throws Exception {
 		switch (type) {
-		case EXTERNAL:
-		case REPO:
-			files.add(file);
-			return true;
+			case EXTERNAL :
+			case REPO :
+				files.add(file);
+				return true;
 
-		case PROJECT:
-			File[] fs = project.build();
-			reporter.getInfo(project);
-			if (fs == null)
-				return false;
-
-			for (File f : fs)
-				files.add(f);
-			return true;
-
-		case LIBRARY:
-			List<Container> containers = getMembers();
-			for (Container container : containers) {
-				if (!container.contributeFiles(files, reporter))
+			case PROJECT :
+				File[] fs = project.build();
+				reporter.getInfo(project);
+				if (fs == null)
 					return false;
-			}
-			return true;
 
-		case ERROR:
-			reporter.error(error);
-			return false;
+				for (File f : fs)
+					files.add(f);
+				return true;
+
+			case LIBRARY :
+				List<Container> containers = getMembers();
+				for (Container container : containers) {
+					if (!container.contributeFiles(files, reporter))
+						return false;
+				}
+				return true;
+
+			case ERROR :
+				reporter.error(error);
+				return false;
 		}
 		return false;
 	}
@@ -130,13 +130,13 @@ public class Container {
 			return getFile().getAbsolutePath();
 	}
 
-	public Map<String, String> getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
-	
+
 	public void putAttribute(String name, String value) {
-		if (attributes == Collections.<String,String>emptyMap())
-			attributes = new HashMap<String, String>(1);
+		if (attributes == Collections.<String, String> emptyMap())
+			attributes = new HashMap<String,String>(1);
 		attributes.put(name, value);
 	}
 
@@ -162,8 +162,7 @@ public class Container {
 			String line;
 			try {
 				in = new FileInputStream(file);
-				rd = new BufferedReader(new InputStreamReader(in,
-						Constants.DEFAULT_CHARSET));
+				rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
@@ -171,7 +170,8 @@ public class Container {
 						result.addAll(list);
 					}
 				}
-			} finally {
+			}
+			finally {
 				if (rd != null) {
 					rd.close();
 				}
@@ -201,7 +201,8 @@ public class Container {
 				manifest = jin.getManifest();
 				jin.close();
 				manifestTime = getFile().lastModified();
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}

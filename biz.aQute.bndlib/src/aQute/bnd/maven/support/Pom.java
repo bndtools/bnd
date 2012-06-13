@@ -18,19 +18,19 @@ public abstract class Pom {
 	static {
 		dbf.setNamespaceAware(false);
 	}
-	
+
 	public enum Scope {
 		compile, runtime, system, import_, provided, test, ;
-		
-//		private boolean includes(Scope other) {
-//			if (other == this) return true;
-//			switch (this) {
-//			case compile:
-//				return other == provided || other == test;
-//			default:
-//				return false;
-//			}
-//		}
+
+		// private boolean includes(Scope other) {
+		// if (other == this) return true;
+		// switch (this) {
+		// case compile:
+		// return other == provided || other == test;
+		// default:
+		// return false;
+		// }
+		// }
 	}
 
 	final Maven			maven;
@@ -41,7 +41,7 @@ public abstract class Pom {
 	String				version;
 	List<Dependency>	dependencies	= new ArrayList<Dependency>();
 	File				pomFile;
-	String				description="";
+	String				description		= "";
 	String				name;
 
 	public String getDescription() {
@@ -88,6 +88,7 @@ public abstract class Pom {
 		public Pom getPom() throws Exception {
 			return maven.getPom(groupId, artifactId, version);
 		}
+
 		@Override
 		public String toString() {
 			StringBuilder builder = new StringBuilder();
@@ -129,16 +130,15 @@ public abstract class Pom {
 		this.artifactId = replace(xp.evaluate("project/artifactId", doc).trim(), this.artifactId);
 		this.groupId = replace(xp.evaluate("project/groupId", doc).trim(), this.groupId);
 		this.version = replace(xp.evaluate("project/version", doc).trim(), this.version);
-		
+
 		String nextDescription = xp.evaluate("project/description", doc).trim();
-		if ( this.description.length() != 0 && nextDescription.length() != 0)
+		if (this.description.length() != 0 && nextDescription.length() != 0)
 			this.description += "\n";
 		this.description += replace(nextDescription);
-		
+
 		this.name = replace(xp.evaluate("project/name", doc).trim(), this.name);
 
-		NodeList list = (NodeList) xp.evaluate("project/dependencies/dependency", doc,
-				XPathConstants.NODESET);
+		NodeList list = (NodeList) xp.evaluate("project/dependencies/dependency", doc, XPathConstants.NODESET);
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
 			Dependency dep = new Dependency();
@@ -157,8 +157,7 @@ public abstract class Pom {
 			dep.version = replace(xp.evaluate("version", node).trim());
 			dependencies.add(dep);
 
-			NodeList exclusions = (NodeList) xp
-					.evaluate("exclusions", node, XPathConstants.NODESET);
+			NodeList exclusions = (NodeList) xp.evaluate("exclusions", node, XPathConstants.NODESET);
 			for (int e = 0; e < exclusions.getLength(); e++) {
 				Node exc = exclusions.item(e);
 				String exclGroupId = xp.evaluate("groupId", exc).trim();
@@ -170,9 +169,9 @@ public abstract class Pom {
 	}
 
 	private String replace(String key, String dflt) {
-		if ( key == null || key.length() == 0)
+		if (key == null || key.length() == 0)
 			return dflt;
-		
+
 		return replace(key);
 	}
 
@@ -185,7 +184,7 @@ public abstract class Pom {
 	}
 
 	public String getVersion() throws Exception {
-		if ( version == null)
+		if (version == null)
 			return "<not set>";
 		return replace(version);
 	}
@@ -205,8 +204,7 @@ public abstract class Pom {
 		final Dependency	dependency;
 
 		public boolean excludes(String name) {
-			return dependency.exclusions.contains(name) && previous != null
-					&& previous.excludes(name);
+			return dependency.exclusions.contains(name) && previous != null && previous.excludes(name);
 		}
 	}
 
@@ -229,7 +227,7 @@ public abstract class Pom {
 
 			if (rover.excludes(name) || dep.optional)
 				continue;
-			
+
 			if (dep.scope == scope && !dep.optional) {
 				try {
 					Pom sub = maven.getPom(groupId, artifactId, version, urls);
@@ -240,35 +238,35 @@ public abstract class Pom {
 								queue.add(new Rover(rover, subd));
 							}
 						}
-					} else
-						if (rover.previous != null)
-							System.err.println("Cannot find " + dep + " from "
-									+ rover.previous.dependency);
-						else
-							System.err.println("Cannot find " + dep + " from top");
-				} catch (Exception e) {
+					} else if (rover.previous != null)
+						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
+					else
+						System.err.println("Cannot find " + dep + " from top");
+				}
+				catch (Exception e) {
 					if (rover.previous != null)
-						System.err.println("Cannot find " + dep + " from "
-								+ rover.previous.dependency);
+						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
 					else
 						System.err.println("Cannot find " + dep + " from top");
 
-//			boolean include = false;
-//			if (dep.scope == Scope.compile) {
-//				include = true;
-//			} else if (dep.scope == Scope.test) {
-//				include = rover.previous == null && (action == Action.compile || action == Action.test);
-//			} else if (dep.scope == Scope.runtime) {
-//				include = action == Action.run;
-//			}
-//			if (include) {
-//				Pom sub = maven.getPom(groupId, artifactId, version, urls);
-//				if (!result.contains(sub)) {
-//					result.add(sub);
-//					for (Dependency subd : sub.dependencies) {
-//						queue.add(new Rover(rover, subd));
-//					}
-					
+					// boolean include = false;
+					// if (dep.scope == Scope.compile) {
+					// include = true;
+					// } else if (dep.scope == Scope.test) {
+					// include = rover.previous == null && (action ==
+					// Action.compile || action == Action.test);
+					// } else if (dep.scope == Scope.runtime) {
+					// include = action == Action.run;
+					// }
+					// if (include) {
+					// Pom sub = maven.getPom(groupId, artifactId, version,
+					// urls);
+					// if (!result.contains(sub)) {
+					// result.add(sub);
+					// for (Dependency subd : sub.dependencies) {
+					// queue.add(new Rover(rover, subd));
+					// }
+
 				}
 			}
 		}
@@ -281,8 +279,7 @@ public abstract class Pom {
 			return "null";
 
 		in = in.trim();
-		if ("${pom.version}".equals(in) || "${version}".equals(in)
-				|| "${project.version}".equals(in))
+		if ("${pom.version}".equals(in) || "${version}".equals(in) || "${project.version}".equals(in))
 			return version;
 
 		if ("${basedir}".equals(in))
@@ -318,7 +315,8 @@ public abstract class Pom {
 			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}
-		} finally {
+		}
+		finally {
 			writer.close();
 		}
 		return file;

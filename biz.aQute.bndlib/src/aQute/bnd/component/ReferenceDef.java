@@ -11,7 +11,7 @@ import aQute.libg.version.*;
  */
 
 class ReferenceDef {
-	Version					version = AnnotationReader.V1_1;
+	Version					version	= AnnotationReader.V1_1;
 	String					name;
 	String					service;
 	ReferenceCardinality	cardinality;
@@ -25,25 +25,26 @@ class ReferenceDef {
 	/**
 	 * Prepare the reference, will check for any errors.
 	 * 
-	 * @param analyzer the analyzer to report errors to.
-	 * @throws Exception 
+	 * @param analyzer
+	 *            the analyzer to report errors to.
+	 * @throws Exception
 	 */
 	public void prepare(Analyzer analyzer) throws Exception {
 		if (name == null)
 			analyzer.error("No name for a reference");
-		
-		if ((updated != null && !updated.equals("-")) || policyOption!= null)
+
+		if ((updated != null && !updated.equals("-")) || policyOption != null)
 			version = max(version, AnnotationReader.V1_2);
 
 		if (target != null) {
 			String error = Verifier.validateFilter(target);
-			if ( error != null)
+			if (error != null)
 				analyzer.error("Invalid target filter %s for %s", target, name);
 		}
 
-		if ( service == null)
+		if (service == null)
 			analyzer.error("No interface specified on %s", name);
-		
+
 	}
 
 	/**
@@ -71,12 +72,12 @@ class ReferenceDef {
 		if (unbind != null && !"-".equals(unbind))
 			ref.addAttribute("unbind", unbind);
 
-		if (updated != null && !"-".equals(updated)) 
+		if (updated != null && !"-".equals(updated))
 			ref.addAttribute("updated", updated);
 
-		if ( policyOption != null)
+		if (policyOption != null)
 			ref.addAttribute("policy-option", policyOption.toString());
-		
+
 		return ref;
 	}
 

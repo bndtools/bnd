@@ -75,7 +75,8 @@ public class EmbeddedResource implements Resource {
 		InputStream in = resource.openInputStream();
 		try {
 			build(sub, in, resource.lastModified());
-		} catch( Exception e ) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		finally {

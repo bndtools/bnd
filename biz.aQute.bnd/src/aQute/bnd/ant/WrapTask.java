@@ -48,9 +48,8 @@ public class WrapTask extends BaseTask implements Reporter {
 				throw new BuildException("No files set", getLocation());
 
 			if (output != null && jars.size() > 1 && !output.isDirectory()) {
-				throw new BuildException(
-						"Multiple jars must be wrapped but the output given is not a directory "
-								+ output, getLocation());
+				throw new BuildException("Multiple jars must be wrapped but the output given is not a directory "
+						+ output, getLocation());
 			}
 
 			if (definitions != null && jars.size() > 1 && !definitions.isDirectory()) {
@@ -73,22 +72,21 @@ public class WrapTask extends BaseTask implements Reporter {
 				wrapper.setExceptions(exceptions);
 				wrapper.setBase(getProject().getBaseDir());
 				wrapper.addClasspath(classpath);
-				
+
 				if (failok)
 					wrapper.setFailOk(true);
-				
+
 				wrapper.setJar(file);
 				wrapper.addProperties(getProject().getProperties());
 				wrapper.setDefaults(bsn, version);
 
-				File outputFile = wrapper.getOutputFile(output == null ? null : output
-						.getAbsolutePath());
+				File outputFile = wrapper.getOutputFile(output == null ? null : output.getAbsolutePath());
 
 				if (definitions != null) {
 					File properties = definitions;
 					if (properties.isDirectory()) {
-						String pfile = wrapper.replaceExtension(outputFile.getName(),
-								Constants.DEFAULT_JAR_EXTENSION, Constants.DEFAULT_BND_EXTENSION);
+						String pfile = wrapper.replaceExtension(outputFile.getName(), Constants.DEFAULT_JAR_EXTENSION,
+								Constants.DEFAULT_BND_EXTENSION);
 						properties = new File(definitions, pfile);
 					}
 					if (properties.isFile()) {
@@ -99,12 +97,14 @@ public class WrapTask extends BaseTask implements Reporter {
 				wrapper.calcManifest();
 				if (wrapper.isOk()) {
 					boolean saved = wrapper.save(outputFile, force);
-					 log( String.format("%30s %6d %s\n", wrapper.getJar().getBsn()+"-"+wrapper.getJar().getVersion(), outputFile.length(), saved ? "":"(not modified)"));
+					log(String.format("%30s %6d %s\n", wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(),
+							outputFile.length(), saved ? "" : "(not modified)"));
 				}
 
 				failed |= report(wrapper);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 
 			if (exceptions)
 				e.printStackTrace();

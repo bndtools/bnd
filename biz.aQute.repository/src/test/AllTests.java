@@ -1,21 +1,15 @@
 package test;
 
-import test.http.CachingURLResourceHandlerTest;
-import test.http.HttpConnectorTest;
-import test.obr.OBRTest;
-import test.repository.TestCompressedObrRepo;
-import test.repository.TestFixedIndexedRepo;
-import test.repository.TestLocalIndexGeneration;
-import test.repository.TestLocalObrGeneration;
-import test.repository.TestObrRepo;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import junit.framework.*;
+import test.http.*;
+import test.obr.*;
+import test.repository.*;
 
 public class AllTests {
 
 	public static Test suite() {
 		TestSuite suite = new TestSuite(AllTests.class.getName());
-		//$JUnit-BEGIN$
+		// $JUnit-BEGIN$
 		suite.addTestSuite(CachingURLResourceHandlerTest.class);
 		suite.addTestSuite(HttpConnectorTest.class);
 		suite.addTestSuite(OBRTest.class);
@@ -24,7 +18,7 @@ public class AllTests {
 		suite.addTestSuite(TestLocalIndexGeneration.class);
 		suite.addTestSuite(TestLocalObrGeneration.class);
 		suite.addTestSuite(TestObrRepo.class);
-		//$JUnit-END$
+		// $JUnit-END$
 		return suite;
 	}
 

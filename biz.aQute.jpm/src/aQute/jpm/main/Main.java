@@ -15,39 +15,42 @@ import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
 import aQute.lib.getopt.*;
-import aQute.lib.getopt.Description;
 import aQute.lib.io.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
-@Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.") public class Main
-		extends ReporterAdapter {
+@Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.")
+public class Main extends ReporterAdapter {
 
 	public final static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
-	File					base		= new File(System.getProperty("user.dir"));
+	File						base		= new File(System.getProperty("user.dir"));
 
 	/**
 	 * Show installed binaries
 	 */
 
-	@Arguments(arg = {}) @Description("List the repository information. Contains bsns, versions, and services.") public interface artifactOptions
-			extends Options {
+	@Arguments(arg = {})
+	@Description("List the repository information. Contains bsns, versions, and services.")
+	public interface artifactOptions extends Options {
 		String filter();
 	}
 
 	/**
 	 * Show platform
 	 */
-	@Arguments(arg = {}) @Description("Show platform specific information.") public interface platformOptions
-			extends Options {
-	}
+	@Arguments(arg = {})
+	@Description("Show platform specific information.")
+	public interface platformOptions extends Options {}
 
 	/**
 	 * Services
 	 */
-	@Arguments(arg = { "[name]" }) @Description("Services") public interface serviceOptions extends
-			Options {
+	@Arguments(arg = {
+		"[name]"
+	})
+	@Description("Services")
+	public interface serviceOptions extends Options {
 
 		String create();
 
@@ -69,23 +72,27 @@ import aQute.libg.version.*;
 	/**
 	 * Commands
 	 */
-	@Arguments(arg = {}) @Description("Commands") public interface commandOptions extends Options {
-	}
+	@Arguments(arg = {})
+	@Description("Commands")
+	public interface commandOptions extends Options {}
 
 	/**
 	 * Uninstall a binary.
-	 * 
 	 */
-	@Description("Uninstall a jar by bsn.") @Arguments(arg = { "bsn", "..." }) public interface uninstallOptions
-			extends Options {
-		@Description("Version range that must be matched, if not specified all versions are removed.") VersionRange range();
+	@Description("Uninstall a jar by bsn.")
+	@Arguments(arg = {
+			"bsn", "..."
+	})
+	public interface uninstallOptions extends Options {
+		@Description("Version range that must be matched, if not specified all versions are removed.")
+		VersionRange range();
 
-		@Description("Garbage collect command and services that do not point to a valid repo file") boolean gc();
+		@Description("Garbage collect command and services that do not point to a valid repo file")
+		boolean gc();
 	}
 
 	/**
 	 * Uninstall a binary.
-	 * 
 	 */
 	public interface deinitOptions extends Options {
 		boolean force();
@@ -94,9 +101,9 @@ import aQute.libg.version.*;
 	/**
 	 * garbage collect commands and services
 	 */
-	@Description("Garbage collect any orphan services and commands") @Arguments(arg = {}) public interface GCOptions
-			extends Options {
-	}
+	@Description("Garbage collect any orphan services and commands")
+	@Arguments(arg = {})
+	public interface GCOptions extends Options {}
 
 	JustAnotherPackageManager	jpm;
 	final PrintStream			err	= System.err;
@@ -105,7 +112,6 @@ import aQute.libg.version.*;
 
 	/**
 	 * Default constructor
-	 * 
 	 */
 
 	public Main() {
@@ -116,7 +122,6 @@ import aQute.libg.version.*;
 	 * Main entry
 	 * 
 	 * @throws Exception
-	 * 
 	 */
 	public static void main(String args[]) throws Exception {
 		Main jpm = new Main();
@@ -127,20 +132,26 @@ import aQute.libg.version.*;
 	 * Main options
 	 */
 
-	@Description("Options valid for all commands. Must be given before sub command") interface jpmOptions
-			extends Options {
+	@Description("Options valid for all commands. Must be given before sub command")
+	interface jpmOptions extends Options {
 
-		@Description("Use a local jpm directory.") String local();
+		@Description("Use a local jpm directory.")
+		String local();
 
-		@Description("Print exception stack traces when they occur.") boolean exceptions();
+		@Description("Print exception stack traces when they occur.")
+		boolean exceptions();
 
-		@Description("Trace on.") boolean trace();
+		@Description("Trace on.")
+		boolean trace();
 
-		@Description("Be pedantic about all details.") boolean pedantic();
+		@Description("Be pedantic about all details.")
+		boolean pedantic();
 
-		@Description("Specify a new base directory (default working directory).") String base();
+		@Description("Specify a new base directory (default working directory).")
+		String base();
 
-		@Description("Do not return error status for error that match this given regular expression.") String[] failok();
+		@Description("Do not return error status for error that match this given regular expression.")
+		String[] failok();
 	}
 
 	/**
@@ -175,7 +186,8 @@ import aQute.libg.version.*;
 					err.println(help);
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			exception(t, "Failed %s", t);
 		}
 
@@ -188,13 +200,19 @@ import aQute.libg.version.*;
 	/**
 	 * Install a jar options
 	 */
-	@Arguments(arg = { "url|file", "..." }) @Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ") public interface installOptions
-			extends Options {
-		@Description("Ignore command and service information") boolean ignore();
+	@Arguments(arg = {
+			"url|file", "..."
+	})
+	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ")
+	public interface installOptions extends Options {
+		@Description("Ignore command and service information")
+		boolean ignore();
 
-		@Description("Force overwrite of existing command") boolean force();
+		@Description("Force overwrite of existing command")
+		boolean force();
 
-		@Description("Verify digests in the JAR, provide algorithms. Default is MD5 and SHA1. A '-' ignores the digests.") String[] verify();
+		@Description("Verify digests in the JAR, provide algorithms. Default is MD5 and SHA1. A '-' ignores the digests.")
+		String[] verify();
 
 	}
 
@@ -226,10 +244,12 @@ import aQute.libg.version.*;
 
 								continue;
 							}
-						} finally {
+						}
+						finally {
 							tmp.delete();
 						}
-					} catch (MalformedURLException mfue) {
+					}
+					catch (MalformedURLException mfue) {
 						// Ignore, try as file name
 					}
 				}
@@ -247,7 +267,8 @@ import aQute.libg.version.*;
 					}
 				}
 
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				exception(e, "Could not install %s because %s", target, e);
 			}
 		}
@@ -264,7 +285,8 @@ import aQute.libg.version.*;
 		List<ArtifactData> ads = jpm.getArtifacts();
 		Collections.sort(ads, new Comparator<ArtifactData>() {
 
-			@Override public int compare(ArtifactData a, ArtifactData b) {
+			@Override
+			public int compare(ArtifactData a, ArtifactData b) {
 				return a.bsn.compareTo(b.bsn);
 			}
 		});
@@ -365,8 +387,7 @@ import aQute.libg.version.*;
 	}
 
 	private void print(ServiceData sd) throws Exception {
-		out.printf("%-40s %s-%s (%s) %s%n", sd.name, sd.bsn, sd.version, jpm.getService(sd.name)
-				.isRunning(), sd.args);
+		out.printf("%-40s %s-%s (%s) %s%n", sd.name, sd.bsn, sd.version, jpm.getService(sd.name).isRunning(), sd.args);
 	}
 
 	public void _command(commandOptions opts) throws Exception {
@@ -482,7 +503,7 @@ import aQute.libg.version.*;
 
 		if (!opts.ignore()) {
 			Parameters service = OSGiHeader.parseHeader(main.getValue("JPM-Service"));
-			for (Map.Entry<String, Attrs> e : service.entrySet()) {
+			for (Map.Entry<String,Attrs> e : service.entrySet()) {
 				Attrs attrs = e.getValue();
 				ServiceData data = new ServiceData();
 				data.name = e.getKey();
@@ -502,7 +523,7 @@ import aQute.libg.version.*;
 
 		if (!opts.ignore()) {
 			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
-			for (Map.Entry<String, Attrs> e : command.entrySet()) {
+			for (Map.Entry<String,Attrs> e : command.entrySet()) {
 				Attrs attrs = e.getValue();
 				CommandData data = new CommandData();
 				data.bsn = bsn;
@@ -519,25 +540,23 @@ import aQute.libg.version.*;
 		try {
 			String msg = jpm.verify(jar, opts.verify());
 			if (msg != null) {
-				error("The JAR %s fails to verify, %s. Use -v - to ignore verification", source,
-						msg);
+				error("The JAR %s fails to verify, %s. Use -v - to ignore verification", source, msg);
 				return;
 			}
 
 			if (!opts.ignore()) {
 				if (commands.size() > 0 && mainClass == null)
-					error("JPM command is specified but JAR contains no Main-Class attribute for %s",
-							source);
+					error("JPM command is specified but JAR contains no Main-Class attribute for %s", source);
 
 				if (services.size() > 0 && mainClass == null)
-					error("JPM service is specified but JAR contains no Main-Class attribute for %s",
-							source);
+					error("JPM service is specified but JAR contains no Main-Class attribute for %s", source);
 			}
 
 			if (!isOk())
 				return;
 
-		} finally {
+		}
+		finally {
 			jar.close();
 		}
 
@@ -582,9 +601,9 @@ import aQute.libg.version.*;
 			Object o = m.invoke(null);
 			if (o == null) {
 				Icon icon = new ImageIcon(Main.class.getResource("/images/jpm.png"), "JPM");
-				int answer = JOptionPane.showOptionDialog(null,
-						"This is a command line application. Setup?", "Package Manager for Java™",
-						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon, null, null);
+				int answer = JOptionPane.showOptionDialog(null, "This is a command line application. Setup?",
+						"Package Manager for Java™", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon,
+						null, null);
 				if (answer == JOptionPane.OK_OPTION) {
 
 					_init(null);
@@ -597,7 +616,8 @@ import aQute.libg.version.*;
 				}
 				return;
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			// Ignore, happens in certain circumstances, we fallback to the
 			// command line
 		}
@@ -618,8 +638,7 @@ import aQute.libg.version.*;
 	public void _init(Options opts) throws Exception {
 		String s = System.getProperty("java.class.path");
 		if (s == null || s.indexOf(File.pathSeparator) > 0) {
-			error("Cannot initialize because not clear what the command jar is from java.class.path: %s",
-					s);
+			error("Cannot initialize because not clear what the command jar is from java.class.path: %s", s);
 			return;
 		}
 		try {
@@ -629,7 +648,8 @@ import aQute.libg.version.*;
 				cl.execute(this, "install", Arrays.asList("-f", f.getAbsolutePath()));
 			} else
 				error("Cannot find the jpm jar from %s", f);
-		} catch (InvocationTargetException e) {
+		}
+		catch (InvocationTargetException e) {
 			exception(e, "Could not install jpm, %s", e.getMessage());
 		}
 	}
@@ -655,7 +675,8 @@ import aQute.libg.version.*;
 						String result = service.start();
 						if (result != null)
 							error("Failed to start: %s", result);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						exception(e, "Could not start service %s due to %s", s, e.getMessage());
 					}
 				} else
@@ -682,7 +703,8 @@ import aQute.libg.version.*;
 					String result = service.start();
 					if (result != null)
 						error("Failed to start: %s", result);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					exception(e, "Could not start service %s due to %s", s, e.getMessage());
 				}
 			}
@@ -695,8 +717,10 @@ import aQute.libg.version.*;
 	 * @param options
 	 * @throws Exception
 	 */
-	@Arguments(arg = { "service", "[on|off]" }) public interface traceOptions extends Options {
-	}
+	@Arguments(arg = {
+			"service", "[on|off]"
+	})
+	public interface traceOptions extends Options {}
 
 	public void _trace(traceOptions options) throws Exception {
 		List<String> args = options._();
@@ -715,7 +739,8 @@ import aQute.libg.version.*;
 					if (result != null)
 						error("Failed to trace: %s", result);
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				exception(e, "Could not trace service %s due to %s", s, e.getMessage());
 			}
 		}
@@ -738,7 +763,8 @@ import aQute.libg.version.*;
 						String result = service.stop();
 						if (result != null)
 							error("Failed to stop: %s", result);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						exception(e, "Could not stop service %s due to %s", s, e.getMessage());
 					}
 				} else
@@ -763,10 +789,10 @@ import aQute.libg.version.*;
 					runs = service.isRunning() + "";
 					status = service.status();
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				status = e.getMessage();
-				exception(e, "could not fetch status information from service %s, due to %s", s,
-						e.getMessage());
+				exception(e, "could not fetch status information from service %s, due to %s", s, e.getMessage());
 			}
 			out.printf("%-40s %8s %s%n", s, runs, status);
 		}

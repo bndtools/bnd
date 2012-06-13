@@ -45,7 +45,7 @@ public class URLResource implements Resource {
 		try {
 			if (url.getProtocol().equals("file:")) {
 				File file = new File(url.getPath());
-				if ( file.isFile())
+				if (file.isFile())
 					return size = file.length();
 			} else {
 				URLConnection con = url.openConnection();
@@ -59,7 +59,8 @@ public class URLResource implements Resource {
 					}
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Forget this exception, we do it the hard way
 		}
 		InputStream in = openInputStream();
@@ -67,11 +68,12 @@ public class URLResource implements Resource {
 		try {
 			din = new DataInputStream(in);
 			long result = din.skipBytes(Integer.MAX_VALUE);
-			while( in.read() >= 0) {
+			while (in.read() >= 0) {
 				result += din.skipBytes(Integer.MAX_VALUE);
 			}
 			size = result;
-		} finally {
+		}
+		finally {
 			if (din != null) {
 				din.close();
 			}

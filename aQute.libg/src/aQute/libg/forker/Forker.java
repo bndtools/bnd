@@ -12,12 +12,11 @@ import java.util.concurrent.atomic.*;
  * have ran their associated runnable.
  * 
  * @author aqute
- * 
  * @param <T>
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Map<T, Job>	waiting		= new HashMap<T, Job>();
+	final Map<T,Job>	waiting		= new HashMap<T,Job>();
 	final Set<Job>		executing	= new HashSet<Job>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
 	private int			count;
@@ -48,10 +47,12 @@ public class Forker<T> {
 					t = Thread.currentThread();
 				}
 				runnable.run();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				exception = e;
 				e.printStackTrace();
-			} finally {
+			}
+			finally {
 				synchronized (this) {
 					t = null;
 				}
@@ -84,7 +85,6 @@ public class Forker<T> {
 
 	/**
 	 * Constructor
-	 * 
 	 */
 	public Forker() {
 		this.executor = Executors.newFixedThreadPool(4);
@@ -101,8 +101,7 @@ public class Forker<T> {
 	 * @param runnable
 	 *            the runnable to run
 	 */
-	public synchronized void doWhen(Collection<? extends T> dependencies, T target,
-			Runnable runnable) {
+	public synchronized void doWhen(Collection< ? extends T> dependencies, T target, Runnable runnable) {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
@@ -130,8 +129,7 @@ public class Forker<T> {
 		dependencies.removeAll(waiting.keySet());
 		if (dependencies.size() > 0)
 			throw new IllegalArgumentException(
-					"There are dependencies in the jobs that are not present in the targets: "
-							+ dependencies);
+					"There are dependencies in the jobs that are not present in the targets: " + dependencies);
 
 	}
 
@@ -181,8 +179,9 @@ public class Forker<T> {
 
 			for (Job job : waiting.values()) {
 				// boolean x =
-					job.dependencies.remove(done.target);
-				//System.err.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
+				job.dependencies.remove(done.target);
+				// System.err.println( "Removing " + done.target + " from " +
+				// job.target + " ?" + x + " " + job.dependencies.size());
 			}
 		}
 		schedule();

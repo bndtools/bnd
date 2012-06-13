@@ -2,8 +2,8 @@ package aQute.lib.deployer.repository.api;
 
 public class Referral {
 
-	private final String url;
-	private final int depth;
+	private final String	url;
+	private final int		depth;
 
 	public Referral(String url, int depth) {
 		this.url = url;

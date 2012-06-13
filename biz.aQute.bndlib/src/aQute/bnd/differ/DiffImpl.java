@@ -28,14 +28,30 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 * child delta for each child. This escalates deltas from below up.
 	 */
 	final static Delta[][]		TRANSITIONS	= {
-			{ IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR }, // IGNORED
-			{ IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR }, // UNCHANGED
-			{ IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR }, // CHANGED
-			{ IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR }, // MICRO
-			{ IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR }, // MINOR
-			{ IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR }, // MAJOR
-			{ IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR }, // REMOVED
-			{ IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR }, // ADDED
+			{
+			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+			}, // IGNORED
+			{
+			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+			}, // UNCHANGED
+			{
+			IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR
+			}, // CHANGED
+			{
+			IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR
+			}, // MICRO
+			{
+			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+			}, // MINOR
+			{
+			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+			}, // MAJOR
+			{
+			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+			}, // REMOVED
+			{
+			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+			}, // ADDED
 											};
 
 	/**
@@ -160,7 +176,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return (newer == null ? older : newer).getName();
 	}
 
-	public Collection<? extends Diff> getChildren() {
+	public Collection< ? extends Diff> getChildren() {
 		return children;
 	}
 
@@ -171,8 +187,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	public boolean equals(Object other) {
 		if (other instanceof DiffImpl) {
 			DiffImpl o = (DiffImpl) other;
-			return getDelta() == o.getDelta() && getType() == o.getType()
-					&& getName().equals(o.getName());
+			return getDelta() == o.getDelta() && getType() == o.getType() && getName().equals(o.getName());
 		}
 		return false;
 	}

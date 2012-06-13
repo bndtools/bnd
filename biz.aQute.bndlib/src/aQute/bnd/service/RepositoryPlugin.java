@@ -24,7 +24,8 @@ public interface RepositoryPlugin {
 	 * @throws Exception
 	 *             when anything goes wrong
 	 */
-	@Deprecated File[] get(String bsn, String range) throws Exception;
+	@Deprecated
+	File[] get(String bsn, String range) throws Exception;
 
 	/**
 	 * Return a URL to a matching version of the given bundle.

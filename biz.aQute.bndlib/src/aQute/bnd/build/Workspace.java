@@ -23,9 +23,9 @@ public class Workspace extends Processor {
 	public static final String					BNDDIR		= "bnd";
 	public static final String					CACHEDIR	= "cache";
 
-	static Map<File, WeakReference<Workspace>>	cache		= newHashMap();
-	final Map<String, Project>					models		= newHashMap();
-	final Map<String, Action>					commands	= newMap();
+	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
+	final Map<String,Project>					models		= newHashMap();
+	final Map<String,Action>					commands	= newMap();
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 
@@ -132,7 +132,8 @@ public class Workspace extends Processor {
 		return false;
 	}
 
-	@Override public void propertiesChanged() {
+	@Override
+	public void propertiesChanged() {
 		super.propertiesChanged();
 		File extDir = new File(this.buildDir, "ext");
 		File[] extensions = extDir.listFiles();
@@ -143,7 +144,8 @@ public class Workspace extends Processor {
 					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
 					try {
 						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						error("PropertiesChanged: " + e.getMessage());
 					}
 				}
@@ -163,7 +165,7 @@ public class Workspace extends Processor {
 		commands.remove(menu);
 	}
 
-	public void fillActions(Map<String, Action> all) {
+	public void fillActions(Map<String,Action> all) {
 		all.putAll(commands);
 	}
 
@@ -187,7 +189,8 @@ public class Workspace extends Processor {
 		for (BndListener l : listeners)
 			try {
 				l.changed(f);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 	}
@@ -200,38 +203,42 @@ public class Workspace extends Processor {
 					l.begin();
 				else
 					l.end();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// who cares?
 			}
 	}
 
-	
 	/**
-	 * Signal a BndListener plugin.
-	 * We ran an infinite bug loop :-( 
+	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter> signalBusy = new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>	signalBusy	= new ThreadLocal<Reporter>();
+
 	public void signal(Reporter reporter) {
-		if ( signalBusy.get() != null)
+		if (signalBusy.get() != null)
 			return;
-		
+
 		signalBusy.set(reporter);
 		try {
 			List<BndListener> listeners = getPlugins(BndListener.class);
 			for (BndListener l : listeners)
 				try {
 					l.signal(this);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// who cares?
 				}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Ignore
-		} finally {
+		}
+		finally {
 			signalBusy.set(null);
 		}
 	}
 
-	@Override public void signal() {
+	@Override
+	public void signal() {
 		signal(this);
 	}
 
@@ -251,15 +258,14 @@ public class Workspace extends Processor {
 		CachedFileRepo() {
 			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
-		
+
 		public String toString() {
 			return "bnd-cache";
 		}
 
 		protected void init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
-				throw new TimeLimitExceededException(
-						"Cached File Repo is locked and can't acquire it");
+				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
 			try {
 				if (!inited) {
 					inited = true;
@@ -275,7 +281,8 @@ public class Workspace extends Processor {
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
 				}
-			} finally {
+			}
+			finally {
 				lock.unlock();
 			}
 		}
@@ -287,20 +294,21 @@ public class Workspace extends Processor {
 				while (jentry != null) {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
-						if (!dest.isFile() || dest.lastModified() < jentry.getTime()
-								|| jentry.getTime() == 0) {
+						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime() == 0) {
 							dest.getParentFile().mkdirs();
 							FileOutputStream out = new FileOutputStream(dest);
 							try {
 								copy(jin, out);
-							} finally {
+							}
+							finally {
 								out.close();
 							}
 						}
 					}
 					jentry = jin.getNextJarEntry();
 				}
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}
@@ -345,7 +353,8 @@ public class Workspace extends Processor {
 		return maven;
 	}
 
-	@Override protected void setTypeSpecificPlugins(Set<Object> list) {
+	@Override
+	protected void setTypeSpecificPlugins(Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
 		list.add(maven);
 		list.add(new CachedFileRepo());

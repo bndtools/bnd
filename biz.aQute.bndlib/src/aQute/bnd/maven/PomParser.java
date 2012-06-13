@@ -12,22 +12,21 @@ import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 
 /**
- * Provides a way to parse a maven pom as properties.
- * 
- * This provides most of the maven elements as properties. It also
- * provides pom.scope.[compile|test|runtime|provided|system] properties
- * that can be appended to the build and run path. That is, they are
- * in the correct format for this.
+ * Provides a way to parse a maven pom as properties. This provides most of the
+ * maven elements as properties. It also provides
+ * pom.scope.[compile|test|runtime|provided|system] properties that can be
+ * appended to the build and run path. That is, they are in the correct format
+ * for this.
  */
 public class PomParser extends Processor {
 	static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf		= XPathFactory.newInstance();
 	static Set<String>				multiple	= new HashSet<String>();
-	static Set<String>				skip	= new HashSet<String>();
+	static Set<String>				skip		= new HashSet<String>();
 
 	static {
 		dbf.setNamespaceAware(false);
-		
+
 		// Set all elements that need enumeration of their elements
 		// these will not use the name of the subelement but instead
 		// they use an index from 0..n
@@ -46,7 +45,7 @@ public class PomParser extends Processor {
 		skip.add("dependencies");
 		skip.add("reporting");
 		skip.add("extensions");
-		
+
 	}
 
 	public Properties getProperties(File pom) throws Exception {
@@ -58,7 +57,7 @@ public class PomParser extends Processor {
 
 		// Check if there is a parent pom
 		String relativePath = xpath.evaluate("project/parent/relativePath", doc);
-		if (relativePath != null && relativePath.length()!=0) {
+		if (relativePath != null && relativePath.length() != 0) {
 			File parentPom = IO.getFile(pom.getParentFile(), relativePath);
 			if (parentPom.isFile()) {
 				Properties parentProps = getProperties(parentPom);
@@ -71,15 +70,16 @@ public class PomParser extends Processor {
 		Element e = doc.getDocumentElement();
 		traverse("pom", e, p);
 
-		String scopes[] = { "provided", "runtime", "test", "system" };
+		String scopes[] = {
+				"provided", "runtime", "test", "system"
+		};
 		NodeList set = (NodeList) xpath.evaluate("//dependency[not(scope) or scope='compile']", doc,
 				XPathConstants.NODESET);
 		if (set.getLength() != 0)
 			p.put("pom.scope.compile", toBsn(set));
 
 		for (String scope : scopes) {
-			set = (NodeList) xpath.evaluate("//dependency[scope='" + scope + "']", doc,
-					XPathConstants.NODESET);
+			set = (NodeList) xpath.evaluate("//dependency[scope='" + scope + "']", doc, XPathConstants.NODESET);
 			if (set.getLength() != 0)
 				p.put("pom.scope." + scope, toBsn(set));
 		}
@@ -98,9 +98,9 @@ public class PomParser extends Processor {
 			sb.append(xpath.evaluate("groupId", child));
 			sb.append(".");
 			sb.append(xpath.evaluate("artifactId", child));
-			if (version != null && version.trim().length()!=0) {
+			if (version != null && version.trim().length() != 0) {
 				sb.append(";version=");
-				sb.append( Analyzer.cleanupVersion(version));
+				sb.append(Analyzer.cleanupVersion(version));
 			}
 			del = ", ";
 		}
@@ -108,15 +108,17 @@ public class PomParser extends Processor {
 	}
 
 	/**
-	 * The maven POM is quite straightforward, it is basically a structured property file.
+	 * The maven POM is quite straightforward, it is basically a structured
+	 * property file.
+	 * 
 	 * @param name
 	 * @param parent
 	 * @param p
 	 */
 	static void traverse(String name, Node parent, Properties p) {
-		if ( skip.contains(parent.getNodeName()))
+		if (skip.contains(parent.getNodeName()))
 			return;
-		
+
 		NodeList children = parent.getChildNodes();
 		if (multiple.contains(parent.getNodeName())) {
 			int n = 0;
@@ -132,7 +134,7 @@ public class PomParser extends Processor {
 				Node child = children.item(i);
 				if (child instanceof Text) {
 					String value = child.getNodeValue().trim();
-					if (value.length()!=0) {
+					if (value.length() != 0) {
 						p.put(name, value);
 					}
 				} else {

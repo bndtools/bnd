@@ -19,7 +19,6 @@ public interface BndMessages extends Messages {
 
 	ERROR Project_RunFailed_(Project project, Exception e);
 
-	ERROR ForProject_File_FailedToCreateExecutableException_(Project project, String path,
-			Exception e);
+	ERROR ForProject_File_FailedToCreateExecutableException_(Project project, String path, Exception e);
 
 }

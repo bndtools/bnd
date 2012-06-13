@@ -28,19 +28,18 @@ public class Base64 {
 		this.data = data;
 	}
 
-	
-	
 	public final static byte[] decodeBase64(String string) {
-		ByteArrayOutputStream bout= new ByteArrayOutputStream(string.length()*2/3);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream(string.length() * 2 / 3);
 		StringReader rdr = new StringReader(string.trim());
 		try {
-			decode(rdr,bout);
-		} catch (Exception e) {
+			decode(rdr, bout);
+		}
+		catch (Exception e) {
 			// cannot happen
 		}
 		return bout.toByteArray();
 	}
-	
+
 	public final static void decode(Reader rdr, OutputStream out) throws Exception {
 		int register = 0;
 		int i = 0;
@@ -48,22 +47,19 @@ public class Base64 {
 
 		byte test[] = new byte[3];
 		int c;
-		while ((c=rdr.read()) >= 0) {
+		while ((c = rdr.read()) >= 0) {
 
 			if (c > 0x7F)
-				throw new IllegalArgumentException(
-						"Invalid base64 character in " + rdr
-								+ ", character value > 128 ");
-			
+				throw new IllegalArgumentException("Invalid base64 character in " + rdr + ", character value > 128 ");
+
 			int v = 0;
-			if ( c == '=' ) {
+			if (c == '=') {
 				pads++;
 			} else {
 				v = values[c];
-				if ( v < 0 )
-					throw new IllegalArgumentException(
-							"Invalid base64 character in " + rdr + ", " + c );
-			}					
+				if (v < 0)
+					throw new IllegalArgumentException("Invalid base64 character in " + rdr + ", " + c);
+			}
 			register <<= 6;
 			register |= v;
 			test[2] = (byte) (register & 0xFF);
@@ -82,19 +78,19 @@ public class Base64 {
 
 	static private void flush(OutputStream out, int register, int pads) throws IOException {
 		switch (pads) {
-		case 0:
-			out.write(0xFF & (register >> 16));
-			out.write(0xFF & (register >> 8));
-			out.write(0xFF & (register >> 0));
-			break;
-			
-		case 1:
-			out.write(0xFF & (register >> 16));
-			out.write(0xFF & (register >> 8));
-			break;
-			
-		case 2:
-			out.write(0xFF & (register >> 16));
+			case 0 :
+				out.write(0xFF & (register >> 16));
+				out.write(0xFF & (register >> 8));
+				out.write(0xFF & (register >> 0));
+				break;
+
+			case 1 :
+				out.write(0xFF & (register >> 16));
+				out.write(0xFF & (register >> 8));
+				break;
+
+			case 2 :
+				out.write(0xFF & (register >> 16));
 		}
 	}
 
@@ -110,24 +106,24 @@ public class Base64 {
 		StringWriter sw = new StringWriter();
 		ByteArrayInputStream bin = new ByteArrayInputStream(data);
 		try {
-			encode(bin,sw);
-		} catch (IOException e) {
+			encode(bin, sw);
+		}
+		catch (IOException e) {
 			// can't happen
 		}
 		return sw.toString();
 	}
-	
 
 	public Object toData() {
 		return data;
 	}
 
 	public static void encode(InputStream in, Appendable sb) throws IOException {
-		//StringBuilder sb = new StringBuilder();
+		// StringBuilder sb = new StringBuilder();
 		int buf = 0;
 		int bits = 0;
 		int out = 0;
-		
+
 		while (true) {
 			if (bits >= 6) {
 				bits -= 6;

@@ -8,14 +8,13 @@ import aQute.libg.generics.*;
 
 public class TestEclipseRepo extends TestCase {
 
-    
-    public void testSimple() {
-        EclipseRepo er = new EclipseRepo();
-        Map<String, String> map = Create.map();
-        map.put("location", "test/eclipse");
-        map.put("name", "eclipse-test");
-        er.setProperties(map);
-        
-        System.err.println(er.list("*"));
-    }
+	public void testSimple() {
+		EclipseRepo er = new EclipseRepo();
+		Map<String,String> map = Create.map();
+		map.put("location", "test/eclipse");
+		map.put("name", "eclipse-test");
+		er.setProperties(map);
+
+		System.err.println(er.list("*"));
+	}
 }

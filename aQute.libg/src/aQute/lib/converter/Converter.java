@@ -12,16 +12,17 @@ import aQute.lib.base64.*;
  * conversion
  * 
  * @author aqute
- * 
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({
+		"unchecked", "rawtypes"
+})
 public class Converter {
 	public interface Hook {
 		Object convert(Type dest, Object o) throws Exception;
 	}
 
 	boolean			fatal	= true;
-	Map<Type, Hook>	hooks = new HashMap<Type, Converter.Hook>();
+	Map<Type,Hook>	hooks	= new HashMap<Type,Converter.Hook>();
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
@@ -34,14 +35,13 @@ public class Converter {
 		if (o == null)
 			return null; // compatible with any
 
-		
 		Hook hook = hooks.get(type);
-		if ( hook != null ) {
+		if (hook != null) {
 			Object value = hook.convert(type, o);
-			if ( value != null)
+			if (value != null)
 				return value;
 		}
-		
+
 		Class resultType = getRawClass(type);
 		Class< ? > actualType = o.getClass();
 
@@ -116,61 +116,47 @@ public class Converter {
 				return n.longValue() == 0 ? false : true;
 
 			resultType = Boolean.class;
+		} else if (resultType == byte.class || resultType == Byte.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.byteValue();
+			resultType = Byte.class;
+		} else if (resultType == char.class || resultType == Character.class) {
+			Number n = number(o);
+			if (n != null)
+				return (char) n.shortValue();
+			resultType = Character.class;
+		} else if (resultType == short.class || resultType == Short.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.shortValue();
+
+			resultType = Short.class;
+		} else if (resultType == int.class || resultType == Integer.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.intValue();
+
+			resultType = Integer.class;
+		} else if (resultType == long.class || resultType == Long.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.longValue();
+
+			resultType = Long.class;
+		} else if (resultType == float.class || resultType == Float.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.floatValue();
+
+			resultType = Float.class;
+		} else if (resultType == double.class || resultType == Double.class) {
+			Number n = number(o);
+			if (n != null)
+				return n.doubleValue();
+
+			resultType = Double.class;
 		}
-		else
-			if (resultType == byte.class || resultType == Byte.class) {
-				Number n = number(o);
-				if (n != null)
-					return n.byteValue();
-				resultType = Byte.class;
-			}
-			else
-				if (resultType == char.class || resultType == Character.class) {
-					Number n = number(o);
-					if (n != null)
-						return (char) n.shortValue();
-					resultType = Character.class;
-				}
-				else
-					if (resultType == short.class || resultType == Short.class) {
-						Number n = number(o);
-						if (n != null)
-							return n.shortValue();
-
-						resultType = Short.class;
-					}
-					else
-						if (resultType == int.class || resultType == Integer.class) {
-							Number n = number(o);
-							if (n != null)
-								return n.intValue();
-
-							resultType = Integer.class;
-						}
-						else
-							if (resultType == long.class || resultType == Long.class) {
-								Number n = number(o);
-								if (n != null)
-									return n.longValue();
-
-								resultType = Long.class;
-							}
-							else
-								if (resultType == float.class || resultType == Float.class) {
-									Number n = number(o);
-									if (n != null)
-										return n.floatValue();
-
-									resultType = Float.class;
-								}
-								else
-									if (resultType == double.class || resultType == Double.class) {
-										Number n = number(o);
-										if (n != null)
-											return n.doubleValue();
-
-										resultType = Double.class;
-									}
 
 		assert !resultType.isPrimitive();
 
@@ -193,15 +179,13 @@ public class Converter {
 				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
 			}
-			catch (Throwable t) {
-			}
+			catch (Throwable t) {}
 			try {
 				Method m = resultType.getMethod("valueOf", String.class);
 				if (Modifier.isStatic(m.getModifiers()))
 					return m.invoke(null, o.toString());
 			}
-			catch (Throwable t) {
-			}
+			catch (Throwable t) {}
 
 			if (resultType == Character.class && input.length() == 1)
 				return input.charAt(0);
@@ -236,7 +220,7 @@ public class Converter {
 
 		if (o instanceof Map) {
 			try {
-				Map<Object, Object> map = (Map) o;
+				Map<Object,Object> map = (Map) o;
 				Object instance = resultType.newInstance();
 				for (Map.Entry e : map.entrySet()) {
 					String key = (String) e.getKey();
@@ -276,35 +260,27 @@ public class Converter {
 		return null;
 	}
 
-	private Collection collection(Type collectionType, Class< ? extends Collection> rawClass,
-			Object o) throws Exception {
+	private Collection collection(Type collectionType, Class< ? extends Collection> rawClass, Object o)
+			throws Exception {
 		Collection collection;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(ArrayList.class))
 				collection = new ArrayList();
+			else if (rawClass.isAssignableFrom(HashSet.class))
+				collection = new HashSet();
+			else if (rawClass.isAssignableFrom(TreeSet.class))
+				collection = new TreeSet();
+			else if (rawClass.isAssignableFrom(LinkedList.class))
+				collection = new LinkedList();
+			else if (rawClass.isAssignableFrom(Vector.class))
+				collection = new Vector();
+			else if (rawClass.isAssignableFrom(Stack.class))
+				collection = new Stack();
+			else if (rawClass.isAssignableFrom(ConcurrentLinkedQueue.class))
+				collection = new ConcurrentLinkedQueue();
 			else
-				if (rawClass.isAssignableFrom(HashSet.class))
-					collection = new HashSet();
-				else
-					if (rawClass.isAssignableFrom(TreeSet.class))
-						collection = new TreeSet();
-					else
-						if (rawClass.isAssignableFrom(LinkedList.class))
-							collection = new LinkedList();
-						else
-							if (rawClass.isAssignableFrom(Vector.class))
-								collection = new Vector();
-							else
-								if (rawClass.isAssignableFrom(Stack.class))
-									collection = new Stack();
-								else
-									if (rawClass.isAssignableFrom(ConcurrentLinkedQueue.class))
-										collection = new ConcurrentLinkedQueue();
-									else
-										return (Collection) error("Cannot find a suitable collection for the collection interface "
-												+ rawClass);
-		}
-		else
+				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
+		} else
 			collection = rawClass.newInstance();
 
 		Type subType = Object.class;
@@ -321,22 +297,18 @@ public class Converter {
 		return collection;
 	}
 
-	private Map map(Type mapType, Class< ? extends Map< ? , ? >> rawClass, Object o)
-			throws Exception {
+	private Map map(Type mapType, Class< ? extends Map< ? , ? >> rawClass, Object o) throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(HashMap.class))
 				result = new HashMap();
+			else if (rawClass.isAssignableFrom(TreeMap.class))
+				result = new TreeMap();
+			else if (rawClass.isAssignableFrom(ConcurrentHashMap.class))
+				result = new ConcurrentHashMap();
 			else
-				if (rawClass.isAssignableFrom(TreeMap.class))
-					result = new TreeMap();
-				else
-					if (rawClass.isAssignableFrom(ConcurrentHashMap.class))
-						result = new ConcurrentHashMap();
-					else
-						return (Map) error("Cannot find suitable map for map interface " + rawClass);
-		}
-		else
+				return (Map) error("Cannot find suitable map for map interface " + rawClass);
+		} else
 			result = rawClass.newInstance();
 
 		Map< ? , ? > input = toMap(o);
@@ -439,8 +411,7 @@ public class Converter {
 	public void setFatalIsException(boolean b) {
 		fatal = b;
 	}
-	
-	
+
 	public Converter hook(Type type, Hook hook) {
 		this.hooks.put(type, hook);
 		return this;

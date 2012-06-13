@@ -20,12 +20,10 @@ import aQute.libg.version.*;
 /**
  * JPM is the Java package manager. It manages a local repository in the user
  * home directory and/or a global directory. This class is the main entry point
- * for the command line.
- * 
- * This program maintains a repository, a list of installed commands, and a list
- * of installed services. It provides the commands to changes these resources.
- * All information is kept in a platform specific area. However, the layout of
- * this area is standardized.
+ * for the command line. This program maintains a repository, a list of
+ * installed commands, and a list of installed services. It provides the
+ * commands to changes these resources. All information is kept in a platform
+ * specific area. However, the layout of this area is standardized.
  * 
  * <pre>
  * 	platform/
@@ -56,8 +54,7 @@ public class JustAnotherPackageManager {
 	public final static String	VERSION_PATTERN		= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?";
 	public final static String	BSN_PATTERN			= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
 	public final static String	COMMAND_PATTERN		= "[\\w\\d]*";
-	static Pattern				DIGEST_PATTERN		= Pattern.compile("([\\w\\d]+)-Digest",
-															Pattern.CASE_INSENSITIVE);
+	static Pattern				DIGEST_PATTERN		= Pattern.compile("([\\w\\d]+)-Digest", Pattern.CASE_INSENSITIVE);
 	public final static String	MAINCLASS_PATTERN	= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*";
 
 	File						repoDir;
@@ -67,7 +64,7 @@ public class JustAnotherPackageManager {
 	Platform					platform;
 	FileRepo					repo;
 	Reporter					reporter;
-	final JSONCodec					codec = new JSONCodec();
+	final JSONCodec				codec				= new JSONCodec();
 
 	public JustAnotherPackageManager(Reporter reporter) {
 		this.reporter = reporter;
@@ -91,7 +88,8 @@ public class JustAnotherPackageManager {
 		try {
 			store("", file);
 			return true;
-		} catch( Exception e) {
+		}
+		catch (Exception e) {
 			return false;
 		}
 	}
@@ -111,7 +109,7 @@ public class JustAnotherPackageManager {
 	public List<ServiceData> getServices() throws Exception {
 		List<ServiceData> result = new ArrayList<ServiceData>();
 		for (File sdir : serviceDir.listFiles()) {
-			File dataFile = new File(sdir,"data");
+			File dataFile = new File(sdir, "data");
 			ServiceData data = getData(ServiceData.class, dataFile);
 			result.add(data);
 		}
@@ -173,8 +171,8 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Remove the JPM area.
-	 * @return 
 	 * 
+	 * @return
 	 * @throws Exception
 	 */
 
@@ -189,7 +187,6 @@ public class JustAnotherPackageManager {
 		delete(platform.getGlobal());
 		return null;
 	}
-
 
 	public File install(File source, String bsn, Version version) throws IOException {
 		File target = repo.put(bsn, version);
@@ -208,26 +205,26 @@ public class JustAnotherPackageManager {
 		data.sdir = new File(serviceDir, data.name);
 		data.sdir.mkdirs();
 		data.lock = new File(data.sdir, "lock");
-		if ( data.work == null)
+		if (data.work == null)
 			data.work = new File(data.sdir, "work");
 		data.work.mkdir();
-		if ( data.log == null)
+		if (data.log == null)
 			data.log = new File(data.sdir, "log");
-		
+
 		data.log.mkdir();
-		
+
 		if (Data.validate(data) != null)
-			 return "Invalid service data: " + Data.validate(data);
+			return "Invalid service data: " + Data.validate(data);
 
 		File service = repo.get("biz.aQute.jpm.service", null, 1);
-		if (service == null) 
-			throw new RuntimeException("Missing biz.aQute.jpm.service in repo, should have been installed by init, try reiniting");
+		if (service == null)
+			throw new RuntimeException(
+					"Missing biz.aQute.jpm.service in repo, should have been installed by init, try reiniting");
 
-		data.path = data.repoFile.getAbsolutePath() + File.pathSeparator
-				+ service.getAbsolutePath();
+		data.path = data.repoFile.getAbsolutePath() + File.pathSeparator + service.getAbsolutePath();
 
-		String s= platform.createService(data);
-		if ( s == null)
+		String s = platform.createService(data);
+		if (s == null)
 			storeData(new File(data.sdir, "data"), data);
 		return s;
 	}
@@ -240,9 +237,9 @@ public class JustAnotherPackageManager {
 	 */
 	public String createCommand(CommandData data) throws Exception, IOException {
 		if (Data.validate(data) != null)
-			 return "Invalid command data: " + Data.validate(data);
-		String s= platform.createCommand(data);
-		if ( s == null)
+			return "Invalid command data: " + Data.validate(data);
+		String s = platform.createCommand(data);
+		if (s == null)
 			storeData(new File(commandDir, data.name), data);
 		return s;
 	}
@@ -250,9 +247,9 @@ public class JustAnotherPackageManager {
 	public Service getService(String service) throws Exception {
 		File base = new File(serviceDir, service);
 		File dataFile = new File(base, "data");
-		if ( !dataFile.isFile())
+		if (!dataFile.isFile())
 			return null;
-		
+
 		ServiceData data = getData(ServiceData.class, dataFile);
 		return new Service(this, data);
 	}
@@ -265,7 +262,9 @@ public class JustAnotherPackageManager {
 	 */
 	public String verify(JarFile jar, String[] algorithms) throws IOException {
 		if (algorithms == null)
-			algorithms = new String[] { "MD5", "SHA1" };
+			algorithms = new String[] {
+					"MD5", "SHA1"
+			};
 		else if (algorithms.length == 1 && algorithms[0].equals("-"))
 			return null;
 
@@ -294,19 +293,20 @@ public class JustAnotherPackageManager {
 							return "Invalid digest for " + je.getName() + ", " + expected + " != "
 									+ Base64.encodeBase64(md.digest());
 
-					} catch (NoSuchAlgorithmException nsae) {
+					}
+					catch (NoSuchAlgorithmException nsae) {
 						return "Missing digest algorithm " + algorithm;
 					}
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return "Failed to verify due to exception: " + e.getMessage();
 		}
 		return null;
 	}
 
 	/**
-	 * 
 	 * @param clazz
 	 * @param dataFile
 	 * @return

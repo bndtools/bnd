@@ -6,9 +6,9 @@ public class MetatypeTests {
 
 	public static Test suite() {
 		TestSuite suite = new TestSuite(MetatypeTests.class.getName());
-		//$JUnit-BEGIN$
+		// $JUnit-BEGIN$
 		suite.addTestSuite(test.metatype.MetatypeTest.class);
-		//$JUnit-END$
+		// $JUnit-END$
 		return suite;
 	}
 

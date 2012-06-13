@@ -21,7 +21,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	String		passphrase;
 	Reporter	reporter;
 
-	public void setProperties(Map<String, String> map) {
+	public void setProperties(Map<String,String> map) {
 		repository = map.get("repository");
 		url = map.get("url");
 		passphrase = map.get("passphrase");
@@ -41,10 +41,9 @@ public class MavenDeploy implements Deploy, Plugin {
 	/**
 	 */
 	public boolean deploy(Project project, Jar original) throws Exception {
-		Parameters deploy = project.parseHeader(project
-				.getProperty(Constants.DEPLOY));
+		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
 
-		Map<String, String> maven = deploy.get(repository);
+		Map<String,String> maven = deploy.get(repository);
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
@@ -66,8 +65,8 @@ public class MavenDeploy implements Deploy, Plugin {
 			Jar src = new Jar("src");
 			try {
 				split(original, main, src);
-				Parameters exports = project.parseHeader(manifest
-						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+				Parameters exports = project.parseHeader(manifest.getMainAttributes()
+						.getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				jdoc.mkdirs();
 				project.progress("Generating Javadoc for: " + exports.keySet());
@@ -86,7 +85,8 @@ public class MavenDeploy implements Deploy, Plugin {
 				project.progress("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
-			} finally {
+			}
+			finally {
 				main.close();
 				src.close();
 			}
@@ -95,7 +95,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	}
 
 	private void split(Jar original, Jar main, Jar src) {
-		for (Map.Entry<String, Resource> e : original.getResources().entrySet()) {
+		for (Map.Entry<String,Resource> e : original.getResources().entrySet()) {
 			String path = e.getKey();
 			if (path.startsWith("OSGI-OPT/src/")) {
 				src.putResource(path.substring("OSGI-OPT/src/".length()), e.getValue());
@@ -114,8 +114,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	// -Dfile=/Ws/bnd/biz.aQute.bndlib/tmp/biz.aQute.bndlib.jar \
 	// -Dpassphrase=a1k3v3t5x3
 
-	private void maven_gpg_sign_and_deploy(Project b, File file, String classifier, File pomFile)
-			throws Exception {
+	private void maven_gpg_sign_and_deploy(Project b, File file, String classifier, File pomFile) throws Exception {
 		Command command = new Command();
 		command.setTrace();
 		command.add(b.getProperty("mvn", "mvn"));
@@ -134,8 +133,8 @@ public class MavenDeploy implements Deploy, Plugin {
 
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
-			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository,
-					file, "" + stdout + stderr);
+			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file, "" + stdout
+					+ stderr);
 		}
 	}
 
@@ -148,12 +147,12 @@ public class MavenDeploy implements Deploy, Plugin {
 
 	private Jar javadoc(File tmp, Project b, Set<String> exports) throws Exception {
 		Command command = new Command();
-		
+
 		command.add(b.getProperty("javadoc", "javadoc"));
 		command.add("-d");
 		command.add(tmp.getAbsolutePath());
 		command.add("-sourcepath");
-		command.add( Processor.join(b.getSourcePath(),File.pathSeparator));
+		command.add(Processor.join(b.getSourcePath(), File.pathSeparator));
 
 		for (String packageName : exports) {
 			command.add(packageName);
@@ -178,7 +177,8 @@ public class MavenDeploy implements Deploy, Plugin {
 		OutputStream out = new FileOutputStream(f);
 		try {
 			r.write(out);
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 		return f;

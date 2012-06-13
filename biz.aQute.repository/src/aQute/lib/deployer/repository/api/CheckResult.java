@@ -4,12 +4,12 @@ import static aQute.lib.deployer.repository.api.Decision.*;
 
 public class CheckResult {
 
-	private Decision decision;
-	private String message;
-	private Throwable exception;
-	
+	private Decision	decision;
+	private String		message;
+	private Throwable	exception;
+
 	public static CheckResult fromBool(boolean match, String matchMsg, String unmatchedMsg, Throwable exception) {
-		return new CheckResult(match ? accept : reject, match ? matchMsg : unmatchedMsg	, exception);
+		return new CheckResult(match ? accept : reject, match ? matchMsg : unmatchedMsg, exception);
 	}
 
 	public CheckResult(Decision decision, String message, Throwable exception) {

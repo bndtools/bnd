@@ -1,27 +1,22 @@
 package test.http;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
-import org.eclipse.jetty.http.HttpHeaders;
-import org.eclipse.jetty.http.HttpMethods;
-import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.io.Buffer;
-import org.eclipse.jetty.io.WriterOutputStream;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.http.*;
+import org.eclipse.jetty.io.*;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.*;
+import org.eclipse.jetty.util.resource.*;
 
 public class ETaggingResourceHandler extends ResourceHandler {
 
-	MimeTypes _mimeTypes = new MimeTypes();
+	MimeTypes	_mimeTypes	= new MimeTypes();
 
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
 		if (baseRequest.isHandled())
 			return;
 
@@ -85,7 +80,8 @@ public class ETaggingResourceHandler extends ResourceHandler {
 		OutputStream out = null;
 		try {
 			out = response.getOutputStream();
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			out = new WriterOutputStream(response.getWriter());
 		}
 		resource.writeTo(out, 0, resource.length());

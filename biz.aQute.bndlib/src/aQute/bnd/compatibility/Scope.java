@@ -4,20 +4,20 @@ import java.io.*;
 import java.util.*;
 
 public class Scope {
-	final Map<String, Scope>	children	= new LinkedHashMap<String, Scope>();
+	final Map<String,Scope>	children	= new LinkedHashMap<String,Scope>();
 
 	// class: slashed name
 	// field: name ":" typed
 	// constructor: ":(" typed* ")" typed
 	// method: name ":(" typed* ")" typed
-	final String				name;
+	final String			name;
 
-	Access						access;
-	Kind						kind;
-	Scope						enclosing;
-	Scope						declaring;
-	GenericParameter						typeVars[];
-	Map<String, String[]>		name2bounds;
+	Access					access;
+	Kind					kind;
+	Scope					enclosing;
+	Scope					declaring;
+	GenericParameter		typeVars[];
+	Map<String,String[]>	name2bounds;
 
 	// class: super
 	// field: type
@@ -28,11 +28,11 @@ public class Scope {
 	// class: interfaces
 	// constructor: args
 	// method: args
-	GenericType[]				parameters;
+	GenericType[]			parameters;
 
 	// constructor: exceptions
 	// method: exceptions
-	GenericType[]				exceptions;
+	GenericType[]			exceptions;
 
 	// class: super interfaces*
 	// field: type
@@ -70,10 +70,10 @@ public class Scope {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		
-		if ( typeVars != null && typeVars.length !=0) {
+
+		if (typeVars != null && typeVars.length != 0) {
 			sb.append("<");
-			for ( GenericParameter v : typeVars) {
+			for (GenericParameter v : typeVars) {
 				sb.append(v);
 			}
 			sb.append(">");
@@ -81,8 +81,8 @@ public class Scope {
 		sb.append(access.toString());
 		sb.append(" ");
 		sb.append(kind.toString());
-		sb.append( " ");
-		sb.append( name );
+		sb.append(" ");
+		sb.append(name);
 		return sb.toString();
 	}
 
@@ -124,7 +124,7 @@ public class Scope {
 	}
 
 	static public String classIdentity(String name2) {
-		return name2.replace('.','/');
+		return name2.replace('.', '/');
 	}
 
 	static public String methodIdentity(String name, String descriptor) {
@@ -140,18 +140,18 @@ public class Scope {
 	}
 
 	public void cleanRoot() {
-		Iterator<Map.Entry<String, Scope>> i = children.entrySet().iterator();
+		Iterator<Map.Entry<String,Scope>> i = children.entrySet().iterator();
 		while (i.hasNext()) {
-			Map.Entry<String, Scope> entry = i.next();
+			Map.Entry<String,Scope> entry = i.next();
 			if (!entry.getValue().isTop())
 				i.remove();
 		}
 	}
 
 	public void prune(EnumSet<Access> level) {
-		Iterator<Map.Entry<String, Scope>> i = children.entrySet().iterator();
+		Iterator<Map.Entry<String,Scope>> i = children.entrySet().iterator();
 		while (i.hasNext()) {
-			Map.Entry<String, Scope> entry = i.next();
+			Map.Entry<String,Scope> entry = i.next();
 			if (!level.contains(entry.getValue().access))
 				i.remove();
 			else

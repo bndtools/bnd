@@ -9,16 +9,15 @@ public class RuntimeSignatureBuilder {
 		this.root = root;
 	}
 
-	static public String identity(Class<?> c) {
+	static public String identity(Class< ? > c) {
 		return Scope.classIdentity(c.getName());
 	}
 
 	static public String identity(Method m) {
-		return Scope.methodIdentity(m.getName(), getDescriptor(m.getReturnType(), m
-				.getParameterTypes()));
+		return Scope.methodIdentity(m.getName(), getDescriptor(m.getReturnType(), m.getParameterTypes()));
 	}
 
-	static public String identity(Constructor<?> m) {
+	static public String identity(Constructor< ? > m) {
 		return Scope.constructorIdentity(getDescriptor(void.class, m.getParameterTypes()));
 	}
 
@@ -26,11 +25,11 @@ public class RuntimeSignatureBuilder {
 		return Scope.fieldIdentity(m.getName(), getDescriptor(m.getType(), null));
 	}
 
-	static public String getDescriptor(Class<?> base, Class<?>[] parameters) {
+	static public String getDescriptor(Class< ? > base, Class< ? >[] parameters) {
 		StringBuilder sb = new StringBuilder();
 		if (parameters != null) {
 			sb.append("(");
-			for (Class<?> parameter : parameters) {
+			for (Class< ? > parameter : parameters) {
 				sb.append(getDescriptor(parameter));
 			}
 			sb.append(")");
@@ -39,9 +38,9 @@ public class RuntimeSignatureBuilder {
 		return sb.toString();
 	}
 
-	public Scope add(Class<?> c) {
-		Scope local = add(root, getEnclosingScope(c), c.getModifiers(), c.getTypeParameters(),
-				Kind.CLASS, identity(c), c.getGenericSuperclass(), c.getGenericInterfaces(), null);
+	public Scope add(Class< ? > c) {
+		Scope local = add(root, getEnclosingScope(c), c.getModifiers(), c.getTypeParameters(), Kind.CLASS, identity(c),
+				c.getGenericSuperclass(), c.getGenericInterfaces(), null);
 
 		for (Field f : c.getDeclaredFields()) {
 			add(local, // declaring scope
@@ -56,7 +55,7 @@ public class RuntimeSignatureBuilder {
 			);
 		}
 
-		for (Constructor<?> constr : c.getConstructors()) {
+		for (Constructor< ? > constr : c.getConstructors()) {
 			add(local, // class scope
 					local, // enclosing
 					constr.getModifiers(), // access modifiers
@@ -86,20 +85,20 @@ public class RuntimeSignatureBuilder {
 		return local;
 	}
 
-	private Scope getEnclosingScope(Class<?> c) {
+	private Scope getEnclosingScope(Class< ? > c) {
 		Method m = c.getEnclosingMethod();
 		if (m != null) {
 			Scope s = getGlobalScope(m.getDeclaringClass());
 			return s.getScope(identity(m));
 		}
-// TODO
-//		Constructor cnstr = c.getEnclosingConstructor();
-//		if (m != null) {
-//			Scope s = getGlobalScope(cnstr.getDeclaringClass());
-//			return s.getScope(identity(cnstr));
-//
-//		}
-		Class<?> enclosingClass = c.getEnclosingClass();
+		// TODO
+		// Constructor cnstr = c.getEnclosingConstructor();
+		// if (m != null) {
+		// Scope s = getGlobalScope(cnstr.getDeclaringClass());
+		// return s.getScope(identity(cnstr));
+		//
+		// }
+		Class< ? > enclosingClass = c.getEnclosingClass();
 		if (enclosingClass != null) {
 			return getGlobalScope(enclosingClass);
 		}
@@ -107,23 +106,22 @@ public class RuntimeSignatureBuilder {
 		return null;
 	}
 
-	private Scope getGlobalScope(Class<?> c) {
+	private Scope getGlobalScope(Class< ? > c) {
 		if (c == null)
 			return null;
 		String id = identity(c);
 		return root.getScope(id);
 	}
 
-	private Scope add(Scope declaring, Scope enclosing, int modifiers,
-			TypeVariable<?>[] typeVariables, Kind kind, String id, Type mainType,
-			Type[] parameterTypes, Type exceptionTypes[]) {
+	private Scope add(Scope declaring, Scope enclosing, int modifiers, TypeVariable< ? >[] typeVariables, Kind kind,
+			String id, Type mainType, Type[] parameterTypes, Type exceptionTypes[]) {
 
 		Scope scope = declaring.getScope(id);
 		assert scope.access == Access.UNKNOWN;
 		scope.setAccess(Access.modifier(modifiers));
 		scope.setKind(kind);
 		scope.setGenericParameter(convert(typeVariables));
-		scope.setBase(convert(scope,mainType));
+		scope.setBase(convert(scope, mainType));
 		scope.setParameterTypes(convert(parameterTypes));
 		scope.setExceptionTypes(convert(exceptionTypes));
 		scope.setDeclaring(declaring);
@@ -135,32 +133,32 @@ public class RuntimeSignatureBuilder {
 		if (t instanceof ParameterizedType) {
 			// C<P..>
 			ParameterizedType pt = (ParameterizedType) t;
-			/*Scope reference =*/ root.getScope(identity((Class<?>)pt.getRawType()));			
+			/* Scope reference = */root.getScope(identity((Class< ? >) pt.getRawType()));
 			Type args[] = pt.getActualTypeArguments();
 			GenericType[] arguments = new GenericType[args.length];
 			int n = 0;
 			for (Type arg : args)
-				arguments[n++] = convert(source,arg);
-//			return new GenericType(reference,null,arguments);
-			
+				arguments[n++] = convert(source, arg);
+			// return new GenericType(reference,null,arguments);
+
 		} else if (t instanceof TypeVariable) {
-//			TypeVariable tv = (TypeVariable) t;
-//			return new GenericType(source,tv.getName(), null);
+			// TypeVariable tv = (TypeVariable) t;
+			// return new GenericType(source,tv.getName(), null);
 		} else if (t instanceof WildcardType) {
-//			WildcardType wc = (WildcardType) t;
-//			wc.
+			// WildcardType wc = (WildcardType) t;
+			// wc.
 		} else if (t instanceof GenericArrayType) {
 
 		}
-		if (t instanceof Class<?>) {
-//			raw = ((Class<?>) t).getName() + ";";
+		if (t instanceof Class< ? >) {
+			// raw = ((Class<?>) t).getName() + ";";
 		} else
 			throw new IllegalArgumentException(t.toString());
 
 		return null;
 	}
 
-	private GenericParameter[] convert(TypeVariable<?> vars[]) {
+	private GenericParameter[] convert(TypeVariable< ? > vars[]) {
 		if (vars == null)
 			return null;
 
@@ -178,12 +176,12 @@ public class RuntimeSignatureBuilder {
 
 		GenericType tss[] = new GenericType[parameterTypes.length];
 		for (int i = 0; i < parameterTypes.length; i++) {
-			//tss[i] = new GenericType(parameterTypes[i]);
+			// tss[i] = new GenericType(parameterTypes[i]);
 		}
 		return tss;
 	}
 
-	private static String getDescriptor(Class<?> c) {
+	private static String getDescriptor(Class< ? > c) {
 		StringBuilder sb = new StringBuilder();
 		if (c.isPrimitive()) {
 			if (c == boolean.class)

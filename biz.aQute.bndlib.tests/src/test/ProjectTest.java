@@ -14,7 +14,7 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
-	
+
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
@@ -33,21 +33,22 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test 2 equal bsns but diff. versions
 	 */
-	
+
 	public void testSameBsnRunBundles() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
-		top.setProperty("-runbundles", "org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
+		top.setProperty("-runbundles",
+				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
 		Collection<Container> runbundles = top.getRunbundles();
 		assertTrue(top.check());
 		assertNotNull(runbundles);
 		assertEquals(2, runbundles.size());
 	}
-	
+
 	/**
 	 * Duplicates in runbundles gave a bad error, should be ignored
 	 */
-	
+
 	public void testRunbundleDuplicates() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
@@ -58,12 +59,11 @@ public class ProjectTest extends TestCase {
 		assertNotNull(runbundles);
 		assertEquals(1, runbundles.size());
 	}
-	
-	
+
 	/**
 	 * Check isStale
 	 */
-	
+
 	public void testIsStale() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p-stale");
@@ -72,43 +72,39 @@ public class ProjectTest extends TestCase {
 		Project bottom = ws.getProject("p-stale-dep");
 		assertNotNull(bottom);
 		bottom.build();
-		
+
 		long lastModified = bottom.lastModified();
-		top.getPropertiesFile().setLastModified(lastModified+1000);
-		
-		stale(top,true);
-		stale(bottom,true);
+		top.getPropertiesFile().setLastModified(lastModified + 1000);
+
+		stale(top, true);
+		stale(bottom, true);
 		assertTrue(top.isStale());
 		assertTrue(bottom.isStale());
-		
+
 		stale(top, false);
 		stale(bottom, true);
 		assertTrue(top.isStale());
 		assertTrue(bottom.isStale());
-		
+
 		stale(top, true);
 		stale(bottom, false);
 		assertTrue(top.isStale());
 		assertFalse(bottom.isStale());
-		
-//		Thread.sleep(1000);
-//		stale(top, false);
-//		stale(bottom, false);
-//		assertFalse(top.isStale());
-//		assertFalse(bottom.isStale());
+
+		// Thread.sleep(1000);
+		// stale(top, false);
+		// stale(bottom, false);
+		// assertFalse(top.isStale());
+		// assertFalse(bottom.isStale());
 	}
-	
-	
-	
+
 	private void stale(Project project, boolean b) throws Exception {
 		File file = project.getBuildFiles(false)[0];
-		if ( b ) 
-			file.setLastModified(project.lastModified()-10000);
+		if (b)
+			file.setLastModified(project.lastModified() - 10000);
 		else
-			file.setLastModified(project.lastModified()+10000);
+			file.setLastModified(project.lastModified() + 10000);
 	}
-
-
 
 	/**
 	 * Check multiple repos
@@ -118,12 +114,9 @@ public class ProjectTest extends TestCase {
 	public void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
-				Strategy.EXACT, null));
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
-				Strategy.HIGHEST, null));
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0",
-				Strategy.LOWEST, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
 	}
 
 	/**
@@ -134,7 +127,7 @@ public class ProjectTest extends TestCase {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p4-sub");
 
-		Collection<? extends Builder> bs = project.getSubBuilders();
+		Collection< ? extends Builder> bs = project.getSubBuilders();
 		assertNotNull(bs);
 		assertEquals(3, bs.size());
 		Set<String> names = new HashSet<String>();
@@ -146,8 +139,8 @@ public class ProjectTest extends TestCase {
 		assertTrue(names.contains("p4-sub.c"));
 
 		File[] files = project.build();
-		assertTrue( project.check());
-		
+		assertTrue(project.check());
+
 		System.err.println(Processor.join(project.getErrors(), "\n"));
 		System.err.println(Processor.join(project.getWarnings(), "\n"));
 		assertEquals(0, project.getErrors().size());
@@ -221,7 +214,8 @@ public class ProjectTest extends TestCase {
 			files = project.build();
 			assertEquals(1, files.length);
 			assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
-		} finally {
+		}
+		finally {
 			project.clean();
 		}
 	}
@@ -277,7 +271,8 @@ public class ProjectTest extends TestCase {
 			assertEquals(0, newv.getMicro());
 			assertEquals(size, project.getProperties().size());
 			assertEquals("sometime", newv.getQualifier());
-		} finally {
+		}
+		finally {
 			IO.delete(tmp);
 		}
 	}
@@ -295,23 +290,23 @@ public class ProjectTest extends TestCase {
 			Project project = ws.getProject("bump-included");
 			project.setTrace(true);
 			Version old = new Version(project.getProperty("Bundle-Version"));
-			assertEquals( new Version(1,0,0), old);
+			assertEquals(new Version(1, 0, 0), old);
 			project.bump("=+0");
-			
+
 			Processor processor = new Processor();
 			processor.setProperties(project.getFile("include.txt"));
-			
-			
+
 			Version newv = new Version(processor.getProperty("Bundle-Version"));
 			System.err.println("New version " + newv);
 			assertEquals(1, newv.getMajor());
 			assertEquals(1, newv.getMinor());
 			assertEquals(0, newv.getMicro());
-		} finally {
+		}
+		finally {
 			IO.delete(tmp);
 		}
 	}
-	
+
 	public void testBumpSubBuilders() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
@@ -324,20 +319,22 @@ public class ProjectTest extends TestCase {
 			Workspace ws = Workspace.getWorkspace(tmp);
 			Project project = ws.getProject("bump-sub");
 			project.setTrace(true);
-			
-			assertNull( project.getProperty("Bundle-Version"));
-			
-			project.bump("=+0");
-			
-			assertNull( project.getProperty("Bundle-Version"));
 
-			for ( Builder b : project.getSubBuilders()) {
-				assertEquals( new Version(1,1,0), new Version(b.getVersion()));
+			assertNull(project.getProperty("Bundle-Version"));
+
+			project.bump("=+0");
+
+			assertNull(project.getProperty("Bundle-Version"));
+
+			for (Builder b : project.getSubBuilders()) {
+				assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
 			}
-		} finally {
+		}
+		finally {
 			IO.delete(tmp);
 		}
 	}
+
 	public void testRunBuilds() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 

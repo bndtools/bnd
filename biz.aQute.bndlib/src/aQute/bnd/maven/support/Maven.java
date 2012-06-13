@@ -12,25 +12,27 @@ import java.util.regex.*;
  */
 public class Maven {
 	final File						userHome	= new File(System.getProperty("user.home"));
-	final Map<String, MavenEntry>	entries		= new ConcurrentHashMap<String, MavenEntry>();
-	final static String[]			ALGORITHMS	= { "md5", "sha1" };
+	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
+	final static String[]			ALGORITHMS	= {
+			"md5", "sha1"
+												};
 	boolean							usecache	= false;
 	final Executor					executor;
 	File							m2			= new File(userHome, ".m2");
 	File							repository	= new File(m2, "repository");
 
 	public Maven(Executor executor) {
-		if ( executor == null)
+		if (executor == null)
 			this.executor = Executors.newCachedThreadPool();
 		else
 			this.executor = executor;
 	}
-	
-	//http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
-	
-	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
-	public CachedPom getPom(String groupId, String artifactId, String version, URI... extra)
-			throws Exception {		
+
+	// http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
+
+	static Pattern	MAVEN_RANGE	= Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
+
+	public CachedPom getPom(String groupId, String artifactId, String version, URI... extra) throws Exception {
 		MavenEntry entry = getEntry(groupId, artifactId, version);
 		return entry.getPom(extra);
 	}
@@ -59,8 +61,7 @@ public class Maven {
 	}
 
 	private String path(String groupId, String artifactId, String version) {
-		return groupId.replace('.', '/') + '/' + artifactId + '/' + version + "/" + artifactId
-				+ "-" + version;
+		return groupId.replace('.', '/') + '/' + artifactId + '/' + version + "/" + artifactId + "-" + version;
 	}
 
 	public void schedule(Runnable runnable) {
@@ -82,7 +83,7 @@ public class Maven {
 
 	public void setM2(File dir) {
 		this.m2 = dir;
-		this.repository = new File(dir,"repository");
+		this.repository = new File(dir, "repository");
 	}
 
 }

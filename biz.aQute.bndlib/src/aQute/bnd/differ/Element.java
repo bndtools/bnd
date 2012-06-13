@@ -37,8 +37,7 @@ class Element implements Comparable<Element>, Tree {
 		this(type, name, Arrays.asList(children), Delta.MINOR, Delta.MAJOR, null);
 	}
 
-	Element(Type type, String name, Collection<? extends Element> children, Delta add,
-			Delta remove, String comment) {
+	Element(Type type, String name, Collection< ? extends Element> children, Delta add, Delta remove, String comment) {
 		this.type = type;
 		this.name = name;
 		this.add = add;
@@ -66,6 +65,7 @@ class Element implements Comparable<Element>, Tree {
 			Arrays.sort(this.children);
 		}
 	}
+
 	public Data serialize() {
 		Data data = new Data();
 		data.type = this.type;
@@ -135,10 +135,9 @@ class Element implements Comparable<Element>, Tree {
 		}
 		return null;
 	}
-	
+
 	public String toString() {
 		return type + " " + name + " (" + add + "/" + remove + ")";
 	}
-
 
 }

@@ -9,34 +9,34 @@ import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 
 public class Make {
-	Builder									builder;
-	Map<Instruction, Map<String, String>>	make;
+	Builder								builder;
+	Map<Instruction,Map<String,String>>	make;
 
 	public Make(Builder builder) {
 		this.builder = builder;
 	}
 
 	public Resource process(String source) {
-		Map<Instruction, Map<String, String>> make = getMakeHeader();
+		Map<Instruction,Map<String,String>> make = getMakeHeader();
 		builder.trace("make " + source);
 
-		for (Map.Entry<Instruction, Map<String, String>> entry : make.entrySet()) {
+		for (Map.Entry<Instruction,Map<String,String>> entry : make.entrySet()) {
 			Instruction instr = entry.getKey();
 			Matcher m = instr.getMatcher(source);
 			if (m.matches() || instr.isNegated()) {
-				Map<String, String> arguments = replace(m, entry.getValue());
+				Map<String,String> arguments = replace(m, entry.getValue());
 				List<MakePlugin> plugins = builder.getPlugins(MakePlugin.class);
 				for (MakePlugin plugin : plugins) {
 					try {
 						Resource resource = plugin.make(builder, source, arguments);
 						if (resource != null) {
-							builder.trace("Made " + source + " from args " + arguments + " with "
-									+ plugin);
+							builder.trace("Made " + source + " from args " + arguments + " with " + plugin);
 							return resource;
 						}
-					} catch (Exception e) {
-						builder.error("Plugin " + plugin + " generates error when use in making "
-								+ source + " with args " + arguments, e);
+					}
+					catch (Exception e) {
+						builder.error("Plugin " + plugin + " generates error when use in making " + source
+								+ " with args " + arguments, e);
 					}
 				}
 			}
@@ -44,9 +44,9 @@ public class Make {
 		return null;
 	}
 
-	private Map<String, String> replace(Matcher m, Map<String, String> value) {
-		Map<String, String> newArgs = Processor.newMap();
-		for (Map.Entry<String, String> entry : value.entrySet()) {
+	private Map<String,String> replace(Matcher m, Map<String,String> value) {
+		Map<String,String> newArgs = Processor.newMap();
+		for (Map.Entry<String,String> entry : value.entrySet()) {
 			String s = entry.getValue();
 			s = replace(m, s);
 			newArgs.put(entry.getKey(), s);
@@ -77,15 +77,15 @@ public class Make {
 		return sb.toString();
 	}
 
-	Map<Instruction, Map<String, String>> getMakeHeader() {
+	Map<Instruction,Map<String,String>> getMakeHeader() {
 		if (make != null)
 			return make;
 		make = Processor.newMap();
 
 		String s = builder.getProperty(Builder.MAKE);
 		Parameters make = builder.parseHeader(s);
-		
-		for (Entry<String, Attrs> entry : make.entrySet()) {
+
+		for (Entry<String,Attrs> entry : make.entrySet()) {
 			String pattern = Processor.removeDuplicateMarker(entry.getKey());
 
 			Instruction instr = new Instruction(pattern);

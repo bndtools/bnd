@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-
 package aQute.libg.reporter;
 
 import java.io.*;
 
 public interface Messages {
 	static public class ERROR {}
+
 	static public class WARNING {}
 
 	ERROR NoSuchFile_(File f);
+
 	ERROR Unexpected_Error_(String context, Exception e);
 
 }

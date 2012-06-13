@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package aQute.lib.osgi;
 
 import aQute.libg.reporter.*;

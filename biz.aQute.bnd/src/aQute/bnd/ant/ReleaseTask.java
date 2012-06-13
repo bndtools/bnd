@@ -1,17 +1,26 @@
 package aQute.bnd.ant;
 
-import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 
 /**
- * <p>ANT task to release into a repository, equivalent to: <code>&lt;bnd command="release"/&gt;</code></p>
- * <p>To release into the <em>default</em> repository (defined by <code>-releaserepo</code> in <code>build.bnd</code>):</p>
+ * <p>
+ * ANT task to release into a repository, equivalent to:
+ * <code>&lt;bnd command="release"/&gt;</code>
+ * </p>
+ * <p>
+ * To release into the <em>default</em> repository (defined by
+ * <code>-releaserepo</code> in <code>build.bnd</code>):
+ * </p>
+ * 
  * <pre>
  *    &lt;bndrelease/&gt;
  * </pre>
- * <p>To release into a specific named repository:
+ * <p>
+ * To release into a specific named repository:
+ * 
  * <pre>
  *    &lt;bndrelease releaserepo="My Repository"/&gt;
  * </pre>
@@ -21,7 +30,7 @@ import aQute.bnd.build.Workspace;
  */
 public class ReleaseTask extends BaseTask {
 
-	String releaseRepo = null;
+	String	releaseRepo	= null;
 
 	public void execute() throws BuildException {
 		try {
@@ -30,7 +39,8 @@ public class ReleaseTask extends BaseTask {
 
 			if (report(project))
 				throw new BuildException("Release failed");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}

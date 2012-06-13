@@ -18,7 +18,7 @@ public class Tag {
 																							// of
 																							// the
 																							// tag
-	Hashtable<String, String>	attributes	= new Hashtable<String, String>();				// Attributes
+	Hashtable<String,String>	attributes	= new Hashtable<String,String>();				// Attributes
 																							// name
 																							// ->
 																							// value
@@ -38,7 +38,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Hashtable<String, String> attributes) {
+	public Tag(String name, Hashtable<String,String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -137,7 +137,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Dictionary<String, String> getAttributes() {
+	public Dictionary<String,String> getAttributes() {
 		return attributes;
 	}
 
@@ -273,7 +273,8 @@ public class Tag {
 						line = rdr.readLine();
 					}
 				}
-			} finally {
+			}
+			finally {
 				if (rdr != null) {
 					rdr.close();
 				}
@@ -281,7 +282,8 @@ public class Tag {
 					in.close();
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			System.err.println("Problems copying extra XML");
 		}
 	}
@@ -302,22 +304,22 @@ public class Tag {
 				pos = 0;
 			}
 			switch (c) {
-			case '<':
-				pw.print("&lt;");
-				pos += 4;
-				break;
-			case '>':
-				pw.print("&gt;");
-				pos += 4;
-				break;
-			case '&':
-				pw.print("&amp;");
-				pos += 5;
-				break;
-			default:
-				pw.print(c);
-				pos++;
-				break;
+				case '<' :
+					pw.print("&lt;");
+					pos += 4;
+					break;
+				case '>' :
+					pw.print("&gt;");
+					pos += 4;
+					break;
+				case '&' :
+					pw.print("&amp;");
+					pos += 5;
+					break;
+				default :
+					pw.print(c);
+					pos++;
+					break;
 			}
 
 		}
@@ -331,18 +333,18 @@ public class Tag {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			default:
-				sb.append(c);
-				break;
+				case '<' :
+					sb.append("&lt;");
+					break;
+				case '>' :
+					sb.append("&gt;");
+					break;
+				case '&' :
+					sb.append("&amp;");
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		return sb.toString();
@@ -437,10 +439,9 @@ public class Tag {
 		if (mapping == null) {
 			return tn == sn || (sn != null && sn.equals(tn));
 		} else {
-			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
-					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child
-					.findRecursiveAttribute("xmlns:" + tn);
+			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
+			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:"
+					+ tn);
 			return turi == suri || (turi != null && suri != null && turi.equals(suri));
 		}
 	}

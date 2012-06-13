@@ -17,20 +17,30 @@ public class DiffCommand {
 		this.bnd = bnd;
 	}
 
-	@Arguments(arg = { "newer file", "[older file]" }) interface diffOptions extends Options {
-		@Config(description = "Print the API") boolean api();
+	@Arguments(arg = {
+			"newer file", "[older file]"
+	})
+	interface diffOptions extends Options {
+		@Config(description = "Print the API")
+		boolean api();
 
-		@Config(description = "Print the Resources") boolean resources();
+		@Config(description = "Print the Resources")
+		boolean resources();
 
-		@Config(description = "Print the Manifest") boolean manifest();
+		@Config(description = "Print the Manifest")
+		boolean manifest();
 
-		@Config(description = "Show full tree") boolean full();
+		@Config(description = "Show full tree")
+		boolean full();
 
-		@Config(description = "Print difference as valid XML") boolean xml();
+		@Config(description = "Print difference as valid XML")
+		boolean xml();
 
-		@Config(description = "Where to send the output") File output();
+		@Config(description = "Where to send the output")
+		File output();
 
-		@Config(description = "Limit to these packages") Collection<String> pack();
+		@Config(description = "Limit to these packages")
+		Collection<String> pack();
 	}
 
 	public void diff(diffOptions options) throws Exception {
@@ -52,25 +62,24 @@ public class DiffCommand {
 				pw = new PrintWriter(bnd.out);
 			else
 				pw = new PrintWriter(fout);
-			
+
 			Instructions packageFilters = new Instructions(options.pack());
-			
+
 			Iterator<String> it = options._().iterator();
 			newer = bnd.getJar(it.next());
-			if ( newer == null)
+			if (newer == null)
 				return;
-		
+
 			older = bnd.getJar(it.next());
-			if ( older == null)
+			if (older == null)
 				return;
-			
+
 			Differ di = new DiffPluginImpl();
 			Tree n = di.tree(newer);
 			Tree o = di.tree(older);
 			Diff diff = n.diff(o);
-			
-			boolean all = options.api() == false && options.resources() == false
-					&& options.manifest() == false;
+
+			boolean all = options.api() == false && options.resources() == false && options.manifest() == false;
 			if (!options.xml()) {
 				if (all || options.api())
 					for (Diff packageDiff : diff.get("<api>").getChildren()) {
@@ -92,11 +101,12 @@ public class DiffCommand {
 					tag.addContent(getTagFrom(diff.get("<manifest>"), !options.full()));
 				if (all || options.resources())
 					tag.addContent(getTagFrom(diff.get("<resources>"), !options.full()));
-				
+
 				pw.println("<?xml version='1.0'?>");
 				tag.print(0, pw);
 			}
-		} finally {
+		}
+		finally {
 			if (older != null) {
 				older.close();
 			}
@@ -132,8 +142,7 @@ public class DiffCommand {
 			Differ di = new DiffPluginImpl();
 			Tree n = di.tree(newer);
 
-			boolean all = options.api() == false && options.resources() == false
-					&& options.manifest() == false;
+			boolean all = options.api() == false && options.resources() == false && options.manifest() == false;
 
 			if (all || options.api())
 				for (Tree packageDiff : n.get("<api>").getChildren()) {
@@ -145,7 +154,8 @@ public class DiffCommand {
 			if (all || options.resources())
 				show(pw, n.get("<resources>"), 0, !options.full());
 			pw.close();
-		} finally {
+		}
+		finally {
 			newer.close();
 		}
 

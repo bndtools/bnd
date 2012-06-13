@@ -19,42 +19,41 @@ import aQute.libg.header.*;
  * class is instantiated and cast to a LauncherPlugin. This plug in is then
  * asked to provide a ProjectLauncher. This project launcher is then used by the
  * project to run the code. Launchers must extend this class.
- * 
  */
 public abstract class ProjectLauncher {
-	private final Project				project;
-	private long						timeout				= 0;
+	private final Project		project;
+	private long				timeout				= 0;
 	private final List<String>	classpath			= new ArrayList<String>();
-	private List<String>				runbundles			= Create.list();
-	private final List<String>			runvm				= new ArrayList<String>();
-	private Map<String, String>			runproperties;
-	private Command						java;
-	private Parameters					runsystempackages;
-	private final List<String>			activators			= Create.list();
-	private File						storageDir;
-	private final List<String>			warnings			= Create.list();
-	private final List<String>			errors				= Create.list();
+	private List<String>		runbundles			= Create.list();
+	private final List<String>	runvm				= new ArrayList<String>();
+	private Map<String,String>	runproperties;
+	private Command				java;
+	private Parameters			runsystempackages;
+	private final List<String>	activators			= Create.list();
+	private File				storageDir;
+	private final List<String>	warnings			= Create.list();
+	private final List<String>	errors				= Create.list();
 
-	private boolean						trace;
-	private boolean						keep;
-	private int							framework;
+	private boolean				trace;
+	private boolean				keep;
+	private int					framework;
 
-	public final static int				SERVICES			= 10111;
-	public final static int				NONE				= 20123;
+	public final static int		SERVICES			= 10111;
+	public final static int		NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int				OK					= 0;
-	public final static int				WARNING				= -1;
-	public final static int				ERROR				= -2;
-	public final static int				TIMEDOUT			= -3;
-	public final static int				UPDATE_NEEDED		= -4;
-	public final static int				CANCELED			= -5;
-	public final static int				DUPLICATE_BUNDLE	= -6;
-	public final static int				RESOLVE_ERROR		= -7;
-	public final static int				ACTIVATOR_ERROR		= -8;
-	public final static int				CUSTOM_LAUNCHER		= -128;
+	public final static int		OK					= 0;
+	public final static int		WARNING				= -1;
+	public final static int		ERROR				= -2;
+	public final static int		TIMEDOUT			= -3;
+	public final static int		UPDATE_NEEDED		= -4;
+	public final static int		CANCELED			= -5;
+	public final static int		DUPLICATE_BUNDLE	= -6;
+	public final static int		RESOLVE_ERROR		= -7;
+	public final static int		ACTIVATOR_ERROR		= -8;
+	public final static int		CUSTOM_LAUNCHER		= -128;
 
-	public final static String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public final static String	EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
@@ -99,8 +98,7 @@ public abstract class ProjectLauncher {
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
 		// For backward compatibility with bndtools launcher
-		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty("-runfw"),
-				"-runfw");
+		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty("-runfw"), "-runfw");
 		runpath.addAll(fws);
 
 		for (Container c : runpath) {
@@ -127,8 +125,7 @@ public abstract class ProjectLauncher {
 
 	public void addClasspath(Container container) throws Exception {
 		if (container.getError() != null) {
-			project.error("Cannot launch because %s has reported %s", container.getProject(),
-					container.getError());
+			project.error("Cannot launch because %s has reported %s", container.getProject(), container.getError());
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
@@ -139,9 +136,9 @@ public abstract class ProjectLauncher {
 					Manifest manifest = m.getManifest();
 
 					if (manifest != null) {
-						Parameters exports = project.parseHeader(manifest.getMainAttributes()
-								.getValue(Constants.EXPORT_PACKAGE));
-						for (Entry<String, Attrs> e : exports.entrySet()) {
+						Parameters exports = project.parseHeader(manifest.getMainAttributes().getValue(
+								Constants.EXPORT_PACKAGE));
+						for (Entry<String,Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());
 						}
@@ -151,8 +148,7 @@ public abstract class ProjectLauncher {
 						// the framework is completely initialized wit the
 						// system
 						// context.
-						String activator = manifest.getMainAttributes()
-								.getValue(EMBEDDED_ACTIVATOR);
+						String activator = manifest.getMainAttributes().getValue(EMBEDDED_ACTIVATOR);
 						if (activator != null)
 							activators.add(activator);
 					}
@@ -189,7 +185,7 @@ public abstract class ProjectLauncher {
 		return Collections.emptySet();
 	}
 
-	public Map<String, String> getRunProperties() {
+	public Map<String,String> getRunProperties() {
 		return runproperties;
 	}
 
@@ -214,44 +210,45 @@ public abstract class ProjectLauncher {
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
 		try {
-			int result = java.execute((InputStream)null, System.err, System.err);
+			int result = java.execute((InputStream) null, System.err, System.err);
 			if (result == Integer.MIN_VALUE)
 				return TIMEDOUT;
 			reportResult(result);
 			return result;
-		} finally {
+		}
+		finally {
 			cleanup();
 		}
 	}
 
 	/**
-	 * Is called after the process exists. Can you be used to cleanup
-	 * the properties file.
+	 * Is called after the process exists. Can you be used to cleanup the
+	 * properties file.
 	 */
-	
+
 	public void cleanup() {
 		// do nothing by default
 	}
 
 	protected void reportResult(int result) {
 		switch (result) {
-		case OK:
-			project.trace("Command terminated normal %s", java);
-			break;
-		case TIMEDOUT:
-			project.error("Launch timedout: %s", java);
-			break;
+			case OK :
+				project.trace("Command terminated normal %s", java);
+				break;
+			case TIMEDOUT :
+				project.error("Launch timedout: %s", java);
+				break;
 
-		case ERROR:
-			project.error("Launch errored: %s", java);
-			break;
+			case ERROR :
+				project.error("Launch errored: %s", java);
+				break;
 
-		case WARNING:
-			project.warning("Launch had a warning %s", java);
-			break;
-		default:
-			project.error("Exit code remote process %d: %s", result, java);
-			break;
+			case WARNING :
+				project.warning("Launch had a warning %s", java);
+				break;
+			default :
+				project.error("Exit code remote process %d: %s", result, java);
+				break;
 		}
 	}
 
@@ -267,7 +264,7 @@ public abstract class ProjectLauncher {
 		java.cancel();
 	}
 
-	public Map<String, ? extends Map<String, String>> getSystemPackages() {
+	public Map<String, ? extends Map<String,String>> getSystemPackages() {
 		return runsystempackages.asMapMap();
 	}
 

@@ -6,5 +6,5 @@ public enum Type {
 	public boolean isInherited() {
 		// TODO Auto-generated method stub
 		return false;
-	} 
+	}
 }

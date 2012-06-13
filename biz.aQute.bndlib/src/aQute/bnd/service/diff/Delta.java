@@ -3,7 +3,6 @@ package aQute.bnd.service.diff;
 /**
  * The Delta provides information about the {@link Diff} object. It tells the
  * relation between the newer and older compared elements.
- * 
  */
 public enum Delta {
 

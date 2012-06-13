@@ -6,7 +6,7 @@ import java.util.regex.*;
 public class FileResource implements Resource {
 	File	file;
 	String	extra;
-	
+
 	public FileResource(File file) {
 		this.file = file;
 	}
@@ -16,11 +16,7 @@ public class FileResource implements Resource {
 	}
 
 	public static void build(Jar jar, File directory, Pattern doNotCopy) {
-		traverse(
-				jar,
-				directory.getAbsolutePath().length(),
-				directory,
-				doNotCopy);
+		traverse(jar, directory.getAbsolutePath().length(), directory, doNotCopy);
 	}
 
 	public String toString() {
@@ -31,8 +27,7 @@ public class FileResource implements Resource {
 		copy(this, out);
 	}
 
-	static synchronized void copy(Resource resource, OutputStream out)
-			throws Exception {
+	static synchronized void copy(Resource resource, OutputStream out) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			byte buffer[] = new byte[20000];
@@ -47,19 +42,17 @@ public class FileResource implements Resource {
 		}
 	}
 
-	static void traverse(Jar jar, int rootlength, File directory,
-			Pattern doNotCopy) {
+	static void traverse(Jar jar, int rootlength, File directory, Pattern doNotCopy) {
 		if (doNotCopy != null && doNotCopy.matcher(directory.getName()).matches())
 			return;
 		jar.updateModified(directory.lastModified(), "Dir change");
-		
+
 		File files[] = directory.listFiles();
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].isDirectory())
 				traverse(jar, rootlength, files[i], doNotCopy);
 			else {
-				String path = files[i].getAbsolutePath().substring(
-						rootlength + 1);
+				String path = files[i].getAbsolutePath().substring(rootlength + 1);
 				if (File.separatorChar != '/')
 					path = path.replace(File.separatorChar, '/');
 				jar.putResource(path, new FileResource(files[i]), true);
@@ -78,8 +71,8 @@ public class FileResource implements Resource {
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
-	
+
 	public long size() {
-	    return (int) file.length();
+		return (int) file.length();
 	}
 }

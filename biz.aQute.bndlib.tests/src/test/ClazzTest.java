@@ -11,6 +11,7 @@ public class ClazzTest extends TestCase {
 
 	/**
 	 * Complaint from Groovy that the dynamic instruction fails.
+	 * 
 	 * <pre>
 	 * [bndwrap] java.lang.ArrayIndexOutOfBoundsException: 15
 	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:387)
@@ -26,16 +27,13 @@ public class ClazzTest extends TestCase {
 	public void testDynamicInstr() throws Exception {
 		Analyzer a = new Analyzer();
 		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"),
-				new ClassDataCollector() {
-				});
+		c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"), new ClassDataCollector() {});
 		Set<PackageRef> referred = c.getReferred();
 		Descriptors d = new Descriptors();
 		assertFalse(referred.contains(d.getPackageRef("")));
 		System.out.println(referred);
 	}
-	
-	
+
 	/**
 	 * Check if the class is not picking up false references when the
 	 * CLass.forName name is constructed. The DeploymentAdminPermission.1.jclass
@@ -49,9 +47,7 @@ public class ClazzTest extends TestCase {
 	public void testClassForNameFalsePickup() throws Exception {
 		Analyzer a = new Analyzer();
 		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"),
-				new ClassDataCollector() {
-				});
+		c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"), new ClassDataCollector() {});
 		Set<PackageRef> referred = c.getReferred();
 		Descriptors d = new Descriptors();
 		assertFalse(referred.contains(d.getPackageRef("")));

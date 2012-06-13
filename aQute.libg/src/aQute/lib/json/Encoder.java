@@ -20,7 +20,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		if (app == null)
 			to();
 
-		codec.encode(this, object, null, new IdentityHashMap<Object, Type>());
+		codec.encode(this, object, null, new IdentityHashMap<Object,Type>());
 		return this;
 	}
 
@@ -95,7 +95,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 			((Closeable) app).close();
 	}
 
-	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
+	void encode(Object object, Type type, Map<Object,Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
 

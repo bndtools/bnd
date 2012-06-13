@@ -1,107 +1,76 @@
 package aQute.lib.deployer.repository;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
-import org.osgi.service.log.LogService;
+import org.osgi.service.log.*;
 
-import aQute.bnd.service.IndexProvider;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.RemoteRepositoryPlugin;
-import aQute.bnd.service.ResolutionPhase;
-import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.service.url.URLConnector;
-import aQute.lib.deployer.http.DefaultURLConnector;
+import aQute.bnd.service.url.*;
+import aQute.lib.deployer.http.*;
 import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
-import aQute.lib.deployer.repository.api.BaseResource;
-import aQute.lib.deployer.repository.api.CheckResult;
-import aQute.lib.deployer.repository.api.Decision;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryListener;
-import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.deployer.repository.providers.ObrContentProvider;
-import aQute.lib.deployer.repository.providers.R5RepoContentProvider;
-import aQute.lib.filter.Filter;
-import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
-import aQute.libg.generics.Create;
-import aQute.libg.gzip.GZipUtils;
-import aQute.libg.reporter.Reporter;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.lib.deployer.repository.api.*;
+import aQute.lib.deployer.repository.providers.*;
+import aQute.lib.filter.*;
+import aQute.lib.io.*;
+import aQute.lib.osgi.*;
+import aQute.libg.generics.*;
+import aQute.libg.gzip.*;
+import aQute.libg.reporter.*;
+import aQute.libg.version.*;
 
 /**
  * Abstract base class for indexed repositories.
- * 
  * <p>
- * The repository implementation is read-only by default. To implement a writable
- * repository, subclasses should override {@link #canWrite()} and {@link #put(Jar)}.
+ * The repository implementation is read-only by default. To implement a
+ * writable repository, subclasses should override {@link #canWrite()} and
+ * {@link #put(Jar)}.
  * 
  * @author Neil Bartlett
- *
  */
 public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider {
-	
-	public static final String PROP_NAME = "name";
-	public static final String PROP_REPO_TYPE = "type";
-	public static final String PROP_RESOLUTION_PHASE = "phase";
-	public static final String PROP_RESOLUTION_PHASE_ANY = "any";
-	
-	public static final String REPO_TYPE_R5  = R5RepoContentProvider.NAME;
-	public static final String REPO_TYPE_OBR = ObrContentProvider.NAME;
-	
-	private static final int READ_AHEAD_MAX = 5 * 1024 * 1024;
-	
-	protected final Map<String, IRepositoryContentProvider> allContentProviders = new HashMap<String, IRepositoryContentProvider>(5);
-	protected final List<IRepositoryContentProvider> generatingProviders = new LinkedList<IRepositoryContentProvider>();
-	
-	protected Registry registry;
-	protected Reporter reporter;
-	protected LogService logService = new NullLogService();
-	protected String name = this.getClass().getName();
-	protected Set<ResolutionPhase> supportedPhases = EnumSet.allOf(ResolutionPhase.class);
-	
-	private List<URL> indexLocations;
 
-	private String requestedContentProviderList = null;
-	
-	private boolean initialised = false;
+	public static final String									PROP_NAME						= "name";
+	public static final String									PROP_REPO_TYPE					= "type";
+	public static final String									PROP_RESOLUTION_PHASE			= "phase";
+	public static final String									PROP_RESOLUTION_PHASE_ANY		= "any";
 
-	private final Map<String, SortedMap<Version, BaseResource>> bsnMap = new HashMap<String, SortedMap<Version, BaseResource>>();
-	
-	
+	public static final String									REPO_TYPE_R5					= R5RepoContentProvider.NAME;
+	public static final String									REPO_TYPE_OBR					= ObrContentProvider.NAME;
+
+	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
+
+	protected final Map<String,IRepositoryContentProvider>		allContentProviders				= new HashMap<String,IRepositoryContentProvider>(
+																										5);
+	protected final List<IRepositoryContentProvider>			generatingProviders				= new LinkedList<IRepositoryContentProvider>();
+
+	protected Registry											registry;
+	protected Reporter											reporter;
+	protected LogService										logService						= new NullLogService();
+	protected String											name							= this.getClass()
+																										.getName();
+	protected Set<ResolutionPhase>								supportedPhases					= EnumSet
+																										.allOf(ResolutionPhase.class);
+
+	private List<URL>											indexLocations;
+
+	private String												requestedContentProviderList	= null;
+
+	private boolean												initialised						= false;
+
+	private final Map<String,SortedMap<Version,BaseResource>>	bsnMap							= new HashMap<String,SortedMap<Version,BaseResource>>();
+
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
 		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
-		
+
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}
-	
+
 	protected void addResourceToIndex(BaseResource resource) {
 		addBundleSymbolicNameToIndex(resource);
 	}
@@ -109,11 +78,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public synchronized void reset() {
 		initialised = false;
 	}
-	
+
 	private synchronized void clear() {
 		bsnMap.clear();
 	}
-	
 
 	protected abstract List<URL> loadIndexes() throws Exception;
 
@@ -126,39 +94,42 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		for (IRepositoryContentProvider provider : extraProviders) {
 			String providerName = provider.getName();
 			if (allContentProviders.containsKey(providerName)) {
-				if (reporter != null) reporter.warning("Repository content provider with name \"%s\" is already registered.", providerName);
+				if (reporter != null)
+					reporter.warning("Repository content provider with name \"%s\" is already registered.",
+							providerName);
 			} else {
 				allContentProviders.put(providerName, provider);
 			}
 		}
 	}
-	
+
 	protected final synchronized void init() throws Exception {
 		if (!initialised) {
 			clear();
-			
+
 			// Load the available providers from the workspace plugins.
 			loadAllContentProviders();
-			
+
 			// Load the request repository content providers, if specified
 			if (requestedContentProviderList != null && requestedContentProviderList.length() > 0) {
 				generatingProviders.clear();
-				
-				
+
 				// Find the requested providers from the available ones.
 				StringTokenizer tokenizer = new StringTokenizer(requestedContentProviderList, "|");
 				while (tokenizer.hasMoreTokens()) {
 					String token = tokenizer.nextToken().trim();
 					IRepositoryContentProvider provider = allContentProviders.get(token);
 					if (provider == null) {
-						if (reporter != null) reporter.warning("Unknown repository content provider \"%s\".", token);
+						if (reporter != null)
+							reporter.warning("Unknown repository content provider \"%s\".", token);
 					} else {
 						generatingProviders.add(provider);
 					}
 				}
 				if (generatingProviders.isEmpty()) {
 					if (reporter != null)
-						reporter.warning("No valid repository index generators were found, requested list was: [%s]", requestedContentProviderList);
+						reporter.warning("No valid repository index generators were found, requested list was: [%s]",
+								requestedContentProviderList);
 				}
 			}
 
@@ -177,15 +148,24 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					try {
 						URL indexLocation = new URL(referral.getUrl());
 						try {
-							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(
+									indexLocation.toExternalForm(), null, getCacheDirectory(), connector,
+									CachingMode.PreferRemote);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getFile(), indexLocation.toString(), new FileInputStream(indexHandle.request()), this);
-						} catch (Exception e) {
-							if (reporter != null) reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, fromUrl, e);
+							readIndex(indexLocation.getFile(), indexLocation.toString(), new FileInputStream(
+									indexHandle.request()), this);
 						}
-						
-					} catch (MalformedURLException e) {
-						if (reporter != null) reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), fromUrl, e);
+						catch (Exception e) {
+							if (reporter != null)
+								reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s",
+										indexLocation, fromUrl, e);
+						}
+
+					}
+					catch (MalformedURLException e) {
+						if (reporter != null)
+							reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(),
+									fromUrl, e);
 					}
 				}
 
@@ -194,26 +174,28 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			// Parse the indexes
 			for (URL indexLocation : indexLocations) {
 				try {
-					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toExternalForm(),
+							null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
 					readIndex(indexFile.getName(), indexLocation.toExternalForm(), indexStream, listener);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					if (reporter != null)
 						reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
-			
+
 			initialised = true;
 		}
 	}
-	
+
 	public final List<URL> getIndexLocations() throws Exception {
 		init();
 		return Collections.unmodifiableList(indexLocations);
 	}
-	
+
 	private URLConnector getConnector() {
 		URLConnector connector;
 		synchronized (this) {
@@ -228,10 +210,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		this.registry = registry;
 	}
 
-	public synchronized void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String,String> map) {
 		if (map.containsKey(PROP_NAME))
 			name = map.get(PROP_NAME);
-		
+
 		if (map.containsKey(PROP_RESOLUTION_PHASE)) {
 			supportedPhases = EnumSet.noneOf(ResolutionPhase.class);
 			StringTokenizer tokenizer = new StringTokenizer(map.get(PROP_RESOLUTION_PHASE), ",");
@@ -242,22 +224,24 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				else {
 					try {
 						supportedPhases.add(ResolutionPhase.valueOf(token));
-					} catch (Exception e) {
-						if (reporter != null) reporter.error("Unknown OBR resolution mode: " + token);
+					}
+					catch (Exception e) {
+						if (reporter != null)
+							reporter.error("Unknown OBR resolution mode: " + token);
 					}
 				}
 			}
 		}
-		
+
 		requestedContentProviderList = map.get(PROP_REPO_TYPE);
 	}
-	
+
 	public File[] get(String bsn, String range) throws Exception {
 		ResourceHandle[] handles = getHandles(bsn, range);
-		
+
 		return requestAll(handles);
 	}
-	
+
 	protected static File[] requestAll(ResourceHandle[] handles) throws IOException {
 		File[] result;
 		if (handles == null)
@@ -273,32 +257,32 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	protected ResourceHandle[] getHandles(String bsn, String rangeStr) throws Exception {
 		init();
-		
+
 		// If the range is set to "project", we cannot resolve it.
 		if ("project".equals(rangeStr))
 			return null;
-		
-		
-		SortedMap<Version, BaseResource> versionMap = bsnMap.get(bsn);
+
+		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
 		List<BaseResource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
 		List<ResourceHandle> handles = mapResourcesToHandles(resources);
-		
+
 		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
 	}
-	
+
 	public synchronized void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 		this.logService = new ReporterLogService(reporter);
 	}
-	
-	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
+
+	public File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
 		ResourceHandle handle = getHandle(bsn, range, strategy, properties);
 		return handle != null ? handle.request() : null;
 	}
-	
-	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
+
+	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String,String> properties)
+			throws Exception {
 		init();
 		ResourceHandle result;
 		if (bsn != null)
@@ -321,18 +305,18 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		init();
 		Pattern pattern = regex != null ? Pattern.compile(regex) : null;
 		List<String> result = new LinkedList<String>();
-		
+
 		for (String bsn : bsnMap.keySet()) {
 			if (pattern == null || pattern.matcher(bsn).matches())
 				result.add(bsn);
 		}
-		
+
 		return result;
 	}
 
 	public List<Version> versions(String bsn) throws Exception {
 		init();
-		SortedMap<Version, BaseResource> versionMap = bsnMap.get(bsn);
+		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
 		List<Version> list;
 		if (versionMap != null) {
 			list = new ArrayList<Version>(versionMap.size());
@@ -353,18 +337,20 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		String versionStr = resource.getVersion();
 		try {
 			version = new Version(versionStr);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			version = new Version("0.0.0");
 		}
-		SortedMap<Version, BaseResource> versionMap = bsnMap.get(bsn);
+		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
 		if (versionMap == null) {
-			versionMap = new TreeMap<Version, BaseResource>();
+			versionMap = new TreeMap<Version,BaseResource>();
 			bsnMap.put(bsn, versionMap);
 		}
 		versionMap.put(version, resource);
 	}
 
-	private void readIndex(String name, String baseUrl, InputStream stream, IRepositoryListener listener) throws Exception {
+	private void readIndex(String name, String baseUrl, InputStream stream, IRepositoryListener listener)
+			throws Exception {
 		// Make sure we have a buffering stream
 		InputStream bufferedStream;
 		if (stream.markSupported())
@@ -375,79 +361,89 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		// Find a compatible content provider for the input
 		IRepositoryContentProvider selectedProvider = null;
 		IRepositoryContentProvider maybeSelectedProvider = null;
-		for (Entry<String, IRepositoryContentProvider> entry : allContentProviders.entrySet()) {
+		for (Entry<String,IRepositoryContentProvider> entry : allContentProviders.entrySet()) {
 			IRepositoryContentProvider provider = entry.getValue();
-			
+
 			CheckResult checkResult;
 			try {
 				bufferedStream.mark(READ_AHEAD_MAX);
 				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
-			} finally {
+			}
+			finally {
 				bufferedStream.reset();
 			}
-			
+
 			if (checkResult.getDecision() == Decision.accept) {
 				selectedProvider = provider;
 				break;
 			} else if (checkResult.getDecision() == Decision.undecided) {
 				if (reporter != null)
-					reporter.warning("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s", provider.getName(), baseUrl, checkResult.getMessage());
-				if (maybeSelectedProvider == null) maybeSelectedProvider = provider;
+					reporter.warning(
+							"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
+							provider.getName(), baseUrl, checkResult.getMessage());
+				if (maybeSelectedProvider == null)
+					maybeSelectedProvider = provider;
 			}
 		}
-		
-		// If no provider answered definitively, fall back to the first undecided provider, with an appropriate warning.
+
+		// If no provider answered definitively, fall back to the first
+		// undecided provider, with an appropriate warning.
 		if (selectedProvider == null) {
 			if (maybeSelectedProvider != null) {
 				selectedProvider = maybeSelectedProvider;
 				if (reporter != null)
-					reporter.warning("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.", selectedProvider.getName());
+					reporter.warning(
+							"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
+							selectedProvider.getName());
 			} else {
 				throw new IOException("No content provider understands the specified index.");
 			}
 		}
-		
+
 		// Finally, parse the damn file.
 		try {
 			selectedProvider.parseIndex(bufferedStream, baseUrl, listener, logService);
-		} finally {
+		}
+		finally {
 			IO.close(bufferedStream);
 		}
 	}
 
-	List<BaseResource> narrowVersionsByFilter(String pkgName, SortedMap<Version, BaseResource> versionMap, Filter filter) {
+	List<BaseResource> narrowVersionsByFilter(String pkgName, SortedMap<Version,BaseResource> versionMap, Filter filter) {
 		List<BaseResource> result = new ArrayList<BaseResource>(versionMap.size());
-		
-		Dictionary<String, String> dict = new Hashtable<String, String>();
+
+		Dictionary<String,String> dict = new Hashtable<String,String>();
 		dict.put("package", pkgName);
-		
-		for (Entry<Version, BaseResource> entry : versionMap.entrySet()) {
+
+		for (Entry<Version,BaseResource> entry : versionMap.entrySet()) {
 			dict.put("version", entry.getKey().toString());
 			if (filter.match(dict))
 				result.add(entry.getValue());
 		}
-		
+
 		return result;
 	}
 
-	List<BaseResource> narrowVersionsByVersionRange(SortedMap<Version, BaseResource> versionMap, String rangeStr) {
+	List<BaseResource> narrowVersionsByVersionRange(SortedMap<Version,BaseResource> versionMap, String rangeStr) {
 		List<BaseResource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
-			result = Create.list(new BaseResource[] { versionMap.get(highest) });
+			result = Create.list(new BaseResource[] {
+				versionMap.get(highest)
+			});
 		} else {
 			VersionRange range = rangeStr != null ? new VersionRange(rangeStr) : null;
-			
+
 			// optimisation: skip versions definitely less than the range
 			if (range != null && range.getLow() != null)
 				versionMap = versionMap.tailMap(range.getLow());
-			
+
 			result = new ArrayList<BaseResource>(versionMap.size());
-			for (Entry<Version, BaseResource>  entry : versionMap.entrySet()) {
+			for (Entry<Version,BaseResource> entry : versionMap.entrySet()) {
 				Version version = entry.getKey();
 				if (range == null || range.includes(version))
 					result.add(entry.getValue());
-				
+
 				// optimisation: skip versions definitely higher than the range
 				if (range != null && range.isRange() && version.compareTo(range.getHigh()) >= 0)
 					break;
@@ -455,76 +451,81 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 		return result;
 	}
-	
+
 	List<ResourceHandle> mapResourcesToHandles(Collection<BaseResource> resources) throws Exception {
 		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
-		
+
 		for (BaseResource resource : resources) {
 			ResourceHandle handle = mapResourceToHandle(resource);
 			if (handle != null)
 				result.add(handle);
 		}
-		
+
 		return result;
 	}
-	
+
 	ResourceHandle mapResourceToHandle(BaseResource resource) throws Exception {
 		ResourceHandle result = null;
-		
-		CachingURLResourceHandle handle ;
+
+		CachingURLResourceHandle handle;
 		try {
-			handle = new CachingURLResourceHandle(resource.getContentUrl(), resource.getBaseUrl(), getCacheDirectory(), getConnector(), CachingMode.PreferCache);
-		} catch (FileNotFoundException e) {
+			handle = new CachingURLResourceHandle(resource.getContentUrl(), resource.getBaseUrl(), getCacheDirectory(),
+					getConnector(), CachingMode.PreferCache);
+		}
+		catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
 		}
 		if (handle.getLocation() == Location.local || getCacheDirectory() != null)
 			result = handle;
-		
+
 		return result;
 	}
 
 	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy) throws Exception {
-		if (rangeStr == null) rangeStr = "0.0.0";
-		
+		if (rangeStr == null)
+			rangeStr = "0.0.0";
+
 		if (strategy == Strategy.EXACT) {
 			return findExactMatch(bsn, rangeStr, bsnMap);
 		}
-		
+
 		ResourceHandle[] handles = getHandles(bsn, rangeStr);
 		ResourceHandle selected;
 		if (handles == null || handles.length == 0)
 			selected = null;
 		else {
-			switch(strategy) {
-			case LOWEST:
-				selected = handles[0];
-				break;
-			default:
-				selected = handles[handles.length - 1];
+			switch (strategy) {
+				case LOWEST :
+					selected = handles[0];
+					break;
+				default :
+					selected = handles[handles.length - 1];
 			}
 		}
 		return selected;
 	}
-	
-	String listToString(List<?> list) {
+
+	String listToString(List< ? > list) {
 		StringBuilder builder = new StringBuilder();
-		
+
 		int count = 0;
 		for (Object item : list) {
-			if (count++ > 0) builder.append(',');
+			if (count++ > 0)
+				builder.append(',');
 			builder.append(item);
 		}
-		
+
 		return builder.toString();
 	}
 
-	ResourceHandle findExactMatch(String identity, String version, Map<String, SortedMap<Version, BaseResource>> resourceMap) throws Exception {
+	ResourceHandle findExactMatch(String identity, String version,
+			Map<String,SortedMap<Version,BaseResource>> resourceMap) throws Exception {
 		BaseResource resource;
 		VersionRange range = new VersionRange(version);
 		if (range.isRange())
 			return null;
-		
-		SortedMap<Version, BaseResource> versions = resourceMap.get(identity);
+
+		SortedMap<Version,BaseResource> versions = resourceMap.get(identity);
 		if (versions == null)
 			return null;
 
@@ -534,17 +535,16 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		return mapResourceToHandle(resource);
 	}
-	
-	BaseResource findVersion(Version version, SortedMap<Version, BaseResource> versions) {
+
+	BaseResource findVersion(Version version, SortedMap<Version,BaseResource> versions) {
 		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
 			return versions.get(version);
 		}
 
 		BaseResource latest = null;
-		for (Map.Entry<Version, BaseResource> entry : versions.entrySet()) {
-			if (version.getMicro() == entry.getKey().getMicro()
-				&& version.getMinor() == entry.getKey().getMinor()
-				&& version.getMajor() == entry.getKey().getMajor()) {
+		for (Map.Entry<Version,BaseResource> entry : versions.entrySet()) {
+			if (version.getMicro() == entry.getKey().getMicro() && version.getMinor() == entry.getKey().getMinor()
+					&& version.getMajor() == entry.getKey().getMajor()) {
 				latest = entry.getValue();
 				continue;
 			}
@@ -557,16 +557,16 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private int compare(Version v1, Version v2) {
 
-        if (v1.getMajor() != v2.getMajor())
-            return v1.getMajor() - v2.getMajor();
+		if (v1.getMajor() != v2.getMajor())
+			return v1.getMajor() - v2.getMajor();
 
-        if (v1.getMinor() != v2.getMinor())
-            return v1.getMinor() - v2.getMinor();
+		if (v1.getMinor() != v2.getMinor())
+			return v1.getMinor() - v2.getMinor();
 
-        if (v1.getMicro() != v2.getMicro())
-            return v1.getMicro() - v2.getMicro();
+		if (v1.getMicro() != v2.getMicro())
+			return v1.getMicro() - v2.getMicro();
 
-        return 0;
+		return 0;
 	}
 
 	/**
@@ -585,7 +585,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 		return urls;
 	}
-	
+
 	public Set<ResolutionPhase> getSupportedPhases() {
 		return supportedPhases;
 	}

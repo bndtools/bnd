@@ -14,28 +14,26 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
-	
-	
 	/**
 	 * Test conversion of iterable
-	 * @throws Exception 
-	 * @throws IOException 
+	 * 
+	 * @throws Exception
+	 * @throws IOException
 	 */
-	
+
 	public void testIterable() throws IOException, Exception {
 		final List<String> l = Arrays.asList("a", "b", "c");
 		Iterable<String> i = new Iterable<String>() {
-			
+
 			public Iterator<String> iterator() {
 				return l.iterator();
 			}
 		};
-		
+
 		String s = codec.enc().to().put(i).toString();
 		assertEquals("[\"a\",\"b\",\"c\"]", s);
 	}
-	
-	
+
 	/**
 	 * Test missing field
 	 */
@@ -53,7 +51,8 @@ public class JSONTest extends TestCase {
 			dec = codec.dec();
 			dec.from("{\"field\":3}").strict().get(MissingField.class);
 			fail("Should have thrown an exception due to a missing field");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ok
 		}
 	}
@@ -66,10 +65,10 @@ public class JSONTest extends TestCase {
 
 	public void testEscape() throws Exception {
 
-		assertEquals("{\"message\":\"Hello world\"}",
-				codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"").get(String.class));
-		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"",
-				codec.enc().put("{\"message\":\"Hello world\"}").toString());
+		assertEquals("{\"message\":\"Hello world\"}", codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"")
+				.get(String.class));
+		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"", codec.enc().put("{\"message\":\"Hello world\"}")
+				.toString());
 	}
 
 	/**
@@ -93,8 +92,10 @@ public class JSONTest extends TestCase {
 
 	public void testMaps() throws Exception {
 		Encoder enc = codec.enc();
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("a", new int[] { 1, 2 });
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("a", new int[] {
+				1, 2
+		});
 		String string = enc.put(map).toString();
 		assertEquals("{\"a\":[1,2]}", string);
 	}
@@ -107,49 +108,93 @@ public class JSONTest extends TestCase {
 	public void testPrimitiveArrays() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
-		assertTrue(Arrays.equals(new Boolean[] { true, false },
-				dec.from(" [ true , false ] ").get(Boolean[].class)));
-		assertTrue(Arrays.equals(new boolean[] { true, false },
-				dec.from(" [ true , false ] ").get(boolean[].class)));
+		assertTrue(Arrays.equals(new Boolean[] {
+				true, false
+		}, dec.from(" [ true , false ] ").get(Boolean[].class)));
+		assertTrue(Arrays.equals(new boolean[] {
+				true, false
+		}, dec.from(" [ true , false ] ").get(boolean[].class)));
 
-		assertTrue(Arrays.equals(new Character[] { 'A', 'B' },
-				dec.from(" [ 65,66 ] ").get(Character[].class)));
-		assertTrue(Arrays
-				.equals(new char[] { 'A', 'B' }, dec.from(" [ 65,66 ] ").get(char[].class)));
-		assertTrue(Arrays
-				.equals(new Short[] { -1, -2 }, dec.from("[ -1 , -2 ]").get(Short[].class)));
-		assertTrue(Arrays
-				.equals(new short[] { -1, -2 }, dec.from("[ -1 , -2 ]").get(short[].class)));
-		assertTrue(Arrays.equals(new Integer[] { -1, -2 },
-				dec.from("[ -1 , -2 ]").get(Integer[].class)));
-		assertTrue(Arrays.equals(new int[] { -1, -2 }, dec.from("[ -1 , -2 ]").get(int[].class)));
-		assertTrue(Arrays
-				.equals(new Long[] { -1L, -2L }, dec.from("[ -1 , -2 ]").get(Long[].class)));
-		assertTrue(Arrays.equals(new long[] { -1, -2 }, dec.from("[ -1 , -2 ]").get(long[].class)));
-		assertTrue(Arrays.equals(new Float[] { -1f, -2f }, dec.from("[ -1 ,-2 ]")
-				.get(Float[].class)));
-		assertTrue(Arrays.equals(new float[] { -1f, -2f }, dec.from("[ -1, -2 ]")
-				.get(float[].class)));
-		assertTrue(Arrays.equals(new Double[] { -1d, -2d },
-				dec.from("[-1 , -2 ]").get(Double[].class)));
-		assertTrue(Arrays.equals(new double[] { -1d, -2d }, dec.from("[-1, -2]")
-				.get(double[].class)));
+		assertTrue(Arrays.equals(new Character[] {
+				'A', 'B'
+		}, dec.from(" [ 65,66 ] ").get(Character[].class)));
+		assertTrue(Arrays.equals(new char[] {
+				'A', 'B'
+		}, dec.from(" [ 65,66 ] ").get(char[].class)));
+		assertTrue(Arrays.equals(new Short[] {
+				-1, -2
+		}, dec.from("[ -1 , -2 ]").get(Short[].class)));
+		assertTrue(Arrays.equals(new short[] {
+				-1, -2
+		}, dec.from("[ -1 , -2 ]").get(short[].class)));
+		assertTrue(Arrays.equals(new Integer[] {
+				-1, -2
+		}, dec.from("[ -1 , -2 ]").get(Integer[].class)));
+		assertTrue(Arrays.equals(new int[] {
+				-1, -2
+		}, dec.from("[ -1 , -2 ]").get(int[].class)));
+		assertTrue(Arrays.equals(new Long[] {
+				-1L, -2L
+		}, dec.from("[ -1 , -2 ]").get(Long[].class)));
+		assertTrue(Arrays.equals(new long[] {
+				-1, -2
+		}, dec.from("[ -1 , -2 ]").get(long[].class)));
+		assertTrue(Arrays.equals(new Float[] {
+				-1f, -2f
+		}, dec.from("[ -1 ,-2 ]").get(Float[].class)));
+		assertTrue(Arrays.equals(new float[] {
+				-1f, -2f
+		}, dec.from("[ -1, -2 ]").get(float[].class)));
+		assertTrue(Arrays.equals(new Double[] {
+				-1d, -2d
+		}, dec.from("[-1 , -2 ]").get(Double[].class)));
+		assertTrue(Arrays.equals(new double[] {
+				-1d, -2d
+		}, dec.from("[-1, -2]").get(double[].class)));
 
 		Encoder enc = new JSONCodec().enc();
-		assertEquals("[false,true]", enc.to().put(new Boolean[] { false, true }).toString());
-		assertEquals("[false,true]", enc.to().put(new boolean[] { false, true }).toString());
-		assertEquals("[65,66]", enc.to().put(new Character[] { 'A', 'B' }).toString());
-		assertEquals("[65,66]", enc.to().put(new char[] { 'A', 'B' }).toString());
-		assertEquals("[1,2]", enc.to().put(new short[] { 1, 2 }).toString());
-		assertEquals("[1,2]", enc.to().put(new Short[] { 1, 2 }).toString());
-		assertEquals("[1,2]", enc.to().put(new int[] { 1, 2 }).toString());
-		assertEquals("[1,2]", enc.to().put(new Integer[] { 1, 2 }).toString());
-		assertEquals("[1,2]", enc.to().put(new long[] { 1, 2 }).toString());
-		assertEquals("[1,2]", enc.to().put(new Long[] { 1L, 2L }).toString());
-		assertEquals("[-1,-2]", enc.to().put(new float[] { -1, -2 }).toString());
-		assertEquals("[1,-2]", enc.to().put(new Float[] { 1f, -2f }).toString());
-		assertEquals("[-1,2]", enc.to().put(new double[] { -1d, 2d }).toString());
-		assertEquals("[1,2]", enc.to().put(new Double[] { 1d, 2d }).toString());
+		assertEquals("[false,true]", enc.to().put(new Boolean[] {
+				false, true
+		}).toString());
+		assertEquals("[false,true]", enc.to().put(new boolean[] {
+				false, true
+		}).toString());
+		assertEquals("[65,66]", enc.to().put(new Character[] {
+				'A', 'B'
+		}).toString());
+		assertEquals("[65,66]", enc.to().put(new char[] {
+				'A', 'B'
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new short[] {
+				1, 2
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new Short[] {
+				1, 2
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new int[] {
+				1, 2
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new Integer[] {
+				1, 2
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new long[] {
+				1, 2
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new Long[] {
+				1L, 2L
+		}).toString());
+		assertEquals("[-1,-2]", enc.to().put(new float[] {
+				-1, -2
+		}).toString());
+		assertEquals("[1,-2]", enc.to().put(new Float[] {
+				1f, -2f
+		}).toString());
+		assertEquals("[-1,2]", enc.to().put(new double[] {
+				-1d, 2d
+		}).toString());
+		assertEquals("[1,2]", enc.to().put(new Double[] {
+				1d, 2d
+		}).toString());
 
 	}
 
@@ -160,13 +205,23 @@ public class JSONTest extends TestCase {
 	 */
 	public void testByteArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
-		assertEquals("[43,41]", enc.to().put(new Byte[] { 43, 41 }).toString());
-		assertEquals("\"Kyk=\"", enc.to().put(new byte[] { 43, 41 }).toString());
+		assertEquals("[43,41]", enc.to().put(new Byte[] {
+				43, 41
+		}).toString());
+		assertEquals("\"Kyk=\"", enc.to().put(new byte[] {
+				43, 41
+		}).toString());
 
 		Decoder dec = new JSONCodec().dec();
-		assertTrue(Arrays.equals(new byte[] { 43, 41 }, dec.faq("'Kyk='").get(byte[].class)));
-		assertTrue(Arrays.equals(new Byte[] { 43, 41 }, dec.from("[43,41]").get(Byte[].class)));
-		assertTrue(Arrays.equals(new byte[] { 43, 41 }, dec.from("[43,41]").get(byte[].class)));
+		assertTrue(Arrays.equals(new byte[] {
+				43, 41
+		}, dec.faq("'Kyk='").get(byte[].class)));
+		assertTrue(Arrays.equals(new Byte[] {
+				43, 41
+		}, dec.from("[43,41]").get(Byte[].class)));
+		assertTrue(Arrays.equals(new byte[] {
+				43, 41
+		}, dec.from("[43,41]").get(byte[].class)));
 	}
 
 	/**
@@ -186,10 +241,8 @@ public class JSONTest extends TestCase {
 		assertEquals("false", enc.to().put(false).toString());
 		assertEquals("null", enc.to().put(null).toString());
 		assertEquals("[1,2,3]", enc.to().put(Arrays.asList(1, 2, 3)).toString());
-		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$(1, 1).$(2, 2).$(3, 3))
-				.toString());
-		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$("1", 1).$("2", 2).$("3", 3))
-				.toString());
+		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$(1, 1).$(2, 2).$(3, 3)).toString());
+		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$("1", 1).$("2", 2).$("3", 3)).toString());
 	}
 
 	enum E {
@@ -244,10 +297,8 @@ public class JSONTest extends TestCase {
 		assertEquals("[1,2,3]", dec.from("[1,2,3]").get(String.class));
 
 		// Objects as strings
-		assertEquals("{\"a\":1, \"b\":\"abc\"}",
-				dec.from("{\"a\":1, \"b\":\"abc\"}").get(String.class));
-		assertEquals("{\"a\":1, \"b\":\"}{}\"}",
-				dec.from("{\"a\":1, \"b\":\"}{}\"}").get(String.class));
+		assertEquals("{\"a\":1, \"b\":\"abc\"}", dec.from("{\"a\":1, \"b\":\"abc\"}").get(String.class));
+		assertEquals("{\"a\":1, \"b\":\"}{}\"}", dec.from("{\"a\":1, \"b\":\"}{}\"}").get(String.class));
 
 	}
 
@@ -257,7 +308,9 @@ public class JSONTest extends TestCase {
 	public List<Integer>	integers	= Arrays.asList(1, 2, 3);	// Provides
 																	// generic
 																	// types
-	public int[]			array		= { 1, 2, 3 };				// Provides
+	public int[]			array		= {
+			1, 2, 3
+										};							// Provides
 																	// generic
 																	// types
 
@@ -274,37 +327,32 @@ public class JSONTest extends TestCase {
 
 		// And now use the array of primitives
 		field = getClass().getField("array");
-		assertTrue(Arrays.equals(array,
-				(int[]) dec.from(" [ 1 , 2 , 3 ] ").get(field.getGenericType())));
+		assertTrue(Arrays.equals(array, (int[]) dec.from(" [ 1 , 2 , 3 ] ").get(field.getGenericType())));
 	}
 
 	/**
 	 * Test the map functionality
 	 */
-	public Map<String, Integer>		map;
-	public Map<Integer, Integer>	mapIntegerKeys;
+	public Map<String,Integer>	map;
+	public Map<Integer,Integer>	mapIntegerKeys;
 
 	public void testObject() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get());
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3),
-				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get());
+		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
+				.get());
 
 		Field field = getClass().getField("map");
-		assertEquals(
-				MAP.$("1", 1).$("2", 2).$("3", 3),
-				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get(
-						field.getGenericType()));
+		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
+				.get(field.getGenericType()));
 
 		field = getClass().getField("mapIntegerKeys");
-		assertEquals(MAP.$(1, 1).$(2, 2).$(3, 3),
-				dec.from("{\"1\":1,\"2\":2,\"3\":3}").get(field.getGenericType()));
+		assertEquals(MAP.$(1, 1).$(2, 2).$(3, 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get(field.getGenericType()));
 	}
 
 	/**
 	 * Test the object support
-	 * 
 	 */
 	public static class Data1 {
 		public boolean				b;
@@ -316,7 +364,7 @@ public class JSONTest extends TestCase {
 		public long					l;
 		public String				s;
 		public short				sh;
-		public Map<String, Object>	map;
+		public Map<String,Object>	map;
 	}
 
 	public static class Data1A {
@@ -344,9 +392,8 @@ public class JSONTest extends TestCase {
 		data1.s = "abc";
 		data1.sh = -10;
 
-		assertEquals(
-				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}",
-				enc.to().put(data1).toString());
+		assertEquals("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}", enc
+				.to().put(data1).toString());
 	}
 
 	public void testEncodeType() throws Exception {
@@ -361,7 +408,7 @@ public class JSONTest extends TestCase {
 		data1.l = 2l;
 		data1.s = "abc";
 		data1.sh = -10;
-		data1.map = new HashMap<String, Object>();
+		data1.map = new HashMap<String,Object>();
 		data1.map.put("a", Arrays.asList(1, 2, 3));
 		String s = enc.to().put(data1).toString();
 		assertEquals(
@@ -371,9 +418,9 @@ public class JSONTest extends TestCase {
 
 	public void testDecodeType() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data1 d = dec
-				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
-				.get(Data1.class);
+		Data1 d = dec.from(
+				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
+				Data1.class);
 		assertEquals(false, d.b);
 		assertEquals(-1, d.by);
 		assertEquals('1', d.ch);
@@ -387,9 +434,9 @@ public class JSONTest extends TestCase {
 
 	public void testDecodeTypeA() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data1A d = dec
-				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
-				.get(Data1A.class);
+		Data1A d = dec.from(
+				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
+				Data1A.class);
 		assertEquals((Boolean) false, d.b);
 		assertEquals((Byte) (byte) (-1), d.by);
 		assertEquals((Character) '1', d.ch);
@@ -407,14 +454,13 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static class Data2 {
-		public Map<String, Integer>						integers;
-		public Map<String, List<Map<Integer, String>>>	map;
+		public Map<String,Integer>						integers;
+		public Map<String,List<Map<Integer,String>>>	map;
 	}
 
 	public void testComplexMaps() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}")
-				.get(Data2.class);
+		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}").get(Data2.class);
 
 		// Check integers
 		assertEquals(1, d.integers.size());
@@ -422,11 +468,11 @@ public class JSONTest extends TestCase {
 
 		// Check map
 		assertEquals(1, d.map.size());
-		List<Map<Integer, String>> sub = d.map.get("a");
-		Map<Integer, String> subsub1 = sub.get(0);
+		List<Map<Integer,String>> sub = d.map.get("a");
+		Map<Integer,String> subsub1 = sub.get(0);
 		String subsubsub1 = subsub1.get(1);
 
-		Map<Integer, String> subsub2 = sub.get(1);
+		Map<Integer,String> subsub2 = sub.get(1);
 		String subsubsub2 = subsub2.get(2);
 
 		assertEquals("1", subsubsub1);
@@ -437,7 +483,7 @@ public class JSONTest extends TestCase {
 	 * Test extra field
 	 */
 	public static class Data3 {
-		public Map<String, Object>	__extra;
+		public Map<String,Object>	__extra;
 	}
 
 	public void testExtra() throws Exception {
@@ -446,7 +492,7 @@ public class JSONTest extends TestCase {
 
 		assertEquals(1, d.__extra.get("a"));
 		assertEquals(Arrays.asList(1), d.__extra.get("b"));
-		assertEquals(new HashMap<String, Object>(), d.__extra.get("c"));
+		assertEquals(new HashMap<String,Object>(), d.__extra.get("c"));
 	}
 
 	/**
@@ -484,14 +530,30 @@ public class JSONTest extends TestCase {
 	public void testEncodeTypePrimitiveArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data4 d = new Data4();
-		d.booleans = new boolean[] { false, false };
-		d.bytes = new byte[] { 1, 2 };
-		d.shorts = new short[] { 3, 4 };
-		d.chars = new char[] { 'A', 'B' };
-		d.ints = new int[] { 5, 6 };
-		d.longs = new long[] { 7, 8 };
-		d.floats = new float[] { 7, 8 };
-		d.doubles = new double[] { 7, 8 };
+		d.booleans = new boolean[] {
+				false, false
+		};
+		d.bytes = new byte[] {
+				1, 2
+		};
+		d.shorts = new short[] {
+				3, 4
+		};
+		d.chars = new char[] {
+				'A', 'B'
+		};
+		d.ints = new int[] {
+				5, 6
+		};
+		d.longs = new long[] {
+				7, 8
+		};
+		d.floats = new float[] {
+				7, 8
+		};
+		d.doubles = new double[] {
+				7, 8
+		};
 
 		assertEquals(
 				"{\"booleans\":[false,false],\"bytes\":\"AQI=\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}",

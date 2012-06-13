@@ -6,18 +6,21 @@ public interface Diff {
 	interface Ignore {
 		boolean contains(Diff diff);
 	}
-	
+
 	Delta getDelta();
+
 	Delta getDelta(Ignore ignore);
 
 	Type getType();
+
 	String getName();
+
 	Tree getOlder();
+
 	Tree getNewer();
 
-	Collection<? extends Diff> getChildren();
-	
+	Collection< ? extends Diff> getChildren();
+
 	Diff get(String name);
-	
-	
+
 }

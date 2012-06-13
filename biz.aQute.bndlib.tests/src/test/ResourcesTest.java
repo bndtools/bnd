@@ -167,8 +167,7 @@ public class ResourcesTest extends TestCase {
 
 	public void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource",
-				"TargetFolder=test/ws/p2/Resources;filter:=re*.txt;recursive:=false");
+		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=re*.txt;recursive:=false");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -183,8 +182,7 @@ public class ResourcesTest extends TestCase {
 
 	public void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource",
-				"TargetFolder=test/ws/p2/Resources;filter:=re*.txt;flatten:=true");
+		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=re*.txt;flatten:=true");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 
@@ -209,7 +207,7 @@ public class ResourcesTest extends TestCase {
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
 		assertEquals(0, jar.getResources().size());
-		assertTrue( bmaker.check("The JAR is empty"));
+		assertTrue(bmaker.check("The JAR is empty"));
 	}
 
 	public void testLiteral() throws Exception {
@@ -218,7 +216,9 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
 		bmaker.setProperties(p);
-		bmaker.setClasspath(new String[] { "src" });
+		bmaker.setClasspath(new String[] {
+			"src"
+		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("text");
 		assertNotNull(resource);
@@ -244,7 +244,9 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
 		p.setProperty("Include-Resource", "ondemand.jar");
 		bmaker.setProperties(p);
-		bmaker.setClasspath(new String[] { "bin" });
+		bmaker.setClasspath(new String[] {
+			"bin"
+		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("ondemand.jar");
 		assertNotNull(resource);

@@ -20,7 +20,6 @@ public class Data {
 				if (allowNull == null)
 					formatter.format("Value for %s must not be null\n", f.getName());
 			} else {
-				
 
 				if (patternValidator != null) {
 					Pattern p = Pattern.compile(patternValidator.value());
@@ -28,8 +27,8 @@ public class Data {
 					if (!m.matches()) {
 						String reason = patternValidator.reason();
 						if (reason.length() == 0)
-							formatter.format("Value for %s=%s does not match pattern %s\n",
-									f.getName(), value, patternValidator.value());
+							formatter.format("Value for %s=%s does not match pattern %s\n", f.getName(), value,
+									patternValidator.value());
 						else
 							formatter.format("Value for %s=%s %s\n", f.getName(), value, reason);
 					}
@@ -39,29 +38,31 @@ public class Data {
 					if (o instanceof String) {
 						try {
 							o = Double.parseDouble((String) o);
-						} catch (Exception e) {
+						}
+						catch (Exception e) {
 							formatter.format("Value for %s=%s %s\n", f.getName(), value, "Not a number");
 						}
 					}
-					
+
 					try {
 						Number n = (Number) o;
 						long number = n.longValue();
 						if (number >= numericValidator.min() && number < numericValidator.max()) {
-							formatter.format("Value for %s=%s not in valid range (%s,%s]\n",
-									f.getName(), value, numericValidator.min(), numericValidator.max());
+							formatter.format("Value for %s=%s not in valid range (%s,%s]\n", f.getName(), value,
+									numericValidator.min(), numericValidator.max());
 						}
-					} catch (ClassCastException e) {
+					}
+					catch (ClassCastException e) {
 						formatter.format("Value for %s=%s [%s,%s) is not a number\n", f.getName(), value,
 								numericValidator.min(), numericValidator.max());
 					}
 				}
 			}
 		}
-		if ( sb.length() == 0)
+		if (sb.length() == 0)
 			return null;
-		
-		if ( sb.length() > 0)
+
+		if (sb.length() > 0)
 			sb.delete(sb.length() - 1, sb.length());
 		return sb.toString();
 	}
@@ -69,8 +70,8 @@ public class Data {
 	public static void details(Object data, Appendable out) throws Exception {
 		Field fields[] = data.getClass().getFields();
 		Formatter formatter = new Formatter(out);
-		
-		for ( Field f : fields ) {
+
+		for (Field f : fields) {
 			String name = f.getName();
 			name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
 			formatter.format("%-40s %s\n", name, f.get(data));

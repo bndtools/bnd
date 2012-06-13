@@ -1,16 +1,13 @@
 package test.lib;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import aQute.bnd.service.Registry;
+import aQute.bnd.service.*;
 
 public class MockRegistry implements Registry {
 
-	private final Set<Object> plugins = new HashSet<Object>();
-	
+	private final Set<Object>	plugins	= new HashSet<Object>();
+
 	public void addPlugin(Object plugin) {
 		plugins.add(plugin);
 	}
@@ -23,7 +20,6 @@ public class MockRegistry implements Registry {
 		}
 		return l;
 	}
-
 
 	public <T> T getPlugin(Class<T> clazz) {
 		for (Object plugin : plugins) {

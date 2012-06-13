@@ -15,7 +15,6 @@ package aQute.junit.runtime;
  * a result of type <strong>R</strong>
  * 
  * @author Neil Bartlett
- * 
  * @param <S>
  *            The service type
  * @param <R>

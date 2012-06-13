@@ -96,7 +96,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		getInfo(processor, "");
 	}
 
-	private <T> void addAll(List<String> to, List<? extends T> from, String prefix) {
+	private <T> void addAll(List<String> to, List< ? extends T> from, String prefix) {
 		for (T x : from) {
 			to.add(prefix + x);
 		}
@@ -152,8 +152,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		p.signal();
 	}
 
-	public void signal() {
-	}
+	public void signal() {}
 
 	public List<String> getWarnings() {
 		return warnings;
@@ -250,9 +249,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Return a list of plugins. Plugins are defined with the -plugin command.
 	 * They are class names, optionally associated with attributes. Plugins can
-	 * implement the Plugin interface to see these attributes.
-	 * 
-	 * Any object can be a plugin.
+	 * implement the Plugin interface to see these attributes. Any object can be
+	 * a plugin.
 	 * 
 	 * @return
 	 */
@@ -295,7 +293,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		CL loader = getLoader();
 
 		// First add the plugin-specific paths from their path: directives
-		for (Entry<String, Attrs> entry : plugins.entrySet()) {
+		for (Entry<String,Attrs> entry : plugins.entrySet()) {
 			String key = removeDuplicateMarker(entry.getKey());
 			String path = entry.getValue().get(PATH_DIRECTIVE);
 			if (path != null) {
@@ -305,9 +303,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						File f = getFile(p).getAbsoluteFile();
 						loader.add(f.toURI().toURL());
 					}
-				} catch (Exception e) {
-					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path,
-							key, e);
+				}
+				catch (Exception e) {
+					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
 				}
 			}
 		}
@@ -320,14 +318,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				try {
 					File f = getFile(path).getAbsoluteFile();
 					loader.add(f.toURI().toURL());
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					error("Problem adding path %s from global plugin path. Exception: %s", path, e);
 				}
 			}
 		}
 
 		// Load the plugins
-		for (Entry<String, Attrs> entry : plugins.entrySet()) {
+		for (Entry<String,Attrs> entry : plugins.entrySet()) {
 			String key = entry.getKey();
 
 			try {
@@ -339,11 +338,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				key = removeDuplicateMarker(key);
 
 				try {
-					Class<?> c = (Class<?>) loader.loadClass(key);
+					Class< ? > c = (Class< ? >) loader.loadClass(key);
 					Object plugin = c.newInstance();
 					customize(plugin, entry.getValue());
 					list.add(plugin);
-				} catch (Throwable t) {
+				}
+				catch (Throwable t) {
 					// We can defer the error if the plugin specifies
 					// a command name. In that case, we'll verify that
 					// a bnd file does not contain any references to a
@@ -358,7 +358,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						missingCommand.addAll(cs);
 					}
 				}
-			} catch (Throwable e) {
+			}
+			catch (Throwable e) {
 				error("Problem loading the plugin: %s exception: (%s)", key, e);
 			}
 		}
@@ -420,12 +421,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new TreeSet<T>();
 	}
 
-	public static <K, V> Map<K, V> newMap() {
-		return new LinkedHashMap<K, V>();
+	public static <K, V> Map<K,V> newMap() {
+		return new LinkedHashMap<K,V>();
 	}
 
-	public static <K, V> Map<K, V> newHashMap() {
-		return new LinkedHashMap<K, V>();
+	public static <K, V> Map<K,V> newHashMap() {
+		return new LinkedHashMap<K,V>();
 	}
 
 	public <T> List<T> newList(Collection<T> t) {
@@ -436,15 +437,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new TreeSet<T>(t);
 	}
 
-	public <K, V> Map<K, V> newMap(Map<K, V> t) {
-		return new LinkedHashMap<K, V>(t);
+	public <K, V> Map<K,V> newMap(Map<K,V> t) {
+		return new LinkedHashMap<K,V>(t);
 	}
 
 	public void close() {
 		for (Closeable c : toBeClosed) {
 			try {
 				c.close();
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				// Who cares?
 			}
 		}
@@ -482,7 +484,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			try {
 				Properties properties = loadProperties(file);
 				mergeProperties(properties, override);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				error("Error loading properties file: " + file);
 			}
 		} else {
@@ -494,7 +497,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void mergeProperties(Properties properties, boolean override) {
-		for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration< ? > e = properties.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = properties.getProperty(key);
 			if (override || !getProperties().containsKey(key))
@@ -513,8 +516,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(p);
 	}
 
-	public void addProperties(Map<?, ?> properties) {
-		for (Entry<?, ?> entry : properties.entrySet()) {
+	public void addProperties(Map< ? , ? > properties) {
+		for (Entry< ? , ? > entry : properties.entrySet()) {
 			setProperty(entry.getKey().toString(), entry.getValue() + "");
 		}
 	}
@@ -561,11 +564,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				try {
 					File file = getFile(ubase, value).getAbsoluteFile();
 					if (!file.isFile() && fileMustExist) {
-						error("Included file " + file
-								+ (file.exists() ? " does not exist" : " is directory"));
+						error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
 					} else
 						doIncludeFile(file, overwrite, p);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					if (fileMustExist)
 						error("Error in processing included file: " + value, e);
 				}
@@ -610,10 +613,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 				doIncludes(file.getParentFile(), sub);
 				// make sure we do not override properties
-				for (Map.Entry<?, ?> entry : sub.entrySet()) {
+				for (Map.Entry< ? , ? > entry : sub.entrySet()) {
 					String key = (String) entry.getKey();
 					String value = (String) entry.getValue();
-					
+
 					if (overwrite || !target.containsKey(key)) {
 						target.setProperty(key, value);
 					} else if (extensionName != null) {
@@ -622,7 +625,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							target.setProperty(extensionKey, value);
 					}
 				}
-			} finally {
+			}
+			finally {
 				IO.close(in);
 			}
 		}
@@ -645,8 +649,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				if (changed)
 					break;
 
-				changed |= !file.exists()
-						|| updateModified(file.lastModified(), "include file: " + file);
+				changed |= !file.exists() || updateModified(file.lastModified(), "include file: " + file);
 			}
 		}
 
@@ -667,8 +670,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		propertiesChanged();
 	}
 
-	public void propertiesChanged() {
-	}
+	public void propertiesChanged() {}
 
 	/**
 	 * Set the properties by file. Setting the properties this way will also set
@@ -705,7 +707,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					error("No such properties file: " + propertiesFile);
 				}
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			error("Could not load properties " + propertiesFile);
 		}
 	}
@@ -729,11 +732,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param deflt
 	 * @return
 	 */
-	
+
 	public String getUnprocessedProperty(String key, String deflt) {
 		return getProperties().getProperty(key, deflt);
 	}
-	
+
 	/**
 	 * Get a property with preprocessing it with a proper default
 	 * 
@@ -802,7 +805,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			Properties p = loadProperties(in, file.getAbsolutePath());
 			return p;
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -818,7 +822,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			Properties p = new Properties();
 			p.load(in);
 			return replaceAll(p, "\\$\\{\\.\\}", name);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			error("Error during loading properties file: " + name + ", error:" + e);
 			return new Properties();
 		}
@@ -832,8 +837,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static Properties replaceAll(Properties p, String pattern, String replacement) {
 		Properties result = new Properties();
-		for (Iterator<Map.Entry<Object, Object>> i = p.entrySet().iterator(); i.hasNext();) {
-			Map.Entry<Object, Object> entry = i.next();
+		for (Iterator<Map.Entry<Object,Object>> i = p.entrySet().iterator(); i.hasNext();) {
+			Map.Entry<Object,Object> entry = i.next();
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
 			value = value.replaceAll(pattern, replacement);
@@ -850,17 +855,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return the clauses
 	 * @throws IOException
 	 */
-	public static String printClauses(Map<?, ? extends Map<?, ?>> exports) throws IOException {
+	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
-			boolean checkMultipleVersions) throws IOException {
+	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, boolean checkMultipleVersions)
+			throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Entry<?, ? extends Map<?, ?>> entry : exports.entrySet()) {
+		for (Entry< ? , ? extends Map< ? , ? >> entry : exports.entrySet()) {
 			String name = entry.getKey().toString();
-			Map<?, ?> clause = entry.getValue();
+			Map< ? , ? > clause = entry.getValue();
 
 			// We allow names to be duplicated in the input
 			// by ending them with '~'. This is necessary to use
@@ -876,13 +881,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return sb.toString();
 	}
 
-	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
+	public static void printClause(Map< ? , ? > map, StringBuilder sb) throws IOException {
 
-		for (Entry<?, ?> entry : map.entrySet()) {
+		for (Entry< ? , ? > entry : map.entrySet()) {
 			Object key = entry.getKey();
 			// Skip directives we do not recognize
-			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
-					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
+			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE)
+					|| key.equals(FROM_DIRECTIVE))
 				continue;
 
 			String value = ((String) entry.getValue()).trim();
@@ -901,8 +906,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
-		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value
-				.length() - 1) == '"') || Verifier.TOKEN.matcher(value).matches();
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
+				|| Verifier.TOKEN.matcher(value).matches();
 		if (!clean)
 			sb.append("\"");
 		sb.append(value);
@@ -1021,7 +1026,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				sb.append(chars, 0, size);
 				size = ir.read(chars);
 			}
-		} finally {
+		}
+		finally {
 			ir.close();
 		}
 		return sb.toString();
@@ -1033,15 +1039,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param args
 	 * @return
 	 */
-	public static String join(Collection<?> list, String delimeter) {
+	public static String join(Collection< ? > list, String delimeter) {
 		return join(delimeter, list);
 	}
 
-	public static String join(String delimeter, Collection<?>... list) {
+	public static String join(String delimeter, Collection< ? >... list) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		if (list != null) {
-			for (Collection<?> l : list) {
+			for (Collection< ? > l : list) {
 				for (Object item : l) {
 					sb.append(del);
 					sb.append(item);
@@ -1065,7 +1071,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return sb.toString();
 	}
 
-	public static String join(Collection<?>... list) {
+	public static String join(Collection< ? >... list) {
 		return join(",", list);
 	}
 
@@ -1160,11 +1166,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			super.addURL(url);
 		}
 
-		public Class<?> loadClass(String name) throws NoClassDefFoundError {
+		public Class< ? > loadClass(String name) throws NoClassDefFoundError {
 			try {
-				Class<?> c = super.loadClass(name);
+				Class< ? > c = super.loadClass(name);
 				return c;
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
 				sb.append(" not found, parent:  ");
@@ -1189,8 +1196,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Check if this is a valid project.
 	 */
 	public boolean exists() {
-		return base != null && base.isDirectory() && propertiesFile != null
-				&& propertiesFile.isFile();
+		return base != null && base.isDirectory() && propertiesFile != null && propertiesFile.isFile();
 	}
 
 	public boolean isOk() {
@@ -1225,8 +1231,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return true;
 
 		if (!missed.isEmpty())
-			System.err
-					.println("Missed the following patterns in the warnings or errors: " + missed);
+			System.err.println("Missed the following patterns in the warnings or errors: " + missed);
 
 		report(System.err);
 		return false;
@@ -1259,9 +1264,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Answer if the name is a missing plugin's command name. If a bnd file
 	 * contains the command name of a plugin, and that plugin is not available,
 	 * then an error is reported during manifest calculation. This allows the
-	 * plugin to fail to load when it is not needed.
-	 * 
-	 * We first get the plugins to ensure it is properly initialized.
+	 * plugin to fail to load when it is not needed. We first get the plugins to
+	 * ensure it is properly initialized.
 	 * 
 	 * @param name
 	 * @return
@@ -1282,7 +1286,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * &#064;param prefix
 	 * &#064;param suffix
 	 * &#064;return
-	 * 
 	 */
 	public static String appendPath(String... parts) {
 		StringBuilder sb = new StringBuilder();
@@ -1331,8 +1334,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				map.put(attr.substring(0, n), macro.process(attr.substring(n + 1)));
 			} else
 				throw new IllegalArgumentException(formatArrays(
-						"Invalid attribute on package-info.java in %s , %s. Must be <key>=<name> ",
-						clazz, attr));
+						"Invalid attribute on package-info.java in %s , %s. Must be <key>=<name> ", clazz, attr));
 		}
 		return map;
 	}
@@ -1385,7 +1387,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return join(result);
 	}
 
-	public synchronized Class<?> getClass(String type, File jar) throws Exception {
+	public synchronized Class< ? > getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
 		cl.add(jar.toURI().toURL());
 		return cl.loadClass(type);
@@ -1402,9 +1404,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		tm = tm.toUpperCase();
 		TimeUnit unit = TimeUnit.MILLISECONDS;
 		Matcher m = Pattern
-				.compile(
-						"\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?")
-				.matcher(tm);
+				.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?").matcher(
+						tm);
 		if (m.matches()) {
 			long duration = Long.parseLong(tm);
 			String u = m.group(2);
@@ -1427,9 +1428,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (args.length > 1) {
 			try {
 				numchars = Integer.parseInt(args[1]);
-			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException(
-						"Invalid character count parameter in ${random} macro.");
+			}
+			catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Invalid character count parameter in ${random} macro.");
 			}
 		}
 
@@ -1439,8 +1440,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		char[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-				.toCharArray();
+		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
 
 		char[] array = new char[numchars];
 		for (int i = 0; i < numchars; i++) {
@@ -1458,9 +1458,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Set the current command thread. This must be balanced with the
 	 * {@link #end(Processor)} method. The method returns the previous command
-	 * owner or null.
-	 * 
-	 * The command owner will receive all warnings and error reports.
+	 * owner or null. The command owner will receive all warnings and error
+	 * reports.
 	 */
 
 	protected Processor beginHandleErrors(String message) {
@@ -1510,19 +1509,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Overrides for the Domain class
 	 */
-	@Override public String get(String key) {
+	@Override
+	public String get(String key) {
 		return getProperty(key);
 	}
 
-	@Override public String get(String key, String deflt) {
+	@Override
+	public String get(String key, String deflt) {
 		return getProperty(key, deflt);
 	}
 
-	@Override public void set(String key, String value) {
+	@Override
+	public void set(String key, String value) {
 		getProperties().setProperty(key, value);
 	}
 
-	@Override public Iterator<String> iterator() {
+	@Override
+	public Iterator<String> iterator() {
 		Set<String> keys = keySet();
 		final Iterator<String> it = keys.iterator();
 
@@ -1565,7 +1568,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			StringBuilder sb = new StringBuilder();
 			report(sb);
 			return sb.toString();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

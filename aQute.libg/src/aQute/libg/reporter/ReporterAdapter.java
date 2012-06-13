@@ -8,7 +8,6 @@ import aQute.libg.generics.*;
 
 /**
  * Mainly used for testing where reporters are needed.
- * 
  */
 public class ReporterAdapter implements Reporter {
 	final List<String>	errors		= new ArrayList<String>();
@@ -74,7 +73,7 @@ public class ReporterAdapter implements Reporter {
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
-			if ( t instanceof InvocationTargetException )
+			if (t instanceof InvocationTargetException)
 				t.getCause().printStackTrace(System.err);
 			else
 				t.printStackTrace(System.err);
@@ -89,14 +88,14 @@ public class ReporterAdapter implements Reporter {
 	public void progress(String s, Object... args) {
 		if (out != null) {
 			out.format(s, args);
-			if ( !s.endsWith("\n"))
+			if (!s.endsWith("\n"))
 				out.format("\n");
 		}
 	}
 
 	public void trace(String s, Object... args) {
 		if (trace && out != null) {
-			out.format("# "+s+"\n", args);
+			out.format("# " + s + "\n", args);
 			out.flush();
 		}
 	}
@@ -172,8 +171,8 @@ public class ReporterAdapter implements Reporter {
 	void report(String title, Collection<String> list, Formatter f) {
 		if (list.isEmpty())
 			return;
-		f.format(title + (list.size() > 1 ? "s" : "")+"\n");
-		int n=0;
+		f.format(title + (list.size() > 1 ? "s" : "") + "\n");
+		int n = 0;
 		for (String s : list) {
 			f.format("%3s. %s\n", n++, s);
 		}

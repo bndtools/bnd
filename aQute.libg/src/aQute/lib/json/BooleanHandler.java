@@ -6,24 +6,28 @@ import java.util.*;
 
 public class BooleanHandler extends Handler {
 
-	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)
-			throws IOException, Exception {
-		app.append( object.toString());
+	@Override
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+		app.append(object.toString());
 	}
-	
-	@Override Object decode(boolean s) {
+
+	@Override
+	Object decode(boolean s) {
 		return s;
 	}
 
-	@Override Object decode(String s) {
+	@Override
+	Object decode(String s) {
 		return Boolean.parseBoolean(s);
 	}
 
-	@Override Object decode(Number s) {
+	@Override
+	Object decode(Number s) {
 		return s.intValue() != 0;
 	}
 
-	@Override Object decode() {
+	@Override
+	Object decode() {
 		return false;
 	}
 

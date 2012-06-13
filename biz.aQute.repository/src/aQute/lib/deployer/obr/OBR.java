@@ -1,19 +1,15 @@
 package aQute.lib.deployer.obr;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
-import aQute.lib.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.service.*;
+import aQute.lib.deployer.repository.*;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
  * and a basic local cache.
- * 
  * <p>
  * <h2>Properties</h2>
  * <ul>
@@ -24,7 +20,6 @@ import aQute.lib.deployer.repository.FixedIndexedRepo;
  * repository will only be able to serve resources with {@code file:} URLs.</li>
  * <li><b>location:</b> (deprecated) alias for "locations".
  * </ul>
- * 
  * <p>
  * <h2>Example</h2>
  * 
@@ -33,20 +28,20 @@ import aQute.lib.deployer.repository.FixedIndexedRepo;
  * </pre>
  * 
  * @author Neil Bartlett
- * 
  */
 @SuppressWarnings("deprecation")
-public class OBR extends FixedIndexedRepo implements OBRIndexProvider{
+public class OBR extends FixedIndexedRepo implements OBRIndexProvider {
 
 	@Override
-	public synchronized void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(Conversions.convertConfig(map));
 	}
 
 	public Collection<URL> getOBRIndexes() throws IOException {
 		try {
 			return getIndexLocations();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new IOException(e.toString());
 		}
 	}

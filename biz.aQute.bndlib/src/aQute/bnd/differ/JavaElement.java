@@ -47,32 +47,26 @@ import aQute.libg.version.Version;
  * <li>MAJOR - +final
  * <li>MAJOR - +protected
  * </ul>
- * 
  */
 
 class JavaElement {
-	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS,
-																IMPLEMENTS);
-	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null,
-																MAJOR, MINOR, null);
-	private static final Element		STATIC			= new Element(ACCESS, "static", null,
-																MAJOR, MAJOR, null);
-	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null,
-																MAJOR, MINOR, null);
-	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR,
-																MINOR, null);
+	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
+	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
+	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
+	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
+	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
 
 	final Analyzer						analyzer;
-	final Map<PackageRef, Instructions>	providerMatcher	= Create.map();
+	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
 	final Set<TypeRef>					notAccessible	= Create.set();
-	final Map<Object, Element>			cache			= Create.map();
+	final Map<Object,Element>			cache			= Create.map();
 	MultiMap<PackageRef, //
 	Element>							packages;
 	final MultiMap<TypeRef, //
-	Element>							covariant		= new MultiMap<TypeRef, Element>();
+	Element>							covariant		= new MultiMap<TypeRef,Element>();
 	final Set<JAVA>						javas			= Create.set();
 	final Packages						exports;
 
@@ -87,10 +81,9 @@ class JavaElement {
 		this.analyzer = analyzer;
 
 		Manifest manifest = analyzer.getJar().getManifest();
-		if (manifest != null
-				&& manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
+		if (manifest != null && manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
 			exports = new Packages();
-			for (Map.Entry<String, Attrs> entry : OSGiHeader.parseHeader(
+			for (Map.Entry<String,Attrs> entry : OSGiHeader.parseHeader(
 					manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).entrySet())
 				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
 		} else
@@ -101,7 +94,7 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
+		for (Entry<PackageRef,Attrs> entry : exports.entrySet()) {
 			String value = entry.getValue().get(Constants.PROVIDER_TYPE_DIRECTIVE);
 			if (value != null) {
 				providerMatcher.put(entry.getKey(), new Instructions(value));
@@ -112,7 +105,7 @@ class JavaElement {
 		// creating the packages yet because we do not yet know
 		// which classes are accessible
 
-		packages = new MultiMap<PackageRef, Element>();
+		packages = new MultiMap<PackageRef,Element>();
 
 		for (Clazz c : analyzer.getClassspace().values()) {
 			if (c.isPublic() || c.isProtected()) {
@@ -136,27 +129,25 @@ class JavaElement {
 	private Element getLocalAPI() throws Exception {
 		List<Element> result = new ArrayList<Element>();
 
-		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
+		for (Map.Entry<PackageRef,List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
 			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
-				
-				if (notAccessible.contains( analyzer.getTypeRefFromFQN(i.next().getName())))
+
+				if (notAccessible.contains(analyzer.getTypeRefFromFQN(i.next().getName())))
 					i.remove();
-				
+
 			}
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(Type.VERSION, v.getWithoutQualifier().toString(), null,
-						IGNORED, IGNORED, null));
+				set.add(new Element(Type.VERSION, v.getWithoutQualifier().toString(), null, IGNORED, IGNORED, null));
 			}
 			Element pd = new Element(Type.PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
 			result.add(pd);
 		}
 
 		for (JAVA java : javas) {
-			result.add(new Element(CLASS_VERSION, java.toString(), null, Delta.CHANGED,
-					Delta.CHANGED, null));
+			result.add(new Element(CLASS_VERSION, java.toString(), null, Delta.CHANGED, Delta.CHANGED, null));
 		}
 
 		return new Element(Type.API, "<api>", result, CHANGED, CHANGED, null);
@@ -183,7 +174,7 @@ class JavaElement {
 		final Set<Element> members = new HashSet<Element>();
 		final Set<MethodDef> methods = Create.set();
 		final Set<Clazz.FieldDef> fields = Create.set();
-		final MultiMap<Clazz.Def, Element> annotations = new MultiMap<Clazz.Def, Element>();
+		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<Clazz.Def,Element>();
 
 		final TypeRef name = clazz.getClassName();
 
@@ -209,11 +200,13 @@ class JavaElement {
 			boolean			memberEnd;
 			Clazz.FieldDef	last;
 
-			@Override public void version(int minor, int major) {
+			@Override
+			public void version(int minor, int major) {
 				javas.add(Clazz.JAVA.getJava(major, minor));
 			}
 
-			@Override public void method(MethodDef defined) {
+			@Override
+			public void method(MethodDef defined) {
 				if ((defined.isProtected() || defined.isPublic())) {
 					last = defined;
 					methods.add(defined);
@@ -222,14 +215,16 @@ class JavaElement {
 				}
 			}
 
-			@Override public void deprecated() {
+			@Override
+			public void deprecated() {
 				if (memberEnd)
 					clazz.setDeprecated(true);
 				else
 					last.setDeprecated(true);
 			}
 
-			@Override public void field(Clazz.FieldDef defined) {
+			@Override
+			public void field(Clazz.FieldDef defined) {
 				if (defined.isProtected() || defined.isPublic()) {
 					last = defined;
 					fields.add(defined);
@@ -237,25 +232,27 @@ class JavaElement {
 					last = null;
 			}
 
-			@Override public void constant(Object o) {
+			@Override
+			public void constant(Object o) {
 				if (last != null) {
 					// Must be accessible now
 					last.setConstant(o);
 				}
 			}
 
-			@Override public void extendsClass(TypeRef name) throws Exception {
+			@Override
+			public void extendsClass(TypeRef name) throws Exception {
 				String comment = null;
 				if (!clazz.isInterface())
 					comment = inherit(members, name);
 
 				Clazz c = analyzer.findClass(name);
 				if ((c == null || c.isPublic()) && !name.isObject())
-					members.add(new Element(Type.EXTENDS, name.getFQN(), null, MICRO, MAJOR,
-							comment));
+					members.add(new Element(Type.EXTENDS, name.getFQN(), null, MICRO, MAJOR, comment));
 			}
 
-			@Override public void implementsInterfaces(TypeRef names[]) throws Exception {
+			@Override
+			public void implementsInterfaces(TypeRef names[]) throws Exception {
 				// TODO is interface reordering important for binary
 				// compatibility??
 
@@ -264,8 +261,7 @@ class JavaElement {
 					String comment = null;
 					if (clazz.isInterface() || clazz.isAbstract())
 						comment = inherit(members, name);
-					members.add(new Element(Type.IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR,
-							comment));
+					members.add(new Element(Type.IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
 				}
 			}
 
@@ -286,8 +282,7 @@ class JavaElement {
 							if (INHERITED.contains(child.type)) {
 								String n = child.getName();
 								if (child.type == METHOD) {
-									if (n.startsWith("<init>")
-											|| "getClass()".equals(child.getName())
+									if (n.startsWith("<init>") || "getClass()".equals(child.getName())
 											|| n.startsWith("wait(") || n.startsWith("notify(")
 											|| n.startsWith("notifyAll("))
 										continue;
@@ -314,7 +309,8 @@ class JavaElement {
 				return null;
 			}
 
-			@Override public void annotation(Annotation annotation) {
+			@Override
+			public void annotation(Annotation annotation) {
 				Collection<Element> properties = Create.set();
 				if (Deprecated.class.getName().equals(annotation.getName().getFQN())) {
 					if (memberEnd)
@@ -330,21 +326,20 @@ class JavaElement {
 					sb.append('=');
 					toString(sb, annotation.get(key));
 
-					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED,
-							CHANGED, null));
+					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
 				}
 
 				if (memberEnd) {
-					members.add(new Element(Type.ANNOTATED, annotation.getName().getFQN(),
-							properties, CHANGED, CHANGED, null));
+					members.add(new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties, CHANGED,
+							CHANGED, null));
 					if (ProviderType.class.getName().equals(annotation.getName().getFQN())) {
 						provider.set(true);
 					} else if (ConsumerType.class.getName().equals(annotation.getName().getFQN())) {
 						provider.set(false);
 					}
 				} else if (last != null)
-					annotations.add(last, new Element(Type.ANNOTATED,
-							annotation.getName().getFQN(), properties, CHANGED, CHANGED, null));
+					annotations.add(last, new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties,
+							CHANGED, CHANGED, null));
 			}
 
 			private void toString(StringBuilder sb, Object object) {
@@ -359,19 +354,20 @@ class JavaElement {
 					sb.append(object);
 			}
 
-			@Override public void innerClass(TypeRef innerClass, TypeRef outerClass,
-					String innerName, int innerClassAccessFlags) throws Exception {
+			@Override
+			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
+					throws Exception {
 				Clazz clazz = analyzer.findClass(innerClass);
 				if (clazz != null)
 					clazz.setInnerAccess(innerClassAccessFlags);
 
-				if (Modifier.isProtected(innerClassAccessFlags)
-						|| Modifier.isPublic(innerClassAccessFlags))
+				if (Modifier.isProtected(innerClassAccessFlags) || Modifier.isPublic(innerClassAccessFlags))
 					return;
 				notAccessible.add(innerClass);
 			}
 
-			@Override public void memberEnd() {
+			@Override
+			public void memberEnd() {
 				memberEnd = true;
 			}
 		});
@@ -463,15 +459,14 @@ class JavaElement {
 
 			for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();) {
 				MethodDef s = i.next();
-				if (s.getName().equals(m.getName())
-						&& Arrays.equals(s.getPrototype(), m.getPrototype())) {
+				if (s.getName().equals(m.getName()) && Arrays.equals(s.getPrototype(), m.getPrototype())) {
 					i.remove();
 					getCovariantReturns(children, s.getType());
 				}
 			}
 
-			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()),
-					children, add, remove, null);
+			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
+					null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -505,8 +500,8 @@ class JavaElement {
 
 			getCovariantReturns(children, m.getType());
 
-			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()),
-					children, add, remove, "synthetic");
+			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
+					"synthetic");
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -521,13 +516,12 @@ class JavaElement {
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {
-				children.add(new Element(Type.CONSTANT, f.getConstant().toString(), null, CHANGED,
-						CHANGED, null));
+				children.add(new Element(Type.CONSTANT, f.getConstant().toString(), null, CHANGED, CHANGED, null));
 			}
 
 			access(children, f.getAccess(), f.isDeprecated());
-			Element member = new Element(Type.FIELD, f.getType().getFQN() + " " + f.getName(),
-					children, MINOR, MAJOR, null);
+			Element member = new Element(Type.FIELD, f.getType().getFQN() + " " + f.getName(), children, MINOR, MAJOR,
+					null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -538,8 +532,7 @@ class JavaElement {
 		access(members, clazz.getAccess(), clazz.isDeprecated());
 
 		// And make the result
-		Element s = new Element(type, fqn, members, MINOR, MAJOR, comment.length() == 0 ? null
-				: comment.toString());
+		Element s = new Element(type, fqn, members, MINOR, MAJOR, comment.length() == 0 ? null : comment.toString());
 		cache.put(clazz, s);
 		return s;
 	}
@@ -577,33 +570,33 @@ class JavaElement {
 			String name = type.getBinary();
 			Element e;
 			switch (name.charAt(0)) {
-			case 'Z':
-				e = BOOLEAN_R;
-				break;
-			case 'S':
-				e = SHORT_R;
-				break;
-			case 'I':
-				e = INT_R;
-				break;
-			case 'B':
-				e = BYTE_R;
-				break;
-			case 'C':
-				e = CHAR_R;
-				break;
-			case 'J':
-				e = LONG_R;
-				break;
-			case 'F':
-				e = FLOAT_R;
-				break;
-			case 'D':
-				e = DOUBLE_R;
-				break;
+				case 'Z' :
+					e = BOOLEAN_R;
+					break;
+				case 'S' :
+					e = SHORT_R;
+					break;
+				case 'I' :
+					e = INT_R;
+					break;
+				case 'B' :
+					e = BYTE_R;
+					break;
+				case 'C' :
+					e = CHAR_R;
+					break;
+				case 'J' :
+					e = LONG_R;
+					break;
+				case 'F' :
+					e = FLOAT_R;
+					break;
+				case 'D' :
+					e = DOUBLE_R;
+					break;
 
-			default:
-				throw new IllegalArgumentException("Unknown primitive " + type);
+				default :
+					throw new IllegalArgumentException("Unknown primitive " + type);
 			}
 			elements.add(e);
 			return;

@@ -12,8 +12,7 @@ public class ArrayHandler extends Handler {
 	}
 
 	@Override
-	void encode(Encoder app, Object object, Map<Object, Type> visited)
-			throws IOException, Exception {
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		app.append("[");
 		String del = "";
 		int l = Array.getLength(object);
@@ -29,8 +28,7 @@ public class ArrayHandler extends Handler {
 	Object decodeArray(Decoder r) throws Exception {
 		ArrayList<Object> list = new ArrayList<Object>();
 		r.codec.parseArray(list, componentType, r);
-		Object array = Array.newInstance(r.codec.getRawClass(componentType),
-				list.size());
+		Object array = Array.newInstance(r.codec.getRawClass(componentType), list.size());
 		int n = 0;
 		for (Object o : list)
 			Array.set(array, n++, o);

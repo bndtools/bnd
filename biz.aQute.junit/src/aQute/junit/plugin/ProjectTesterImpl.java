@@ -8,10 +8,10 @@ import aQute.junit.constants.*;
 import aQute.lib.osgi.*;
 
 public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
-	int					port	= -1;
-	String				host;
-	Project				project;
-	boolean				prepared;
+	int		port	= -1;
+	String	host;
+	Project	project;
+	boolean	prepared;
 
 	public ProjectTesterImpl(Project project) throws Exception {
 		super(project);
@@ -31,7 +31,7 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			}
 			launcher.getRunProperties().put(TESTER_DIR, getReportDir().getAbsolutePath());
 			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
-			if ( Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
+			if (Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
 				launcher.getRunProperties().put(TESTER_TRACE, "true");
 
 			Collection<String> testnames = getTests();

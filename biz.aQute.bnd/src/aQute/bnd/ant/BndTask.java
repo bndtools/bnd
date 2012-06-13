@@ -4,19 +4,25 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.Property;
+import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
 import aQute.lib.osgi.*;
+import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.eclipse.*;
 import aQute.libg.qtokens.*;
 
 /**
- * <p>This file is the bnd main task for ant.</p> 
+ * <p>
+ * This file is the bnd main task for ant.
+ * </p>
+ * <p>
+ * To define the task library, load property from <code>build.bnd</code> and
+ * prepare the workspace:
+ * </p>
  * 
- * <p>To define the task library, load property from <code>build.bnd</code> and prepare the workspace:</p>
  * <pre>
  * &lt;target name="init" unless="initialized"&gt;
  *    &lt;taskdef classpath="${path.to.bnd.jar}" resource="aQute/bnd/ant/taskdef.properties"&gt;
@@ -24,8 +30,10 @@ import aQute.libg.qtokens.*;
  *    &lt;property name="initialized" value="set"/&gt;
  * &lt;/target&gt;
  * </pre>
+ * <p>
+ * To recursively build dependency projects, before building this project:
+ * </p>
  * 
- * <p>To recursively build dependency projects, before building this project:</p>
  * <pre>
  * &lt;target name="dependencies" depends="init" if="project.dependson" unless="donotrecurse"&gt;
  *    &lt;subant target="build" inheritAll="false" buildpath="${project.dependson}"&gt;
@@ -33,23 +41,27 @@ import aQute.libg.qtokens.*;
  *    &lt;/subant&gt;
  * &lt;/target>
  * </pre>
+ * <p>
+ * To build a bundle:
+ * </p>
  * 
- * <p>To build a bundle:</p>
  * <pre>
  * &lt;target name="build" depends="compile"&gt;
  *    &lt;mkdir dir="${target}"/&gt;
  *    &lt;bnd command="build" exceptions="true" basedir="${project}"/&gt;
  * &lt;/target&gt;
  * </pre>
+ * <p>
+ * To pass properties into bnd from ANT:
+ * </p>
  * 
- * <p>To pass properties into bnd from ANT:</p>
  * <pre>
  * &lt;target name="build" depends="compile"&gt;
  *    &lt;mkdir dir="${target}"/&gt;
  *    &lt;bnd command="build" exceptions="true" basedir="${project}"&gt;
  *        &lt;!-- Property will be set on the bnd Project: --&gt;
  *        &lt;property name="foo" value="bar"/&gt;
- *
+ * 
  *        &lt;!-- Property will be set on the bnd Workspace: --&gt;
  *        &lt;wsproperty name="foo" value="bar"/&gt;
  *    &lt;/bnd&gt;
@@ -59,51 +71,23 @@ import aQute.libg.qtokens.*;
  * @see {@link DeployTask} {@link ReleaseTask}
  */
 
- /* OLD JAVADOCS:
- * <pre>
- * <project name="test path with bnd" default="run-test" basedir=".">
- *    <property file="run-demo.properties"/>
- *    <target name="run-test" description="show bnd usage with classpathref">
- *      <path id="run.demo.id" >
- *        <pathelement location="demo/classes"/>
- *        <fileset dir="${libs.demo.dir}">
- *          <include name="*.jar"/>
- *        </fileset>
- *      </path>
- *      <path id="bnd.path.id" >
- *        <fileset dir="dist">
- *          <include name="*.jar"/>
- *        </fileset>
- *      </path>
- *      <path id="descriptors.id" >
- *        <fileset dir="demo/bnd">
- *          <include name="*.bnd"/>
- *        </fileset>
- *      </path>
- * 
- *      <taskdef classpathref="bnd.path.id" classname="aQute.bnd.ant.BndTask" name="bnd"/>
- *      <bnd classpathref="run.demo.id"  eclipse="false" failok="false" exceptions="true" 
- *               output="demo/generated"  bndFiles="descriptors.id"/>
- * 
- * <!-- sample usage with nested paths -->
- * 
- * 	    <bnd eclipse="false" failok="false" exceptions="true" output="demo/generated">
- * 		  <classpath>
- * 		    <pathelement location="demo/classes"/>
- * 		      <fileset dir="${libs.demo.dir}">
- * 			    <include name="*.jar"/>
- *      	  </fileset>	 	
- * 		  </classpath>
- * 		  <bndfiles>
- * 		    <fileset dir="demo/bnd">
- * 		      <include name="*.bnd"/>
- * 		    </fileset>				
- * 		  <bndfiles>
- *      </bnd> 
- *    </target>
- *  </project>
- * </pre>
- * 
+/*
+ * OLD JAVADOCS: <pre> <project name="test path with bnd" default="run-test"
+ * basedir="."> <property file="run-demo.properties"/> <target name="run-test"
+ * description="show bnd usage with classpathref"> <path id="run.demo.id" >
+ * <pathelement location="demo/classes"/> <fileset dir="${libs.demo.dir}">
+ * <include name="*.jar"/> </fileset> </path> <path id="bnd.path.id" > <fileset
+ * dir="dist"> <include name="*.jar"/> </fileset> </path> <path
+ * id="descriptors.id" > <fileset dir="demo/bnd"> <include name="*.bnd"/>
+ * </fileset> </path> <taskdef classpathref="bnd.path.id"
+ * classname="aQute.bnd.ant.BndTask" name="bnd"/> <bnd
+ * classpathref="run.demo.id" eclipse="false" failok="false" exceptions="true"
+ * output="demo/generated" bndFiles="descriptors.id"/> <!-- sample usage with
+ * nested paths --> <bnd eclipse="false" failok="false" exceptions="true"
+ * output="demo/generated"> <classpath> <pathelement location="demo/classes"/>
+ * <fileset dir="${libs.demo.dir}"> <include name="*.jar"/> </fileset>
+ * </classpath> <bndfiles> <fileset dir="demo/bnd"> <include name="*.bnd"/>
+ * </fileset> <bndfiles> </bnd> </target> </project> </pre>
  */
 public class BndTask extends BaseTask {
 	String			command;
@@ -117,7 +101,7 @@ public class BndTask extends BaseTask {
 	private boolean	classpathDirectlySet;
 	private Path	classpathReference;
 	private Path	bndfilePath;
-	
+
 	public void execute() throws BuildException {
 		// JME add - ensure every required parameter is present
 		// handle cases where mutual exclusion live..
@@ -137,30 +121,32 @@ public class BndTask extends BaseTask {
 
 		try {
 			Project project = Workspace.getProject(basedir);
-			
+
 			Workspace ws = project.getWorkspace();
-			if (ws != null) for (Property prop : workspaceProps) {
-				ws.setProperty(prop.getName(), prop.getValue());
-			}
-			
+			if (ws != null)
+				for (Property prop : workspaceProps) {
+					ws.setProperty(prop.getName(), prop.getValue());
+				}
+
 			project.setProperty("in.ant", "true");
 			project.setProperty("environment", "ant");
 			project.setExceptions(true);
 			project.setTrace(trace);
 			project.setPedantic(pedantic);
-			
+
 			for (Property prop : properties) {
 				project.setProperty(prop.getName(), prop.getValue());
 			}
-			
+
 			project.action(command);
 
-			for ( Project p : ws.getCurrentProjects())
-				ws.getInfo(p, p +":");
-			
+			for (Project p : ws.getCurrentProjects())
+				ws.getInfo(p, p + ":");
+
 			if (report(ws))
 				throw new BuildException("Command " + command + " failed");
-		} catch (Throwable e) {
+		}
+		catch (Throwable e) {
 			if (exceptions)
 				e.printStackTrace();
 			throw new BuildException(e);
@@ -226,11 +212,11 @@ public class BndTask extends BaseTask {
 				// properties, if the inherit flag is specified
 				if (inherit) {
 					Properties projectProperties = new Properties();
-					projectProperties.putAll((Map<?, ?>) getProject().getProperties());
+					projectProperties.putAll((Map< ? , ? >) getProject().getProperties());
 					projectProperties.putAll(builder.getProperties());
 					builder.setProperties(projectProperties);
 				}
-				
+
 				builder.setClasspath(toFiles(classpath, "classpath"));
 				builder.setSourcepath(toFiles(sourcepath, "sourcepath"));
 				Jar jars[] = builder.builds();
@@ -270,14 +256,14 @@ public class BndTask extends BaseTask {
 					} else {
 						msg = "(not modified)";
 					}
-					trace(jar.getName() + " (" + output.getName() + ") "
-							+ jar.getResources().size() + " " + msg);
+					trace(jar.getName() + " (" + output.getName() + ") " + jar.getResources().size() + " " + msg);
 					report();
 					jar.close();
 				}
 				builder.close();
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// if (exceptions)
 			e.printStackTrace();
 			if (!failok)
@@ -388,7 +374,7 @@ public class BndTask extends BaseTask {
 		assertPathNotSet(bndfilePath, "bnd files are already set");
 		bndfilePath = path;
 	}
-	
+
 	private Path createPath(Reference r) {
 		Path path = new Path(getProject()).createPath();
 		path.setRefid(r);

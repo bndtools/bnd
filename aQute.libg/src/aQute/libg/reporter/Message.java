@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package aQute.libg.reporter;
 
 public @interface Message {

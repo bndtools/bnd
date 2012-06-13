@@ -14,26 +14,23 @@ import aQute.lib.osgi.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.header.*;
 
-
 /**
  * This Diff Plugin Implementation will compare JARs for their API (based on the
  * Bundle Class Path and exported packages), the Manifest, and the resources.
  * The Differences are represented in a {@link Diff} tree.
  */
 public class DiffPluginImpl implements Differ {
-	
+
 	/**
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String>				MAJOR_HEADERS	= new TreeSet<String>(
-																	String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	MAJOR_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String>				IGNORE_HEADERS	= new TreeSet<String>(
-																	String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	IGNORE_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
@@ -52,7 +49,6 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * 
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
 	 *      aQute.lib.resource.Jar)
 	 */
@@ -60,22 +56,23 @@ public class DiffPluginImpl implements Differ {
 		Jar jnewer = new Jar(newer);
 		try {
 			return tree(jnewer);
-		} finally {
+		}
+		finally {
 			jnewer.close();
 		}
 	}
 
 	/**
-	 * 
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
 	 *      aQute.lib.resource.Jar)
 	 */
 	public Tree tree(Jar newer) throws Exception {
 		Analyzer anewer = new Analyzer();
 		try {
-				anewer.setJar(newer);
-				return tree(anewer);
-		} finally {
+			anewer.setJar(newer);
+			return tree(anewer);
+		}
+		finally {
 			anewer.setJar((Jar) null);
 			anewer.close();
 		}
@@ -88,7 +85,7 @@ public class DiffPluginImpl implements Differ {
 	/**
 	 * Create an element representing a bundle from the Jar.
 	 * 
-	 * @param infos 
+	 * @param infos
 	 * @param jar
 	 *            The Jar to be analyzed
 	 * @return the elements that should be compared
@@ -104,8 +101,7 @@ public class DiffPluginImpl implements Differ {
 			result.add(manifestElement(manifest));
 		}
 		result.add(resourcesElement(analyzer.getJar()));
-		return new Element(Type.BUNDLE, analyzer.getJar().getName(), result, CHANGED, CHANGED,
-				null);
+		return new Element(Type.BUNDLE, analyzer.getJar().getName(), result, CHANGED, CHANGED, null);
 	}
 
 	/**
@@ -117,24 +113,21 @@ public class DiffPluginImpl implements Differ {
 	 */
 	private Element resourcesElement(Jar jar) throws Exception {
 		List<Element> resources = new ArrayList<Element>();
-		for (Map.Entry<String, Resource> entry : jar.getResources().entrySet()) {
+		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 
 			InputStream in = entry.getValue().openInputStream();
 			try {
 				Digester<SHA1> digester = SHA1.getDigester();
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
-				resources
-						.add(new Element(Type.RESOURCE, entry.getKey()+"="+value, null, CHANGED, CHANGED, null));
-			} finally {
+				resources.add(new Element(Type.RESOURCE, entry.getKey() + "=" + value, null, CHANGED, CHANGED, null));
+			}
+			finally {
 				in.close();
 			}
 		}
 		return new Element(Type.RESOURCES, "<resources>", resources, CHANGED, CHANGED, null);
 	}
-
-
-
 
 	/**
 	 * Create an element for each manifest header. There are
@@ -157,18 +150,17 @@ public class DiffPluginImpl implements Differ {
 			if (MAJOR_HEADERS.contains(header)) {
 				Parameters clauses = OSGiHeader.parseHeader(value);
 				Collection<Element> clausesDef = new ArrayList<Element>();
-				for (Map.Entry<String, Attrs> clause : clauses.entrySet()) {
+				for (Map.Entry<String,Attrs> clause : clauses.entrySet()) {
 					Collection<Element> parameterDef = new ArrayList<Element>();
-					for (Map.Entry<String, String> parameter : clause.getValue().entrySet()) {
-						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + parameter
-								.getValue(), null, CHANGED, CHANGED, null));
+					for (Map.Entry<String,String> parameter : clause.getValue().entrySet()) {
+						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + parameter.getValue(),
+								null, CHANGED, CHANGED, null));
 					}
-					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef,
-							CHANGED, CHANGED, null));
+					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef, CHANGED, CHANGED, null));
 				}
 				result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
 			} else {
-				result.add(new Element(Type.HEADER, header +":"+ value, null,CHANGED, CHANGED, null));
+				result.add(new Element(Type.HEADER, header + ":" + value, null, CHANGED, CHANGED, null));
 			}
 		}
 		return new Element(Type.MANIFEST, "<manifest>", result, CHANGED, CHANGED, null);

@@ -4,5 +4,5 @@ import aQute.bnd.annotation.*;
 
 @ProviderType
 public interface EventAdmin {
-    void post(Object o);
+	void post(Object o);
 }

@@ -6,9 +6,10 @@ import java.util.regex.*;
 import aQute.lib.collections.*;
 import aQute.libg.version.*;
 
-public class Attrs implements Map<String, String> {
+public class Attrs implements Map<String,String> {
 	public enum Type {
-		STRING(null), LONG(null), VERSION(null), DOUBLE(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION), DOUBLES(DOUBLE);
+		STRING(null), LONG(null), VERSION(null), DOUBLE(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION), DOUBLES(
+				DOUBLE);
 
 		Type	sub;
 
@@ -33,14 +34,15 @@ public class Attrs implements Map<String, String> {
 	 * ’List<’ scalar ’>’
 	 * </pre>
 	 */
-	static String					EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
-	static String					SCALAR		= "String|Version|Long|Double";
-	static String					LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static final Pattern		TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*("+ SCALAR + "|" + LIST + ")\\s*");
+	static String							EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	static String							SCALAR		= "String|Version|Long|Double";
+	static String							LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
+	public static final Pattern				TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR
+																+ "|" + LIST + ")\\s*");
 
-	private LinkedHashMap<String, String>	map;
-	private Map<String, Type>		types;
-	static Map<String, String>		EMPTY		= Collections.emptyMap();
+	private LinkedHashMap<String,String>	map;
+	private Map<String,Type>				types;
+	static Map<String,String>				EMPTY		= Collections.emptyMap();
 
 	public Attrs(Attrs... attrs) {
 		for (Attrs a : attrs) {
@@ -62,7 +64,8 @@ public class Attrs implements Map<String, String> {
 	}
 
 	@SuppressWarnings("cast")
-	@Deprecated public boolean containsKey(Object name) {
+	@Deprecated
+	public boolean containsKey(Object name) {
 		assert name instanceof String;
 		if (map == null)
 			return false;
@@ -78,7 +81,8 @@ public class Attrs implements Map<String, String> {
 	}
 
 	@SuppressWarnings("cast")
-	@Deprecated public boolean containsValue(Object value) {
+	@Deprecated
+	public boolean containsValue(Object value) {
 		assert value instanceof String;
 		if (map == null)
 			return false;
@@ -86,7 +90,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsValue((String) value);
 	}
 
-	public Set<java.util.Map.Entry<String, String>> entrySet() {
+	public Set<java.util.Map.Entry<String,String>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
@@ -94,7 +98,8 @@ public class Attrs implements Map<String, String> {
 	}
 
 	@SuppressWarnings("cast")
-	@Deprecated public String get(Object key) {
+	@Deprecated
+	public String get(Object key) {
 		assert key instanceof String;
 		if (map == null)
 			return null;
@@ -129,7 +134,7 @@ public class Attrs implements Map<String, String> {
 
 	public String put(String key, String value) {
 		if (map == null)
-			map = new LinkedHashMap<String, String>();
+			map = new LinkedHashMap<String,String>();
 
 		Matcher m = TYPED.matcher(key);
 		if (m.matches()) {
@@ -137,28 +142,28 @@ public class Attrs implements Map<String, String> {
 			String type = m.group(2);
 			Type t = Type.STRING;
 
-			if ( type.startsWith("List")) {
+			if (type.startsWith("List")) {
 				type = m.group(3);
-				if ( "String".equals(type))
+				if ("String".equals(type))
 					t = Type.STRINGS;
-				else if ( "Long".equals(type))
+				else if ("Long".equals(type))
 					t = Type.LONGS;
-				else if ( "Double".equals(type))
+				else if ("Double".equals(type))
 					t = Type.DOUBLES;
-				else if ( "Version".equals(type))
-					t = Type.VERSIONS;				
+				else if ("Version".equals(type))
+					t = Type.VERSIONS;
 			} else {
-				if ( "String".equals(type))
+				if ("String".equals(type))
 					t = Type.STRING;
-				else if ( "Long".equals(type))
+				else if ("Long".equals(type))
 					t = Type.LONG;
-				else if ( "Double".equals(type))
+				else if ("Double".equals(type))
 					t = Type.DOUBLE;
-				else if ( "Version".equals(type))
+				else if ("Version".equals(type))
 					t = Type.VERSION;
 			}
 			if (types == null)
-				types = new LinkedHashMap<String, Type>();
+				types = new LinkedHashMap<String,Type>();
 			types.put(key, t);
 
 			// TODO verify value?
@@ -176,13 +181,14 @@ public class Attrs implements Map<String, String> {
 		return t;
 	}
 
-	public void putAll(Map<? extends String, ? extends String> map) {
-		for (Map.Entry<? extends String, ? extends String> e : map.entrySet())
+	public void putAll(Map< ? extends String, ? extends String> map) {
+		for (Map.Entry< ? extends String, ? extends String> e : map.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
 	@SuppressWarnings("cast")
-	@Deprecated public String remove(Object var0) {
+	@Deprecated
+	public String remove(Object var0) {
 		assert var0 instanceof String;
 		if (map == null)
 			return null;
@@ -221,7 +227,7 @@ public class Attrs implements Map<String, String> {
 
 	public void append(StringBuilder sb) {
 		String del = "";
-		for (Map.Entry<String, String> e : entrySet()) {
+		for (Map.Entry<String,String> e : entrySet()) {
 			sb.append(del);
 			sb.append(e.getKey());
 			sb.append("=");
@@ -230,11 +236,13 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
-	@Deprecated public boolean equals(Object other) {
+	@Deprecated
+	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
-	@Deprecated public int hashCode() {
+	@Deprecated
+	public int hashCode() {
 		return super.hashCode();
 	}
 
@@ -275,12 +283,12 @@ public class Attrs implements Map<String, String> {
 	private Object convert(Type t, String s) {
 		if (t.sub == null) {
 			switch (t) {
-			case STRING:
-				return s;
-			case LONG:
-				return Long.parseLong(s.trim());
-			case VERSION:
-				return Version.parseVersion(s);
+				case STRING :
+					return s;
+				case LONG :
+					return Long.parseLong(s.trim());
+				case VERSION :
+					return Version.parseVersion(s);
 			}
 			return null;
 		}

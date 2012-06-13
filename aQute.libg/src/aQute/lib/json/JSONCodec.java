@@ -39,22 +39,18 @@ public class JSONCodec {
 	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
 
 	// Handlers
-	private final static WeakHashMap<Type, Handler>	handlers			= new WeakHashMap<Type, Handler>();
+	private final static WeakHashMap<Type,Handler>	handlers			= new WeakHashMap<Type,Handler>();
 	private static StringHandler					sh					= new StringHandler();
 	private static BooleanHandler					bh					= new BooleanHandler();
 	private static CharacterHandler					ch					= new CharacterHandler();
-	private static CollectionHandler				dch					= new CollectionHandler(
-																				ArrayList.class,
+	private static CollectionHandler				dch					= new CollectionHandler(ArrayList.class,
 																				Object.class);
-	private static SpecialHandler					sph					= new SpecialHandler(
-																				Pattern.class,
-																				null, null);
+	private static SpecialHandler					sph					= new SpecialHandler(Pattern.class, null, null);
 	private static DateHandler						sdh					= new DateHandler();
 	private static FileHandler						fh					= new FileHandler();
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
-	boolean ignorenull;
-	
+	boolean											ignorenull;
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
@@ -77,7 +73,7 @@ public class JSONCodec {
 	/*
 	 * Work horse encode methods, all encoding ends up here.
 	 */
-	void encode(Encoder app, Object object, Type type, Map<Object, Type> visited) throws Exception {
+	void encode(Encoder app, Object object, Type type, Map<Object,Type> visited) throws Exception {
 
 		// Get the null out of the way
 
@@ -104,11 +100,8 @@ public class JSONCodec {
 	 * stuff. It returns a handler for each type. If no appropriate handler
 	 * exists, it will create one for the given type. There are actually quite a
 	 * lot of handlers since Java is not very object oriented.
-	 * 
 	 * @param type
-	 * 
 	 * @return
-	 * 
 	 * @throws Exception
 	 */
 	Handler getHandler(Type type) throws Exception {
@@ -146,7 +139,7 @@ public class JSONCodec {
 
 		if (type instanceof Class) {
 
-			Class<?> clazz = (Class<?>) type;
+			Class< ? > clazz = (Class< ? >) type;
 
 			if (Enum.class.isAssignableFrom(clazz))
 				h = new EnumHandler(clazz);
@@ -162,16 +155,18 @@ public class JSONCodec {
 				h = new NumberHandler(clazz);
 			else {
 				Method valueOf = null;
-				Constructor<?> constructor = null;
+				Constructor< ? > constructor = null;
 
 				try {
 					constructor = clazz.getConstructor(String.class);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// Ignore
 				}
 				try {
 					valueOf = clazz.getMethod("valueOf", String.class);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// Ignore
 				}
 				if (constructor != null || valueOf != null)
@@ -190,22 +185,19 @@ public class JSONCodec {
 				ParameterizedType pt = (ParameterizedType) type;
 				Type rawType = pt.getRawType();
 				if (rawType instanceof Class) {
-					Class<?> rawClass = (Class<?>) rawType;
+					Class< ? > rawClass = (Class< ? >) rawType;
 					if (Iterable.class.isAssignableFrom(rawClass))
 						h = new CollectionHandler(rawClass, pt.getActualTypeArguments()[0]);
 					else if (Map.class.isAssignableFrom(rawClass))
-						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0],
-								pt.getActualTypeArguments()[1]);
+						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0], pt.getActualTypeArguments()[1]);
 					else
-						throw new IllegalArgumentException(
-								"Found a parameterized type that is not a map or collection");
+						throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 				}
 			} else if (type instanceof GenericArrayType) {
 				GenericArrayType gat = (GenericArrayType) type;
 				h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
 			} else
-				throw new IllegalArgumentException(
-						"Found a parameterized type that is not a map or collection");
+				throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 		}
 		synchronized (handlers) {
 			// We might actually have duplicates
@@ -225,87 +217,86 @@ public class JSONCodec {
 			// type information
 
 			switch (c) {
-			case '{':
-				type = LinkedHashMap.class;
-				break;
+				case '{' :
+					type = LinkedHashMap.class;
+					break;
 
-			case '[':
-				type = ArrayList.class;
-				break;
+				case '[' :
+					type = ArrayList.class;
+					break;
 
-			case '"':
-				return parseString(isr);
+				case '"' :
+					return parseString(isr);
 
-			case 'n':
-				isr.expect("ull");
-				return null;
+				case 'n' :
+					isr.expect("ull");
+					return null;
 
-			case 't':
-				isr.expect("rue");
-				return true;
+				case 't' :
+					isr.expect("rue");
+					return true;
 
-			case 'f':
-				isr.expect("alse");
-				return false;
+				case 'f' :
+					isr.expect("alse");
+					return false;
 
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-			case '-':
-				return parseNumber(isr);
+				case '0' :
+				case '1' :
+				case '2' :
+				case '3' :
+				case '4' :
+				case '5' :
+				case '6' :
+				case '7' :
+				case '8' :
+				case '9' :
+				case '-' :
+					return parseNumber(isr);
 
-			default:
-				throw new IllegalArgumentException("Invalid character at begin of token: "
-						+ (char) c);
+				default :
+					throw new IllegalArgumentException("Invalid character at begin of token: " + (char) c);
 			}
 		}
 
 		h = getHandler(type);
 
 		switch (c) {
-		case '{':
-			return h.decodeObject(isr);
+			case '{' :
+				return h.decodeObject(isr);
 
-		case '[':
-			return h.decodeArray(isr);
+			case '[' :
+				return h.decodeArray(isr);
 
-		case '"':
-			return h.decode(parseString(isr));
+			case '"' :
+				return h.decode(parseString(isr));
 
-		case 'n':
-			isr.expect("ull");
-			return h.decode();
+			case 'n' :
+				isr.expect("ull");
+				return h.decode();
 
-		case 't':
-			isr.expect("rue");
-			return h.decode(Boolean.TRUE);
+			case 't' :
+				isr.expect("rue");
+				return h.decode(Boolean.TRUE);
 
-		case 'f':
-			isr.expect("alse");
-			return h.decode(Boolean.FALSE);
+			case 'f' :
+				isr.expect("alse");
+				return h.decode(Boolean.FALSE);
 
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '-':
-			return h.decode(parseNumber(isr));
+			case '0' :
+			case '1' :
+			case '2' :
+			case '3' :
+			case '4' :
+			case '5' :
+			case '6' :
+			case '7' :
+			case '8' :
+			case '9' :
+			case '-' :
+				return h.decode(parseNumber(isr));
 
-		default:
-			throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
+			default :
+				throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
 		}
 	}
 
@@ -317,47 +308,45 @@ public class JSONCodec {
 		StringBuilder sb = new StringBuilder();
 		while (c != '"') {
 			if (c < 0 || Character.isISOControl(c))
-				throw new IllegalArgumentException(
-						"JSON strings may not contain control characters: " + r.current());
+				throw new IllegalArgumentException("JSON strings may not contain control characters: " + r.current());
 
 			if (c == '\\') {
 				c = r.read();
 				switch (c) {
-				case '"':
-				case '\\':
-				case '/':
-					sb.append((char)c);
-					break;
+					case '"' :
+					case '\\' :
+					case '/' :
+						sb.append((char) c);
+						break;
 
-				case 'b':
-					sb.append('\b');
-					break;
+					case 'b' :
+						sb.append('\b');
+						break;
 
-				case 'f':
-					sb.append('\f');
-					break;
-				case 'n':
-					sb.append('\n');
-					break;
-				case 'r':
-					sb.append('\r');
-					break;
-				case 't':
-					sb.append('\t');
-					break;
-				case 'u':
-					int a3 = hexDigit(r.read()) << 12;
-					int a2 = hexDigit(r.read()) << 8;
-					int a1 = hexDigit(r.read()) << 4;
-					int a0 = hexDigit(r.read()) << 0;
-					c = a3 + a2 + a1 + a0;
-					sb.append((char) c);
-					break;
+					case 'f' :
+						sb.append('\f');
+						break;
+					case 'n' :
+						sb.append('\n');
+						break;
+					case 'r' :
+						sb.append('\r');
+						break;
+					case 't' :
+						sb.append('\t');
+						break;
+					case 'u' :
+						int a3 = hexDigit(r.read()) << 12;
+						int a2 = hexDigit(r.read()) << 8;
+						int a1 = hexDigit(r.read()) << 4;
+						int a0 = hexDigit(r.read()) << 0;
+						c = a3 + a2 + a1 + a0;
+						sb.append((char) c);
+						break;
 
-				default:
-					throw new IllegalArgumentException(
-							"The only characters after a backslash are \", \\, b, f, n, r, t, and u but got "
-									+ c);
+					default :
+						throw new IllegalArgumentException(
+								"The only characters after a backslash are \", \\, b, f, n, r, t, and u but got " + c);
 				}
 			} else
 				sb.append((char) c);
@@ -455,15 +444,15 @@ public class JSONCodec {
 				continue;
 			}
 
-			throw new IllegalArgumentException(
-					"Invalid character in parsing list, expected ] or , but found " + (char) c);
+			throw new IllegalArgumentException("Invalid character in parsing list, expected ] or , but found "
+					+ (char) c);
 		}
 		assert r.current() == ']';
 		r.read(); // skip closing
 	}
 
 	@SuppressWarnings("rawtypes")
-	Class<?> getRawClass(Type type) {
+	Class< ? > getRawClass(Type type) {
 		if (type instanceof Class)
 			return (Class) type;
 
@@ -477,12 +466,12 @@ public class JSONCodec {
 		}
 
 		throw new IllegalArgumentException(
-				"Does not support generics beyond Parameterized Type  and GenericArrayType, got "
-						+ type);
+				"Does not support generics beyond Parameterized Type  and GenericArrayType, got " + type);
 	}
 
 	/**
 	 * Ignore null values in output and input
+	 * 
 	 * @param ignorenull
 	 * @return
 	 */

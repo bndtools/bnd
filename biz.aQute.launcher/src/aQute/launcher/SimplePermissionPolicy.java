@@ -55,7 +55,8 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			PermissionInfo[] info;
 			try {
 				info = parse(in);
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 			permissionAdmin.setDefaultPermissions(info);
@@ -82,14 +83,12 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		if (info == null) {
 			launcher.trace("Using default permissions for %s", bundle.getLocation());
 			info = defaultPermissions;
-		}
-		else
+		} else
 			launcher.trace("For permissions inside bundle %s", bundle.getLocation());
 
-		
 		if (info != null && info.length > 0) {
 			bundles.add(bundle);
-			permissionAdmin.setPermissions(bundle.getLocation(), info);			
+			permissionAdmin.setPermissions(bundle.getLocation(), info);
 		} else
 			launcher.trace("No permissions for %s", bundle.getLocation());
 	}
@@ -107,9 +106,9 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			try {
 				InputStream in = url.openStream();
 				info = parse(in);
-			} catch (IOException e) {
-				System.err.println("Unable to read permission info for bundle  "
-						+ bundle.getLocation() + " " + e);
+			}
+			catch (IOException e) {
+				System.err.println("Unable to read permission info for bundle  " + bundle.getLocation() + " " + e);
 			}
 		return info;
 	}
@@ -130,12 +129,14 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 						continue;
 					try {
 						permissions.add(new PermissionInfo(line));
-					} catch (IllegalArgumentException iae) {
+					}
+					catch (IllegalArgumentException iae) {
 						/* incorrectly encoded permission */
 						System.err.println("Permission incorrectly encoded: " + line + " " + iae);
 					}
 				}
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 			int size = permissions.size();
@@ -178,13 +179,13 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			return;
 		int type = event.getType();
 		switch (type) {
-		case BundleEvent.INSTALLED:
-		case BundleEvent.UPDATED:
-			setPermissions(bundle);
-			break;
-		case BundleEvent.UNINSTALLED:
-			clearPermissions(bundle);
-			break;
+			case BundleEvent.INSTALLED :
+			case BundleEvent.UPDATED :
+				setPermissions(bundle);
+				break;
+			case BundleEvent.UNINSTALLED :
+				clearPermissions(bundle);
+				break;
 		}
 	}
 

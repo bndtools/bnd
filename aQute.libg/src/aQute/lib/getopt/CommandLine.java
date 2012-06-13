@@ -17,15 +17,15 @@ import aQute.libg.reporter.*;
  * parameter of Options type. Usually this is an interface that extends Options.
  * The methods on this interface are options or flags (when they return
  * boolean).
- * 
  */
-@SuppressWarnings("unchecked") public class CommandLine {
-	static int		LINELENGTH	= 60;
-	static Pattern	ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
-	Reporter		reporter;
-	Justif			justif = new Justif(60);
-	CommandLineMessages msg;
-	
+@SuppressWarnings("unchecked")
+public class CommandLine {
+	static int			LINELENGTH	= 60;
+	static Pattern		ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
+	Reporter			reporter;
+	Justif				justif		= new Justif(60);
+	CommandLineMessages	msg;
+
 	public CommandLine(Reporter reporter) {
 		this.reporter = reporter;
 		msg = ReporterMessages.base(reporter, CommandLineMessages.class);
@@ -58,7 +58,7 @@ import aQute.libg.reporter.*;
 		//
 
 		List<String> arguments = new ArrayList<String>(input);
-		Map<String, Method> commands = getCommands(target);
+		Map<String,Method> commands = getCommands(target);
 
 		Method m = commands.get(cmd);
 		if (m == null) {
@@ -70,7 +70,7 @@ import aQute.libg.reporter.*;
 		// Parse the options
 		//
 
-		Class<? extends Options> optionClass = (Class<? extends Options>) m.getParameterTypes()[0];
+		Class< ? extends Options> optionClass = (Class< ? extends Options>) m.getParameterTypes()[0];
 		Options options = getOptions(optionClass, arguments);
 		if (options == null) {
 			// had some error, already reported
@@ -130,7 +130,7 @@ import aQute.libg.reporter.*;
 		return help(target, cmd, optionClass);
 	}
 
-	private String help(Object target, String cmd, Class<? extends Options> type) throws Exception {
+	private String help(Object target, String cmd, Class< ? extends Options> type) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
 		if (cmd == null)
@@ -149,13 +149,11 @@ import aQute.libg.reporter.*;
 	 * Parse the options in a command line and return an interface that provides
 	 * the options from this command line. This will parse up to (and including)
 	 * -- or an argument that does not start with -
-	 * 
 	 */
-	public <T extends Options> T getOptions(Class<T> specification, List<String> arguments)
-			throws Exception {
-		Map<String, String> properties = Create.map();
-		Map<String, Object> values = new HashMap<String, Object>();
-		Map<String, Method> options = getOptions(specification);
+	public <T extends Options> T getOptions(Class<T> specification, List<String> arguments) throws Exception {
+		Map<String,String> properties = Create.map();
+		Map<String,Object> values = new HashMap<String,Object>();
+		Map<String,Method> options = getOptions(specification);
 
 		argloop: while (arguments.size() > 0) {
 
@@ -186,15 +184,14 @@ import aQute.libg.reporter.*;
 
 						char optionChar = option.charAt(j);
 
-						for (Entry<String, Method> entry : options.entrySet()) {
+						for (Entry<String,Method> entry : options.entrySet()) {
 							if (entry.getKey().charAt(0) == optionChar) {
 								boolean last = (j + 1) >= option.length();
-								assignOptionValue(values, entry.getValue(),
-										arguments, last);
+								assignOptionValue(values, entry.getValue(), arguments, last);
 								continue charloop;
 							}
 						}
-						msg.UnrecognizedOption_(optionChar+"");
+						msg.UnrecognizedOption_(optionChar + "");
 					}
 				}
 			} else {
@@ -208,7 +205,7 @@ import aQute.libg.reporter.*;
 
 		// check if all required elements are set
 
-		for (Entry<String, Method> entry : options.entrySet()) {
+		for (Entry<String,Method> entry : options.entrySet()) {
 			Method m = entry.getValue();
 			String name = entry.getKey();
 			if (!values.containsKey(name) && isMandatory(m))
@@ -224,8 +221,8 @@ import aQute.libg.reporter.*;
 	/**
 	 * Answer a list of the options specified in an options interface
 	 */
-	private Map<String, Method> getOptions(Class<? extends Options> interf) {
-		Map<String, Method> map = new TreeMap<String, Method>();
+	private Map<String,Method> getOptions(Class< ? extends Options> interf) {
+		Map<String,Method> map = new TreeMap<String,Method>();
 
 		for (Method m : interf.getMethods()) {
 			if (m.getName().startsWith("_"))
@@ -260,8 +257,7 @@ import aQute.libg.reporter.*;
 	 *            if this is the last in a multi single character option
 	 * @return
 	 */
-	public void assignOptionValue(Map<String, Object> options, Method m, List<String> args,
-			boolean last) {
+	public void assignOptionValue(Map<String,Object> options, Method m, List<String> args, boolean last) {
 		String name = m.getName();
 		Type type = m.getGenericReturnType();
 
@@ -275,13 +271,12 @@ import aQute.libg.reporter.*;
 			// The option is followed by an argument
 
 			if (!last) {
-				msg.Option__WithArgumentNotLastInAvvreviation_(
-						name, name.charAt(0), getTypeDescriptor(type));
+				msg.Option__WithArgumentNotLastInAvvreviation_(name, name.charAt(0), getTypeDescriptor(type));
 				return;
 			}
 
 			if (args.isEmpty()) {
-				msg.MissingArgument__( name, name.charAt(0));
+				msg.MissingArgument__(name, name.charAt(0));
 				return;
 			}
 
@@ -313,10 +308,10 @@ import aQute.libg.reporter.*;
 	 * Provide a help text.
 	 */
 
-	public void help(Formatter f, Object target, String cmd, Class<? extends Options> specification) {
+	public void help(Formatter f, Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
-		Map<String, Method> options = getOptions(specification);
+		Map<String,Method> options = getOptions(specification);
 
 		String description = descr == null ? "" : descr.value();
 
@@ -338,7 +333,7 @@ import aQute.libg.reporter.*;
 		}
 
 		f.format("OPTIONS\n");
-		for (Entry<String, Method> entry : options.entrySet()) {
+		for (Entry<String,Method> entry : options.entrySet()) {
 			String optionName = entry.getKey();
 			Method m = entry.getValue();
 
@@ -346,8 +341,7 @@ import aQute.libg.reporter.*;
 			Description d = m.getAnnotation(Description.class);
 			boolean required = isMandatory(m);
 
-			String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d
-					.value());
+			String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d.value());
 
 			f.format("   %s -%s, --%s %s%s - %s\n", required ? " " : "[", //
 					optionName.charAt(0), //
@@ -397,7 +391,7 @@ import aQute.libg.reporter.*;
 		if (m == null)
 			f.format("No such command: %s\n", cmd);
 		else {
-			Class<? extends Options> options = (Class<? extends Options>) m.getParameterTypes()[0];
+			Class< ? extends Options> options = (Class< ? extends Options>) m.getParameterTypes()[0];
 			help(f, target, cmd, options);
 		}
 	}
@@ -408,13 +402,13 @@ import aQute.libg.reporter.*;
 	 * @param target
 	 * @return
 	 */
-	public Map<String, Method> getCommands(Object target) {
-		Map<String, Method> map = new TreeMap<String, Method>();
+	public Map<String,Method> getCommands(Object target) {
+		Map<String,Method> map = new TreeMap<String,Method>();
 
 		for (Method m : target.getClass().getMethods()) {
 
 			if (m.getParameterTypes().length == 1 && m.getName().startsWith("_")) {
-				Class<?> clazz = m.getParameterTypes()[0];
+				Class< ? > clazz = m.getParameterTypes()[0];
 				if (Options.class.isAssignableFrom(clazz)) {
 					String name = m.getName().substring(1);
 					map.put(name, m);
@@ -452,7 +446,7 @@ import aQute.libg.reporter.*;
 			ParameterizedType pt = (ParameterizedType) type;
 			Type c = pt.getRawType();
 			if (c instanceof Class) {
-				if (Collection.class.isAssignableFrom((Class<?>) c)) {
+				if (Collection.class.isAssignableFrom((Class< ? >) c)) {
 					return getTypeDescriptor(pt.getActualTypeArguments()[0]) + "*";
 				}
 			}
@@ -460,7 +454,7 @@ import aQute.libg.reporter.*;
 		if (!(type instanceof Class))
 			return "<>";
 
-		Class<?> clazz = (Class<?>) type;
+		Class< ? > clazz = (Class< ? >) type;
 
 		if (clazz == Boolean.class || clazz == boolean.class)
 			return ""; // Is a flag

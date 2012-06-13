@@ -1,20 +1,13 @@
 package aQute.lib.deployer.repository;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.*;
 
-import aQute.bnd.service.ResourceHandle;
-import aQute.bnd.service.url.TaggedData;
-import aQute.bnd.service.url.URLConnector;
-import aQute.lib.deployer.http.DefaultURLConnector;
-import aQute.lib.io.IO;
-import aQute.libg.reporter.Reporter;
+import aQute.bnd.service.*;
+import aQute.bnd.service.url.*;
+import aQute.lib.deployer.http.*;
+import aQute.lib.io.*;
+import aQute.libg.reporter.*;
 
 /**
  * <p>
@@ -22,7 +15,6 @@ import aQute.libg.reporter.Reporter;
  * as local files. Resources that are already local (i.e. <code>file:...</code>
  * URLs) are returned directly.
  * </p>
- * 
  * <p>
  * Two alternative caching modes are available. When the mode is
  * {@link CachingMode#PreferCache}, the cached file will always be returned if
@@ -34,10 +26,9 @@ import aQute.libg.reporter.Reporter;
  * </p>
  * 
  * @author njbartlett
- * 
  */
 public class CachingURLResourceHandle implements ResourceHandle {
-	
+
 	public static enum CachingMode {
 		/**
 		 * Always use the cached file, if it exists.
@@ -50,39 +41,42 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		 */
 		PreferRemote;
 	}
-	
-	static final String FILE_SCHEME = "file:";
-	static final String HTTP_SCHEME = "http:";
-	static final String UTF_8 = "UTF-8";
-	
-	final File cacheDir;
-	final URLConnector connector;
-	
+
+	static final String	FILE_SCHEME	= "file:";
+	static final String	HTTP_SCHEME	= "http:";
+	static final String	UTF_8		= "UTF-8";
+
+	final File			cacheDir;
+	final URLConnector	connector;
+
 	// The resolved, absolute URL of the resource
-	final URL url;
-	
+	final URL			url;
+
 	// The local file, if the resource IS a file, otherwise null.
-	final File localFile;
-	
-	// The cached file copy of the resource, if it is remote and has been downloaded.
-	final File cachedFile;
-	
+	final File			localFile;
+
+	// The cached file copy of the resource, if it is remote and has been
+	// downloaded.
+	final File			cachedFile;
+
 	// The etag file stores the etag of the last downloaded version
-	final File etagFile;
-	
-	final CachingMode mode;
-	
-	Reporter reporter;
-	
-	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, CachingMode mode) throws IOException {
+	final File			etagFile;
+
+	final CachingMode	mode;
+
+	Reporter			reporter;
+
+	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, CachingMode mode)
+			throws IOException {
 		this(url, baseUrl, cacheDir, new DefaultURLConnector(), mode);
 	}
-	
-	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, URLConnector connector, CachingMode mode) throws IOException {
+
+	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, URLConnector connector,
+			CachingMode mode) throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
 		this.mode = mode;
-		
+
 		if (url.startsWith(FILE_SCHEME)) {
 			// File URL may be relative or absolute
 			File file = new File(url.substring(FILE_SCHEME.length()));
@@ -90,7 +84,8 @@ public class CachingURLResourceHandle implements ResourceHandle {
 				this.localFile = file;
 			} else {
 				if (baseUrl == null || !baseUrl.startsWith(FILE_SCHEME))
-					throw new IllegalArgumentException("Relative file URLs cannot be resolved if the base URL is a non-file URL.");
+					throw new IllegalArgumentException(
+							"Relative file URLs cannot be resolved if the base URL is a non-file URL.");
 				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), file.toString());
 			}
 			this.url = localFile.toURI().toURL();
@@ -126,33 +121,34 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			}
 		}
 	}
-	
+
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
-	
+
 	File resolveFile(String baseFileName, String fileName) {
 		File resolved;
-		
+
 		File baseFile = new File(baseFileName);
 		if (baseFile.isDirectory())
 			resolved = new File(baseFile, fileName);
 		else if (baseFile.isFile())
 			resolved = new File(baseFile.getParentFile(), fileName);
 		else
-			throw new IllegalArgumentException("Cannot resolve relative to non-existant base file path: " + baseFileName);
-		
+			throw new IllegalArgumentException("Cannot resolve relative to non-existant base file path: "
+					+ baseFileName);
+
 		return resolved;
 	}
 
 	private File mapRemoteURL(URL url) throws UnsupportedEncodingException {
-		
+
 		String localDirName;
 		String localFileName;
-		
+
 		String fullUrl = url.toExternalForm();
 		int lastSlashIndex = fullUrl.lastIndexOf('/');
-		
+
 		File localDir;
 		if (lastSlashIndex > -1) {
 			localDirName = URLEncoder.encode(fullUrl.substring(0, lastSlashIndex), UTF_8);
@@ -168,10 +164,10 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			localFileName = URLEncoder.encode(fullUrl, UTF_8);
 		}
 		localDir.mkdirs();
-		
+
 		return new File(localDir, localFileName);
 	}
-	
+
 	private File mapETag(File cachedFile) {
 		return new File(cachedFile.getAbsolutePath() + ".etag");
 	}
@@ -182,14 +178,14 @@ public class CachingURLResourceHandle implements ResourceHandle {
 
 	public Location getLocation() {
 		Location result;
-		
+
 		if (localFile != null)
 			result = Location.local;
 		else if (cachedFile.exists())
 			result = Location.remote_cached;
 		else
 			result = Location.remote;
-		
+
 		return result;
 	}
 
@@ -197,72 +193,88 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		if (localFile != null)
 			return localFile;
 		if (cachedFile == null)
-			throw new IllegalStateException("Invalid URLResourceHandle: both local file and cache file location are uninitialised.");
-		
+			throw new IllegalStateException(
+					"Invalid URLResourceHandle: both local file and cache file location are uninitialised.");
+
 		switch (mode) {
-		case PreferCache:
-			if (!cachedFile.exists()) {
+			case PreferCache :
+				if (!cachedFile.exists()) {
+					try {
+						TaggedData data = connector.connectTagged(url);
+
+						// Save the etag
+						if (data.getTag() != null)
+							saveETag(data.getTag());
+
+						// Download to the cache
+						cacheDir.mkdirs();
+						IO.copy(data.getInputStream(), cachedFile);
+					}
+					catch (IOException e) {
+						if (reporter != null)
+							reporter.error(
+									"Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s",
+									url, cachedFile, e, collectStackTrace(e));
+						throw new IOException(
+								String.format(
+										"Download of remote resource %s failed and cache file %s not available, see log for details.",
+										url, cachedFile));
+					}
+				}
+				return cachedFile;
+			case PreferRemote :
+				boolean cacheExists = cachedFile.exists();
+				String etag = readETag();
+
 				try {
-					TaggedData data = connector.connectTagged(url);
-					
-					// Save the etag
+					// Only send the etag if we have a cached copy corresponding
+					// to that etag!
+					TaggedData data = cacheExists ? connector.connectTagged(url, etag) : connector.connectTagged(url);
+
+					// Null return means the cached file is still current
+					if (data == null)
+						return cachedFile;
+
+					// Save the etag...
 					if (data.getTag() != null)
 						saveETag(data.getTag());
-					
-					// Download to the cache
+
+					// Save the data to the cache
 					cacheDir.mkdirs();
 					IO.copy(data.getInputStream(), cachedFile);
-				} catch (IOException e) {
-					if (reporter != null)
-						reporter.error("Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
-					throw new IOException(String.format("Download of remote resource %s failed and cache file %s not available, see log for details.", url, cachedFile));
-				}
-			}
-			return cachedFile;
-		case PreferRemote:
-			boolean cacheExists = cachedFile.exists();
-			String etag = readETag();
-			
-			try {
-				// Only send the etag if we have a cached copy corresponding to that etag!
-				TaggedData data = cacheExists ? connector.connectTagged(url, etag) : connector.connectTagged(url);
-				
-				// Null return means the cached file is still current
-				if (data == null)
 					return cachedFile;
-				
-				// Save the etag...
-				if (data.getTag() != null)
-					saveETag(data.getTag());
-				
-				// Save the data to the cache
-				cacheDir.mkdirs();
-				IO.copy(data.getInputStream(), cachedFile);
-				return cachedFile;
-			} catch (IOException e) {
-				// Remote access failed, use the cache if available
-				if (cacheExists) {
-					if (reporter != null)
-						reporter.warning("Download of remote resource %s failed, using local cache %s. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e)); 
-					return cachedFile;
-				} else {
-					if (reporter != null)
-						reporter.error("Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
-					throw new IOException(String.format("Download of remote resource %s failed and cache file %s not available, see log for details.", url, cachedFile));
 				}
-			}
-		default:
-			throw new IllegalArgumentException("Invalid caching mode");
+				catch (IOException e) {
+					// Remote access failed, use the cache if available
+					if (cacheExists) {
+						if (reporter != null)
+							reporter.warning(
+									"Download of remote resource %s failed, using local cache %s. Original exception: %s. Trace: %s",
+									url, cachedFile, e, collectStackTrace(e));
+						return cachedFile;
+					} else {
+						if (reporter != null)
+							reporter.error(
+									"Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s",
+									url, cachedFile, e, collectStackTrace(e));
+						throw new IOException(
+								String.format(
+										"Download of remote resource %s failed and cache file %s not available, see log for details.",
+										url, cachedFile));
+					}
+				}
+			default :
+				throw new IllegalArgumentException("Invalid caching mode");
 		}
 	}
-	
+
 	private String collectStackTrace(Throwable t) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintStream pps = new PrintStream(buffer);
 		t.printStackTrace(pps);
 		return buffer.toString();
 	}
-	
+
 	String readETag() throws IOException {
 		String etag;
 		if (etagFile != null && etagFile.isFile())
@@ -271,16 +283,18 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			etag = null;
 		return etag;
 	}
-	
+
 	void saveETag(String etag) {
 		try {
 			IO.copy(IO.stream(etag), etagFile);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Errors saving the etag should not interfere with the download
-			if (reporter != null) reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
+			if (reporter != null)
+				reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
 		}
 	}
-	
+
 	public URL getResolvedUrl() {
 		return url;
 	}

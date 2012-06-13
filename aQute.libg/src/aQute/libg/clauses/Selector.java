@@ -65,18 +65,18 @@ public class Selector {
 		StringBuilder sb = new StringBuilder();
 		for (int c = 0; c < string.length(); c++) {
 			switch (string.charAt(c)) {
-			case '.':
-				sb.append("\\.");
-				break;
-			case '*':
-				sb.append(".*");
-				break;
-			case '?':
-				sb.append(".?");
-				break;
-			default:
-				sb.append(string.charAt(c));
-				break;
+				case '.' :
+					sb.append("\\.");
+					break;
+				case '*' :
+					sb.append(".*");
+					break;
+				case '?' :
+					sb.append(".?");
+					break;
+				default :
+					sb.append(string.charAt(c));
+					break;
 			}
 		}
 		string = sb.toString();
@@ -101,17 +101,16 @@ public class Selector {
 
 	public static List<Selector> getInstructions(Clauses clauses) {
 		List<Selector> result = new ArrayList<Selector>();
-		for (Map.Entry<String, Map<String, String>> entry : clauses.entrySet()) {
+		for (Map.Entry<String,Map<String,String>> entry : clauses.entrySet()) {
 			Selector instruction = getPattern(entry.getKey());
 			result.add(instruction);
 		}
 		return result;
 	}
-	
-	public static <T> List<T> select(Collection<T> domain,
-			List<Selector> instructions) {
+
+	public static <T> List<T> select(Collection<T> domain, List<Selector> instructions) {
 		List<T> result = new ArrayList<T>();
-		Iterator<T> iterator = domain.iterator(); 
+		Iterator<T> iterator = domain.iterator();
 		value: while (iterator.hasNext()) {
 			T value = iterator.next();
 			for (Selector instruction : instructions) {
@@ -124,6 +123,5 @@ public class Selector {
 		}
 		return result;
 	}
-	
 
 }

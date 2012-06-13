@@ -87,10 +87,8 @@ public class Clazz {
 
 	}
 
-	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS,
-																QUERY.EXTENDS, QUERY.IMPORTS,
-																QUERY.NAMED, QUERY.VERSION,
-																QUERY.ANNOTATED);
+	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
+																QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
 
 	/**
 	 * <pre>
@@ -106,29 +104,29 @@ public class Clazz {
 	 * 
 	 * @param mod
 	 */
-	final static int					ACC_PUBLIC		= 0x0001;					// Declared
+	final static int					ACC_PUBLIC		= 0x0001;												// Declared
 	// public;
 	// may
 	// be
 	// accessed
 	// from outside its package.
-	final static int					ACC_FINAL		= 0x0010;					// Declared
+	final static int					ACC_FINAL		= 0x0010;												// Declared
 	// final;
 	// no
 	// subclasses
 	// allowed.
-	final static int					ACC_SUPER		= 0x0020;					// Treat
+	final static int					ACC_SUPER		= 0x0020;												// Treat
 	// superclass
 	// methods
 	// specially when invoked by the
 	// invokespecial instruction.
-	final static int					ACC_INTERFACE	= 0x0200;					// Is
+	final static int					ACC_INTERFACE	= 0x0200;												// Is
 	// an
 	// interface,
 	// not
 	// a
 	// classs
-	final static int					ACC_ABSTRACT	= 0x0400;					// Declared
+	final static int					ACC_ABSTRACT	= 0x0400;												// Declared
 
 	// a thing not in the source code
 	final static int					ACC_SYNTHETIC	= 0x1000;
@@ -303,7 +301,7 @@ public class Clazz {
 	}
 
 	final static byte	SkipTable[]	= { //
-									0, // 0 non existent
+			0, // 0 non existent
 			-1, // 1 CONSTANT_utf8 UTF 8, handled in
 			// method
 			-1, // 2
@@ -371,7 +369,8 @@ public class Clazz {
 		InputStream in = resource.openInputStream();
 		try {
 			return parseClassFile(in, cd);
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -381,7 +380,8 @@ public class Clazz {
 		try {
 			this.cd = cd;
 			return parseClassFile(din);
-		} finally {
+		}
+		finally {
 			cd = null;
 			din.close();
 		}
@@ -409,59 +409,59 @@ public class Clazz {
 		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
 			byte tag = in.readByte();
 			switch (tag) {
-			case 0:
-				break process;
-			case 1:
-				constantUtf8(in, poolIndex);
-				break;
+				case 0 :
+					break process;
+				case 1 :
+					constantUtf8(in, poolIndex);
+					break;
 
-			case 3:
-				constantInteger(in, poolIndex);
-				break;
+				case 3 :
+					constantInteger(in, poolIndex);
+					break;
 
-			case 4:
-				constantFloat(in, poolIndex);
-				break;
+				case 4 :
+					constantFloat(in, poolIndex);
+					break;
 
-			// For some insane optimization reason are
-			// the long and the double two entries in the
-			// constant pool. See 4.4.5
-			case 5:
-				constantLong(in, poolIndex);
-				poolIndex++;
-				break;
+				// For some insane optimization reason are
+				// the long and the double two entries in the
+				// constant pool. See 4.4.5
+				case 5 :
+					constantLong(in, poolIndex);
+					poolIndex++;
+					break;
 
-			case 6:
-				constantDouble(in, poolIndex);
-				poolIndex++;
-				break;
+				case 6 :
+					constantDouble(in, poolIndex);
+					poolIndex++;
+					break;
 
-			case 7:
-				constantClass(in, poolIndex);
-				break;
+				case 7 :
+					constantClass(in, poolIndex);
+					break;
 
-			case 8:
-				constantString(in, poolIndex);
-				break;
+				case 8 :
+					constantString(in, poolIndex);
+					break;
 
-			case 10: // Method ref
-			case 11: // Interface Method ref
-				methodRef(in, poolIndex);
-				break;
+				case 10 : // Method ref
+				case 11 : // Interface Method ref
+					methodRef(in, poolIndex);
+					break;
 
-			// Name and Type
-			case 12:
-				nameAndType(in, poolIndex, tag);
-				break;
+				// Name and Type
+				case 12 :
+					nameAndType(in, poolIndex, tag);
+					break;
 
-			// We get the skip count for each record type
-			// from the SkipTable. This will also automatically
-			// abort when
-			default:
-				if (tag == 2)
-					throw new IOException("Invalid tag " + tag);
-				in.skipBytes(SkipTable[tag]);
-				break;
+				// We get the skip count for each record type
+				// from the SkipTable. This will also automatically
+				// abort when
+				default :
+					if (tag == 2)
+						throw new IOException("Invalid tag " + tag);
+					in.skipBytes(SkipTable[tag]);
+					break;
 			}
 		}
 
@@ -499,8 +499,7 @@ public class Clazz {
 			if (interfacesCount > 0) {
 				interfaces = new TypeRef[interfacesCount];
 				for (int i = 0; i < interfacesCount; i++)
-					interfaces[i] = analyzer.getTypeRef((String) pool[intPool[in
-							.readUnsignedShort()]]);
+					interfaces[i] = analyzer.getTypeRef((String) pool[intPool[in.readUnsignedShort()]]);
 				if (cd != null)
 					cd.implementsInterfaces(interfaces);
 			}
@@ -526,8 +525,7 @@ public class Clazz {
 					crawl = true;
 				}
 				if (cd != null)
-					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index]
-							.toString()));
+					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index].toString()));
 				descriptors.add(Integer.valueOf(descriptor_index));
 				doAttributes(in, ElementType.FIELD, false);
 			}
@@ -539,24 +537,21 @@ public class Clazz {
 			// can do this efficiently
 			//
 			if (crawl) {
-				forName = findMethodReference("java/lang/Class", "forName",
-						"(Ljava/lang/String;)Ljava/lang/Class;");
-				class$ = findMethodReference(className.getBinary(), "class$",
-						"(Ljava/lang/String;)Ljava/lang/Class;");
-			} else if (major == 48 ) {
-				forName = findMethodReference("java/lang/Class", "forName",
-						"(Ljava/lang/String;)Ljava/lang/Class;");
+				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+				class$ = findMethodReference(className.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
+			} else if (major == 48) {
+				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 				if (forName > 0) {
 					crawl = true;
 					class$ = findMethodReference(className.getBinary(), "class$",
 							"(Ljava/lang/String;)Ljava/lang/Class;");
 				}
 			}
-			
+
 			// There are some serious changes in the
 			// class file format. So we do not do any crawling
 			// it has also become less important
-			if ( major >= JAVA.OpenJDK7.major )
+			if (major >= JAVA.OpenJDK7.major)
 				crawl = false;
 
 			//
@@ -614,7 +609,8 @@ public class Clazz {
 			Set<TypeRef> xref = this.xref;
 			reset();
 			return xref;
-		} finally {
+		}
+		finally {
 			if (cd != null)
 				cd.classEnd();
 		}
@@ -633,8 +629,7 @@ public class Clazz {
 			pool[poolIndex] = intPool[poolIndex];
 	}
 
-	protected void pool(Object[] pool, int[] intPool) {
-	}
+	protected void pool(Object[] pool, int[] intPool) {}
 
 	/**
 	 * @param in
@@ -762,8 +757,7 @@ public class Clazz {
 	 *            The stream
 	 * @throws Exception
 	 */
-	private void doAttributes(DataInputStream in, ElementType member, boolean crawl)
-			throws Exception {
+	private void doAttributes(DataInputStream in, ElementType member, boolean crawl) throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
@@ -778,8 +772,7 @@ public class Clazz {
 	 *            the data stream
 	 * @throws Exception
 	 */
-	private void doAttribute(DataInputStream in, ElementType member, boolean crawl)
-			throws Exception {
+	private void doAttribute(DataInputStream in, ElementType member, boolean crawl) throws Exception {
 		int attribute_name_index = in.readUnsignedShort();
 		String attributeName = (String) pool[attribute_name_index];
 		long attribute_length = in.readInt();
@@ -824,7 +817,6 @@ public class Clazz {
 	 * 	u2 method_index;
 	 * }
 	 * </pre>
-	 * 
 	 * 
 	 * @param in
 	 * @throws IOException
@@ -996,83 +988,84 @@ public class Clazz {
 		while (bb.remaining() > 0) {
 			int instruction = 0xFF & bb.get();
 			switch (instruction) {
-			case OpCodes.ldc:
-				lastReference = 0xFF & bb.get();
-				break;
+				case OpCodes.ldc :
+					lastReference = 0xFF & bb.get();
+					break;
 
-			case OpCodes.ldc_w:
-				lastReference = 0xFFFF & bb.getShort();
-				break;
+				case OpCodes.ldc_w :
+					lastReference = 0xFFFF & bb.getShort();
+					break;
 
-			case OpCodes.invokespecial: {
-				int mref = 0xFFFF & bb.getShort();
-				if (cd != null)
-					getMethodDef(0, mref);
-				break;
-			}
+				case OpCodes.invokespecial : {
+					int mref = 0xFFFF & bb.getShort();
+					if (cd != null)
+						getMethodDef(0, mref);
+					break;
+				}
 
-			case OpCodes.invokevirtual: {
-				int mref = 0xFFFF & bb.getShort();
-				if (cd != null)
-					getMethodDef(0, mref);
-				break;
-			}
+				case OpCodes.invokevirtual : {
+					int mref = 0xFFFF & bb.getShort();
+					if (cd != null)
+						getMethodDef(0, mref);
+					break;
+				}
 
-			case OpCodes.invokeinterface: {
-				int mref = 0xFFFF & bb.getShort();
-				if (cd != null)
-					getMethodDef(0, mref);
-				break;
-			}
+				case OpCodes.invokeinterface : {
+					int mref = 0xFFFF & bb.getShort();
+					if (cd != null)
+						getMethodDef(0, mref);
+					break;
+				}
 
-			case OpCodes.invokestatic: {
-				int methodref = 0xFFFF & bb.getShort();
-				if (cd != null)
-					getMethodDef(0, methodref);
+				case OpCodes.invokestatic : {
+					int methodref = 0xFFFF & bb.getShort();
+					if (cd != null)
+						getMethodDef(0, methodref);
 
-				if ((methodref == forName || methodref == class$) && lastReference != -1
-						&& pool[intPool[lastReference]] instanceof String) {
-					String fqn = (String) pool[intPool[lastReference]];
-					if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
-						TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
-						referTo(clazz);
+					if ((methodref == forName || methodref == class$) && lastReference != -1
+							&& pool[intPool[lastReference]] instanceof String) {
+						String fqn = (String) pool[intPool[lastReference]];
+						if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
+							TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
+							referTo(clazz);
+						}
+						lastReference = -1;
+					}
+					break;
+				}
+
+				case OpCodes.tableswitch :
+					// Skip to place divisible by 4
+					while ((bb.position() & 0x3) != 0)
+						bb.get();
+					/* int deflt = */
+					bb.getInt();
+					int low = bb.getInt();
+					int high = bb.getInt();
+					try {
+						bb.position(bb.position() + (high - low + 1) * 4);
+					}
+					catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 					lastReference = -1;
-				}
-				break;
-			}
+					break;
 
-			case OpCodes.tableswitch:
-				// Skip to place divisible by 4
-				while ((bb.position() & 0x3) != 0)
-					bb.get();
-				/* int deflt = */
-				bb.getInt();
-				int low = bb.getInt();
-				int high = bb.getInt();
-				try {
-					bb.position(bb.position() + (high - low + 1) * 4);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				lastReference = -1;
-				break;
+				case OpCodes.lookupswitch :
+					// Skip to place divisible by 4
+					while ((bb.position() & 0x3) != 0)
+						bb.get();
+					/* deflt = */
+					bb.getInt();
+					int npairs = bb.getInt();
+					bb.position(bb.position() + npairs * 8);
+					lastReference = -1;
+					break;
 
-			case OpCodes.lookupswitch:
-				// Skip to place divisible by 4
-				while ((bb.position() & 0x3) != 0)
-					bb.get();
-				/* deflt = */
-				bb.getInt();
-				int npairs = bb.getInt();
-				bb.position(bb.position() + npairs * 8);
-				lastReference = -1;
-				break;
-
-			default:
-				lastReference = -1;
-				bb.position(bb.position() + OpCodes.OFFSETS[instruction]);
+				default :
+					lastReference = -1;
+					bb.position(bb.position() + OpCodes.OFFSETS[instruction]);
 			}
 		}
 	}
@@ -1082,8 +1075,8 @@ public class Clazz {
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInputStream in, ElementType member,
-			RetentionPolicy policy) throws IOException {
+	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy)
+			throws IOException {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1092,8 +1085,7 @@ public class Clazz {
 		}
 	}
 
-	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy)
-			throws IOException {
+	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy) throws IOException {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
@@ -1105,8 +1097,8 @@ public class Clazz {
 		}
 	}
 
-	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy,
-			boolean collect) throws IOException {
+	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect)
+			throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<TypeRef>();
@@ -1122,14 +1114,14 @@ public class Clazz {
 		}
 		TypeRef name = analyzer.getTypeRef((String) pool[type_index]);
 		int num_element_value_pairs = in.readUnsignedShort();
-		Map<String, Object> elements = null;
+		Map<String,Object> elements = null;
 		for (int v = 0; v < num_element_value_pairs; v++) {
 			int element_name_index = in.readUnsignedShort();
 			String element = (String) pool[element_name_index];
 			Object value = doElementValue(in, member, policy, collect);
 			if (collect) {
 				if (elements == null)
-					elements = new LinkedHashMap<String, Object>();
+					elements = new LinkedHashMap<String,Object>();
 				elements.put(element, value);
 			}
 		}
@@ -1139,56 +1131,54 @@ public class Clazz {
 			return null;
 	}
 
-	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy,
-			boolean collect) throws IOException {
+	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect)
+			throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
-		case 'B': // Byte
-		case 'C': // Character
-		case 'I': // Integer
-		case 'S': // Short
-			int const_value_index = in.readUnsignedShort();
-			return intPool[const_value_index];
+			case 'B' : // Byte
+			case 'C' : // Character
+			case 'I' : // Integer
+			case 'S' : // Short
+				int const_value_index = in.readUnsignedShort();
+				return intPool[const_value_index];
 
-		case 'D': // Double
-		case 'F': // Float
-		case 's': // String
-		case 'J': // Long
-			const_value_index = in.readUnsignedShort();
-			return pool[const_value_index];
+			case 'D' : // Double
+			case 'F' : // Float
+			case 's' : // String
+			case 'J' : // Long
+				const_value_index = in.readUnsignedShort();
+				return pool[const_value_index];
 
-		case 'Z': // Boolean
-			const_value_index = in.readUnsignedShort();
-			return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false
-					: true;
+			case 'Z' : // Boolean
+				const_value_index = in.readUnsignedShort();
+				return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false : true;
 
-		case 'e': // enum constant
-			int type_name_index = in.readUnsignedShort();
-			if (policy == RetentionPolicy.RUNTIME)
-				descriptors.add(Integer.valueOf(type_name_index));
-			int const_name_index = in.readUnsignedShort();
-			return pool[const_name_index];
+			case 'e' : // enum constant
+				int type_name_index = in.readUnsignedShort();
+				if (policy == RetentionPolicy.RUNTIME)
+					descriptors.add(Integer.valueOf(type_name_index));
+				int const_name_index = in.readUnsignedShort();
+				return pool[const_name_index];
 
-		case 'c': // Class
-			int class_info_index = in.readUnsignedShort();
-			if (policy == RetentionPolicy.RUNTIME)
-				descriptors.add(Integer.valueOf(class_info_index));
-			return pool[class_info_index];
+			case 'c' : // Class
+				int class_info_index = in.readUnsignedShort();
+				if (policy == RetentionPolicy.RUNTIME)
+					descriptors.add(Integer.valueOf(class_info_index));
+				return pool[class_info_index];
 
-		case '@': // Annotation type
-			return doAnnotation(in, member, policy, collect);
+			case '@' : // Annotation type
+				return doAnnotation(in, member, policy, collect);
 
-		case '[': // Array
-			int num_values = in.readUnsignedShort();
-			Object[] result = new Object[num_values];
-			for (int i = 0; i < num_values; i++) {
-				result[i] = doElementValue(in, member, policy, collect);
-			}
-			return result;
+			case '[' : // Array
+				int num_values = in.readUnsignedShort();
+				Object[] result = new Object[num_values];
+				for (int i = 0; i < num_values; i++) {
+					result[i] = doElementValue(in, member, policy, collect);
+				}
+				return result;
 
-		default:
-			throw new IllegalArgumentException("Invalid value for Annotation ElementValue tag "
-					+ tag);
+			default :
+				throw new IllegalArgumentException("Invalid value for Annotation ElementValue tag " + tag);
 		}
 	}
 
@@ -1213,9 +1203,7 @@ public class Clazz {
 
 	/**
 	 * This method parses a descriptor and adds the package of the descriptor to
-	 * the referenced packages.
-	 * 
-	 * The syntax of the descriptor is:
+	 * the referenced packages. The syntax of the descriptor is:
 	 * 
 	 * <pre>
 	 *   descriptor ::= ( '(' reference * ')' )? reference
@@ -1363,17 +1351,12 @@ public class Clazz {
 	}
 
 	/**
-	 * .class construct for different compilers
-	 * 
-	 * sun 1.1 Detect static variable class$com$acme$MyClass 1.2 " 1.3 " 1.4 "
-	 * 1.5 ldc_w (class) 1.6 "
-	 * 
-	 * eclipse 1.1 class$0, ldc (string), invokestatic Class.forName 1.2 " 1.3 "
-	 * 1.5 ldc (class) 1.6 "
-	 * 
-	 * 1.5 and later is not an issue, sun pre 1.5 is easy to detect the static
-	 * variable that decodes the class name. For eclipse, the class$0 gives away
-	 * we have a reference encoded in a string.
+	 * .class construct for different compilers sun 1.1 Detect static variable
+	 * class$com$acme$MyClass 1.2 " 1.3 " 1.4 " 1.5 ldc_w (class) 1.6 " eclipse
+	 * 1.1 class$0, ldc (string), invokestatic Class.forName 1.2 " 1.3 " 1.5 ldc
+	 * (class) 1.6 " 1.5 and later is not an issue, sun pre 1.5 is easy to
+	 * detect the static variable that decodes the class name. For eclipse, the
+	 * class$0 gives away we have a reference encoded in a string.
 	 * compilerversions/compilerversions.jar contains test versions of all
 	 * versions/compilers.
 	 */
@@ -1388,65 +1371,65 @@ public class Clazz {
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
 		switch (query) {
-		case ANY:
-			return true;
+			case ANY :
+				return true;
 
-		case NAMED:
-			if (instr.matches(getClassName().getDottedOnly()))
-				return !instr.isNegated();
-			return false;
-
-		case VERSION:
-			String v = major + "." + minor;
-			if (instr.matches(v))
-				return !instr.isNegated();
-			return false;
-
-		case IMPLEMENTS:
-			for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-				if (instr.matches(interfaces[i].getDottedOnly()))
+			case NAMED :
+				if (instr.matches(getClassName().getDottedOnly()))
 					return !instr.isNegated();
-			}
-			break;
-
-		case EXTENDS:
-			if (zuper == null)
 				return false;
 
-			if (instr.matches(zuper.getDottedOnly()))
-				return !instr.isNegated();
-			break;
-
-		case PUBLIC:
-			return Modifier.isPublic(accessx);
-
-		case CONCRETE:
-			return !Modifier.isAbstract(accessx);
-
-		case ANNOTATED:
-			if (annotations == null)
+			case VERSION :
+				String v = major + "." + minor;
+				if (instr.matches(v))
+					return !instr.isNegated();
 				return false;
 
-			for (TypeRef annotation : annotations) {
-				if (instr.matches(annotation.getFQN()))
+			case IMPLEMENTS :
+				for (int i = 0; interfaces != null && i < interfaces.length; i++) {
+					if (instr.matches(interfaces[i].getDottedOnly()))
+						return !instr.isNegated();
+				}
+				break;
+
+			case EXTENDS :
+				if (zuper == null)
+					return false;
+
+				if (instr.matches(zuper.getDottedOnly()))
 					return !instr.isNegated();
-			}
+				break;
 
-			return false;
+			case PUBLIC :
+				return Modifier.isPublic(accessx);
 
-		case RUNTIMEANNOTATIONS:
-			return hasClassAnnotations;
-		case CLASSANNOTATIONS:
-			return hasClassAnnotations;
+			case CONCRETE :
+				return !Modifier.isAbstract(accessx);
 
-		case ABSTRACT:
-			return Modifier.isAbstract(accessx);
+			case ANNOTATED :
+				if (annotations == null)
+					return false;
 
-		case IMPORTS:
-			for (PackageRef imp : imports) {
-				if (instr.matches(imp.getFQN()))
-					return !instr.isNegated();
-			}
+				for (TypeRef annotation : annotations) {
+					if (instr.matches(annotation.getFQN()))
+						return !instr.isNegated();
+				}
+
+				return false;
+
+			case RUNTIMEANNOTATIONS :
+				return hasClassAnnotations;
+			case CLASSANNOTATIONS :
+				return hasClassAnnotations;
+
+			case ABSTRACT :
+				return Modifier.isAbstract(accessx);
+
+			case IMPORTS :
+				for (PackageRef imp : imports) {
+					if (instr.matches(imp.getFQN()))
+						return !instr.isNegated();
+				}
 		}
 
 		if (zuper == null)
@@ -1465,12 +1448,11 @@ public class Clazz {
 
 	/**
 	 * Called when crawling the byte code and a method reference is found
-	 * 
 	 */
 	void getMethodDef(int access, int methodRefPoolIndex) {
-		if ( methodRefPoolIndex == 0)
+		if (methodRefPoolIndex == 0)
 			return;
-		
+
 		Object o = pool[methodRefPoolIndex];
 		if (o != null && o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
@@ -1493,8 +1475,7 @@ public class Clazz {
 				throw new IllegalArgumentException(
 						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
 		} else
-			throw new IllegalArgumentException(
-					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
+			throw new IllegalArgumentException("Invalid class file (or parsing is wrong), Not an assoc at a method ref");
 	}
 
 	public boolean isPublic() {
@@ -1519,26 +1500,26 @@ public class Clazz {
 			return string.substring(1, string.length() - 1).replace('/', '.');
 
 		switch (string.charAt(0)) {
-		case 'V':
-			return "void";
-		case 'B':
-			return "byte";
-		case 'C':
-			return "char";
-		case 'I':
-			return "int";
-		case 'S':
-			return "short";
-		case 'D':
-			return "double";
-		case 'F':
-			return "float";
-		case 'J':
-			return "long";
-		case 'Z':
-			return "boolean";
-		case '[': // Array
-			return objectDescriptorToFQN(string.substring(1)) + "[]";
+			case 'V' :
+				return "void";
+			case 'B' :
+				return "byte";
+			case 'C' :
+				return "char";
+			case 'I' :
+				return "int";
+			case 'S' :
+				return "short";
+			case 'D' :
+				return "double";
+			case 'F' :
+				return "float";
+			case 'J' :
+				return "long";
+			case 'Z' :
+				return "boolean";
+			case '[' : // Array
+				return objectDescriptorToFQN(string.substring(1)) + "[]";
 		}
 		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
 	}

@@ -10,8 +10,8 @@ import aQute.libg.header.*;
 public class NoUsesTest extends TestCase {
 
 	/*
-	 * Check if we explicitly set a uses directive, prepend the calculated
-	 * but the calculated is empty. This should remove the extraneuous comma
+	 * Check if we explicitly set a uses directive, prepend the calculated but
+	 * the calculated is empty. This should remove the extraneuous comma
 	 */
 	public void testExplicitUsesWithPrependZeroUses() throws Exception {
 		Builder bmaker = new Builder();
@@ -20,22 +20,22 @@ public class NoUsesTest extends TestCase {
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("not.used", uses);
 	}
-	
+
 	/*
-	 * Check if we explicitly set a uses directive, but append it
-	 * with the calculated directive
+	 * Check if we explicitly set a uses directive, but append it with the
+	 * calculated directive
 	 */
 	public void testExplicitUsesWithAppend() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
-		assertTrue("not.used", uses.indexOf("not.used")>=0);
-		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework")>=0);
+		assertTrue("not.used", uses.indexOf("not.used") >= 0);
+		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework") >= 0);
 	}
 
 	/*
-	 * Check if we explicitly set a uses directive, append the calculated
-	 * but the calculated is empty. This should remove the extraneuous comma
+	 * Check if we explicitly set a uses directive, append the calculated but
+	 * the calculated is empty. This should remove the extraneuous comma
 	 */
 	public void testExplicitUsesWithAppendZeroUses() throws Exception {
 		Builder bmaker = new Builder();
@@ -44,18 +44,19 @@ public class NoUsesTest extends TestCase {
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("not.used", uses);
 	}
-	
+
 	/*
-	 * Check if we explicitly set a uses directive, but append it
-	 * with the calculated directive
+	 * Check if we explicitly set a uses directive, but append it with the
+	 * calculated directive
 	 */
 	public void testExplicitUsesWithPrepend() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
-		assertTrue("not.used", uses.indexOf("not.used")>=0);
-		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework")>=0);
+		assertTrue("not.used", uses.indexOf("not.used") >= 0);
+		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework") >= 0);
 	}
+
 	/*
 	 * Check if we explicitly set a uses directive
 	 */
@@ -65,14 +66,13 @@ public class NoUsesTest extends TestCase {
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("not.used", uses);
 	}
-	
+
 	public void testExportedUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker, org.osgi.framework");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("org.osgi.framework", uses);
 	}
-	
 
 	public void testPrivateUses() throws Exception {
 		Builder bmaker = new Builder();
@@ -81,7 +81,7 @@ public class NoUsesTest extends TestCase {
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertNull("org.osgi.framework", uses);
 	}
-	
+
 	public void testHasUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "test.activator");
@@ -97,32 +97,32 @@ public class NoUsesTest extends TestCase {
 		assertNull("org.osgi.framework", uses);
 	}
 
+	String findUses(Builder bmaker, String pack) throws Exception {
+		File cp[] = {
+				new File("bin"), new File("jar/osgi.jar")
+		};
+		bmaker.setClasspath(cp);
+		Jar jar = bmaker.build();
+		assertOk(bmaker);
+		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+		assertNotNull("exports", exports);
+		Parameters map = Processor.parseHeader(exports, null);
+		if (map == null)
+			return null;
 
-	
-	String findUses(Builder bmaker, String pack ) throws Exception {
-			File cp[] = { new File("bin"), new File("jar/osgi.jar") };
-			bmaker.setClasspath(cp);
-			Jar jar = bmaker.build();
-			assertOk(bmaker);
-			String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
-			assertNotNull("exports", exports );
-			Parameters map = Processor.parseHeader(exports, null);
-			if ( map == null )
-				return null;
-			
-			Map<String,String> clause = map.get(pack);
-			if ( clause == null )
-				return null;
-			
-			return clause.get("uses:");			
+		Map<String,String> clause = map.get(pack);
+		if (clause == null)
+			return null;
+
+		return clause.get("uses:");
 	}
-	
+
 	void assertOk(Analyzer bmaker) throws Exception {
 		System.err.println(bmaker.getErrors());
 		System.err.println(bmaker.getWarnings());
 		bmaker.getJar().getManifest().write(System.err);
-		assertEquals(0,bmaker.getErrors().size());
-		assertEquals(0,bmaker.getWarnings().size());
-		
+		assertEquals(0, bmaker.getErrors().size());
+		assertEquals(0, bmaker.getWarnings().size());
+
 	}
 }

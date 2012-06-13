@@ -13,9 +13,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 	public final static String	NAME	= "name";
 
-	File					root;
-	Reporter				reporter;
-	String					name;
+	File						root;
+	Reporter					reporter;
+	String						name;
 
 	public String toString() {
 		return "maven:" + root;
@@ -31,9 +31,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			range = new VersionRange(version);
 
 		List<BsnToMavenPath> plugins = ((Processor) reporter).getPlugins(BsnToMavenPath.class);
-		if ( plugins.isEmpty())
+		if (plugins.isEmpty())
 			plugins.add(this);
-		
+
 		for (BsnToMavenPath cvr : plugins) {
 			String[] paths = cvr.getGroupAndArtifact(bsn);
 			if (paths != null) {
@@ -62,18 +62,16 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 				if (Verifier.isVersion(vv)) {
 					Version vvv = new Version(vv);
 					if (range.includes(vvv)) {
-						File file = Processor.getFile(vsdir, v + "/" + artifactId + "-" + v
-								+ ".jar");
+						File file = Processor.getFile(vsdir, v + "/" + artifactId + "-" + v + ".jar");
 						if (file.isFile())
 							result.add(file);
 						else
 							reporter.warning("Expected maven entry was not a valid file %s ", file);
 					}
 				} else {
-					reporter
-							.warning(
-									"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s",
-									vsdir, vv, v);
+					reporter.warning(
+							"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s",
+							vsdir, vv, v);
 				}
 			}
 		} else
@@ -119,27 +117,27 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public List<Version> versions(String bsn) throws Exception {
-		
-		File files[] = get( bsn, null);
+
+		File files[] = get(bsn, null);
 		List<Version> versions = new ArrayList<Version>();
-		for ( File f : files ) {
+		for (File f : files) {
 			String version = f.getParentFile().getName();
 			version = Builder.cleanupVersion(version);
-			Version v = new Version( version );
+			Version v = new Version(version);
 			versions.add(v);
 		}
 		return versions;
 	}
 
-	public void setProperties(Map<String, String> map) {
+	public void setProperties(Map<String,String> map) {
 		File home = new File("");
 		String root = map.get("root");
 		if (root == null) {
-			home = new File( System.getProperty("user.home") );
-			this.root = Processor.getFile(home , ".m2/repository").getAbsoluteFile();
+			home = new File(System.getProperty("user.home"));
+			this.root = Processor.getFile(home, ".m2/repository").getAbsoluteFile();
 		} else
 			this.root = Processor.getFile(home, root).getAbsoluteFile();
-		
+
 		if (!this.root.isDirectory()) {
 			reporter.error("Maven repository did not get a proper URL to the repository %s", root);
 		}
@@ -155,21 +153,23 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		String groupId;
 		String artifactId;
 		int n = bsn.indexOf('.');
-		
-		while ( n > 0 ) {
-			artifactId = bsn.substring(n+1);
-			groupId = bsn.substring(0,n);
-			
-			File gdir = new File(root, groupId.replace('.',File.separatorChar)).getAbsoluteFile();
-			File adir = new File( gdir, artifactId).getAbsoluteFile();
-			if ( adir.isDirectory() )
-				return new String[] {groupId, artifactId};
-			
-			n = bsn.indexOf('.',n+1);
+
+		while (n > 0) {
+			artifactId = bsn.substring(n + 1);
+			groupId = bsn.substring(0, n);
+
+			File gdir = new File(root, groupId.replace('.', File.separatorChar)).getAbsoluteFile();
+			File adir = new File(gdir, artifactId).getAbsoluteFile();
+			if (adir.isDirectory())
+				return new String[] {
+						groupId, artifactId
+				};
+
+			n = bsn.indexOf('.', n + 1);
 		}
 		return null;
 	}
-	
+
 	public String getName() {
 		if (name == null) {
 			return toString();
@@ -181,16 +181,16 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		File[] files = get(bsn, range);
 		if (files.length >= 0) {
 			switch (strategy) {
-			case LOWEST:
-				return files[0];
-			case HIGHEST:
-				return files[files.length - 1];
+				case LOWEST :
+					return files[0];
+				case HIGHEST :
+					return files[files.length - 1];
 			}
 		}
 		return null;
 	}
 
-	public void setRoot( File f  ) {
+	public void setRoot(File f) {
 		root = f;
 	}
 

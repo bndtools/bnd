@@ -57,32 +57,36 @@ public class ComponentTest extends TestCase {
 						return null;
 				}
 			});
-		} catch (ParserConfigurationException e) {
+		}
+		catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Can we order the references? References are ordered by their name as Java does not
-	 * define the order of the methods.
+	 * Can we order the references? References are ordered by their name as Java
+	 * does not define the order of the methods.
 	 * 
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	
-	@Component static class TestReferenceOrdering {
-		
-		@Reference(service=LogService.class)
+
+	@Component
+	static class TestReferenceOrdering {
+
+		@Reference(service = LogService.class)
 		void setA(ServiceReference ref) {}
+
 		@Reference
 		void setC(LogService log) {}
-		@Reference(service=LogService.class)
+
+		@Reference(service = LogService.class)
 		void setB(Map<String,Object> map) {}
 	}
-	
-	public void testReferenceOrdering () throws Exception {
+
+	public void testReferenceOrdering() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File( "bin"));
+		b.addClasspath(new File("bin"));
 		b.setProperty("Service-Component", "*TestReferenceOrdering");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -93,15 +97,14 @@ public class ComponentTest extends TestCase {
 		assertEquals("c", nodes.item(2).getAttributes().getNamedItem("name").getTextContent());
 	}
 
-	
-	
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	public void testScalaObject () throws Exception {
+	public void testScalaObject() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File( "jar/com.test.scala.jar"));
+		b.addClasspath(new File("jar/com.test.scala.jar"));
 		b.setProperty("Service-Component", "*");
 		b.setProperty("Export-Package", "com.test.scala.*");
 		Jar jar = b.build();
@@ -113,23 +116,22 @@ public class ComponentTest extends TestCase {
 		Document doc = doc(b, "com.test.scala.Service");
 		assertEquals("com.test.scala.Service", xpath.evaluate("component/implementation/@class", doc));
 		assertEquals("", xpath.evaluate("component/service/provide/@interface", doc));
-		
+
 	}
-	
-	
-	
-	
+
 	/**
 	 * Test config with metatype
 	 */
 
-	@Component(name = "config", designateFactory = Config.class, configurationPolicy = ConfigurationPolicy.require) static class MetatypeConfig {
+	@Component(name = "config", designateFactory = Config.class, configurationPolicy = ConfigurationPolicy.require)
+	static class MetatypeConfig {
 		interface Config {
 			String name();
 		}
 	}
 
-	@Component(designate = Config.class) static class MetatypeConfig2 {
+	@Component(designate = Config.class)
+	static class MetatypeConfig2 {
 		interface Config {
 			String name();
 		}
@@ -138,7 +140,9 @@ public class ComponentTest extends TestCase {
 	public void testConfig() throws Exception {
 		Builder b = new Builder();
 		b.setExceptions(true);
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*MetatypeConfig*");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -161,49 +165,51 @@ public class ComponentTest extends TestCase {
 			Resource mr = b.getJar().getResource("OSGI-INF/metatype/config.xml");
 			mr.write(System.err);
 			Document d = db.parse(mr.openInputStream());
-			assertEquals("config", xpath.evaluate("//Designate/@factoryPid", d,
-					XPathConstants.STRING));
-			assertEquals("config", xpath.evaluate("//Object/@ocdref", d,
-					XPathConstants.STRING));
+			assertEquals("config", xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
+			assertEquals("config", xpath.evaluate("//Object/@ocdref", d, XPathConstants.STRING));
 		}
 
 		// Now with default name
 		{
-			Resource cr2 = b.getJar()
-					.getResource("OSGI-INF/test.component.ComponentTest$MetatypeConfig2.xml");
+			Resource cr2 = b.getJar().getResource("OSGI-INF/test.component.ComponentTest$MetatypeConfig2.xml");
 			cr2.write(System.err);
 			Document d = db.parse(cr2.openInputStream());
-			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate("//scr:component/@name",
-					d, XPathConstants.STRING));
+			assertEquals("test.component.ComponentTest$MetatypeConfig2",
+					xpath.evaluate("//scr:component/@name", d, XPathConstants.STRING));
 		}
 		{
-			Resource mr2 = b.getJar().getResource(
-					"OSGI-INF/metatype/test.component.ComponentTest$MetatypeConfig2.xml");
+			Resource mr2 = b.getJar().getResource("OSGI-INF/metatype/test.component.ComponentTest$MetatypeConfig2.xml");
 			mr2.write(System.err);
 			Document d = db.parse(mr2.openInputStream());
-			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate(
-					"//Designate/@pid", d, XPathConstants.STRING));
-			assertEquals("test.component.ComponentTest$MetatypeConfig2", xpath.evaluate("//Object/@ocdref", d,
-					XPathConstants.STRING));
+			assertEquals("test.component.ComponentTest$MetatypeConfig2",
+					xpath.evaluate("//Designate/@pid", d, XPathConstants.STRING));
+			assertEquals("test.component.ComponentTest$MetatypeConfig2",
+					xpath.evaluate("//Object/@ocdref", d, XPathConstants.STRING));
 		}
 	}
 
 	/**
 	 * Test properties
 	 */
-	@Meta.OCD static interface Config {
+	@Meta.OCD
+	static interface Config {
 		String name();
 	}
 
-	@Component(name = "props", properties = { "a=1", "b=3", "c=1|2|3" }, designate = Config.class, designateFactory = Config.class) static class PropertiesAndConfig {
-		@Activate protected void activate(ComponentContext c) {
-		}
+	@Component(name = "props", properties = {
+			"a=1", "b=3", "c=1|2|3"
+	}, designate = Config.class, designateFactory = Config.class)
+	static class PropertiesAndConfig {
+		@Activate
+		protected void activate(ComponentContext c) {}
 	}
 
 	public void testPropertiesAndConfig() throws Exception {
 		Builder b = new Builder();
 		b.setExceptions(true);
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*PropertiesAndConfig");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -225,13 +231,14 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Test if a reference is made to an interface implemented on a superclass.
-	 * 
 	 * This is from https://github.com/bndtools/bnd/issues#issue/23
 	 */
 
 	public void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
 		b.addClasspath(new File("jar/osgi.jar"));
@@ -250,39 +257,49 @@ public class ComponentTest extends TestCase {
 	 * Test if a package private method gives us 1.1 + namespace in the XML
 	 */
 
-	@Component(name = "protected") static class PackageProtectedActivateMethod {
-		@Activate protected void activatex(ComponentContext c) {
-		}
+	@Component(name = "protected")
+	static class PackageProtectedActivateMethod {
+		@Activate
+		protected void activatex(ComponentContext c) {}
 	}
 
-	@Component(name = "packageprivate") static class PackagePrivateActivateMethod {
-		@Activate void activatex(ComponentContext c) {
-		}
+	@Component(name = "packageprivate")
+	static class PackagePrivateActivateMethod {
+		@Activate
+		void activatex(ComponentContext c) {}
 	}
 
-	@Component(name = "private") static class PrivateActivateMethod {
-		@SuppressWarnings("unused") @Activate private void activatex(ComponentContext c) {
-		}
+	@Component(name = "private")
+	static class PrivateActivateMethod {
+		@SuppressWarnings("unused")
+		@Activate
+		private void activatex(ComponentContext c) {}
 	}
 
-	@Component(name = "default-private") static class DefaultPrivateActivateMethod {
-		@SuppressWarnings("unused") @Activate private void activate(ComponentContext c) {
-		}
+	@Component(name = "default-private")
+	static class DefaultPrivateActivateMethod {
+		@SuppressWarnings("unused")
+		@Activate
+		private void activate(ComponentContext c) {}
 	}
 
-	@Component(name = "default-protected") static class DefaultProtectedActivateMethod {
-		@Activate protected void activate(ComponentContext c) {
-		}
+	@Component(name = "default-protected")
+	static class DefaultProtectedActivateMethod {
+		@Activate
+		protected void activate(ComponentContext c) {}
 	}
 
-	@Component(name = "public") static class PublicActivateMethod {
-		@Activate public void activatex(ComponentContext c) {
-		}
+	@Component(name = "public")
+	static class PublicActivateMethod {
+		@Activate
+		public void activatex(ComponentContext c) {}
 	}
 
 	public void testPackagePrivateActivateMethod() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*ActivateMethod");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -292,37 +309,37 @@ public class ComponentTest extends TestCase {
 			Document doc = doc(b, "default-private");
 			Object o = xpath.evaluate("scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "",xpath.evaluate("component/@activate", doc));
+			assertEquals("", xpath.evaluate("component/@activate", doc));
 		}
 		{
 			Document doc = doc(b, "default-protected");
 			Object o = xpath.evaluate("component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "",xpath.evaluate("component/@activate", doc));
+			assertEquals("", xpath.evaluate("component/@activate", doc));
 		}
 		{
 			Document doc = doc(b, "public");
 			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+			assertEquals("activatex", xpath.evaluate("scr:component/@activate", doc));
 		}
 		{
 			Document doc = doc(b, "private");
 			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+			assertEquals("activatex", xpath.evaluate("scr:component/@activate", doc));
 		}
 		{
 			Document doc = doc(b, "protected");
 			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+			assertEquals("activatex", xpath.evaluate("scr:component/@activate", doc));
 		}
 		{
 			Document doc = doc(b, "packageprivate");
 			Object o = xpath.evaluate("//scr:component", doc, XPathConstants.NODE);
 			assertNotNull(o);
-			assertEquals( "activatex", xpath.evaluate("scr:component/@activate", doc));
+			assertEquals("activatex", xpath.evaluate("scr:component/@activate", doc));
 		}
 
 	}
@@ -331,16 +348,19 @@ public class ComponentTest extends TestCase {
 	 * Test an attribute on an annotation
 	 */
 
-	@Component(name = "annotated") static class Annotated {
+	@Component(name = "annotated")
+	static class Annotated {
 
-		@Reference protected void setLog(LogService log) {
-		}
+		@Reference
+		protected void setLog(LogService log) {}
 
 	}
 
 	public void testAnnotatedWithAttribute() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*NoUnbind;log=org.osgi.service.log.LogService");
 		b.setProperty("Private-Package", "test.component");
 		Jar jar = b.build();
@@ -361,9 +381,8 @@ public class ComponentTest extends TestCase {
 
 	public void testNonFQNAndNoAnnotations() throws Exception {
 		Builder b = new Builder();
-		b
-				.setProperty("Include-Resource",
-						"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+		b.setProperty("Include-Resource",
+				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
 		b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS + "=true");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
@@ -386,9 +405,8 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
-		b
-				.setProperty("Include-Resource",
-						"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+		b.setProperty("Include-Resource",
+				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
 		b.setProperty("Service-Component", "*");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
@@ -403,16 +421,19 @@ public class ComponentTest extends TestCase {
 		assertNull(component);
 	}
 
-	@Component(name = "nounbind") static class NoUnbind {
+	@Component(name = "nounbind")
+	static class NoUnbind {
 
-		@Reference protected void setLog(LogService log) {
-		}
+		@Reference
+		protected void setLog(LogService log) {}
 
 	}
 
 	public void testNoUnbind() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*NoUnbind");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -426,16 +447,19 @@ public class ComponentTest extends TestCase {
 		assertEquals("", xpath.evaluate("component/reference/@unbind", doc));
 	}
 
-	@Component(name = "explicitunbind") static class ExplicitUnbind {
+	@Component(name = "explicitunbind")
+	static class ExplicitUnbind {
 
-		@Reference(unbind = "killLog") protected void setLog(LogService log) {
-		}
+		@Reference(unbind = "killLog")
+		protected void setLog(LogService log) {}
 
 	}
 
 	public void testExplicitUnbind() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*ExplicitUnbind");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -454,29 +478,34 @@ public class ComponentTest extends TestCase {
 	 * activate and deactivate
 	 */
 
-	@Component(name = "ncomp", provide = {}) static class NewActivateVersion {
+	@Component(name = "ncomp", provide = {})
+	static class NewActivateVersion {
 
-		@Activate protected void activate(ComponentContext context) {
-		}
-
-	}
-
-	@Component(name = "ndcomp", provide = {}) static class NewDeActivateVersion {
-		@Deactivate protected void deactivate() {
-		}
+		@Activate
+		protected void activate(ComponentContext context) {}
 
 	}
 
-	@Component(name = "nbcomp", provide = {}) static class NewBindVersion {
+	@Component(name = "ndcomp", provide = {})
+	static class NewDeActivateVersion {
+		@Deactivate
+		protected void deactivate() {}
 
-		@Reference protected void bind(ServiceReference ref, Map<String, Object> map) {
-		}
+	}
+
+	@Component(name = "nbcomp", provide = {})
+	static class NewBindVersion {
+
+		@Reference
+		protected void bind(ServiceReference ref, Map<String,Object> map) {}
 
 	}
 
 	public void testNewVersion() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*Version");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -496,20 +525,25 @@ public class ComponentTest extends TestCase {
 	 * Test the same bind method names
 	 */
 
-	@Component(name = "cpcomp") static class SameRefName {
+	@Component(name = "cpcomp")
+	static class SameRefName {
 
-		@Reference protected void bind(LogService log) {
+		@Reference
+		protected void bind(LogService log) {
 
 		}
 
-		@Reference protected void bind(EventAdmin event) {
+		@Reference
+		protected void bind(EventAdmin event) {
 
 		}
 	}
 
 	public void testSameRefName() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.SameRefName");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -526,13 +560,17 @@ public class ComponentTest extends TestCase {
 	 */
 
 	@Component(name = "cpcomp", configurationPolicy = ConfigurationPolicy.require, provide = {
-			Serializable.class, EventAdmin.class }) static class ConfigurationPolicyTest {
+			Serializable.class, EventAdmin.class
+	})
+	static class ConfigurationPolicyTest {
 
 	}
 
 	public void testConfigurationPolicy() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.ConfigurationPolicyTest");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -542,10 +580,10 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "cpcomp");
-		assertEquals("java.io.Serializable", doc.getElementsByTagName("provide").item(0)
-				.getAttributes().getNamedItem("interface").getTextContent());
-		assertEquals("org.osgi.service.event.EventAdmin", doc.getElementsByTagName("provide").item(
-				1).getAttributes().getNamedItem("interface").getTextContent());
+		assertEquals("java.io.Serializable",
+				doc.getElementsByTagName("provide").item(0).getAttributes().getNamedItem("interface").getTextContent());
+		assertEquals("org.osgi.service.event.EventAdmin", doc.getElementsByTagName("provide").item(1).getAttributes()
+				.getNamedItem("interface").getTextContent());
 
 	}
 
@@ -553,35 +591,39 @@ public class ComponentTest extends TestCase {
 	 * Test to see if we use defaults we get the old version of the namespace
 	 */
 
-	@Component(name = "vcomp", provide = {}) static class OldVersion {
+	@Component(name = "vcomp", provide = {})
+	static class OldVersion {
 
-		@Activate protected void activate(ComponentContext cc) {
-		}
+		@Activate
+		protected void activate(ComponentContext cc) {}
 
-		@Deactivate protected void deactivate(ComponentContext cc) {
-		}
+		@Deactivate
+		protected void deactivate(ComponentContext cc) {}
 
-		@Reference protected void bindLog(LogService log) {
+		@Reference
+		protected void bindLog(LogService log) {
 
 		}
 	}
-
 
 	/**
 	 * Test if an activate/deactivate method that has wrong prototype
 	 */
 
-	@Component(name = "wacomp", provide = {}) static class ActivateWithWrongArguments {
+	@Component(name = "wacomp", provide = {})
+	static class ActivateWithWrongArguments {
 
-		@Activate// Is not allowed, must give an error
-		protected void whatever(String x) {
-		}
+		@Activate
+		// Is not allowed, must give an error
+		protected void whatever(String x) {}
 
 	}
 
 	public void testActivateWithActivateWithWrongArguments() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.ActivateWithWrongArguments");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -591,7 +633,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "wacomp");
-		assertEquals("whatever", xpath.evaluate("scr:component/@activate",doc,XPathConstants.STRING));
+		assertEquals("whatever", xpath.evaluate("scr:component/@activate", doc, XPathConstants.STRING));
 		assertAttribute(doc, "whatever", "scr:component/@activate");
 	}
 
@@ -599,17 +641,19 @@ public class ComponentTest extends TestCase {
 	 * Test if an activate/deactivate method can have multiple args
 	 */
 
-	@Component(name = "amcomp", provide = {}) static class ActivateWithMultipleArguments {
+	@Component(name = "amcomp", provide = {})
+	static class ActivateWithMultipleArguments {
 
-		@Activate protected void whatever(Map<?, ?> map, ComponentContext cc, BundleContext bc,
-				Map<?, ?> x) {
-		}
+		@Activate
+		protected void whatever(Map< ? , ? > map, ComponentContext cc, BundleContext bc, Map< ? , ? > x) {}
 
 	}
 
 	public void testActivateWithMultipleArguments() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.ActivateWithMultipleArguments");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -625,23 +669,27 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test components with references that have multiple arguments.
 	 */
-	@Component(name = "mcomp", provide = {}) static class MultipleArguments {
+	@Component(name = "mcomp", provide = {})
+	static class MultipleArguments {
 
-		@Reference protected void bindWithMap(LogService log, Map<?, ?> map) {
-		}
+		@Reference
+		protected void bindWithMap(LogService log, Map< ? , ? > map) {}
 
 	}
 
-	@Component(name = "rcomp", provide = {}) static class ReferenceArgument {
+	@Component(name = "rcomp", provide = {})
+	static class ReferenceArgument {
 
-		@Reference(service = LogService.class) protected void bindReference(ServiceReference ref) {
-		}
+		@Reference(service = LogService.class)
+		protected void bindReference(ServiceReference ref) {}
 
 	}
 
 	public void testMultipleArguments() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.(MultipleArguments|ReferenceArgument)");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -652,31 +700,31 @@ public class ComponentTest extends TestCase {
 
 		Document doc = doc(b, "mcomp");
 		assertAttribute(doc, "bindWithMap", "scr:component/reference/@bind");
-		assertAttribute(doc, "org.osgi.service.log.LogService",
-				"scr:component/reference/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/reference/@interface");
 
 		doc = doc(b, "rcomp");
 		assertAttribute(doc, "bindReference", "scr:component/reference/@bind");
-		assertAttribute(doc, "org.osgi.service.log.LogService",
-				"scr:component/reference/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/reference/@interface");
 	}
 
 	/**
 	 * Test components with weird bind methods.
 	 */
-	@Component(name = "xcomp", provide = {}) static class TypeVersusDetailed {
+	@Component(name = "xcomp", provide = {})
+	static class TypeVersusDetailed {
 
-		@Reference(type = '*') protected void bind(LogService log) {
-		}
+		@Reference(type = '*')
+		protected void bind(LogService log) {}
 
-		@Reference(multiple = true, optional = true, dynamic = true) protected void bind2(
-				LogService log) {
-		}
+		@Reference(multiple = true, optional = true, dynamic = true)
+		protected void bind2(LogService log) {}
 	}
 
 	public void testTypeVersusDetailed() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.TypeVersusDetailed");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -698,14 +746,17 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test components with weird bind methods.
 	 */
-	@Component(name = "acomp", provide = {}) static class MyComponent4 {
-		@Activate protected void xyz() {
-		}
+	@Component(name = "acomp", provide = {})
+	static class MyComponent4 {
+		@Activate
+		protected void xyz() {}
 	}
 
 	public void testAnnotationsNamespaceVersion() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.MyComponent4");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -721,15 +772,19 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test components with weird bind methods.
 	 */
-	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.require) static class MyComponent2 {
-		@Reference protected void addLogMultiple(LogService log) {
+	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.require)
+	static class MyComponent2 {
+		@Reference
+		protected void addLogMultiple(LogService log) {
 
 		}
 	}
 
 	public void testAnnotationsStrangeBindMethods() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.MyComponent2");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -750,15 +805,19 @@ public class ComponentTest extends TestCase {
 	/**
 	 * Test setting the unbind method
 	 */
-	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.ignore) static class MyComponent3 {
-		@Reference(unbind = "destroyX") protected void putX(LogService log) {
+	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.ignore)
+	static class MyComponent3 {
+		@Reference(unbind = "destroyX")
+		protected void putX(LogService log) {
 
 		}
 	}
 
 	public void testAnnotationsSettingUnbind() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.MyComponent3");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -777,23 +836,23 @@ public class ComponentTest extends TestCase {
 	 * Test some more components
 	 * 
 	 * @author aqute
-	 * 
 	 */
-	@Component(name = "acomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, configurationPolicy = ConfigurationPolicy.optional) static class MyComponent
-			implements Serializable {
+	@Component(name = "acomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, configurationPolicy = ConfigurationPolicy.optional)
+	static class MyComponent implements Serializable {
 		private static final long	serialVersionUID	= 1L;
 		LogService					log;
 
-		@Activate protected void activatex() {
-		}
+		@Activate
+		protected void activatex() {}
 
-		@Deactivate protected void deactivatex() {
-		}
+		@Deactivate
+		protected void deactivatex() {}
 
-		@Modified protected void modifiedx() {
-		}
+		@Modified
+		protected void modifiedx() {}
 
-		@Reference(type = '~', target = "(abc=3)") protected void setLog(LogService log) {
+		@Reference(type = '~', target = "(abc=3)")
+		protected void setLog(LogService log) {
 			this.log = log;
 		}
 
@@ -805,7 +864,9 @@ public class ComponentTest extends TestCase {
 
 	public void testAnnotations() throws Exception {
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin") });
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
 		b.setProperty("Service-Component", "*.MyComponent");
 		b.setProperty("Private-Package", "test.component");
 		b.build();
@@ -816,28 +877,25 @@ public class ComponentTest extends TestCase {
 
 		Document doc = doc(b, "acomp");
 		print(doc, "");
-		assertAttribute(doc, "test.component.ComponentTest$MyComponent",
-				"scr:component/implementation/@class");
+		assertAttribute(doc, "test.component.ComponentTest$MyComponent", "scr:component/implementation/@class");
 		assertAttribute(doc, "acomp", "scr:component/@name");
 		assertAttribute(doc, "abc", "scr:component/@factory");
 		assertAttribute(doc, "true", "scr:component/service/@servicefactory");
 		assertAttribute(doc, "activatex", "scr:component/@activate");
 		assertAttribute(doc, "modifiedx", "scr:component/@modified");
 		assertAttribute(doc, "deactivatex", "scr:component/@deactivate");
-		assertAttribute(doc, "org.osgi.service.log.LogService",
-				"scr:component/service/provide/@interface");
+		assertAttribute(doc, "org.osgi.service.log.LogService", "scr:component/service/provide/@interface");
 		assertAttribute(doc, "(abc=3)", "scr:component/reference/@target");
 		assertAttribute(doc, "setLog", "scr:component/reference/@bind");
 		assertAttribute(doc, "unsetLog", "scr:component/reference/@unbind");
 		assertAttribute(doc, "0..1", "scr:component/reference/@cardinality");
 	}
 
-	public void assertAttribute(Document doc, String value, String expr)
-			throws XPathExpressionException {
+	public void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
-		if ( o == null ) {
-			
+		if (o == null) {
+
 		}
 		assertNotNull(o);
 		assertEquals(value, o);
@@ -884,7 +942,9 @@ public class ComponentTest extends TestCase {
 	Element setup(String header) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT, header);
-		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setClasspath(new File[] {
+				new File("bin"), new File("jar/osgi.jar")
+		});
 		b.setProperty("Private-Package", "test.activator, org.osgi.service.http.*");
 		b.build();
 
@@ -894,8 +954,8 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		print(b.getJar().getResource("OSGI-INF/test.activator.Activator.xml"), System.err);
-		Document doc = db.parse(new InputSource(b.getJar().getResource(
-				"OSGI-INF/test.activator.Activator.xml").openInputStream()));
+		Document doc = db.parse(new InputSource(b.getJar().getResource("OSGI-INF/test.activator.Activator.xml")
+				.openInputStream()));
 
 		return doc.getDocumentElement();
 	}
@@ -910,7 +970,8 @@ public class ComponentTest extends TestCase {
 				size = in.read(buffer);
 			}
 			out.flush();
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -926,11 +987,11 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testImplementation() throws Exception {
 		Builder b = new Builder();
-		b
-				.setProperty(
-						Analyzer.SERVICE_COMPONENT,
-						"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
-		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setProperty(Analyzer.SERVICE_COMPONENT,
+				"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
+		b.setClasspath(new File[] {
+				new File("bin"), new File("jar/osgi.jar")
+		});
 		b.setProperty("Private-Package", "test.activator");
 		b.build();
 		System.err.println(b.getErrors());
@@ -940,13 +1001,12 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
-				.openInputStream()));
+		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml").openInputStream()));
 
-		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0)
-				.getAttributes().getNamedItem("class").getNodeValue());
-		assertEquals("true", doc.getElementsByTagName("service").item(0).getAttributes()
-				.getNamedItem("servicefactory").getNodeValue());
+		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0).getAttributes()
+				.getNamedItem("class").getNodeValue());
+		assertEquals("true", doc.getElementsByTagName("service").item(0).getAttributes().getNamedItem("servicefactory")
+				.getNodeValue());
 	}
 
 	/**
@@ -960,7 +1020,9 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;properties:=\"a=3|4,b=1|2|3\"");
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setClasspath(new File[] {
+				new File("bin"), new File("jar/osgi.jar")
+		});
 		b.setProperties(p);
 		b.build();
 		assertEquals(0, b.getErrors().size());
@@ -968,8 +1030,8 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		Document doc = db.parse(new InputSource(jar.getResource(
-				"OSGI-INF/test.activator.Activator.xml").openInputStream()));
+		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/test.activator.Activator.xml")
+				.openInputStream()));
 
 		NodeList l = doc.getElementsByTagName("property");
 		assertEquals(2, l.getLength());
@@ -978,8 +1040,8 @@ public class ComponentTest extends TestCase {
 		assertEquals("3\n4", l.item(0).getFirstChild().getNodeValue().trim());
 		assertEquals("1\n2\n3", l.item(1).getFirstChild().getNodeValue().trim());
 
-		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0)
-				.getAttributes().getNamedItem("class").getNodeValue());
+		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0).getAttributes()
+				.getNamedItem("class").getNodeValue());
 		// assertEquals("test.activator.Activator", xp.evaluate(
 		// "/component/implementation/@class", doc));
 		// assertEquals("org.osgi.service.http.HttpService", xp.evaluate(
@@ -1003,7 +1065,9 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;provides:=true");
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setClasspath(new File[] {
+				new File("bin"), new File("jar/osgi.jar")
+		});
 		b.setProperties(p);
 		b.build();
 		assertEquals(1, b.getErrors().size());

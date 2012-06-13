@@ -5,30 +5,29 @@ import java.util.*;
 import aQute.libg.generics.*;
 
 public class Descriptors {
-	Map<String, TypeRef>	typeRefCache	= Create.map();
-	Map<String, Descriptor>	descriptorCache	= Create.map();
-	Map<String, PackageRef>	packageCache	= Create.map();
+	Map<String,TypeRef>		typeRefCache		= Create.map();
+	Map<String,Descriptor>	descriptorCache		= Create.map();
+	Map<String,PackageRef>	packageCache		= Create.map();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
-	final static PackageRef	DEFAULT_PACKAGE	= new PackageRef();
+	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
 	final static PackageRef	PRIMITIVE_PACKAGE	= new PackageRef();
-	
-	final static TypeRef	VOID			= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
-	final static TypeRef	BOOLEAN			= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
-	final static TypeRef	BYTE			= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
-	final static TypeRef	CHAR			= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
-	final static TypeRef	SHORT			= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
-	final static TypeRef	INTEGER			= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
-	final static TypeRef	LONG			= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
-	final static TypeRef	DOUBLE			= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
-	final static TypeRef	FLOAT			= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
+	final static TypeRef	VOID				= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
+	final static TypeRef	BOOLEAN				= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
+	final static TypeRef	BYTE				= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
+	final static TypeRef	CHAR				= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
+	final static TypeRef	SHORT				= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
+	final static TypeRef	INTEGER				= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
+	final static TypeRef	LONG				= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
+	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
+	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
 	{
 		packageCache.put("", DEFAULT_PACKAGE);
 	}
 
-	public interface TypeRef extends Comparable<TypeRef>{
+	public interface TypeRef extends Comparable<TypeRef> {
 		String getBinary();
 
 		String getFQN();
@@ -55,7 +54,7 @@ public class Descriptors {
 
 	}
 
-	public static class PackageRef implements Comparable<PackageRef>{
+	public static class PackageRef implements Comparable<PackageRef> {
 		final String	binaryName;
 		final String	fqn;
 		final boolean	java;
@@ -63,21 +62,23 @@ public class Descriptors {
 		private PackageRef(String binaryName) {
 			this.binaryName = fqnToBinary(binaryName);
 			this.fqn = binaryToFQN(binaryName);
-			this.java = this.fqn.startsWith("java.") ; // && !this.fqn.equals("java.sql)"
-			
+			this.java = this.fqn.startsWith("java."); // &&
+														// !this.fqn.equals("java.sql)"
+
 			// For some reason I excluded java.sql but the classloader will
 			// delegate anyway. So lost the understanding why I did it??
 		}
 
 		private PackageRef() {
 			this.binaryName = "";
-			this.fqn=".";
+			this.fqn = ".";
 			this.java = false;
 		}
 
 		public PackageRef getDuplicate() {
-			return new PackageRef(binaryName+Constants.DUPLICATE_MARKER);
+			return new PackageRef(binaryName + Constants.DUPLICATE_MARKER);
 		}
+
 		public String getFQN() {
 			return fqn;
 		}
@@ -97,7 +98,7 @@ public class Descriptors {
 		public String toString() {
 			return fqn;
 		}
-		
+
 		boolean isDefaultPackage() {
 			return this.fqn.equals(".");
 		}
@@ -109,16 +110,16 @@ public class Descriptors {
 		public int compareTo(PackageRef other) {
 			return fqn.compareTo(other.fqn);
 		}
-		
+
 		public boolean equals(Object o) {
 			assert o instanceof PackageRef;
 			return o == this;
 		}
-		
+
 		public int hashCode() {
 			return super.hashCode();
 		}
-		
+
 		/**
 		 * Decide if the package is a metadata package.
 		 * 
@@ -128,7 +129,7 @@ public class Descriptors {
 		public boolean isMetaData() {
 			if (isDefaultPackage())
 				return true;
-			
+
 			for (int i = 0; i < Constants.METAPACKAGES.length; i++) {
 				if (fqn.startsWith(Constants.METAPACKAGES[i]))
 					return true;
@@ -146,7 +147,7 @@ public class Descriptors {
 		final PackageRef	packageRef;
 
 		ConcreteRef(PackageRef packageRef, String binaryName) {
-			if ( packageRef.getFQN().length() < 2 )
+			if (packageRef.getFQN().length() < 2)
 				System.err.println("in default pack? " + binaryName);
 			this.binaryName = binaryName;
 			this.fqn = binaryToFQN(binaryName);
@@ -220,11 +221,11 @@ public class Descriptors {
 		}
 
 		public int compareTo(TypeRef other) {
-			if ( this == other)
+			if (this == other)
 				return 0;
 			return fqn.compareTo(other.getFQN());
 		}
-		
+
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -249,7 +250,7 @@ public class Descriptors {
 		public String getSourcePath() {
 			return component.getSourcePath();
 		}
-		
+
 		public boolean isPrimitive() {
 			return false;
 		}
@@ -294,17 +295,17 @@ public class Descriptors {
 		}
 
 		public int compareTo(TypeRef other) {
-			if ( this == other)
+			if (this == other)
 				return 0;
-			
+
 			return getFQN().compareTo(other.getFQN());
 		}
 
 	}
 
-	public TypeRef getTypeRef(String binaryClassName) {		
+	public TypeRef getTypeRef(String binaryClassName) {
 		assert !binaryClassName.endsWith(".class");
-		
+
 		TypeRef ref = typeRefCache.get(binaryClassName);
 		if (ref != null)
 			return ref;
@@ -315,34 +316,34 @@ public class Descriptors {
 		} else {
 			if (binaryClassName.length() >= 1) {
 				switch (binaryClassName.charAt(0)) {
-				case 'V':
-					return VOID;
-				case 'B':
-					return BYTE;
-				case 'C':
-					return CHAR;
-				case 'I':
-					return INTEGER;
-				case 'S':
-					return SHORT;
-				case 'D':
-					return DOUBLE;
-				case 'F':
-					return FLOAT;
-				case 'J':
-					return LONG;
-				case 'Z':
-					return BOOLEAN;
-				case 'L':
-					binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
-					break;
+					case 'V' :
+						return VOID;
+					case 'B' :
+						return BYTE;
+					case 'C' :
+						return CHAR;
+					case 'I' :
+						return INTEGER;
+					case 'S' :
+						return SHORT;
+					case 'D' :
+						return DOUBLE;
+					case 'F' :
+						return FLOAT;
+					case 'J' :
+						return LONG;
+					case 'Z' :
+						return BOOLEAN;
+					case 'L' :
+						binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
+						break;
 				}
 				// falls trough for other 1 letter class names
 			}
 			ref = typeRefCache.get(binaryClassName);
-			if ( ref != null)
+			if (ref != null)
 				return ref;
-			
+
 			PackageRef pref;
 			int n = binaryClassName.lastIndexOf('/');
 			if (n < 0)
@@ -352,13 +353,13 @@ public class Descriptors {
 
 			ref = new ConcreteRef(pref, binaryClassName);
 		}
-		
+
 		typeRefCache.put(binaryClassName, ref);
 		return ref;
 	}
 
 	public PackageRef getPackageRef(String binaryPackName) {
-		if (binaryPackName.indexOf('.') >= 0 ) {
+		if (binaryPackName.indexOf('.') >= 0) {
 			binaryPackName = binaryPackName.replace('.', '/');
 		}
 		PackageRef ref = packageCache.get(binaryPackName);
@@ -411,28 +412,28 @@ public class Descriptors {
 			}
 
 			switch (c) {
-			case 'L':
-				while ((c = descriptor.charAt(index++)) != ';') {
-					// TODO
+				case 'L' :
+					while ((c = descriptor.charAt(index++)) != ';') {
+						// TODO
+						sb.append(c);
+					}
+					break;
+
+				case 'V' :
+				case 'B' :
+				case 'C' :
+				case 'I' :
+				case 'S' :
+				case 'D' :
+				case 'F' :
+				case 'J' :
+				case 'Z' :
 					sb.append(c);
-				}
-				break;
+					break;
 
-			case 'V':
-			case 'B':
-			case 'C':
-			case 'I':
-			case 'S':
-			case 'D':
-			case 'F':
-			case 'J':
-			case 'Z':
-				sb.append(c);
-				break;
-
-			default:
-				throw new IllegalArgumentException("Invalid type in descriptor: " + c + " from "
-						+ descriptor + "[" + index + "]");
+				default :
+					throw new IllegalArgumentException("Invalid type in descriptor: " + c + " from " + descriptor + "["
+							+ index + "]");
 			}
 			types.add(getTypeRef(sb.toString()));
 			return index;
@@ -450,13 +451,11 @@ public class Descriptors {
 			if (other == null || other.getClass() != getClass())
 				return false;
 
-			return Arrays.equals(prototype, ((Descriptor) other).prototype)
-					&& type == ((Descriptor) other).type;
+			return Arrays.equals(prototype, ((Descriptor) other).prototype) && type == ((Descriptor) other).type;
 		}
 
 		public int hashCode() {
-			return prototype == null ? type.hashCode() : type.hashCode()
-					^ Arrays.hashCode(prototype);
+			return prototype == null ? type.hashCode() : type.hashCode() ^ Arrays.hashCode(prototype);
 		}
 
 		public String toString() {
@@ -470,7 +469,7 @@ public class Descriptors {
 
 	public static String getShortName(String fqn) {
 		assert fqn.indexOf('/') < 0;
-		
+
 		int n = fqn.lastIndexOf('.');
 		if (n >= 0) {
 			return fqn.substring(n + 1);
@@ -480,10 +479,10 @@ public class Descriptors {
 
 	public static String binaryToFQN(String binary) {
 		StringBuilder sb = new StringBuilder();
-		for ( int i=0, l=binary.length(); i<l; i++) {
+		for (int i = 0, l = binary.length(); i < l; i++) {
 			char c = binary.charAt(i);
-			
-			if ( c == '/')
+
+			if (c == '/')
 				sb.append('.');
 			else
 				sb.append(c);
@@ -514,35 +513,35 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
-		if ( fqn.equals("boolean"))
+		if (fqn.equals("boolean"))
 			return BOOLEAN;
-		
-		if ( fqn.equals("byte"))
+
+		if (fqn.equals("byte"))
 			return BOOLEAN;
-		
-		if ( fqn.equals("char"))
+
+		if (fqn.equals("char"))
 			return CHAR;
-		
-		if ( fqn.equals("short"))
+
+		if (fqn.equals("short"))
 			return SHORT;
-		
-		if ( fqn.equals("int"))
+
+		if (fqn.equals("int"))
 			return INTEGER;
-		
-		if ( fqn.equals("long"))
+
+		if (fqn.equals("long"))
 			return LONG;
-		
-		if ( fqn.equals("float"))
+
+		if (fqn.equals("float"))
 			return FLOAT;
-		
-		if ( fqn.equals("double"))
+
+		if (fqn.equals("double"))
 			return DOUBLE;
-		
+
 		return getTypeRef(fqnToBinary(fqn));
 	}
 
 	public TypeRef getTypeRefFromPath(String path) {
 		assert path.endsWith(".class");
-		return getTypeRef(path.substring(0,path.length()-6));
+		return getTypeRef(path.substring(0, path.length() - 6));
 	}
 }

@@ -6,10 +6,10 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class CollectionHandler extends Handler {
-	Class<?>	rawClass;
+	Class< ? >	rawClass;
 	Type		componentType;
-	
-	CollectionHandler(Class<?> rawClass, Type componentType) {
+
+	CollectionHandler(Class< ? > rawClass, Type componentType) {
 		this.componentType = componentType;
 		if (rawClass.isInterface()) {
 			if (rawClass.isAssignableFrom(ArrayList.class))
@@ -29,15 +29,14 @@ public class CollectionHandler extends Handler {
 			else if (rawClass.isAssignableFrom(CopyOnWriteArraySet.class))
 				rawClass = CopyOnWriteArraySet.class;
 			else
-				throw new IllegalArgumentException("Unknown interface type for collection: "
-						+ rawClass);
+				throw new IllegalArgumentException("Unknown interface type for collection: " + rawClass);
 		}
 		this.rawClass = rawClass;
 	}
 
-	@Override void encode(Encoder app, Object object, Map<Object, Type> visited)
-			throws IOException, Exception {
-		Iterable<?> collection = (Iterable<?>) object;
+	@Override
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+		Iterable< ? > collection = (Iterable< ? >) object;
 
 		app.append("[");
 		String del = "";
@@ -49,7 +48,9 @@ public class CollectionHandler extends Handler {
 		app.append("]");
 	}
 
-	@SuppressWarnings("unchecked") @Override Object decodeArray(Decoder r) throws Exception {
+	@SuppressWarnings("unchecked")
+	@Override
+	Object decodeArray(Decoder r) throws Exception {
 		Collection<Object> c = (Collection<Object>) rawClass.newInstance();
 		r.codec.parseArray(c, componentType, r);
 		return c;

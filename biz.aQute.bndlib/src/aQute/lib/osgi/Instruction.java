@@ -60,8 +60,7 @@ public class Instruction {
 		if (s.startsWith("!")) {
 			negated = true;
 			s = s.substring(1);
-		}
-		else
+		} else
 			negated = false;
 
 		if (input.equals("*")) {
@@ -75,8 +74,7 @@ public class Instruction {
 		if (s.startsWith("=")) {
 			match = s.substring(1);
 			literal = true;
-		}
-		else {
+		} else {
 			boolean wildcards = false;
 
 			StringBuilder sb = new StringBuilder();
@@ -90,8 +88,7 @@ public class Instruction {
 							sb.append("(\\..*)?");
 							wildcards = true;
 							break loop;
-						}
-						else
+						} else
 							sb.append("\\.");
 
 						break;
@@ -119,8 +116,7 @@ public class Instruction {
 			if (!wildcards) {
 				literal = true;
 				match = s;
-			}
-			else {
+			} else {
 				literal = false;
 				match = sb.toString();
 			}

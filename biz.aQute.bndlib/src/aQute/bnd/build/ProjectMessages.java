@@ -23,13 +23,11 @@ public interface ProjectMessages extends Messages {
 
 	ERROR MissingPom();
 
-	ERROR FoundVersions_ForStrategy_ButNoProvider(SortedMap<Version, RepositoryPlugin> versions,
-			Strategy useStrategy);
+	ERROR FoundVersions_ForStrategy_ButNoProvider(SortedMap<Version,RepositoryPlugin> versions, Strategy useStrategy);
 
 	ERROR NoSuchProject(String bsn, String spec);
 
 	ERROR CircularDependencyContext_Message_(String name, String message);
-
 
 	ERROR IncompatibleHandler_For_(String launcher, String defaultHandler);
 

@@ -4,17 +4,21 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
-@SuppressWarnings( { "unchecked", "rawtypes" }) public class Configurable<T> {
-	
-	public static <T> T createConfigurable(Class<T> c, Map<?, ?> properties) {
-		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] { c },
-				new ConfigurableHandler(properties, c.getClassLoader()));
+@SuppressWarnings({
+		"unchecked", "rawtypes"
+})
+public class Configurable<T> {
+
+	public static <T> T createConfigurable(Class<T> c, Map< ? , ? > properties) {
+		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class< ? >[] {
+			c
+		}, new ConfigurableHandler(properties, c.getClassLoader()));
 		return c.cast(o);
 	}
 
-	public static <T> T createConfigurable(Class<T> c, Dictionary<?, ?> properties) {
+	public static <T> T createConfigurable(Class<T> c, Dictionary< ? , ? > properties) {
 		Map<Object,Object> alt = new HashMap<Object,Object>();
-		for( Enumeration<?> e = properties.keys(); e.hasMoreElements(); ) {
+		for (Enumeration< ? > e = properties.keys(); e.hasMoreElements();) {
 			Object key = e.nextElement();
 			alt.put(key, properties.get(key));
 		}
@@ -22,10 +26,10 @@ import java.util.regex.*;
 	}
 
 	static class ConfigurableHandler implements InvocationHandler {
-		final Map<?, ?>	properties;
-		final ClassLoader			loader;
+		final Map< ? , ? >	properties;
+		final ClassLoader	loader;
 
-		ConfigurableHandler(Map<?, ?> properties, ClassLoader loader) {
+		ConfigurableHandler(Map< ? , ? > properties, ClassLoader loader) {
 			this.properties = properties;
 			this.loader = loader;
 		}
@@ -42,8 +46,7 @@ import java.util.regex.*;
 			if (o == null) {
 				if (ad != null) {
 					if (ad.required())
-						throw new IllegalStateException("Attribute is required but not set "
-								+ method.getName());
+						throw new IllegalStateException("Attribute is required but not set " + method.getName());
 
 					o = ad.deflt();
 					if (o.equals(Meta.NULL))
@@ -51,10 +54,10 @@ import java.util.regex.*;
 				}
 			}
 			if (o == null) {
-				Class<?> rt = method.getReturnType();
-				if ( rt == boolean.class || rt==Boolean.class)
+				Class< ? > rt = method.getReturnType();
+				if (rt == boolean.class || rt == Boolean.class)
 					return false;
-				
+
 				if (method.getReturnType().isPrimitive()) {
 
 					o = "0";
@@ -65,8 +68,7 @@ import java.util.regex.*;
 			return convert(method.getGenericReturnType(), o);
 		}
 
-		public Object convert(Type type, Object o)
-				throws Exception {
+		public Object convert(Type type, Object o) throws Exception {
 			if (type instanceof ParameterizedType) {
 				ParameterizedType pType = (ParameterizedType) type;
 				return convert(pType, o);
@@ -77,20 +79,20 @@ import java.util.regex.*;
 				return convertArray(gType.getGenericComponentType(), o);
 			}
 
-			Class<?> resultType = (Class<?>) type;
+			Class< ? > resultType = (Class< ? >) type;
 
 			if (resultType.isArray()) {
 				return convertArray(resultType.getComponentType(), o);
 			}
 
-			Class<?> actualType = o.getClass();
+			Class< ? > actualType = o.getClass();
 			if (actualType.isAssignableFrom(resultType))
 				return o;
 
 			if (resultType == boolean.class || resultType == Boolean.class) {
-				if ( actualType == boolean.class || actualType == Boolean.class)
+				if (actualType == boolean.class || actualType == Boolean.class)
 					return o;
-				
+
 				if (Number.class.isAssignableFrom(actualType)) {
 					double b = ((Number) o).doubleValue();
 					if (b == 0)
@@ -99,7 +101,7 @@ import java.util.regex.*;
 						return true;
 				}
 				return true;
-				
+
 			} else if (resultType == byte.class || resultType == Byte.class) {
 				if (Number.class.isAssignableFrom(actualType))
 					return ((Number) o).byteValue();
@@ -148,37 +150,41 @@ import java.util.regex.*;
 			}
 
 			try {
-				Constructor<?> c = resultType.getConstructor(String.class);
+				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 				// handled on next line
 			}
-			throw new IllegalArgumentException("No conversion to " + resultType + " from "
-					+ actualType + " value " + o);
+			throw new IllegalArgumentException("No conversion to " + resultType + " from " + actualType + " value " + o);
 		}
 
 		private Object convert(ParameterizedType pType, Object o) throws InstantiationException,
 				IllegalAccessException, Exception {
-			Class<?> resultType = (Class<?>) pType.getRawType();
+			Class< ? > resultType = (Class< ? >) pType.getRawType();
 			if (Collection.class.isAssignableFrom(resultType)) {
-				Collection<?> input = toCollection(o);
+				Collection< ? > input = toCollection(o);
 				if (resultType.isInterface()) {
 					if (resultType == Collection.class || resultType == List.class)
 						resultType = ArrayList.class;
 					else if (resultType == Set.class || resultType == SortedSet.class)
 						resultType = TreeSet.class;
-					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
+					else if (resultType == Queue.class /*
+														 * || resultType ==
+														 * Deque.class
+														 */)
 						resultType = LinkedList.class;
-					else if (resultType == Queue.class /*|| resultType == Deque.class*/)
+					else if (resultType == Queue.class /*
+														 * || resultType ==
+														 * Deque.class
+														 */)
 						resultType = LinkedList.class;
 					else
 						throw new IllegalArgumentException(
-								"Unknown interface for a collection, no concrete class found: "
-										+ resultType);
+								"Unknown interface for a collection, no concrete class found: " + resultType);
 				}
-				
-				Collection<Object> result = (Collection<Object>) resultType
-						.newInstance();
+
+				Collection<Object> result = (Collection<Object>) resultType.newInstance();
 				Type componentType = pType.getActualTypeArguments()[0];
 
 				for (Object i : input) {
@@ -188,8 +194,8 @@ import java.util.regex.*;
 			} else if (pType.getRawType() == Class.class) {
 				return loader.loadClass(o.toString());
 			}
-			if (Map.class.isAssignableFrom(resultType)){
-				Map<?,?> input = toMap(o);
+			if (Map.class.isAssignableFrom(resultType)) {
+				Map< ? , ? > input = toMap(o);
 				if (resultType.isInterface()) {
 					if (resultType == SortedMap.class)
 						resultType = TreeMap.class;
@@ -197,16 +203,14 @@ import java.util.regex.*;
 						resultType = LinkedHashMap.class;
 					else
 						throw new IllegalArgumentException(
-								"Unknown interface for a collection, no concrete class found: "
-										+ resultType);
+								"Unknown interface for a collection, no concrete class found: " + resultType);
 				}
-				Map<Object,Object> result = (Map<Object,Object>) resultType
-						.newInstance();
+				Map<Object,Object> result = (Map<Object,Object>) resultType.newInstance();
 				Type keyType = pType.getActualTypeArguments()[0];
 				Type valueType = pType.getActualTypeArguments()[1];
 
-				for ( Map.Entry<?, ?> entry : input.entrySet()) {
-					result.put(convert(keyType,entry.getKey()), convert(valueType,entry.getValue()));
+				for (Map.Entry< ? , ? > entry : input.entrySet()) {
+					result.put(convert(keyType, entry.getKey()), convert(valueType, entry.getValue()));
 				}
 				return result;
 			}
@@ -214,10 +218,9 @@ import java.util.regex.*;
 					+ " because it uses generics and is not a Collection or a map");
 		}
 
-
 		Object convertArray(Type componentType, Object o) throws Exception {
-			Collection<?> input = toCollection(o);
-			Class<?> componentClass = getRawClass(componentType);
+			Collection< ? > input = toCollection(o);
+			Class< ? > componentClass = getRawClass(componentType);
 			Object array = Array.newInstance(componentClass, input.size());
 
 			int i = 0;
@@ -227,67 +230,63 @@ import java.util.regex.*;
 			return array;
 		}
 
-		private Class<?> getRawClass(Type type) {
+		private Class< ? > getRawClass(Type type) {
 			if (type instanceof Class)
-				return (Class<?>) type;
+				return (Class< ? >) type;
 
 			if (type instanceof ParameterizedType)
-				return (Class<?>) ((ParameterizedType) type).getRawType();
+				return (Class< ? >) ((ParameterizedType) type).getRawType();
 
-			throw new IllegalArgumentException(
-					"For the raw type, type must be ParamaterizedType or Class but is " + type);
+			throw new IllegalArgumentException("For the raw type, type must be ParamaterizedType or Class but is "
+					+ type);
 		}
 
-		private Collection<?> toCollection(Object o) {
+		private Collection< ? > toCollection(Object o) {
 			if (o instanceof Collection)
-				return (Collection<?>) o;
+				return (Collection< ? >) o;
 
 			if (o.getClass().isArray()) {
-				if ( o.getClass().getComponentType().isPrimitive()) {
+				if (o.getClass().getComponentType().isPrimitive()) {
 					int length = Array.getLength(o);
 					List<Object> result = new ArrayList<Object>(length);
-					for ( int i=0; i<length; i++) {
-						result.add( Array.get(o, i));
+					for (int i = 0; i < length; i++) {
+						result.add(Array.get(o, i));
 					}
 					return result;
 				} else
 					return Arrays.asList((Object[]) o);
 			}
 
-			if ( o instanceof String) {
-				String s = (String)o;
-				if (s.indexOf('|')>0)
-					return Arrays.asList(s.split("\\|"));					
+			if (o instanceof String) {
+				String s = (String) o;
+				if (s.indexOf('|') > 0)
+					return Arrays.asList(s.split("\\|"));
 			}
 			return Arrays.asList(o);
 		}
-		
-		private Map<?, ?> toMap(Object o) {
-			if ( o instanceof Map) 
-				return (Map<?, ?>) o;
-			
-			throw new IllegalArgumentException(
-					"Cannot convert " + o + " to a map as requested");
+
+		private Map< ? , ? > toMap(Object o) {
+			if (o instanceof Map)
+				return (Map< ? , ? >) o;
+
+			throw new IllegalArgumentException("Cannot convert " + o + " to a map as requested");
 		}
 
-
 	}
-	
-	
+
 	public static String mangleMethodName(String id) {
 		StringBuilder sb = new StringBuilder(id);
-		for ( int i =0; i<sb.length(); i++) {
-			char c  = sb.charAt(i);
-			boolean twice = i < sb.length()-1 && sb.charAt(i+1) ==c;
-			if ( c == '$' || c == '_') {
-				if ( twice )
-					sb.deleteCharAt(i+1);
-				else 
-					if ( c == '$')
-						sb.deleteCharAt(i--); // Remove dollars
-					else
-						sb.setCharAt(i, '.'); // Make _ into .
-			}				
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
+			if (c == '$' || c == '_') {
+				if (twice)
+					sb.deleteCharAt(i + 1);
+				else if (c == '$')
+					sb.deleteCharAt(i--); // Remove dollars
+				else
+					sb.setCharAt(i, '.'); // Make _ into .
+			}
 		}
 		return sb.toString();
 	}

@@ -16,7 +16,8 @@ public class IO {
 				w.write(buffer, 0, size);
 				size = r.read(buffer);
 			}
-		} finally {
+		}
+		finally {
 			r.close();
 			w.flush();
 		}
@@ -26,19 +27,20 @@ public class IO {
 		copy(r, w, "UTF-8");
 	}
 
-	public static void copy(byte []r, Writer w) throws IOException {
-		copy( new ByteArrayInputStream(r), w, "UTF-8");
+	public static void copy(byte[] r, Writer w) throws IOException {
+		copy(new ByteArrayInputStream(r), w, "UTF-8");
 	}
 
-	public static void copy(byte []r, OutputStream w) throws IOException {
-		copy( new ByteArrayInputStream(r), w);
+	public static void copy(byte[] r, OutputStream w) throws IOException {
+		copy(new ByteArrayInputStream(r), w);
 	}
 
 	public static void copy(InputStream r, Writer w, String charset) throws IOException {
 		try {
 			InputStreamReader isr = new InputStreamReader(r, charset);
 			copy(isr, w);
-		} finally {
+		}
+		finally {
 			r.close();
 		}
 	}
@@ -51,7 +53,8 @@ public class IO {
 		try {
 			OutputStreamWriter osw = new OutputStreamWriter(o, charset);
 			copy(r, osw);
-		} finally {
+		}
+		finally {
 			r.close();
 		}
 	}
@@ -70,7 +73,8 @@ public class IO {
 				out.write(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -83,7 +87,8 @@ public class IO {
 				bb.put(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -100,7 +105,6 @@ public class IO {
 		copy(in.getInputStream(), md);
 	}
 
-
 	public static void copy(InputStream in, MessageDigest md) throws IOException {
 		byte[] buffer = new byte[10000];
 		try {
@@ -109,7 +113,8 @@ public class IO {
 				md.update(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -142,14 +147,14 @@ public class IO {
 			FileOutputStream out = new FileOutputStream(b);
 			try {
 				copy(new FileInputStream(a), out);
-			} finally {
+			}
+			finally {
 				out.close();
 			}
 		} else if (a.isDirectory()) {
 			b.mkdirs();
 			if (!b.isDirectory())
-				throw new IllegalArgumentException(
-						"target directory for a directory must be a directory: " + b);
+				throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
 			File subs[] = a.listFiles();
 			for (File sub : subs) {
 				copy(sub, new File(b, sub.getName()));
@@ -162,7 +167,8 @@ public class IO {
 		FileOutputStream out = new FileOutputStream(b);
 		try {
 			copy(a, out);
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 	}
@@ -259,14 +265,15 @@ public class IO {
 				result += size;
 				size = in.read(buffer);
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 		return result;
 	}
 
-	public void copy(Collection<?> c, OutputStream out) throws IOException {
-		Writer w = new OutputStreamWriter(out,"UTF-8");
+	public void copy(Collection< ? > c, OutputStream out) throws IOException {
+		Writer w = new OutputStreamWriter(out, "UTF-8");
 		PrintWriter ps = new PrintWriter(w);
 		for (Object o : c) {
 			ps.println(o);
@@ -276,13 +283,14 @@ public class IO {
 	}
 
 	public static Throwable close(Closeable in) {
-		if ( in == null)
+		if (in == null)
 			return null;
-		
+
 		try {
 			in.close();
 			return null;
-		} catch (Throwable e) {
+		}
+		catch (Throwable e) {
 			return e;
 		}
 	}
@@ -304,18 +312,18 @@ public class IO {
 		FileOutputStream fout = new FileOutputStream(out);
 		try {
 			store(o, fout, encoding);
-		} finally {
+		}
+		finally {
 			fout.close();
 		}
 	}
 
-	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException,
-			IOException {
+	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException, IOException {
 		store(o, fout, "UTF-8");
 	}
 
-	public static void store(Object o, OutputStream fout, String encoding)
-			throws UnsupportedEncodingException, IOException {
+	public static void store(Object o, OutputStream fout, String encoding) throws UnsupportedEncodingException,
+			IOException {
 		String s;
 
 		if (o == null)
@@ -325,7 +333,8 @@ public class IO {
 
 		try {
 			fout.write(s.getBytes(encoding));
-		} finally {
+		}
+		finally {
 			fout.close();
 		}
 	}
@@ -333,7 +342,8 @@ public class IO {
 	public static InputStream stream(String s) {
 		try {
 			return new ByteArrayInputStream(s.getBytes("UTF-8"));
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Ignore
 			return null;
 		}
@@ -355,33 +365,34 @@ public class IO {
 		return new StringReader(s);
 	}
 
-
 	public static BufferedReader reader(File f, String encoding) throws IOException {
-		return reader( new FileInputStream(f), encoding);
+		return reader(new FileInputStream(f), encoding);
 	}
-	
+
 	public static BufferedReader reader(File f) throws IOException {
-		return reader(f,"UTF-8");
+		return reader(f, "UTF-8");
 	}
-	
+
 	public static PrintWriter writer(File f, String encoding) throws IOException {
-		return writer( new FileOutputStream(f),encoding);
+		return writer(new FileOutputStream(f), encoding);
 	}
-	
+
 	public static PrintWriter writer(File f) throws IOException {
 		return writer(f, "UTF-8");
 	}
-	
+
 	public static PrintWriter writer(OutputStream out, String encoding) throws IOException {
-		return new PrintWriter( new OutputStreamWriter( out,encoding));
+		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
+
 	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
-		return new BufferedReader( new InputStreamReader(in, encoding));
+		return new BufferedReader(new InputStreamReader(in, encoding));
 	}
-	
+
 	public static BufferedReader reader(InputStream in) throws IOException {
 		return reader(in, "UTF-8");
 	}
+
 	public static PrintWriter writer(OutputStream out) throws IOException {
 		return writer(out, "UTF-8");
 	}

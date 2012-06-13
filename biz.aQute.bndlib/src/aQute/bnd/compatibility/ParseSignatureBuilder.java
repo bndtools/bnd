@@ -6,30 +6,32 @@ import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.TypeRef;
 
 public class ParseSignatureBuilder {
-	final Scope			root;
-	
+	final Scope	root;
+
 	public ParseSignatureBuilder(Scope root) {
 		this.root = root;
 	}
-	
-	public void add( Jar jar ) throws Exception {
-		for ( Resource r : jar.getResources().values()) {
+
+	public void add(Jar jar) throws Exception {
+		for (Resource r : jar.getResources().values()) {
 			InputStream in = r.openInputStream();
 			try {
 				parse(in);
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}
 	}
-	
-	public Scope getRoot() { return root; }
-	
-	
+
+	public Scope getRoot() {
+		return root;
+	}
+
 	public void parse(InputStream in) throws Exception {
 		Analyzer analyzer = new Analyzer();
 		Clazz clazz = new Clazz(analyzer, "", null);
-		
+
 		clazz.parseClassFile(in, new ClassDataCollector() {
 			Scope	s;
 			Scope	enclosing;
@@ -44,7 +46,7 @@ public class ParseSignatureBuilder {
 
 			@Override
 			public void extendsClass(TypeRef name) {
-//				s.setBase(new GenericType(name));
+				// s.setBase(new GenericType(name));
 			}
 
 			@Override
@@ -55,7 +57,7 @@ public class ParseSignatureBuilder {
 			GenericType[] convert(TypeRef names[]) {
 				GenericType tss[] = new GenericType[names.length];
 				for (int i = 0; i < names.length; i++) {
-//					tss[i] = new GenericType(names[i]);
+					// tss[i] = new GenericType(names[i]);
 				}
 				return tss;
 			}
@@ -92,9 +94,9 @@ public class ParseSignatureBuilder {
 			@Override
 			public void classEnd() {
 				if (enclosing != null)
-					s.setEnclosing( enclosing );
+					s.setEnclosing(enclosing);
 				if (declaring != null)
-					s.setDeclaring( declaring );				
+					s.setDeclaring(declaring);
 			}
 
 			@Override
@@ -106,14 +108,11 @@ public class ParseSignatureBuilder {
 			}
 
 			@Override
-			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
-					int innerClassAccessFlags) {
+			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags) {
 				if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
 					declaring = root.getScope(outerClass.getBinary());
 			}
 		});
-		
-		
+
 	}
 }
-

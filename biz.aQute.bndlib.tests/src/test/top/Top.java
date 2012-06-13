@@ -1,4 +1,3 @@
 package test.top;
 
-public class Top {
-}
+public class Top {}

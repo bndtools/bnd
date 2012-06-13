@@ -14,7 +14,8 @@ public class LimitedInputStream extends InputStream {
 		this.size = size;
 	}
 
-	@Override public int read() throws IOException {
+	@Override
+	public int read() throws IOException {
 		if (left <= 0) {
 			eof();
 			return -1;
@@ -24,27 +25,31 @@ public class LimitedInputStream extends InputStream {
 		return in.read();
 	}
 
-	@Override public int available() throws IOException {		
+	@Override
+	public int available() throws IOException {
 		return Math.min(left, in.available());
 	}
 
-	@Override public void close() throws IOException {
+	@Override
+	public void close() throws IOException {
 		eof();
 		in.close();
 	}
 
-	protected void eof() {
-	}
+	protected void eof() {}
 
-	@Override public synchronized void mark(int readlimit) {
+	@Override
+	public synchronized void mark(int readlimit) {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public boolean markSupported() {
+	@Override
+	public boolean markSupported() {
 		return false;
 	}
 
-	@Override public int read(byte[] b, int off, int len) throws IOException {
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
 		int min = Math.min(len, left);
 		if (min == 0)
 			return 0;
@@ -55,23 +60,26 @@ public class LimitedInputStream extends InputStream {
 		return read;
 	}
 
-	@Override public int read(byte[] b) throws IOException {
-		return read(b,0,b.length);
+	@Override
+	public int read(byte[] b) throws IOException {
+		return read(b, 0, b.length);
 	}
 
-	@Override public synchronized void reset() throws IOException {
+	@Override
+	public synchronized void reset() throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public long skip(long n) throws IOException {
+	@Override
+	public long skip(long n) throws IOException {
 		long count = 0;
 		byte buffer[] = new byte[1024];
-		while ( n > 0 && read() >= 0) {
+		while (n > 0 && read() >= 0) {
 			int size = read(buffer);
-			if ( size <= 0)
+			if (size <= 0)
 				return count;
-			count+=size;
-			n-=size;
+			count += size;
+			n -= size;
 		}
 		return count;
 	}

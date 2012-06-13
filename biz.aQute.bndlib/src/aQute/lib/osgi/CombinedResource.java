@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-
 package aQute.lib.osgi;
 
 import java.io.*;
 import java.util.*;
 
 public class CombinedResource extends WriteResource {
-	final List<Resource> resources = new ArrayList<Resource>();
-	long lastModified = 0;
-	
+	final List<Resource>	resources		= new ArrayList<Resource>();
+	long					lastModified	= 0;
+
 	@Override
 	public void write(final OutputStream out) throws IOException, Exception {
 		OutputStream unclosable = new FilterOutputStream(out) {
@@ -31,7 +30,7 @@ public class CombinedResource extends WriteResource {
 				// Ignore
 			}
 		};
-		for ( Resource r : resources ) {
+		for (Resource r : resources) {
 			r.write(unclosable);
 			unclosable.flush();
 		}
@@ -46,6 +45,5 @@ public class CombinedResource extends WriteResource {
 		lastModified = Math.max(lastModified, r.lastModified());
 		resources.add(r);
 	}
-
 
 }

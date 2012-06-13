@@ -15,24 +15,21 @@ import aQute.libg.header.*;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
- * pattern. We parse the resource and and the imports to the builder.
- * 
- * Parsing is done with XSLT (first time I see the use of having XML for the
- * Spring configuration files!).
+ * pattern. We parse the resource and and the imports to the builder. Parsing is
+ * done with XSLT (first time I see the use of having XML for the Spring
+ * configuration files!).
  * 
  * @author aqute
- * 
  */
 public class SpringComponent implements AnalyzerPlugin {
-	static Transformer transformer;
-	static Pattern SPRING_SOURCE = Pattern.compile("META-INF/spring/.*\\.xml");
-	static Pattern QN = Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	static Transformer	transformer;
+	static Pattern		SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");
+	static Pattern		QN				= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public static Set<CharSequence> analyze(InputStream in) throws Exception {
 		if (transformer == null) {
 			TransformerFactory tf = TransformerFactory.newInstance();
-			Source source = new StreamSource(SpringComponent.class
-					.getResourceAsStream("extract.xsl"));
+			Source source = new StreamSource(SpringComponent.class.getResourceAsStream("extract.xsl"));
 			transformer = tf.newTransformer(source);
 		}
 
@@ -66,30 +63,32 @@ public class SpringComponent implements AnalyzerPlugin {
 		return refers;
 	}
 
-    public boolean analyzeJar(Analyzer analyzer) throws Exception {
-	    Jar jar = analyzer.getJar();
-	    Map<String, Resource> dir = jar.getDirectories().get("META-INF/spring");
-		if ( dir == null || dir.isEmpty())
+	public boolean analyzeJar(Analyzer analyzer) throws Exception {
+		Jar jar = analyzer.getJar();
+		Map<String,Resource> dir = jar.getDirectories().get("META-INF/spring");
+		if (dir == null || dir.isEmpty())
 			return false;
-		
-		for (Iterator<Entry<String, Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
-			Entry<String, Resource> entry = i.next();
+
+		for (Iterator<Entry<String,Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
+			Entry<String,Resource> entry = i.next();
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
 			if (SPRING_SOURCE.matcher(path).matches()) {
 				try {
-				InputStream in = resource.openInputStream();
-				Set<CharSequence> set = analyze(in);
-				in.close();
-				for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
-					PackageRef pack = analyzer.getPackageRef((String) r.next());
-					if ( !QN.matcher(pack.getFQN()).matches())
-					    analyzer.warning("Package does not seem a package in spring resource ("+path+"): " + pack );
-					if (!analyzer.getReferred().containsKey(pack))
-						analyzer.getReferred().put(pack, new Attrs());
+					InputStream in = resource.openInputStream();
+					Set<CharSequence> set = analyze(in);
+					in.close();
+					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
+						PackageRef pack = analyzer.getPackageRef((String) r.next());
+						if (!QN.matcher(pack.getFQN()).matches())
+							analyzer.warning("Package does not seem a package in spring resource (" + path + "): "
+									+ pack);
+						if (!analyzer.getReferred().containsKey(pack))
+							analyzer.getReferred().put(pack, new Attrs());
+					}
 				}
-				} catch( Exception e ) {
-					analyzer.error("Unexpected exception in processing spring resources("+path+"): " + e );
+				catch (Exception e) {
+					analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
 				}
 			}
 		}

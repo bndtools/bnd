@@ -23,19 +23,14 @@ import aQute.libg.generics.*;
 import aQute.libg.header.*;
 
 /**
- * Include-Resource: ( [name '=' ] file )+
- * 
- * Private-Package: package-decl ( ',' package-decl )*
- * 
- * Export-Package: package-decl ( ',' package-decl )*
- * 
+ * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
+ * package-decl )* Export-Package: package-decl ( ',' package-decl )*
  * Import-Package: package-decl ( ',' package-decl )*
  * 
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
-	static Pattern					IR_PATTERN			= Pattern
-																.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
+	static Pattern					IR_PATTERN			= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
 	private final DiffPluginImpl	differ				= new DiffPluginImpl();
 	private Pattern					xdoNotCopy			= null;
 	private static final int		SPLIT_MERGE_LAST	= 1;
@@ -50,8 +45,7 @@ public class Builder extends Analyzer {
 		super(parent);
 	}
 
-	public Builder() {
-	}
+	public Builder() {}
 
 	public Jar build() throws Exception {
 		trace("build");
@@ -60,8 +54,7 @@ public class Builder extends Analyzer {
 			return null;
 
 		if (getProperty(CONDUIT) != null)
-			error("Specified " + CONDUIT
-					+ " but calls build() instead of builds() (might be a programmer error");
+			error("Specified " + CONDUIT + " but calls build() instead of builds() (might be a programmer error");
 
 		Jar dot = new Jar("dot");
 		try {
@@ -78,7 +71,7 @@ public class Builder extends Analyzer {
 		doWab(dot);
 
 		doBndInfo(dot);
-		
+
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
 		// we need to have analyzed the classpath.
@@ -97,8 +90,7 @@ public class Builder extends Analyzer {
 				catch (Exception e) {
 					error(MANIFEST + " while reading manifest file", e);
 				}
-			}
-			else {
+			} else {
 				error(MANIFEST + ", no such file " + mf);
 			}
 		}
@@ -133,16 +125,16 @@ public class Builder extends Analyzer {
 		doBaseline(dot); // check for a baseline
 		return dot;
 	}
-	
-	
+
 	/**
 	 * Make sure any bnd.info files are properly processed
+	 * 
 	 * @param jar
 	 */
 
 	private void doBndInfo(Jar jar) {
-		for ( Entry<String, Resource> e : jar.getResources().entrySet()) {
-			if ( e.getKey().endsWith("/bnd.info")) {
+		for (Entry<String,Resource> e : jar.getResources().entrySet()) {
+			if (e.getKey().endsWith("/bnd.info")) {
 				PreprocessResource pp = new PreprocessResource(this, e.getValue());
 				e.setValue(pp);
 			}
@@ -232,16 +224,14 @@ public class Builder extends Analyzer {
 				for (String part : parts) {
 					File sub = getFile(f.getParentFile(), part);
 					if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {
-						warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory",
-								sub, f);
-					}
-					else {
+						warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory", sub,
+								f);
+					} else {
 						addWabLib(dot, sub);
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			error("WAB lib does not exist %s", f);
 		}
 	}
@@ -272,14 +262,11 @@ public class Builder extends Analyzer {
 		changedFile(f);
 	}
 
-	protected void changedFile(File f) {
-	}
+	protected void changedFile(File f) {}
 
 	/**
-	 * Sign the jar file.
-	 * 
-	 * -sign : <alias> [ ';' 'password:=' <password> ] [ ';' 'keystore:='
-	 * <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
+	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
+	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
 	 * 
 	 * @return
 	 */
@@ -293,7 +280,7 @@ public class Builder extends Analyzer {
 		List<SignerPlugin> signers = getPlugins(SignerPlugin.class);
 
 		Parameters infos = parseHeader(signing);
-		for (Entry<String, Attrs> entry : infos.entrySet()) {
+		for (Entry<String,Attrs> entry : infos.entrySet()) {
 			for (SignerPlugin signer : signers) {
 				signer.sign(this, entry.getKey());
 			}
@@ -320,7 +307,7 @@ public class Builder extends Analyzer {
 		addClose(jar);
 		for (PackageRef pref : referred) {
 			for (Jar cpe : getClasspath()) {
-				Map<String, Resource> map = cpe.getDirectories().get(pref.getPath());
+				Map<String,Resource> map = cpe.getDirectories().get(pref.getPath());
 				if (map != null) {
 					jar.addDirectory(map, false);
 					break;
@@ -352,7 +339,7 @@ public class Builder extends Analyzer {
 	}
 
 	public void cleanupVersion(Packages packages, String defaultVersion) {
-		for (Map.Entry<PackageRef, Attrs> entry : packages.entrySet()) {
+		for (Map.Entry<PackageRef,Attrs> entry : packages.entrySet()) {
 			Attrs attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
@@ -360,8 +347,7 @@ public class Builder extends Analyzer {
 					v = defaultVersion;
 					if (isPedantic())
 						warning("Used bundle version %s for exported package %s", v, entry.getKey());
-				}
-				else {
+				} else {
 					if (isPedantic())
 						warning("No export version for exported package %s", entry.getKey());
 				}
@@ -386,8 +372,9 @@ public class Builder extends Analyzer {
 			String packagePath = packageRef.getPath();
 
 			boolean found = false;
-			String[] fixed = {"packageinfo", "package.html", "module-info.java",
-					"package-info.java"};
+			String[] fixed = {
+					"packageinfo", "package.html", "module-info.java", "package-info.java"
+			};
 
 			for (Iterator<File> i = getSourcePath().iterator(); i.hasNext();) {
 				File root = i.next();
@@ -418,8 +405,7 @@ public class Builder extends Analyzer {
 					Resource resource = jar.getResource(sourcePath);
 					if (resource != null) {
 						dot.putResource("OSGI-OPT/src/" + sourcePath, resource);
-					}
-					else {
+					} else {
 						resource = jar.getResource("OSGI-OPT/src/" + sourcePath);
 						if (resource != null) {
 							dot.putResource("OSGI-OPT/src/" + sourcePath, resource);
@@ -428,8 +414,7 @@ public class Builder extends Analyzer {
 				}
 			}
 			if (getSourcePath().isEmpty())
-				warning("Including sources but " + SOURCEPATH
-						+ " does not contain any source directories ");
+				warning("Including sources but " + SOURCEPATH + " does not contain any source directories ");
 			// TODO copy from the jars where they came from
 		}
 	}
@@ -449,8 +434,7 @@ public class Builder extends Analyzer {
 						File f = getFile(file);
 						if (!f.isDirectory()) {
 							error("Adding a sourcepath that is not a directory: " + f);
-						}
-						else {
+						} else {
 							sourcePath.add(f);
 						}
 					}
@@ -472,9 +456,9 @@ public class Builder extends Analyzer {
 
 		// Build an index of the class path that we can then
 		// use destructively
-		MultiMap<String, Jar> packages = new MultiMap<String, Jar>();
+		MultiMap<String,Jar> packages = new MultiMap<String,Jar>();
 		for (Jar srce : getClasspath()) {
-			for (Entry<String, Map<String, Resource>> e : srce.getDirectories().entrySet()) {
+			for (Entry<String,Map<String,Resource>> e : srce.getDirectories().entrySet()) {
 				if (e.getValue() != null)
 					packages.add(e.getKey(), srce);
 			}
@@ -491,8 +475,7 @@ public class Builder extends Analyzer {
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
 			if (!unused.isEmpty()) {
-				warning("Unused Private-Package instructions, no such package(s) on the class path: %s",
-						unused);
+				warning("Unused Private-Package instructions, no such package(s) on the class path: %s", unused);
 			}
 		}
 
@@ -517,10 +500,10 @@ public class Builder extends Analyzer {
 	 * @param name
 	 * @param instructions
 	 */
-	private Set<Instruction> doExpand(Jar jar, MultiMap<String, Jar> index, Instructions filter) {
+	private Set<Instruction> doExpand(Jar jar, MultiMap<String,Jar> index, Instructions filter) {
 		Set<Instruction> unused = Create.set();
 
-		for (Entry<Instruction, Attrs> e : filter.entrySet()) {
+		for (Entry<Instruction,Attrs> e : filter.entrySet()) {
 			Instruction instruction = e.getKey();
 			if (instruction.isDuplicate())
 				continue;
@@ -535,9 +518,8 @@ public class Builder extends Analyzer {
 
 			boolean used = false;
 
-			for (Iterator<Entry<String, List<Jar>>> entry = index.entrySet().iterator(); entry
-					.hasNext();) {
-				Entry<String, List<Jar>> p = entry.next();
+			for (Iterator<Entry<String,List<Jar>>> entry = index.entrySet().iterator(); entry.hasNext();) {
+				Entry<String,List<Jar>> p = entry.next();
 
 				String directory = p.getKey();
 				PackageRef packageRef = getPackageRef(directory);
@@ -645,7 +627,7 @@ public class Builder extends Analyzer {
 
 		if (hasSources()) {
 			String srcPath = "OSGI-OPT/src/" + path;
-			Map<String, Resource> srcContents = srce.getDirectories().get(srcPath);
+			Map<String,Resource> srcContents = srce.getDirectories().get(srcPath);
 			if (srcContents != null) {
 				dest.addDirectory(srcContents, overwrite);
 			}
@@ -692,16 +674,19 @@ public class Builder extends Analyzer {
 	/**
 	 * Matches the instructions against a package.
 	 * 
-	 * @param instructions The list of instructions
-	 * @param pack The name of the package
-	 * @param unused The total list of patterns, matched patterns are removed
-	 * @param source The name of the source container, can be filtered upon with
-	 *        the from: directive.
+	 * @param instructions
+	 *            The list of instructions
+	 * @param pack
+	 *            The name of the package
+	 * @param unused
+	 *            The total list of patterns, matched patterns are removed
+	 * @param source
+	 *            The name of the source container, can be filtered upon with
+	 *            the from: directive.
 	 * @return
 	 */
-	private Instruction matches(Instructions instructions, String pack, Set<Instruction> unused,
-			String source) {
-		for (Entry<Instruction, Attrs> entry : instructions.entrySet()) {
+	private Instruction matches(Instructions instructions, String pack, Set<Instruction> unused, String source) {
+		for (Entry<Instruction,Attrs> entry : instructions.entrySet()) {
 			Instruction pattern = entry.getKey();
 
 			// It is possible to filter on the source of the
@@ -740,8 +725,7 @@ public class Builder extends Analyzer {
 			includes = getProperty(INCLUDERESOURCE);
 			if (includes == null || includes.length() == 0)
 				includes = getProperty("Include-Resource");
-		}
-		else
+		} else
 			warning("Please use -includeresource instead of Bundle-Includes");
 
 		doIncludeResource(jar, includes);
@@ -753,15 +737,14 @@ public class Builder extends Analyzer {
 		doIncludeResource(jar, clauses);
 	}
 
-	private void doIncludeResource(Jar jar, Parameters clauses) throws ZipException, IOException,
-			Exception {
-		for (Entry<String, Attrs> entry : clauses.entrySet()) {
+	private void doIncludeResource(Jar jar, Parameters clauses) throws ZipException, IOException, Exception {
+		for (Entry<String,Attrs> entry : clauses.entrySet()) {
 			doIncludeResource(jar, entry.getKey(), entry.getValue());
 		}
 	}
 
-	private void doIncludeResource(Jar jar, String name, Map<String, String> extra)
-			throws ZipException, IOException, Exception {
+	private void doIncludeResource(Jar jar, String name, Map<String,String> extra) throws ZipException, IOException,
+			Exception {
 
 		boolean preprocess = false;
 		boolean absentIsOk = false;
@@ -783,56 +766,47 @@ public class Builder extends Analyzer {
 		}
 
 		if (source.startsWith("@")) {
-			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination,
-					absentIsOk);
-		}
-		else
-			if (extra.containsKey("cmd")) {
-				doCommand(jar, source, destination, extra, preprocess, absentIsOk);
+			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk);
+		} else if (extra.containsKey("cmd")) {
+			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
+		} else if (extra.containsKey("literal")) {
+			String literal = extra.get("literal");
+			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
+			String x = extra.get("extra");
+			if (x != null)
+				r.setExtra(x);
+			jar.putResource(name, r);
+		} else {
+			File sourceFile;
+			String destinationPath;
+
+			sourceFile = getFile(source);
+			if (parts.length == 1) {
+				// Directories should be copied to the root
+				// but files to their file name ...
+				if (sourceFile.isDirectory())
+					destinationPath = "";
+				else
+					destinationPath = sourceFile.getName();
+			} else {
+				destinationPath = parts[0];
 			}
-			else
-				if (extra.containsKey("literal")) {
-					String literal = extra.get("literal");
-					Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
-					String x = extra.get("extra");
-					if (x != null)
-						r.setExtra(x);
-					jar.putResource(name, r);
-				}
-				else {
-					File sourceFile;
-					String destinationPath;
+			// Handle directories
+			if (sourceFile.isDirectory()) {
+				destinationPath = doResourceDirectory(jar, extra, preprocess, sourceFile, destinationPath);
+				return;
+			}
 
-					sourceFile = getFile(source);
-					if (parts.length == 1) {
-						// Directories should be copied to the root
-						// but files to their file name ...
-						if (sourceFile.isDirectory())
-							destinationPath = "";
-						else
-							destinationPath = sourceFile.getName();
-					}
-					else {
-						destinationPath = parts[0];
-					}
-					// Handle directories
-					if (sourceFile.isDirectory()) {
-						destinationPath = doResourceDirectory(jar, extra, preprocess, sourceFile,
-								destinationPath);
-						return;
-					}
+			// destinationPath = checkDestinationPath(destinationPath);
 
-					// destinationPath = checkDestinationPath(destinationPath);
+			if (!sourceFile.exists()) {
+				if (absentIsOk)
+					return;
 
-					if (!sourceFile.exists()) {
-						if (absentIsOk)
-							return;
-
-						noSuchFile(jar, name, extra, source, destinationPath);
-					}
-					else
-						copy(jar, destinationPath, sourceFile, preprocess, extra);
-				}
+				noSuchFile(jar, name, extra, source, destinationPath);
+			} else
+				copy(jar, destinationPath, sourceFile, preprocess, extra);
+		}
 	}
 
 	/**
@@ -843,13 +817,10 @@ public class Builder extends Analyzer {
 	 * {@link Macro#_lsa(String[])} or {@link Macro#_lsb(String[])} macro. The
 	 * repetition will repeat the given command for each item. The @} macro can
 	 * be used to replace the current item. If no {@code for} is given, the
-	 * source is used as the only item.
-	 * 
-	 * If the destination contains a macro, each iteration will create a new
-	 * file, otherwise the destination name is used.
-	 * 
-	 * The execution of the command is delayed until the JAR is actually written
-	 * to the file system for performance reasons.
+	 * source is used as the only item. If the destination contains a macro,
+	 * each iteration will create a new file, otherwise the destination name is
+	 * used. The execution of the command is delayed until the JAR is actually
+	 * written to the file system for performance reasons.
 	 * 
 	 * @param jar
 	 * @param source
@@ -858,8 +829,8 @@ public class Builder extends Analyzer {
 	 * @param preprocess
 	 * @param absentIsOk
 	 */
-	private void doCommand(Jar jar, String source, String destination, Map<String, String> extra,
-			boolean preprocess, boolean absentIsOk) {
+	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra, boolean preprocess,
+			boolean absentIsOk) {
 		String repeat = extra.get("for"); // TODO constant
 		if (repeat == null)
 			repeat = source;
@@ -869,10 +840,9 @@ public class Builder extends Analyzer {
 		for (String required : requires) {
 			File file = getFile(required);
 			if (!file.isFile()) {
-				error("Include-Resource.cmd for %s, requires %s, but no such file %s", source,
-						required, file.getAbsoluteFile());
-			}
-			else
+				error("Include-Resource.cmd for %s, requires %s, but no such file %s", source, required,
+						file.getAbsoluteFile());
+			} else
 				lastModified = Math.max(lastModified, file.lastModified());
 		}
 
@@ -886,7 +856,7 @@ public class Builder extends Analyzer {
 			cr = new CombinedResource();
 		}
 		trace("last modified requires %s", lastModified);
-		
+
 		for (String item : items) {
 			setProperty("@", item);
 			try {
@@ -895,7 +865,7 @@ public class Builder extends Analyzer {
 				File file = getFile(item);
 
 				Resource r = new CommandResource(command, this, Math.max(lastModified,
-						file.exists() ? file.lastModified():0L));
+						file.exists() ? file.lastModified() : 0L));
 
 				if (preprocess)
 					r = new PreprocessResource(this, r);
@@ -909,15 +879,15 @@ public class Builder extends Analyzer {
 				unsetProperty("@");
 			}
 		}
-		
+
 		// Add last so the correct modification date is used
 		// to update the modified time.
-		if ( cr != null)
+		if (cr != null)
 			jar.putResource(destination, cr);
 	}
 
-	private String doResourceDirectory(Jar jar, Map<String, String> extra, boolean preprocess,
-			File sourceFile, String destinationPath) throws Exception {
+	private String doResourceDirectory(Jar jar, Map<String,String> extra, boolean preprocess, File sourceFile,
+			String destinationPath) throws Exception {
 		String filter = extra.get("filter:");
 		boolean flatten = isTrue(extra.get("flatten:"));
 		boolean recursive = true;
@@ -929,22 +899,21 @@ public class Builder extends Analyzer {
 		Instruction.Filter iFilter = null;
 		if (filter != null) {
 			iFilter = new Instruction.Filter(new Instruction(filter), recursive, getDoNotCopy());
-		}
-		else {
+		} else {
 			iFilter = new Instruction.Filter(null, recursive, getDoNotCopy());
 		}
 
-		Map<String, File> files = newMap();
+		Map<String,File> files = newMap();
 		resolveFiles(sourceFile, iFilter, recursive, destinationPath, files, flatten);
 
-		for (Map.Entry<String, File> entry : files.entrySet()) {
+		for (Map.Entry<String,File> entry : files.entrySet()) {
 			copy(jar, entry.getKey(), entry.getValue(), preprocess, extra);
 		}
 		return destinationPath;
 	}
 
-	private void resolveFiles(File dir, FileFilter filter, boolean recursive, String path,
-			Map<String, File> files, boolean flatten) {
+	private void resolveFiles(File dir, FileFilter filter, boolean recursive, String path, Map<String,File> files,
+			boolean flatten) {
 
 		if (doNotCopy(dir.getName())) {
 			return;
@@ -963,8 +932,7 @@ public class Builder extends Analyzer {
 					resolveFiles(file, filter, recursive, nextPath, files, flatten);
 				}
 				// Directories are ignored otherwise
-			}
-			else {
+			} else {
 				String p = appendPath(path, file.getName());
 				if (files.containsKey(p))
 					warning("Include-Resource overwrites entry %s from file %s", p, file);
@@ -973,8 +941,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, String clause, Map<String, String> extra, String source,
-			String destinationPath) throws Exception {
+	private void noSuchFile(Jar jar, String clause, Map<String,String> extra, String source, String destinationPath)
+			throws Exception {
 		Jar src = getJarFromName(source, "Include-Resource " + source);
 		if (src != null) {
 			// Do not touch the manifest so this also
@@ -982,16 +950,14 @@ public class Builder extends Analyzer {
 			src.setDoNotTouchManifest();
 			JarResource jarResource = new JarResource(src);
 			jar.putResource(destinationPath, jarResource);
-		}
-		else {
+		} else {
 			Resource lastChance = make.process(source);
 			if (lastChance != null) {
 				String x = extra.get("extra");
 				if (x != null)
 					lastChance.setExtra(x);
 				jar.putResource(destinationPath, lastChance);
-			}
-			else
+			} else
 				error("Input file does not exist: " + source);
 		}
 	}
@@ -1006,8 +972,8 @@ public class Builder extends Analyzer {
 	 * @throws ZipException
 	 * @throws IOException
 	 */
-	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
-			throws ZipException, IOException {
+	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk) throws ZipException,
+			IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
 		// like @zip.jar!/META-INF/MANIFEST.MF
@@ -1030,8 +996,7 @@ public class Builder extends Analyzer {
 				return;
 
 			error("Can not find JAR file " + source);
-		}
-		else {
+		} else {
 			addAll(jar, sub, instr, destination);
 		}
 	}
@@ -1039,8 +1004,10 @@ public class Builder extends Analyzer {
 	/**
 	 * Add all the resources in the given jar that match the given filter.
 	 * 
-	 * @param sub the jar
-	 * @param filter a pattern that should match the resoures in sub to be added
+	 * @param sub
+	 *            the jar
+	 * @param filter
+	 *            a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter) {
 		return addAll(to, sub, filter, "");
@@ -1049,8 +1016,10 @@ public class Builder extends Analyzer {
 	/**
 	 * Add all the resources in the given jar that match the given filter.
 	 * 
-	 * @param sub the jar
-	 * @param filter a pattern that should match the resoures in sub to be added
+	 * @param sub
+	 *            the jar
+	 * @param filter
+	 *            a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
 		boolean dupl = false;
@@ -1059,14 +1028,12 @@ public class Builder extends Analyzer {
 				continue;
 
 			if (filter == null || filter.matches(name) != filter.isNegated())
-				dupl |= to.putResource(Processor.appendPath(destination, name),
-						sub.getResource(name), true);
+				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
 		}
 		return dupl;
 	}
 
-	private void copy(Jar jar, String path, File from, boolean preprocess, Map<String, String> extra)
-			throws Exception {
+	private void copy(Jar jar, String path, File from, boolean preprocess, Map<String,String> extra) throws Exception {
 		if (doNotCopy(from.getName()))
 			return;
 
@@ -1076,8 +1043,7 @@ public class Builder extends Analyzer {
 			for (int i = 0; i < files.length; i++) {
 				copy(jar, appendPath(path, files[i].getName()), files[i], preprocess, extra);
 			}
-		}
-		else {
+		} else {
 			if (from.exists()) {
 				Resource resource = new FileResource(from);
 				if (preprocess) {
@@ -1093,8 +1059,7 @@ public class Builder extends Analyzer {
 				if (isTrue(extra.get(LIB_DIRECTIVE))) {
 					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH), path));
 				}
-			}
-			else {
+			} else {
 				error("Input file does not exist: " + from);
 			}
 		}
@@ -1254,12 +1219,11 @@ public class Builder extends Analyzer {
 	public String _maven_version(String args[]) {
 		if (args.length > 2)
 			error("${maven_version} macro receives too many arguments " + Arrays.toString(args));
-		else
-			if (args.length < 2)
-				error("${maven_version} macro has no arguments, use ${maven_version;1.2.3-SNAPSHOT}");
-			else {
-				return cleanupVersion(args[1]);
-			}
+		else if (args.length < 2)
+			error("${maven_version} macro has no arguments, use ${maven_version;1.2.3-SNAPSHOT}");
+		else {
+			return cleanupVersion(args[1]);
+		}
 		return null;
 	}
 
@@ -1280,16 +1244,12 @@ public class Builder extends Analyzer {
 					sb.append(exp);
 					sb.append("\" \"export\")\r\n");
 				}
-			}
+			} else if ("admin".equals(arg) || "all".equals(arg)) {
+				sb.append("(org.osgi.framework.AdminPermission)");
+			} else if ("permissions".equals(arg))
+				;
 			else
-				if ("admin".equals(arg) || "all".equals(arg)) {
-					sb.append("(org.osgi.framework.AdminPermission)");
-				}
-				else
-					if ("permissions".equals(arg))
-						;
-					else
-						error("Invalid option in ${permissions}: %s", arg);
+				error("Invalid option in ${permissions}: %s", arg);
 		}
 		return sb.toString();
 	}
@@ -1315,8 +1275,7 @@ public class Builder extends Analyzer {
 		Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
 		clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES,
-					"test;presence:=optional")));
+			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, "test;presence:=optional")));
 		}
 
 		Collection<String> ir = getIncludedResourcePrefixes();
@@ -1352,7 +1311,7 @@ public class Builder extends Analyzer {
 	private Collection<String> getIncludedResourcePrefixes() {
 		List<String> prefixes = new ArrayList<String>();
 		Parameters includeResource = getIncludeResource();
-		for (Entry<String, Attrs> p : includeResource.entrySet()) {
+		for (Entry<String,Attrs> p : includeResource.entrySet()) {
 			if (p.getValue().containsKey("literal"))
 				continue;
 
@@ -1368,7 +1327,8 @@ public class Builder extends Analyzer {
 	/**
 	 * Answer the string of the resource that it has in the container.
 	 * 
-	 * @param resource The resource to look for
+	 * @param resource
+	 *            The resource to look for
 	 * @return
 	 * @throws Exception
 	 */
@@ -1393,11 +1353,9 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * doNotCopy
-	 * 
-	 * The doNotCopy variable maintains a patter for files that should not be
-	 * copied. There is a default {@link #DEFAULT_DO_NOT_COPY} but this ca be
-	 * overridden with the {@link Constants#DONOTCOPY} property.
+	 * doNotCopy The doNotCopy variable maintains a patter for files that should
+	 * not be copied. There is a default {@link #DEFAULT_DO_NOT_COPY} but this
+	 * ca be overridden with the {@link Constants#DONOTCOPY} property.
 	 */
 
 	public boolean doNotCopy(String v) {
@@ -1454,7 +1412,7 @@ public class Builder extends Analyzer {
 		if (tree == null)
 			tree = differ.tree(this);
 
-		for (Entry<String, Attrs> entry : diffs.entrySet()) {
+		for (Entry<String,Attrs> entry : diffs.entrySet()) {
 			String path = entry.getKey();
 			File file = getFile(path);
 			if (!file.isFile()) {
@@ -1482,11 +1440,9 @@ public class Builder extends Analyzer {
 								error("Differ %s", p);
 						else {
 							if (warning)
-								warning("Diff found a difference in %s for packages %s", file,
-										instructions);
+								warning("Diff found a difference in %s for packages %s", file, instructions);
 							else
-								error("Diff found a difference in %s for packages %s", file,
-										instructions);
+								error("Diff found a difference in %s for packages %s", file, instructions);
 							show(p, "", warning);
 						}
 					}
@@ -1541,7 +1497,7 @@ public class Builder extends Analyzer {
 
 		Baseline baseline = new Baseline(this, differ);
 
-		for (Entry<String, Attrs> entry : diffs.entrySet()) {
+		for (Entry<String,Attrs> entry : diffs.entrySet()) {
 			String path = entry.getKey();
 			File file = getFile(path);
 			if (!file.isFile()) {
@@ -1552,9 +1508,8 @@ public class Builder extends Analyzer {
 			Set<Info> infos = baseline.baseline(dot, other, null);
 			for (Info info : infos) {
 				if (info.mismatch) {
-					error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ',
-							info.packageName, info.packageDiff.getDelta(), info.newerVersion,
-							info.olderVersion, info.suggestedVersion,
+					error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ', info.packageName,
+							info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
 							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				}
 			}

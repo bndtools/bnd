@@ -1,13 +1,13 @@
 package aQute.lib.deployer.repository;
 
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogService;
+import org.osgi.framework.*;
+import org.osgi.service.log.*;
 
-import aQute.libg.reporter.Reporter;
+import aQute.libg.reporter.*;
 
 public class ReporterLogService implements LogService {
-	
-	private final Reporter reporter;
+
+	private final Reporter	reporter;
 
 	public ReporterLogService(Reporter reporter) {
 		this.reporter = reporter;
@@ -28,7 +28,7 @@ public class ReporterLogService implements LogService {
 	public void log(ServiceReference sr, int level, String message, Throwable t) {
 		if (t != null)
 			message += " [" + t + "]";
-		
+
 		if (reporter != null) {
 			if (level <= LOG_ERROR)
 				reporter.error(message);

@@ -1,26 +1,22 @@
 package aQute.lib.deployer.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.GeneralSecurityException;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.security.*;
+import java.util.*;
 
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.url.TaggedData;
-import aQute.bnd.service.url.URLConnector;
-import aQute.libg.reporter.Reporter;
+import aQute.bnd.service.*;
+import aQute.bnd.service.url.*;
+import aQute.libg.reporter.*;
 
 public class DefaultURLConnector implements URLConnector, Plugin {
 
-	private static final String HEADER_IF_NONE_MATCH = "If-None-Match";
-	private static final String HEADER_ETAG = "ETag";
-	private static final int RESPONSE_NOT_MODIFIED = 304;
-	
-	private boolean disableServerVerify = false;
-	private Reporter reporter = null;
+	private static final String	HEADER_IF_NONE_MATCH	= "If-None-Match";
+	private static final String	HEADER_ETAG				= "ETag";
+	private static final int	RESPONSE_NOT_MODIFIED	= 304;
+
+	private boolean				disableServerVerify		= false;
+	private Reporter			reporter				= null;				;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -28,11 +24,11 @@ public class DefaultURLConnector implements URLConnector, Plugin {
 		TaggedData data = connectTagged(url);
 		return data.getInputStream();
 	}
-	
-	public void setProperties(Map<String, String> map) {
+
+	public void setProperties(Map<String,String> map) {
 		disableServerVerify = "true".equalsIgnoreCase(map.get(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY));
 	}
-	
+
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
@@ -46,13 +42,15 @@ public class DefaultURLConnector implements URLConnector, Plugin {
 
 		URLConnection connection = url.openConnection();
 		try {
-			if (disableServerVerify) HttpsUtil.disableServerVerification(connection);
-		} catch (GeneralSecurityException e) {
+			if (disableServerVerify)
+				HttpsUtil.disableServerVerification(connection);
+		}
+		catch (GeneralSecurityException e) {
 			if (reporter != null)
 				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
 			throw new IOException("Error attempting to disable SSL server certificate verification.");
 		}
-		
+
 		if (connection instanceof HttpURLConnection) {
 			// Turn on caching and send the ETag
 			HttpURLConnection httpConnection = (HttpURLConnection) connection;

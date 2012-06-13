@@ -17,18 +17,16 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public final static String	READONLY	= "readonly";
 	public final static String	NAME		= "name";
 
-	File[]					EMPTY_FILES	= new File[0];
-	protected File			root;
-	Registry				registry;
-	boolean					canWrite	= true;
-	Pattern					REPO_FILE	= Pattern
-												.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
-	Reporter				reporter;
-	boolean					dirty;
-	String					name;
+	File[]						EMPTY_FILES	= new File[0];
+	protected File				root;
+	Registry					registry;
+	boolean						canWrite	= true;
+	Pattern						REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Reporter					reporter;
+	boolean						dirty;
+	String						name;
 
-	public FileRepo() {
-	}
+	public FileRepo() {}
 
 	public FileRepo(String name, File location, boolean canWrite) {
 		this.name = name;
@@ -40,7 +38,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		// for extensions
 	}
 
-	public void setProperties(Map<String, String> map) {
+	public void setProperties(Map<String,String> map) {
 		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
@@ -93,7 +91,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		// this list.
 		//
 		File instances[] = f.listFiles();
-		SortedMap<Version, File> versions = new TreeMap<Version, File>();
+		SortedMap<Version,File> versions = new TreeMap<Version,File>();
 		for (int i = 0; i < instances.length; i++) {
 			Matcher m = REPO_FILE.matcher(instances[i].getName());
 			if (m.matches() && m.group(1).equals(bsn)) {
@@ -111,7 +109,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		File[] files = versions.values().toArray(EMPTY_FILES);
 		if ("latest".equals(versionRange) && files.length > 0) {
-			return new File[] { files[files.length - 1] };
+			return new File[] {
+				files[files.length - 1]
+			};
 		}
 		return files;
 	}
@@ -149,8 +149,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		else
 			version = new Version(versionString);
 
-		reporter.trace("bsn=%s version=%s",bsn,version);
-		
+		reporter.trace("bsn=%s version=%s", bsn, version);
+
 		File dir = new File(root, bsn);
 		dir.mkdirs();
 		String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
@@ -178,12 +178,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected void fireBundleAdded(Jar jar, File file) {
 		if (registry == null)
 			return;
-		List<RepositoryListenerPlugin> listeners = registry
-				.getPlugins(RepositoryListenerPlugin.class);
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
 		for (RepositoryListenerPlugin listener : listeners) {
 			try {
 				listener.bundleAdded(this, jar, file);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
 			}
@@ -275,16 +275,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public Jar get(String bsn, Version v) throws Exception {
 		init();
 		File bsns = new File(root, bsn);
-		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "."
-				+ v.getMicro() + ".jar");
-		if ( version.exists())
+		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro() + ".jar");
+		if (version.exists())
 			return new Jar(version);
 		else
 			return null;
 	}
 
-	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties)
-			throws Exception {
+	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
 		if (version == null)
 			version = "0.0.0";
 
@@ -313,10 +311,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		if (files.length >= 0) {
 			switch (strategy) {
-			case LOWEST:
-				return files[0];
-			case HIGHEST:
-				return files[files.length - 1];
+				case LOWEST :
+					return files[0];
+				case HIGHEST :
+					return files[files.length - 1];
 			}
 		}
 		return null;

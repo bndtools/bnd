@@ -26,7 +26,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 	public void setup(Bundle fw, Bundle targetBundle) {
 		this.targetBundle = targetBundle;
 	}
-	
+
 	public void begin(List<Test> tests, int realcount) {
 		activator.trace(">>>> %s, tests %s", targetBundle, tests);
 	}
@@ -54,21 +54,26 @@ public class BasicTestReport implements TestListener, TestReporter {
 
 		if (b != null) {
 			BundleContext context = b.getBundleContext();
-			activator.trace("got bundle context %s from %s in state %s", context, b, b.getState()	);
+			activator.trace("got bundle context %s from %s in state %s", context, b, b.getState());
 			assert context != null;
 			try {
-				Method m = test.getClass().getMethod("setBundleContext",
-						new Class[] { BundleContext.class });
+				Method m = test.getClass().getMethod("setBundleContext", new Class[] {
+					BundleContext.class
+				});
 				m.setAccessible(true);
-				m.invoke(test, new Object[] { context });
+				m.invoke(test, new Object[] {
+					context
+				});
 				activator.trace("set context through setter");
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				Field f;
 				try {
 					f = test.getClass().getField("context");
 					f.set(test, context);
 					activator.trace("set context in field");
-				} catch (Exception e1) {
+				}
+				catch (Exception e1) {
 					// Ok, no problem
 				}
 			}
@@ -108,6 +113,8 @@ public class BasicTestReport implements TestListener, TestReporter {
 	}
 
 	String[] getCaptured() {
-		return new String[] { systemOut.getContent(), systemErr.getContent() };
+		return new String[] {
+				systemOut.getContent(), systemErr.getContent()
+		};
 	}
 }

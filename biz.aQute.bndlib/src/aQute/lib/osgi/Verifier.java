@@ -23,14 +23,11 @@ public class Verifier extends Processor {
 	private boolean			r3;
 	private boolean			usesRequire;
 
-	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0"
-											+ "|CDC-1\\.1/Foundation-1\\.1"
-											+ "|OSGi/Minimum-1\\.[1-9]" + "|JRE-1\\.1"
-											+ "|J2SE-1\\.2" + "|J2SE-1\\.3" + "|J2SE-1\\.4"
-											+ "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
+	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
+											+ "|OSGi/Minimum-1\\.[1-9]" + "|JRE-1\\.1" + "|J2SE-1\\.2" + "|J2SE-1\\.3"
+											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
 											+ "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
-											+ "|CDC-1\\.0/PersonalBasis-1\\.0"
-											+ "|CDC-1\\.0/PersonalJava-1\\.0");
+											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0");
 
 	final static int		V1_1	= 45;
 	final static int		V1_2	= 46;
@@ -69,37 +66,30 @@ public class Verifier extends Processor {
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
 			new EE("JavaSE-1.7", V1_7, V1_7), //
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
-			new EE("PersonalJava-1.2", V1_1, V1_1),
-			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
-			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),
-			new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
-			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)		};
+			new EE("PersonalJava-1.2", V1_1, V1_1), new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
+			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
+			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
+																};
 
-	final static Pattern		CARDINALITY_PATTERN				= Pattern
-																		.compile("single|multiple");
-	final static Pattern		RESOLUTION_PATTERN				= Pattern
-																		.compile("optional|mandatory");
+	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
+	final static Pattern		RESOLUTION_PATTERN				= Pattern.compile("optional|mandatory");
 	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
 	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
-	public final static Pattern	SYMBOLICNAME					= Pattern
-																		.compile(SYMBOLICNAME_STRING);
+	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
 
 	public final static String	VERSION_STRING					= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?";
 	public final static Pattern	VERSION							= Pattern.compile(VERSION_STRING);
 	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
 
-																+ VERSION_STRING + ","
-																		+ VERSION_STRING
-																		+ "(\\]|\\)))|"
+																+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|"
 																		+ VERSION_STRING);
 	final static Pattern		FILE							= Pattern
 																		.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
 	final static Pattern		WILDCARDPACKAGE					= Pattern
 																		.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
 	public final static Pattern	ISO639							= Pattern.compile("[A-Z][A-Z]");
-	public final static Pattern	HEADER_PATTERN					= Pattern
-																		.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
+	public final static Pattern	HEADER_PATTERN					= Pattern.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
 	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
 
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
@@ -110,18 +100,18 @@ public class Verifier extends Processor {
 	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
 	public final static Pattern	ANYPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FILTERPATTERN					= Pattern.compile(".*");
-	public final static Pattern	TRUEORFALSEPATTERN				= Pattern
-																		.compile("true|false|TRUE|FALSE");
+	public final static Pattern	TRUEORFALSEPATTERN				= Pattern.compile("true|false|TRUE|FALSE");
 	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
 	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
 
-	public final static String	EES[]							= { "CDC-1.0/Foundation-1.0",
-			"CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1", "OSGi/Minimum-1.2",
-			"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7",
-			"PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0",
-			"CDC-1.0/PersonalJava-1.0"							};
+	public final static String	EES[]							= {
+			"CDC-1.0/Foundation-1.0", "CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1",
+			"OSGi/Minimum-1.2", "JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7",
+			"PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0", "CDC-1.0/PersonalJava-1.0"
+																};
 
-	public final static String	OSNAMES[]						= { "AIX", // IBM
+	public final static String	OSNAMES[]						= {
+			"AIX", // IBM
 			"DigitalUnix", // Compaq
 			"Embos", // Segger Embedded Software Solutions
 			"Epoc32", // SymbianOS Symbian OS
@@ -140,10 +130,11 @@ public class Verifier extends Processor {
 			"VxWorks", // WindRiver Systems
 			"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000", // Win2000
 			"Windows2003", // Win2003
-			"WindowsXP", "WindowsVista",						};
+			"WindowsXP", "WindowsVista",
+																};
 
 	public final static String	PROCESSORNAMES[]				= { //
-																//
+			//
 			"68k", // Motorola 68000
 			"ARM_LE", // Intel Strong ARM. Deprecated because it does not
 			// specify the endianness. See the following two rows.
@@ -164,7 +155,8 @@ public class Verifier extends Processor {
 			"V850E", // NEC V850E
 			"x86", // pentium i386
 			"i486", // i586 i686 Intel& AMD 32 bit
-			"x86-64",											};
+			"x86-64",
+																};
 
 	final Analyzer				analyzer;
 	private Instructions		dynamicImports;
@@ -265,7 +257,8 @@ public class Verifier extends Processor {
 		try {
 			verifyFilter(value, 0);
 			return null;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return "Not a valid filter: " + value + e.getMessage();
 		}
 	}
@@ -281,8 +274,7 @@ public class Verifier extends Processor {
 			if (packageRef.isDefaultPackage())
 				error("The Bundle Activator is not in the bundle and it is in the default package ");
 			else if (!analyzer.isImported(packageRef)) {
-				error("Bundle-Activator not found on the bundle class path nor in imports: "
-						+ bactivator);
+				error("Bundle-Activator not found on the bundle class path nor in imports: " + bactivator);
 			}
 		}
 	}
@@ -308,8 +300,7 @@ public class Verifier extends Processor {
 	 * referred packages.
 	 */
 	private void verifyUnresolvedReferences() {
-		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred()
-				.keySet());
+		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
 		unresolvedReferences.removeAll(analyzer.getImports().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
 
@@ -334,8 +325,8 @@ public class Verifier extends Processor {
 					culprits.add(clazz.getAbsolutePath());
 			}
 
-			error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
-					unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+			error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s", unresolvedReferences,
+					culprits, analyzer.getBundleClasspath().keySet());
 		}
 	}
 
@@ -350,8 +341,8 @@ public class Verifier extends Processor {
 		return dynamicImports.matches(pack.getFQN());
 	}
 
-	private boolean hasOverlap(Set<?> a, Set<?> b) {
-		for (Iterator<?> i = a.iterator(); i.hasNext();) {
+	private boolean hasOverlap(Set< ? > a, Set< ? > b) {
+		for (Iterator< ? > i = a.iterator(); i.hasNext();) {
 			if (b.contains(i.next()))
 				return true;
 		}
@@ -360,15 +351,14 @@ public class Verifier extends Processor {
 
 	public void verify() throws Exception {
 		verifyHeaders();
-		verifyDirectives("Export-Package",
-				"uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN, "package");
+		verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN,
+				"package");
 		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN, "package");
 		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME, "bsn");
 		verifyDirectives("Fragment-Host", "extension:", SYMBOLICNAME, "bsn");
 		verifyDirectives("Provide-Capability", "effective:|uses:", null, null);
-		verifyDirectives("Require-Capability", "effective:|resolution:|filter:", null,null);
-		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:",
-				SYMBOLICNAME,"bsn");
+		verifyDirectives("Require-Capability", "effective:|resolution:|filter:", null, null);
+		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME, "bsn");
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -397,15 +387,12 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyRequirements() {
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
-				Constants.REQUIRE_CAPABILITY));
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
 			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
-			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
-					"Requirement %s cardinality not correct", key);
-			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
-					"Requirement %s resolution not correct", key);
+			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Requirement %s cardinality not correct", key);
+			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Requirement %s resolution not correct", key);
 
 			if (key.equals("osgi.extender")) {
 				// No requirements on extender
@@ -451,20 +438,16 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyCapabilities() {
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(
-				Constants.PROVIDE_CAPABILITY));
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
 			Attrs attrs = map.get(key);
-			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false,
-					"Requirement %s cardinality not correct", key);
-			verify(attrs, "resolution:", RESOLUTION_PATTERN, false,
-					"Requirement %s resolution not correct", key);
+			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Requirement %s cardinality not correct", key);
+			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Requirement %s resolution not correct", key);
 
 			if (key.equals("osgi.extender")) {
 				verify(attrs, "osgi.extender", SYMBOLICNAME, true,
 						"Extender %s must always have the osgi.extender attribute set", key);
-				verify(attrs, "version", VERSION, true, "Extender %s must always have a version",
-						key);
+				verify(attrs, "version", VERSION, true, "Extender %s must always have a version", key);
 			} else if (key.equals("osgi.serviceloader")) {
 				verify(attrs, "register:", PACKAGEPATTERN, false,
 						"Service Loader extender register: directive not a fully qualified Java name");
@@ -493,8 +476,7 @@ public class Verifier extends Processor {
 		}
 	}
 
-	private void verify(Attrs attrs, String ad, Pattern pattern, boolean mandatory, String msg,
-			String... args) {
+	private void verify(Attrs attrs, String ad, Pattern pattern, boolean mandatory, String msg, String... args) {
 		String v = attrs.get(ad);
 		if (v == null) {
 			if (mandatory)
@@ -519,7 +501,7 @@ public class Verifier extends Processor {
 	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) {
 		Pattern pattern = Pattern.compile(directives);
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(header));
-		for (Entry<String, Attrs> entry : map.entrySet()) {
+		for (Entry<String,Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
 			if (namePattern != null) {
@@ -529,7 +511,7 @@ public class Verifier extends Processor {
 					else
 						warning("Invalid %s name: '%s'", type, pname);
 			}
-			
+
 			for (String key : entry.getValue().keySet()) {
 				if (key.endsWith(":")) {
 					if (!key.startsWith("x-")) {
@@ -537,8 +519,8 @@ public class Verifier extends Processor {
 						if (m.matches())
 							continue;
 
-						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.",
-								key, header, directives.replace('|', ','));
+						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header,
+								directives.replace('|', ','));
 					}
 				}
 			}
@@ -578,7 +560,7 @@ public class Verifier extends Processor {
 		else if (map.size() > 1)
 			warning("Bundle-ActivationPolicy has too many arguments %s", policy);
 		else {
-			Map<String, String> s = map.get("lazy");
+			Map<String,String> s = map.get("lazy");
 			if (s == null)
 				warning("Bundle-ActivationPolicy set but is not set to lazy: %s", policy);
 			else
@@ -635,10 +617,9 @@ public class Verifier extends Processor {
 			if (!verify(name, WILDCARDPACKAGE))
 				error("DynamicImport-Package header contains an invalid package name: " + name);
 
-			Map<String, String> sub = map.get(name);
+			Map<String,String> sub = map.get(name);
 			if (r3 && sub.size() != 0) {
-				error("DynamicPackage-Import has attributes on import: "
-						+ name
+				error("DynamicPackage-Import has attributes on import: " + name
 						+ ". This is however, an <=R3 bundle and attributes on this header were introduced in R4. ");
 			}
 		}
@@ -706,8 +687,7 @@ public class Verifier extends Processor {
 				index++;
 
 			if (expr.charAt(index) != '(')
-				throw new IllegalArgumentException("Filter mismatch: expected ( at position "
-						+ index + " : " + expr);
+				throw new IllegalArgumentException("Filter mismatch: expected ( at position " + index + " : " + expr);
 
 			index++; // skip (
 
@@ -715,50 +695,50 @@ public class Verifier extends Processor {
 				index++;
 
 			switch (expr.charAt(index)) {
-			case '!':
-				index++; // skip !
-				while (Character.isWhitespace(expr.charAt(index)))
-					index++;
+				case '!' :
+					index++; // skip !
+					while (Character.isWhitespace(expr.charAt(index)))
+						index++;
 
-				if (expr.charAt(index) != '(')
-					throw new IllegalArgumentException(
-							"Filter mismatch: ! (not) must have one sub expression " + index
-									+ " : " + expr);
-				while (Character.isWhitespace(expr.charAt(index)))
-					index++;
+					if (expr.charAt(index) != '(')
+						throw new IllegalArgumentException("Filter mismatch: ! (not) must have one sub expression "
+								+ index + " : " + expr);
+					while (Character.isWhitespace(expr.charAt(index)))
+						index++;
 
-				index = verifyFilter(expr, index);
-				while (Character.isWhitespace(expr.charAt(index)))
-					index++;
-				if (expr.charAt(index) != ')')
-					throw new IllegalArgumentException("Filter mismatch: expected ) at position "
-							+ index + " : " + expr);
-				return index + 1;
-
-			case '&':
-			case '|':
-				index++; // skip operator
-				while (Character.isWhitespace(expr.charAt(index)))
-					index++;
-				while (expr.charAt(index) == '(') {
 					index = verifyFilter(expr, index);
 					while (Character.isWhitespace(expr.charAt(index)))
 						index++;
-				}
+					if (expr.charAt(index) != ')')
+						throw new IllegalArgumentException("Filter mismatch: expected ) at position " + index + " : "
+								+ expr);
+					return index + 1;
 
-				if (expr.charAt(index) != ')')
-					throw new IllegalArgumentException("Filter mismatch: expected ) at position "
-							+ index + " : " + expr);
-				return index + 1; // skip )
+				case '&' :
+				case '|' :
+					index++; // skip operator
+					while (Character.isWhitespace(expr.charAt(index)))
+						index++;
+					while (expr.charAt(index) == '(') {
+						index = verifyFilter(expr, index);
+						while (Character.isWhitespace(expr.charAt(index)))
+							index++;
+					}
 
-			default:
-				index = verifyFilterOperation(expr, index);
-				if (expr.charAt(index) != ')')
-					throw new IllegalArgumentException("Filter mismatch: expected ) at position "
-							+ index + " : " + expr);
-				return index + 1;
+					if (expr.charAt(index) != ')')
+						throw new IllegalArgumentException("Filter mismatch: expected ) at position " + index + " : "
+								+ expr);
+					return index + 1; // skip )
+
+				default :
+					index = verifyFilterOperation(expr, index);
+					if (expr.charAt(index) != ')')
+						throw new IllegalArgumentException("Filter mismatch: expected ) at position " + index + " : "
+								+ expr);
+					return index + 1;
 			}
-		} catch (IndexOutOfBoundsException e) {
+		}
+		catch (IndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Filter mismatch: early EOF from " + index);
 		}
 	}
@@ -777,19 +757,17 @@ public class Verifier extends Processor {
 		}
 		String operator = sb.toString();
 		if (!verify(operator, FILTEROP))
-			throw new IllegalArgumentException("Filter error, illegal operator " + operator
-					+ " at index " + index);
+			throw new IllegalArgumentException("Filter error, illegal operator " + operator + " at index " + index);
 
 		sb = new StringBuilder();
 		while (")".indexOf(expr.charAt(index)) < 0) {
 			switch (expr.charAt(index)) {
-			case '\\':
-				if ("\\)(*".indexOf(expr.charAt(index + 1)) >= 0)
-					index++;
-				else
-					throw new IllegalArgumentException(
-							"Filter error, illegal use of backslash at index " + index
-									+ ". Backslash may only be used before * or () or \\");
+				case '\\' :
+					if ("\\)(*".indexOf(expr.charAt(index + 1)) >= 0)
+						index++;
+					else
+						throw new IllegalArgumentException("Filter error, illegal use of backslash at index " + index
+								+ ". Backslash may only be used before * or () or \\");
 			}
 			sb.append(expr.charAt(index++));
 		}
@@ -804,8 +782,7 @@ public class Verifier extends Processor {
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
 		for (Iterator<String> i = st.getTokenSet().iterator(); i.hasNext();) {
 			if (!verify(i.next(), regex)) {
-				String msg = "Invalid value for " + name + ", " + value + " does not match "
-						+ regex.pattern();
+				String msg = "Invalid value for " + name + ", " + value + " does not match " + regex.pattern();
 				if (error)
 					error(msg);
 				else
@@ -827,8 +804,7 @@ public class Verifier extends Processor {
 		Parameters map = parseHeader(value);
 		for (String header : map.keySet()) {
 			if (!regex.matcher(header).matches()) {
-				String msg = "Invalid value for " + name + ", " + value + " does not match "
-						+ regex.pattern();
+				String msg = "Invalid value for " + name + ", " + value + " does not match " + regex.pattern();
 				if (error)
 					error(msg);
 				else
@@ -926,8 +902,7 @@ public class Verifier extends Processor {
 				IO.copy(in, digester);
 				digester.digest();
 				if (!expected.equals(digester.digest())) {
-					error("Checksum mismatch %s, expected %s, got %s", path, expected,
-							digester.digest());
+					error("Checksum mismatch %s, expected %s, got %s", path, expected, digester.digest());
 				}
 			}
 		}

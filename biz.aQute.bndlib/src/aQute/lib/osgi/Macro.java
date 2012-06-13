@@ -17,17 +17,10 @@ import aQute.libg.version.*;
  * based on a properties and a domain. The domain can implement functions that
  * start with a "_" and take args[], the names of these functions are available
  * as functions in the macro processor (without the _). Macros can nest to any
- * depth but may not contain loops.
- * 
- * Add POSIX macros: ${#parameter} String length.
- * 
- * ${parameter%word} Remove smallest suffix pattern.
- * 
- * ${parameter%%word} Remove largest suffix pattern.
- * 
- * ${parameter#word} Remove smallest prefix pattern.
- * 
- * ${parameter##word} Remove largest prefix pattern.
+ * depth but may not contain loops. Add POSIX macros: ${#parameter} String
+ * length. ${parameter%word} Remove smallest suffix pattern. ${parameter%%word}
+ * Remove largest suffix pattern. ${parameter#word} Remove smallest prefix
+ * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro implements Replacer {
 	Processor	domain;
@@ -66,39 +59,32 @@ public class Macro implements Replacer {
 					result.append(replace(variable.toString(), link));
 					return index;
 				}
+			} else if (c1 == begin)
+				nesting++;
+			else if (c1 == '\\' && index < line.length() - 1 && line.charAt(index) == '$') {
+				// remove the escape backslash and interpret the dollar
+				// as a
+				// literal
+				index++;
+				variable.append('$');
+				continue outer;
+			} else if (c1 == '$' && index < line.length() - 2) {
+				char c2 = line.charAt(index);
+				char terminator = getTerminator(c2);
+				if (terminator != 0) {
+					index = process(line, index + 1, c2, terminator, variable, link);
+					continue outer;
+				}
+			} else if (c1 == '.' && index < line.length() && line.charAt(index) == '/') {
+				// Found the sequence ./
+				if (index == 1 || Character.isWhitespace(line.charAt(index - 2))) {
+					// make sure it is preceded by whitespace or starts at begin
+					index++;
+					variable.append(domain.getBase().getAbsolutePath());
+					variable.append('/');
+					continue outer;
+				}
 			}
-			else
-				if (c1 == begin)
-					nesting++;
-				else
-					if (c1 == '\\' && index < line.length() - 1 && line.charAt(index) == '$') {
-						// remove the escape backslash and interpret the dollar
-						// as a
-						// literal
-						index++;
-						variable.append('$');
-						continue outer;
-					}
-					else
-						if (c1 == '$' && index < line.length() - 2) {
-							char c2 = line.charAt(index);
-							char terminator = getTerminator(c2);
-							if (terminator != 0) {
-								index = process(line, index + 1, c2, terminator, variable, link);
-								continue outer;
-							}
-						}
-						else
-							if (c1 == '.' && index < line.length() && line.charAt(index) == '/') {
-								// Found the sequence ./
-								if (index == 1 || Character.isWhitespace(line.charAt(index - 2))) {
-									// make sure it is preceded by whitespace or starts at begin
-									index++;
-									variable.append(domain.getBase().getAbsolutePath());
-									variable.append('/');
-									continue outer;
-								}
-							}
 			variable.append(c1);
 		}
 		result.append(variable);
@@ -171,12 +157,10 @@ public class Macro implements Replacer {
 				}
 				if (!flattening && !key.equals("@"))
 					domain.warning("No translation found for macro: " + key);
-			}
-			else {
+			} else {
 				domain.warning("Found empty macro key");
 			}
-		}
-		else {
+		} else {
 			domain.warning("Found null macro key");
 		}
 		return "${" + key + "}";
@@ -235,18 +219,20 @@ public class Macro implements Replacer {
 		else {
 			String cname = "_" + method.replaceAll("-", "_");
 			try {
-				Method m = target.getClass().getMethod(cname, new Class[] {String[].class});
-				return (String) m.invoke(target, new Object[] {args});
+				Method m = target.getClass().getMethod(cname, new Class[] {
+					String[].class
+				});
+				return (String) m.invoke(target, new Object[] {
+					args
+				});
 			}
 			catch (NoSuchMethodException e) {
 				// Ignore
 			}
 			catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method,
-							Arrays.toString(args));
-				}
-				else {
+					domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+				} else {
 					domain.warning("Exception in replace: " + e.getCause());
 					e.getCause().printStackTrace();
 				}
@@ -395,7 +381,6 @@ public class Macro implements Replacer {
 	}
 
 	/**
-	 * 
 	 * replace ; <list> ; regex ; replace
 	 * 
 	 * @param args
@@ -453,16 +438,12 @@ public class Macro implements Replacer {
 			if (path.endsWith(".class")) {
 				String name = path.substring(0, path.length() - 6).replace('/', '.');
 				names.add(name);
+			} else if (path.endsWith(".java")) {
+				String name = path.substring(0, path.length() - 5).replace('/', '.');
+				names.add(name);
+			} else {
+				domain.warning("in toclassname, " + args[1] + " is not a class path because it does not end in .class");
 			}
-			else
-				if (path.endsWith(".java")) {
-					String name = path.substring(0, path.length() - 5).replace('/', '.');
-					names.add(name);
-				}
-				else {
-					domain.warning("in toclassname, " + args[1]
-							+ " is not a class path because it does not end in .class");
-				}
 		}
 		return Processor.join(names, ",");
 	}
@@ -495,8 +476,7 @@ public class Macro implements Replacer {
 		if (args.length < 2) {
 			domain.warning("Need at least one file name for ${dir;...}");
 			return null;
-		}
-		else {
+		} else {
 			String del = "";
 			StringBuilder sb = new StringBuilder();
 			for (int i = 1; i < args.length; i++) {
@@ -516,8 +496,7 @@ public class Macro implements Replacer {
 		if (args.length < 2) {
 			domain.warning("Need at least one file name for ${basename;...}");
 			return null;
-		}
-		else {
+		} else {
 			String del = "";
 			StringBuilder sb = new StringBuilder();
 			for (int i = 1; i < args.length; i++) {
@@ -537,8 +516,7 @@ public class Macro implements Replacer {
 		if (args.length < 2) {
 			domain.warning("Need at least one file name for ${isfile;...}");
 			return null;
-		}
-		else {
+		} else {
 			boolean isfile = true;
 			for (int i = 1; i < args.length; i++) {
 				File f = new File(args[i]).getAbsoluteFile();
@@ -553,8 +531,7 @@ public class Macro implements Replacer {
 		if (args.length < 2) {
 			domain.warning("Need at least one file name for ${isdir;...}");
 			return null;
-		}
-		else {
+		} else {
 			boolean isdir = true;
 			for (int i = 1; i < args.length; i++) {
 				File f = new File(args[i]).getAbsoluteFile();
@@ -584,12 +561,10 @@ public class Macro implements Replacer {
 
 	/**
 	 * Wildcard a directory. The lists can contain Instruction that are matched
-	 * against the given directory
-	 * 
-	 * ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;<list>(;<list>)*}
+	 * against the given directory ${lsr;<dir>;<list>(;<list>)*}
+	 * ${lsa;<dir>;<list>(;<list>)*}
 	 * 
 	 * @author aqute
-	 * 
 	 */
 
 	public String _lsr(String args[]) {
@@ -602,22 +577,18 @@ public class Macro implements Replacer {
 
 	String ls(String args[], boolean relative) {
 		if (args.length < 2)
-			throw new IllegalArgumentException(
-					"the ${ls} macro must at least have a directory as parameter");
+			throw new IllegalArgumentException("the ${ls} macro must at least have a directory as parameter");
 
 		File dir = domain.getFile(args[1]);
 		if (!dir.isAbsolute())
-			throw new IllegalArgumentException(
-					"the ${ls} macro directory parameter is not absolute: " + dir);
+			throw new IllegalArgumentException("the ${ls} macro directory parameter is not absolute: " + dir);
 
 		if (!dir.exists())
-			throw new IllegalArgumentException(
-					"the ${ls} macro directory parameter does not exist: " + dir);
+			throw new IllegalArgumentException("the ${ls} macro directory parameter does not exist: " + dir);
 
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException(
-					"the ${ls} macro directory parameter points to a file instead of a directory: "
-							+ dir);
+					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
 		List<File> files = new ArrayList<File>(new SortedList<File>(dir.listFiles()));
 
@@ -652,9 +623,6 @@ public class Macro implements Replacer {
 	 * version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
 	 * </pre>
 	 * 
-	 * 
-	 * 
-	 * 
 	 * @param args
 	 * @return
 	 */
@@ -662,9 +630,10 @@ public class Macro implements Replacer {
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
 	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
 														+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-														+ "M ::= '+' | '-' | MQ\n"
-														+ "MQ ::= '~' | '='";
-	final static Pattern	_versionPattern[]	= new Pattern[] {null, null, MASK, Verifier.VERSION};
+														+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+	final static Pattern	_versionPattern[]	= new Pattern[] {
+			null, null, MASK, Verifier.VERSION
+												};
 
 	public String _version(String args[]) {
 		verifyCommand(args, _versionHelp, null, 2, 3);
@@ -699,26 +668,23 @@ public class Macro implements Replacer {
 			if (c != '~') {
 				if (i == 3) {
 					result = version.getQualifier();
+				} else if (Character.isDigit(c)) {
+					// Handle masks like +00, =+0
+					result = String.valueOf(c);
+				} else {
+					int x = version.get(i);
+					switch (c) {
+						case '+' :
+							x++;
+							break;
+						case '-' :
+							x--;
+							break;
+						case '=' :
+							break;
+					}
+					result = Integer.toString(x);
 				}
-				else
-					if (Character.isDigit(c)) {
-						// Handle masks like +00, =+0
-						result = String.valueOf(c);
-					}
-					else {
-						int x = version.get(i);
-						switch (c) {
-							case '+' :
-								x++;
-								break;
-							case '-' :
-								x--;
-								break;
-							case '=' :
-								break;
-						}
-						result = Integer.toString(x);
-					}
 				if (result != null) {
 					sb.append(del);
 					del = ".";
@@ -741,12 +707,14 @@ public class Macro implements Replacer {
 	 * @return
 	 */
 
-	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),("
-											+ MASK_STRING + ")(\\]|\\))");
+	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
 											+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-											+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	static Pattern	_rangePattern[]	= new Pattern[] {null, RANGE_MASK};
+											+ "M ::= '+' | '-' | MQ\n"
+											+ "MQ ::= '~' | '='";
+	static Pattern	_rangePattern[]	= new Pattern[] {
+			null, RANGE_MASK
+									};
 
 	public String _range(String args[]) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
@@ -780,8 +748,7 @@ public class Macro implements Replacer {
 		String s = sb.toString();
 		VersionRange vr = new VersionRange(s);
 		if (!(vr.includes(vr.getHigh()) || vr.includes(vr.getLow()))) {
-			domain.error("${range} macro created an invalid range %s from %s and mask %s", s,
-					version, spec);
+			domain.error("${range} macro created an invalid range %s from %s and mask %s", s, version, spec);
 		}
 		return sb.toString();
 	}
@@ -861,43 +828,36 @@ public class Macro implements Replacer {
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
 			return IO.collect(f);
+		} else if (f.isDirectory()) {
+			return Arrays.toString(f.list());
+		} else {
+			try {
+				URL url = new URL(args[1]);
+				return IO.collect(url, "UTF-8");
+			}
+			catch (MalformedURLException mfue) {
+				// Ignore here
+			}
+			return null;
 		}
-		else
-			if (f.isDirectory()) {
-				return Arrays.toString(f.list());
-			}
-			else {
-				try {
-					URL url = new URL(args[1]);
-					return IO.collect(url, "UTF-8");
-				}
-				catch (MalformedURLException mfue) {
-					// Ignore here
-				}
-				return null;
-			}
 	}
 
-	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low,
-			int high) {
+	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {
 		String message = "";
 		if (args.length > high) {
 			message = "too many arguments";
-		}
-		else
-			if (args.length < low) {
-				message = "too few arguments";
-			}
-			else {
-				for (int i = 0; patterns != null && i < patterns.length && i < args.length; i++) {
-					if (patterns[i] != null) {
-						Matcher m = patterns[i].matcher(args[i]);
-						if (!m.matches())
-							message += String.format("Argument %s (%s) does not match %s\n", i,
-									args[i], patterns[i].pattern());
-					}
+		} else if (args.length < low) {
+			message = "too few arguments";
+		} else {
+			for (int i = 0; patterns != null && i < patterns.length && i < args.length; i++) {
+				if (patterns[i] != null) {
+					Matcher m = patterns[i].matcher(args[i]);
+					if (!m.matches())
+						message += String.format("Argument %s (%s) does not match %s\n", i, args[i],
+								patterns[i].pattern());
 				}
 			}
+		}
 		if (message.length() != 0) {
 			StringBuilder sb = new StringBuilder();
 			String del = "${";

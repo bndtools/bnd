@@ -11,7 +11,7 @@ public class ObjectHandler extends Handler {
 	final Object	defaults[];
 	final Field		extra;
 
-	ObjectHandler(JSONCodec codec, Class<?> c) throws Exception {
+	ObjectHandler(JSONCodec codec, Class< ? > c) throws Exception {
 		rawClass = c;
 		fields = c.getFields();
 
@@ -35,19 +35,21 @@ public class ObjectHandler extends Handler {
 			extra = x;
 		else
 			extra = null;
-		
+
 		try {
 			Object template = c.newInstance();
 
 			for (int i = 0; i < fields.length; i++) {
 				defaults[i] = fields[i].get(template);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Ignore
 		}
 	}
 
-	@Override void encode(Encoder app, Object object, Map<Object, Type> visited) throws Exception {
+	@Override
+	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		app.append("{");
 		String del = "";
 		for (int i = 0; i < fields.length; i++) {
@@ -72,7 +74,9 @@ public class ObjectHandler extends Handler {
 		app.append("}");
 	}
 
-	@SuppressWarnings("unchecked") @Override Object decodeObject(Decoder r) throws Exception {
+	@SuppressWarnings("unchecked")
+	@Override
+	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		Object targetObject = rawClass.newInstance();
 
@@ -95,7 +99,7 @@ public class ObjectHandler extends Handler {
 			if (f != null) {
 				// We have a field and thus a type
 				Object value = r.codec.decode(f.getGenericType(), r);
-				if ( value != null || !r.codec.ignorenull)
+				if (value != null || !r.codec.ignorenull)
 					f.set(targetObject, value);
 			} else {
 				// No field, but may extra is defined
@@ -106,9 +110,9 @@ public class ObjectHandler extends Handler {
 					r.getExtra().put(rawClass.getName() + "." + key, value);
 				} else {
 
-					Map<String, Object> map = (Map<String, Object>) extra.get(targetObject);
+					Map<String,Object> map = (Map<String,Object>) extra.get(targetObject);
 					if (map == null) {
-						map = new LinkedHashMap<String, Object>();
+						map = new LinkedHashMap<String,Object>();
 						extra.set(targetObject, map);
 					}
 					Object value = r.codec.decode(null, r);
@@ -126,8 +130,8 @@ public class ObjectHandler extends Handler {
 				continue;
 			}
 
-			throw new IllegalArgumentException(
-					"Invalid character in parsing object, expected } or , but found " + (char) c);
+			throw new IllegalArgumentException("Invalid character in parsing object, expected } or , but found "
+					+ (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing

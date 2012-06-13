@@ -5,30 +5,28 @@ import java.util.*;
 /**
  * An immutbale list that sorts objects by their natural order or through a
  * comparator. It has convenient methods/constructors to create it from
- * collections and iterators.
- * 
- * Why not maintain the lists in their sorted form? Well, TreeMaps are quite
- * expensive ... I once profiled bnd and was shocked how much memory the Jar
- * class took due to the TreeMaps. I could not easily change it unfortunately.
- * The other reason is that Parameters uses a LinkedHashMap because the
- * preferred order should be the declaration order. However, sometimes you need
- * to sort the keys by name.
- * 
- * Last, and most important reason, is that sometimes you do not know what
- * collection you have or it is not available in a sort ordering (MultiMap for
- * example) ... I found myself sorting these things over and over again and
- * decided to just make an immutable SortedList that is easy to slice and dice
+ * collections and iterators. Why not maintain the lists in their sorted form?
+ * Well, TreeMaps are quite expensive ... I once profiled bnd and was shocked
+ * how much memory the Jar class took due to the TreeMaps. I could not easily
+ * change it unfortunately. The other reason is that Parameters uses a
+ * LinkedHashMap because the preferred order should be the declaration order.
+ * However, sometimes you need to sort the keys by name. Last, and most
+ * important reason, is that sometimes you do not know what collection you have
+ * or it is not available in a sort ordering (MultiMap for example) ... I found
+ * myself sorting these things over and over again and decided to just make an
+ * immutable SortedList that is easy to slice and dice
  * 
  * @param <T>
  */
-@SuppressWarnings("unchecked") public class SortedList<T> implements SortedSet<T>, List<T> {
-	static SortedList<?>		empty		= new SortedList<Object>();
+@SuppressWarnings("unchecked")
+public class SortedList<T> implements SortedSet<T>, List<T> {
+	static SortedList< ? >		empty		= new SortedList<Object>();
 
 	final T[]					list;
 	final int					start;
 	final int					end;
 	final Comparator<T>			cmp;
-	Class<?>					type;
+	Class< ? >					type;
 	static Comparator<Object>	comparator	= //
 
 											new Comparator<Object>() {
@@ -78,20 +76,23 @@ import java.util.*;
 			return (n - 1) - start;
 		}
 
-		@Deprecated public void remove() {
+		@Deprecated
+		public void remove() {
 			throw new UnsupportedOperationException("Immutable");
 		}
 
-		@Deprecated public void set(T e) {
+		@Deprecated
+		public void set(T e) {
 			throw new UnsupportedOperationException("Immutable");
 		}
 
-		@Deprecated public void add(T e) {
+		@Deprecated
+		public void add(T e) {
 			throw new UnsupportedOperationException("Immutable");
 		}
 	}
 
-	public SortedList(Collection<? extends Comparable<?>> x) {
+	public SortedList(Collection< ? extends Comparable< ? >> x) {
 		this((Collection<T>) x, 0, x.size(), (Comparator<T>) comparator);
 	}
 
@@ -135,7 +136,7 @@ import java.util.*;
 		this.cmp = comparator2;
 	}
 
-	public SortedList(Collection<? extends T> x, int start, int end, Comparator<T> cmp) {
+	public SortedList(Collection< ? extends T> x, int start, int end, Comparator<T> cmp) {
 		if (start > end) {
 			int tmp = start;
 			start = end;
@@ -183,7 +184,8 @@ import java.util.*;
 		return list.clone();
 	}
 
-	@SuppressWarnings("hiding") public <T> T[] toArray(T[] a) {
+	@SuppressWarnings("hiding")
+	public <T> T[] toArray(T[] a) {
 		if (a == null || a.length < list.length) {
 			return (T[]) list.clone();
 		}
@@ -199,7 +201,7 @@ import java.util.*;
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean containsAll(Collection<?> c) {
+	public boolean containsAll(Collection< ? > c) {
 		if (c.isEmpty())
 			return true;
 
@@ -215,15 +217,15 @@ import java.util.*;
 		return false;
 	}
 
-	public boolean addAll(Collection<? extends T> c) {
+	public boolean addAll(Collection< ? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean retainAll(Collection<?> c) {
+	public boolean retainAll(Collection< ? > c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean removeAll(Collection<?> c) {
+	public boolean removeAll(Collection< ? > c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -231,7 +233,7 @@ import java.util.*;
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public Comparator<? super T> comparator() {
+	public Comparator< ? super T> comparator() {
 		return cmp;
 	}
 
@@ -299,7 +301,8 @@ import java.util.*;
 		return get(end - 1);
 	}
 
-	@Deprecated public boolean addAll(int index, Collection<? extends T> c) {
+	@Deprecated
+	public boolean addAll(int index, Collection< ? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -307,15 +310,18 @@ import java.util.*;
 		return list[index + start];
 	}
 
-	@Deprecated public T set(int index, T element) {
+	@Deprecated
+	public T set(int index, T element) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	@Deprecated public void add(int index, T element) {
+	@Deprecated
+	public void add(int index, T element) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	@Deprecated public T remove(int index) {
+	@Deprecated
+	public T remove(int index) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -358,11 +364,13 @@ import java.util.*;
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
 
-	@Deprecated public boolean equals(Object other) {
+	@Deprecated
+	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
-	@Deprecated public int hashCode() {
+	@Deprecated
+	public int hashCode() {
 		return super.hashCode();
 	}
 
@@ -377,11 +385,11 @@ import java.util.*;
 		return true;
 	}
 
-	public Class<?> getType() {
+	public Class< ? > getType() {
 		return type;
 	}
 
-	public void setType(Class<?> type) {
+	public void setType(Class< ? > type) {
 		this.type = type;
 	}
 
@@ -411,7 +419,7 @@ import java.util.*;
 		return false;
 	}
 
-	public static <T extends Comparable<?>> SortedList<T> fromIterator(Iterator<T> it) {
+	public static <T extends Comparable< ? >> SortedList<T> fromIterator(Iterator<T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l);
 	}

@@ -12,33 +12,34 @@ import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 
 public class MetaTypeReader extends WriteResource {
-	final Analyzer				reporter;
-	Clazz						clazz;
-	String						interfaces[];
-	Tag							metadata	= new Tag("metatype:MetaData", new String[] {
-			"xmlns:metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0" });
-	Tag							ocd			= new Tag(metadata, "OCD");
-	Tag							designate	= new Tag(metadata, "Designate");
-	Tag							object		= new Tag(designate, "Object");
+	final Analyzer			reporter;
+	Clazz					clazz;
+	String					interfaces[];
+	Tag						metadata	= new Tag("metatype:MetaData", new String[] {
+			"xmlns:metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0"
+										});
+	Tag						ocd			= new Tag(metadata, "OCD");
+	Tag						designate	= new Tag(metadata, "Designate");
+	Tag						object		= new Tag(designate, "Object");
 
 	// Resource
-	String						extra;
+	String					extra;
 
 	// One time init
-	boolean						finished;
+	boolean					finished;
 
 	// Designate
-	boolean						override;
-	String						designatePid;
-	boolean						factory;
+	boolean					override;
+	String					designatePid;
+	boolean					factory;
 
 	// AD
-	Map<MethodDef, Meta.AD>	methods		= new LinkedHashMap<MethodDef, Meta.AD>();
+	Map<MethodDef,Meta.AD>	methods		= new LinkedHashMap<MethodDef,Meta.AD>();
 
 	// OCD
-	Annotation					ocdAnnotation;
+	Annotation				ocdAnnotation;
 
-	MethodDef					method;
+	MethodDef				method;
 
 	public MetaTypeReader(Clazz clazz, Analyzer reporter) {
 		this.clazz = clazz;
@@ -58,13 +59,12 @@ public class MetaTypeReader extends WriteResource {
 	 * @param optionValues
 	 */
 
-	static Pattern	COLLECTION	= Pattern
-										.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
+	static Pattern	COLLECTION	= Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
 
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
 		// Set all the defaults.
-		
+
 		String rtype = method.getGenericReturnType();
 		String id = Configurable.mangleMethodName(method.getName());
 		String name = Clazz.unCamel(id);
@@ -88,8 +88,8 @@ public class MetaTypeReader extends WriteResource {
 		}
 
 		Meta.Type type = getType(rtype);
-		
-		boolean required = ad ==null || ad.required();
+
+		boolean required = ad == null || ad.required();
 		String deflt = null;
 		String max = null;
 		String min = null;
@@ -114,15 +114,15 @@ public class MetaTypeReader extends WriteResource {
 				cardinality = ad.cardinality();
 			if (ad.type() != null)
 				type = ad.type();
-//			if (ad.required() || ad.deflt() == null)
-//				required = true;
+			// if (ad.required() || ad.deflt() == null)
+			// required = true;
 
 			if (ad.description() != null)
 				description = ad.description();
 
 			if (ad.optionLabels() != null)
 				optionLabels = ad.optionLabels();
-			if (ad.optionValues() != null )
+			if (ad.optionValues() != null)
 				optionValues = ad.optionValues();
 
 			if (ad.min() != null)
@@ -208,13 +208,15 @@ public class MetaTypeReader extends WriteResource {
 	}
 
 	class Find extends ClassDataCollector {
-		
-		@Override public void method(MethodDef mdef) {
+
+		@Override
+		public void method(MethodDef mdef) {
 			method = mdef;
 			methods.put(mdef, null);
 		}
-		
-		@Override public void annotation(Annotation annotation) {
+
+		@Override
+		public void annotation(Annotation annotation) {
 			try {
 				Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
 				Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
@@ -225,20 +227,20 @@ public class MetaTypeReader extends WriteResource {
 					assert method != null;
 					methods.put(method, ad);
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				reporter.error("Error during annotation parsing %s : %s", clazz, e);
 				e.printStackTrace();
 			}
 		}
 
 	}
-	
-
 
 	public void write(OutputStream out) throws IOException {
 		try {
 			finish();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
@@ -255,8 +257,7 @@ public class MetaTypeReader extends WriteResource {
 			if (this.ocdAnnotation != null)
 				ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
 			else
-				ocd = Configurable.createConfigurable(Meta.OCD.class,
-						new HashMap<String, Object>());
+				ocd = Configurable.createConfigurable(Meta.OCD.class, new HashMap<String,Object>());
 
 			// defaults
 			String id = clazz.getClassName().getFQN();
@@ -268,7 +269,6 @@ public class MetaTypeReader extends WriteResource {
 			if (ocd.id() != null)
 				id = ocd.id();
 
-			
 			if (ocd.name() != null)
 				name = ocd.name();
 
@@ -295,7 +295,7 @@ public class MetaTypeReader extends WriteResource {
 			this.ocd.addAttribute("localization", localization);
 
 			// do ADs
-			for (Map.Entry<MethodDef, Meta.AD> entry : methods.entrySet())
+			for (Map.Entry<MethodDef,Meta.AD> entry : methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			this.designate.addAttribute("pid", pid);
@@ -313,7 +313,8 @@ public class MetaTypeReader extends WriteResource {
 		this.designatePid = pid;
 	}
 
-	@Override public long lastModified() {
+	@Override
+	public long lastModified() {
 		return 0;
 	}
 }

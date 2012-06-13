@@ -12,16 +12,15 @@ public class ServiceMain extends Thread {
 	Date					last	= new Date();
 	String					message	= "<>";
 	static DatagramSocket	socket;
-	static Class<?>			mainClass;
+	static Class< ? >		mainClass;
 	static Method			serviceMethod;
 	static Thread			mainThread;
 	static final UUID		uuid	= UUID.randomUUID();
 	private boolean			trace	= false;
 
-	public static void main(String args[]) throws Exception, SecurityException,
-			NoSuchMethodException {
+	public static void main(String args[]) throws Exception, SecurityException, NoSuchMethodException {
 		lock = new File(args[0]).getAbsoluteFile();
-		
+
 		if (!lock.exists())
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
 
@@ -39,7 +38,8 @@ public class ServiceMain extends Thread {
 		try {
 			serviceMethod = mainClass.getDeclaredMethod("daemon", boolean.class);
 			serviceMethod.invoke(null, true);
-		} catch (NoSuchMethodException e) {
+		}
+		catch (NoSuchMethodException e) {
 			String[] args2 = new String[args.length - 2];
 			System.arraycopy(args, 2, args2, 0, args2.length);
 
@@ -79,7 +79,8 @@ public class ServiceMain extends Thread {
 							if (serviceMethod != null) {
 								try {
 									serviceMethod.invoke(null, false);
-								} catch (Exception e) {
+								}
+								catch (Exception e) {
 									// Ignore
 								}
 								mainThread.interrupt();
@@ -98,27 +99,31 @@ public class ServiceMain extends Thread {
 							reply = "404 UNKNOWN REQUEST " + s;
 
 						byte data[] = reply.getBytes("UTF-8");
-						DatagramPacket p = new DatagramPacket(data, 0, data.length,
-								dp.getAddress(), dp.getPort());
+						DatagramPacket p = new DatagramPacket(data, 0, data.length, dp.getAddress(), dp.getPort());
 						trace("Sending reply message " + reply);
 						socket.send(p);
 					} else
 						System.err.println("Received UDP from external source");
-				} catch (SocketTimeoutException stoe) {
+				}
+				catch (SocketTimeoutException stoe) {
 					trace("checking lock " + lock + " " + lock.exists());
 					if (!lock.exists())
 						break;
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			t.printStackTrace();
-		} finally {
+		}
+		finally {
 			try {
 				socket.close();
-			} finally {
+			}
+			finally {
 				try {
 					lock.delete();
-				} finally {
+				}
+				finally {
 					System.exit(1);
 				}
 			}
@@ -134,7 +139,8 @@ public class ServiceMain extends Thread {
 		PrintWriter fw = IO.writer(f);
 		try {
 			fw.append(response);
-		} finally {
+		}
+		finally {
 			fw.close();
 		}
 	}

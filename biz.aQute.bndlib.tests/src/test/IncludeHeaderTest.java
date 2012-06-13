@@ -8,82 +8,83 @@ import aQute.lib.osgi.*;
 
 public class IncludeHeaderTest extends TestCase {
 
-//	public void testMavenInclude() throws Exception {
-//		String b = "pom.modelVersion=b\n";
-//		File bb = new File("b.props");
-//		write(bb, b );
-//		bb.deleteOnExit();
-//		
-//		Analyzer analyzer = new Analyzer();
-//		Properties x = new Properties();
-//		x.put("pom.modelVersion", "set");		
-//		x.put("pom.scope.test", "set");		
-//		x.put("-include", "~maven/pom.xml,b.props");
-//		analyzer.setProperties(x);
-//		System.err.println(analyzer.getErrors());
-//		System.err.println(analyzer.getWarnings());
-//		assertEquals("b", analyzer.getProperty("pom.modelVersion")); // from b
-//		assertEquals("org.apache.felix.metatype", analyzer.getProperty("pom.artifactId")); // from pom
-//		assertEquals("org.apache.felix", analyzer.getProperty("pom.groupId")); // from parent pom
-//		assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
-//	}
-	
-    public void testTopBottom() throws Exception {
-        Analyzer analyzer = new Analyzer();
-        analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
-        assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
-    }
+	// public void testMavenInclude() throws Exception {
+	// String b = "pom.modelVersion=b\n";
+	// File bb = new File("b.props");
+	// write(bb, b );
+	// bb.deleteOnExit();
+	//
+	// Analyzer analyzer = new Analyzer();
+	// Properties x = new Properties();
+	// x.put("pom.modelVersion", "set");
+	// x.put("pom.scope.test", "set");
+	// x.put("-include", "~maven/pom.xml,b.props");
+	// analyzer.setProperties(x);
+	// System.err.println(analyzer.getErrors());
+	// System.err.println(analyzer.getWarnings());
+	// assertEquals("b", analyzer.getProperty("pom.modelVersion")); // from b
+	// assertEquals("org.apache.felix.metatype",
+	// analyzer.getProperty("pom.artifactId")); // from pom
+	// assertEquals("org.apache.felix", analyzer.getProperty("pom.groupId")); //
+	// from parent pom
+	// assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
+	// }
+
+	public void testTopBottom() throws Exception {
+		Analyzer analyzer = new Analyzer();
+		analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
+		assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
+	}
 
 	public void testPrecedence() throws Exception {
-		File base  = new File("src/test");
+		File base = new File("src/test");
 		String a = "a=a.props\n";
 		String b = "a=b.props\n";
-		File aa = new File(base,"a.props");
-		File bb = new File(base,"b.props");
+		File aa = new File(base, "a.props");
+		File bb = new File(base, "b.props");
 		write(aa, a);
-		write(bb, b );
-		
-		
+		write(bb, b);
+
 		Analyzer analyzer = new Analyzer();
 		analyzer.setBase(base);
 		Properties x = new Properties();
-		x.put("a", "x");		
+		x.put("a", "x");
 		x.put("-include", "a.props, b.props");
-		analyzer.setProperties(x);		
-		assertEquals("b.props", analyzer.getProperty("a")); 	// from org
-		
+		analyzer.setProperties(x);
+		assertEquals("b.props", analyzer.getProperty("a")); // from org
+
 		analyzer = new Analyzer();
-        analyzer.setBase(base);
+		analyzer.setBase(base);
 		x = new Properties();
-		x.put("a", "x");		
+		x.put("a", "x");
 		x.put("-include", "~a.props, b.props");
-		analyzer.setProperties(x);		
-		assertEquals("b.props", analyzer.getProperty("a")); 	// from org
+		analyzer.setProperties(x);
+		assertEquals("b.props", analyzer.getProperty("a")); // from org
 
-        analyzer = new Analyzer();
-        analyzer.setBase(base);
+		analyzer = new Analyzer();
+		analyzer.setBase(base);
 		x = new Properties();
-		x.put("a", "x");		
+		x.put("a", "x");
 		x.put("-include", "a.props, ~b.props");
-		analyzer.setProperties(x);		
-		assertEquals("a.props", analyzer.getProperty("a")); 	// from org
+		analyzer.setProperties(x);
+		assertEquals("a.props", analyzer.getProperty("a")); // from org
 
-        analyzer = new Analyzer();
-        analyzer.setBase(base);
+		analyzer = new Analyzer();
+		analyzer.setBase(base);
 		x = new Properties();
-		x.put("a", "x");		
+		x.put("a", "x");
 		x.put("-include", "~a.props, ~b.props");
-		analyzer.setProperties(x);		
-		assertEquals("x", analyzer.getProperty("a")); 	// from org
+		analyzer.setProperties(x);
+		assertEquals("x", analyzer.getProperty("a")); // from org
 
 		aa.delete();
 		bb.delete();
 	}
-	
+
 	private void write(File file, String b) throws Exception {
-		FileOutputStream out = new FileOutputStream( file);
-		out.write( b.getBytes());
-		out.close();		
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(b.getBytes());
+		out.close();
 	}
 
 	public void testAbsentIncludes() throws IOException {
@@ -109,16 +110,15 @@ public class IncludeHeaderTest extends TestCase {
 			analyzer.setBase(new File("src/test"));
 			Properties p = new Properties();
 			p.put("a", "1");
-			p
-					.put("-include",
-							"-iamnotthere.txt, ${user.home}/includeheadertest.txt");
+			p.put("-include", "-iamnotthere.txt, ${user.home}/includeheadertest.txt");
 			analyzer.setProperties(p);
 			String value = analyzer.getProperty("IncludeHeaderTest");
 			assertEquals("yes", value);
 			assertEquals("2", analyzer.getProperty("a"));
 			assertEquals("2", analyzer.getProperty("b"));
 			assertEquals(0, analyzer.getErrors().size());
-		} finally {
+		}
+		finally {
 			include.delete();
 		}
 	}

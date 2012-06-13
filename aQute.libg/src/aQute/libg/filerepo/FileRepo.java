@@ -39,9 +39,9 @@ public class FileRepo {
 				Matcher m = REPO_FILE.matcher(name);
 				if (!m.matches())
 					return false;
-				if ( versionRange == null)
+				if (versionRange == null)
 					return true;
-				
+
 				Version v = new Version(m.group(2));
 				return versionRange.includes(v);
 			}
@@ -97,10 +97,11 @@ public class FileRepo {
 	}
 
 	public File put(String bsn, Version version) {
-		File dir = new File(root,bsn);
+		File dir = new File(root, bsn);
 		dir.mkdirs();
-		File file = new File(dir, bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
+		File file = new File(dir, bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro()
+				+ ".jar");
 		return file;
 	}
-	
+
 }

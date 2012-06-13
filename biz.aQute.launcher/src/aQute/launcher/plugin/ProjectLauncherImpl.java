@@ -21,8 +21,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
 				propertiesFile.getAbsolutePath()));
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "="
-				+ propertiesFile.getAbsolutePath());
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath());
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
@@ -67,7 +66,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
 			lc.getProperties().store(out, "Launching " + project);
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 	}
@@ -78,8 +78,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles) throws Exception,
-			FileNotFoundException, IOException {
+	private LauncherConstants getConstants(Collection<String> runbundles) throws Exception, FileNotFoundException,
+			IOException {
 		project.trace("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -93,11 +93,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
-		
+
 		if (!getSystemPackages().isEmpty()) {
 			try {
 				lc.systemPackages = Processor.printClauses(getSystemPackages());
-			} catch (Throwable e) {
+			}
+			catch (Throwable e) {
 				// ignore for now
 			}
 		}
@@ -136,7 +137,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		}
 
 		// Copy the bundles to the JAR
-		
+
 		List<String> runbundles = (List<String>) getRunBundles();
 		List<String> actualPaths = new ArrayList<String>();
 
@@ -155,7 +156,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		final Properties p = lc.getProperties();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		p.store(bout, "");		
+		p.store(bout, "");
 		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
 
 		// Remove signer files, we have a different manifest now

@@ -47,7 +47,7 @@ public class AnnotationReader extends ClassDataCollector {
 	MethodDef					method;
 	TypeRef						className;
 	Analyzer					analyzer;
-	MultiMap<String, String>	methods					= new MultiMap<String, String>();
+	MultiMap<String,String>		methods					= new MultiMap<String,String>();
 	TypeRef						extendsClass;
 	boolean						inherit;
 	boolean						baseclass				= true;
@@ -77,29 +77,26 @@ public class AnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
-					analyzer.error("Missing super class for DS annotations: " + extendsClass
-							+ " from " + clazz.getClassName());
+					analyzer.error("Missing super class for DS annotations: " + extendsClass + " from "
+							+ clazz.getClassName());
 				} else {
 					ec.parseClassFileWithCollector(this);
 				}
 			}
 		}
 		for (ReferenceDef rdef : component.references.values()) {
-			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1",
-					"(.*)", "un$1");
-			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)",
-					"updated$2", "(.*)", "updated$1");
+			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
+			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
+					"updated$1");
 		}
 		return component;
 	}
 
 	/**
-	 * 
 	 * @param analyzer
 	 * @param rdef
 	 */
-	protected String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value,
-			String... matches) {
+	protected String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value, String... matches) {
 		if (value == null) {
 			String bind = rdef.bind;
 			for (int i = 0; i < matches.length; i += 2) {
@@ -117,8 +114,7 @@ public class AnnotationReader extends ClassDataCollector {
 				Matcher matcher = BINDDESCRIPTOR.matcher(descriptor);
 				if (matcher.matches()) {
 					String type = matcher.group(2);
-					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type))
-							|| type.equals("Ljava/util/Map;")
+					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) || type.equals("Ljava/util/Map;")
 							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
 
 						return value;
@@ -145,7 +141,8 @@ public class AnnotationReader extends ClassDataCollector {
 				doModified();
 			else if (a instanceof Reference)
 				doReference((Reference) a, annotation);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
@@ -187,7 +184,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (def.name == null) {
 			Matcher m = BINDNAME.matcher(method.getName());
-			if ( m.matches() )
+			if (m.matches())
 				def.name = m.group(2);
 			else
 				analyzer.error("Invalid name for bind method %s", method.getName());
@@ -315,8 +312,7 @@ public class AnnotationReader extends ClassDataCollector {
 					String value = m.group(4);
 					component.property.add(key, value);
 				} else
-					throw new IllegalArgumentException("Malformed property '" + p
-							+ "' on component: " + className);
+					throw new IllegalArgumentException("Malformed property '" + p + "' on component: " + className);
 			}
 		}
 	}
@@ -325,15 +321,18 @@ public class AnnotationReader extends ClassDataCollector {
 	 * Are called during class parsing
 	 */
 
-	@Override public void classBegin(int access, TypeRef name) {
+	@Override
+	public void classBegin(int access, TypeRef name) {
 		className = name;
 	}
 
-	@Override public void implementsInterfaces(TypeRef[] interfaces) {
+	@Override
+	public void implementsInterfaces(TypeRef[] interfaces) {
 		this.interfaces = interfaces;
 	}
 
-	@Override public void method(Clazz.MethodDef method) {
+	@Override
+	public void method(Clazz.MethodDef method) {
 		int access = method.getAccess();
 
 		if (Modifier.isAbstract(access) || Modifier.isStatic(access))
@@ -346,7 +345,8 @@ public class AnnotationReader extends ClassDataCollector {
 		methods.add(method.getName(), method.getDescriptor().toString());
 	}
 
-	@Override public void extendsClass(TypeRef name) {
+	@Override
+	public void extendsClass(TypeRef name) {
 		this.extendsClass = name;
 	}
 

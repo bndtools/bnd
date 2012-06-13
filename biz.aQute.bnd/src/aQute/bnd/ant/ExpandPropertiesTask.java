@@ -14,9 +14,9 @@ public class ExpandPropertiesTask extends BaseTask {
 		try {
 			if (propertyFile.exists()) {
 				Properties properties = new Properties();
-				properties.putAll((Map<?,?>)getProject().getProperties());
-				
-				Processor   processor = new Processor(properties);
+				properties.putAll((Map< ? , ? >) getProject().getProperties());
+
+				Processor processor = new Processor(properties);
 				processor.setProperties(propertyFile);
 
 				Project project = getProject();
@@ -29,7 +29,8 @@ public class ExpandPropertiesTask extends BaseTask {
 				}
 			}
 			report();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}

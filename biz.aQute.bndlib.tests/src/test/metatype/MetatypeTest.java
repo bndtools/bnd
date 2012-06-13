@@ -43,7 +43,8 @@ public class MetatypeTest extends TestCase {
 					return "http://www.osgi.org/xmlns/metatype/v1.1.0";
 				}
 			});
-		} catch (ParserConfigurationException e) {
+		}
+		catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -55,38 +56,38 @@ public class MetatypeTest extends TestCase {
 
 	/**
 	 * Configuration should return null for nonprimitive properties if not
-	 * defined. Now it returns 0.
-	 * 
-	 * Testcase:
+	 * defined. Now it returns 0. Testcase:
 	 * 
 	 * @OCD interface Config {
-	 * @ad(required = false) Integer port(); }
-	 * 
-	 *              Config config =
+	 * @ad(required = false) Integer port(); } Config config =
 	 *              Configurable.createConfigurable(Config.class, properties);
 	 *              assert config.port() == null; // property port is not set
-	 * 
 	 *              Fix: Please delete
 	 *              "|| Number.class.isAssignableFrom(method.getReturnType())"
 	 *              from aQute/bnd/annotation/metatype/Configurable.java
 	 */
-	@Meta.OCD interface C {
-		@Meta.AD(required = false ) Integer port();
+	@Meta.OCD
+	interface C {
+		@Meta.AD(required = false)
+		Integer port();
 	}
+
 	public void testConfigurableForNonPrimitives() {
-		Map<String,String> p = new HashMap<String, String>();
+		Map<String,String> p = new HashMap<String,String>();
 		C config = Configurable.createConfigurable(C.class, p);
 		assertNull(config.port());
 		p.put("port", "10");
-		 config = Configurable.createConfigurable(C.class, p);
-		assertEquals( Integer.valueOf(10), config.port()); // property port is not set
+		config = Configurable.createConfigurable(C.class, p);
+		assertEquals(Integer.valueOf(10), config.port()); // property port is
+															// not set
 	}
 
 	/**
 	 * Test method naming options with '.' and reserved names
 	 */
 
-	@Meta.OCD public static interface Naming {
+	@Meta.OCD
+	public static interface Naming {
 		String secret();
 
 		String _secret(); // .secret
@@ -121,47 +122,65 @@ public class MetatypeTest extends TestCase {
 
 		String a_$_(); // a..
 
-		@Meta.AD(id = "secret") String xsecret();
+		@Meta.AD(id = "secret")
+		String xsecret();
 
-		@Meta.AD(id = ".secret") String x_secret();
+		@Meta.AD(id = ".secret")
+		String x_secret();
 
-		@Meta.AD(id = "_secret") String x__secret(); // _secret
+		@Meta.AD(id = "_secret")
+		String x__secret(); // _secret
 
-		@Meta.AD(id = "new") String x$new(); // new
+		@Meta.AD(id = "new")
+		String x$new(); // new
 
-		@Meta.AD(id = "$new") String x$$new(); // $new
+		@Meta.AD(id = "$new")
+		String x$$new(); // $new
 
-		@Meta.AD(id = "a.b.c") String xa_b_c(); // a.b.c
+		@Meta.AD(id = "a.b.c")
+		String xa_b_c(); // a.b.c
 
-		@Meta.AD(id = "a_b_c") String xa__b__c(); // a_b_c
+		@Meta.AD(id = "a_b_c")
+		String xa__b__c(); // a_b_c
 
-		@Meta.AD(id = ".a_b") String x_a__b(); // .a_b
+		@Meta.AD(id = ".a_b")
+		String x_a__b(); // .a_b
 
-		@Meta.AD(id = "$$$$a_b") String x$$$$$$$$a__b(); // $$$$a_b
+		@Meta.AD(id = "$$$$a_b")
+		String x$$$$$$$$a__b(); // $$$$a_b
 
-		@Meta.AD(id = "$$$$a.b") String x$$$$$$$$a_b(); // $$$$a.b
+		@Meta.AD(id = "$$$$a.b")
+		String x$$$$$$$$a_b(); // $$$$a.b
 
-		@Meta.AD(id = "a") String xa$(); // a
+		@Meta.AD(id = "a")
+		String xa$(); // a
 
-		@Meta.AD(id = "a$") String xa$$(); // a$
+		@Meta.AD(id = "a$")
+		String xa$$(); // a$
 
-		@Meta.AD(id = "a$") String xa$$$(); // a$
+		@Meta.AD(id = "a$")
+		String xa$$$(); // a$
 
-		@Meta.AD(id = "a$$") String xa$$$$(); // a$$
+		@Meta.AD(id = "a$$")
+		String xa$$$$(); // a$$
 
-		@Meta.AD(id = "a$.$") String xa$$_$$(); // a$.$
+		@Meta.AD(id = "a$.$")
+		String xa$$_$$(); // a$.$
 
-		@Meta.AD(id = "a$_$") String xa$$__$$(); // a$_$
+		@Meta.AD(id = "a$_$")
+		String xa$$__$$(); // a$_$
 
-		@Meta.AD(id = "a..") String xa_$_(); // a..
+		@Meta.AD(id = "a..")
+		String xa_$_(); // a..
 
 		String noid();
 
-		@Meta.AD(id = Meta.NULL) String nullid();
+		@Meta.AD(id = Meta.NULL)
+		String nullid();
 	}
 
 	public void testNaming() throws Exception {
-		Map<String, Object> map = Create.map();
+		Map<String,Object> map = Create.map();
 
 		map.put("_secret", "_secret");
 		map.put("_secret", "_secret");
@@ -229,12 +248,10 @@ public class MetatypeTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		Resource r = b.getJar().getResource(
-				"OSGI-INF/metatype/test.metatype.MetatypeTest$Naming.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
 		Document d = db.parse(r.openInputStream(), "UTF-8");
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
-				.getNamespaceURI());
+		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement().getNamespaceURI());
 
 	}
 
@@ -273,7 +290,9 @@ public class MetatypeTest extends TestCase {
 	}
 
 	public void testCollections() throws Exception {
-		CollectionsTest trt = set(CollectionsTest.class, new int[] { 1, 2, 3 });
+		CollectionsTest trt = set(CollectionsTest.class, new int[] {
+				1, 2, 3
+		});
 		List<String> source = Arrays.asList("1", "2", "3");
 
 		assertTrue(trt.collection() instanceof Collection);
@@ -299,7 +318,7 @@ public class MetatypeTest extends TestCase {
 		assertEqualList(source, trt.myList());
 	}
 
-	private void assertEqualList(List<?> a, Collection<?> b) {
+	private void assertEqualList(List< ? > a, Collection< ? > b) {
 		if (a.size() == b.size()) {
 			for (Object x : a) {
 				if (!b.contains(x))
@@ -322,7 +341,7 @@ public class MetatypeTest extends TestCase {
 
 		Pattern pattern();
 
-		Class<?> clazz();
+		Class< ? > clazz();
 
 		URI constructor();
 	}
@@ -334,7 +353,7 @@ public class MetatypeTest extends TestCase {
 		p.put("clazz", "java.lang.Object");
 		p.put("constructor", "http://www.aQute.biz");
 
-		SpecialConversions trt = Configurable.createConfigurable(SpecialConversions.class, (Map<Object, Object>) p);
+		SpecialConversions trt = Configurable.createConfigurable(SpecialConversions.class, (Map<Object,Object>) p);
 		assertEquals(SpecialConversions.X.A, trt.enumv());
 		assertEquals(".*", trt.pattern().pattern());
 		assertEquals(Object.class, trt.clazz());
@@ -351,13 +370,27 @@ public class MetatypeTest extends TestCase {
 		{
 			// Test collections as value
 			TestReturnTypes trt = set(TestReturnTypes.class, Arrays.asList(55));
-			assertTrue(Arrays.equals(new boolean[] { true }, trt.rpaBoolean()));
-			assertTrue(Arrays.equals(new byte[] { 55 }, trt.rpaByte()));
-			assertTrue(Arrays.equals(new short[] { 55 }, trt.rpaShort()));
-			assertTrue(Arrays.equals(new int[] { 55 }, trt.rpaInt()));
-			assertTrue(Arrays.equals(new long[] { 55 }, trt.rpaLong()));
-			assertTrue(Arrays.equals(new float[] { 55 }, trt.rpaFloat()));
-			assertTrue(Arrays.equals(new double[] { 55 }, trt.rpaDouble()));
+			assertTrue(Arrays.equals(new boolean[] {
+				true
+			}, trt.rpaBoolean()));
+			assertTrue(Arrays.equals(new byte[] {
+				55
+			}, trt.rpaByte()));
+			assertTrue(Arrays.equals(new short[] {
+				55
+			}, trt.rpaShort()));
+			assertTrue(Arrays.equals(new int[] {
+				55
+			}, trt.rpaInt()));
+			assertTrue(Arrays.equals(new long[] {
+				55
+			}, trt.rpaLong()));
+			assertTrue(Arrays.equals(new float[] {
+				55
+			}, trt.rpaFloat()));
+			assertTrue(Arrays.equals(new double[] {
+				55
+			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
@@ -368,27 +401,61 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
-			assertTrue(Arrays.equals(new Boolean[] { true }, trt.raBoolean()));
-			assertTrue(Arrays.equals(new Byte[] { 55 }, trt.raByte()));
-			assertTrue(Arrays.equals(new Short[] { 55 }, trt.raShort()));
-			assertTrue(Arrays.equals(new Integer[] { 55 }, trt.raInt()));
-			assertTrue(Arrays.equals(new Long[] { 55L }, trt.raLong()));
-			assertTrue(Arrays.equals(new Float[] { 55F }, trt.raFloat()));
-			assertTrue(Arrays.equals(new Double[] { 55D }, trt.raDouble()));
-			assertTrue(Arrays.equals(new String[] { "55" }, trt.raString()));
-			assertTrue(Arrays.equals(new URI[] { new URI("55") }, trt.raURI()));
+			assertTrue(Arrays.equals(new Boolean[] {
+				true
+			}, trt.raBoolean()));
+			assertTrue(Arrays.equals(new Byte[] {
+				55
+			}, trt.raByte()));
+			assertTrue(Arrays.equals(new Short[] {
+				55
+			}, trt.raShort()));
+			assertTrue(Arrays.equals(new Integer[] {
+				55
+			}, trt.raInt()));
+			assertTrue(Arrays.equals(new Long[] {
+				55L
+			}, trt.raLong()));
+			assertTrue(Arrays.equals(new Float[] {
+				55F
+			}, trt.raFloat()));
+			assertTrue(Arrays.equals(new Double[] {
+				55D
+			}, trt.raDouble()));
+			assertTrue(Arrays.equals(new String[] {
+				"55"
+			}, trt.raString()));
+			assertTrue(Arrays.equals(new URI[] {
+				new URI("55")
+			}, trt.raURI()));
 
 		}
 		{
 			// Test primitive arrays as value
-			TestReturnTypes trt = set(TestReturnTypes.class, new int[] { 55 });
-			assertTrue(Arrays.equals(new boolean[] { true }, trt.rpaBoolean()));
-			assertTrue(Arrays.equals(new byte[] { 55 }, trt.rpaByte()));
-			assertTrue(Arrays.equals(new short[] { 55 }, trt.rpaShort()));
-			assertTrue(Arrays.equals(new int[] { 55 }, trt.rpaInt()));
-			assertTrue(Arrays.equals(new long[] { 55 }, trt.rpaLong()));
-			assertTrue(Arrays.equals(new float[] { 55 }, trt.rpaFloat()));
-			assertTrue(Arrays.equals(new double[] { 55 }, trt.rpaDouble()));
+			TestReturnTypes trt = set(TestReturnTypes.class, new int[] {
+				55
+			});
+			assertTrue(Arrays.equals(new boolean[] {
+				true
+			}, trt.rpaBoolean()));
+			assertTrue(Arrays.equals(new byte[] {
+				55
+			}, trt.rpaByte()));
+			assertTrue(Arrays.equals(new short[] {
+				55
+			}, trt.rpaShort()));
+			assertTrue(Arrays.equals(new int[] {
+				55
+			}, trt.rpaInt()));
+			assertTrue(Arrays.equals(new long[] {
+				55
+			}, trt.rpaLong()));
+			assertTrue(Arrays.equals(new float[] {
+				55
+			}, trt.rpaFloat()));
+			assertTrue(Arrays.equals(new double[] {
+				55
+			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
@@ -399,15 +466,33 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
-			assertTrue(Arrays.equals(new Boolean[] { true }, trt.raBoolean()));
-			assertTrue(Arrays.equals(new Byte[] { 55 }, trt.raByte()));
-			assertTrue(Arrays.equals(new Short[] { 55 }, trt.raShort()));
-			assertTrue(Arrays.equals(new Integer[] { 55 }, trt.raInt()));
-			assertTrue(Arrays.equals(new Long[] { 55L }, trt.raLong()));
-			assertTrue(Arrays.equals(new Float[] { 55F }, trt.raFloat()));
-			assertTrue(Arrays.equals(new Double[] { 55D }, trt.raDouble()));
-			assertTrue(Arrays.equals(new String[] { "55" }, trt.raString()));
-			assertTrue(Arrays.equals(new URI[] { new URI("55") }, trt.raURI()));
+			assertTrue(Arrays.equals(new Boolean[] {
+				true
+			}, trt.raBoolean()));
+			assertTrue(Arrays.equals(new Byte[] {
+				55
+			}, trt.raByte()));
+			assertTrue(Arrays.equals(new Short[] {
+				55
+			}, trt.raShort()));
+			assertTrue(Arrays.equals(new Integer[] {
+				55
+			}, trt.raInt()));
+			assertTrue(Arrays.equals(new Long[] {
+				55L
+			}, trt.raLong()));
+			assertTrue(Arrays.equals(new Float[] {
+				55F
+			}, trt.raFloat()));
+			assertTrue(Arrays.equals(new Double[] {
+				55D
+			}, trt.raDouble()));
+			assertTrue(Arrays.equals(new String[] {
+				"55"
+			}, trt.raString()));
+			assertTrue(Arrays.equals(new URI[] {
+				new URI("55")
+			}, trt.raURI()));
 
 		}
 
@@ -430,13 +515,27 @@ public class MetatypeTest extends TestCase {
 			assertEquals(new Double(55), trt.rDouble());
 			assertEquals("55", trt.rString());
 			assertEquals(new URI("55"), trt.rURI());
-			assertTrue(Arrays.equals(new boolean[] { true }, trt.rpaBoolean()));
-			assertTrue(Arrays.equals(new byte[] { 55 }, trt.rpaByte()));
-			assertTrue(Arrays.equals(new short[] { 55 }, trt.rpaShort()));
-			assertTrue(Arrays.equals(new int[] { 55 }, trt.rpaInt()));
-			assertTrue(Arrays.equals(new long[] { 55 }, trt.rpaLong()));
-			assertTrue(Arrays.equals(new float[] { 55 }, trt.rpaFloat()));
-			assertTrue(Arrays.equals(new double[] { 55 }, trt.rpaDouble()));
+			assertTrue(Arrays.equals(new boolean[] {
+				true
+			}, trt.rpaBoolean()));
+			assertTrue(Arrays.equals(new byte[] {
+				55
+			}, trt.rpaByte()));
+			assertTrue(Arrays.equals(new short[] {
+				55
+			}, trt.rpaShort()));
+			assertTrue(Arrays.equals(new int[] {
+				55
+			}, trt.rpaInt()));
+			assertTrue(Arrays.equals(new long[] {
+				55
+			}, trt.rpaLong()));
+			assertTrue(Arrays.equals(new float[] {
+				55
+			}, trt.rpaFloat()));
+			assertTrue(Arrays.equals(new double[] {
+				55
+			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
 			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
@@ -447,15 +546,33 @@ public class MetatypeTest extends TestCase {
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
-			assertTrue(Arrays.equals(new Boolean[] { true }, trt.raBoolean()));
-			assertTrue(Arrays.equals(new Byte[] { 55 }, trt.raByte()));
-			assertTrue(Arrays.equals(new Short[] { 55 }, trt.raShort()));
-			assertTrue(Arrays.equals(new Integer[] { 55 }, trt.raInt()));
-			assertTrue(Arrays.equals(new Long[] { 55L }, trt.raLong()));
-			assertTrue(Arrays.equals(new Float[] { 55F }, trt.raFloat()));
-			assertTrue(Arrays.equals(new Double[] { 55D }, trt.raDouble()));
-			assertTrue(Arrays.equals(new String[] { "55" }, trt.raString()));
-			assertTrue(Arrays.equals(new URI[] { new URI("55") }, trt.raURI()));
+			assertTrue(Arrays.equals(new Boolean[] {
+				true
+			}, trt.raBoolean()));
+			assertTrue(Arrays.equals(new Byte[] {
+				55
+			}, trt.raByte()));
+			assertTrue(Arrays.equals(new Short[] {
+				55
+			}, trt.raShort()));
+			assertTrue(Arrays.equals(new Integer[] {
+				55
+			}, trt.raInt()));
+			assertTrue(Arrays.equals(new Long[] {
+				55L
+			}, trt.raLong()));
+			assertTrue(Arrays.equals(new Float[] {
+				55F
+			}, trt.raFloat()));
+			assertTrue(Arrays.equals(new Double[] {
+				55D
+			}, trt.raDouble()));
+			assertTrue(Arrays.equals(new String[] {
+				"55"
+			}, trt.raString()));
+			assertTrue(Arrays.equals(new URI[] {
+				new URI("55")
+			}, trt.raURI()));
 		}
 	}
 
@@ -466,14 +583,15 @@ public class MetatypeTest extends TestCase {
 		for (Method m : ms) {
 			p.put(m.getName(), value);
 		}
-		return Configurable.createConfigurable(interf, (Map<Object, Object>) p);
+		return Configurable.createConfigurable(interf, (Map<Object,Object>) p);
 	}
 
 	/**
 	 * Test enum handling
 	 */
 
-	@Meta.OCD public static interface Enums {
+	@Meta.OCD
+	public static interface Enums {
 		enum X {
 			requireConfiguration, optionalConfiguration, ignoreConfiguration
 		}
@@ -494,19 +612,17 @@ public class MetatypeTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		Resource r = b.getJar().getResource(
-				"OSGI-INF/metatype/test.metatype.MetatypeTest$Enums.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
-				.getNamespaceURI());
+		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement().getNamespaceURI());
 
 		Properties p = new Properties();
 		p.setProperty("r", "requireConfiguration");
 		p.setProperty("i", "ignoreConfiguration");
 		p.setProperty("o", "optionalConfiguration");
-		Enums enums = Configurable.createConfigurable(Enums.class, (Map<Object, Object>) p);
+		Enums enums = Configurable.createConfigurable(Enums.class, (Map<Object,Object>) p);
 		assertEquals(Enums.X.requireConfiguration, enums.r());
 		assertEquals(Enums.X.ignoreConfiguration, enums.i());
 		assertEquals(Enums.X.optionalConfiguration, enums.o());
@@ -515,29 +631,29 @@ public class MetatypeTest extends TestCase {
 	/**
 	 * Test the OCD settings
 	 */
-	@Meta.OCD() public static interface OCDEmpty {
-	}
+	@Meta.OCD()
+	public static interface OCDEmpty {}
 
-	@Meta.OCD(description = "description") public static interface OCDDescription {
-	}
+	@Meta.OCD(description = "description")
+	public static interface OCDDescription {}
 
-	@Meta.OCD() public static interface OCDDesignatePidOnly {
-	}
+	@Meta.OCD()
+	public static interface OCDDesignatePidOnly {}
 
-	@Meta.OCD(factory = true) public static interface OCDDesignatePidFactory {
-	}
+	@Meta.OCD(factory = true)
+	public static interface OCDDesignatePidFactory {}
 
-	@Meta.OCD(id = "id") public static interface OCDId {
-	}
+	@Meta.OCD(id = "id")
+	public static interface OCDId {}
 
-	@Meta.OCD(id = "id") public static interface OCDIdWithPid {
-	}
+	@Meta.OCD(id = "id")
+	public static interface OCDIdWithPid {}
 
-	@Meta.OCD(localization = "localization") public static interface OCDLocalization {
-	}
+	@Meta.OCD(localization = "localization")
+	public static interface OCDLocalization {}
 
-	@Meta.OCD(name = "name") public static interface OCDName {
-	}
+	@Meta.OCD(name = "name")
+	public static interface OCDName {}
 
 	public void testOCD() throws Exception {
 		Builder b = new Builder();
@@ -551,30 +667,26 @@ public class MetatypeTest extends TestCase {
 
 		assertOCD(b, "test.metatype.MetatypeTest$OCDEmpty", "test.metatype.MetatypeTest$OCDEmpty",
 				"Metatype test OCDEmpty", null, "test.metatype.MetatypeTest$OCDEmpty", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDName", "test.metatype.MetatypeTest$OCDName",
-				"name", null, "test.metatype.MetatypeTest$OCDName", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDDescription",
-				"test.metatype.MetatypeTest$OCDDescription", "Metatype test OCDDescription",
-				"description", "test.metatype.MetatypeTest$OCDDescription", false, null);
+		assertOCD(b, "test.metatype.MetatypeTest$OCDName", "test.metatype.MetatypeTest$OCDName", "name", null,
+				"test.metatype.MetatypeTest$OCDName", false, null);
+		assertOCD(b, "test.metatype.MetatypeTest$OCDDescription", "test.metatype.MetatypeTest$OCDDescription",
+				"Metatype test OCDDescription", "description", "test.metatype.MetatypeTest$OCDDescription", false, null);
 		assertOCD(b, "test.metatype.MetatypeTest$OCDDesignatePidOnly",
-				"test.metatype.MetatypeTest$OCDDesignatePidOnly",
-				"Metatype test OCDDesignate pid only", null,
+				"test.metatype.MetatypeTest$OCDDesignatePidOnly", "Metatype test OCDDesignate pid only", null,
 				"test.metatype.MetatypeTest$OCDDesignatePidOnly", false, null);
 		assertOCD(b, "test.metatype.MetatypeTest$OCDDesignatePidFactory",
-				"test.metatype.MetatypeTest$OCDDesignatePidFactory",
-				"Metatype test OCDDesignate pid factory", null,
+				"test.metatype.MetatypeTest$OCDDesignatePidFactory", "Metatype test OCDDesignate pid factory", null,
 				"test.metatype.MetatypeTest$OCDDesignatePidFactory", true, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDId", "id", "Metatype test OCDId", null, "id",
+		assertOCD(b, "test.metatype.MetatypeTest$OCDId", "id", "Metatype test OCDId", null, "id", false, null);
+		assertOCD(b, "test.metatype.MetatypeTest$OCDIdWithPid", "id", "Metatype test OCDId with pid", null, "id",
 				false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDIdWithPid", "id",
-				"Metatype test OCDId with pid", null, "id", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDLocalization",
-				"test.metatype.MetatypeTest$OCDLocalization", "Metatype test OCDLocalization",
-				null, "test.metatype.MetatypeTest$OCDLocalization", false, "localization");
+		assertOCD(b, "test.metatype.MetatypeTest$OCDLocalization", "test.metatype.MetatypeTest$OCDLocalization",
+				"Metatype test OCDLocalization", null, "test.metatype.MetatypeTest$OCDLocalization", false,
+				"localization");
 	}
 
-	void assertOCD(Builder b, String cname, String id, String name, String description,
-			String designate, boolean factory, String localization) throws Exception {
+	void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
+			boolean factory, String localization) throws Exception {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + cname + ".xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -589,13 +701,11 @@ public class MetatypeTest extends TestCase {
 		if (designate == null) {
 			assertEquals(id, xpath.evaluate("//Designate/@pid", d, XPathConstants.STRING));
 			if (factory)
-				assertEquals(id,
-						xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
+				assertEquals(id, xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
 		} else {
 			assertEquals(designate, xpath.evaluate("//Designate/@pid", d, XPathConstants.STRING));
 			if (factory)
-				assertEquals(designate,
-						xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
+				assertEquals(designate, xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
 		}
 
 		assertEquals(id, xpath.evaluate("//Object/@ocdref", d, XPathConstants.STRING));
@@ -605,42 +715,67 @@ public class MetatypeTest extends TestCase {
 	 * Test the AD settings.
 	 */
 
-	@Meta.OCD(description = "advariations") public static interface TestAD {
-		@Meta.AD String noSettings();
+	@Meta.OCD(description = "advariations")
+	public static interface TestAD {
+		@Meta.AD
+		String noSettings();
 
-		@Meta.AD(id = "id") String withId();
+		@Meta.AD(id = "id")
+		String withId();
 
-		@Meta.AD(name = "name") String withName();
+		@Meta.AD(name = "name")
+		String withName();
 
-		@Meta.AD(max = "1") String withMax();
+		@Meta.AD(max = "1")
+		String withMax();
 
-		@Meta.AD(min = "-1") String withMin();
+		@Meta.AD(min = "-1")
+		String withMin();
 
-		@Meta.AD(deflt = "deflt") String withDefault();
+		@Meta.AD(deflt = "deflt")
+		String withDefault();
 
-		@Meta.AD(cardinality = 0) String[] withC0();
+		@Meta.AD(cardinality = 0)
+		String[] withC0();
 
-		@Meta.AD(cardinality = 1) String[] withC1();
+		@Meta.AD(cardinality = 1)
+		String[] withC1();
 
-		@Meta.AD(cardinality = -1) Collection<String> withC_1();
+		@Meta.AD(cardinality = -1)
+		Collection<String> withC_1();
 
-		@Meta.AD(cardinality = -1) String[] withC_1ButArray();
+		@Meta.AD(cardinality = -1)
+		String[] withC_1ButArray();
 
-		@Meta.AD(cardinality = 1) Collection<String> withC1ButCollection();
+		@Meta.AD(cardinality = 1)
+		Collection<String> withC1ButCollection();
 
-		@Meta.AD(type = Meta.Type.String) int withInt();
+		@Meta.AD(type = Meta.Type.String)
+		int withInt();
 
-		@Meta.AD(type = Meta.Type.Integer) String withString();
+		@Meta.AD(type = Meta.Type.Integer)
+		String withString();
 
-		@Meta.AD(description = "description_xxx\"xxx'xxx") String a();
+		@Meta.AD(description = "description_xxx\"xxx'xxx")
+		String a();
 
-		@Meta.AD(optionValues = { "a", "b" }) String valuesOnly();
+		@Meta.AD(optionValues = {
+				"a", "b"
+		})
+		String valuesOnly();
 
-		@Meta.AD(optionValues = { "a", "b" }, optionLabels = { "A", "B" }) String labelsAndValues();
+		@Meta.AD(optionValues = {
+				"a", "b"
+		}, optionLabels = {
+				"A", "B"
+		})
+		String labelsAndValues();
 
-		@Meta.AD(required = true) String required();
+		@Meta.AD(required = true)
+		String required();
 
-		@Meta.AD(required = false) String notRequired();
+		@Meta.AD(required = false)
+		String notRequired();
 	}
 
 	public void testAD() throws Exception {
@@ -649,8 +784,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource(
-				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestAD.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestAD.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -659,39 +793,38 @@ public class MetatypeTest extends TestCase {
 
 		Document d = db.parse(r.openInputStream());
 
-		assertAD(d, "noSettings", "No settings", "noSettings", null, null, null, 0, "String", null,
-				null, null);
+		assertAD(d, "noSettings", "No settings", "noSettings", null, null, null, 0, "String", null, null, null);
 		assertAD(d, "withId", "With id", "id", null, null, null, 0, "String", null, null, null);
 		assertAD(d, "name", "name", "withName", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withMax", "With max", "withMax", null, "1", null, 0, "String", null, null,
-				null);
-		assertAD(d, "withMin", "With min", "withMin", "-1", null, null, 0, "String", null, null,
-				null);
+		assertAD(d, "withMax", "With max", "withMax", null, "1", null, 0, "String", null, null, null);
+		assertAD(d, "withMin", "With min", "withMin", "-1", null, null, 0, "String", null, null, null);
 		assertAD(d, "withC1", "With c1", "withC1", null, null, null, 1, "String", null, null, null);
-		assertAD(d, "withC0", "With c0", "withC0", null, null, null, 2147483647, "String", null,
+		assertAD(d, "withC0", "With c0", "withC0", null, null, null, 2147483647, "String", null, null, null);
+		assertAD(d, "withC_1", "With c 1", "withC.1", null, null, null, -1, "String", null, null, null);
+		assertAD(d, "withC_1ButArray", "With c 1 but array", "withC.1ButArray", null, null, null, -1, "String", null,
 				null, null);
-		assertAD(d, "withC_1", "With c 1", "withC.1", null, null, null, -1, "String", null, null,
-				null);
-		assertAD(d, "withC_1ButArray", "With c 1 but array", "withC.1ButArray", null, null, null,
-				-1, "String", null, null, null);
-		assertAD(d, "withC1ButCollection", "With c1 but collection", "withC1ButCollection", null,
-				null, null, 1, "String", null, null, null);
-		assertAD(d, "withInt", "With int", "withInt", null, null, null, 0, "String", null, null,
-				null);
-		assertAD(d, "withString", "With string", "withString", null, null, null, 0, "Integer",
-				null, null, null);
+		assertAD(d, "withC1ButCollection", "With c1 but collection", "withC1ButCollection", null, null, null, 1,
+				"String", null, null, null);
+		assertAD(d, "withInt", "With int", "withInt", null, null, null, 0, "String", null, null, null);
+		assertAD(d, "withString", "With string", "withString", null, null, null, 0, "Integer", null, null, null);
 		assertAD(d, "a", "A", "a", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
-		assertAD(d, "valuesOnly", "Values only", "valuesOnly", null, null, null, 0, "String", null,
-				new String[] { "a", "b" }, new String[] { "a", "b" });
-		assertAD(d, "labelsAndValues", "Labels and values", "labelsAndValues", null, null, null, 0,
-				"String", null, new String[] { "a", "b" }, new String[] { "A", "A" });
+		assertAD(d, "valuesOnly", "Values only", "valuesOnly", null, null, null, 0, "String", null, new String[] {
+				"a", "b"
+		}, new String[] {
+				"a", "b"
+		});
+		assertAD(d, "labelsAndValues", "Labels and values", "labelsAndValues", null, null, null, 0, "String", null,
+				new String[] {
+						"a", "b"
+				}, new String[] {
+						"A", "A"
+				});
 	}
 
-	void assertAD(Document d, String mname, String name, String id, String min, String max,
-			String deflt, int cardinality, String type, String description, String[] optionvalues,
-			String optionLabels[]) throws XPathExpressionException {
-		assertEquals(name,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
+	void assertAD(Document d, String mname, String name, String id, String min, String max, String deflt,
+			int cardinality, String type, String description, String[] optionvalues, String optionLabels[])
+			throws XPathExpressionException {
+		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
 		assertEquals(id, xpath.evaluate("//OCD/AD[@id='" + id + "']/@id", d, XPathConstants.STRING));
 		assertEquals(min == null ? "" : min,
 				xpath.evaluate("//OCD/AD[@id='" + id + "']/@min", d, XPathConstants.STRING));
@@ -701,8 +834,7 @@ public class MetatypeTest extends TestCase {
 				xpath.evaluate("//OCD/AD[@id='" + id + "']/@deflt", d, XPathConstants.STRING));
 		assertEquals(cardinality + "",
 				xpath.evaluate("//OCD/AD[@id='" + id + "']/@cardinality", d, XPathConstants.STRING));
-		assertEquals(type,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@type", d, XPathConstants.STRING));
+		assertEquals(type, xpath.evaluate("//OCD/AD[@id='" + id + "']/@type", d, XPathConstants.STRING));
 		assertEquals(description == null ? "" : description,
 				xpath.evaluate("//OCD/AD[@id='" + id + "']/@description", d, XPathConstants.STRING));
 	}
@@ -710,7 +842,8 @@ public class MetatypeTest extends TestCase {
 	/**
 	 * Test all the return types.
 	 */
-	@Meta.OCD(description = "simple", name = "TestSimple") public static interface TestReturnTypes {
+	@Meta.OCD(description = "simple", name = "TestSimple")
+	public static interface TestReturnTypes {
 		boolean rpBoolean();
 
 		byte rpByte();
@@ -810,8 +943,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource(
-				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestReturnTypes.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestReturnTypes.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -819,8 +951,7 @@ public class MetatypeTest extends TestCase {
 		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement()
-				.getNamespaceURI());
+		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement().getNamespaceURI());
 		// Primitives
 		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rpBoolean']/@type", d));
 		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rpByte']/@type", d));
@@ -911,10 +1042,11 @@ public class MetatypeTest extends TestCase {
 	 * Test simple
 	 * 
 	 * @author aqute
-	 * 
 	 */
-	@Meta.OCD(description = "simple", name = "TestSimple") public static interface TestSimple {
-		@Meta.AD String simple();
+	@Meta.OCD(description = "simple", name = "TestSimple")
+	public static interface TestSimple {
+		@Meta.AD
+		String simple();
 
 		String[] notSoSimple();
 
@@ -927,8 +1059,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource(
-				"OSGI-INF/metatype/test.metatype.MetatypeTest$TestSimple.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestSimple.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -945,8 +1076,7 @@ public class MetatypeTest extends TestCase {
 		assertEquals("simple", xpath.evaluate("//OCD/AD[@id='simple']/@id", d));
 		assertEquals("Simple", xpath.evaluate("//OCD/AD[@id='simple']/@name", d));
 		assertEquals("String", xpath.evaluate("//OCD/AD[@id='simple']/@type", d));
-		assertEquals(Integer.MAX_VALUE + "",
-				xpath.evaluate("//OCD/AD[@id='notSoSimple']/@cardinality", d));
+		assertEquals(Integer.MAX_VALUE + "", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@cardinality", d));
 
 	}
 

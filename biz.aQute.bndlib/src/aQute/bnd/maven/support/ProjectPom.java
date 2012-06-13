@@ -13,20 +13,21 @@ import aQute.lib.io.*;
 
 public class ProjectPom extends Pom {
 
-	final List<URI>	repositories	= new ArrayList<URI>();
+	final List<URI>		repositories	= new ArrayList<URI>();
 	final Properties	properties		= new Properties();
-	String 		packaging;
-	String 		url;
-	
+	String				packaging;
+	String				url;
+
 	ProjectPom(Maven maven, File pomFile) throws Exception {
 		super(maven, pomFile, pomFile.toURI());
 	}
 
-	@Override protected void parse(Document doc, XPath xp) throws Exception {
+	@Override
+	protected void parse(Document doc, XPath xp) throws Exception {
 
 		packaging = xp.evaluate("project/packaging", doc);
 		url = xp.evaluate("project/url", doc);
-		
+
 		Node parent = (Node) xp.evaluate("project/parent", doc, XPathConstants.NODE);
 		if (parent != null && parent.hasChildNodes()) {
 			File parentFile = IO.getFile(getPomFile().getParentFile(), "../pom.xml");
@@ -35,20 +36,20 @@ public class ProjectPom extends Pom {
 			String parentArtifactId = xp.evaluate("artifactId", parent).trim();
 			String parentVersion = xp.evaluate("version", parent).trim();
 			String parentPath = xp.evaluate("relativePath", parent).trim();
-			if (parentPath != null && parentPath.length()!=0) {
+			if (parentPath != null && parentPath.length() != 0) {
 				parentFile = IO.getFile(getPomFile().getParentFile(), parentPath);
 			}
 			if (parentFile.isFile()) {
 				ProjectPom parentPom = new ProjectPom(maven, parentFile);
 				parentPom.parse();
 				dependencies.addAll(parentPom.dependencies);
-				for ( Enumeration<?> e = parentPom.properties.propertyNames(); e.hasMoreElements(); ) {
+				for (Enumeration< ? > e = parentPom.properties.propertyNames(); e.hasMoreElements();) {
 					String key = (String) e.nextElement();
-					if ( ! properties.contains(key))
+					if (!properties.contains(key))
 						properties.put(key, parentPom.properties.get(key));
 				}
 				repositories.addAll(parentPom.repositories);
-				
+
 				setNames(parentPom);
 			} else {
 				// This seems to be a bit bizarre, extending an external pom?
@@ -58,42 +59,40 @@ public class ProjectPom extends Pom {
 			}
 		}
 
-		NodeList propNodes = (NodeList) xp.evaluate("project/properties/*", doc,
-				XPathConstants.NODESET);
+		NodeList propNodes = (NodeList) xp.evaluate("project/properties/*", doc, XPathConstants.NODESET);
 		for (int i = 0; i < propNodes.getLength(); i++) {
 			Node node = propNodes.item(i);
 			String key = node.getNodeName();
 			String value = node.getTextContent();
-			if ( key == null || key.length()==0)
+			if (key == null || key.length() == 0)
 				throw new IllegalArgumentException("Pom has an empty or null key");
-			if ( value == null || value.length()==0)
+			if (value == null || value.length() == 0)
 				throw new IllegalArgumentException("Pom has an empty or null value for property " + key);
 			properties.setProperty(key, value.trim());
 		}
 
-		NodeList repos = (NodeList) xp.evaluate("project/repositories/repository/url", doc,
-				XPathConstants.NODESET);
+		NodeList repos = (NodeList) xp.evaluate("project/repositories/repository/url", doc, XPathConstants.NODESET);
 		for (int i = 0; i < repos.getLength(); i++) {
 			Node node = repos.item(i);
 			String URIString = node.getTextContent().trim();
 			URI uri = new URI(URIString);
-			if ( uri.getScheme() ==null )
-				uri = IO.getFile(pomFile.getParentFile(),URIString).toURI();
+			if (uri.getScheme() == null)
+				uri = IO.getFile(pomFile.getParentFile(), URIString).toURI();
 			repositories.add(uri);
 		}
 
 		super.parse(doc, xp);
 	}
 
-//	private void print(Node node, String indent) {
-//		System.err.print(indent);
-//		System.err.println(node.getNodeName());
-//		Node rover = node.getFirstChild();
-//		while ( rover != null) {
-//			print( rover, indent+" ");
-//			rover = rover.getNextSibling();
-//		}
-//	}
+	// private void print(Node node, String indent) {
+	// System.err.print(indent);
+	// System.err.println(node.getNodeName());
+	// Node rover = node.getFirstChild();
+	// while ( rover != null) {
+	// print( rover, indent+" ");
+	// rover = rover.getNextSibling();
+	// }
+	// }
 
 	/**
 	 * @param parentArtifactId
@@ -102,17 +101,17 @@ public class ProjectPom extends Pom {
 	 * @throws Exception
 	 */
 	private void setNames(Pom pom) throws Exception {
-		if (artifactId == null || artifactId.length()==0)
+		if (artifactId == null || artifactId.length() == 0)
 			artifactId = pom.getArtifactId();
-		if (groupId == null || groupId.length()==0)
+		if (groupId == null || groupId.length() == 0)
 			groupId = pom.getGroupId();
-		if (version == null || version.length()==0)
+		if (version == null || version.length() == 0)
 			version = pom.getVersion();
-		if ( description == null )
+		if (description == null)
 			description = pom.getDescription();
 		else
 			description = pom.getDescription() + "\n" + description;
-	
+
 	}
 
 	static class Rover {
@@ -126,8 +125,7 @@ public class ProjectPom extends Pom {
 		final Dependency	dependency;
 
 		public boolean excludes(String name) {
-			return dependency.exclusions.contains(name) && previous != null
-					&& previous.excludes(name);
+			return dependency.exclusions.contains(name) && previous != null && previous.excludes(name);
 		}
 	}
 
@@ -140,7 +138,7 @@ public class ProjectPom extends Pom {
 
 	protected String replace(String in) {
 		System.err.println("Replce: " + in);
-		if ( in == null) {
+		if (in == null) {
 			System.err.println("null??");
 		}
 		Matcher matcher = MACRO.matcher(in);
@@ -148,18 +146,18 @@ public class ProjectPom extends Pom {
 		StringBuilder sb = new StringBuilder();
 		while (matcher.find()) {
 			int n = matcher.start();
-			sb.append( in, last, n);
+			sb.append(in, last, n);
 			String replacement = get(matcher.group(2));
-			if ( replacement == null )
-				sb.append( matcher.group(1));
+			if (replacement == null)
+				sb.append(matcher.group(1));
 			else
-				sb.append( replacement );
+				sb.append(replacement);
 			last = matcher.end();
 		}
-		if ( last == 0)
+		if (last == 0)
 			return in;
-		
-		sb.append( in, last, in.length());
+
+		sb.append(in, last, in.length());
 		return sb.toString();
 	}
 
@@ -170,14 +168,14 @@ public class ProjectPom extends Pom {
 			return groupId;
 		if (key.equals("pom.version"))
 			return version;
-		
+
 		if (key.equals("pom.name"))
 			return name;
-		
+
 		String prop = properties.getProperty(key);
-		if ( prop != null )
+		if (prop != null)
 			return prop;
-		
+
 		return System.getProperty(key);
 	}
 
@@ -198,7 +196,8 @@ public class ProjectPom extends Pom {
 		return replace(s);
 	}
 
-	@Override public File getArtifact() throws Exception {
+	@Override
+	public File getArtifact() throws Exception {
 		return null;
 	}
 }

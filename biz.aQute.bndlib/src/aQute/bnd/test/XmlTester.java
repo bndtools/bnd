@@ -20,7 +20,8 @@ public class XmlTester {
 		try {
 			dbf.setNamespaceAware(true);
 			db = dbf.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
+		}
+		catch (ParserConfigurationException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -55,8 +56,7 @@ public class XmlTester {
 		document = db.parse(in);
 	}
 
-	public void assertAttribute(String value, String expr)
-			throws XPathExpressionException {
+	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);

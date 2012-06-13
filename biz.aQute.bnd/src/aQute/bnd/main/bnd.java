@@ -29,7 +29,6 @@ import aQute.configurable.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.getopt.*;
-import aQute.lib.getopt.Description;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.osgi.*;
@@ -54,8 +53,7 @@ public class bnd extends Processor {
 	Justif						justif		= new Justif(60);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
 
-	static Pattern				JARCOMMANDS	= Pattern
-													.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
 
@@ -199,7 +197,7 @@ public class bnd extends Processor {
 				setBase(getFile(getBase(), options.base()));
 
 			// And the properties
-			for (Entry<String, String> entry : options._properties().entrySet()) {
+			for (Entry<String,String> entry : options._properties().entrySet()) {
 				setProperty(entry.getKey(), entry.getValue());
 			}
 
@@ -217,8 +215,7 @@ public class bnd extends Processor {
 				Formatter f = new Formatter(err);
 				handler.help(f, this);
 				f.flush();
-			}
-			else {
+			} else {
 				String cmd = arguments.remove(0);
 				String help = handler.execute(this, cmd, arguments);
 				if (help != null) {
@@ -240,7 +237,6 @@ public class bnd extends Processor {
 
 	/**
 	 * Options for the jar create command.
-	 * 
 	 */
 	@Description("Equivalent jar command c[v0mf] command (supports the jar tool's syntax). Will wrap the bundle unless --wrapnot is specified")
 	interface createOptions extends Options {
@@ -317,8 +313,7 @@ public class bnd extends Processor {
 
 		if (options.Manifest()) {
 			jar.setManifest((Manifest) null);
-		}
-		else {
+		} else {
 			if (options.wrap()) {
 				Analyzer w = new Analyzer(this);
 				addClose(w);
@@ -368,20 +363,18 @@ public class bnd extends Processor {
 
 		if (f.isFile()) {
 			jar.putResource(path, new FileResource(f));
-		}
-		else
-			if (f.isDirectory()) {
-				if (path.equals("."))
-					path = "";
-				else
-					path += "/";
+		} else if (f.isDirectory()) {
+			if (path.equals("."))
+				path = "";
+			else
+				path += "/";
 
-				String[] subs = f.list();
-				for (String sub : subs) {
+			String[] subs = f.list();
+			for (String sub : subs) {
 
-					add(jar, base, path + sub, report);
-				}
+				add(jar, base, path + sub, report);
 			}
+		}
 	}
 
 	/**
@@ -410,8 +403,7 @@ public class bnd extends Processor {
 				return;
 			}
 			jar = new Jar(f);
-		}
-		else {
+		} else {
 			jar = new Jar("cin", System.in);
 		}
 		try {
@@ -462,8 +454,7 @@ public class bnd extends Processor {
 				return;
 			}
 			jar = new Jar(f);
-		}
-		else {
+		} else {
 			jar = new Jar("cin", System.in);
 		}
 
@@ -475,8 +466,7 @@ public class bnd extends Processor {
 				if (opts.verbose()) {
 					Resource r = jar.getResource(path);
 					err.printf("%8s %-32s %s%n", r.size(), new Date(r.lastModified()), path);
-				}
-				else
+				} else
 					err.printf("%s%n", path);
 			}
 		}
@@ -525,18 +515,13 @@ public class bnd extends Processor {
 					out.delete();
 				}
 				b.close();
-			}
+			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
+				Jar jar = getJar(path);
+				doPrint(jar, MANIFEST);
+			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
+				doRun(path);
 			else
-				if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
-						|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
-					Jar jar = getJar(path);
-					doPrint(jar, MANIFEST);
-				}
-				else
-					if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
-						doRun(path);
-					else
-						messages.UnrecognizedFileType_(path);
+				messages.UnrecognizedFileType_(path);
 		}
 	}
 
@@ -617,17 +602,14 @@ public class bnd extends Processor {
 			mask = options._().get(0);
 			if (mask.equalsIgnoreCase("major"))
 				mask = "+00";
-			else
-				if (mask.equalsIgnoreCase("minor"))
-					mask = "=+0";
-				else
-					if (mask.equalsIgnoreCase("micro"))
-						mask = "==+";
-					else
-						if (!mask.matches("[+=0]{1,3}")) {
-							messages.InvalidBumpMask_(mask);
-							return;
-						}
+			else if (mask.equalsIgnoreCase("minor"))
+				mask = "=+0";
+			else if (mask.equalsIgnoreCase("micro"))
+				mask = "==+";
+			else if (!mask.matches("[+=0]{1,3}")) {
+				messages.InvalidBumpMask_(mask);
+				return;
+			}
 		}
 
 		if (mask == null)
@@ -693,9 +675,10 @@ public class bnd extends Processor {
 		project.clean();
 	}
 
-	@Arguments(arg = {"header|instruction", "..."})
-	interface syntaxOptions extends Options {
-	}
+	@Arguments(arg = {
+			"header|instruction", "..."
+	})
+	interface syntaxOptions extends Options {}
 
 	public void _syntax(syntaxOptions opts) throws Exception {
 		List<String> args = opts._();
@@ -755,8 +738,7 @@ public class bnd extends Processor {
 		if (bndbnd.isFile()) {
 			project = new Project(ws, projectDir, bndbnd);
 			project.doIncludeFile(file, true, project.getProperties());
-		}
-		else
+		} else
 			project = new Project(ws, projectDir, file);
 
 		project.setTrace(isTrace());
@@ -778,7 +760,9 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
-	@Arguments(arg = {"bnd|bndrun", "[...]"})
+	@Arguments(arg = {
+			"bnd|bndrun", "[...]"
+	})
 	interface packageOptions extends Options {
 		@Description("Where to store the resulting file")
 		String output();
@@ -796,8 +780,7 @@ public class bnd extends Processor {
 
 		if (opts.output() != null) {
 			output = getFile(opts.output());
-		}
-		else
+		} else
 			output = getBase();
 
 		if (opts._().size() > 1)
@@ -815,8 +798,7 @@ public class bnd extends Processor {
 			File file = getFile(path);
 			if (!file.isFile()) {
 				messages.NoSuchFile_(file);
-			}
-			else {
+			} else {
 
 				// Tricky because we can be run inside the context of a
 				// project (in which case
@@ -872,7 +854,9 @@ public class bnd extends Processor {
 			}
 
 			jar.setManifest(m);
-			jar.calcChecksums(new String[] {"SHA1", "MD5"});
+			jar.calcChecksums(new String[] {
+					"SHA1", "MD5"
+			});
 			File out = output;
 			if (output.isDirectory())
 				out = new File(output, path);
@@ -886,7 +870,6 @@ public class bnd extends Processor {
 
 	/**
 	 * List all deliverables for this workspace.
-	 * 
 	 */
 	interface deliverableOptions extends Options {
 		String project();
@@ -918,8 +901,7 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(), v.getWithoutQualifier(),
-					c.getFile());
+			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(), v.getWithoutQualifier(), c.getFile());
 		}
 		getInfo(project);
 	}
@@ -994,12 +976,11 @@ public class bnd extends Processor {
 	 * @param i
 	 */
 
-	interface xrefOptions extends Options {
-	}
+	interface xrefOptions extends Options {}
 
 	public void _xref(xrefOptions options) {
 		Analyzer analyzer = new Analyzer();
-		MultiMap<TypeRef, TypeRef> table = new MultiMap<TypeRef, TypeRef>();
+		MultiMap<TypeRef,TypeRef> table = new MultiMap<TypeRef,TypeRef>();
 		Set<TypeRef> set = Create.set();
 
 		for (String arg : options._()) {
@@ -1007,7 +988,7 @@ public class bnd extends Processor {
 				File file = new File(arg);
 				Jar jar = new Jar(file.getName(), file);
 				try {
-					for (Map.Entry<String, Resource> entry : jar.getResources().entrySet()) {
+					for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
@@ -1070,8 +1051,7 @@ public class bnd extends Processor {
 		File cp = new File(dir, ".classpath");
 		if (!cp.exists()) {
 			error("Cannot find .classpath in project directory: " + dir.getAbsolutePath());
-		}
-		else {
+		} else {
 			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
 			err.println("Classpath    " + eclipse.getClasspath());
 			err.println("Dependents   " + eclipse.getDependents());
@@ -1138,8 +1118,7 @@ public class bnd extends Processor {
 				b.setSources(true);
 
 			if (options.eclipse()) {
-				EclipseClasspath ep = new EclipseClasspath(this, getBase().getParentFile(),
-						getBase());
+				EclipseClasspath ep = new EclipseClasspath(this, getBase().getParentFile(), getBase());
 
 				b.addClasspath(ep.getClasspath());
 				b.addClasspath(ep.getBootclasspath());
@@ -1177,8 +1156,7 @@ public class bnd extends Processor {
 	// Find the build order
 	// by recursively passing
 	// through the builders.
-	private void prebuild(List<String> set, List<String> order, List<Builder> builders, String s)
-			throws IOException {
+	private void prebuild(List<String> set, List<String> order, List<Builder> builders, String s) throws IOException {
 		if (order.contains(s)) // Already done
 			return;
 
@@ -1206,9 +1184,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * View files from JARs
-	 * 
-	 * We parse the commandline and print each file on it.
+	 * View files from JARs We parse the commandline and print each file on it.
 	 * 
 	 * @param args
 	 * @param i
@@ -1247,16 +1223,13 @@ public class bnd extends Processor {
 			if (selection.endsWith(".MF")) {
 				Manifest m = new Manifest(r.openInputStream());
 				printManifest(m);
+			} else if (selection.endsWith(".class")) {
+				ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
+				clsd.dump(err);
+			} else {
+				InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
+				IO.copy(isr, err);
 			}
-			else
-				if (selection.endsWith(".class")) {
-					ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
-					clsd.dump(err);
-				}
-				else {
-					InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
-					IO.copy(isr, err);
-				}
 		}
 	}
 
@@ -1325,13 +1298,11 @@ public class bnd extends Processor {
 					wrapper.setExportPackage("*");
 					warning("Using defaults for wrap, which means no export versions");
 
+				} else if (p.isFile())
+					wrapper.setProperties(p);
+				else {
+					error("No valid property file: %s", p);
 				}
-				else
-					if (p.isFile())
-						wrapper.setProperties(p);
-					else {
-						error("No valid property file: %s", p);
-					}
 
 				if (options.bsn() != null)
 					wrapper.setBundleSymbolicName(options.bsn());
@@ -1386,18 +1357,17 @@ public class bnd extends Processor {
 		if (project != null) {
 			getInfo(project.getWorkspace());
 
-			MultiMap<String, Object> table = new MultiMap<String, Object>();
+			MultiMap<String,Object> table = new MultiMap<String,Object>();
 			table.add("Workspace", project.getWorkspace().toString());
 			table.addAll("Plugins", project.getPlugins(Object.class));
 			table.addAll("Repos", project.getWorkspace().getRepositories());
 			printMultiMap(table);
-		}
-		else
+		} else
 			err.println("No project");
 
 		target = this;
 
-		MultiMap<String, String> table = new MultiMap<String, String>();
+		MultiMap<String,String> table = new MultiMap<String,String>();
 
 		for (Iterator<String> i = target.iterator(); i.hasNext();) {
 			String key = i.next();
@@ -1428,7 +1398,6 @@ public class bnd extends Processor {
 
 	/**
 	 * Run a JavaScript program
-	 * 
 	 */
 	interface scriptOptions extends Options {
 		String file();
@@ -1557,10 +1526,9 @@ public class bnd extends Processor {
 							}
 						}
 					}
-					print("Import-Package", new TreeMap<String, Attrs>(imports));
-					print("Export-Package", new TreeMap<String, Attrs>(exports));
-				}
-				else
+					print("Import-Package", new TreeMap<String,Attrs>(imports));
+					print("Export-Package", new TreeMap<String,Attrs>(exports));
+				} else
 					warning("File has no manifest");
 			}
 
@@ -1591,10 +1559,9 @@ public class bnd extends Processor {
 
 			if ((options & LIST) != 0) {
 				err.println("[LIST]");
-				for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
-						.entrySet()) {
+				for (Map.Entry<String,Map<String,Resource>> entry : jar.getDirectories().entrySet()) {
 					String name = entry.getKey();
-					Map<String, Resource> contents = entry.getValue();
+					Map<String,Resource> contents = entry.getValue();
 					err.println(name);
 					if (contents != null) {
 						for (String element : contents.keySet()) {
@@ -1616,8 +1583,7 @@ public class bnd extends Processor {
 							}
 							err.println();
 						}
-					}
-					else {
+					} else {
 						err.println(name + " <no contents>");
 					}
 				}
@@ -1639,7 +1605,9 @@ public class bnd extends Processor {
 		}
 		for (String key : sorted) {
 			Object value = manifest.getMainAttributes().getValue(key);
-			format("%-40s %-40s\r\n", new Object[] {key, value});
+			format("%-40s %-40s\r\n", new Object[] {
+					key, value
+			});
 		}
 	}
 
@@ -1684,8 +1652,7 @@ public class bnd extends Processor {
 
 			Resource r = jar.getResource(path);
 			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r.openInputStream(),
-						Constants.DEFAULT_CHARSET);
+				InputStreamReader ir = new InputStreamReader(r.openInputStream(), Constants.DEFAULT_CHARSET);
 				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
 					IO.copy(ir, or);
@@ -1694,8 +1661,7 @@ public class bnd extends Processor {
 					or.flush();
 					ir.close();
 				}
-			}
-			else {
+			} else {
 				out.println("  - no resource");
 				warning("No Resource found for service component: " + path);
 			}
@@ -1716,9 +1682,9 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Map<String, Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
+		Map<String,Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
 		if (map != null) {
-			for (Map.Entry<String, Resource> entry : map.entrySet()) {
+			for (Map.Entry<String,Resource> entry : map.entrySet()) {
 				out.println(entry.getKey());
 				IO.copy(entry.getValue().openInputStream(), out);
 				out.println();
@@ -1761,7 +1727,6 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * 
 	 * @param msg
 	 * @param ports
 	 */
@@ -1774,8 +1739,7 @@ public class bnd extends Processor {
 			Object key = entry.getKey();
 			Map< ? , ? > clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			format("  %-38s %s\r\n", key.toString().trim(),
-					clause.isEmpty() ? "" : clause.toString());
+			format("  %-38s %s\r\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -1992,8 +1956,7 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(),
-				testFile.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
 		project.setTrace(isTrace());
 		project.setProperty(NOBUNDLES, "true");
 
@@ -2055,8 +2018,7 @@ public class bnd extends Processor {
 					if (errors > 0) {
 						test.addAttribute("errors", errors);
 						return errors;
-					}
-					else {
+					} else {
 						test.addAttribute("failed", "unknown reason");
 						return errors;
 					}
@@ -2117,8 +2079,7 @@ public class bnd extends Processor {
 		InputStream in = getClass().getResourceAsStream("testreport.xsl");
 		if (in == null) {
 			warning("Resource not found: test-report.xsl, no html report");
-		}
-		else {
+		} else {
 			FileWriter out = new FileWriter(html);
 			try {
 				Transformer transformer = fact.newTransformer(new StreamSource(in));
@@ -2138,16 +2099,14 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	interface verifyOptions extends Options {
-	}
+	interface verifyOptions extends Options {}
 
 	public void _verify(verifyOptions opts) throws Exception {
 		for (String path : opts._()) {
 			File f = getFile(path);
 			if (!f.isFile()) {
 				error("No such file: %ss", f);
-			}
-			else {
+			} else {
 				Jar jar = new Jar(f);
 				if (jar.getManifest() == null || jar.getBsn() == null)
 					error("Not a bundle %s", f);
@@ -2169,7 +2128,9 @@ public class bnd extends Processor {
 
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
 	//
-	@Arguments(arg = {"jar file", "source file"})
+	@Arguments(arg = {
+			"jar file", "source file"
+	})
 	//
 	interface sourceOptions extends Options {
 		@Description("The output file")
@@ -2276,8 +2237,7 @@ public class bnd extends Processor {
 
 		if (where.equals(Project.BNDFILE)) {
 			return null;
-		}
-		else
+		} else
 			error("Project not found: " + f);
 
 		return null;
@@ -2287,7 +2247,9 @@ public class bnd extends Processor {
 	 * Convert files
 	 */
 	@Description("Converter to different formats")
-	@Arguments(arg = {"from", "to"})
+	@Arguments(arg = {
+			"from", "to"
+	})
 	interface convertOptions extends Options {
 		@Config(description = "Convert a manifest to a properties files")
 		boolean m2p();
@@ -2305,7 +2267,7 @@ public class bnd extends Processor {
 				Properties p = new Properties();
 				Manifest m = new Manifest(in);
 				Attributes attrs = m.getMainAttributes();
-				for (Map.Entry<Object, Object> i : attrs.entrySet()) {
+				for (Map.Entry<Object,Object> i : attrs.entrySet()) {
 					p.put(i.getKey().toString(), i.getValue().toString());
 				}
 				FileOutputStream fout = new FileOutputStream(to);
@@ -2323,18 +2285,18 @@ public class bnd extends Processor {
 				in.close();
 			}
 			return;
-		}
-		else
+		} else
 			error("no conversion specified");
 	}
 
 	/**
-	 * Create a list of file names that match manifest headers
-	 * 
-	 * bnd select -h Bundle-SymbolicName --where (...) *
+	 * Create a list of file names that match manifest headers bnd select -h
+	 * Bundle-SymbolicName --where (...) *
 	 */
 	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.")
-	@Arguments(arg = {"..."})
+	@Arguments(arg = {
+		"..."
+	})
 	interface selectOptions extends Options {
 		@Description("A simple assertion on a manifest header or an OSGi filter. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted.")
 		String where();
@@ -2373,7 +2335,7 @@ public class bnd extends Processor {
 			}
 
 			Domain domain = Domain.domain(jar.getManifest());
-			Hashtable<String, Object> ht = new Hashtable<String, Object>();
+			Hashtable<String,Object> ht = new Hashtable<String,Object>();
 			Iterator<String> i = domain.iterator();
 			Set<String> realNames = new HashSet<String>();
 
@@ -2408,15 +2370,12 @@ public class bnd extends Processor {
 				String literal = ins.getLiteral();
 				if (literal.equals("name"))
 					out.println(jar.getSource().getName());
-				else
-					if (literal.equals("path"))
-						out.println(jar.getSource().getAbsolutePath());
-					else
-						if (literal.equals("size") || literal.equals("length"))
-							out.println(jar.getSource().length());
-						else
-							if (literal.equals("modified"))
-								out.println(new Date(jar.getSource().lastModified()));
+				else if (literal.equals("path"))
+					out.println(jar.getSource().getAbsolutePath());
+				else if (literal.equals("size") || literal.equals("length"))
+					out.println(jar.getSource().length());
+				else if (literal.equals("modified"))
+					out.println(new Date(jar.getSource().lastModified()));
 			}
 		}
 	}

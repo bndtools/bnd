@@ -16,23 +16,26 @@ public class PatchCommand {
 	}
 
 	@Description("WIP")
-	@Arguments(arg={"<older>","<newer>", "<patch>"})
+	@Arguments(arg = {
+			"<older>", "<newer>", "<patch>"
+	})
 	interface createOptions extends Options {
-		
+
 	}
+
 	public void _create(createOptions opts) throws Exception {
 		List<String> arguments = opts._();
-		
+
 		Jar a = new Jar(bnd.getFile(arguments.remove(0)));
 		Manifest am = a.getManifest();
-		
+
 		Jar b = new Jar(bnd.getFile(arguments.remove(0)));
 		Manifest bm = b.getManifest();
 
 		File patch = bnd.getFile(arguments.remove(0));
 
 		// TODO check arguments
-		
+
 		Set<String> delete = Create.set();
 
 		for (String path : a.getResources().keySet()) {
@@ -51,13 +54,12 @@ public class PatchCommand {
 		}
 
 		bm.getMainAttributes().putValue("Patch-Delete", Processor.join(delete, ", "));
-		bm.getMainAttributes().putValue("Patch-Version",
-				am.getMainAttributes().getValue("Bundle-Version"));
+		bm.getMainAttributes().putValue("Patch-Version", am.getMainAttributes().getValue("Bundle-Version"));
 
 		b.write(patch);
 		a.close();
 		a.close();
-		
+
 		// TODO proper close
 	}
 
@@ -75,54 +77,61 @@ public class PatchCommand {
 					} else
 						return false;
 				}
-			} finally {
+			}
+			finally {
 				bin.close();
 			}
-		} finally {
+		}
+		finally {
 			ain.close();
 		}
 	}
 
 	@Description("WIP")
-	@Arguments(arg={"<older>","<newer>", "<patch>"})
+	@Arguments(arg = {
+			"<older>", "<newer>", "<patch>"
+	})
 	interface applyOptions {
-		
+
 	}
+
 	public void _apply(applyOptions opts) throws Exception {
-//		List<String> arguments = opts._();
-//		Jar a = new Jar(bnd.getFile(arguments.remove(0)));
-//		Manifest am = a.getManifest();
-//		
-//		Jar b = new Jar(bnd.getFile(arguments.remove(0)));
-//		Manifest bm = b.getManifest();
-//
-//		File patch = bnd.getFile(arguments.remove(0));
-//		Jar a = new Jar(new File(old));
-//		Jar b = new Jar(new File(patch));
-//		Manifest bm = b.getManifest();
-//
-//		String patchDelete = bm.getMainAttributes().getValue("Patch-Delete");
-//		String patchVersion = bm.getMainAttributes().getValue("Patch-Version");
-//		if (patchVersion == null) {
-//			error("To patch, you must provide a patch bundle.\nThe given " + patch
-//					+ " bundle does not contain the Patch-Version header");
-//			return;
-//		}
-//
-//		Collection<String> delete = split(patchDelete);
-//		Set<String> paths = new HashSet<String>(a.getResources().keySet());
-//		paths.removeAll(delete);
-//
-//		for (String path : paths) {
-//			Resource br = b.getResource(path);
-//			if (br == null)
-//				b.putResource(path, a.getResource(path));
-//		}
-//
-//		bm.getMainAttributes().putValue("Bundle-Version", patchVersion);
-//		b.write(new File(newer));
-//		a.close();
-//		b.close();
+		// List<String> arguments = opts._();
+		// Jar a = new Jar(bnd.getFile(arguments.remove(0)));
+		// Manifest am = a.getManifest();
+		//
+		// Jar b = new Jar(bnd.getFile(arguments.remove(0)));
+		// Manifest bm = b.getManifest();
+		//
+		// File patch = bnd.getFile(arguments.remove(0));
+		// Jar a = new Jar(new File(old));
+		// Jar b = new Jar(new File(patch));
+		// Manifest bm = b.getManifest();
+		//
+		// String patchDelete = bm.getMainAttributes().getValue("Patch-Delete");
+		// String patchVersion =
+		// bm.getMainAttributes().getValue("Patch-Version");
+		// if (patchVersion == null) {
+		// error("To patch, you must provide a patch bundle.\nThe given " +
+		// patch
+		// + " bundle does not contain the Patch-Version header");
+		// return;
+		// }
+		//
+		// Collection<String> delete = split(patchDelete);
+		// Set<String> paths = new HashSet<String>(a.getResources().keySet());
+		// paths.removeAll(delete);
+		//
+		// for (String path : paths) {
+		// Resource br = b.getResource(path);
+		// if (br == null)
+		// b.putResource(path, a.getResource(path));
+		// }
+		//
+		// bm.getMainAttributes().putValue("Bundle-Version", patchVersion);
+		// b.write(new File(newer));
+		// a.close();
+		// b.close();
 	}
 
 }

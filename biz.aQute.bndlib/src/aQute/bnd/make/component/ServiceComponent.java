@@ -26,7 +26,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		ComponentMaker m = new ComponentMaker(analyzer);
 
-		Map<String, Map<String, String>> l = m.doServiceComponent();
+		Map<String,Map<String,String>> l = m.doServiceComponent();
 
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
 
@@ -50,21 +50,20 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * <li>An XML file reference</li>
 		 * <li>A FQN/wildcard with a set of attributes</li>
 		 * </ol>
-		 * 
 		 * An XML reference is immediately expanded, an FQN/wildcard is more
 		 * complicated and is delegated to
 		 * {@link #componentEntry(Map, String, Map)}.
 		 * 
 		 * @throws Exception
 		 */
-		Map<String, Map<String, String>> doServiceComponent() throws Exception {
-			Map<String, Map<String, String>> serviceComponents = newMap();
+		Map<String,Map<String,String>> doServiceComponent() throws Exception {
+			Map<String,Map<String,String>> serviceComponents = newMap();
 			String header = getProperty(SERVICE_COMPONENT);
 			Parameters sc = parseHeader(header);
 
-			for (Entry<String, Attrs> entry : sc.entrySet()) {
+			for (Entry<String,Attrs> entry : sc.entrySet()) {
 				String name = entry.getKey();
-				Map<String, String> info = entry.getValue();
+				Map<String,String> info = entry.getValue();
 
 				try {
 					if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
@@ -73,7 +72,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 					} else {
 						componentEntry(serviceComponents, name, info);
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					e.printStackTrace();
 					error("Invalid Service-Component header: %s %s, throws %s", name, info, e);
 				}
@@ -89,17 +89,16 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * <li>A wildcard expression for finding annotated components.</li>
 		 * </ol>
 		 * The problem is the distinction between an FQN and a wildcard because
-		 * an FQN can also be used as a wildcard.
-		 * 
-		 * If the info specifies {@link Constants#NOANNOTATIONS} then wildcards
-		 * are an error and the component must be fully described by the info.
-		 * Otherwise the FQN/wildcard is expanded into a list of classes with
-		 * annotations. If this list is empty, the FQN case is interpreted as a
-		 * complete component definition. For the wildcard case, it is checked
-		 * if any matching classes for the wildcard have been compiled for a
-		 * class file format that does not support annotations, this can be a
-		 * problem with JSR14 who silently ignores annotations. An error is
-		 * reported in such a case.
+		 * an FQN can also be used as a wildcard. If the info specifies
+		 * {@link Constants#NOANNOTATIONS} then wildcards are an error and the
+		 * component must be fully described by the info. Otherwise the
+		 * FQN/wildcard is expanded into a list of classes with annotations. If
+		 * this list is empty, the FQN case is interpreted as a complete
+		 * component definition. For the wildcard case, it is checked if any
+		 * matching classes for the wildcard have been compiled for a class file
+		 * format that does not support annotations, this can be a problem with
+		 * JSR14 who silently ignores annotations. An error is reported in such
+		 * a case.
 		 * 
 		 * @param serviceComponents
 		 * @param name
@@ -107,8 +106,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @throws Exception
 		 * @throws IOException
 		 */
-		private void componentEntry(Map<String, Map<String, String>> serviceComponents,
-				String name, Map<String, String> info) throws Exception, IOException {
+		private void componentEntry(Map<String,Map<String,String>> serviceComponents, String name,
+				Map<String,String> info) throws Exception, IOException {
 
 			boolean annotations = !Processor.isTrue(info.get(NOANNOTATIONS));
 			boolean fqn = Verifier.isFQN(name);
@@ -117,8 +116,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 				// Annotations possible!
 
-				Collection<Clazz> annotatedComponents = analyzer.getClasses("",
-						QUERY.ANNOTATED.toString(), Component.class.getName(), //
+				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
+						Component.class.getName(), //
 						QUERY.NAMED.toString(), name //
 						);
 
@@ -169,9 +168,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {
 			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
 					);
-			
+
 			if (not.isEmpty())
-				if ( "*".equals(name))
+				if ("*".equals(name))
 					return not;
 				else
 					error("Specified %s but could not find any class matching this pattern", name);
@@ -180,18 +179,17 @@ public class ServiceComponent implements AnalyzerPlugin {
 				if (c.getFormat().hasAnnotations())
 					return not;
 			}
-			
+
 			warning("Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
 					name);
-			
+
 			return not;
 		}
 
-		void annotated(Map<String, Map<String, String>> components, Clazz c,
-				Map<String, String> info) throws Exception {
+		void annotated(Map<String,Map<String,String>> components, Clazz c, Map<String,String> info) throws Exception {
 			// Get the component definition
 			// from the annotations
-			Map<String, String> map = ComponentAnnotationReader.getDefinition(c, this);
+			Map<String,String> map = ComponentAnnotationReader.getDefinition(c, this);
 
 			// Pick the name, the annotation can override
 			// the name.
@@ -202,16 +200,15 @@ public class ServiceComponent implements AnalyzerPlugin {
 			// Override the component info without manifest
 			// entries. We merge the properties though.
 
-			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES),
-					map.remove(COMPONENT_PROPERTIES));
+			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES), map.remove(COMPONENT_PROPERTIES));
 			if (merged != null && merged.length() > 0)
 				map.put(COMPONENT_PROPERTIES, merged);
 			map.putAll(info);
 			createComponentResource(components, localname, map);
 		}
 
-		private void createComponentResource(Map<String, Map<String, String>> components,
-				String name, Map<String, String> info) throws IOException {
+		private void createComponentResource(Map<String,Map<String,String>> components, String name,
+				Map<String,String> info) throws IOException {
 
 			// We can override the name in the parameters
 			if (info.containsKey(COMPONENT_NAME))
@@ -264,9 +261,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 					analyzer.getJar().putResource(rname, r);
 				} else {
-					analyzer.error(
-							"Cannot find designated configuration class %s for component %s", c,
-							name);
+					analyzer.error("Cannot find designated configuration class %s for component %s", c, name);
 				}
 			}
 			return true;
@@ -280,8 +275,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param info
 		 * @throws UnsupportedEncodingException
 		 */
-		Resource createComponentResource(String name, String impl, Map<String, String> info)
-				throws IOException {
+		Resource createComponentResource(String name, String impl, Map<String,String> info) throws IOException {
 			String namespace = getNamespace(info);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
@@ -295,8 +289,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 			doAttribute(pw, info.get(COMPONENT_FACTORY), "factory");
 			doAttribute(pw, info.get(COMPONENT_IMMEDIATE), "immediate", "false", "true");
 			doAttribute(pw, info.get(COMPONENT_ENABLED), "enabled", "true", "false");
-			doAttribute(pw, info.get(COMPONENT_CONFIGURATION_POLICY), "configuration-policy",
-					"optional", "require", "ignore");
+			doAttribute(pw, info.get(COMPONENT_CONFIGURATION_POLICY), "configuration-policy", "optional", "require",
+					"ignore");
 			doAttribute(pw, info.get(COMPONENT_ACTIVATE), "activate", JIDENTIFIER);
 			doAttribute(pw, info.get(COMPONENT_DEACTIVATE), "deactivate", JIDENTIFIER);
 			doAttribute(pw, info.get(COMPONENT_MODIFIED), "modified", JIDENTIFIER);
@@ -335,13 +329,12 @@ public class ServiceComponent implements AnalyzerPlugin {
 				if (matches.length != 0) {
 					if (matches.length == 1 && matches[0].equals(JIDENTIFIER)) {
 						if (!Verifier.isIdentifier(value))
-							error("Component attribute %s has value %s but is not a Java identifier",
-									name, value);
+							error("Component attribute %s has value %s but is not a Java identifier", name, value);
 					} else {
 
 						if (!Verifier.isMember(value, matches))
-							error("Component attribute %s has value %s but is not a member of %s",
-									name, value, Arrays.toString(matches));
+							error("Component attribute %s has value %s but is not a member of %s", name, value,
+									Arrays.toString(matches));
 					}
 				}
 				pw.print(" ");
@@ -358,15 +351,15 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param info
 		 * @return
 		 */
-		private String getNamespace(Map<String, String> info) {
+		private String getNamespace(Map<String,String> info) {
 			String version = info.get(COMPONENT_VERSION);
 			if (version != null) {
 				try {
 					Version v = new Version(version);
 					return NAMESPACE_STEM + "/v" + v;
-				} catch (Exception e) {
-					error("version: specified on component header but not a valid version: "
-							+ version);
+				}
+				catch (Exception e) {
+					error("version: specified on component header but not a valid version: " + version);
 					return null;
 				}
 			}
@@ -384,7 +377,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param pw
 		 * @param info
 		 */
-		void properties(PrintWriter pw, Map<String, String> info) {
+		void properties(PrintWriter pw, Map<String,String> info) {
 			Collection<String> properties = split(info.get(COMPONENT_PROPERTIES));
 			for (Iterator<String> p = properties.iterator(); p.hasNext();) {
 				String clause = p.next();
@@ -468,21 +461,20 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param pw
 		 */
 
-		void reference(Map<String, String> info, PrintWriter pw) {
+		void reference(Map<String,String> info, PrintWriter pw) {
 			Collection<String> dynamic = new ArrayList<String>(split(info.get(COMPONENT_DYNAMIC)));
 			Collection<String> optional = new ArrayList<String>(split(info.get(COMPONENT_OPTIONAL)));
 			Collection<String> multiple = new ArrayList<String>(split(info.get(COMPONENT_MULTIPLE)));
 
 			Collection<String> descriptors = split(info.get(COMPONENT_DESCRIPTORS));
 
-			for (Map.Entry<String, String> entry : info.entrySet()) {
+			for (Map.Entry<String,String> entry : info.entrySet()) {
 
 				// Skip directives
 				String referenceName = entry.getKey();
 				if (referenceName.endsWith(":")) {
 					if (!SET_COMPONENT_DIRECTIVES.contains(referenceName))
-						error("Unrecognized directive in Service-Component header: "
-								+ referenceName);
+						error("Unrecognized directive in Service-Component header: " + referenceName);
 					continue;
 				}
 
@@ -508,15 +500,14 @@ public class ServiceComponent implements AnalyzerPlugin {
 					}
 				} else if (Character.isLowerCase(referenceName.charAt(0))) {
 					unbindCalculated = true;
-					bind = "set" + Character.toUpperCase(referenceName.charAt(0))
-							+ referenceName.substring(1);
+					bind = "set" + Character.toUpperCase(referenceName.charAt(0)) + referenceName.substring(1);
 					unbind = "un" + bind;
 				}
 
 				String interfaceName = entry.getValue();
 				if (interfaceName == null || interfaceName.length() == 0) {
-					error("Invalid Interface Name for references in Service Component: "
-							+ referenceName + "=" + interfaceName);
+					error("Invalid Interface Name for references in Service Component: " + referenceName + "="
+							+ interfaceName);
 					continue;
 				}
 
@@ -603,21 +594,21 @@ public class ServiceComponent implements AnalyzerPlugin {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			case '\'':
-				sb.append("&quot;");
-				break;
-			default:
-				sb.append(c);
-				break;
+				case '<' :
+					sb.append("&lt;");
+					break;
+				case '>' :
+					sb.append("&gt;");
+					break;
+				case '&' :
+					sb.append("&amp;");
+					break;
+				case '\'' :
+					sb.append("&quot;");
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		return sb.toString();

@@ -1,8 +1,7 @@
 package aQute.bnd.service.url;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 
 public interface URLConnector {
 
@@ -24,7 +23,6 @@ public interface URLConnector {
 	 *         {@link TaggedData#getTag()} method <strong>may</strong> return
 	 *         {@code null} if the resource has no tag.
 	 * @throws IOException
-	 * 
 	 * @since 1.1
 	 */
 	TaggedData connectTagged(URL url) throws IOException;
@@ -41,7 +39,6 @@ public interface URLConnector {
 	 * @return An instance of {@link TaggedData}, or {@code null} if the
 	 *         resource has not modified (i.e., if it has the same tag value).
 	 * @throws IOException
-	 * 
 	 * @since 1.1
 	 */
 	TaggedData connectTagged(URL url, String tag) throws IOException;

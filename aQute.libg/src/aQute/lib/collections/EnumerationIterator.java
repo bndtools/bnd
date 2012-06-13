@@ -8,11 +8,11 @@ import java.util.*;
  * @param <T>
  */
 public class EnumerationIterator<T> implements Iterable<T>, Iterator<T> {
-	
+
 	public static <T> EnumerationIterator<T> iterator(Enumeration<T> e) {
 		return new EnumerationIterator<T>(e);
 	}
-	
+
 	final Enumeration<T>	enumerator;
 	volatile boolean		done	= false;
 

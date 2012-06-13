@@ -1,13 +1,7 @@
 package aQute.launcher.constants;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 public class LauncherConstants {
 
@@ -56,7 +50,7 @@ public class LauncherConstants {
 	public boolean				trace;
 	public long					timeout;
 	public final List<String>	activators					= new ArrayList<String>();
-	public Map<String, String>	runProperties				= new HashMap<String, String>();
+	public Map<String,String>	runProperties				= new HashMap<String,String>();
 	public boolean				embedded					= false;
 	public String				name;
 
@@ -81,7 +75,7 @@ public class LauncherConstants {
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
 
-		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
+		for (Map.Entry<String,String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
 				if (entry.getKey() != null)
 					p.remove(entry.getKey());
@@ -97,8 +91,7 @@ public class LauncherConstants {
 	 * Empty constructor for the plugin
 	 */
 
-	public LauncherConstants() {
-	}
+	public LauncherConstants() {}
 
 	/**
 	 * Create a constants from properties.
@@ -118,11 +111,11 @@ public class LauncherConstants {
 		String s = p.getProperty(LAUNCH_EMBEDDED);
 		embedded = s != null && Boolean.parseBoolean(s);
 		name = p.getProperty(LAUNCH_NAME);
-		Map<String, String> map = (Map) p;
+		Map<String,String> map = (Map) p;
 		runProperties.putAll(map);
 	}
 
-	private Collection<? extends String> split(String property, String string) {
+	private Collection< ? extends String> split(String property, String string) {
 		List<String> result = new ArrayList<String>();
 		StringTokenizer st = new StringTokenizer(property, string);
 		while (st.hasMoreTokens()) {
@@ -132,7 +125,7 @@ public class LauncherConstants {
 		return result;
 	}
 
-	private static String join(List<?> runbundles2, String string) {
+	private static String join(List< ? > runbundles2, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Object r : runbundles2) {

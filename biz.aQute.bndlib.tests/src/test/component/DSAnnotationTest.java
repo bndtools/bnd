@@ -20,9 +20,12 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Property test
 	 */
 
-	@Component(property = { "x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1",
-			"char:Character=1", "short:Short=3", "integer:Integer=3", "long:Long=3",
-			"float:Float=3.0", "double:Double=3e7", "string:String=%", "wrongInteger:Integer=blabla" }) public static class PropertiesTestx {
+	@Component(property = {
+			"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
+			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
+			"string:String=%", "wrongInteger:Integer=blabla"
+	})
+	public static class PropertiesTestx {
 
 	}
 
@@ -33,20 +36,18 @@ public class DSAnnotationTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
-		if ( !b.check("Cannot convert data blabla to type Integer", "Cannot convert data 3.0 to type Integer"))
+		if (!b.check("Cannot convert data blabla to type Integer", "Cannot convert data 3.0 to type Integer"))
 			fail();
-		
+
 		//
 		// Test all the defaults
 		//
-		
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$PropertiesTestx.xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.1.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
 		xt.assertAttribute("1", "scr:component/property[@name='b']/@value");
 		xt.assertAttribute("", "scr:component/property[@name='a']/@value");
 		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
@@ -63,19 +64,21 @@ public class DSAnnotationTest extends BndTestCase {
 	 * The basic test. This test will take an all default component and a
 	 * component that has all values set.
 	 */
-	@Component public static class Defaults_basic implements Serializable, Runnable {
+	@Component
+	public static class Defaults_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
-		@Activate void open() {
-		}
+		@Activate
+		void open() {}
 
-		@Deactivate void close() {
-		}
+		@Deactivate
+		void close() {}
 
-		@Modified void modified() {
-		}
+		@Modified
+		void modified() {}
 
-		@Reference void xsetLogService(LogService log) {
+		@Reference
+		void xsetLogService(LogService log) {
 
 		}
 
@@ -94,21 +97,22 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
-			"a=1", "a=2", "b=3" }, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns") public static class Explicit_basic
-			implements Serializable, Runnable {
+			"a=1", "a=2", "b=3"
+	}, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns")
+	public static class Explicit_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
-		@Activate void open() {
-		}
+		@Activate
+		void open() {}
 
-		@Deactivate void close() {
-		}
+		@Deactivate
+		void close() {}
 
-		@Modified void changed() {
-		}
+		@Modified
+		void changed() {}
 
-		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, name = "foo", policy = ReferencePolicy.DYNAMIC, service = Object.class, target = "(objectclass=*)", unbind = "unset", updated = "updatedLogService", policyOption = ReferencePolicyOption.GREEDY) void setLogService(
-				LogService log) {
+		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, name = "foo", policy = ReferencePolicy.DYNAMIC, service = Object.class, target = "(objectclass=*)", unbind = "unset", updated = "updatedLogService", policyOption = ReferencePolicyOption.GREEDY)
+		void setLogService(LogService log) {
 
 		}
 
@@ -152,13 +156,12 @@ public class DSAnnotationTest extends BndTestCase {
 			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
-			XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-					"http://www.osgi.org/xmlns/scr/v1.1.0"); // #136 was
-																// http://www.osgi.org/xmlns/scr/1.1.0
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																												// was
+																												// http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$Defaults_basic",
-					"scr:component/implementation/@class");
+			xt.assertAttribute("test.component.DSAnnotationTest$Defaults_basic", "scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("test.component.DSAnnotationTest$Defaults_basic", "scr:component/@name");
@@ -172,8 +175,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("open", "scr:component/@activate");
 			xt.assertAttribute("close", "scr:component/@deactivate");
 			xt.assertAttribute("modified", "scr:component/@modified");
-			xt.assertAttribute("java.io.Serializable",
-					"scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
 			xt.assertAttribute("0", "count(scr:component/properties)");
@@ -199,8 +201,7 @@ public class DSAnnotationTest extends BndTestCase {
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "xmlns");
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$Explicit_basic",
-					"scr:component/implementation/@class");
+			xt.assertAttribute("test.component.DSAnnotationTest$Explicit_basic", "scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("name", "scr:component/@name");
@@ -238,26 +239,23 @@ public class DSAnnotationTest extends BndTestCase {
 	/**
 	 * Tests all the different enum values. This also tests the ordering.
 	 */
-	@Component(name = "enums") public class Enums {
+	@Component(name = "enums")
+	public class Enums {
 
-		@Reference void setA(LogService l) {
-		}
+		@Reference
+		void setA(LogService l) {}
 
-		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY) void setB(
-				LogService l) {
-		}
+		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
+		void setB(LogService l) {}
 
-		@Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.RELUCTANT) void setE(
-				LogService l) {
-		}
+		@Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.RELUCTANT)
+		void setE(LogService l) {}
 
-		@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC, policyOption = ReferencePolicyOption.RELUCTANT) void setC(
-				LogService l) {
-		}
+		@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC, policyOption = ReferencePolicyOption.RELUCTANT)
+		void setC(LogService l) {}
 
-		@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY) void setD(
-				LogService l) {
-		}
+		@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
+		void setD(LogService l) {}
 
 	}
 
@@ -273,8 +271,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/enums.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		xt.assertAttribute("A", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
@@ -305,43 +302,36 @@ public class DSAnnotationTest extends BndTestCase {
 	/**
 	 * Test the - for the unbind and updated parameter.
 	 */
-	@Component(name = "methods") public class Methods {
+	@Component(name = "methods")
+	public class Methods {
 
-		@Reference(unbind = "-", updated = "-") void setA(LogService l) {
-		}
+		@Reference(unbind = "-", updated = "-")
+		void setA(LogService l) {}
 
-		void updatedA(LogService l) {
-		}
+		void updatedA(LogService l) {}
 
-		void unsetA(LogService l) {
-		}
+		void unsetA(LogService l) {}
 
-		@Reference(unbind = "_B", updated = "__B") void setB(LogService l) {
-		}
+		@Reference(unbind = "_B", updated = "__B")
+		void setB(LogService l) {}
 
-		void _B(LogService l) {
-		}
+		void _B(LogService l) {}
 
-		void __B(LogService l) {
-		}
+		void __B(LogService l) {}
 
-		void updatedB(LogService l) {
-		}
+		void updatedB(LogService l) {}
 
-		void unsetB(LogService l) {
-		}
+		void unsetB(LogService l) {}
 
-		@Reference void setC(LogService l) {
-		}
+		@Reference
+		void setC(LogService l) {}
 
-		void updatedC(LogService l) {
-		}
+		void updatedC(LogService l) {}
 
-		void unsetC(LogService l) {
-		}
+		void unsetC(LogService l) {}
 
-		@Reference void setD(LogService l) {
-		}
+		@Reference
+		void setD(LogService l) {}
 
 	}
 
@@ -357,8 +347,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/methods.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		// use - to make sure no unbind and updated method is set
 		xt.assertAttribute("A", "scr:component/reference[1]/@name");
@@ -389,24 +378,27 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public class Top {
 
-		@Reference void setLogService(LogService l) {
-		}
+		@Reference
+		void setLogService(LogService l) {}
 
 		void updatedLogService(ServiceReference ref) {
 
 		}
 
-		@Reference protected void setPrivateLogService(LogService l) {
+		@Reference
+		protected void setPrivateLogService(LogService l) {
 
 		}
 
-		@SuppressWarnings("unused") private void updatedPrivateLogService(ServiceReference ref) {
+		@SuppressWarnings("unused")
+		private void updatedPrivateLogService(ServiceReference ref) {
 
 		}
 	}
 
-	@Component(name = "bottom") public class Bottom extends Top {
-		void unsetLogService(LogService l, Map<Object, Object> map) {
+	@Component(name = "bottom")
+	public class Bottom extends Top {
+		void unsetLogService(LogService l, Map<Object,Object> map) {
 
 		}
 
@@ -428,8 +420,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/bottom.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
@@ -451,23 +442,29 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test the different prototypes ...
 	 */
 
-	@Component(name = "prototypes") public class Prototypes {
-		@SuppressWarnings("unused") @Activate private void activate() {
-		}
+	@Component(name = "prototypes")
+	public class Prototypes {
+		@SuppressWarnings("unused")
+		@Activate
+		private void activate() {}
 
-		@Deactivate protected void deactivate(ComponentContext ctx) {
-
-		}
-
-		@Modified void modified(BundleContext context) {
-
-		}
-
-		@SuppressWarnings("unused") @Reference private void setLogService(LogService l) {
+		@Deactivate
+		protected void deactivate(ComponentContext ctx) {
 
 		}
 
-		protected void unsetLogService(LogService l, Map<Object, Object> map) {
+		@Modified
+		void modified(BundleContext context) {
+
+		}
+
+		@SuppressWarnings("unused")
+		@Reference
+		private void setLogService(LogService l) {
+
+		}
+
+		protected void unsetLogService(LogService l, Map<Object,Object> map) {
 
 		}
 
@@ -475,7 +472,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-}
+	}
 
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
@@ -489,8 +486,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/prototypes.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
@@ -503,23 +499,29 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test the different prototypes ...
 	 */
 
-	@Component(name = "prototypes") public class CheckBinds {
-		@SuppressWarnings("unused") @Activate private void activate() {
-		}
+	@Component(name = "prototypes")
+	public class CheckBinds {
+		@SuppressWarnings("unused")
+		@Activate
+		private void activate() {}
 
-		@Deactivate protected void deactivate(ComponentContext ctx) {
-
-		}
-
-		@Modified void modified(BundleContext context) {
-
-		}
-
-		@SuppressWarnings("unused") @Reference private void bindLogService(LogService l) {
+		@Deactivate
+		protected void deactivate(ComponentContext ctx) {
 
 		}
 
-		protected void unbindLogService(LogService l, Map<Object, Object> map) {
+		@Modified
+		void modified(BundleContext context) {
+
+		}
+
+		@SuppressWarnings("unused")
+		@Reference
+		private void bindLogService(LogService l) {
+
+		}
+
+		protected void unbindLogService(LogService l, Map<Object,Object> map) {
 
 		}
 
@@ -527,7 +529,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-}
+	}
 
 	public void testBinds() throws Exception {
 		Builder b = new Builder();
@@ -541,8 +543,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/prototypes.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr",
-				"http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("bindLogService", "scr:component/reference[1]/@bind");

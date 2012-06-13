@@ -16,7 +16,7 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("=", s[5]);
 		assertEquals("4", s[6]);
 	}
-	
+
 	public void testSimple() {
 		String s[] = new QuotedTokenizer("1.jar, 2.jar,    \t   3.jar", ",").getTokens();
 		assertEquals("Length", 3, s.length);
@@ -24,27 +24,27 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("2.jar", s[1]);
 		assertEquals("3.jar", s[2]);
 	}
-	
+
 	public void testQuoted() {
 		String s[] = new QuotedTokenizer("'1 ,\t.jar'", ",").getTokens();
 		assertEquals("Length", 1, s.length);
 		assertEquals("1 ,\t.jar", s[0]);
 	}
-	
+
 	public void testWhiteSpace() {
 		String s[] = new QuotedTokenizer("               1.jar,               2.jar         ", ",").getTokens();
 		assertEquals("Length", 2, s.length);
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[1]);
 	}
-	
+
 	public void testMultipleSeps() {
 		String s[] = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",").getTokens();
 		assertEquals("Length", 14, s.length);
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[13]);
 	}
-	
+
 	public void testNative() {
 		String s[] = new QuotedTokenizer("x.dll;y.dll;abc=3;def=5;version=\"1.2.34,123\"", ";,=").getTokens();
 		assertEquals("Length", 8, s.length);
@@ -57,5 +57,5 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("version", s[6]);
 		assertEquals("1.2.34,123", s[7]);
 	}
-	
+
 }

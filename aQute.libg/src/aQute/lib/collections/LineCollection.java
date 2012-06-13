@@ -12,7 +12,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 	}
 
 	public LineCollection(File in) throws IOException {
-		this(new InputStreamReader( new FileInputStream(in),"UTF-8"));
+		this(new InputStreamReader(new FileInputStream(in), "UTF-8"));
 	}
 
 	public LineCollection(Reader reader) throws IOException {
@@ -37,7 +37,8 @@ public class LineCollection implements Iterator<String>, Closeable {
 			if (next == null)
 				reader.close();
 			return result;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ignore
 			return null;
 		}

@@ -1,14 +1,11 @@
 package aQute.lib.deployer.repository.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import org.osgi.service.log.LogService;
+import org.osgi.service.log.*;
 
-import aQute.bnd.service.Registry;
+import aQute.bnd.service.*;
 
 public interface IRepositoryContentProvider {
 
@@ -31,9 +28,7 @@ public interface IRepositoryContentProvider {
 	 * <p>
 	 * Check the stream for compatibility with this provider.
 	 * </p>
-	* 
 	 * </ul>
-	 * 
 	 * 
 	 * @param name
 	 *            The name of the stream, which may be the file name, or
@@ -42,17 +37,17 @@ public interface IRepositoryContentProvider {
 	 * @param stream
 	 *            An input stream that MUST support mark/reset operations.
 	 * @return Whether the stream can be handled by this provider.
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	CheckResult checkStream(String name, InputStream stream) throws IOException;
-	
+
 	/**
 	 * Return whether the content provider supports index generation.
 	 * 
 	 * @return
 	 */
 	boolean supportsGeneration();
-	
+
 	/**
 	 * Generate a new repository index to a stream. Clients must not call this
 	 * method if the provider returns {@code false} from
@@ -78,7 +73,8 @@ public interface IRepositoryContentProvider {
 	 * @throws Exception
 	 *             If any other error unrecoverable occurs.
 	 */
-	void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty, Registry registry, LogService log) throws Exception;
+	void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty,
+			Registry registry, LogService log) throws Exception;
 
 	/**
 	 * Get the default name for an index file supported by this provider;

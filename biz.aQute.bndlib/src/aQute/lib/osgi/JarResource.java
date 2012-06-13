@@ -17,7 +17,8 @@ public class JarResource extends WriteResource {
 	public void write(OutputStream out) throws Exception {
 		try {
 			jar.write(out);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}

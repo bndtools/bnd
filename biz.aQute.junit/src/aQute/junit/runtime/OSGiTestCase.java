@@ -41,7 +41,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param filter
 	 *            An additional service filter, which may be {@code null}.
 	 */
-	protected void assertSvcAvail(Class<?> service, String filter) {
+	protected void assertSvcAvail(Class< ? > service, String filter) {
 		assertSvcAvail(null, service, filter);
 	}
 
@@ -56,12 +56,13 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param filter
 	 *            An additional service filter, which may be {@code null}.
 	 */
-	protected void assertSvcAvail(String message, Class<?> service, String filter) {
+	protected void assertSvcAvail(String message, Class< ? > service, String filter) {
 		BundleContext context = getBundleContext();
 		ServiceReference[] refs = null;
 		try {
 			refs = context.getServiceReferences(service.getName(), filter);
-		} catch (InvalidSyntaxException e) {
+		}
+		catch (InvalidSyntaxException e) {
 			fail("Invalid filter syntax");
 		}
 
@@ -75,7 +76,8 @@ public abstract class OSGiTestCase extends TestCase {
 		try {
 			if (!service.isInstance(svcObj))
 				fail(message);
-		} finally {
+		}
+		finally {
 			context.ungetService(refs[0]);
 		}
 	}
@@ -85,17 +87,15 @@ public abstract class OSGiTestCase extends TestCase {
 	 * Perform the specified operation against a service, or fail immediately if
 	 * a matching service is not available.
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
 	 * 
 	 * <pre>
-	 * String	reply	= withService(HelloService.class, null, new Operation&lt;HelloService, String&gt;() {
+	 * String	reply	= withService(HelloService.class, null, new Operation&lt;HelloService,String&gt;() {
 	 * 					public String call(HelloService service) {
 	 * 						return service.sayHello();
 	 * 					}
@@ -119,8 +119,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter,
-			Operation<? super S, R> operation) throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, Operation< ? super S,R> operation) throws Exception {
 		return withService(service, filter, 0, operation);
 	}
 
@@ -128,13 +127,12 @@ public abstract class OSGiTestCase extends TestCase {
 	 * <p>
 	 * Perform the specified operation against a service, if available.
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
 	 * 
 	 * <pre>
-	 * String	reply	= withService(HelloService.class, null, 0, new Operation&lt;HelloService, String&gt;() {
+	 * String	reply	= withService(HelloService.class, null, 0, new Operation&lt;HelloService,String&gt;() {
 	 * 					public String call(HelloService service) {
 	 * 						return service.sayHello();
 	 * 					}
@@ -158,17 +156,18 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter, long timeout,
-			Operation<? super S, R> operation) throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, long timeout, Operation< ? super S,R> operation)
+			throws Exception {
 		BundleContext context = getBundleContext();
 
 		ServiceTracker tracker = null;
 		if (filter != null) {
 			try {
-				Filter combined = FrameworkUtil.createFilter("(" + Constants.OBJECTCLASS + "="
-						+ service.getName() + ")");
+				Filter combined = FrameworkUtil.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName()
+						+ ")");
 				tracker = new ServiceTracker(context, combined, null);
-			} catch (InvalidSyntaxException e) {
+			}
+			catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");
 			}
 		} else {
@@ -189,9 +188,11 @@ public abstract class OSGiTestCase extends TestCase {
 			@SuppressWarnings("unchecked")
 			S casted = (S) instance;
 			return operation.perform(casted);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			fail("Interrupted.");
-		} finally {
+		}
+		finally {
 			tracker.close();
 		}
 

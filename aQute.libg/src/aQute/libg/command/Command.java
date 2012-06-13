@@ -12,7 +12,7 @@ public class Command {
 	boolean				trace;
 	Reporter			reporter;
 	List<String>		arguments	= new ArrayList<String>();
-	Map<String, String>	variables	= new LinkedHashMap<String, String>();
+	Map<String,String>	variables	= new LinkedHashMap<String,String>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
 	static Timer		timer		= new Timer(Command.class.getName(), true);
@@ -24,8 +24,7 @@ public class Command {
 		this.fullCommand = fullCommand;
 	}
 
-	public Command() {
-	}
+	public Command() {}
 
 	public int execute(Appendable stdout, Appendable stderr) throws Exception {
 		return execute((InputStream) null, stdout, stderr);
@@ -44,7 +43,7 @@ public class Command {
 		String args[] = arguments.toArray(new String[arguments.size()]);
 		String vars[] = new String[variables.size()];
 		int i = 0;
-		for (Entry<String, String> s : variables.entrySet()) {
+		for (Entry<String,String> s : variables.entrySet()) {
 			vars[i++] = s.getKey() + "=" + s.getValue();
 		}
 
@@ -53,7 +52,6 @@ public class Command {
 		else
 			process = Runtime.getRuntime().exec(fullCommand, vars.length == 0 ? null : vars, cwd);
 
-		
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
 			public void run() {
@@ -83,12 +81,12 @@ public class Command {
 				cout.start();
 				Collector cerr = new Collector(err, stderr);
 				cerr.start();
-	
+
 				try {
 					int c = in.read();
 					while (c >= 0) {
 						stdin.write(c);
-						if ( c == '\n')
+						if (c == '\n')
 							stdin.flush();
 						c = in.read();
 					}
@@ -98,13 +96,14 @@ public class Command {
 				}
 				catch (Exception e) {
 					// Who cares?
-				} finally {
+				}
+				finally {
 					stdin.close();
 				}
-				
+
 				if (reporter != null)
 					reporter.trace("exited process");
-				
+
 				cerr.join();
 				cout.join();
 				if (reporter != null)
@@ -120,15 +119,15 @@ public class Command {
 				timer.cancel();
 			Runtime.getRuntime().removeShutdownHook(hook);
 		}
-		
+
 		byte exitValue = (byte) process.waitFor();
 		if (reporter != null)
-			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue,
-					stdout, stderr, timedout);
+			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue, stdout,
+					stderr, timedout);
 
 		if (timedout)
 			return Integer.MIN_VALUE;
-		
+
 		return exitValue;
 	}
 
@@ -182,7 +181,7 @@ public class Command {
 					c = in.read();
 				}
 			}
-			catch( IOException e) {
+			catch (IOException e) {
 				// We assume the socket is closed
 			}
 			catch (Exception e) {
@@ -191,8 +190,7 @@ public class Command {
 					sb.append(e.toString());
 					sb.append("\n**************************************\n");
 				}
-				catch (IOException e1) {
-				}
+				catch (IOException e1) {}
 				if (reporter != null) {
 					reporter.trace("cmd exec: %s", e);
 				}
@@ -217,7 +215,7 @@ public class Command {
 
 	public void inherit() {
 		ProcessBuilder pb = new ProcessBuilder();
-		for (Entry<String, String> e : pb.environment().entrySet()) {
+		for (Entry<String,String> e : pb.environment().entrySet()) {
 			var(e.getKey(), e.getValue());
 		}
 	}

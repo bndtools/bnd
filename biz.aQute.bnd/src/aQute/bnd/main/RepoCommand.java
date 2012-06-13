@@ -16,9 +16,9 @@ import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 public class RepoCommand {
-	
+
 	@Description("Access to the repositories")
-	@Arguments(arg="*")
+	@Arguments(arg = "*")
 	interface repoOptions extends Options {
 		@Description("Add a file repository")
 		Collection<String> repo();
@@ -33,7 +33,6 @@ public class RepoCommand {
 		@Description("Include the cache repository")
 		boolean cache();
 	}
-	
 
 	final bnd						bnd;
 	final repoOptions				opts;
@@ -103,7 +102,7 @@ public class RepoCommand {
 			// Other commands
 			String cmd = args.remove(0);
 			String help = opts._command().execute(this, cmd, args);
-			if ( help != null) {
+			if (help != null) {
 				bnd.out.print(help);
 			}
 		}
@@ -112,8 +111,7 @@ public class RepoCommand {
 	/**
 	 * List the repos
 	 */
-	interface reposOptions extends Options {
-	}
+	interface reposOptions extends Options {}
 
 	public void _repos(reposOptions opts) {
 		int n = 1;
@@ -121,11 +119,11 @@ public class RepoCommand {
 			String location = "";
 			try {
 				location = repo.getLocation();
-			} catch (Throwable e) {
+			}
+			catch (Throwable e) {
 				// Ignore
 			}
-			bnd.out.printf("%03d: %-20s %4s %-20s %s%n", n++, repo.getName(),
-					repo.canWrite() ? "r/w" : "r/o",
+			bnd.out.printf("%03d: %-20s %4s %-20s %s%n", n++, repo.getName(), repo.canWrite() ? "r/w" : "r/o",
 					Descriptors.getShortName(repo.getClass().getName()), location);
 		}
 	}
@@ -201,7 +199,7 @@ public class RepoCommand {
 		}
 
 		VersionRange r = new VersionRange(range == null ? "0" : range);
-		Map<Version, RepositoryPlugin> index = new HashMap<Version, RepositoryPlugin>();
+		Map<Version,RepositoryPlugin> index = new HashMap<Version,RepositoryPlugin>();
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
@@ -215,11 +213,11 @@ public class RepoCommand {
 		}
 
 		SortedList<Version> l = new SortedList<Version>(index.keySet());
-		if ( l.isEmpty() ) {
+		if (l.isEmpty()) {
 			bnd.out.printf("No versions found for %s%n", bsn);
 			return;
 		}
-		
+
 		Version v;
 		if (opts.lowest())
 			v = l.first();
@@ -263,8 +261,7 @@ public class RepoCommand {
 
 		List<String> args = opts._();
 		if (args.isEmpty()) {
-			bnd.out.println("Writable repo is " + writable.getName() + " ("
-					+ writable.getLocation() + ")");
+			bnd.out.println("Writable repo is " + writable.getName() + " (" + writable.getLocation() + ")");
 			return;
 		}
 
@@ -273,19 +270,19 @@ public class RepoCommand {
 			bnd.error("No such file %s", file);
 			return;
 		}
-	
+
 		bnd.trace("put %s", file);
 
 		Jar jar = new Jar(file);
-		
+
 		String bsn = jar.getBsn();
-		if ( bsn == null) {
+		if (bsn == null) {
 			bnd.error("File %s is not a bundle (it has no bsn) ", file);
 			return;
 		}
-		 
+
 		bnd.trace("bsn %s version %s", bsn, jar.getVersion());
-		
+
 		try {
 			if (!opts.force()) {
 				Verifier v = new Verifier(jar);
@@ -300,7 +297,8 @@ public class RepoCommand {
 				File out = writable.put(jar);
 				bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(), out);
 			}
-		} finally {
+		}
+		finally {
 			jar.close();
 		}
 	}

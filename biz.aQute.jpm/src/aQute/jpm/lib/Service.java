@@ -22,7 +22,8 @@ public class Service {
 					return null;
 
 				return "Could not launch service " + data.name + " return value " + result;
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 				data.lock.delete();
 				return String.format("Failed to start %s for %s", data.name, t.getMessage());
 			}
@@ -37,14 +38,15 @@ public class Service {
 			} else {
 				try {
 					send(getPort(), "STOP");
-					for ( int i=0; i<20; i++) {
-						if ( !data.lock.exists())
+					for (int i = 0; i < 20; i++) {
+						if (!data.lock.exists())
 							return null;
-					
+
 						Thread.sleep(500);
 					}
 					return "Lock was not deleted by service in time (waited 10 secs)";
-				} finally {
+				}
+				finally {
 					data.lock.delete();
 				}
 			}
@@ -60,12 +62,13 @@ public class Service {
 	}
 
 	private String send(int port, String m) throws Exception {
-		if ( port == -1 )
+		if (port == -1)
 			return "Invalid port";
 
 		byte data[] = m.getBytes("UTF-8");
-		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getByAddress(new byte[] {127,0,0,1}),
-				port);
+		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getByAddress(new byte[] {
+				127, 0, 0, 1
+		}), port);
 		DatagramSocket dsocket = new DatagramSocket();
 		dsocket.setReceiveBufferSize(5000);
 		dsocket.setSoTimeout(5000);
@@ -75,9 +78,11 @@ public class Service {
 			DatagramPacket dp = new DatagramPacket(buffer, 1000);
 			dsocket.receive(dp);
 			return new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
-		} catch( SocketTimeoutException stoe) {
+		}
+		catch (SocketTimeoutException stoe) {
 			return "Timed out";
-		} finally {
+		}
+		finally {
 			dsocket.close();
 		}
 	}
@@ -87,7 +92,8 @@ public class Service {
 			String l = collect(data.lock);
 			String parts[] = l.split(":");
 			return Integer.parseInt(parts[0]);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return -1;
 		}
 	}
@@ -97,7 +103,8 @@ public class Service {
 			String l = collect(data.lock);
 			String parts[] = l.split(":");
 			return Integer.parseInt(parts[1]);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return -1;
 		}
 	}
@@ -119,10 +126,10 @@ public class Service {
 	}
 
 	public String trace(boolean b) throws Exception {
-		if ( !isRunning())
+		if (!isRunning())
 			return "Not running";
 
-		if ( b )
+		if (b)
 			send(getPort(), "TRACE-ON");
 		else
 			send(getPort(), "TRACE-OFF");
