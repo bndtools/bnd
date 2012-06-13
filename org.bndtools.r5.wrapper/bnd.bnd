@@ -1,0 +1,7 @@
+-buildpath:\
+	osgi.core;version=5.0,\
+	osgi.enterprise;version=5.0
+Include-Resource: README.txt
+Export-Package: org.osgi.resource,\
+	org.osgi.service.resolver,\
+	org.osgi.service.repository
