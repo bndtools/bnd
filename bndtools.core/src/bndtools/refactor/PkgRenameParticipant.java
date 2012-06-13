@@ -36,7 +36,7 @@ import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
-    private Map<IPackageFragment, RenameArguments> pkgFragments = new HashMap<IPackageFragment, RenameArguments>();
+    private Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
     private String changeTitle = null;
 
     @Override
@@ -77,7 +77,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-        final Map<IFile, TextChange> fileChanges = new HashMap<IFile, TextChange>();
+        final Map<IFile,TextChange> fileChanges = new HashMap<IFile,TextChange>();
 
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
             public boolean visit(IResourceProxy proxy) throws CoreException {
@@ -105,10 +105,8 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 }
 
                 /*
-                 * get the previous change for this file if it exists, or
-                 * otherwise create a new change for it, but do not store it
-                 * yet: wait until we know if there are actually changes in the
-                 * file
+                 * get the previous change for this file if it exists, or otherwise create a new change for it, but do
+                 * not store it yet: wait until we know if there are actually changes in the file
                  */
                 TextChange fileChange = getTextChange(resource);
                 final boolean fileChangeIsNew = (fileChange == null);
@@ -119,7 +117,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 TextEdit rootEdit = fileChange.getEdit();
 
                 /* loop over all renames to perform */
-                for (Map.Entry<IPackageFragment, RenameArguments> entry : pkgFragments.entrySet()) {
+                for (Map.Entry<IPackageFragment,RenameArguments> entry : pkgFragments.entrySet()) {
                     IPackageFragment pkgFragment = entry.getKey();
                     RenameArguments arguments = entry.getValue();
 
@@ -144,8 +142,8 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 }
 
                 /*
-                 * only store the changes when no changes were stored before for
-                 * this file and when there are actually changes.
+                 * only store the changes when no changes were stored before for this file and when there are actually
+                 * changes.
                  */
                 if (fileChangeIsNew && rootEdit.hasChildren()) {
                     fileChanges.put(resource, fileChange);

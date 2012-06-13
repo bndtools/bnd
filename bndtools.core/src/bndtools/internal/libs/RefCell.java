@@ -11,5 +11,5 @@
 package bndtools.internal.libs;
 
 public interface RefCell<T> {
-	T getValue();
+    T getValue();
 }

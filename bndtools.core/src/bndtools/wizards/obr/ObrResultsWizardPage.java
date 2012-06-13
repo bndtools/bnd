@@ -72,11 +72,11 @@ public class ObrResultsWizardPage extends WizardPage {
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
 
     private final ResolutionFailurePanel resolutionFailurePanel = new ResolutionFailurePanel();
-    
+
     private TabFolder tabFolder;
     private TabItem tbtmResults;
     private TabItem tbtmErrors;
-    
+
     private SashFormPanelMaximiser requiredMaximiser;
     private TableViewer requiredViewer;
     private SashFormPanelMaximiser optionalMaximiser;
@@ -99,6 +99,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
     /**
      * Create contents of the wizard.
+     * 
      * @param parent
      */
     public void createControl(Composite parent) {
@@ -113,7 +114,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
         tabFolder = new TabFolder(container, SWT.NONE);
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        
+
         tbtmResults = new TabItem(tabFolder, SWT.NONE);
         tbtmResults.setText("Results");
         tbtmResults.setControl(createResultsTabControl(tabFolder));
@@ -133,12 +134,12 @@ public class ObrResultsWizardPage extends WizardPage {
         Color sashColor = colorRegistry.get("org.eclipse.ui.workbench.ACTIVE_TAB_HIGHLIGHT_START");
         sashForm.setSashBackground(sashColor);
         sashForm.setSashForeground(sashColor);
-        
+
         Composite cmpRequired = new Composite(sashForm, SWT.NONE);
         cmpRequired.setLayout(new GridLayout(2, false));
         Label lblRequired = new Label(cmpRequired, SWT.NONE);
         lblRequired.setText("Required Resources");
-        
+
         ToolBar requiredToolbar = new ToolBar(cmpRequired, SWT.FLAT | SWT.HORIZONTAL);
         requiredToolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
         requiredMaximiser = new SashFormPanelMaximiser(sashForm);
@@ -167,16 +168,16 @@ public class ObrResultsWizardPage extends WizardPage {
 
         Composite cmpOptional = new Composite(sashForm, SWT.NONE);
         cmpOptional.setLayout(new GridLayout(2, false));
-        
+
         Label lblOptional = new Label(cmpOptional, SWT.NONE);
         lblOptional.setText("Optional Resources");
         lblOptional.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        
+
         ToolBar optionalToolbar = new ToolBar(cmpOptional, SWT.FLAT | SWT.HORIZONTAL);
         optionalToolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
         optionalMaximiser = new SashFormPanelMaximiser(sashForm);
         optionalMaximiser.createToolItem(cmpOptional, optionalToolbar);
-        
+
         Table tblOptional = new Table(cmpOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
@@ -197,7 +198,7 @@ public class ObrResultsWizardPage extends WizardPage {
             }
         });
         optionalViewer.addSelectionChangedListener(reasonSelectionListener);
-        
+
         Composite cmpOptionalButtons = new Composite(cmpOptional, SWT.NONE);
         cmpOptionalButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
         GridLayout gl_cmpOptionalButtons = new GridLayout(3, false);
@@ -229,7 +230,7 @@ public class ObrResultsWizardPage extends WizardPage {
             }
         });
         btnAllOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-        
+
         Button btnClearOptional = new Button(cmpOptionalButtons, SWT.NONE);
         btnClearOptional.setText("Clear All");
         btnClearOptional.addSelectionListener(new SelectionAdapter() {
@@ -272,8 +273,10 @@ public class ObrResultsWizardPage extends WizardPage {
                 }
             }
         });
-        
-        sashForm.setWeights(new int[] { 3, 3, 1 });
+
+        sashForm.setWeights(new int[] {
+                3, 3, 1
+        });
         return sashForm;
     }
 
@@ -308,7 +311,8 @@ public class ObrResultsWizardPage extends WizardPage {
 
     private void doAddResolve() {
         List<Requirement> oldRequires = model.getRunRequire();
-        if (oldRequires == null) oldRequires = Collections.emptyList();
+        if (oldRequires == null)
+            oldRequires = Collections.emptyList();
 
         ArrayList<Requirement> newRequires = new ArrayList<Requirement>(oldRequires.size() + checkedOptional.size());
         newRequires.addAll(oldRequires);
@@ -364,10 +368,8 @@ public class ObrResultsWizardPage extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return result != null && result.isResolved() &&  checkedOptional.isEmpty() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
+        return result != null && result.isResolved() && checkedOptional.isEmpty() && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);
     }
-
-
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
@@ -384,13 +386,13 @@ public class ObrResultsWizardPage extends WizardPage {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
-        
+
         resolutionFailurePanel.dispose();
-        
+
         requiredMaximiser.dispose();
         optionalMaximiser.dispose();
 

@@ -62,9 +62,10 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     public JAREntryPart(IEditorPart editor, Composite composite, FormToolkit toolkit) {
         this.editor = editor;
 
-        SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
+        SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
         charsets = new String[charsetMap.size()];
-        int i=0; for (Iterator<String> iter = charsetMap.keySet().iterator(); iter.hasNext(); i++) {
+        int i = 0;
+        for (Iterator<String> iter = charsetMap.keySet().iterator(); iter.hasNext(); i++) {
             charsets[i] = iter.next();
         }
         setSelectedCharset(DEFAULT_CHARSET);
@@ -150,13 +151,13 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     public void selectionChanged(IFormPart part, ISelection selection) {
-        if(selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
 
             ZipEntry entry = null;
-            if(element instanceof ZipEntry)
+            if (element instanceof ZipEntry)
                 entry = (ZipEntry) element;
-            else if(element instanceof ZipTreeNode)
+            else if (element instanceof ZipTreeNode)
                 entry = ((ZipTreeNode) element).getZipEntry();
 
             this.zipEntry = entry;
@@ -167,8 +168,8 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     private final void setSelectedCharset(String selectedCharsetName) {
-        for(int i=0; i<charsets.length; i++) {
-            if(charsets[i].equals(selectedCharsetName)) {
+        for (int i = 0; i < charsets.length; i++) {
+            if (charsets[i].equals(selectedCharsetName)) {
                 selectedCharset = i;
                 return;
             }
@@ -177,10 +178,10 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     protected void loadContent() {
-        if(displayJob != null && displayJob.getState() != Job.NONE)
+        if (displayJob != null && displayJob.getState() != Job.NONE)
             displayJob.cancel();
 
-        if(zipEntry != null && !zipEntry.isDirectory()) {
+        if (zipEntry != null && !zipEntry.isDirectory()) {
             final IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
             final Display display = text.getDisplay();
             displayJob = new Job("Load zip content") {
@@ -191,7 +192,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                     try {
                         zipFile = new ZipFile(ioFile);
                         final StringWriter writer = new StringWriter();
-                        if(showAsText)
+                        if (showAsText)
                             readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
                         else
                             readAsHex(zipFile, zipEntry, writer, 1024 * 10, monitor);
@@ -205,11 +206,12 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                         return Status.OK_STATUS;
                     } catch (IOException e) {
                         Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
-                        //ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
+                        // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
                         return status;
                     } finally {
                         try {
-                            if(zipFile != null) zipFile.close();
+                            if (zipFile != null)
+                                zipFile.close();
                         } catch (IOException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
@@ -231,7 +233,9 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         }
     }
 
-    private static final String pseudo[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+    private static final String pseudo[] = {
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"
+    };
 
     private static SubMonitor createProgressMonitor(ZipEntry entry, long limit, IProgressMonitor monitor) {
         SubMonitor progress;
@@ -253,7 +257,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
             byte[] buffer = new byte[1024];
             while (true) {
-                if(progress.isCanceled())
+                if (progress.isCanceled())
                     return;
                 int bytesRead = stream.read(buffer, 0, 1024);
                 if (bytesRead < 0)
@@ -280,18 +284,20 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
             long total = 0;
 
             long charsWritten = 0;
-            while(true) {
-                if(progress.isCanceled())
+            while (true) {
+                if (progress.isCanceled())
                     return;
                 int bytesRead = stream.read(buffer, 0, 1024);
-                if(bytesRead < 0) break;
+                if (bytesRead < 0)
+                    break;
 
-                for(int i=0; i<bytesRead; i++) {
+                for (int i = 0; i < bytesRead; i++) {
                     out.write(pseudo[(buffer[i] & 0xf0) >>> 4]); // Convert to a string character
                     out.write(pseudo[(buffer[i] & 0x0f)]); // convert the nibble to a String Character
                     out.write(' ');
                     charsWritten += 3;
-                    if(charsWritten % 75 == 0) out.write('\n');
+                    if (charsWritten % 75 == 0)
+                        out.write('\n');
                 }
 
                 total += bytesRead;

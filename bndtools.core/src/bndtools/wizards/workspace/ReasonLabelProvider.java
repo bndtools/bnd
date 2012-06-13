@@ -39,7 +39,7 @@ public class ReasonLabelProvider extends StyledCellLabelProvider {
         string.append(" ");
         string.append(reason.getRequirement().getFilter());
 
-        cell.setText(string.getString()); 
+        cell.setText(string.getString());
         cell.setStyleRanges(string.getStyleRanges());
 
         setImage(cell, reason.getRequirement().getName());

@@ -91,7 +91,8 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
-//        toolkit.createLabel(composite, Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
+        // toolkit.createLabel(composite,
+        // Messages.BundleCalculatedImportsPart_description, SWT.WRAP);
 
         tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 
@@ -109,25 +110,29 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                 return true;
             }
         };
-        viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
+        viewer.setFilters(new ViewerFilter[] {
+            hideSelfImportsFilter
+        });
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 getManagedForm().fireSelectionChanged(BundleCalculatedImportsPart.this, event.getSelection());
             }
         });
-        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceAdapter() {
+        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
+            TextTransfer.getInstance()
+        }, new DragSourceAdapter() {
             @Override
             public void dragSetData(DragSourceEvent event) {
                 if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                     StringBuilder builder = new StringBuilder();
-                    Iterator<?> iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
-                    while(iterator.hasNext()) {
+                    Iterator< ? > iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
+                    while (iterator.hasNext()) {
                         Object item = iterator.next();
-                        if(item instanceof HeaderClause) {
+                        if (item instanceof HeaderClause) {
                             HeaderClause clause = (HeaderClause) item;
                             builder.append(clause.getName());
-                            if(iterator.hasNext()) {
+                            if (iterator.hasNext()) {
                                 builder.append(",\n"); //$NON-NLS-1$
                             }
                         }
@@ -139,44 +144,46 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         viewer.addOpenListener(new IOpenListener() {
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
+                for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
                     Object item = iter.next();
-                    if(item instanceof ImportUsedByClass) {
+                    if (item instanceof ImportUsedByClass) {
                         ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
                         String className = importUsedBy.getClazz().getFQN();
                         IType type = null;
 
                         IFile file = getEditorFile();
-                        if(file != null) {
-                                IJavaProject javaProject = JavaCore.create(file.getProject());
-                                try {
-                                    type = javaProject.findType(className);
-                                } catch (JavaModelException e) {
-                                    ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, Messages.BundleCalculatedImportsPart_errorFindingType, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
-                                }
+                        if (file != null) {
+                            IJavaProject javaProject = JavaCore.create(file.getProject());
+                            try {
+                                type = javaProject.findType(className);
+                            } catch (JavaModelException e) {
+                                ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, Messages.BundleCalculatedImportsPart_errorFindingType,
+                                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
+                            }
                         }
                         try {
-                            if(type != null)
+                            if (type != null)
                                 JavaUI.openInEditor(type, true, true);
                         } catch (PartInitException e) {
-                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningJavaEditor, className), e));
+                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null,
+                                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningJavaEditor, className), e));
                         } catch (JavaModelException e) {
-                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
+                            ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null,
+                                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
                         }
                     }
                 }
             }
         });
 
-
         // LISTENERS
         showSelfImportsItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean showSelfImports = showSelfImportsItem.getSelection();
-                ViewerFilter[] filters = showSelfImports
-                    ? new ViewerFilter[0]
-                    : new ViewerFilter[] { hideSelfImportsFilter };
+                ViewerFilter[] filters = showSelfImports ? new ViewerFilter[0] : new ViewerFilter[] {
+                    hideSelfImportsFilter
+                };
                 viewer.setFilters(filters);
             }
         });
@@ -212,16 +219,18 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         if (location == null)
             return;
 
-        final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] { location.toFile() });
+        final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] {
+            location.toFile()
+        });
         final Display display = tree.getDisplay();
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                if(job.getResult().isOK()) {
+                if (job.getResult().isOK()) {
                     final List<ImportPackage> imports = job.getImportResults();
                     display.asyncExec(new Runnable() {
                         public void run() {
-                            if(tree != null && !tree.isDisposed())
+                            if (tree != null && !tree.isDisposed())
                                 viewer.setInput(imports);
                         }
                     });
@@ -253,7 +262,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             delta = delta.findMember(file.getFullPath());
             if (delta != null) {
                 IFormPage page = (IFormPage) getManagedForm().getContainer();
-                if(page.isActive())
+                if (page.isActive())
                     refresh();
                 else
                     markStale();

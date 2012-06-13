@@ -7,11 +7,9 @@ import bndtools.classpath.BndContainerInitializer;
 import bndtools.utils.Predicate;
 
 /**
- * Filter for {@linkIClasspathContainer} instances that removes the Bnd and JRE
- * containers
+ * Filter for {@linkIClasspathContainer} instances that removes the Bnd and JRE containers
  * 
  * @author Neil Bartlett
- * 
  */
 class ClasspathContainerFilter implements Predicate<IClasspathContainer> {
 

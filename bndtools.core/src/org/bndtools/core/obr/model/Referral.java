@@ -18,34 +18,26 @@
  */
 package org.bndtools.core.obr.model;
 
-public class Referral
-{
+public class Referral {
     private int m_depth = 1;
     private String m_url;
 
-    public int getDepth()
-    {
+    public int getDepth() {
         return m_depth;
     }
 
-    public String getUrl()
-    {
+    public String getUrl() {
         return m_url;
     }
 
-    public void setUrl(String url)
-    {
+    public void setUrl(String url) {
         m_url = url;
     }
 
-    public void setDepth(String depth)
-    {
-        try
-        {
+    public void setDepth(String depth) {
+        try {
             m_depth = Integer.parseInt(depth);
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
             // don't care, and don't change current value
         }
     }

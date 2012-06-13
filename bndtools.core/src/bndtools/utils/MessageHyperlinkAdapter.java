@@ -18,31 +18,29 @@ import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
 public class MessageHyperlinkAdapter implements IHyperlinkListener {
-	
-	private PopupDialog popupDialog = null;
-	private final IWorkbenchPart part;
-	
-	public MessageHyperlinkAdapter(IWorkbenchPart part) {
-		this.part = part;
-	}
 
-	public void linkActivated(HyperlinkEvent e) {
-		showPopup(e);
-	}
+    private PopupDialog popupDialog = null;
+    private final IWorkbenchPart part;
 
-	public void linkEntered(final HyperlinkEvent e) {
-	}
-	
-	public void linkExited(HyperlinkEvent e) {
-	}
+    public MessageHyperlinkAdapter(IWorkbenchPart part) {
+        this.part = part;
+    }
 
-	private void showPopup(final HyperlinkEvent e) {
-		Hyperlink link = (Hyperlink) e.getSource();
-		link.setToolTipText(null);
-		
-		if(popupDialog != null) 
-			popupDialog.close();
-		popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
-		popupDialog.open();
-	}
+    public void linkActivated(HyperlinkEvent e) {
+        showPopup(e);
+    }
+
+    public void linkEntered(final HyperlinkEvent e) {}
+
+    public void linkExited(HyperlinkEvent e) {}
+
+    private void showPopup(final HyperlinkEvent e) {
+        Hyperlink link = (Hyperlink) e.getSource();
+        link.setToolTipText(null);
+
+        if (popupDialog != null)
+            popupDialog.close();
+        popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
+        popupDialog.open();
+    }
 }

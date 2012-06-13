@@ -21,15 +21,14 @@ public class NewBndFileActionDelegate implements IWorkbenchWindowActionDelegate 
     }
 
     public void selectionChanged(IAction action, ISelection selection) {
-        if(selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection) {
             this.selection = (IStructuredSelection) selection;
         } else {
             this.selection = null;
         }
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
     public void init(IWorkbenchWindow window) {
         this.window = window;

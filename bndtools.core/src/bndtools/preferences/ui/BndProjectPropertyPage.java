@@ -32,6 +32,7 @@ public class BndProjectPropertyPage extends PropertyPage {
 
     /**
      * Create contents of the property page.
+     * 
      * @param parent
      */
     @Override
@@ -57,15 +58,15 @@ public class BndProjectPropertyPage extends PropertyPage {
 
         final Button btnContinue = new Button(grpJavaCompilationErrors, SWT.RADIO);
         btnContinue.setText("Continue building the bundle");
-        
+
         Group grpEclipseClasspathEntries = new Group(container, SWT.NONE);
         grpEclipseClasspathEntries.setLayout(new GridLayout(1, false));
         grpEclipseClasspathEntries.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpEclipseClasspathEntries.setText("Eclipse Classpath Entries");
-        
+
         final Button btnExposeEclipseClasspath = new Button(grpEclipseClasspathEntries, SWT.RADIO);
         btnExposeEclipseClasspath.setText("Expose Eclipse classpath entries to bnd");
-        
+
         final Button btnHideEclipseClasspath = new Button(grpEclipseClasspathEntries, SWT.RADIO);
         btnHideEclipseClasspath.setText("Hide Eclipse classpath entries (safer)");
 
@@ -73,23 +74,31 @@ public class BndProjectPropertyPage extends PropertyPage {
         IPreferenceStore store = getPreferenceStore();
         action = CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY));
         switch (action) {
-        case delete:
-            btnDelete.setSelection(true); btnSkip.setSelection(false); btnContinue.setSelection(false);
+        case delete :
+            btnDelete.setSelection(true);
+            btnSkip.setSelection(false);
+            btnContinue.setSelection(false);
             break;
-        case skip:
-            btnDelete.setSelection(false); btnSkip.setSelection(true); btnContinue.setSelection(false);
+        case skip :
+            btnDelete.setSelection(false);
+            btnSkip.setSelection(true);
+            btnContinue.setSelection(false);
             break;
-        case build:
-            btnDelete.setSelection(false); btnSkip.setSelection(false); btnContinue.setSelection(true);
+        case build :
+            btnDelete.setSelection(false);
+            btnSkip.setSelection(false);
+            btnContinue.setSelection(true);
             break;
         }
         classpathPref = EclipseClasspathPreference.parse(store.getString(EclipseClasspathPreference.PREFERENCE_KEY));
         switch (classpathPref) {
-        case expose:
-            btnExposeEclipseClasspath.setSelection(true); btnHideEclipseClasspath.setSelection(false);
+        case expose :
+            btnExposeEclipseClasspath.setSelection(true);
+            btnHideEclipseClasspath.setSelection(false);
             break;
-        case hide:
-            btnExposeEclipseClasspath.setSelection(false); btnHideEclipseClasspath.setSelection(true);
+        case hide :
+            btnExposeEclipseClasspath.setSelection(false);
+            btnHideEclipseClasspath.setSelection(true);
         }
 
         // LISTENERS

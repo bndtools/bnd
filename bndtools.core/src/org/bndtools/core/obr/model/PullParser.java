@@ -52,114 +52,89 @@ public class PullParser {
     public static final String MULTIPLE = "multiple";
     public static final String OPTIONAL = "optional";
 
-    public PullParser()
-    {
-    }
+    public PullParser() {}
 
-    public static RepositoryImpl parseRepository(InputStream is) throws Exception
-    {
+    public static RepositoryImpl parseRepository(InputStream is) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(is, null);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !REPOSITORY.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !REPOSITORY.equals(reader.getName())) {
             throw new Exception("Expected element 'repository' at the root of the document");
         }
         return parse(reader);
     }
 
-    public static RepositoryImpl parseRepository(Reader r) throws Exception
-    {
+    public static RepositoryImpl parseRepository(Reader r) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !REPOSITORY.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !REPOSITORY.equals(reader.getName())) {
             throw new Exception("Expected element 'repository' at the root of the document");
         }
         return parse(reader);
     }
 
-    public static ResourceImpl parseResource(Reader r) throws Exception
-    {
+    public static ResourceImpl parseResource(Reader r) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !RESOURCE.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !RESOURCE.equals(reader.getName())) {
             throw new Exception("Expected element 'resource'");
         }
         return parseResource(reader);
     }
 
-    public static CapabilityImpl parseCapability(Reader r) throws Exception
-    {
+    public static CapabilityImpl parseCapability(Reader r) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !CAPABILITY.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !CAPABILITY.equals(reader.getName())) {
             throw new Exception("Expected element 'capability'");
         }
         return parseCapability(reader);
     }
 
-    public static PropertyImpl parseProperty(Reader r) throws Exception
-    {
+    public static PropertyImpl parseProperty(Reader r) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !P.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !P.equals(reader.getName())) {
             throw new Exception("Expected element 'p'");
         }
         return parseProperty(reader);
     }
 
-    public static RequirementImpl parseRequirement(Reader r) throws Exception
-    {
+    public static RequirementImpl parseRequirement(Reader r) throws Exception {
         XmlPullParser reader = new KXmlParser();
         reader.setInput(r);
         int event = reader.nextTag();
-        if (event != XmlPullParser.START_TAG || !REQUIRE.equals(reader.getName()))
-        {
+        if (event != XmlPullParser.START_TAG || !REQUIRE.equals(reader.getName())) {
             throw new Exception("Expected element 'require'");
         }
         return parseRequire(reader);
     }
 
-    public static RepositoryImpl parse(XmlPullParser reader) throws Exception
-    {
+    public static RepositoryImpl parse(XmlPullParser reader) throws Exception {
         RepositoryImpl repository = new RepositoryImpl();
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
             String name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
-            if (NAME.equals(name))
-            {
+            if (NAME.equals(name)) {
                 repository.setName(value);
-            }
-            else if (LASTMODIFIED.equals(name))
-            {
+            } else if (LASTMODIFIED.equals(name)) {
                 repository.setLastModified(value);
             }
         }
         int event;
-        while ((event = reader.nextTag()) == XmlPullParser.START_TAG)
-        {
+        while ((event = reader.nextTag()) == XmlPullParser.START_TAG) {
             String element = reader.getName();
-            if (REFERRAL.equals(element))
-            {
+            if (REFERRAL.equals(element)) {
                 Referral referral = parseReferral(reader);
                 repository.addReferral(referral);
-            }
-            else if (RESOURCE.equals(element))
-            {
+            } else if (RESOURCE.equals(element)) {
                 ResourceImpl resource = parseResource(reader);
                 repository.addResource(resource);
-            }
-            else
-            {
+            } else {
                 ignoreTag(reader);
             }
         }
@@ -168,27 +143,20 @@ public class PullParser {
         return repository;
     }
 
-    private static void sanityCheckEndElement(XmlPullParser reader, int event, String element)
-    {
-        if (event != XmlPullParser.END_TAG || !element.equals(reader.getName()))
-        {
+    private static void sanityCheckEndElement(XmlPullParser reader, int event, String element) {
+        if (event != XmlPullParser.END_TAG || !element.equals(reader.getName())) {
             throw new IllegalStateException("Unexpected state while finishing element " + element);
         }
     }
 
-    public static Referral parseReferral(XmlPullParser reader) throws Exception
-    {
+    public static Referral parseReferral(XmlPullParser reader) throws Exception {
         Referral referral = new Referral();
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
             String name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
-            if (DEPTH.equals(name))
-            {
+            if (DEPTH.equals(name)) {
                 referral.setDepth(value);
-            }
-            else if (URL.equals(name))
-            {
+            } else if (URL.equals(name)) {
                 referral.setUrl(value);
             }
         }
@@ -196,79 +164,58 @@ public class PullParser {
         return referral;
     }
 
-    public static ResourceImpl parseResource(XmlPullParser reader) throws Exception
-    {
+    public static ResourceImpl parseResource(XmlPullParser reader) throws Exception {
         ResourceImpl resource = new ResourceImpl();
-        try
-        {
-            for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-            {
+        try {
+            for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
                 resource.put(reader.getAttributeName(i), reader.getAttributeValue(i));
             }
             int event;
-            while ((event = reader.nextTag()) == XmlPullParser.START_TAG)
-            {
+            while ((event = reader.nextTag()) == XmlPullParser.START_TAG) {
                 String element = reader.getName();
-                if (CATEGORY.equals(element))
-                {
+                if (CATEGORY.equals(element)) {
                     String category = parseCategory(reader);
                     resource.addCategory(category);
-                }
-                else if (CAPABILITY.equals(element))
-                {
+                } else if (CAPABILITY.equals(element)) {
                     CapabilityImpl capability = parseCapability(reader);
                     resource.addCapability(capability);
-                }
-                else if (REQUIRE.equals(element))
-                {
+                } else if (REQUIRE.equals(element)) {
                     RequirementImpl requirement = parseRequire(reader);
                     resource.addRequire(requirement);
-                }
-                else
-                {
+                } else {
                     StringBuffer sb = null;
                     String type = reader.getAttributeValue(null, "type");
-                    while ((event = reader.next()) != XmlPullParser.END_TAG)
-                    {
-                        switch (event)
-                        {
-                            case XmlPullParser.START_TAG:
-                                throw new Exception("Unexpected element inside <require/> element");
-                            case XmlPullParser.TEXT:
-                                if (sb == null)
-                                {
-                                    sb = new StringBuffer();
-                                }
-                                sb.append(reader.getText());
-                                break;
+                    while ((event = reader.next()) != XmlPullParser.END_TAG) {
+                        switch (event) {
+                        case XmlPullParser.START_TAG :
+                            throw new Exception("Unexpected element inside <require/> element");
+                        case XmlPullParser.TEXT :
+                            if (sb == null) {
+                                sb = new StringBuffer();
+                            }
+                            sb.append(reader.getText());
+                            break;
                         }
                     }
-                    if (sb != null)
-                    {
+                    if (sb != null) {
                         resource.put(element, sb.toString().trim(), type);
                     }
                 }
             }
             // Sanity check
-            if (event != XmlPullParser.END_TAG || !RESOURCE.equals(reader.getName()))
-            {
+            if (event != XmlPullParser.END_TAG || !RESOURCE.equals(reader.getName())) {
                 throw new Exception("Unexpected state");
             }
             return resource;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new Exception("Error while parsing resource " + resource.getId() + " at line " + reader.getLineNumber() + " and column " + reader.getColumnNumber(), e);
         }
     }
 
-    public static String parseCategory(XmlPullParser reader) throws IOException, XmlPullParserException
-    {
+    public static String parseCategory(XmlPullParser reader) throws IOException, XmlPullParserException {
         String id = null;
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
-            if (ID.equals(reader.getAttributeName(i)))
-            {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
+            if (ID.equals(reader.getAttributeName(i))) {
                 id = reader.getAttributeValue(i);
             }
         }
@@ -276,29 +223,22 @@ public class PullParser {
         return id;
     }
 
-    public static CapabilityImpl parseCapability(XmlPullParser reader) throws Exception
-    {
+    public static CapabilityImpl parseCapability(XmlPullParser reader) throws Exception {
         CapabilityImpl capability = new CapabilityImpl();
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
             String name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
-            if (NAME.equals(name))
-            {
+            if (NAME.equals(name)) {
                 capability.setName(value);
             }
         }
         int event;
-        while ((event = reader.nextTag()) == XmlPullParser.START_TAG)
-        {
+        while ((event = reader.nextTag()) == XmlPullParser.START_TAG) {
             String element = reader.getName();
-            if (P.equals(element))
-            {
+            if (P.equals(element)) {
                 PropertyImpl prop = parseProperty(reader);
                 capability.addProperty(prop);
-            }
-            else
-            {
+            } else {
                 ignoreTag(reader);
             }
         }
@@ -307,23 +247,16 @@ public class PullParser {
         return capability;
     }
 
-    public static PropertyImpl parseProperty(XmlPullParser reader) throws Exception
-    {
+    public static PropertyImpl parseProperty(XmlPullParser reader) throws Exception {
         String n = null, t = null, v = null;
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
             String name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
-            if (N.equals(name))
-            {
+            if (N.equals(name)) {
                 n = value;
-            }
-            else if (T.equals(name))
-            {
+            } else if (T.equals(name)) {
                 t = value;
-            }
-            else if (V.equals(name))
-            {
+            } else if (V.equals(name)) {
                 v = value;
             }
         }
@@ -333,53 +266,38 @@ public class PullParser {
         return prop;
     }
 
-    public static RequirementImpl parseRequire(XmlPullParser reader) throws Exception
-    {
+    public static RequirementImpl parseRequire(XmlPullParser reader) throws Exception {
         RequirementImpl requirement = new RequirementImpl();
-        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++)
-        {
+        for (int i = 0, nb = reader.getAttributeCount(); i < nb; i++) {
             String name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
-            if (NAME.equals(name))
-            {
+            if (NAME.equals(name)) {
                 requirement.setName(value);
-            }
-            else if (FILTER.equals(name))
-            {
+            } else if (FILTER.equals(name)) {
                 requirement.setFilter(value);
-            }
-            else if (EXTEND.equals(name))
-            {
+            } else if (EXTEND.equals(name)) {
                 requirement.setExtend(Boolean.parseBoolean(value));
-            }
-            else if (MULTIPLE.equals(name))
-            {
+            } else if (MULTIPLE.equals(name)) {
                 requirement.setMultiple(Boolean.parseBoolean(value));
-            }
-            else if (OPTIONAL.equals(name))
-            {
+            } else if (OPTIONAL.equals(name)) {
                 requirement.setOptional(Boolean.parseBoolean(value));
             }
         }
         int event;
         StringBuffer sb = null;
-        while ((event = reader.next()) != XmlPullParser.END_TAG)
-        {
-            switch (event)
-            {
-                case XmlPullParser.START_TAG:
-                    throw new Exception("Unexpected element inside <require/> element");
-                case XmlPullParser.TEXT:
-                    if (sb == null)
-                    {
-                        sb = new StringBuffer();
-                    }
-                    sb.append(reader.getText());
-                    break;
+        while ((event = reader.next()) != XmlPullParser.END_TAG) {
+            switch (event) {
+            case XmlPullParser.START_TAG :
+                throw new Exception("Unexpected element inside <require/> element");
+            case XmlPullParser.TEXT :
+                if (sb == null) {
+                    sb = new StringBuffer();
+                }
+                sb.append(reader.getText());
+                break;
             }
         }
-        if (sb != null)
-        {
+        if (sb != null) {
             requirement.addText(sb.toString());
         }
         // Sanity check
@@ -389,15 +307,11 @@ public class PullParser {
 
     public static void ignoreTag(XmlPullParser reader) throws IOException, XmlPullParserException {
         int level = 1;
-        while (level > 0)
-        {
+        while (level > 0) {
             int eventType = reader.next();
-            if (eventType == XmlPullParser.START_TAG)
-            {
+            if (eventType == XmlPullParser.START_TAG) {
                 level++;
-            }
-            else if (eventType == XmlPullParser.END_TAG)
-            {
+            } else if (eventType == XmlPullParser.END_TAG) {
                 level--;
             }
         }

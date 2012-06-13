@@ -10,6 +10,7 @@ public class RequiredBundle extends HeaderClause {
         super(name, attribs);
         this.satisfied = satisfied;
     }
+
     public boolean isSatisfied() {
         return satisfied;
     }

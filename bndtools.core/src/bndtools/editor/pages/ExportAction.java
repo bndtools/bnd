@@ -26,11 +26,11 @@ import bndtools.launch.LaunchUtils;
 import bndtools.wizards.bndfile.RunExportSelectionWizard;
 
 public class ExportAction extends Action {
-    
+
     private final Shell parentShell;
     private final IEditorPart editor;
     private final IBndModel model;
-    
+
     private final IConfigurationElement[] configElems;
 
     public ExportAction(Shell parentShell, IEditorPart editor, IBndModel model) {
@@ -38,19 +38,19 @@ public class ExportAction extends Action {
         this.parentShell = parentShell;
         this.editor = editor;
         this.model = model;
-        
+
         configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "runExportWizards");
     }
-    
+
     boolean shouldEnable() {
         return configElems != null && configElems.length > 0;
     }
-    
+
     @Override
     public void run() {
         if (configElems == null || configElems.length == 0)
             return;
-        
+
         if (editor.isDirty()) {
             if (MessageDialog.openConfirm(parentShell, "Export", "The editor content must be saved before exporting. Save now?")) {
                 try {
@@ -67,18 +67,18 @@ public class ExportAction extends Action {
                 return;
             }
         }
-        
+
         IFile targetResource = ResourceUtil.getFile(editor.getEditorInput());
         try {
             Project project = LaunchUtils.getBndProject(targetResource);
-            
+
             RunExportSelectionWizard wizard = new RunExportSelectionWizard(configElems, model, project);
             WizardDialog dialog = new WizardDialog(parentShell, wizard);
             dialog.open();
-            
+
         } catch (CoreException e) {
             ErrorDialog.openError(parentShell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error deriving Bnd project.", e));
         }
-        
+
     }
 }

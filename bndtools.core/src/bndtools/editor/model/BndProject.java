@@ -12,7 +12,7 @@ import bndtools.api.IBndProject;
 public class BndProject implements IBndProject {
 
     private final IProject project;
-    private Map<String, URL> resources;
+    private Map<String,URL> resources;
 
     public BndProject(IProject project) {
         this.project = project;
@@ -32,12 +32,12 @@ public class BndProject implements IBndProject {
 
     public void addResource(String fullPath, URL url) {
         if (resources == null) {
-            resources = new HashMap<String, URL>();
+            resources = new HashMap<String,URL>();
         }
         resources.put(fullPath, url);
     }
 
-    public Map<String, URL> getResources() {
+    public Map<String,URL> getResources() {
         if (resources == null) {
             return Collections.emptyMap();
         }

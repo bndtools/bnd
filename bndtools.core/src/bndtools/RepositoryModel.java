@@ -26,44 +26,45 @@ import bndtools.types.Pair;
 
 public class RepositoryModel {
 
-    private Trie<String, Map<File, BundleInfo>> nameLookup = new PatriciaTrie<String, Map<File, BundleInfo>>(new StringKeyAnalyzer());
-    private Map<File, Set<String>> reverseLookup = new HashMap<File, Set<String>>();
+    private Trie<String,Map<File,BundleInfo>> nameLookup = new PatriciaTrie<String,Map<File,BundleInfo>>(new StringKeyAnalyzer());
+    private Map<File,Set<String>> reverseLookup = new HashMap<File,Set<String>>();
 
-    public List<Pair<Clazz, BundleInfo>> findMatches(String prefix) {
-        List<Pair<Clazz, BundleInfo>> result = new LinkedList<Pair<Clazz,BundleInfo>>();
+    public List<Pair<Clazz,BundleInfo>> findMatches(String prefix) {
+        List<Pair<Clazz,BundleInfo>> result = new LinkedList<Pair<Clazz,BundleInfo>>();
 
         SortedMap<String,Map<File,BundleInfo>> map = nameLookup.getPrefixedBy(prefix);
-        if(map != null) for (Entry<String, Map<File, BundleInfo>> entry : map.entrySet()) {
-            String shortName = entry.getKey();
-            Map<File, BundleInfo> fileMap = entry.getValue();
-            for (Entry<File, BundleInfo> fileEntry : fileMap.entrySet()) {
-                BundleInfo bundleInfo = fileEntry.getValue();
-                List<Clazz> list = bundleInfo.clazzes.get(shortName);
-                for (Clazz clazz : list) {
-                    Pair<Clazz, BundleInfo> pair = new Pair<Clazz, BundleInfo>(clazz, bundleInfo);
-                    result.add(pair);
+        if (map != null)
+            for (Entry<String,Map<File,BundleInfo>> entry : map.entrySet()) {
+                String shortName = entry.getKey();
+                Map<File,BundleInfo> fileMap = entry.getValue();
+                for (Entry<File,BundleInfo> fileEntry : fileMap.entrySet()) {
+                    BundleInfo bundleInfo = fileEntry.getValue();
+                    List<Clazz> list = bundleInfo.clazzes.get(shortName);
+                    for (Clazz clazz : list) {
+                        Pair<Clazz,BundleInfo> pair = new Pair<Clazz,BundleInfo>(clazz, bundleInfo);
+                        result.add(pair);
+                    }
                 }
             }
-        }
 
         return result;
     }
 
     private synchronized void insertBundleInfo(BundleInfo info) {
-        for (Entry<String, List<Clazz>> entry : info.clazzes.entrySet()) {
+        for (Entry<String,List<Clazz>> entry : info.clazzes.entrySet()) {
             String shortName = entry.getKey();
 
             // Update the classname map
-            Map<File, BundleInfo> map = nameLookup.get(shortName);
-            if(map == null) {
-                map = new HashMap<File, BundleInfo>();
+            Map<File,BundleInfo> map = nameLookup.get(shortName);
+            if (map == null) {
+                map = new HashMap<File,BundleInfo>();
                 nameLookup.put(shortName, map);
             }
             map.put(info.file, info);
 
             // Update the reverse lookup map
             Set<String> nameSet = reverseLookup.get(info.file);
-            if(nameSet == null) {
+            if (nameSet == null) {
                 nameSet = new HashSet<String>();
                 reverseLookup.put(info.file, nameSet);
             }
@@ -90,13 +91,13 @@ public class RepositoryModel {
         Collection<Clazz> clazzes = null;
         try {
             clazzes = builder.getClasses("classes", "PUBLIC");
-            if(clazzes != null) {
-                Map<String, List<Clazz>> classMap = new HashMap<String, List<Clazz>>();
+            if (clazzes != null) {
+                Map<String,List<Clazz>> classMap = new HashMap<String,List<Clazz>>();
                 for (Clazz clazz : clazzes) {
                     String shortName = clazz.getClassName().getShortName();
 
                     List<Clazz> list = classMap.get(shortName);
-                    if(list == null) {
+                    if (list == null) {
                         list = new LinkedList<Clazz>();
                         classMap.put(shortName, list);
                     }

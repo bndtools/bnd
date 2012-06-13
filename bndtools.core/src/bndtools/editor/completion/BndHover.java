@@ -7,8 +7,7 @@ public class BndHover implements ITextHover {
         if (hoverRegion != null) {
             IDocument doc = textViewer.getDocument();
             try {
-                String key = doc.get(hoverRegion.getOffset(), hoverRegion
-                        .getLength());
+                String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength());
 
                 Syntax syntax = Syntax.HELP.get(key);
                 if (syntax == null)
@@ -47,7 +46,7 @@ public class BndHover implements ITextHover {
 
             start++;
             int length = Math.min(doc.getLength(), end - start);
-            start = Math.max(0,start);
+            start = Math.max(0, start);
             return new Region(start, length);
         } catch (BadLocationException e) {
             // TODO Auto-generated catch block
@@ -67,14 +66,14 @@ public class BndHover implements ITextHover {
         while (r < text.length()) {
             char c = text.charAt(r++);
             switch (c) {
-            case '\r':
-            case '\n':
+            case '\r' :
+            case '\n' :
                 if (n != 0)
                     sb.append('\n');
                 n = 0;
                 break;
-            case ' ':
-            case '\t':
+            case ' ' :
+            case '\t' :
                 if (n > 20) {
                     sb.append("\n");
                     n = 0;
@@ -83,7 +82,7 @@ public class BndHover implements ITextHover {
                     n++;
                 }
                 break;
-            default:
+            default :
                 sb.append(c);
                 n++;
             }

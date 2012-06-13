@@ -28,72 +28,72 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 
 public class CnfSetupUserConfirmationWizardPage extends WizardPage {
-    
+
     public final String PROP_DECISION = "decision";
     public final String PROP_CREATE_IN_ECLIPSE_WORKSPACE = "createInEclipseWorkspace";
     public final String PROP_EXTERNAL_LOCATION = "externalLocation";
-    
+
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-	private CnfSetupDecision decision;
-	private boolean createInEclipseWorkspace = true;
-	private String externalLocation = "";
-	private boolean valid = false;
+    private CnfSetupDecision decision;
+    private boolean createInEclipseWorkspace = true;
+    private String externalLocation = "";
+    private boolean valid = false;
 
-	private Text txtExternalLocation;
+    private Text txtExternalLocation;
     private Button btnBrowseExternalLocation;
 
-	public CnfSetupUserConfirmationWizardPage(CnfSetupDecision decision) {
-		super(CnfSetupUserConfirmationWizardPage.class.getSimpleName());
-		this.decision = decision;
-		
-		setMessage(Messages.CnfSetupUserConfirmationWizardPage_this_message);
-		setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
-	}
+    public CnfSetupUserConfirmationWizardPage(CnfSetupDecision decision) {
+        super(CnfSetupUserConfirmationWizardPage.class.getSimpleName());
+        this.decision = decision;
 
-	public void createControl(Composite parent) {
-		setControl(parent = new Composite(parent, SWT.NONE));
+        setMessage(Messages.CnfSetupUserConfirmationWizardPage_this_message);
+        setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
+    }
 
-		Text text = new Text(parent, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-		text.setBackground(parent.getBackground());
-		text.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+    public void createControl(Composite parent) {
+        setControl(parent = new Composite(parent, SWT.NONE));
 
-		Group grpSetup = new Group(parent, SWT.NONE);
-		final Button btnSetup = new Button(grpSetup, SWT.RADIO);
-		final Button btnSkip = new Button(grpSetup, SWT.RADIO);
-		final Button btnNever = new Button(grpSetup, SWT.RADIO);
-		
-		Group grpLocation = new Group(parent, SWT.NONE);
-		final Button btnCreateInEclipseWorkspace = new Button(grpLocation, SWT.RADIO);
-		final Button btnCreateExternal = new Button(grpLocation, SWT.RADIO);
-		txtExternalLocation = new Text(grpLocation, SWT.BORDER);
-		btnBrowseExternalLocation = new Button(grpLocation, SWT.PUSH);
+        Text text = new Text(parent, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+        text.setBackground(parent.getBackground());
+        text.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
 
-		// LABELS
-		setTitle(Messages.CnfSetupCreateTitle);
-		text.setText(Messages.CnfSetupCreateExplanation);
-		grpSetup.setText("Setup");
-		
-		btnSetup.setText(Messages.CnfSetupCreate);
-		btnSkip.setText(Messages.CnfSetupCreateSkip);
-		btnNever.setText(Messages.CnfSetupNever);
-		
-		grpLocation.setText("Location");
-		btnCreateInEclipseWorkspace.setText(String.format("Create in Eclipse Workspace\n(%s).", ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()));
-		btnCreateExternal.setText("Create in:");
-		btnBrowseExternalLocation.setText("Browse");
+        Group grpSetup = new Group(parent, SWT.NONE);
+        final Button btnSetup = new Button(grpSetup, SWT.RADIO);
+        final Button btnSkip = new Button(grpSetup, SWT.RADIO);
+        final Button btnNever = new Button(grpSetup, SWT.RADIO);
 
-		// INIT CONTROLS
-		btnSetup.setSelection(decision == CnfSetupDecision.SETUP);
-		btnSkip.setSelection(decision == CnfSetupDecision.SKIP);
-		btnNever.setSelection(decision == CnfSetupDecision.NEVER);
-		
-		btnCreateInEclipseWorkspace.setSelection(createInEclipseWorkspace);
-		btnCreateExternal.setSelection(!createInEclipseWorkspace);
-		txtExternalLocation.setText(externalLocation != null ? externalLocation : "");
-		
-		updateEnablement();
-		validate();
+        Group grpLocation = new Group(parent, SWT.NONE);
+        final Button btnCreateInEclipseWorkspace = new Button(grpLocation, SWT.RADIO);
+        final Button btnCreateExternal = new Button(grpLocation, SWT.RADIO);
+        txtExternalLocation = new Text(grpLocation, SWT.BORDER);
+        btnBrowseExternalLocation = new Button(grpLocation, SWT.PUSH);
+
+        // LABELS
+        setTitle(Messages.CnfSetupCreateTitle);
+        text.setText(Messages.CnfSetupCreateExplanation);
+        grpSetup.setText("Setup");
+
+        btnSetup.setText(Messages.CnfSetupCreate);
+        btnSkip.setText(Messages.CnfSetupCreateSkip);
+        btnNever.setText(Messages.CnfSetupNever);
+
+        grpLocation.setText("Location");
+        btnCreateInEclipseWorkspace.setText(String.format("Create in Eclipse Workspace\n(%s).", ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()));
+        btnCreateExternal.setText("Create in:");
+        btnBrowseExternalLocation.setText("Browse");
+
+        // INIT CONTROLS
+        btnSetup.setSelection(decision == CnfSetupDecision.SETUP);
+        btnSkip.setSelection(decision == CnfSetupDecision.SKIP);
+        btnNever.setSelection(decision == CnfSetupDecision.NEVER);
+
+        btnCreateInEclipseWorkspace.setSelection(createInEclipseWorkspace);
+        btnCreateExternal.setSelection(!createInEclipseWorkspace);
+        txtExternalLocation.setText(externalLocation != null ? externalLocation : "");
+
+        updateEnablement();
+        validate();
 
         // EVENTS
         SelectionListener listener = new SelectionAdapter() {
@@ -115,22 +115,22 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
                 propSupport.firePropertyChange(PROP_DECISION, old, decision);
             }
         };
-		btnSetup.addSelectionListener(listener);
-		btnSkip.addSelectionListener(listener);
-		btnNever.addSelectionListener(listener);
-		
+        btnSetup.addSelectionListener(listener);
+        btnSkip.addSelectionListener(listener);
+        btnNever.addSelectionListener(listener);
+
         Listener locationListener = new Listener() {
             public void handleEvent(Event event) {
                 boolean oldCreateIn = createInEclipseWorkspace;
                 String oldExtLoc = externalLocation;
-                
+
                 createInEclipseWorkspace = btnCreateInEclipseWorkspace.getSelection();
                 externalLocation = txtExternalLocation.getText();
-                
+
                 updateEnablement();
                 validate();
                 getContainer().updateButtons();
-                
+
                 propSupport.firePropertyChange(PROP_CREATE_IN_ECLIPSE_WORKSPACE, oldCreateIn, createInEclipseWorkspace);
                 propSupport.firePropertyChange(PROP_EXTERNAL_LOCATION, oldExtLoc, externalLocation);
             }
@@ -138,7 +138,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         btnCreateExternal.addListener(SWT.Selection, locationListener);
         btnCreateInEclipseWorkspace.addListener(SWT.Selection, locationListener);
         txtExternalLocation.addListener(SWT.Modify, locationListener);
-        
+
         btnBrowseExternalLocation.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -149,28 +149,28 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
             }
         });
 
-		// LAYOUT
-		GridLayout gl;
-		
-		gl = new GridLayout();
-		gl.verticalSpacing = 20;
-		parent.setLayout(gl);
-		
-		GridDataFactory.fillDefaults().grab(true, true).hint(250, SWT.DEFAULT).applyTo(text);
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpSetup);
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpLocation);
-		
-		gl = new GridLayout();
-		grpSetup.setLayout(gl);
-		
-		gl = new GridLayout(3, false);
-		grpLocation.setLayout(gl);
-		btnCreateInEclipseWorkspace.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		txtExternalLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		
-		validate();
-	}
-	
+        // LAYOUT
+        GridLayout gl;
+
+        gl = new GridLayout();
+        gl.verticalSpacing = 20;
+        parent.setLayout(gl);
+
+        GridDataFactory.fillDefaults().grab(true, true).hint(250, SWT.DEFAULT).applyTo(text);
+        GridDataFactory.fillDefaults().grab(true, false).applyTo(grpSetup);
+        GridDataFactory.fillDefaults().grab(true, false).applyTo(grpLocation);
+
+        gl = new GridLayout();
+        grpSetup.setLayout(gl);
+
+        gl = new GridLayout(3, false);
+        grpLocation.setLayout(gl);
+        btnCreateInEclipseWorkspace.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtExternalLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        validate();
+    }
+
     private void updateEnablement() {
         txtExternalLocation.setEnabled(!createInEclipseWorkspace);
         btnBrowseExternalLocation.setEnabled(!createInEclipseWorkspace);
@@ -196,25 +196,25 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
                 }
             }
         }
-        
+
         valid = error == null;
         setErrorMessage(error);
         setMessage(warning, WARNING);
     }
-    
+
     @Override
     public boolean isPageComplete() {
         return valid;
     }
-    
+
     public CnfSetupDecision getDecision() {
         return decision;
     }
-    
+
     public boolean isCreateInEclipseWorkspace() {
         return createInEclipseWorkspace;
     }
-    
+
     public String getExternalLocation() {
         return externalLocation;
     }
@@ -226,7 +226,5 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
     public void removePropertyChangeListener(PropertyChangeListener var0) {
         propSupport.removePropertyChangeListener(var0);
     }
-    
-    
 
 }

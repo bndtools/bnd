@@ -100,7 +100,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         // Section toolbar buttons
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
-        
+
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
         addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText(Messages.TestSuitesPart_add);
@@ -143,11 +143,13 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         viewer.addOpenListener(new IOpenListener() {
             public void open(OpenEvent event) {
                 String name = (String) ((IStructuredSelection) event.getSelection()).getFirstElement();
-                if(name != null)
+                if (name != null)
                     doOpenSource(name);
             }
         });
-        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { ResourceTransfer.getInstance() }, new TestSuiteListDropAdapter());
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+            ResourceTransfer.getInstance()
+        }, new TestSuiteListDropAdapter());
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -163,9 +165,10 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.character == SWT.DEL) {
+                if (e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {;
+                } else if (e.character == '+') {
+                    ;
                     doAdd();
                 }
             }
@@ -195,7 +198,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         composite.setLayout(layout);
 
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        //gd.widthHint = 75;
+        // gd.widthHint = 75;
         gd.heightHint = 75;
         table.setLayoutData(gd);
         toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -204,10 +207,10 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     void doOpenSource(String name) {
         IJavaProject javaProj = getJavaProject();
-        if(javaProj != null) {
+        if (javaProj != null) {
             try {
                 IType type = javaProj.findType(name);
-                if(type != null)
+                if (type != null)
                     JavaUI.openInEditor(type, true, true);
             } catch (PartInitException e) {
                 e.printStackTrace();
@@ -218,7 +221,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 
     void doAdd() {
-        
+
         // Prepare the exclusion list based on existing test cases
         final Set<String> testSuitesSet = new HashSet<String>(testSuites);
 
@@ -230,51 +233,53 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         };
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
-        
-       // Prepare the package lister from the Java project
+
+        // Prepare the package lister from the Java project
         IJavaProject javaProject = getJavaProject();
-        if(javaProject == null) {
+        if (javaProject == null) {
             MessageDialog.openError(getSection().getShell(), "Error", "Cannot add test cases: unable to find a Java project associated with the editor input.");
             return;
         }
 
-        IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+        IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
+            javaProject
+        });
         JavaSearchScopeTestCaseLister testCaseLister = new JavaSearchScopeTestCaseLister(searchScope, window);
 
         // Create and open the dialog
-        TestCaseSelectionDialog dialog =  new TestCaseSelectionDialog(getSection().getShell(), testCaseLister, filter, Messages.TestSuitesPart_title);
+        TestCaseSelectionDialog dialog = new TestCaseSelectionDialog(getSection().getShell(), testCaseLister, filter, Messages.TestSuitesPart_title);
         dialog.setSourceOnly(true);
         dialog.setMultipleSelection(true);
-        if(dialog.open() == Window.OK) {
+        if (dialog.open() == Window.OK) {
             Object[] results = dialog.getResult();
             List<String> added = new LinkedList<String>();
 
             // Select the results
             for (Object result : results) {
                 String newTestSuites = (String) result;
-                if(testSuites.add(newTestSuites)) {
+                if (testSuites.add(newTestSuites)) {
                     added.add(newTestSuites);
                 }
             }
 
             // Update the model and view
-            if(!added.isEmpty()) {
+            if (!added.isEmpty()) {
                 viewer.add(added.toArray(new String[added.size()]));
                 markDirty();
             }
         }
-   }
+    }
 
     void doRemove() {
         IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-        if(!sel.isEmpty()) {
+        if (!sel.isEmpty()) {
             testSuites.removeAll(sel.toList());
             viewer.remove(sel.toArray());
             markDirty();
             validate();
         }
     }
-    
+
     void doMoveUp() {
         int[] selectedIndexes = findSelectedIndexes();
         if (CollectionUtils.moveUp(testSuites, selectedIndexes)) {
@@ -297,7 +302,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
         int[] selectionIndexes = new int[selection.length];
 
-        for(int i=0; i<selection.length; i++) {
+        for (int i = 0; i < selection.length; i++) {
             selectionIndexes[i] = testSuites.indexOf(selection[i]);
         }
         return selectionIndexes;
@@ -320,8 +325,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         validate();
     }
 
-    private void validate() {
-    }
+    private void validate() {}
 
     @Override
     public void commit(boolean onSave) {
@@ -338,14 +342,14 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if(BndConstants.TESTSUITES.equals(propertyName) || Constants.TESTCASES.equals(propertyName)) {
+        if (BndConstants.TESTSUITES.equals(propertyName) || Constants.TESTCASES.equals(propertyName)) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
-            if(page.isActive()) {
+            if (page.isActive()) {
                 refresh();
             } else {
                 markStale();
             }
-        } else if(Constants.PRIVATE_PACKAGE.equals(propertyName) || Constants.EXPORT_PACKAGE.equals(propertyName)) {
+        } else if (Constants.PRIVATE_PACKAGE.equals(propertyName) || Constants.EXPORT_PACKAGE.equals(propertyName)) {
             validate();
         }
     }
@@ -355,12 +359,13 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         IEditorInput input = page.getEditorInput();
 
         IFile file = ResourceUtil.getFile(input);
-        if(file != null) {
+        if (file != null) {
             return JavaCore.create(file.getProject());
         } else {
             return null;
         }
     }
+
     private class TestSuiteListDropAdapter extends ViewerDropAdapter {
 
         protected TestSuiteListDropAdapter() {
@@ -372,39 +377,41 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             event.detail = DND.DROP_COPY;
             super.dragEnter(event);
         }
+
         @Override
         public boolean validateDrop(Object target, int operation, TransferData transferType) {
             return ResourceTransfer.getInstance().isSupportedType(transferType);
         }
+
         @Override
         public boolean performDrop(Object data) {
             Object target = getCurrentTarget();
             int loc = getCurrentLocation();
 
             int insertionIndex = -1;
-            if(target != null) {
+            if (target != null) {
                 insertionIndex = testSuites.indexOf(target);
-                if(insertionIndex > -1 && loc == LOCATION_ON || loc == LOCATION_AFTER)
-                    insertionIndex ++;
+                if (insertionIndex > -1 && loc == LOCATION_ON || loc == LOCATION_AFTER)
+                    insertionIndex++;
             }
 
             List<String> addedNames = new ArrayList<String>();
-            if(data instanceof IResource[]) {
+            if (data instanceof IResource[]) {
                 IResource[] resources = (IResource[]) data;
                 for (IResource resource : resources) {
                     IJavaElement javaElement = JavaCore.create(resource);
-                    if(javaElement != null) {
+                    if (javaElement != null) {
                         try {
-                            if(javaElement instanceof IType) {
+                            if (javaElement instanceof IType) {
                                 IType type = (IType) javaElement;
-                                if(type.isClass() && Flags.isPublic(type.getFlags())) {
+                                if (type.isClass() && Flags.isPublic(type.getFlags())) {
                                     String typeName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
                                     addedNames.add(typeName);
                                 }
-                            } else if(javaElement instanceof ICompilationUnit) {
+                            } else if (javaElement instanceof ICompilationUnit) {
                                 IType[] allTypes = ((ICompilationUnit) javaElement).getAllTypes();
                                 for (IType type : allTypes) {
-                                    if(type.isClass() && Flags.isPublic(type.getFlags())) {
+                                    if (type.isClass() && Flags.isPublic(type.getFlags())) {
                                         String typeName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
                                         addedNames.add(typeName);
                                     }
@@ -417,8 +424,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                 }
             }
 
-            if(!addedNames.isEmpty()) {
-                if(insertionIndex == -1 || insertionIndex == testSuites.size()) {
+            if (!addedNames.isEmpty()) {
+                if (insertionIndex == -1 || insertionIndex == testSuites.size()) {
                     testSuites.addAll(addedNames);
                     viewer.add(addedNames.toArray(new String[addedNames.size()]));
                 } else {
@@ -434,17 +441,20 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     }
 }
 
-
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
     private Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
-//    private Image testImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/test.gif").createImage();
-    
+
+    // private Image testImg =
+    // AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,
+    // "/icons/test.gif").createImage();
+
     @Override
     public void update(ViewerCell cell) {
         String fqName = (String) cell.getElement();
         cell.setText(fqName);
         cell.setImage(suiteImg);
     }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -452,4 +462,3 @@ class TestSuiteLabelProvider extends StyledCellLabelProvider {
     }
 
 }
-

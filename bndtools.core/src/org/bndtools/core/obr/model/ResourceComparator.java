@@ -22,18 +22,13 @@ import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Resource;
 
-class ResourceComparator implements Comparator<Resource>
-{
-    public int compare(Resource r1, Resource r2)
-    {
+class ResourceComparator implements Comparator<Resource> {
+    public int compare(Resource r1, Resource r2) {
         String name1 = r1.getPresentationName();
         String name2 = r2.getPresentationName();
-        if (name1 == null)
-        {
+        if (name1 == null) {
             return -1;
-        }
-        else if (name2 == null)
-        {
+        } else if (name2 == null) {
             return 1;
         }
         return name1.compareToIgnoreCase(name2);

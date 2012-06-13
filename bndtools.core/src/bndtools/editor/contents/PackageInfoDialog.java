@@ -37,7 +37,7 @@ import bndtools.Plugin;
 
 public class PackageInfoDialog extends TitleAreaDialog {
 
-    private final Map<String, File> packages;
+    private final Map<String,File> packages;
     private final Collection<String> selection;
 
     private boolean dontAsk = false;
@@ -47,11 +47,11 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
     /**
      * Create the dialog.
-     *
+     * 
      * @param parentShell
      * @param packages
      */
-    public PackageInfoDialog(Shell parentShell, Map<String, File> packages) {
+    public PackageInfoDialog(Shell parentShell, Map<String,File> packages) {
         super(parentShell);
         setShellStyle(SWT.BORDER | SWT.CLOSE | SWT.RESIZE);
         this.packages = packages;
@@ -62,7 +62,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the dialog.
-     *
+     * 
      * @param parent
      */
     @Override

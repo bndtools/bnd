@@ -75,7 +75,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private ScopedPreferenceStore projectPrefs;
 
     @Override
-    protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, @SuppressWarnings("rawtypes")
+    Map args, IProgressMonitor monitor) throws CoreException {
         BndPreferences prefs = new BndPreferences();
         logLevel = prefs.getBuildLogging();
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
@@ -99,7 +100,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             model = Workspace.getProject(myProject.getLocation().toFile());
         } catch (Exception e) {
             clearBuildMarkers();
-            createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String>emptyList());
+            createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
         }
         if (model == null)
             return null;
@@ -144,7 +145,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     return calculateDependsOn();
                 }
             }
-            // (NB: from now on the delta cannot be null, due to the check in isLocalBndFileChange)
+            // (NB: from now on the delta cannot be null, due to the check in
+            // isLocalBndFileChange)
 
             // CASE 3: JAR file in dependency project changed
             Project changedDependency = getDependencyTargetChange();
@@ -182,7 +184,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
                 Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
             }
-            
+
             listeners.release();
             model = null;
         }
@@ -301,7 +303,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         for (Project dep : dependson) {
             File targetDir = dep.getTarget();
-            if (targetDir != null && !(targetDir.isDirectory())) // Does not exist... deleted?
+            if (targetDir != null && !(targetDir.isDirectory())) // Does not
+                                                                 // exist...
+                                                                 // deleted?
                 return dep;
 
             IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
@@ -377,33 +381,38 @@ public class NewBuilder extends IncrementalProjectBuilder {
             log(LOG_BASIC, "no info on local changes available");
         }
 
-        // Process the sub-builders to determine whether a rebuild, force rebuild, or nothing is required.
-        if (!model.isNoBundles()) for (Builder builder : model.getSubBuilders()) {
-            // If the builder's output JAR has been removed, this could be because the user
-            // deleted it, so we should force build in order to regenerate it.
-            File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
-            if (!targetFile.isFile()) {
-                log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", targetFile, builder.getBsn());
-                force = true;
-                break;
-            }
-
-            // Account for this builder's target JAR
-            targetJars.remove(targetFile);
-
-            // Finally if any removed or changed files are in scope for the bundle, we simply force rebuild
-            if (!changedFiles.isEmpty()) {
-                if (changedFiles.contains(builder.getPropertiesFile())) {
-                    log(LOG_FULL, "the properties file for builder %s was changes, will force a rebuild", builder.getBsn());
-                    force = true;
-                    break;
-                } else if (builder.isInScope(changedFiles)) {
-                    log(LOG_FULL, "some removed files were in scope for builder %s, will force a rebuild", builder.getBsn());
+        // Process the sub-builders to determine whether a rebuild, force
+        // rebuild, or nothing is required.
+        if (!model.isNoBundles())
+            for (Builder builder : model.getSubBuilders()) {
+                // If the builder's output JAR has been removed, this could be
+                // because the user
+                // deleted it, so we should force build in order to regenerate
+                // it.
+                File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
+                if (!targetFile.isFile()) {
+                    log(LOG_FULL, "output file %s of builder %s was removed, will force a rebuild", targetFile, builder.getBsn());
                     force = true;
                     break;
                 }
+
+                // Account for this builder's target JAR
+                targetJars.remove(targetFile);
+
+                // Finally if any removed or changed files are in scope for the
+                // bundle, we simply force rebuild
+                if (!changedFiles.isEmpty()) {
+                    if (changedFiles.contains(builder.getPropertiesFile())) {
+                        log(LOG_FULL, "the properties file for builder %s was changes, will force a rebuild", builder.getBsn());
+                        force = true;
+                        break;
+                    } else if (builder.isInScope(changedFiles)) {
+                        log(LOG_FULL, "some removed files were in scope for builder %s, will force a rebuild", builder.getBsn());
+                        force = true;
+                        break;
+                    }
+                }
             }
-        }
 
         // Delete any unaccounted-for Jars from target dir
         for (File jar : targetJars) {
@@ -432,9 +441,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         });
         Set<File> result = new HashSet<File>();
-        if (targetJars != null) for (File jar : targetJars) {
-            result.add(jar);
-        }
+        if (targetJars != null)
+            for (File jar : targetJars) {
+                result.add(jar);
+            }
         return result;
     }
 
@@ -444,43 +454,47 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return targetDirPath;
     }
 
-    private enum Action { build, delete };
+    private enum Action {
+        build, delete
+    };
 
     /**
-     * @param force Whether to force bnd to build
+     * @param force
+     *            Whether to force bnd to build
      * @return Whether any files were built
      */
     @SuppressWarnings("unchecked")
     private boolean rebuild(boolean force) throws Exception {
         clearBuildMarkers();
 
-        // Check if compilation errors exist, and if so check the project settings for what to do about that...
+        // Check if compilation errors exist, and if so check the project
+        // settings for what to do about that...
         Action buildAction = Action.build;
         if (hasBlockingErrors()) {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
-            case skip:
+            case skip :
                 addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to Java problem markers");
                 return false;
-            case build:
+            case build :
                 buildAction = Action.build;
                 break;
-            case delete:
+            case delete :
                 buildAction = Action.delete;
                 break;
             }
         } else if (!classpathErrors.isEmpty()) {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
-            case skip:
+            case skip :
                 addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
                 return false;
-            case build:
+            case build :
                 buildAction = Action.build;
                 break;
-            case delete:
+            case delete :
                 buildAction = Action.delete;
                 break;
             }
@@ -491,7 +505,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Validate
         List<IValidator> validators = loadValidators();
         if (validators != null) {
-            Collection<? extends Builder> builders = model.getSubBuilders();
+            Collection< ? extends Builder> builders = model.getSubBuilders();
             for (Builder builder : builders) {
                 validate(builder, validators);
             }
@@ -499,7 +513,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Clear errors & warnings before build
         model.clear();
-        
+
         // Load Eclipse classpath containers
         model.clearClasspath();
         EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
@@ -511,21 +525,22 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model.addClasspath(file);
             }
         }
-        
+
         if (buildAction == Action.build) {
             // Build!
             model.setTrace(true);
             boolean stale = model.isStale();
-            
+
             if (force || stale) {
                 log(LOG_BASIC, "REBUILDING: force=%b; stale=%b", force, stale);
                 built = model.buildLocal(false);
-                if (built == null) built = new File[0]; // shouldn't happen but just in case
+                if (built == null)
+                    built = new File[0]; // shouldn't happen but just in case
             } else {
                 log(LOG_BASIC, "NOT REBUILDING: force=%b;stale=%b", force, stale);
                 built = new File[0];
             }
-            
+
             // Notify the build listeners
             if (listeners != null && built.length > 0) {
                 IPath[] paths = new IPath[built.length];
@@ -542,7 +557,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
             }
         } else {
-            // Delete target files since the project has compile errors and the delete action was selected.
+            // Delete target files since the project has compile errors and the
+            // delete action was selected.
             for (Builder builder : model.getSubBuilders()) {
                 File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
                 boolean deleted = targetFile.delete();
@@ -555,7 +571,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
         if (built.length > 0)
             Central.invalidateIndex();
 
-        // Make sure Eclipse knows about the changed files (should already have been done?)
+        // Make sure Eclipse knows about the changed files (should already have
+        // been done?)
         IFolder targetFolder = getProject().getFolder(calculateTargetDirPath(model));
         targetFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
 
@@ -611,39 +628,39 @@ public class NewBuilder extends IncrementalProjectBuilder {
         log(LOG_FULL, "returning depends-on list: %s", result);
         return result.toArray(new IProject[result.size()]);
     }
-    
+
     private void accumulateClasspath(List<File> files, IJavaProject project, boolean exports, Predicate<IClasspathContainer>... containerFilters) throws JavaModelException {
         if (exports) {
             IPath outputPath = project.getOutputLocation();
             files.add(getFileForPath(outputPath));
         }
-        
+
         IClasspathEntry[] entries = project.getRawClasspath();
         List<IClasspathEntry> queue = new ArrayList<IClasspathEntry>(entries.length);
         queue.addAll(Arrays.asList(entries));
 
         while (!queue.isEmpty()) {
             IClasspathEntry entry = queue.remove(0);
-            
+
             if (exports && !entry.isExported())
                 continue;
-            
+
             IPath path = entry.getPath();
-            
-            switch(entry.getEntryKind()) {
-            case IClasspathEntry.CPE_LIBRARY:
+
+            switch (entry.getEntryKind()) {
+            case IClasspathEntry.CPE_LIBRARY :
                 files.add(getFileForPath(path));
                 break;
-            case IClasspathEntry.CPE_VARIABLE:
+            case IClasspathEntry.CPE_VARIABLE :
                 IPath resolvedPath = JavaCore.getResolvedVariablePath(path);
                 files.add(getFileForPath(resolvedPath));
                 break;
-            case IClasspathEntry.CPE_SOURCE:
+            case IClasspathEntry.CPE_SOURCE :
                 IPath outputLocation = entry.getOutputLocation();
                 if (exports && outputLocation != null)
                     files.add(getFileForPath(outputLocation));
                 break;
-            case IClasspathEntry.CPE_CONTAINER:
+            case IClasspathEntry.CPE_CONTAINER :
                 IClasspathContainer container = JavaCore.getClasspathContainer(path, project);
                 boolean allow = true;
                 for (Predicate<IClasspathContainer> filter : containerFilters)
@@ -652,7 +669,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 if (allow)
                     queue.addAll(Arrays.asList(container.getClasspathEntries()));
                 break;
-            case IClasspathEntry.CPE_PROJECT:
+            case IClasspathEntry.CPE_PROJECT :
                 IProject targetProject = ResourcesPlugin.getWorkspace().getRoot().getProject(path.lastSegment());
                 IJavaProject targetJavaProject = JavaCore.create(targetProject);
                 accumulateClasspath(files, targetJavaProject, true, containerFilters);
@@ -660,7 +677,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         }
     }
-    
+
     private static File getFileForPath(IPath path) {
         File file;
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
@@ -670,7 +687,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             file = path.toFile();
         return file;
     }
-    
+
     private boolean hasBlockingErrors() {
         try {
             if (containsError(getProject().findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
@@ -700,7 +717,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return true;
     }
 
-    private void createBuildMarkers(Collection<? extends String> errors, Collection<? extends String> warnings) throws CoreException {
+    private void createBuildMarkers(Collection< ? extends String> errors, Collection< ? extends String> warnings) throws CoreException {
         for (String error : errors) {
             addBuildMarker(error, IMarker.SEVERITY_ERROR);
         }
@@ -755,14 +772,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private void addClasspathMarker(IStatus status) throws CoreException {
         int severity;
         switch (status.getSeverity()) {
-        case IStatus.CANCEL:
-        case IStatus.ERROR:
+        case IStatus.CANCEL :
+        case IStatus.ERROR :
             severity = IMarker.SEVERITY_ERROR;
             break;
-        case IStatus.WARNING:
+        case IStatus.WARNING :
             severity = IMarker.SEVERITY_WARNING;
             break;
-        default:
+        default :
             severity = IMarker.SEVERITY_INFO;
         }
         addClasspathMarker(status.getMessage(), severity);

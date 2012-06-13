@@ -12,7 +12,7 @@ public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirec
 
     public void initializeParticipants() {
         addParticipants(new ISourceLookupParticipant[] {
-                new JavaSourceLookupParticipant()
+            new JavaSourceLookupParticipant()
         });
     }
 
@@ -26,8 +26,7 @@ public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirec
         dispose();
         setLaunchConfiguration(configuration);
         setSourceContainers(new ISourceContainer[] {
-                new DefaultSourceContainer(),
-                new BndDependencySourceContainer()
+                new DefaultSourceContainer(), new BndDependencySourceContainer()
         });
         initializeParticipants();
     }

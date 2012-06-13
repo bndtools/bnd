@@ -125,11 +125,9 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     }
 
     /**
-     * Registers a resource listener with the project model file to update the
-     * launcher when the model or any of the run-bundles changes. The resource
-     * listener is automatically unregistered when the launched process
-     * terminates.
-     *
+     * Registers a resource listener with the project model file to update the launcher when the model or any of the
+     * run-bundles changes. The resource listener is automatically unregistered when the launched process terminates.
+     * 
      * @param project
      * @param launch
      * @throws CoreException
@@ -138,7 +136,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
         if (targetResource == null)
             return;
-        
+
         final IPath bndbndPath;
         try {
             bndbndPath = Central.toPath(project.getPropertiesFile());
@@ -157,7 +155,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                 try {
                     final AtomicBoolean update = new AtomicBoolean(false);
 
-                    // Was the properties file (bnd.bnd or *.bndrun) included in the delta?
+                    // Was the properties file (bnd.bnd or *.bndrun) included in
+                    // the delta?
                     IResourceDelta propsDelta = event.getDelta().findMember(bndbndPath);
                     if (propsDelta == null && targetResource.getType() == IResource.FILE)
                         propsDelta = event.getDelta().findMember(targetResource.getFullPath());
@@ -167,12 +166,14 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         }
                     }
 
-                    // Check for bundles included in the launcher's runbundles list
+                    // Check for bundles included in the launcher's runbundles
+                    // list
                     if (!update.get()) {
                         final Set<String> runBundleSet = new HashSet<String>(bndLauncher.getRunBundles());
                         event.getDelta().accept(new IResourceDeltaVisitor() {
                             public boolean visit(IResourceDelta delta) throws CoreException {
-                                // Short circuit if we have already found a match
+                                // Short circuit if we have already found a
+                                // match
                                 if (update.get())
                                     return false;
 
@@ -189,11 +190,12 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         });
                     }
 
-                    // Was the target path included in the delta? This might mean that sub-bundles have changed
+                    // Was the target path included in the delta? This might
+                    // mean that sub-bundles have changed
                     boolean targetPathChanged = event.getDelta().findMember(targetPath) != null;
                     update.compareAndSet(false, targetPathChanged);
 
-                    if(update.get()) {
+                    if (update.get()) {
                         project.forceRefresh();
                         project.setChanged();
                         bndLauncher.update();

@@ -10,10 +10,10 @@
  *******************************************************************************/
 package bndtools.internal.libs;
 
-public class ObjectStringifier implements Function<Object, String> {
+public class ObjectStringifier implements Function<Object,String> {
 
-	public String invoke(Object arg) {
-		return arg == null ? "<null>" : arg.toString();
-	}
+    public String invoke(Object arg) {
+        return arg == null ? "<null>" : arg.toString();
+    }
 
 }

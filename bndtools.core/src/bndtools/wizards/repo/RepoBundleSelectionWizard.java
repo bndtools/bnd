@@ -12,9 +12,9 @@ public class RepoBundleSelectionWizard extends Wizard {
     private final RepoBundleSelectionWizardPage selectionPage = new RepoBundleSelectionWizardPage();
 
     /**
-     * Create a wizard for editing the specified list of bundles. The supplied
-     * collection will be modified by this wizard.
-     *
+     * Create a wizard for editing the specified list of bundles. The supplied collection will be modified by this
+     * wizard.
+     * 
      * @param bundles
      *            A mutable collection of bundles.
      * @throws Exception
@@ -25,9 +25,9 @@ public class RepoBundleSelectionWizard extends Wizard {
     }
 
     @Override
-	public boolean performFinish() {
-		return true;
-	}
+    public boolean performFinish() {
+        return true;
+    }
 
     public void setSelectionPageTitle(String title) {
         selectionPage.setTitle(title);

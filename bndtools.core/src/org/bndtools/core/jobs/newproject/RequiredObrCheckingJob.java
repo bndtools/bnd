@@ -54,7 +54,8 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
 
         IFile bndFile = project.getFile(Project.BNDFILE);
         if (!bndFile.exists()) {
-            if (retryCount > 0) new RequiredObrCheckingJob(project, retryCount - 1).schedule(RESCHEDULE_TIME);
+            if (retryCount > 0)
+                new RequiredObrCheckingJob(project, retryCount - 1).schedule(RESCHEDULE_TIME);
             return Status.CANCEL_STATUS;
         }
 

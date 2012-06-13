@@ -19,12 +19,12 @@ public class ResourceIndexerTracker extends ServiceTracker implements ResourceIn
         this.timeout = timeout;
     }
 
-    public void index(Set<File> files, OutputStream out, Map<String, String> config) throws Exception {
+    public void index(Set<File> files, OutputStream out, Map<String,String> config) throws Exception {
         ResourceIndexer indexer = doGetIndexer();
         indexer.index(files, out, config);
     }
 
-    public void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception {
+    public void indexFragment(Set<File> files, Writer out, Map<String,String> config) throws Exception {
         ResourceIndexer indexer = doGetIndexer();
         indexer.indexFragment(files, out, config);
     }

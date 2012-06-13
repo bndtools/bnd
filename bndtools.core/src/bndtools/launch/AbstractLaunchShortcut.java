@@ -46,7 +46,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
     public void launch(ISelection selection, String mode) {
         IStructuredSelection is = (IStructuredSelection) selection;
-        if ( is.getFirstElement() != null ) {
+        if (is.getFirstElement() != null) {
             try {
                 Object selected = is.getFirstElement();
                 launchSelectedObject(selected, mode);
@@ -62,14 +62,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         } else if (selected instanceof IResource && Project.BNDFILE.equals(((IResource) selected).getName())) {
             IProject project = ((IResource) selected).getProject();
             launchProject(project, mode);
-        } else if(selected instanceof IFile && ((IFile) selected).getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+        } else if (selected instanceof IFile && ((IFile) selected).getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
             IFile bndRunFile = (IFile) selected;
             launchBndRun(bndRunFile, mode);
-        }
-        else if (selected instanceof IAdaptable) {
+        } else if (selected instanceof IAdaptable) {
             IAdaptable adaptable = (IAdaptable) selected;
             IJavaElement javaElement = (IJavaElement) adaptable.getAdapter(IJavaElement.class);
-            if(javaElement != null) {
+            if (javaElement != null) {
                 launchJavaElement(javaElement, mode);
             } else {
                 IResource resource = (IResource) adaptable.getAdapter(IResource.class);
@@ -135,15 +134,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
         for (int i = 0; i < configs.length; i++) {
             ILaunchConfiguration config = configs[i];
             String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-            if(configTargetName != null && configTargetName.equals(targetPath.toString())) {
+            if (configTargetName != null && configTargetName.equals(targetPath.toString())) {
                 candidateConfigs.add(config);
             }
         }
 
         // Return the latest (last in the list)
-        return !candidateConfigs.isEmpty()
-            ? candidateConfigs.get(candidateConfigs.size() - 1)
-            : null;
+        return !candidateConfigs.isEmpty() ? candidateConfigs.get(candidateConfigs.size() - 1) : null;
     }
 
     ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath) throws CoreException {
@@ -165,13 +162,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
     }
 
     static IProject getProject(ISelection selection) {
-        if(selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
-            if(element instanceof IResource)
+            if (element instanceof IResource)
                 return ((IResource) element).getProject();
-            else if(element instanceof IAdaptable) {
+            else if (element instanceof IAdaptable) {
                 IResource resource = (IResource) ((IAdaptable) element).getAdapter(IResource.class);
-                if(resource != null)
+                if (resource != null)
                     return resource.getProject();
             }
         }
@@ -180,16 +177,12 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
     static IProject getProject(IEditorPart editorPart) {
         IResource resource = ResourceUtil.getResource(editorPart);
-        return resource != null
-            ? resource.getProject()
-            : null;
+        return resource != null ? resource.getProject() : null;
     }
 
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
         IProject project = getProject(selection);
-        return project != null
-            ? getLaunchConfigsForProject(project)
-            : null;
+        return project != null ? getLaunchConfigsForProject(project) : null;
     }
 
     ILaunchConfiguration[] getLaunchConfigsForProject(IProject project) {
@@ -209,21 +202,19 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
     public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editorPart) {
         IProject project = getProject(editorPart);
-        return project != null
-            ? getLaunchConfigsForProject(project)
-            : null;
+        return project != null ? getLaunchConfigsForProject(project) : null;
     }
 
     public IResource getLaunchableResource(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSel= (IStructuredSelection) selection;
+            IStructuredSelection structSel = (IStructuredSelection) selection;
             if (structSel.size() == 1) {
-                Object selected= structSel.getFirstElement();
+                Object selected = structSel.getFirstElement();
                 if (!(selected instanceof IJavaElement) && selected instanceof IAdaptable) {
-                    selected= ((IAdaptable) selected).getAdapter(IJavaElement.class);
+                    selected = ((IAdaptable) selected).getAdapter(IJavaElement.class);
                 }
                 if (selected instanceof IJavaElement) {
-                    return ((IJavaElement)selected).getResource();
+                    return ((IJavaElement) selected).getResource();
                 }
             }
         }
@@ -231,12 +222,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
     }
 
     public IResource getLaunchableResource(IEditorPart editorPart) {
-        ITypeRoot element= JavaUI.getEditorInputTypeRoot(editorPart.getEditorInput());
+        ITypeRoot element = JavaUI.getEditorInputTypeRoot(editorPart.getEditorInput());
         if (element != null) {
             try {
                 return element.getCorrespondingResource();
-            } catch (JavaModelException e) {
-            }
+            } catch (JavaModelException e) {}
         }
         return null;
     }

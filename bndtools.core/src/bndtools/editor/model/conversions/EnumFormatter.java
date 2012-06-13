@@ -1,20 +1,18 @@
 package bndtools.editor.model.conversions;
 
 /**
- * Formats an enum type. Outputs {@code null} when the value of the enum is
- * equal to a default value.
- *
+ * Formats an enum type. Outputs {@code null} when the value of the enum is equal to a default value.
+ * 
  * @param <E>
  * @author Neil Bartlett
  */
-public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
+public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 
     private final E defaultValue;
 
     /**
-     * Construct a new formatter with no default value, i.e. any non-null value
-     * of the enum will print that value.
-     *
+     * Construct a new formatter with no default value, i.e. any non-null value of the enum will print that value.
+     * 
      * @param enumType
      *            The enum type.
      * @return
@@ -25,7 +23,7 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 
     /**
      * Construct a new formatter with the specified default value.
-     *
+     * 
      * @param enumType
      *            The enum type.
      * @param defaultValue

@@ -41,21 +41,20 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                     iconUrl = contributorBundle.getEntry(iconPath);
             }
 
-            List<RepositoryPlugin> repositories = (workspace != null)
-                    ? workspace.getRepositories()
-                    : Collections.<RepositoryPlugin>emptyList();
+            List<RepositoryPlugin> repositories = (workspace != null) ? workspace.getRepositories() : Collections.<RepositoryPlugin> emptyList();
             for (RepositoryPlugin repo : repositories) {
                 try {
                     List<Version> versions = repo.versions(bsn);
-                    if (versions != null) for (Version version : versions) {
-                        try {
-                            File framework = repo.get(bsn, version.toString(), Strategy.HIGHEST, null);
-                            if (framework != null)
-                                frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
-                        } catch (Exception e) {
-                            Plugin.logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
+                    if (versions != null)
+                        for (Version version : versions) {
+                            try {
+                                File framework = repo.get(bsn, version.toString(), Strategy.HIGHEST, null);
+                                if (framework != null)
+                                    frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
+                            } catch (Exception e) {
+                                Plugin.logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
+                            }
                         }
-                    }
                 } catch (Exception e) {
                     Plugin.logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
                 }
@@ -63,9 +62,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
         }
     }
 
-
-    public void dispose() {
-    }
+    public void dispose() {}
 
     public Object[] getElements(Object inputElement) {
         return frameworks.toArray();

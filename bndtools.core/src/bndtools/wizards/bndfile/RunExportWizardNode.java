@@ -22,9 +22,8 @@ public class RunExportWizardNode implements IWizardNode {
     private final IConfigurationElement config;
     private final IBndModel model;
     private final Project bndProject;
-    
-    private final AtomicReference<IRunDescriptionExportWizard> wizardRef = new AtomicReference<IRunDescriptionExportWizard>(null);
 
+    private final AtomicReference<IRunDescriptionExportWizard> wizardRef = new AtomicReference<IRunDescriptionExportWizard>(null);
 
     public RunExportWizardNode(Shell shell, IConfigurationElement config, IBndModel model, Project bndProject) {
         this.shell = shell;
@@ -45,13 +44,13 @@ public class RunExportWizardNode implements IWizardNode {
         try {
             wizard = (IRunDescriptionExportWizard) config.createExecutableExtension("class");
             wizard.setBndModel(model, bndProject);
-            
+
             if (!wizardRef.compareAndSet(null, wizard))
                 wizard = wizardRef.get();
 
             return wizard;
         } catch (Exception e) {
-            ErrorDialog.openError(shell, "Error", null,  new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to create selected export wizard", e));
+            ErrorDialog.openError(shell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to create selected export wizard", e));
             return null;
         }
     }
@@ -60,8 +59,7 @@ public class RunExportWizardNode implements IWizardNode {
         return wizardRef.get() != null;
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
     @Override
     public int hashCode() {

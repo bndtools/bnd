@@ -25,14 +25,13 @@ public class Activator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "aQute.bmaker";
 
     // The shared instance
-    static volatile Activator       instance;
-    BundleContext                   context;
+    static volatile Activator instance;
+    BundleContext context;
     RepositoryListenerPluginTracker repoListenerTracker;
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext )
      */
     @Override
     public void start(BundleContext context) throws Exception {
@@ -40,8 +39,9 @@ public class Activator extends AbstractUIPlugin {
         instance = this;
         this.context = context;
 
-        Hashtable<String,Object> p = new Hashtable<String, Object>();
-        // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d", "a:d:e"});
+        Hashtable<String,Object> p = new Hashtable<String,Object>();
+        // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
+        // "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
 
         repoListenerTracker = new RepositoryListenerPluginTracker(context);
@@ -50,8 +50,7 @@ public class Activator extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext )
      */
     @Override
     public void stop(BundleContext context) throws Exception {
@@ -62,7 +61,7 @@ public class Activator extends AbstractUIPlugin {
 
     /**
      * Returns the shared instance
-     *
+     * 
      * @return the shared instance
      */
     public static Activator getDefault() {
@@ -70,9 +69,8 @@ public class Activator extends AbstractUIPlugin {
     }
 
     /**
-     * Returns an image descriptor for the image file at the given plug-in
-     * relative path
-     *
+     * Returns an image descriptor for the image file at the given plug-in relative path
+     * 
      * @param path
      *            the path
      * @return the image descriptor
@@ -82,19 +80,19 @@ public class Activator extends AbstractUIPlugin {
     }
 
     static volatile boolean busy;
+
     public void error(final String msg, final Throwable t) {
         Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             public void run() {
-                synchronized(this) {
-                    if  ( busy )
+                synchronized (this) {
+                    if (busy)
                         return;
                     busy = true;
                 }
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation",
-                        msg + " " + t.getMessage(), s);
+                ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
                 busy = false;
             }
@@ -116,8 +114,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             public void run() {
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation",
-                        sb.toString(), s);
+                ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
     }
@@ -139,8 +136,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             public void run() {
                 Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null,
-                        "Warnings during bundle generation", sb.toString(), s);
+                ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
     }
@@ -183,9 +179,8 @@ public class Activator extends AbstractUIPlugin {
         return context;
     }
 
-    public static void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
-        if (reporter.getErrors().size() > 0
-                || (warnings && reporter.getWarnings().size() > 0)) {
+    public static void report(boolean warnings, boolean acknowledge, Processor reporter, final String title, final String extra) {
+        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
             if (reporter.getErrors().size() > 0) {
@@ -213,7 +208,7 @@ public class Activator extends AbstractUIPlugin {
             });
 
         } else {
-            message(title+ " : ok");
+            message(title + " : ok");
         }
     }
 

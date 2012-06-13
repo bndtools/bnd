@@ -7,6 +7,7 @@ public class CnfSetupOperation {
     public static enum Type {
         Nothing, Open, Import, Create
     }
+
     public static final CnfSetupOperation NOTHING = new CnfSetupOperation(Type.Nothing, null);
 
     private final Type type;

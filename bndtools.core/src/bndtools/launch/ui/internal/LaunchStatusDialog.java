@@ -37,7 +37,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
 
     /**
      * Create the dialog.
-     *
+     * 
      * @param parentShell
      */
     public LaunchStatusDialog(Shell parentShell, IStatus status) {
@@ -49,7 +49,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the dialog.
-     *
+     * 
      * @param parent
      */
     @Override
@@ -135,7 +135,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the button bar.
-     *
+     * 
      * @param parent
      */
     @Override

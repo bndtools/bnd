@@ -19,45 +19,48 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 public class ResolutionFailureTreeContentProvider implements ITreeContentProvider {
-    
-//    private final Comparator<Requirement> requirementComparator = new RequirementComparator();
-//    private final Comparator<Capability> capabilityComparator = new CapabilityComparator(new PropertyComparator());
-//    private final Comparator<Resource> resourceComparator = new ResourceComparator();
-    
+
+    // private final Comparator<Requirement> requirementComparator = new
+    // RequirementComparator();
+    // private final Comparator<Capability> capabilityComparator = new
+    // CapabilityComparator(new PropertyComparator());
+    // private final Comparator<Resource> resourceComparator = new
+    // ResourceComparator();
+
     Set<Requirement> roots = new HashSet<Requirement>();
-    Map<Resource, List<Reason>> unresolved = new HashMap<Resource, List<Reason>>();
-    Map<Capability, Set<Resource>> capabilities = new HashMap<Capability, Set<Resource>>();
-    
+    Map<Resource,List<Reason>> unresolved = new HashMap<Resource,List<Reason>>();
+    Map<Capability,Set<Resource>> capabilities = new HashMap<Capability,Set<Resource>>();
+
     Resolver resolver;
-    
+
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         roots.clear();
         unresolved.clear();
         capabilities.clear();
-        
+
         resolver = (Resolver) newInput;
         if (resolver == null)
             return;
-        
+
         for (Reason reason : resolver.getUnsatisfiedRequirements()) {
             Resource requiredResource = reason.getResource();
             if (isRoot(requiredResource)) {
                 roots.add(reason.getRequirement());
             } else {
                 try {
-                addUnresolved(requiredResource, reason);
-                addCapabilities(requiredResource);
+                    addUnresolved(requiredResource, reason);
+                    addCapabilities(requiredResource);
                 } catch (Throwable t) {
                     t.printStackTrace();
                 }
             }
         }
     }
-    
+
     private static boolean isRoot(Resource resource) {
         return resource == null || resource.getId() == null;
     }
-    
+
     private void addUnresolved(Resource resource, Reason reason) {
         List<Reason> reasons = unresolved.get(resource);
         if (reasons == null) {
@@ -81,19 +84,18 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
 
     private PotentialMatch findPotentialMatch(Requirement requirement) {
         Set<Resource> resources = new HashSet<Resource>();
-        
-        for (Entry<Capability, Set<Resource>> entry : capabilities.entrySet()) {
+
+        for (Entry<Capability,Set<Resource>> entry : capabilities.entrySet()) {
             if (requirement.isSatisfied(entry.getKey())) {
                 for (Resource potential : entry.getValue()) {
                     resources.add(potential);
                 }
             }
         }
-        
+
         return new PotentialMatch(requirement, resources);
     }
-    
-    
+
     public Object[] getElements(Object input) {
         List<PotentialMatch> matches = new ArrayList<PotentialMatch>(roots.size());
         for (Requirement requirement : roots) {
@@ -132,8 +134,7 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
         }
         return true;
     }
-    
-    public void dispose() {
-    }
+
+    public void dispose() {}
 
 }

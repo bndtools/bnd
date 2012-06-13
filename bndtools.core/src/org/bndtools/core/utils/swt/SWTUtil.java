@@ -30,9 +30,9 @@ public class SWTUtil {
     }
 
     public static void setHorizontalGrabbing(Control control) {
-        Object ld= control.getLayoutData();
+        Object ld = control.getLayoutData();
         if (ld instanceof GridData) {
-            ((GridData)ld).grabExcessHorizontalSpace= true;
+            ((GridData) ld).grabExcessHorizontalSpace = true;
         }
     }
 

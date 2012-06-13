@@ -132,8 +132,7 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
 
         private List<String> search(String type, final List<IJavaElement> testCaseList, IProgressMonitor monitor) throws TestCaseListException {
 
-            SearchPattern pattern = SearchPattern.createPattern(type, IJavaSearchConstants.CLASS, IJavaSearchConstants.IMPLEMENTORS,
-                    SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
+            SearchPattern pattern = SearchPattern.createPattern(type, IJavaSearchConstants.CLASS, IJavaSearchConstants.IMPLEMENTORS, SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
             final List<String> typesFound = new ArrayList<String>();
 

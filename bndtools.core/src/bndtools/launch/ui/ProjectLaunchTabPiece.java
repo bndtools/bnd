@@ -150,9 +150,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         dialog.addFilter(new FileExtensionFilter(LaunchConstants.EXT_BNDRUN));
         dialog.setInput(ResourcesPlugin.getWorkspace());
 
-        if(dialog.open() == Window.OK) {
+        if (dialog.open() == Window.OK) {
             Object[] files = dialog.getResult();
-            if(files != null && files.length == 1) {
+            if (files != null && files.length == 1) {
                 IPath path = ((IResource) files[0]).getFullPath().makeRelative();
                 launchTargetTxt.setText(path.toString());
             } else {
@@ -199,7 +199,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
         targetName = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if(targetName == null)
+        if (targetName == null)
             targetName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String) null);
         if (targetName != null) {
             launchTargetTxt.setText(targetName);
@@ -210,7 +210,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
 
     @Override
     public String checkForError() {
-        if(targetName == null || targetName.length() == 0) {
+        if (targetName == null || targetName.length() == 0) {
             return "Launch target must be specified";
         }
 
@@ -219,7 +219,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             return MessageFormat.format("Launch target {0} does not exist.", targetName);
         }
 
-        if(targetResource.getType() == IResource.PROJECT) {
+        if (targetResource.getType() == IResource.PROJECT) {
             IProject project = (IProject) targetResource;
             if (!project.isOpen()) {
                 return MessageFormat.format("Project {0} is closed.", targetName);
@@ -232,8 +232,8 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                 Plugin.logError("Error checking for Bnd OSGi project nature", e);
                 return "Error checking for Bnd OSGi project nature";
             }
-        } else if(targetResource.getType() == IResource.FILE) {
-            if(!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+        } else if (targetResource.getType() == IResource.FILE) {
+            if (!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
                 return MessageFormat.format("Selected file {0} is not a .bndrun file.", targetName);
             }
         }

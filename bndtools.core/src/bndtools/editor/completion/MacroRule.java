@@ -7,7 +7,7 @@ import aQute.lib.osgi.*;
 public class MacroRule implements IRule {
 
     private StringBuffer buffer = new StringBuffer();
-    private IToken       token;
+    private IToken token;
 
     public MacroRule(IToken token) {
         this.token = token;
@@ -18,7 +18,7 @@ public class MacroRule implements IRule {
         if (c == '$') {
             buffer.setLength(0);
             buffer.append('$');
-            if ( scan(scanner, buffer) )
+            if (scan(scanner, buffer))
                 return token;
         }
         scanner.unread();
@@ -26,33 +26,29 @@ public class MacroRule implements IRule {
 
     }
 
-    boolean scan( ICharacterScanner scanner, StringBuffer buffer ) {
+    boolean scan(ICharacterScanner scanner, StringBuffer buffer) {
         int c = scanner.read();
         if (c == ICharacterScanner.EOF)
             return false;
         int terminator = Macro.getTerminator((char) c);
-        
+
         if (terminator == 0)
             return false;
 
-
-        while(true) {
+        while (true) {
             c = scanner.read();
-            buffer.append((char)c);
-            if ( c == terminator )
+            buffer.append((char) c);
+            if (c == terminator)
                 return true;
-            else
-            if ( c == '$') {
-                if ( !scan(scanner, buffer) )
+            else if (c == '$') {
+                if (!scan(scanner, buffer))
                     return false;
-            }
-            else         
-            if ( c == '\\') {
+            } else if (c == '\\') {
                 c = scanner.read();
-                if ( c == ICharacterScanner.EOF)
+                if (c == ICharacterScanner.EOF)
                     return false;
-                buffer.append((char)c);
+                buffer.append((char) c);
             }
         }
-   }
+    }
 }

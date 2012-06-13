@@ -65,24 +65,26 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
         return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher().getErrors(), bndTester.getProjectLauncher().getWarnings());
     }
 
-    // A couple of hacks to make sure the JUnit plugin is active and notices our launch.
+    // A couple of hacks to make sure the JUnit plugin is active and notices our
+    // launch.
     @Override
     public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
         // start the JUnit plugin
         try {
             Bundle jdtJUnitBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), JDT_JUNIT_BSN, null);
-            if(jdtJUnitBundle == null)
+            if (jdtJUnitBundle == null)
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bundle \"{0}\" was not found. Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
             jdtJUnitBundle.start();
         } catch (BundleException e) {
-            throw new  CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error starting bundle \"{0}\". Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error starting bundle \"{0}\". Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
         }
 
-        // JUnit plugin ignores the launch unless attribute "org.eclipse.jdt.launching.PROJECT_ATTR" is set.
+        // JUnit plugin ignores the launch unless attribute
+        // "org.eclipse.jdt.launching.PROJECT_ATTR" is set.
         ILaunchConfigurationWorkingCopy modifiedConfig = configuration.getWorkingCopy();
 
         IResource launchResource = LaunchUtils.getTargetResource(configuration);
-        if(launchResource != null) {
+        if (launchResource != null) {
             modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(launchResource));
         }
 
@@ -146,7 +148,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implemen
     protected ProjectLauncher getProjectLauncher() throws CoreException {
         if (bndTester == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd tester was not initialised.", null));
-         return bndTester.getProjectLauncher();
+        return bndTester.getProjectLauncher();
     }
 
 }

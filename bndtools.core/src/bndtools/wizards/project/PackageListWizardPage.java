@@ -127,7 +127,6 @@ public class PackageListWizardPage extends WizardPage {
             }
         });
 
-
         btnRemove = new Button(composite_1, SWT.NONE);
         btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnRemove.addSelectionListener(new SelectionAdapter() {
@@ -210,11 +209,13 @@ public class PackageListWizardPage extends WizardPage {
                         for (IPath path : paths) {
                             Jar jar = null;
                             try {
-                                if (path.isAbsolute()) jar = new Jar(path.toFile());
-                                else jar = new Jar(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path).toFile());
+                                if (path.isAbsolute())
+                                    jar = new Jar(path.toFile());
+                                else
+                                    jar = new Jar(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path).toFile());
 
-                                Map<String, Map<String, Resource>> dirs = jar.getDirectories();
-                                for (Entry<String, Map<String, Resource>> entry : dirs.entrySet()) {
+                                Map<String,Map<String,Resource>> dirs = jar.getDirectories();
+                                for (Entry<String,Map<String,Resource>> entry : dirs.entrySet()) {
                                     if (entry.getValue() == null)
                                         continue;
 
@@ -226,9 +227,9 @@ public class PackageListWizardPage extends WizardPage {
 
                                     availablePackages.add(packagePath);
                                 }
-                            } catch (Exception e) {
-                            } finally {
-                                if (jar != null) jar.close();
+                            } catch (Exception e) {} finally {
+                                if (jar != null)
+                                    jar.close();
                             }
                         }
                     }
@@ -294,7 +295,8 @@ public class PackageListWizardPage extends WizardPage {
 
             this.projectName = name;
             if (txtProjectName != null && !txtProjectName.isDisposed()) {
-                if (!uiChange) txtProjectName.setText(projectName);
+                if (!uiChange)
+                    txtProjectName.setText(projectName);
                 updateUI();
             }
             propSupport.firePropertyChange("projectName", oldName, name);

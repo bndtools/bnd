@@ -15,7 +15,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * A {@link FormPage} that allows updating of tab titles, images and overlay images.
  * 
  * @author Neil Bartlett
- *
  */
 public abstract class ExtendedFormEditor extends FormEditor {
 
@@ -93,8 +92,8 @@ public abstract class ExtendedFormEditor extends FormEditor {
     protected void configurePage(int index, IFormPage page) throws PartInitException {
         super.configurePage(index, page);
         Image image = page.getTitleImage();
-        if (image != null) setPageImage(index, page.getTitleImage());
+        if (image != null)
+            setPageImage(index, page.getTitleImage());
     }
-
 
 }

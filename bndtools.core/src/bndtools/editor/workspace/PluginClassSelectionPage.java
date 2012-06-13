@@ -30,11 +30,10 @@ public class PluginClassSelectionPage extends WizardPage {
 
     private Table table;
     private TableViewer viewer;
-//    private ScrolledFormText txtDescription;
+    // private ScrolledFormText txtDescription;
 
     private IConfigurationElement selectedElement;
     private boolean programmaticChange = false;
-    
 
     public PluginClassSelectionPage() {
         super("pluginClassSelection");
@@ -51,7 +50,7 @@ public class PluginClassSelectionPage extends WizardPage {
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setSorter(new PluginClassSorter());
         viewer.setLabelProvider(new PluginDeclarationLabelProvider());
-        
+
         // txtDescription = new ScrolledFormText(composite, true);
 
         // Load data
@@ -91,7 +90,7 @@ public class PluginClassSelectionPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
         gd.heightHint = 150;
         // txtDescription.setLayoutData(gd);
-        
+
         setControl(composite);
     }
 
@@ -120,26 +119,26 @@ public class PluginClassSelectionPage extends WizardPage {
         }
         propSupport.firePropertyChange("selectedElement", old, selectedElement);
     }
-    
-//    private void updateDescription() {
-//        String description = null;
-//        if (selectedElement != null)
-//            description = selectedElement.getValue();
-//
-//        if (description == null)
-//            description = "";
-//        txtDescription.setText(description);
-//    }
+
+    // private void updateDescription() {
+    // String description = null;
+    // if (selectedElement != null)
+    // description = selectedElement.getValue();
+    //
+    // if (description == null)
+    // description = "";
+    // txtDescription.setText(description);
+    // }
 
     private void validate() {
         String warning = null;
-        
+
         if (selectedElement != null) {
             String deprecationMsg = selectedElement.getAttribute("deprecated");
             if (deprecationMsg != null)
                 warning = "Plugin is deprecated: " + deprecationMsg;
         }
-        
+
         setMessage(warning, IMessageProvider.WARNING);
     }
 

@@ -8,10 +8,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 
 public class ResolutionFailureTreeSorter extends ViewerSorter implements Comparator<Object> {
-    
+
     private Comparator<Requirement> reqComp = new RequirementComparator();
     private Comparator<Resource> resComp = new ResourceComparator();
-    
+
     @Override
     public int compare(Viewer viewer, Object e1, Object e2) {
         return compare(e1, e2);
@@ -23,13 +23,13 @@ public class ResolutionFailureTreeSorter extends ViewerSorter implements Compara
             PotentialMatch pm2 = (PotentialMatch) e2;
             return reqComp.compare(pm1.getRequirement(), pm2.getRequirement());
         }
-        
+
         if (e1 instanceof Resource && e2 instanceof Resource) {
             Resource r1 = (Resource) e1;
             Resource r2 = (Resource) e2;
             return resComp.compare(r1, r2);
         }
-        
+
         // How did we end up here??
         if (e1.equals(e2))
             return 0;

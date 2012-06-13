@@ -32,64 +32,64 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 
-	public PackageDropAdapter(Viewer viewer) {
-		super(viewer);
-	}
+    public PackageDropAdapter(Viewer viewer) {
+        super(viewer);
+    }
 
-	protected abstract T createNewEntry(String packageName);
+    protected abstract T createNewEntry(String packageName);
 
-	protected abstract void addRows(int index, Collection<T> rows);
+    protected abstract void addRows(int index, Collection<T> rows);
 
-	protected abstract int indexOf(Object object);
+    protected abstract int indexOf(Object object);
 
-	@Override
-	public boolean validateDrop(Object target, int operation, TransferData transferType) {
-		return TextTransfer.getInstance().isSupportedType(transferType)
-			|| ResourceTransfer.getInstance().isSupportedType(transferType)
-			|| LocalSelectionTransfer.getTransfer().isSupportedType(transferType);
-	}
-	@Override
-	public void dragEnter(DropTargetEvent event) {
-		super.dragEnter(event);
-		event.detail = DND.DROP_COPY;
-	}
-	@Override
-	public boolean performDrop(Object data) {
-		int insertionIndex = -1;
-		Object target = getCurrentTarget();
-		if(target != null) {
-			insertionIndex = indexOf(target);
-			int loc = getCurrentLocation();
-			if(loc == LOCATION_ON || loc == LOCATION_AFTER)
-				insertionIndex++;
-		}
+    @Override
+    public boolean validateDrop(Object target, int operation, TransferData transferType) {
+        return TextTransfer.getInstance().isSupportedType(transferType) || ResourceTransfer.getInstance().isSupportedType(transferType) || LocalSelectionTransfer.getTransfer().isSupportedType(transferType);
+    }
 
-		List<T> newEntries = new ArrayList<T>();
-		if(data instanceof String) {
-			String stringData = (String) data;
-			StringTokenizer tok = new StringTokenizer(stringData, ",");
-			while(tok.hasMoreTokens()) {
-				String pkgName = tok.nextToken().trim();
-				newEntries.add(createNewEntry(pkgName));
-			}
-		} else if(data instanceof IResource[]) {
-			for (IResource resource : (IResource[]) data) {
-				IJavaElement javaElement = JavaCore.create(resource);
-				if(javaElement instanceof IPackageFragment) {
-					newEntries.add(createNewEntry(javaElement.getElementName()));
-				}
-			}
-		} else if(data instanceof IStructuredSelection) {
-		    Iterator<?> iterator = ((IStructuredSelection) data).iterator();
-		    while(iterator.hasNext()) {
-		        Object element = iterator.next();
-		        if(element instanceof IPackageFragment) {
-		            IPackageFragment pkg = (IPackageFragment) element;
-		            newEntries.add(createNewEntry(pkg.getElementName()));
-		        }
-		    }
-		}
-		addRows(insertionIndex, newEntries);
-		return true;
-	}
+    @Override
+    public void dragEnter(DropTargetEvent event) {
+        super.dragEnter(event);
+        event.detail = DND.DROP_COPY;
+    }
+
+    @Override
+    public boolean performDrop(Object data) {
+        int insertionIndex = -1;
+        Object target = getCurrentTarget();
+        if (target != null) {
+            insertionIndex = indexOf(target);
+            int loc = getCurrentLocation();
+            if (loc == LOCATION_ON || loc == LOCATION_AFTER)
+                insertionIndex++;
+        }
+
+        List<T> newEntries = new ArrayList<T>();
+        if (data instanceof String) {
+            String stringData = (String) data;
+            StringTokenizer tok = new StringTokenizer(stringData, ",");
+            while (tok.hasMoreTokens()) {
+                String pkgName = tok.nextToken().trim();
+                newEntries.add(createNewEntry(pkgName));
+            }
+        } else if (data instanceof IResource[]) {
+            for (IResource resource : (IResource[]) data) {
+                IJavaElement javaElement = JavaCore.create(resource);
+                if (javaElement instanceof IPackageFragment) {
+                    newEntries.add(createNewEntry(javaElement.getElementName()));
+                }
+            }
+        } else if (data instanceof IStructuredSelection) {
+            Iterator< ? > iterator = ((IStructuredSelection) data).iterator();
+            while (iterator.hasNext()) {
+                Object element = iterator.next();
+                if (element instanceof IPackageFragment) {
+                    IPackageFragment pkg = (IPackageFragment) element;
+                    newEntries.add(createNewEntry(pkg.getElementName()));
+                }
+            }
+        }
+        addRows(insertionIndex, newEntries);
+        return true;
+    }
 }

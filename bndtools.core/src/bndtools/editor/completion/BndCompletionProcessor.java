@@ -12,9 +12,8 @@ import org.eclipse.jface.text.contentassist.*;
 public class BndCompletionProcessor implements IContentAssistProcessor {
 
     private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
-    
-    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
-            int offset) {
+
+    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         try {
             String pre = viewer.getDocument().get(0, offset);
             Matcher matcher = PREFIX_PATTERN.matcher(pre);
@@ -25,12 +24,10 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
                     found[0].apply(viewer.getDocument());
                     viewer.setSelectedRange(offset + (found[0].getDisplayString().length() - prefix.length() + 2), 0);
                     return new ICompletionProposal[0];
-                }
-                else {
+                } else {
                     return found;
                 }
-            }
-            else {
+            } else {
                 return proposals(null, offset);
             }
         } catch (BadLocationException e) {
@@ -50,23 +47,26 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
         Collections.sort(results, new Comparator<ICompletionProposal>() {
             public int compare(ICompletionProposal p1, ICompletionProposal p2) {
                 return p1.getDisplayString().compareTo(p2.getDisplayString());
-            }            
+            }
         });
         return results.toArray(new ICompletionProposal[results.size()]);
     }
 
-    public IContextInformation[] computeContextInformation(ITextViewer viewer,
-            int offset) {
+    public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
         // TODO Auto-generated method stub
         return null;
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return new char[] {'-'};
+        return new char[] {
+            '-'
+        };
     }
 
     public char[] getContextInformationAutoActivationCharacters() {
-        return new char[] {'-'};
+        return new char[] {
+            '-'
+        };
     }
 
     public IContextInformationValidator getContextInformationValidator() {

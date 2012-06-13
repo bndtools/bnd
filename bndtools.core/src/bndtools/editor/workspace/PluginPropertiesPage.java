@@ -156,7 +156,8 @@ public class PluginPropertiesPage extends WizardPage {
                     final Text text = new Text(fieldContainer, SWT.BORDER);
                     text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                    if (value != null) text.setText(value);
+                    if (value != null)
+                        text.setText(value);
 
                     text.addModifyListener(new ModifyListener() {
                         public void modifyText(ModifyEvent e) {
@@ -177,7 +178,7 @@ public class PluginPropertiesPage extends WizardPage {
                     decoration.setDescriptionText(description);
                     decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
                 }
-                
+
                 String deprecation = propertyElement.getAttribute("deprecated");
                 if (deprecation != null) {
                     ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT | SWT.CENTER);

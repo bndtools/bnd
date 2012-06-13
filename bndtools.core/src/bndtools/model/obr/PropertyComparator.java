@@ -15,7 +15,7 @@ public class PropertyComparator implements Comparator<Property> {
         diff = ComparatorUtils.safeCompare(prop1.getValue(), prop2.getValue());
         if (diff != 0)
             return diff;
-        
+
         diff = ComparatorUtils.safeCompare(prop1.getType(), prop2.getType());
 
         return diff;

@@ -54,7 +54,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private final ImageDescriptor imgErrorOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_co.gif");
     private final ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
 
-    private final Map<String, Integer> messageMap = new LinkedHashMap<String, Integer>();
+    private final Map<String,Integer> messageMap = new LinkedHashMap<String,Integer>();
     private int problemSeverity = 0;
 
     private Image pageImage = null;
@@ -192,8 +192,11 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         IMessageManager manager = mform.getMessageManager();
         manager.removeMessages();
 
-        for (Entry<String, Integer> entry : messageMap.entrySet()) {
-            int mappedSeverity = entry.getValue() + 1; // severities in IMessageProvider are 1 higher than in IMarker
+        for (Entry<String,Integer> entry : messageMap.entrySet()) {
+            int mappedSeverity = entry.getValue() + 1; // severities in
+                                                       // IMessageProvider are
+                                                       // 1 higher than in
+                                                       // IMarker
             manager.addMessage(entry.getKey(), entry.getKey(), null, mappedSeverity);
         }
     }

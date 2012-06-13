@@ -12,7 +12,7 @@ import bndtools.PartConstants;
 
 public class BndPerspective implements IPerspectiveFactory {
 
-    public static final String ID_PROJECT_EXPLORER= "org.eclipse.ui.navigator.ProjectExplorer"; //$NON-NLS-1$
+    public static final String ID_PROJECT_EXPLORER = "org.eclipse.ui.navigator.ProjectExplorer"; //$NON-NLS-1$
 
     public static final String VIEW_ID_JUNIT_RESULTS = "org.eclipse.jdt.junit.ResultView";
     private static final String VIEW_ID_CONSOLE = "org.eclipse.ui.console.ConsoleView";
@@ -37,7 +37,7 @@ public class BndPerspective implements IPerspectiveFactory {
         outputFolder.addPlaceholder(IProgressConstants.PROGRESS_VIEW_ID);
         outputFolder.addPlaceholder(VIEW_ID_JUNIT_RESULTS);
 
-        IFolderLayout outlineFolder = layout.createFolder("right", IPageLayout.RIGHT, (float)0.75, editorArea); //$NON-NLS-1$
+        IFolderLayout outlineFolder = layout.createFolder("right", IPageLayout.RIGHT, (float) 0.75, editorArea); //$NON-NLS-1$
         outlineFolder.addView(IPageLayout.ID_OUTLINE);
         outlineFolder.addPlaceholder(TemplatesView.ID);
 

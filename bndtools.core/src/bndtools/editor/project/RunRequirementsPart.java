@@ -273,16 +273,16 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-        if(!selection.isEmpty()) {
-            Iterator<?> elements = selection.iterator();
+        if (!selection.isEmpty()) {
+            Iterator< ? > elements = selection.iterator();
             List<Object> removed = new LinkedList<Object>();
-            while(elements.hasNext()) {
+            while (elements.hasNext()) {
                 Object element = elements.next();
-                if(requires.remove(element))
+                if (requires.remove(element))
                     removed.add(element);
             }
 
-            if(!removed.isEmpty()) {
+            if (!removed.isEmpty()) {
                 viewer.remove(removed.toArray(new Object[removed.size()]));
                 markDirty();
             }
@@ -290,10 +290,12 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     private void doResolve() {
-        // Make sure all the parts of this editor page have committed their dirty state to the model
+        // Make sure all the parts of this editor page have committed their
+        // dirty state to the model
         IFormPart[] parts = getManagedForm().getParts();
         for (IFormPart part : parts) {
-            if (part.isDirty()) part.commit(false);
+            if (part.isDirty())
+                part.commit(false);
         }
 
         IFormPage page = (IFormPage) getManagedForm().getContainer();
@@ -320,7 +322,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 return;
         }
 
-        // Add the operation to perform at the end of the resolution job (i.e., showing the result)
+        // Add the operation to perform at the end of the resolution job (i.e.,
+        // showing the result)
         final Runnable showResult = new Runnable() {
             public void run() {
                 ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
@@ -431,7 +434,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         }
     }
 
-
     Project getProject() {
         Project project = null;
         try {
@@ -448,6 +450,5 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         }
         return project;
     }
-
 
 }

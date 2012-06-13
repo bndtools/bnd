@@ -170,7 +170,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         super.setVisible(visible);
 
         if (visible && !shown) {
-            shown  = true;
+            shown = true;
             if (elements.length > 0) {
                 setSelectionFromConfigElement(elements[0]);
 

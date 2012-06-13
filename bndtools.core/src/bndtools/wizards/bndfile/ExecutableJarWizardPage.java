@@ -21,15 +21,15 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 public class ExecutableJarWizardPage extends WizardPage {
-    
+
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    
+
     private boolean jar = true;
     private boolean folder = false;
-    
+
     private String jarPath;
     private String folderPath;
-    
+
     private Text txtJarPath;
     private Text txtFolderPath;
     private Button btnBrowseJar;
@@ -46,6 +46,7 @@ public class ExecutableJarWizardPage extends WizardPage {
 
     /**
      * Create contents of the wizard.
+     * 
      * @param parent
      */
     public void createControl(Composite parent) {
@@ -53,36 +54,36 @@ public class ExecutableJarWizardPage extends WizardPage {
 
         setControl(container);
         container.setLayout(new GridLayout(1, false));
-        
+
         Group grpDestination = new Group(container, SWT.NONE);
         grpDestination.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpDestination.setText("Destination:");
         grpDestination.setLayout(new GridLayout(3, false));
-        
+
         final Button btnJar = new Button(grpDestination, SWT.RADIO);
         btnJar.setText("Export to JAR:");
         btnJar.setSelection(jar);
-        
+
         txtJarPath = new Text(grpDestination, SWT.BORDER);
         txtJarPath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtJarPath.setText(jarPath != null ? jarPath : "");
-        
+
         btnBrowseJar = new Button(grpDestination, SWT.NONE);
         btnBrowseJar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnBrowseJar.setText("Browse");
-        
+
         final Button btnFolder = new Button(grpDestination, SWT.RADIO);
         btnFolder.setText("Export to folder:");
         btnFolder.setSelection(folder);
-        
+
         txtFolderPath = new Text(grpDestination, SWT.BORDER);
         txtFolderPath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtFolderPath.setText(folderPath != null ? folderPath : "");
-        
+
         btnBrowseFolder = new Button(grpDestination, SWT.NONE);
         btnBrowseFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnBrowseFolder.setText("Browse");
-        
+
         btnBrowseFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -92,18 +93,18 @@ public class ExecutableJarWizardPage extends WizardPage {
                     txtFolderPath.setText(path);
             }
         });
-        
+
         updateEnablement();
         validate();
-        
+
         Listener listener = new Listener() {
             public void handleEvent(Event event) {
                 jar = btnJar.getSelection();
                 jarPath = txtJarPath.getText();
-                
+
                 folder = btnFolder.getSelection();
                 folderPath = txtFolderPath.getText();
-                
+
                 updateEnablement();
                 validate();
             }
@@ -118,30 +119,34 @@ public class ExecutableJarWizardPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-                dialog.setFilterExtensions(new String[] { "*.jar" });
-                dialog.setFilterNames(new String[] { "JAR Files" });
+                dialog.setFilterExtensions(new String[] {
+                    "*.jar"
+                });
+                dialog.setFilterNames(new String[] {
+                    "JAR Files"
+                });
                 String path = dialog.open();
                 if (path != null)
                     txtJarPath.setText(path);
             }
         });
     }
-    
+
     private void updateEnablement() {
         txtFolderPath.setEnabled(folder);
         btnBrowseFolder.setEnabled(folder);
-        
+
         txtJarPath.setEnabled(jar);
         btnBrowseJar.setEnabled(jar);
     }
-    
+
     private void validate() {
         String path = folder ? folderPath : jarPath;
-        
+
         boolean valid = true;
         String error = null;
         String warning = null;
-        
+
         if (path == null || path.length() == 0) {
             valid = false;
         } else if (!Path.EMPTY.isValidPath(path)) {
@@ -161,7 +166,7 @@ public class ExecutableJarWizardPage extends WizardPage {
                 }
             }
         }
-        
+
         setPageComplete(valid);
         setErrorMessage(error);
         setMessage(warning, WARNING);

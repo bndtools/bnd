@@ -20,16 +20,19 @@ public class StatusLabelProvider extends StyledCellLabelProvider {
         IStatus status = (IStatus) cell.getElement();
 
         switch (status.getSeverity()) {
-        case IStatus.ERROR:
-            if (imgError == null) imgError = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_obj.gif").createImage();
+        case IStatus.ERROR :
+            if (imgError == null)
+                imgError = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_obj.gif").createImage();
             cell.setImage(imgError);
             break;
-        case IStatus.WARNING:
-            if (imgWarning == null) imgWarning = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
+        case IStatus.WARNING :
+            if (imgWarning == null)
+                imgWarning = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
             cell.setImage(imgWarning);
             break;
-        case IStatus.INFO:
-            if (imgInfo == null) imgInfo = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/information.gif").createImage();
+        case IStatus.INFO :
+            if (imgInfo == null)
+                imgInfo = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/information.gif").createImage();
             cell.setImage(imgInfo);
             break;
         }
@@ -47,7 +50,7 @@ public class StatusLabelProvider extends StyledCellLabelProvider {
         super.dispose();
         if (imgError != null)
             imgError.dispose();
-        if (imgWarning!= null)
+        if (imgWarning != null)
             imgWarning.dispose();
         if (imgInfo != null)
             imgInfo.dispose();

@@ -15,7 +15,7 @@ public class IndexerTracker extends ServiceTracker implements BundleIndexer {
         super(context, BundleIndexer.class.getName(), null);
     }
 
-    public void index(Set<File> jarFiles, OutputStream out, Map<String, String> config) throws Exception {
+    public void index(Set<File> jarFiles, OutputStream out, Map<String,String> config) throws Exception {
         BundleIndexer service = (BundleIndexer) waitForService(500);
         if (service == null)
             throw new IllegalStateException("Bundle Indexer service is not available.");

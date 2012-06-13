@@ -26,18 +26,17 @@ public class DummyBundle implements Bundle {
 
     private final long id;
     private final BundleContext context;
-//    private final File jar;
+    // private final File jar;
 
     private Properties props;
-
 
     @SuppressWarnings("deprecation")
     DummyBundle(long id, BundleContext context, File jar) throws IOException {
         this.id = id;
         this.context = context;
-//        this.jar = jar;
+        // this.jar = jar;
 
-        JarInputStream stream = null; 
+        JarInputStream stream = null;
         try {
             stream = new JarInputStream(new FileInputStream(jar));
             Manifest manifest = stream.getManifest();
@@ -48,7 +47,8 @@ public class DummyBundle implements Bundle {
                 @Override
                 public Object get(Object key) {
                     Object value = super.get(key);
-                    if (DEBUG) System.out.println("=== getHeaders --> " + key + " = " + value);
+                    if (DEBUG)
+                        System.out.println("=== getHeaders --> " + key + " = " + value);
                     return value;
                 }
             };
@@ -64,130 +64,155 @@ public class DummyBundle implements Bundle {
         }
     }
 
-//    @SuppressWarnings("unchecked")
-//    private static boolean copy(Attributes from, @SuppressWarnings("rawtypes") Dictionary to, String name) {
-//        String value = from.getValue(name);
-//        if (value != null) {
-//            to.put(name, value);
-//            return true;
-//        }
-//        return false;
-//    }
+    // @SuppressWarnings("unchecked")
+    // private static boolean copy(Attributes from,
+    // @SuppressWarnings("rawtypes") Dictionary to, String name) {
+    // String value = from.getValue(name);
+    // if (value != null) {
+    // to.put(name, value);
+    // return true;
+    // }
+    // return false;
+    // }
 
-    public Enumeration<?> findEntries(String arg0, String arg1, boolean arg2) {
-        if (DEBUG) System.out.println("=== findEntries");
+    public Enumeration< ? > findEntries(String arg0, String arg1, boolean arg2) {
+        if (DEBUG)
+            System.out.println("=== findEntries");
         return null;
     }
 
     public BundleContext getBundleContext() {
-        if (DEBUG) System.out.println("=== getBundleContext");
+        if (DEBUG)
+            System.out.println("=== getBundleContext");
         return context;
     }
 
     public long getBundleId() {
-        if (DEBUG) System.out.println("=== getBundleId");
+        if (DEBUG)
+            System.out.println("=== getBundleId");
         return id;
     }
 
     public URL getEntry(String arg0) {
-        if (DEBUG) System.out.println("=== getEntry");
+        if (DEBUG)
+            System.out.println("=== getEntry");
         return null;
     }
 
-    public Enumeration<?> getEntryPaths(String arg0) {
-        if (DEBUG) System.out.println("=== getEntryPaths");
+    public Enumeration< ? > getEntryPaths(String arg0) {
+        if (DEBUG)
+            System.out.println("=== getEntryPaths");
         return null;
     }
 
-    public Dictionary<?, ?> getHeaders() {
-        if (DEBUG) System.out.println("=== getHeaders");
+    public Dictionary< ? , ? > getHeaders() {
+        if (DEBUG)
+            System.out.println("=== getHeaders");
         return props;
     }
 
-    public Dictionary<?, ?> getHeaders(String arg0) {
-        if (DEBUG) System.out.println("=== getHeaders(String)");
+    public Dictionary< ? , ? > getHeaders(String arg0) {
+        if (DEBUG)
+            System.out.println("=== getHeaders(String)");
         return props;
     }
 
     public long getLastModified() {
-        if (DEBUG) System.out.println("=== getLastModified");
+        if (DEBUG)
+            System.out.println("=== getLastModified");
         return 0;
     }
 
     public String getLocation() {
-        if (DEBUG) System.out.println("=== getLocation");
+        if (DEBUG)
+            System.out.println("=== getLocation");
         return Constants.SYSTEM_BUNDLE_LOCATION;
     }
 
     public ServiceReference[] getRegisteredServices() {
-        if (DEBUG) System.out.println("=== getRegisteredServices");
+        if (DEBUG)
+            System.out.println("=== getRegisteredServices");
         return null;
     }
 
     public URL getResource(String arg0) {
-        if (DEBUG) System.out.println("=== getResource");
+        if (DEBUG)
+            System.out.println("=== getResource");
         return null;
     }
 
-    public Enumeration<?> getResources(String arg0) throws IOException {
-        if (DEBUG) System.out.println("=== getResources");
+    public Enumeration< ? > getResources(String arg0) throws IOException {
+        if (DEBUG)
+            System.out.println("=== getResources");
         return null;
     }
 
     public ServiceReference[] getServicesInUse() {
-        if (DEBUG) System.out.println("=== getServicesInUse");
+        if (DEBUG)
+            System.out.println("=== getServicesInUse");
         return null;
     }
 
     public int getState() {
-        if (DEBUG) System.out.println("=== getState");
+        if (DEBUG)
+            System.out.println("=== getState");
         return ACTIVE;
     }
 
     public String getSymbolicName() {
-        if (DEBUG) System.out.println("=== getSymbolicName");
+        if (DEBUG)
+            System.out.println("=== getSymbolicName");
         return props.getProperty(Constants.BUNDLE_SYMBOLICNAME);
     }
 
     public boolean hasPermission(Object arg0) {
-        if (DEBUG) System.out.println("=== hasPermission");
+        if (DEBUG)
+            System.out.println("=== hasPermission");
         return true;
     }
 
-    public Class<?> loadClass(String arg0) throws ClassNotFoundException {
-        if (DEBUG) System.out.println("=== loadClass(String)");
+    public Class< ? > loadClass(String arg0) throws ClassNotFoundException {
+        if (DEBUG)
+            System.out.println("=== loadClass(String)");
         return null;
     }
 
     public void start() throws BundleException {
-        if (DEBUG) System.out.println("=== start");
+        if (DEBUG)
+            System.out.println("=== start");
     }
 
     public void start(int arg0) throws BundleException {
-        if (DEBUG) System.out.println("=== start(int)");
+        if (DEBUG)
+            System.out.println("=== start(int)");
     }
 
     public void stop() throws BundleException {
-        if (DEBUG) System.out.println("=== stop");
+        if (DEBUG)
+            System.out.println("=== stop");
     }
 
     public void stop(int arg0) throws BundleException {
-        if (DEBUG) System.out.println("=== stop(int)");
+        if (DEBUG)
+            System.out.println("=== stop(int)");
     }
 
     public void uninstall() throws BundleException {
-        if (DEBUG) System.out.println("=== uninstall");
+        if (DEBUG)
+            System.out.println("=== uninstall");
     }
 
     public void update() throws BundleException {
-        if (DEBUG) System.out.println("=== update");
+        if (DEBUG)
+            System.out.println("=== update");
     }
 
     public void update(InputStream arg0) throws BundleException {
-        if (DEBUG) System.out.println("=== update(InputStream)");
+        if (DEBUG)
+            System.out.println("=== update(InputStream)");
     }
 
-    public Map<?, ?> getSignerCertificates(int arg0) {
+    public Map< ? , ? > getSignerCertificates(int arg0) {
         return null;
     }
 

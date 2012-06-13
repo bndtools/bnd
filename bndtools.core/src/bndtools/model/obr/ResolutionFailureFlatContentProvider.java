@@ -11,11 +11,9 @@ public class ResolutionFailureFlatContentProvider implements ITreeContentProvide
         return resolver != null ? resolver.getUnsatisfiedRequirements() : new Object[0];
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
     public Object[] getChildren(Object parentElem) {
         return null;

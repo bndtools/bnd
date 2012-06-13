@@ -14,22 +14,23 @@ import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
 public class DelayedPageFactory implements IFormPageFactory {
-    
+
     private final IConfigurationElement configElem;
-    private final Set<Mode> modes = EnumSet.noneOf(Mode.class); 
+    private final Set<Mode> modes = EnumSet.noneOf(Mode.class);
 
     public DelayedPageFactory(IConfigurationElement configElem) {
         this.configElem = configElem;
-        
+
         String modeListStr = configElem.getAttribute("mode");
         if (modeListStr != null) {
             StringTokenizer tokenizer = new StringTokenizer(modeListStr, ",");
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
-                
+
                 try {
                     Mode mode = Enum.valueOf(Mode.class, token);
-                    if (mode != null) modes.add(mode);
+                    if (mode != null)
+                        modes.add(mode);
                 } catch (Exception e) {
                     Plugin.logError("Invalid editor page mode: " + token, e);
                 }

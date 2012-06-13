@@ -48,11 +48,15 @@ public class ComponentTemplate implements IProjectTemplate {
         model.setRunFramework("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
 
-        model.setServiceComponents(Arrays.asList(new ServiceComponent[] { new ServiceComponent("*", null) }));
-        model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
+        model.setServiceComponents(Arrays.asList(new ServiceComponent[] {
+            new ServiceComponent("*", null)
+        }));
+        model.setPrivatePackages(Arrays.asList(new String[] {
+            "org.example"
+        }));
     }
 
-    private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
+    private static void addRunBundle(String bsn, Collection< ? super VersionedClause> runPath, Collection< ? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred)
             requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));

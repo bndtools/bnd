@@ -46,43 +46,42 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentTreePart extends AbstractFormPart {
 
-	protected final IManagedForm managedForm;
+    protected final IManagedForm managedForm;
 
-	private final Tree tree;
-	private final TreeViewer viewer;
+    private final Tree tree;
+    private final TreeViewer viewer;
 
+    public JARContentTreePart(Composite parent, IManagedForm managedForm) {
+        this.managedForm = managedForm;
 
-	public JARContentTreePart(Composite parent, IManagedForm managedForm) {
-	    this.managedForm = managedForm;
+        FormToolkit toolkit = managedForm.getToolkit();
+        Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
 
-	    FormToolkit toolkit = managedForm.getToolkit();
-	    Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+        section.setText("Content Tree");
+        tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
+        tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        section.setClient(tree);
+        toolkit.paintBordersFor(section);
 
-		section.setText("Content Tree");
-		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
-		tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
-		section.setClient(tree);
-		toolkit.paintBordersFor(section);
+        viewer = new TreeViewer(tree);
+        viewer.setContentProvider(new JARTreeContentProvider());
+        viewer.setLabelProvider(new JARTreeLabelProvider());
 
-		viewer = new TreeViewer(tree);
-		viewer.setContentProvider(new JARTreeContentProvider());
-		viewer.setLabelProvider(new JARTreeLabelProvider());
+        managedForm.addPart(this);
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                JARContentTreePart.this.managedForm.fireSelectionChanged(JARContentTreePart.this, event.getSelection());
+            }
+        });
 
-		managedForm.addPart(this);
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				JARContentTreePart.this.managedForm.fireSelectionChanged(JARContentTreePart.this, event.getSelection());
-			}
-		});
+        parent.setLayout(new GridLayout());
+        section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    }
 
-		parent.setLayout(new GridLayout());
-		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-	}
-
-	@Override
-	public void initialize(IManagedForm form) {
-	    super.initialize(form);
-	}
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
+    }
 
     @Override
     public boolean isStale() {
@@ -97,22 +96,22 @@ public class JARContentTreePart extends AbstractFormPart {
         viewer.setInput(input);
     }
 
-	@Override
+    @Override
     public boolean setFormInput(Object input) {
-		viewer.setInput(input);
-		return false;
-	}
+        viewer.setInput(input);
+        return false;
+    }
 
     private static class JARTreeLabelProvider extends StyledCellLabelProvider {
 
         private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
         private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
 
-		public JARTreeLabelProvider() {
-			super();
-		}
+        public JARTreeLabelProvider() {
+            super();
+        }
 
-		@Override
+        @Override
         public void update(ViewerCell cell) {
             ZipTreeNode node = (ZipTreeNode) cell.getElement();
 
@@ -125,7 +124,7 @@ public class JARContentTreePart extends AbstractFormPart {
             } else {
                 cell.setImage(fileImg);
                 ZipEntry entry = node.getZipEntry();
-                if(entry != null) {
+                if (entry != null) {
                     label.append(String.format(" [sz: %,d; crc: %d]", entry.getSize(), entry.getCrc()), StyledString.QUALIFIER_STYLER);
                 }
             }
@@ -142,49 +141,51 @@ public class JARContentTreePart extends AbstractFormPart {
         }
     }
 
-	private class JARTreeContentProvider implements ITreeContentProvider {
+    private class JARTreeContentProvider implements ITreeContentProvider {
 
-		Map<String, ZipTreeNode> entryMap;
+        Map<String,ZipTreeNode> entryMap;
 
-		public JARTreeContentProvider() {
-			super();
-		}
+        public JARTreeContentProvider() {
+            super();
+        }
 
-		public Object[] getChildren(Object parentElement) {
-			ZipTreeNode parentNode = (ZipTreeNode) parentElement;
-			return parentNode.getChildren().toArray();
-		}
+        public Object[] getChildren(Object parentElement) {
+            ZipTreeNode parentNode = (ZipTreeNode) parentElement;
+            return parentNode.getChildren().toArray();
+        }
 
-		public Object getParent(Object element) {
-			return ((ZipTreeNode) element).getParent();
-		}
-		public boolean hasChildren(Object element) {
-			return ((ZipTreeNode) element).hasChildren();
-		}
-		public Object[] getElements(Object inputElement) {
-			return entryMap.values().toArray();
-		}
-		public void dispose() {
-		}
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			entryMap = new LinkedHashMap<String, ZipTreeNode>();
-			if(newInput instanceof IFileEditorInput) {
-				IFile file = ((IFileEditorInput) newInput).getFile();
-				try {
-					File ioFile = new File(file.getLocationURI());
-					JarFile jarFile = new JarFile(ioFile);
+        public Object getParent(Object element) {
+            return ((ZipTreeNode) element).getParent();
+        }
 
-					Enumeration<JarEntry> entries = jarFile.entries();
-					while (entries.hasMoreElements()) {
-						ZipTreeNode.addEntry(entryMap, entries.nextElement());
-					}
-					jarFile.close();
-				} catch (IOException e) {
-					Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
-					ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
-				}
-			}
-		}
-	}
+        public boolean hasChildren(Object element) {
+            return ((ZipTreeNode) element).hasChildren();
+        }
+
+        public Object[] getElements(Object inputElement) {
+            return entryMap.values().toArray();
+        }
+
+        public void dispose() {}
+
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            entryMap = new LinkedHashMap<String,ZipTreeNode>();
+            if (newInput instanceof IFileEditorInput) {
+                IFile file = ((IFileEditorInput) newInput).getFile();
+                try {
+                    File ioFile = new File(file.getLocationURI());
+                    JarFile jarFile = new JarFile(ioFile);
+
+                    Enumeration<JarEntry> entries = jarFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipTreeNode.addEntry(entryMap, entries.nextElement());
+                    }
+                    jarFile.close();
+                } catch (IOException e) {
+                    Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                    ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
+                }
+            }
+        }
+    }
 }
-

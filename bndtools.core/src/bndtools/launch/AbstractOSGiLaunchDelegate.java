@@ -30,9 +30,11 @@ import bndtools.preferences.BndPreferences;
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
     protected Project model;
-    
+
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
+
     protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
+
     protected abstract IStatus getLauncherStatus();
 
     @Override
@@ -57,13 +59,13 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             IResource launchResource = LaunchUtils.getTargetResource(configuration);
             if (launchResource == null)
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified or does not exist.", null));
-            
+
             int processCount = 0;
             for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
                 // ... is it the same launch resource?
                 if (launchResource.equals(LaunchUtils.getTargetResource(l.getLaunchConfiguration()))) {
                     // Iterate existing processes
-                    for(IProcess process : l.getProcesses()) {
+                    for (IProcess process : l.getProcesses()) {
                         if (!process.isTerminated())
                             processCount++;
                     }
@@ -72,7 +74,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
             // Warn if existing processes running
             if (processCount > 0) {
-                Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
+                Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
+                        "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
                 IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
                 if (prompter != null) {
                     boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
@@ -89,7 +92,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             return (Boolean) prompter.handleStatus(launchStatus, model);
         return true;
     }
-    
+
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
         // Register listener to clean up temp files on exit of launched JVM
@@ -102,10 +105,12 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                         if (source instanceof IProcess) {
                             ILaunch processLaunch = ((IProcess) source).getLaunch();
                             if (processLaunch == launch) {
-                                // Not interested in any further events => unregister this listener
+                                // Not interested in any further events =>
+                                // unregister this listener
                                 DebugPlugin.getDefault().removeDebugEventListener(this);
-                                
-                                // Cleanup. Guard with a draconian catch because changes in the ProjectLauncher API
+
+                                // Cleanup. Guard with a draconian catch because
+                                // changes in the ProjectLauncher API
                                 // *may* cause LinkageErrors.
                                 try {
                                     launcher.cleanup();
@@ -119,11 +124,11 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             }
         };
         DebugPlugin.getDefault().addDebugEventListener(listener);
-        
+
         // Now actually launch
         super.launch(configuration, mode, launch, monitor);
     }
-    
+
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         Collection<String> paths = getProjectLauncher().getClasspath();
@@ -150,7 +155,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         Collection<String> runVM = getProjectLauncher().getRunVM();
         for (Iterator<String> iter = runVM.iterator(); iter.hasNext();) {
             builder.append(iter.next());
-            if (iter.hasNext()) builder.append(" ");
+            if (iter.hasNext())
+                builder.append(" ");
         }
         String args = builder.toString();
 
@@ -165,7 +171,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         Collection<String> args = getProjectLauncher().getArguments();
         for (Iterator<String> iter = args.iterator(); iter.hasNext();) {
             builder.append(iter.next());
-            if (iter.hasNext()) builder.append(" ");
+            if (iter.hasNext())
+                builder.append(" ");
         }
 
         return builder.toString();
@@ -193,13 +200,14 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
         return args;
     }
+
     @SuppressWarnings("deprecation")
     protected static boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
         boolean trace = configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
         String logLevelStr = configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, (String) null);
         if (logLevelStr != null) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
-                    MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
+            Plugin.getDefault().getLog()
+                    .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
             Level logLevel = Level.parse(logLevelStr);
             trace |= logLevel.intValue() <= Level.FINE.intValue();
         }

@@ -41,12 +41,10 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor) {
-    }
+    public void doSave(IProgressMonitor monitor) {}
 
     @Override
-    public void doSaveAs() {
-    }
+    public void doSaveAs() {}
 
     @Override
     public boolean isSaveAsAllowed() {
@@ -97,7 +95,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 
         super.dispose();
 
-        if(resource != null) {
+        if (resource != null) {
             resource.getWorkspace().removeResourceChangeListener(this);
         }
     }
@@ -108,12 +106,12 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         IResourceDelta delta = event.getDelta();
         IPath fullPath = myResource.getFullPath();
         delta = delta.findMember(fullPath);
-        if(delta == null)
+        if (delta == null)
             return;
 
-        if(delta.getKind() == IResourceDelta.REMOVED) {
+        if (delta.getKind() == IResourceDelta.REMOVED) {
             close(false);
-        } else if(delta.getKind() == IResourceDelta.CHANGED) {
+        } else if (delta.getKind() == IResourceDelta.CHANGED) {
             updateContent(getEditorInput());
         }
     }

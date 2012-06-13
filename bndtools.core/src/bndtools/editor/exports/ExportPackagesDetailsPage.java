@@ -34,7 +34,7 @@ public class ExportPackagesDetailsPage extends PkgPatternsDetailsPage<ExportedPa
         btnProvide.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if(!modifyLock.isUnderModification()) {
+                if (!modifyLock.isUnderModification()) {
                     boolean provide = btnProvide.getSelection();
                     for (ExportedPackage export : selectedClauses) {
                         export.setProvided(provide);

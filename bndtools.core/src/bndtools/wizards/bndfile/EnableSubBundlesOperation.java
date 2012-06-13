@@ -44,8 +44,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
     }
 
     private static final Set<String> PROJECT_ONLY_HEADERS = new HashSet<String>(Arrays.asList(new String[] {
-            "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm",
-            "-runtrace", "-runframework", "-runfw", "-sub", "-debug"
+            "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw", "-sub", "-debug"
     }));
 
     private final Shell parentShell;
@@ -105,7 +104,9 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
         // Enable subs and copy entries from project model to new bundle model
         if (enableSubs) {
-            projectModel.setSubBndFiles(Arrays.asList(new String[] { "*.bnd" }));
+            projectModel.setSubBndFiles(Arrays.asList(new String[] {
+                "*.bnd"
+            }));
             for (String propertyName : bundleSpecificHeaders) {
                 Object value = projectModel.genericGet(propertyName);
                 projectModel.genericSet(propertyName, null);
@@ -122,7 +123,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         newBundleModel.saveChangesTo(newBundleDocument);
 
         try {
-            newBundleInputStream  = new ByteArrayInputStream(newBundleDocument.get().getBytes("UTF-8"));
+            newBundleInputStream = new ByteArrayInputStream(newBundleDocument.get().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             newBundleInputStream = null;
         }
@@ -161,7 +162,6 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
     private static CoreException newCoreException(String message, Throwable cause) {
         return new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, cause));
     }
-
 
     public InputStream getNewBundleInputStream() {
         return newBundleInputStream;

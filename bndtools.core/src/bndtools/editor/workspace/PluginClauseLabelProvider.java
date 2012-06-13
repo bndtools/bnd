@@ -18,10 +18,10 @@ import bndtools.model.clauses.HeaderClause;
 
 public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
-    private final Map<String, IConfigurationElement> configElements;
-    private final Map<String, Image> images = new HashMap<String, Image>();
+    private final Map<String,IConfigurationElement> configElements;
+    private final Map<String,Image> images = new HashMap<String,Image>();
 
-    public PluginClauseLabelProvider(Map<String, IConfigurationElement> configElements) {
+    public PluginClauseLabelProvider(Map<String,IConfigurationElement> configElements) {
         this.configElements = configElements;
     }
 
@@ -32,11 +32,11 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
         String className = header.getName();
         StyledString label = new StyledString(className);
 
-        Map<String, String> attribs = header.getAttribs();
+        Map<String,String> attribs = header.getAttribs();
         if (!attribs.isEmpty())
             label.append(" ");
-        for (Iterator<Entry<String, String>> iter = attribs.entrySet().iterator(); iter.hasNext(); ) {
-            Entry<String, String> entry = iter.next();
+        for (Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext();) {
+            Entry<String,String> entry = iter.next();
             label.append(entry.getKey(), StyledString.QUALIFIER_STYLER);
             label.append("=", StyledString.QUALIFIER_STYLER);
             label.append(entry.getValue(), StyledString.COUNTER_STYLER);
@@ -76,7 +76,8 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
     public void dispose() {
         super.dispose();
         for (Image image : images.values()) {
-            if (!image.isDisposed()) image.dispose();
+            if (!image.isDisposed())
+                image.dispose();
         }
     }
 }

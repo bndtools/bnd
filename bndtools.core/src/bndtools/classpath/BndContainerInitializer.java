@@ -48,18 +48,12 @@ import bndtools.RefreshFileJob;
 import bndtools.utils.JarUtils;
 
 /**
- * A bnd container reads the bnd.bnd file in the project directory and use the
- * information in there to establish the classpath. The classpath is defined by
- * the -build-env instruction. This instruction contains a list of bsn's that
- * are searched in the available repositories and returned as File objects.
- *
- * This initializer establishes the link between the container object and the
- * BndModel. The container object is just a delegator because for some unknown
- * reasons, you can only update the container (refresh the contents) when you
- * give it a new object ;-(
- *
- * Because this plugin uses the Bnd Builder in different places, the Bnd Model
- * is centralized and available from the Activator.
+ * A bnd container reads the bnd.bnd file in the project directory and use the information in there to establish the
+ * classpath. The classpath is defined by the -build-env instruction. This instruction contains a list of bsn's that are
+ * searched in the available repositories and returned as File objects. This initializer establishes the link between
+ * the container object and the BndModel. The container object is just a delegator because for some unknown reasons, you
+ * can only update the container (refresh the contents) when you give it a new object ;-( Because this plugin uses the
+ * Bnd Builder in different places, the Bnd Model is centralized and available from the Activator.
  */
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
 
@@ -88,7 +82,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         };
         replaceMarkersJob.setRule(project.getProject());
         replaceMarkersJob.schedule();
-     }
+    }
 
     @Override
     public boolean canUpdateClasspathContainer(IPath containerPath, IJavaProject project) {
@@ -96,7 +90,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     @Override
-    // The suggested classpath container is ignored here; always recalculated from the project.
+    // The suggested classpath container is ignored here; always recalculated
+    // from the project.
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
         ArrayList<String> errors = new ArrayList<String>();
         calculateAndUpdateClasspathEntries(project, errors);
@@ -122,9 +117,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         return false;
     }
 
-
-
-    private static void calculateAndUpdateClasspathEntries(IJavaProject project, Collection<? super String> errors) throws CoreException {
+    private static void calculateAndUpdateClasspathEntries(IJavaProject project, Collection< ? super String> errors) throws CoreException {
         IClasspathEntry[] entries = new IClasspathEntry[0];
         Project model;
         try {
@@ -161,10 +154,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     public static void setClasspathEntries(IJavaProject javaProject, IClasspathEntry[] entries) throws JavaModelException {
-        JavaCore.setClasspathContainer(BndContainerInitializer.PATH_ID, new IJavaProject[] { javaProject }, new IClasspathContainer[] { new BndContainer(javaProject, entries, null) }, null);
+        JavaCore.setClasspathContainer(BndContainerInitializer.PATH_ID, new IJavaProject[] {
+            javaProject
+        }, new IClasspathContainer[] {
+            new BndContainer(javaProject, entries, null)
+        }, null);
     }
 
-    public static List<IClasspathEntry> calculateProjectClasspath(Project model, IJavaProject javaProject, Collection<? super String> errors) throws CoreException {
+    public static List<IClasspathEntry> calculateProjectClasspath(Project model, IJavaProject javaProject, Collection< ? super String> errors) throws CoreException {
         IProject project = javaProject.getProject();
         if (!project.exists() || !project.isOpen())
             return null;
@@ -203,7 +200,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
-        LinkedHashMap<Project, List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project, List<IAccessRule>>();
+        LinkedHashMap<Project,List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project,List<IAccessRule>>();
         for (Container c : containers) {
             if (c.getType() == TYPE.PROJECT && c.getError() == null) {
                 calculateWorkspaceBundleAccessRules(projectAccessRules, c);
@@ -232,9 +229,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     case EXTERNAL :
                         errors.add("External file " + c.getFile() + " does not exist");
                         break;
-                    default:
+                    default :
                         break;
-                }
+                    }
                 }
 
                 IPath p = null;
@@ -290,7 +287,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         return null;
     }
 
-    static void calculateWorkspaceBundleAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Container c) {
+    static void calculateWorkspaceBundleAccessRules(Map<Project,List<IAccessRule>> projectAccessRules, Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
             List<IAccessRule> tmp = new LinkedList<IAccessRule>();
@@ -322,7 +319,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    static void addAccessRules(Map<Project, List<IAccessRule>> projectAccessRules, Project project, List<IAccessRule> accessRules) {
+    static void addAccessRules(Map<Project,List<IAccessRule>> projectAccessRules, Project project, List<IAccessRule> accessRules) {
         if (projectAccessRules.containsKey(project)) {
             List<IAccessRule> currentAccessRules = projectAccessRules.get(project);
 
@@ -338,36 +335,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     /*
-    static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors, boolean submitMarkerJob) throws CoreException{
-
-        final IFile bndFile = project.getFile(Project.BNDFILE);
-        if (bndFile == null) {
-            return;
-        }
-
-        if (submitMarkerJob) {
-            Job markerJob = new Job("Bndtools: Resolving markers") {
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    try {
-                        replaceMarkersJob(bndFile, project, errors);
-                    } catch (CoreException e) {
-                        return e.getStatus();
-                    }
-                    return Status.OK_STATUS;
-                }
-            };
-            markerJob.setRule(project);
-
-            markerJob.setRule(bndFile);
-            markerJob.setPriority(Job.BUILD);
-            markerJob.schedule();
-
-        } else {
-            replaceMarkersJob(bndFile, project, errors);
-        }
-    }
-    */
+     * static void replaceClasspathProblemMarkers(final IProject project, final Collection<String> errors, boolean
+     * submitMarkerJob) throws CoreException{ final IFile bndFile = project.getFile(Project.BNDFILE); if (bndFile ==
+     * null) { return; } if (submitMarkerJob) { Job markerJob = new Job("Bndtools: Resolving markers") {
+     * @Override protected IStatus run(IProgressMonitor monitor) { try { replaceMarkersJob(bndFile, project, errors); }
+     * catch (CoreException e) { return e.getStatus(); } return Status.OK_STATUS; } }; markerJob.setRule(project);
+     * markerJob.setRule(bndFile); markerJob.setPriority(Job.BUILD); markerJob.schedule(); } else {
+     * replaceMarkersJob(bndFile, project, errors); } }
+     */
 
     public static void replaceClasspathProblemMarkers(IProject project, Collection<String> errors) throws CoreException {
         assert project != null;

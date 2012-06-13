@@ -10,8 +10,10 @@ import org.w3c.dom.Node;
 
 public class BndDependencySourceContainerType extends AbstractSourceContainerTypeDelegate {
 
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.core.sourcelookup.ISourceContainerType#getMemento(org.eclipse.debug.internal.core.sourcelookup.ISourceContainer)
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.debug.internal.core.sourcelookup.ISourceContainerType#getMemento
+     * (org.eclipse.debug.internal.core.sourcelookup.ISourceContainer)
      */
     public String getMemento(ISourceContainer container) throws CoreException {
         Document document = newDocument();
@@ -20,13 +22,14 @@ public class BndDependencySourceContainerType extends AbstractSourceContainerTyp
         return serializeDocument(document);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.core.sourcelookup.ISourceContainerType#createSourceContainer(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.debug.internal.core.sourcelookup.ISourceContainerType# createSourceContainer(java.lang.String)
      */
-    public ISourceContainer createSourceContainer(String memento)throws CoreException {
+    public ISourceContainer createSourceContainer(String memento) throws CoreException {
         Node node = parseDocument(memento);
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            Element element = (Element)node;
+            Element element = (Element) node;
             if ("default".equals(element.getNodeName())) { //$NON-NLS-1$
                 return new DefaultSourceContainer();
             }

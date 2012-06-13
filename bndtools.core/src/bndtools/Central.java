@@ -34,24 +34,24 @@ public class Central {
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
     static WorkspaceRepoProvider workspaceRepo = null;
-    
+
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
 
-    final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
-    final List<ModelListener>        listeners          = new CopyOnWriteArrayList<ModelListener>();
+    final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
+    final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
-    Central() { }
+    Central() {}
 
     public Project getModel(IJavaProject project) {
         try {
             Project model = javaProjectToModel.get(project);
-             if (model == null) {
+            if (model == null) {
                 File projectDir = project.getProject().getLocation().makeAbsolute().toFile();
                 try {
                     model = Workspace.getProject(projectDir);
                 } catch (IllegalArgumentException e) {
-//                    initialiseWorkspace();
-//                    model = Workspace.getProject(projectDir);
+                    // initialiseWorkspace();
+                    // model = Workspace.getProject(projectDir);
                     return null;
                 }
                 if (workspace == null) {
@@ -69,8 +69,8 @@ public class Central {
     }
 
     /**
-     * Implementation of the resource changed interface. We are checking in the
-     * POST_CHANGE phase if one of our tracked models needs to be updated.
+     * Implementation of the resource changed interface. We are checking in the POST_CHANGE phase if one of our tracked
+     * models needs to be updated.
      */
     public synchronized void resourceChanged(IResourceChangeEvent event) {
         if (event.getType() != IResourceChangeEvent.POST_CHANGE)
@@ -85,14 +85,11 @@ public class Central {
 
                         IPath location = delta.getResource().getLocation();
                         if (location == null) {
-                            System.out
-                                    .println("Cannot convert resource to file: "
-                                            + delta.getResource());
+                            System.out.println("Cannot convert resource to file: " + delta.getResource());
                         } else {
                             File file = location.toFile();
                             File parent = file.getParentFile();
-                            boolean parentIsWorkspace = parent
-                                    .equals(getWorkspace().getBase());
+                            boolean parentIsWorkspace = parent.equals(getWorkspace().getBase());
 
                             // file
                             // /development/osgi/svn/build/org.osgi.test.cases.distribution/bnd.bnd
@@ -112,19 +109,17 @@ public class Central {
                                 // here.
                                 if (file.getName().equals(Workspace.CNFDIR)) {
                                     if (workspace.refresh()) {
-                                        changed.addAll(workspace
-                                                .getCurrentProjects());
+                                        changed.addAll(workspace.getCurrentProjects());
                                     }
                                     return false;
                                 }
                                 if (workspace.isPresent(file.getName())) {
-                                    Project project = workspace.getProject(file
-                                            .getName());
+                                    Project project = workspace.getProject(file.getName());
                                     changed.add(project);
                                 } else {
                                     ; // Project not created yet, so we
-                                    // have
-                                    // no cached results
+                                      // have
+                                      // no cached results
 
                                 }
                                 return false;
@@ -133,9 +128,7 @@ public class Central {
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();
-                        throw new CoreException(new Status(Status.ERROR,
-                                Activator.PLUGIN_ID,
-                                "During checking project changes", e));
+                        throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, "During checking project changes", e));
                     }
                 }
 
@@ -164,15 +157,15 @@ public class Central {
 
         return matches[0];
     }
-    
+
     public synchronized static WorkspaceRepoProvider getWorkspaceRepoProvider() throws Exception {
         if (workspaceRepo != null)
             return workspaceRepo;
-        
+
         File wsIndexFile = new File(Plugin.getDefault().getStateLocation().toFile(), "ws-index.xml");
         workspaceRepo = new WorkspaceRepoProvider(wsIndexFile, Plugin.getDefault().getResourceIndexer(), Plugin.getDefault().getLogger());
         workspaceRepo.setWorkspace(getWorkspace());
-        
+
         return workspaceRepo;
     }
 
@@ -201,7 +194,8 @@ public class Central {
             File cnfDir = cnfProject.getLocation().toFile();
             workspace = Workspace.getWorkspace(cnfDir.getParentFile());
         } else {
-            // Have to assume that the eclipse workspace == the bnd workspace, and cnf hasn't been imported yet.
+            // Have to assume that the eclipse workspace == the bnd workspace,
+            // and cnf hasn't been imported yet.
             File workspaceDir = eclipseWorkspace.getRoot().getLocation().toFile();
             workspace = Workspace.getWorkspace(workspaceDir);
         }
@@ -210,7 +204,7 @@ public class Central {
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
         workspace.addBasicPlugin(new WrappingOBRIndexProvder(getWorkspaceObrProvider()));
-//        workspace.addBasicPlugin(getWorkspaceRepoProvider());
+        // workspace.addBasicPlugin(getWorkspaceRepoProvider());
 
         return workspace;
     }
@@ -310,13 +304,12 @@ public class Central {
         return path;
     }
 
-    public void close() {
-    }
+    public void close() {}
 
     public static void invalidateIndex() {
         indexValid.set(false);
     }
-    
+
     public static boolean needsIndexing() {
         return indexValid.compareAndSet(false, true);
     }

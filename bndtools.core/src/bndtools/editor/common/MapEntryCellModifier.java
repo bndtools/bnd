@@ -23,103 +23,109 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+public class MapEntryCellModifier<K, V> implements ICellModifier {
 
-public class MapEntryCellModifier<K,V> implements ICellModifier {
+    private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
-	private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private static final String PROP_NAME = "NAME";
+    private static final String PROP_VALUE = "VALUE";
 
-	private static final String PROP_NAME = "NAME";
-	private static final String PROP_VALUE = "VALUE";
+    private static final String[] PROPS = new String[] {
+            PROP_NAME, PROP_VALUE
+    };
+    private static final String[] LABELS = new String[] {
+            "Name", "Value"
+    };
 
-	private static final String[] PROPS = new String[] { PROP_NAME, PROP_VALUE };
-	private static final String[] LABELS = new String[] { "Name", "Value" };
+    private TableViewer viewer;
 
-	private TableViewer viewer;
+    public MapEntryCellModifier(TableViewer viewer) {
+        this.viewer = viewer;
+    }
 
-	public MapEntryCellModifier(TableViewer viewer) {
-		this.viewer = viewer;
-	}
+    public boolean canModify(Object element, String property) {
+        return PROP_NAME.equals(property) || PROP_VALUE.equals(property);
+    }
 
-	public boolean canModify(Object element, String property) {
-		return PROP_NAME.equals(property) || PROP_VALUE.equals(property);
-	}
-
-	public Object getValue(Object element, String property) {
+    public Object getValue(Object element, String property) {
         Object result = null;
 
-		@SuppressWarnings("unchecked")
-		K key = (K) element;
-		if(PROP_NAME.equals(property)) {
-			result = key;
-		} else if(PROP_VALUE.equals(property)) {
-			@SuppressWarnings("unchecked")
-			Map<K,V> map = (Map<K, V>) viewer.getInput();
-			result = map.get(key);
-		}
+        @SuppressWarnings("unchecked")
+        K key = (K) element;
+        if (PROP_NAME.equals(property)) {
+            result = key;
+        } else if (PROP_VALUE.equals(property)) {
+            @SuppressWarnings("unchecked")
+            Map<K,V> map = (Map<K,V>) viewer.getInput();
+            result = map.get(key);
+        }
         if (result == null)
             result = "";
-		return result;
-	}
-	public void modify(Object element, String property, Object editResult) {
-		@SuppressWarnings("unchecked")
-		Map<K,V> map = (Map<K, V>) viewer.getInput();
+        return result;
+    }
 
-		if(element instanceof Item) {
-			element = ((Item) element).getData();
-		}
-		@SuppressWarnings("unchecked")
-		K key = (K) element;
+    public void modify(Object element, String property, Object editResult) {
+        @SuppressWarnings("unchecked")
+        Map<K,V> map = (Map<K,V>) viewer.getInput();
 
-		boolean changed = false;
-		if(PROP_VALUE.equals(property)) {
-			@SuppressWarnings("unchecked")
-			V newValue = (V) editResult;
-			V previous = map.put(key, newValue);
+        if (element instanceof Item) {
+            element = ((Item) element).getData();
+        }
+        @SuppressWarnings("unchecked")
+        K key = (K) element;
 
-			changed = (newValue == null && previous != null)
-					|| (newValue != null && !newValue.equals(previous));
-			viewer.refresh(key);
-		} else if(PROP_NAME.equals(property)) {
-			if(!element.equals(editResult)) {
-				V value = map.remove(key);
-				viewer.remove(key);
+        boolean changed = false;
+        if (PROP_VALUE.equals(property)) {
+            @SuppressWarnings("unchecked")
+            V newValue = (V) editResult;
+            V previous = map.put(key, newValue);
 
-				@SuppressWarnings("unchecked")
-				K newKey = (K) editResult;
-				map.put(newKey, value);
-				viewer.add(newKey);
-				changed = true;
-			}
-		}
+            changed = (newValue == null && previous != null) || (newValue != null && !newValue.equals(previous));
+            viewer.refresh(key);
+        } else if (PROP_NAME.equals(property)) {
+            if (!element.equals(editResult)) {
+                V value = map.remove(key);
+                viewer.remove(key);
 
-		if(changed)
-			propertySupport.firePropertyChange(property, null, editResult);
-	}
-	public void addColumnsToTable() {
-		Table table = viewer.getTable();
+                @SuppressWarnings("unchecked")
+                K newKey = (K) editResult;
+                map.put(newKey, value);
+                viewer.add(newKey);
+                changed = true;
+            }
+        }
 
-		for (String label : LABELS) {
-			TableColumn col = new TableColumn(table, SWT.NONE);
-			col.setText(label);
-			col.setWidth(120);
-		}
-	}
-	public static String[] getColumnProperties() {
-		return PROPS;
-	}
-	public void addCellEditorsToViewer() {
-		CellEditor[] cellEditors = new CellEditor[PROPS.length];
-		for (int i = 0; i < PROPS.length; i++) {
-			cellEditors[i] = new TextCellEditor(viewer.getTable());
-		}
-		viewer.setCellEditors(cellEditors);
-	}
+        if (changed)
+            propertySupport.firePropertyChange(property, null, editResult);
+    }
 
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		propertySupport.addPropertyChangeListener(listener);
-	}
+    public void addColumnsToTable() {
+        Table table = viewer.getTable();
 
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertySupport.removePropertyChangeListener(listener);
-	}
+        for (String label : LABELS) {
+            TableColumn col = new TableColumn(table, SWT.NONE);
+            col.setText(label);
+            col.setWidth(120);
+        }
+    }
+
+    public static String[] getColumnProperties() {
+        return PROPS;
+    }
+
+    public void addCellEditorsToViewer() {
+        CellEditor[] cellEditors = new CellEditor[PROPS.length];
+        for (int i = 0; i < PROPS.length; i++) {
+            cellEditors[i] = new TextCellEditor(viewer.getTable());
+        }
+        viewer.setCellEditors(cellEditors);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
+    }
 }

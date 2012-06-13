@@ -14,7 +14,7 @@ import bndtools.Plugin;
 public class BuildListeners {
 
     private final List<BuildListener> listeners;
-    
+
     public BuildListeners() {
         IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildListeners");
         listeners = new ArrayList<BuildListener>(elements.length);
@@ -34,7 +34,7 @@ public class BuildListeners {
             listener.buildStarting(project);
         }
     }
-    
+
     public void fireBuiltBundles(IProject project, IPath[] paths) {
         for (BuildListener listener : listeners) {
             listener.builtBundles(project, paths);

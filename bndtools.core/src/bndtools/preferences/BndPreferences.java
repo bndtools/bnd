@@ -26,6 +26,7 @@ public class BndPreferences {
     public void setNoAskPackageInfo(boolean noAskPackageInfo) {
         store.setValue(PREF_NOASK_PACKAGEINFO, noAskPackageInfo);
     }
+
     public boolean getNoAskPackageInfo() {
         return store.getBoolean(PREF_NOASK_PACKAGEINFO);
     }
@@ -33,6 +34,7 @@ public class BndPreferences {
     public void setHideInitCnfWizard(boolean hide) {
         store.setValue(PREF_HIDE_INITIALISE_CNF_WIZARD, hide);
     }
+
     public boolean getHideInitCnfWizard() {
         return store.getBoolean(PREF_HIDE_INITIALISE_CNF_WIZARD);
     }
@@ -40,6 +42,7 @@ public class BndPreferences {
     public void setWarnExistingLaunch(boolean warnExistingLaunch) {
         store.setValue(PREF_WARN_EXISTING_LAUNCH, warnExistingLaunch);
     }
+
     public boolean getWarnExistingLaunches() {
         return store.getBoolean(PREF_WARN_EXISTING_LAUNCH);
     }
@@ -55,6 +58,7 @@ public class BndPreferences {
     public void setBuildLogging(int buildLogging) {
         store.setValue(PREF_BUILD_LOGGING, buildLogging);
     }
+
     public int getBuildLogging() {
         return store.getInt(PREF_BUILD_LOGGING);
     }
@@ -62,6 +66,7 @@ public class BndPreferences {
     public void setHideInitCnfAdvice(boolean hide) {
         store.setValue(PREF_HIDE_INITIALISE_CNF_ADVICE, hide);
     }
+
     public boolean getHideInitCnfAdvice() {
         return store.getBoolean(PREF_HIDE_INITIALISE_CNF_ADVICE);
     }
@@ -69,6 +74,7 @@ public class BndPreferences {
     public void setHideWarningExternalFile(boolean hide) {
         store.setValue(PREF_HIDE_WARNING_EXTERNAL_FILE, hide);
     }
+
     public boolean getHideWarningExternalFile() {
         return store.getBoolean(PREF_HIDE_WARNING_EXTERNAL_FILE);
     }

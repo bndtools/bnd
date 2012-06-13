@@ -29,7 +29,8 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
     protected IContributionItem[] getContributionItems() {
         try {
             IFile buildFile = Central.getWorkspaceBuildFile();
-            if (buildFile == null) return EMPTY;
+            if (buildFile == null)
+                return EMPTY;
 
             IContainer cnfDir = buildFile.getParent();
             IFolder extDir = cnfDir.getFolder(new Path("ext"));

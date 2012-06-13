@@ -28,12 +28,11 @@ public class Messages extends NLS {
     public static String TestSuitesPart_section_junit_tests;
     public static String TestSuitesPart_title;
     public static String TestSuitesPart_errorJavaType;
-    
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
 
-    private Messages() {
-    }
+    private Messages() {}
 }

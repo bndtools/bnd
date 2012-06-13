@@ -27,69 +27,55 @@ import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Property;
 import org.apache.felix.bundlerepository.impl.PropertyImpl;
 
-public class CapabilityImpl implements Capability
-{
+public class CapabilityImpl implements Capability {
     private String m_name = null;
-    private final Map<String, Object> m_map = new HashMap<String, Object>();
+    private final Map<String,Object> m_map = new HashMap<String,Object>();
     private final List<Property> m_list = new ArrayList<Property>();
 
-    public CapabilityImpl()
-    {
-    }
+    public CapabilityImpl() {}
 
-    public CapabilityImpl(String name)
-    {
+    public CapabilityImpl(String name) {
         setName(name);
     }
 
-    public CapabilityImpl(String name, PropertyImpl[] properties)
-    {
+    public CapabilityImpl(String name, PropertyImpl[] properties) {
         setName(name);
-        for (int i = 0; properties != null && i < properties.length; i++)
-        {
+        for (int i = 0; properties != null && i < properties.length; i++) {
             addProperty(properties[i]);
         }
     }
 
-    public String getName()
-    {
+    public String getName() {
         return m_name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         m_name = name.intern();
     }
 
-    public Map<String, Object> getPropertiesAsMap()
-    {
+    public Map<String,Object> getPropertiesAsMap() {
         return m_map;
     }
 
-    public Property[] getProperties()
-    {
+    public Property[] getProperties() {
         return (Property[]) m_list.toArray(new Property[m_list.size()]);
     }
 
-    public void addProperty(Property prop)
-    {
+    public void addProperty(Property prop) {
         m_map.put(prop.getName().toLowerCase(), prop.getConvertedValue());
         m_list.add(prop);
     }
 
-    public void addProperty(String name, String value)
-    {
+    public void addProperty(String name, String value) {
         addProperty(name, null, value);
     }
 
-    public void addProperty(String name, String type, String value)
-    {
+    public void addProperty(String name, String type, String value) {
         addProperty(new PropertyImpl(name, type, value));
     }
 
     @Override
-    public String toString()
-    {
-        return m_name  + ":" + m_map.toString();
+    public String toString() {
+        return m_name + ":" + m_map.toString();
     }
 }

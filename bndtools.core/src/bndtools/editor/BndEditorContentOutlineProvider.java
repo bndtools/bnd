@@ -34,37 +34,48 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
     static final String IMPORT_PATTERNS = "__import_patterns";
     static final String PLUGINS = "__plugins";
 
-	BndEditModel model;
-	private final TreeViewer viewer;
+    BndEditModel model;
+    private final TreeViewer viewer;
 
-	public BndEditorContentOutlineProvider(TreeViewer viewer) {
-		this.viewer = viewer;
-	}
-	public Object[] getElements(Object inputElement) {
-		Object[] result;
-		if(model.isProjectFile()) {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
-		} else if(model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
-		    result = new String[] { BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE };
-		} else if (Workspace.BUILDFILE.equals(model.getBndResource().getName())) {
-		    result = new String[] { PLUGINS, BndEditor.SOURCE_PAGE };
-		} else {
-			result = new String[] { PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.SOURCE_PAGE };
-		}
-		return result;
-	}
-	public void dispose() {
-		if(model != null)
-			model.removePropertyChangeListener(this);
-	}
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		if(model != null)
-			model.removePropertyChangeListener(this);
+    public BndEditorContentOutlineProvider(TreeViewer viewer) {
+        this.viewer = viewer;
+    }
 
-		model = (BndEditModel) newInput;
-		if(model != null)
-			model.addPropertyChangeListener(this);
-	}
+    public Object[] getElements(Object inputElement) {
+        Object[] result;
+        if (model.isProjectFile()) {
+            result = new String[] {
+                    PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE
+            };
+        } else if (model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+            result = new String[] {
+                    BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE
+            };
+        } else if (Workspace.BUILDFILE.equals(model.getBndResource().getName())) {
+            result = new String[] {
+                    PLUGINS, BndEditor.SOURCE_PAGE
+            };
+        } else {
+            result = new String[] {
+                    PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.SOURCE_PAGE
+            };
+        }
+        return result;
+    }
+
+    public void dispose() {
+        if (model != null)
+            model.removePropertyChangeListener(this);
+    }
+
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        if (model != null)
+            model.removePropertyChangeListener(this);
+
+        model = (BndEditModel) newInput;
+        if (model != null)
+            model.addPropertyChangeListener(this);
+    }
 
     public Object[] getChildren(Object parentElement) {
         Object[] result = new Object[0];
@@ -100,9 +111,9 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         return result;
     }
 
-	public Object getParent(Object element) {
-		return null;
-	}
+    public Object getParent(Object element) {
+        return null;
+    }
 
     public boolean hasChildren(Object element) {
         if (element instanceof String) {
@@ -125,21 +136,22 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         }
         return false;
     }
-	public void propertyChange(PropertyChangeEvent evt) {
-		if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
-			viewer.refresh(EXPORTS);
-			viewer.expandToLevel(EXPORTS, 1);
-		} else if(Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
-		    viewer.refresh(PRIVATE_PKGS);
-		    viewer.expandToLevel(PRIVATE_PKGS, 1);
-		} else if(Constants.IMPORT_PACKAGE.equals(evt.getPropertyName())) {
-			viewer.refresh(IMPORT_PATTERNS);
-			viewer.expandToLevel(IMPORT_PATTERNS, 1);
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
+            viewer.refresh(EXPORTS);
+            viewer.expandToLevel(EXPORTS, 1);
+        } else if (Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
+            viewer.refresh(PRIVATE_PKGS);
+            viewer.expandToLevel(PRIVATE_PKGS, 1);
+        } else if (Constants.IMPORT_PACKAGE.equals(evt.getPropertyName())) {
+            viewer.refresh(IMPORT_PATTERNS);
+            viewer.expandToLevel(IMPORT_PATTERNS, 1);
         } else if (Constants.PLUGIN.equals(evt.getPropertyName())) {
             viewer.refresh(PLUGINS);
             viewer.expandToLevel(PLUGINS, 1);
-		}
-	}
+        }
+    }
 }
 
 class PrivatePkg {

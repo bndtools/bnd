@@ -43,9 +43,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     /**
-     * Generate the new Bnd model for the project. This implementation simply
-     * returns an empty Bnd model.
-     *
+     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
+     * 
      * @param monitor
      */
     @Override
@@ -62,7 +61,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     /**
      * Allows for an IProjectTemplate to modify the new Bnd project
-     *
+     * 
      * @param monitor
      */
     @Override

@@ -20,12 +20,11 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 
-
 public class RepositoryBsnFilter extends ViewerFilter {
 
-    public static final String IMPORTED = "imported:"; 
-    public static final String EXPORTED = "exported:"; 
-    public static final String PACKAGE = "package:"; 
+    public static final String IMPORTED = "imported:";
+    public static final String EXPORTED = "exported:";
+    public static final String PACKAGE = "package:";
 
     public static final String WILDCARD = "*";
 
@@ -33,6 +32,7 @@ public class RepositoryBsnFilter extends ViewerFilter {
     private boolean imported;
     private boolean exported;
     private boolean searchPackage;
+
     public RepositoryBsnFilter(String filterStr) {
         if (filterStr != null) {
             if (filterStr.startsWith(IMPORTED)) {
@@ -56,9 +56,9 @@ public class RepositoryBsnFilter extends ViewerFilter {
     @Override
     public boolean select(Viewer viewer, Object parentElement, Object element) {
         if (searchPackage) {
-            if(element instanceof RepositoryBundle) {
+            if (element instanceof RepositoryBundle) {
                 RepositoryBundle bundle = (RepositoryBundle) element;
-                
+
                 try {
                     List<Version> versions = bundle.getRepo().versions(bundle.getBsn());
                     for (Version version : versions) {
@@ -67,8 +67,7 @@ public class RepositoryBsnFilter extends ViewerFilter {
                             return true;
                         }
                     }
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
                 return false;
             }
             if (element instanceof RepositoryBundleVersion) {
@@ -77,23 +76,24 @@ public class RepositoryBsnFilter extends ViewerFilter {
             }
         } else {
             String bsn = null;
-            if(element instanceof RepositoryBundle) {
+            if (element instanceof RepositoryBundle) {
                 bsn = ((RepositoryBundle) element).getBsn();
             } else if (element instanceof ProjectBundle) {
                 bsn = ((ProjectBundle) element).getBsn();
             }
-            if(bsn != null) {
-                if(filterStr != null && filterStr.length() > 0 && bsn.toLowerCase().indexOf(filterStr) == -1) {
+            if (bsn != null) {
+                if (filterStr != null && filterStr.length() > 0 && bsn.toLowerCase().indexOf(filterStr) == -1) {
                     return false;
                 }
             }
         }
         return true;
     }
-    
+
     private boolean filterMatch(RepositoryBundleVersion bundleVersion) {
 
-        //TODO: Get bundle metadata without instantiating Jar, can we use Resource?
+        // TODO: Get bundle metadata without instantiating Jar, can we use
+        // Resource?
         File bundleFile = (File) bundleVersion.getAdapter(File.class);
         Manifest manifest;
         try {
@@ -102,7 +102,7 @@ public class RepositoryBsnFilter extends ViewerFilter {
         } catch (Exception e) {
             return false;
         }
-        if(manifest == null)
+        if (manifest == null)
             return false;
         Attributes attribs = manifest.getMainAttributes();
         if (imported) {
@@ -120,14 +120,14 @@ public class RepositoryBsnFilter extends ViewerFilter {
         return false;
 
     }
-    
-    private static boolean filterMatch(Map<String, Attrs> headers, String filterStr) {
+
+    private static boolean filterMatch(Map<String,Attrs> headers, String filterStr) {
 
         Parameters search = new Parameters(filterStr, null);
         String searchPackage = null;
         String searchVersion = null;
         boolean versionFound = false;
-        for (Map.Entry<String, Attrs> entry : search.entrySet()) {
+        for (Map.Entry<String,Attrs> entry : search.entrySet()) {
             searchPackage = entry.getKey();
             searchVersion = entry.getValue().get("version");
 
@@ -141,9 +141,9 @@ public class RepositoryBsnFilter extends ViewerFilter {
             int index = searchPackage.indexOf(WILDCARD);
             if (index > -1) {
                 wildcard = true;
-                searchPackage = searchPackage.substring(0, index); 
+                searchPackage = searchPackage.substring(0, index);
             }
-            for(Entry<String, Attrs> headerEntry : headers.entrySet()) {
+            for (Entry<String,Attrs> headerEntry : headers.entrySet()) {
                 String pkgName = headerEntry.getKey();
                 if (!wildcard && pkgName.equals(searchPackage) || wildcard && pkgName.startsWith(searchPackage)) {
                     String pkgVersion = headerEntry.getValue().get("version");
@@ -153,12 +153,8 @@ public class RepositoryBsnFilter extends ViewerFilter {
                     }
                     if (!versionFound && version != null) {
                         if (!vr.isRange() && version.includes(vr.getHigh())) {
-                            versionFound = true;    
-                        } else if (vr.isRange() && version.isRange() &&
-                                   vr.includeHigh() == version.includeHigh() &&
-                                   vr.includeLow() == version.includeLow() &&
-                                   vr.getHigh().equals(version.getHigh()) &&
-                                   vr.getLow().equals(version.getLow())) {
+                            versionFound = true;
+                        } else if (vr.isRange() && version.isRange() && vr.includeHigh() == version.includeHigh() && vr.includeLow() == version.includeLow() && vr.getHigh().equals(version.getHigh()) && vr.getLow().equals(version.getLow())) {
                             versionFound = true;
                         } else if (vr.isRange() && vr.includes(version.getHigh())) {
                             versionFound = true;

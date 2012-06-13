@@ -10,15 +10,12 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 
 /**
- * Utility for executing code after the termination of all the processes created
- * by a launch. It should be created and registered with
- * {@link DebugPlugin#addDebugEventListener(IDebugEventSetListener)}. On
- * termination of all processes, the {@link Runnable} supplied in the
- * constructor will be invoked, and then this listener will unregister itself
- * from the {@link DebugPlugin}. It must not be reused for another launch.
- *
+ * Utility for executing code after the termination of all the processes created by a launch. It should be created and
+ * registered with {@link DebugPlugin#addDebugEventListener(IDebugEventSetListener)}. On termination of all processes,
+ * the {@link Runnable} supplied in the constructor will be invoked, and then this listener will unregister itself from
+ * the {@link DebugPlugin}. It must not be reused for another launch.
+ * 
  * @author Neil Bartlett
- *
  */
 public class TerminationListener implements IDebugEventSetListener {
 

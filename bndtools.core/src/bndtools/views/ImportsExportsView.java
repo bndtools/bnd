@@ -83,14 +83,14 @@ import bndtools.utils.SelectionUtils;
 
 public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
-	private Display display = null;
-	private Tree tree = null;
-	private TreeViewer viewer;
-	private ViewerFilter hideSelfImportsFilter;
+    private Display display = null;
+    private Tree tree = null;
+    private TreeViewer viewer;
+    private ViewerFilter hideSelfImportsFilter;
 
-	private boolean outOfDate = false;
-	private File[] selectedFiles;
-	private Job analysisJob;
+    private boolean outOfDate = false;
+    private File[] selectedFiles;
+    private Job analysisJob;
 
     private final IPartListener partAdapter = new PartAdapter() {
         @Override
@@ -104,7 +104,9 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                 IFile file = ResourceUtil.getFile(editorInput);
                 if (file != null) {
                     if (file.getName().toLowerCase().endsWith(".bnd") || file.getName().toLowerCase().endsWith(".jar")) {
-                        selectedFiles = new File[] { file.getLocation().toFile() };
+                        selectedFiles = new File[] {
+                            file.getLocation().toFile()
+                        };
 
                         if (getSite().getPage().isPartVisible(ImportsExportsView.this)) {
                             executeAnalysis();
@@ -117,167 +119,170 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         }
     };
 
+    @Override
+    public void createPartControl(Composite parent) {
+        this.display = parent.getDisplay();
 
-	@Override
-	public void createPartControl(Composite parent) {
-		this.display = parent.getDisplay();
+        tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI);
+        tree.setHeaderVisible(true);
+        tree.setLinesVisible(true);
 
-		tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI);
-		tree.setHeaderVisible(true);
-		tree.setLinesVisible(true);
+        TreeColumn col;
+        col = new TreeColumn(tree, SWT.NONE);
+        col.setText("Package");
+        col.setWidth(400);
 
-		TreeColumn col;
-		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Package");
-		col.setWidth(400);
+        col = new TreeColumn(tree, SWT.NONE);
+        col.setText("Attribs");
+        col.setWidth(100);
 
-		col = new TreeColumn(tree, SWT.NONE);
-		col.setText("Attribs");
-		col.setWidth(100);
-
-		viewer = new TreeViewer(tree);
-		viewer.setContentProvider(new ImportsExportsTreeContentProvider());
-		viewer.setSorter(new ImportsAndExportsViewerSorter());
-		viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
-		viewer.setAutoExpandLevel(2);
+        viewer = new TreeViewer(tree);
+        viewer.setContentProvider(new ImportsExportsTreeContentProvider());
+        viewer.setSorter(new ImportsAndExportsViewerSorter());
+        viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
+        viewer.setAutoExpandLevel(2);
 
         hideSelfImportsFilter = new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 if (element instanceof ImportPackage) {
                     return !((ImportPackage) element).isSelfImport();
-                } else if(element instanceof RequiredBundle) {
+                } else if (element instanceof RequiredBundle) {
                     return !((RequiredBundle) element).isSatisfied();
                 }
                 return true;
             }
         };
-        viewer.setFilters(new ViewerFilter[] { hideSelfImportsFilter });
+        viewer.setFilters(new ViewerFilter[] {
+            hideSelfImportsFilter
+        });
 
-		viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] { TextTransfer.getInstance() }, new DragSourceListener() {
-			public void dragStart(DragSourceEvent event) {
-			}
-			public void dragSetData(DragSourceEvent event) {
-				if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-					StringBuilder builder = new StringBuilder();
-					Iterator<?> iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
-					while(iterator.hasNext()) {
-						Object item = iterator.next();
-						if(item instanceof HeaderClause) {
-							HeaderClause clause = (HeaderClause) item;
-							builder.append(clause.getName());
-							if(iterator.hasNext()) {
-								builder.append(",\n");
-							}
-						}
-					}
-					event.data = builder.toString();
-				}
-			}
-			public void dragFinished(DragSourceEvent event) {
-			}
-		});
+        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
+            TextTransfer.getInstance()
+        }, new DragSourceListener() {
+            public void dragStart(DragSourceEvent event) {}
 
-		viewer.addOpenListener(new IOpenListener() {
-			public void open(OpenEvent event) {
-				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-				for(Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
-					Object item = iter.next();
-					if(item instanceof ImportUsedByClass) {
-						ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
-						String className = importUsedBy.getClazz().getFQN();
-						IType type = null;
-						if(selectedFiles != null) {
-						    IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-							for (File selectedFile : selectedFiles) {
-							    IFile[] wsfiles = wsroot.findFilesForLocationURI(selectedFile.toURI());
-							    for (IFile wsfile : wsfiles) {
-							        IJavaProject javaProject = JavaCore.create(wsfile.getProject());
-							        try {
-							            type = javaProject.findType(className);
-							            if(type != null)
-							                break;
-							        } catch (JavaModelException e) {
-							            ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
-							        }
+            public void dragSetData(DragSourceEvent event) {
+                if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                    StringBuilder builder = new StringBuilder();
+                    Iterator< ? > iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
+                    while (iterator.hasNext()) {
+                        Object item = iterator.next();
+                        if (item instanceof HeaderClause) {
+                            HeaderClause clause = (HeaderClause) item;
+                            builder.append(clause.getName());
+                            if (iterator.hasNext()) {
+                                builder.append(",\n");
+                            }
+                        }
+                    }
+                    event.data = builder.toString();
+                }
+            }
+
+            public void dragFinished(DragSourceEvent event) {}
+        });
+
+        viewer.addOpenListener(new IOpenListener() {
+            public void open(OpenEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+                    Object item = iter.next();
+                    if (item instanceof ImportUsedByClass) {
+                        ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
+                        String className = importUsedBy.getClazz().getFQN();
+                        IType type = null;
+                        if (selectedFiles != null) {
+                            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+                            for (File selectedFile : selectedFiles) {
+                                IFile[] wsfiles = wsroot.findFilesForLocationURI(selectedFile.toURI());
+                                for (IFile wsfile : wsfiles) {
+                                    IJavaProject javaProject = JavaCore.create(wsfile.getProject());
+                                    try {
+                                        type = javaProject.findType(className);
+                                        if (type != null)
+                                            break;
+                                    } catch (JavaModelException e) {
+                                        ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                                    }
                                 }
-							}
-						}
-						try {
-							if(type != null)
-								JavaUI.openInEditor(type, true, true);
-						} catch (PartInitException e) {
-							ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
-						} catch (JavaModelException e) {
-							ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
-						}
-					}
-				}
-			}
-		});
+                            }
+                        }
+                        try {
+                            if (type != null)
+                                JavaUI.openInEditor(type, true, true);
+                        } catch (PartInitException e) {
+                            ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e));
+                        } catch (JavaModelException e) {
+                            ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                        }
+                    }
+                }
+            }
+        });
 
-		fillActionBars();
+        fillActionBars();
 
-		getSite().getPage().addPostSelectionListener(this);
-		getSite().getPage().addPartListener(partAdapter);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+        getSite().getPage().addPostSelectionListener(this);
+        getSite().getPage().addPartListener(partAdapter);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 
-		// Current selection & part
-		IWorkbenchPart activePart = getSite().getPage().getActivePart();
-		ISelection activeSelection = getSite().getWorkbenchWindow().getSelectionService().getSelection();
-		selectionChanged(activePart, activeSelection);
-	}
+        // Current selection & part
+        IWorkbenchPart activePart = getSite().getPage().getActivePart();
+        ISelection activeSelection = getSite().getWorkbenchWindow().getSelectionService().getSelection();
+        selectionChanged(activePart, activeSelection);
+    }
 
-	void fillActionBars() {
-		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
-			@Override
-			public void runWithEvent(Event event) {
-				if(isChecked()) {
-					viewer.removeFilter(hideSelfImportsFilter);
-				} else {
-					viewer.addFilter(hideSelfImportsFilter);
-				}
-			}
-		};
-		toggleShowSelfImports.setChecked(false);
-		toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
-		toggleShowSelfImports.setToolTipText("Show self-imported packages");
+    void fillActionBars() {
+        IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
+            @Override
+            public void runWithEvent(Event event) {
+                if (isChecked()) {
+                    viewer.removeFilter(hideSelfImportsFilter);
+                } else {
+                    viewer.addFilter(hideSelfImportsFilter);
+                }
+            }
+        };
+        toggleShowSelfImports.setChecked(false);
+        toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
+        toggleShowSelfImports.setToolTipText("Show self-imported packages");
 
-		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
-		toolBarManager.add(toggleShowSelfImports);
-	}
+        IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+        toolBarManager.add(toggleShowSelfImports);
+    }
 
-	@Override
-	public void setFocus() {
-	}
+    @Override
+    public void setFocus() {}
 
-	@Override
-	public void dispose() {
-		getSite().getPage().removeSelectionListener(this);
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		getSite().getPage().removePartListener(partAdapter);
-		super.dispose();
-	};
+    @Override
+    public void dispose() {
+        getSite().getPage().removeSelectionListener(this);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        getSite().getPage().removePartListener(partAdapter);
+        super.dispose();
+    };
 
-	public void setInput(File[] sourceFiles, Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports, Collection<? extends RequiredBundle> requiredBundles) {
-		selectedFiles = sourceFiles;
-		if(tree != null && !tree.isDisposed()) {
-			viewer.setInput(new ImportsExportsAnalysisResult(imports, exports, requiredBundles));
+    public void setInput(File[] sourceFiles, Collection< ? extends ImportPackage> imports, Collection< ? extends ExportPackage> exports, Collection< ? extends RequiredBundle> requiredBundles) {
+        selectedFiles = sourceFiles;
+        if (tree != null && !tree.isDisposed()) {
+            viewer.setInput(new ImportsExportsAnalysisResult(imports, exports, requiredBundles));
 
-			String label;
-			if(sourceFiles != null) {
-				StringBuilder builder = new StringBuilder();
-				for(int i = 0; i < sourceFiles.length; i++) {
-					if(i > 0) builder.append(", ");
-					builder.append(sourceFiles[i].getAbsolutePath());
-				}
-				label = builder.toString();
-			} else {
-				label = "<no input>";
-			}
-			setContentDescription(label);
-		}
-	}
+            String label;
+            if (sourceFiles != null) {
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < sourceFiles.length; i++) {
+                    if (i > 0)
+                        builder.append(", ");
+                    builder.append(sourceFiles[i].getAbsolutePath());
+                }
+                label = builder.toString();
+            } else {
+                label = "<no input>";
+            }
+            setContentDescription(label);
+        }
+    }
 
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         if (selection == null || selection.isEmpty())
@@ -286,7 +291,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         Collection<File> fileList = getFilesFromSelection(selection);
 
         // Filter out non-bundle files/dirs
-        for (Iterator<File> iter = fileList.iterator(); iter.hasNext(); ) {
+        for (Iterator<File> iter = fileList.iterator(); iter.hasNext();) {
             File file = iter.next();
             if (file.isDirectory()) {
                 File manifestFile = new File(file, "META-INF/MANIFEST.MF");
@@ -315,14 +320,14 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
     }
 
     private static Collection<File> getFilesFromSelection(ISelection selection) {
-        if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return Collections.emptyList();
         }
 
         IStructuredSelection structSel = (IStructuredSelection) selection;
         Collection<File> result = new ArrayList<File>();
-        Iterator<?> iter = structSel.iterator();
-        while(iter.hasNext()) {
+        Iterator< ? > iter = structSel.iterator();
+        while (iter.hasNext()) {
             Object element = iter.next();
             File file = SelectionUtils.adaptObject(element, File.class);
             if (file != null) {
@@ -354,13 +359,14 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                     @Override
                     public void done(IJobChangeEvent event) {
                         IStatus result = tmp.getResult();
-                        if(result != null && result.isOK()) {
-                            if(display != null && !display.isDisposed()) display.asyncExec(new Runnable() {
-                                public void run() {
-                                    if(!tree.isDisposed())
-                                        setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults(), tmp.getRequiredBundles());
-                                }
-                            });
+                        if (result != null && result.isOK()) {
+                            if (display != null && !display.isDisposed())
+                                display.asyncExec(new Runnable() {
+                                    public void run() {
+                                        if (!tree.isDisposed())
+                                            setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults(), tmp.getRequiredBundles());
+                                    }
+                                });
                         }
                     }
                 });

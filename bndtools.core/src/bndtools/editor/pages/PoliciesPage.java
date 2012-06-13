@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.editor.pages;
 
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,38 +28,38 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class PoliciesPage extends FormPage {
 
-	private final BndEditModel model;
+    private final BndEditModel model;
 
-	public PoliciesPage(FormEditor editor, BndEditModel model, String id, String title) {
-		super(editor, id, title);
-		this.model = model;
-	}
+    public PoliciesPage(FormEditor editor, BndEditModel model, String id, String title) {
+        super(editor, id, title);
+        this.model = model;
+    }
 
-	@Override
-	protected void createFormContent(IManagedForm managedForm) {
-		FormToolkit toolkit = managedForm.getToolkit();
-		managedForm.setInput(model);
+    @Override
+    protected void createFormContent(IManagedForm managedForm) {
+        FormToolkit toolkit = managedForm.getToolkit();
+        managedForm.setInput(model);
 
-		ScrolledForm scrolledForm = managedForm.getForm();
-		scrolledForm.setText("Import Patterns");
+        ScrolledForm scrolledForm = managedForm.getForm();
+        scrolledForm.setText("Import Patterns");
 
-		Form form = scrolledForm.getForm();
-		toolkit.decorateFormHeading(form);
-		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        Form form = scrolledForm.getForm();
+        toolkit.decorateFormHeading(form);
+        form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
-		Composite body = form.getBody();
+        Composite body = form.getBody();
 
-		VersionPolicyPart versionPolicyPart = new VersionPolicyPart(body, toolkit, Section.EXPANDED | Section.TITLE_BAR);
-		managedForm.addPart(versionPolicyPart);
+        VersionPolicyPart versionPolicyPart = new VersionPolicyPart(body, toolkit, Section.EXPANDED | Section.TITLE_BAR);
+        managedForm.addPart(versionPolicyPart);
 
-		GridLayout layout;
-		GridData gd;
+        GridLayout layout;
+        GridData gd;
 
-		layout = new GridLayout(2, true);
-		body.setLayout(layout);
+        layout = new GridLayout(2, true);
+        body.setLayout(layout);
 
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		versionPolicyPart.getSection().setLayoutData(gd);
-	}
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        versionPolicyPart.getSection().setLayoutData(gd);
+    }
 
 }

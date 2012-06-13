@@ -15,22 +15,21 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IExecutableExtensionFactory;
 
-
 public class NewBndProjectWizardFactory implements IExecutableExtension, IExecutableExtensionFactory {
 
-	private IConfigurationElement config;
+    private IConfigurationElement config;
     private String propertyName;
     private Object data;
 
     public Object create() throws CoreException {
-		NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
-		NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne, pageOne);
+        NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
+        NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne, pageOne);
 
-		NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, pageTwo);
-		wizard.setInitializationData(config, propertyName, data);
+        NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, pageTwo);
+        wizard.setInitializationData(config, propertyName, data);
 
-		return wizard;
-	}
+        return wizard;
+    }
 
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         this.config = config;

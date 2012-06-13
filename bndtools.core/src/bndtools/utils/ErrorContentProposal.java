@@ -14,25 +14,25 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 
 class ErrorContentProposal implements IContentProposal {
 
-	private final String message;
+    private final String message;
 
-	public ErrorContentProposal(String message) {
-		this.message = message;
-	}
+    public ErrorContentProposal(String message) {
+        this.message = message;
+    }
 
-	public String getContent() {
-		return "";
-	}
+    public String getContent() {
+        return "";
+    }
 
-	public String getDescription() {
-		return null;
-	}
+    public String getDescription() {
+        return null;
+    }
 
-	public String getLabel() {
-		return message;
-	}
+    public String getLabel() {
+        return message;
+    }
 
-	public int getCursorPosition() {
-		return 0;
-	}
+    public int getCursorPosition() {
+        return 0;
+    }
 }

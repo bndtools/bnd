@@ -69,5 +69,4 @@ public class ProjectNameGroup {
         propSupport.removePropertyChangeListener(var0);
     }
 
-
 }

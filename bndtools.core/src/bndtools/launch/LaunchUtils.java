@@ -19,19 +19,18 @@ import bndtools.builder.BndProjectNature;
 
 public final class LaunchUtils {
 
-    private LaunchUtils() {
-    }
+    private LaunchUtils() {}
 
     static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
         String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if(target == null || target.length() == 0) {
+        if (target == null || target.length() == 0) {
             return null;
         }
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
-        if(targetResource == null)
+        if (targetResource == null)
             return null;
-        
+
         return targetResource;
     }
 
@@ -49,22 +48,22 @@ public final class LaunchUtils {
         result = (bnd != null) ? bnd.getName() : Project.BNDCNF;
         return result;
     }
-    
+
     static Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
         IResource targetResource = getTargetResource(configuration);
         if (targetResource == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified, or does not exist.", null));
         return getBndProject(targetResource);
     }
-    
+
     public static Project getBndProject(IResource targetResource) throws CoreException {
         Project result;
 
         IProject project = targetResource.getProject();
         File projectDir = project.getLocation().toFile();
-        
-        if(targetResource.getType() == IResource.FILE && targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
-            if(!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN))
+
+        if (targetResource.getType() == IResource.FILE && targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+            if (!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN))
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bnd launch target file \"{0}\" is not a .bndrun file.", targetResource.getFullPath().toString()), null));
 
             // Get the synthetic "run" project (based on a .bndrun file)
@@ -76,11 +75,12 @@ public final class LaunchUtils {
                 if (bndbnd.isFile())
                     result.setParent(parent);
             } catch (Exception e) {
-                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(), project.getName()), e));
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(),
+                        project.getName()), e));
             }
-        } else if(targetResource.getType() == IResource.PROJECT || targetResource.getName().equals(Project.BNDFILE)) {
+        } else if (targetResource.getType() == IResource.PROJECT || targetResource.getName().equals(Project.BNDFILE)) {
             // Use the main project (i.e. bnd.bnd)
-            if(!project.hasNature(BndProjectNature.NATURE_ID))
+            if (!project.hasNature(BndProjectNature.NATURE_ID))
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The configured run project \"{0}\"is not a Bnd project.", project.getName()), null));
             try {
                 result = Workspace.getProject(projectDir);
@@ -88,7 +88,8 @@ public final class LaunchUtils {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to retrieve Bnd project model for project \"{0}\".", project.getName()), null));
             }
         } else {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The specified launch target \"{0}\" is not recognised as a bnd project, bnd.bnd or .bndrun file.", targetResource.getFullPath().toString()), null));
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The specified launch target \"{0}\" is not recognised as a bnd project, bnd.bnd or .bndrun file.", targetResource.getFullPath()
+                    .toString()), null));
         }
 
         return result;

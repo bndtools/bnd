@@ -31,6 +31,7 @@ public class BuildOperationsPart extends SectionPart {
 
     /**
      * Create the SectionPart.
+     * 
      * @param parent
      * @param toolkit
      * @param style

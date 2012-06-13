@@ -89,29 +89,25 @@ import bndtools.utils.ModificationLock;
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-        Constants.BUNDLE_VERSION,
-        Constants.BUNDLE_ACTIVATOR,
-        BndConstants.SOURCES,
-        BndConstants.OUTPUT,
-        aQute.lib.osgi.Constants.SERVICE_COMPONENT,
-        aQute.lib.osgi.Constants.DSANNOTATIONS
+            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, BndConstants.SOURCES, BndConstants.OUTPUT, aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.DSANNOTATIONS
     };
 
     private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
     private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
-    
+
     private static enum ComponentChoice {
-        None("None/Undefined"),
-        Bnd("Bnd Annotations"),
-        DS("DS 1.2 Annotations");
-        
+        None("None/Undefined"), Bnd("Bnd Annotations"), DS("DS 1.2 Annotations");
+
         private final String label;
+
         ComponentChoice(String label) {
             this.label = label;
         }
+
         public String getLabel() {
             return label;
         }
+
         public static String[] getLabels() {
             ComponentChoice[] values = values();
             String[] labels = new String[values.length];
@@ -125,72 +121,72 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private static final ServiceComponent SERVICE_COMPONENT_STAR = new ServiceComponent("*", new Attrs());
     private static final String DSANNOTATIONS_STAR = "*";
 
-	private final Set<String> editablePropertySet;
-	private final Set<String> dirtySet = new HashSet<String>();
+    private final Set<String> editablePropertySet;
+    private final Set<String> dirtySet = new HashSet<String>();
 
     private BndEditModel model;
     private ComponentChoice componentChoice;
 
-	private Text txtVersion;
-	private Text txtActivator;
+    private Text txtVersion;
+    private Text txtActivator;
 
-	private final ModificationLock lock = new ModificationLock();
+    private final ModificationLock lock = new ModificationLock();
 
     private Combo cmbComponents;
 
-	public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style);
-		createSection(getSection(), toolkit);
+    public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
+        super(parent, toolkit, style);
+        createSection(getSection(), toolkit);
 
-		editablePropertySet = new HashSet<String>();
-		for (String prop : EDITABLE_PROPERTIES) {
-			editablePropertySet.add(prop);
-		}
-	}
+        editablePropertySet = new HashSet<String>();
+        for (String prop : EDITABLE_PROPERTIES) {
+            editablePropertySet.add(prop);
+        }
+    }
 
-	private void createSection(Section section, FormToolkit toolkit) {
-		section.setText("Basic Information");
+    private void createSection(Section section, FormToolkit toolkit) {
+        section.setText("Basic Information");
 
-		KeyStroke assistKeyStroke = null;
-		try {
-			assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
-		} catch (ParseException x) {
-			// Ignore
-		}
-		FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+        KeyStroke assistKeyStroke = null;
+        try {
+            assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
+        } catch (ParseException x) {
+            // Ignore
+        }
+        FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 
-		Composite composite = toolkit.createComposite(section);
-		section.setClient(composite);
+        Composite composite = toolkit.createComposite(section);
+        section.setClient(composite);
 
-		toolkit.createLabel(composite, "Version:");
-		txtVersion = toolkit.createText(composite, "", SWT.BORDER);
-		txtVersion.setMessage(Version.LOWEST.toString());
+        toolkit.createLabel(composite, "Version:");
+        txtVersion = toolkit.createText(composite, "", SWT.BORDER);
+        txtVersion.setMessage(Version.LOWEST.toString());
 
-		Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
-		txtActivator = toolkit.createText(composite, "", SWT.BORDER);
-		txtActivator.setMessage("Enter activator class name");
-		
-		Label lblComponents = toolkit.createLabel(composite, "Enable Components:");
-		cmbComponents = new Combo(composite, SWT.READ_ONLY);
-		cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
+        txtActivator = toolkit.createText(composite, "", SWT.BORDER);
+        txtActivator.setMessage("Enter activator class name");
 
-		// Content Proposal for the Activator field
-		ContentProposalAdapter activatorProposalAdapter = null;
-		
-		ActivatorClassProposalProvider proposalProvider = new ActivatorClassProposalProvider();
-		activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
-		activatorProposalAdapter.addContentProposalListener(proposalProvider);
-		activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
-		activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
-		activatorProposalAdapter.setAutoActivationDelay(1000);
-		
-		// Decorator for the Activator field
-		ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.CENTER, composite);
-		decorActivator.setImage(contentAssistDecoration.getImage());
-		decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
-		decorActivator.setShowOnlyOnFocus(true);
-		decorActivator.setShowHover(true);
-		
+        Label lblComponents = toolkit.createLabel(composite, "Enable Components:");
+        cmbComponents = new Combo(composite, SWT.READ_ONLY);
+        cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        // Content Proposal for the Activator field
+        ContentProposalAdapter activatorProposalAdapter = null;
+
+        ActivatorClassProposalProvider proposalProvider = new ActivatorClassProposalProvider();
+        activatorProposalAdapter = new ContentProposalAdapter(txtActivator, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
+        activatorProposalAdapter.addContentProposalListener(proposalProvider);
+        activatorProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+        activatorProposalAdapter.setLabelProvider(new JavaContentProposalLabelProvider());
+        activatorProposalAdapter.setAutoActivationDelay(1000);
+
+        // Decorator for the Activator field
+        ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.CENTER, composite);
+        decorActivator.setImage(contentAssistDecoration.getImage());
+        decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        decorActivator.setShowOnlyOnFocus(true);
+        decorActivator.setShowHover(true);
+
         // Decorator for the Components combo
         ControlDecoration decorComponents = new ControlDecoration(cmbComponents, SWT.LEFT | SWT.CENTER, composite);
         decorComponents.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
@@ -214,7 +210,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 lock.ifNotModifying(new Runnable() {
                     public void run() {
                         ComponentChoice old = componentChoice;
-                        
+
                         int index = cmbComponents.getSelectionIndex();
                         if (index >= 0 && index < ComponentChoice.values().length) {
                             componentChoice = ComponentChoice.values()[cmbComponents.getSelectionIndex()];
@@ -267,10 +263,10 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                     msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
                 }
 
-				checkActivatorIncluded();
-			}
-		});
-		linkActivator.addHyperlinkListener(new HyperlinkAdapter() {
+                checkActivatorIncluded();
+            }
+        });
+        linkActivator.addHyperlinkListener(new HyperlinkAdapter() {
             @Override
             public void linkActivated(HyperlinkEvent ev) {
                 String activatorClassName = txtActivator.getText();
@@ -285,83 +281,81 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             JavaUI.openInEditor(activatorType, true, true);
                         }
                     } catch (PartInitException e) {
-                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-                                MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
+                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null,
+                                new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
                     } catch (JavaModelException e) {
-                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-                                MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
+                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
                     }
                 }
             }
-		});
-		if(activatorProposalAdapter != null) {
-			activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
-				public void proposalAccepted(IContentProposal proposal) {
-					if(proposal instanceof JavaContentProposal) {
-						String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
-						if(!model.isIncludedPackage(selectedPackageName)) {
-							model.addPrivatePackage(selectedPackageName);
-						}
-					}
-				}
-			});
-		}
+        });
+        if (activatorProposalAdapter != null) {
+            activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+                public void proposalAccepted(IContentProposal proposal) {
+                    if (proposal instanceof JavaContentProposal) {
+                        String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
+                        if (!model.isIncludedPackage(selectedPackageName)) {
+                            model.addPrivatePackage(selectedPackageName);
+                        }
+                    }
+                }
+            });
+        }
 
-		// Layout
-		GridLayout layout = new GridLayout(2, false);
-		layout.horizontalSpacing = 10;
+        // Layout
+        GridLayout layout = new GridLayout(2, false);
+        layout.horizontalSpacing = 10;
 
-		composite.setLayout(layout);
+        composite.setLayout(layout);
 
-		GridData gd;
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.horizontalIndent = 5;
-		txtVersion.setLayoutData(gd);
+        GridData gd;
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        gd.horizontalIndent = 5;
+        txtVersion.setLayoutData(gd);
 
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.horizontalIndent = 5;
-		txtActivator.setLayoutData(gd);
-	}
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        gd.horizontalIndent = 5;
+        txtActivator.setLayoutData(gd);
+    }
 
-	void checkActivatorIncluded() {
-		String warningMessage = null;
-		IAction[] fixes = null;
+    void checkActivatorIncluded() {
+        String warningMessage = null;
+        IAction[] fixes = null;
 
-		String activatorClassName = txtActivator.getText();
-		if(activatorClassName != null && activatorClassName.length() > 0) {
-			int dotIndex = activatorClassName.lastIndexOf('.');
-			if(dotIndex == -1) {
-				warningMessage = "Cannot use an activator in the default package.";
-			} else {
-				final String packageName = activatorClassName.substring(0, dotIndex);
-				if(!model.isIncludedPackage(packageName)) {
-					warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
-					fixes = new Action[] {
-						new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
-							@Override
-                            public void run() {
-								model.addPrivatePackage(packageName);
-								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
-							};
-						},
-						new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
-							@Override
-                            public void run() {
-								model.addExportedPackage(new ExportedPackage(packageName, null));
-								addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
-							};
-						}
-					};
-				}
-			}
-		}
+        String activatorClassName = txtActivator.getText();
+        if (activatorClassName != null && activatorClassName.length() > 0) {
+            int dotIndex = activatorClassName.lastIndexOf('.');
+            if (dotIndex == -1) {
+                warningMessage = "Cannot use an activator in the default package.";
+            } else {
+                final String packageName = activatorClassName.substring(0, dotIndex);
+                if (!model.isIncludedPackage(packageName)) {
+                    warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
+                    fixes = new Action[] {
+                            new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
+                                @Override
+                                public void run() {
+                                    model.addPrivatePackage(packageName);
+                                    addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+                                };
+                            }, new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
+                                @Override
+                                public void run() {
+                                    model.addExportedPackage(new ExportedPackage(packageName, null));
+                                    addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+                                };
+                            }
+                    };
+                }
+            }
+        }
 
-		IMessageManager msgs = getManagedForm().getMessageManager();
-		if(warningMessage != null)
-			msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, fixes, IMessageProvider.WARNING, txtActivator);
-		else
-			msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
-	}
+        IMessageManager msgs = getManagedForm().getMessageManager();
+        if (warningMessage != null)
+            msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, fixes, IMessageProvider.WARNING, txtActivator);
+        else
+            msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
+    }
 
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
@@ -372,54 +366,56 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         });
     }
 
-	@Override
-	public void markDirty() {
-		throw new UnsupportedOperationException("Do not call markDirty directly, instead call addDirtyProperty.");
-	}
+    @Override
+    public void markDirty() {
+        throw new UnsupportedOperationException("Do not call markDirty directly, instead call addDirtyProperty.");
+    }
 
-	@Override
-	public boolean isDirty() {
-		return !dirtySet.isEmpty();
-	}
+    @Override
+    public boolean isDirty() {
+        return !dirtySet.isEmpty();
+    }
 
-	@Override
-	public void commit(boolean onSave) {
-		try {
-			// Stop listening to property changes during the commit only
-			model.removePropertyChangeListener(this);
-			if(dirtySet.contains(Constants.BUNDLE_VERSION)) {
-				String version = txtVersion.getText();
-				if(version != null && version.length() == 0) version = null;
-				model.setBundleVersion(version);
-			}
-			if(dirtySet.contains(Constants.BUNDLE_ACTIVATOR)) {
-				String activator = txtActivator.getText();
-				if(activator != null && activator.length() == 0) activator = null;
-				model.setBundleActivator(activator);
-			}
-			
+    @Override
+    public void commit(boolean onSave) {
+        try {
+            // Stop listening to property changes during the commit only
+            model.removePropertyChangeListener(this);
+            if (dirtySet.contains(Constants.BUNDLE_VERSION)) {
+                String version = txtVersion.getText();
+                if (version != null && version.length() == 0)
+                    version = null;
+                model.setBundleVersion(version);
+            }
+            if (dirtySet.contains(Constants.BUNDLE_ACTIVATOR)) {
+                String activator = txtActivator.getText();
+                if (activator != null && activator.length() == 0)
+                    activator = null;
+                model.setBundleActivator(activator);
+            }
+
             if (dirtySet.contains(aQute.lib.osgi.Constants.SERVICE_COMPONENT) || dirtySet.contains(aQute.lib.osgi.Constants.DSANNOTATIONS)) {
                 switch (componentChoice) {
-                case Bnd:
+                case Bnd :
                     model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
                     model.setDSAnnotationPatterns(null);
                     break;
-                case DS:
+                case DS :
                     model.setServiceComponents(null);
                     model.setDSAnnotationPatterns(Collections.singletonList(DSANNOTATIONS_STAR));
                     break;
-                default:
+                default :
                     model.setServiceComponents(null);
                     model.setDSAnnotationPatterns(null);
                 }
             }
-		} finally {
-			// Restore property change listening
-			model.addPropertyChangeListener(this);
-			dirtySet.clear();
-			getManagedForm().dirtyStateChanged();
-		}
-	}
+        } finally {
+            // Restore property change listening
+            model.addPropertyChangeListener(this);
+            dirtySet.clear();
+            getManagedForm().dirtyStateChanged();
+        }
+    }
 
     @Override
     public void refresh() {
@@ -431,10 +427,10 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
                 String bundleActivator = model.getBundleActivator();
                 txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
-                
+
                 List<ServiceComponent> bndPatterns = model.getServiceComponents();
                 List<String> dsPatterns = model.getDSAnnotationPatterns();
-                
+
                 if (bndPatterns != null && bndPatterns.size() == 1 && SERVICE_COMPONENT_STAR.equals(bndPatterns.get(0)) && dsPatterns == null) {
                     componentChoice = ComponentChoice.Bnd;
                 } else if (dsPatterns != null && dsPatterns.size() == 1 && DSANNOTATIONS_STAR.equals(dsPatterns.get(0)) && bndPatterns == null) {
@@ -444,7 +440,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 } else {
                     componentChoice = null;
                 }
-                
+
                 cmbComponents.setItems(ComponentChoice.getLabels());
                 if (componentChoice == null) {
                     cmbComponents.add("Manually Defined", ComponentChoice.values().length);
@@ -458,39 +454,39 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         getManagedForm().dirtyStateChanged();
     }
 
-	@Override
-	public void initialize(IManagedForm form) {
-		super.initialize(form);
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
 
-		this.model = (BndEditModel) form.getInput();
-		this.model.addPropertyChangeListener(this);
-	}
+        this.model = (BndEditModel) form.getInput();
+        this.model.addPropertyChangeListener(this);
+    }
 
-	public void propertyChange(PropertyChangeEvent evt) {
-		if(editablePropertySet.contains(evt.getPropertyName())) {
-			IFormPage page = (IFormPage) getManagedForm().getContainer();
-			if(page.isActive()) {
-				refresh();
-			} else {
-				markStale();
-			}
-		} else if(Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.lib.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
-			checkActivatorIncluded();
-		}
-	}
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (editablePropertySet.contains(evt.getPropertyName())) {
+            IFormPage page = (IFormPage) getManagedForm().getContainer();
+            if (page.isActive()) {
+                refresh();
+            } else {
+                markStale();
+            }
+        } else if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.lib.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
+            checkActivatorIncluded();
+        }
+    }
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		if(this.model != null)
-			this.model.removePropertyChangeListener(this);
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (this.model != null)
+            this.model.removePropertyChangeListener(this);
+    }
 
-	IJavaProject getJavaProject() {
-		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
-		IFile file = ResourceUtil.getFile(formPage.getEditorInput());
-		return file != null ? JavaCore.create(file.getProject()) : null;
-	}
+    IJavaProject getJavaProject() {
+        IFormPage formPage = (IFormPage) getManagedForm().getContainer();
+        IFile file = ResourceUtil.getFile(formPage.getEditorInput());
+        return file != null ? JavaCore.create(file.getProject()) : null;
+    }
 
     private class ActivatorClassProposalProvider extends CachingContentProposalProvider {
         @Override
@@ -534,10 +530,10 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             }
         }
 
-		@Override
-		protected boolean match(String contents, int position, IContentProposal proposal) {
-			String prefix = contents.substring(0, position);
-			return ((JavaTypeContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
-		}
-	}
+        @Override
+        protected boolean match(String contents, int position, IContentProposal proposal) {
+            String prefix = contents.substring(0, position);
+            return ((JavaTypeContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
+        }
+    }
 }

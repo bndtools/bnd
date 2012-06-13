@@ -74,6 +74,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
     /**
      * Create the SectionPart.
+     * 
      * @param parent
      * @param toolkit
      * @param style
@@ -109,16 +110,19 @@ public class RepositorySelectionPart extends BndEditorPart {
 
         viewer = new CheckboxTableViewer(table);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
-        viewer.setFilters(new ViewerFilter[] { new ViewerFilter() {
-            @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
-                return isAvailableRepo(element);
+        viewer.setFilters(new ViewerFilter[] {
+            new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return isAvailableRepo(element);
+                }
             }
-        }});
+        });
         viewer.setCheckStateProvider(new ICheckStateProvider() {
             public boolean isChecked(Object element) {
                 return isIncludedRepo((RepositoryPlugin) element);
             }
+
             public boolean isGrayed(Object element) {
                 return false;
             }
@@ -136,9 +140,9 @@ public class RepositorySelectionPart extends BndEditorPart {
         btnMoveDown.setText("Down");
         btnMoveDown.setImage(imgDown);
         btnMoveDown.setEnabled(false);
-        
+
         final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER, JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR));
-        
+
         viewer.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
@@ -155,7 +159,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                 if (repo instanceof WorkspaceObrProvider) {
                     image = projectImg;
                 }
-                
+
                 boolean available = isAvailableRepo(repo);
                 if (available) {
                     boolean included = isIncludedRepo(repo);
@@ -163,7 +167,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                 } else {
                     styler = StyledString.QUALIFIER_STYLER;
                 }
-                
+
                 StyledString styledLabel = new StyledString(label, styler);
                 cell.setText(styledLabel.getString());
                 cell.setStyleRanges(styledLabel.getStyleRanges());
@@ -226,7 +230,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         };
 
         viewer.setSorter(sorter);
-        
+
         viewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
                 RepositoryPlugin repo = (RepositoryPlugin) event.getElement();
@@ -300,7 +304,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         viewer.refresh();
         updateButtons();
 
-//        markDirty();
+        // markDirty();
         commit(false);
     }
 
@@ -308,7 +312,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         if (includedRepos == null) {
             includedRepos = new LinkedList<String>();
             for (RepositoryPlugin repo : allRepos) {
-                if (isAvailableRepo(repo) ) {
+                if (isAvailableRepo(repo)) {
                     includedRepos.add(repo.getName());
                 }
             }
@@ -340,7 +344,7 @@ public class RepositorySelectionPart extends BndEditorPart {
             viewer.refresh();
             updateButtons();
 
-            //markDirty();
+            // markDirty();
             commit(false);
         }
     }
@@ -350,7 +354,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         if (CollectionUtils.moveDown(includedRepos, selectedIndexes)) {
             viewer.refresh();
             updateButtons();
-            //markDirty();
+            // markDirty();
             commit(false);
         }
     }
@@ -359,17 +363,18 @@ public class RepositorySelectionPart extends BndEditorPart {
         Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
         int[] selectionIndexes = new int[selection.length];
 
-        for(int i=0; i<selection.length; i++) {
+        for (int i = 0; i < selection.length; i++) {
             RepositoryPlugin item = (RepositoryPlugin) selection[i];
             selectionIndexes[i] = includedRepos.indexOf(item.getName());
         }
         return selectionIndexes;
     }
 
-
     @Override
     protected String[] getProperties() {
-        return new String[] { BndConstants.RUNREPOS };
+        return new String[] {
+            BndConstants.RUNREPOS
+        };
     }
 
     @Override

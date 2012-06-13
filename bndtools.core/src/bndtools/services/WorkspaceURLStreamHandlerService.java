@@ -30,11 +30,11 @@ public class WorkspaceURLStreamHandlerService extends AbstractURLStreamHandlerSe
         IPath path = new Path(url.getPath());
 
         IWorkspace workspace = (IWorkspace) workspaceTracker.getService();
-        if(workspace == null)
+        if (workspace == null)
             throw new IOException("Workspace is not available");
 
         IPath workspaceLocation = workspace.getRoot().getLocation();
-        if(workspaceLocation == null)
+        if (workspaceLocation == null)
             throw new IOException("Cannot determine workspace location.");
 
         IPath location = workspaceLocation.append(path);

@@ -25,54 +25,54 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentPage extends FormPage {
 
-	private Image titleImg;
+    private Image titleImg;
     private JARContentTreePart contentTreePart;
     private JAREntryPart entryPart;
 
-	public JARContentPage(FormEditor editor, String id, String title) {
-		super(editor, id, title);
-	}
+    public JARContentPage(FormEditor editor, String id, String title) {
+        super(editor, id, title);
+    }
 
-	@Override
+    @Override
     protected void createFormContent(IManagedForm managedForm) {
-	    managedForm.setInput(getEditorInput());
+        managedForm.setInput(getEditorInput());
 
-	    FormToolkit toolkit = managedForm.getToolkit();
-		ScrolledForm form = managedForm.getForm();
-		form.setText("JAR File Viewer");
-		toolkit.decorateFormHeading(form.getForm());
+        FormToolkit toolkit = managedForm.getToolkit();
+        ScrolledForm form = managedForm.getForm();
+        form.setText("JAR File Viewer");
+        toolkit.decorateFormHeading(form.getForm());
 
-		titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
-		form.setImage(titleImg);
+        titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
+        form.setImage(titleImg);
 
-		// CREATE CONTROLS
-		Composite body = form.getBody();
+        // CREATE CONTROLS
+        Composite body = form.getBody();
 
-		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
+        SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
 
-		Composite treePanel = toolkit.createComposite(sashForm);
-		contentTreePart = new JARContentTreePart(treePanel, managedForm);
-		managedForm.addPart(contentTreePart);
+        Composite treePanel = toolkit.createComposite(sashForm);
+        contentTreePart = new JARContentTreePart(treePanel, managedForm);
+        managedForm.addPart(contentTreePart);
 
-		Composite detailsPanel = toolkit.createComposite(sashForm);
-		entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
-		managedForm.addPart(entryPart);
+        Composite detailsPanel = toolkit.createComposite(sashForm);
+        entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
+        managedForm.addPart(entryPart);
 
-		// LAYOUT
-		GridLayout layout;
+        // LAYOUT
+        GridLayout layout;
         layout = new GridLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         body.setLayout(layout);
 
-		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		//treeSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		//detailsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-	}
+        sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        // treeSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        // detailsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    }
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		titleImg.dispose();
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        titleImg.dispose();
+    }
 }

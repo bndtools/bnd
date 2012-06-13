@@ -39,7 +39,7 @@ public class ProjectLocationGroup {
 
     private static final String PROP_LOCATION = "location";
     private static final String PROP_STATUS = "status";
-    private static final String DIALOGSTORE_LAST_EXTERNAL_LOC= JavaUI.ID_PLUGIN + ".last.external.project"; //$NON-NLS-1$
+    private static final String DIALOGSTORE_LAST_EXTERNAL_LOC = JavaUI.ID_PLUGIN + ".last.external.project"; //$NON-NLS-1$
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 

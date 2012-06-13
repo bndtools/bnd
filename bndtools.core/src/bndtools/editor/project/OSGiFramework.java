@@ -78,5 +78,4 @@ class OSGiFramework {
         return b.toString();
     }
 
-
 }

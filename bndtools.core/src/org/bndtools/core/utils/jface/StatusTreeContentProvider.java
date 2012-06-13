@@ -11,14 +11,14 @@ public class StatusTreeContentProvider implements ITreeContentProvider {
         if (rootStatus.isMultiStatus()) {
             return rootStatus.getChildren();
         }
-        return new Object[] { rootStatus };
+        return new Object[] {
+            rootStatus
+        };
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
     public Object[] getChildren(Object parentElement) {
         IStatus status = (IStatus) parentElement;

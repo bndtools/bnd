@@ -188,7 +188,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             if (warningDecor != null) {
                 warningDecor.show();
             } else {
-                warningDecor  = new ControlDecoration(viewer.getControl(), SWT.RIGHT | SWT.TOP, (Composite) getSection().getClient());
+                warningDecor = new ControlDecoration(viewer.getControl(), SWT.RIGHT | SWT.TOP, (Composite) getSection().getClient());
                 warningDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
                 warningDecor.setDescriptionText(Messages.RunBundlesPart_warningHover);
                 warningDecor.setMarginWidth(2);

@@ -68,26 +68,27 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
         return null;
     }
 
-
     protected Image getServiceImage() {
-        if (serviceImg == null) serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/service-tiny.png").createImage();
+        if (serviceImg == null)
+            serviceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/service-tiny.png").createImage();
         return serviceImg;
     }
 
-
     protected Image getBundleImage() {
-        if (bundleImg == null) bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+        if (bundleImg == null)
+            bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
         return bundleImg;
     }
 
-
     protected Image getPackageImage() {
-        if (pkgImg == null) pkgImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_obj.gif").createImage();
+        if (pkgImg == null)
+            pkgImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_obj.gif").createImage();
         return pkgImg;
     }
-    
+
     protected Image getJavaImage() {
-        if (javaImg == null) javaImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/java.png").createImage();
+        if (javaImg == null)
+            javaImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/java.png").createImage();
         return javaImg;
     }
 
@@ -99,7 +100,8 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
             requirement = (Requirement) element;
         else if (element instanceof bndtools.api.Requirement)
             requirement = new RequirementWrapper((bndtools.api.Requirement) element);
-        else return;
+        else
+            return;
 
         cell.setImage(getIcon(requirement));
 
@@ -111,9 +113,10 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
     @Override
     public void dispose() {
         super.dispose();
-        if (pkgImg != null && !pkgImg.isDisposed()) pkgImg.dispose();
-        if (bundleImg != null && !bundleImg.isDisposed()) bundleImg.dispose();
+        if (pkgImg != null && !pkgImg.isDisposed())
+            pkgImg.dispose();
+        if (bundleImg != null && !bundleImg.isDisposed())
+            bundleImg.dispose();
     }
 
 }
-

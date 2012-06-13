@@ -10,17 +10,17 @@ public class PluginClassSorter extends ViewerSorter {
     public int compare(Viewer viewer, Object e1, Object e2) {
         IConfigurationElement elem1 = (IConfigurationElement) e1;
         IConfigurationElement elem2 = (IConfigurationElement) e2;
-        
+
         // Sort undeprecated plugins before deprecated ones.
         int result = sortDeprecation(elem1, elem2);
         if (result != 0)
             return result;
-        
+
         // Sort by rank
         result = sortByRank(elem1, elem2);
         if (result != 0)
             return result;
-        
+
         // Finally sort on name
         return sortName(elem1, elem2);
     }
@@ -34,7 +34,7 @@ public class PluginClassSorter extends ViewerSorter {
     private static boolean isDeprecated(IConfigurationElement elem) {
         return elem.getAttribute("deprecated") != null;
     }
-    
+
     private static int sortByRank(IConfigurationElement elem1, IConfigurationElement elem2) {
         int r1 = getRank(elem1);
         int r2 = getRank(elem2);
@@ -55,7 +55,7 @@ public class PluginClassSorter extends ViewerSorter {
     private static int sortName(IConfigurationElement elem1, IConfigurationElement elem2) {
         String name1 = elem1.getAttribute("name");
         String name2 = elem2.getAttribute("name");
-        
+
         return name1.compareTo(name2);
     }
 

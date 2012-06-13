@@ -66,41 +66,41 @@ public class JarListWizardPage extends WizardPage {
     public static final String PROP_PATHS = "paths";
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
-	private final Collection<IPath> paths = new LinkedList<IPath>();
+    private final Collection<IPath> paths = new LinkedList<IPath>();
 
-	private TableViewer viewer;
-	private Button btnAdd;
-	private Button btnAddExternal;
-	private Button btnRemove;
+    private TableViewer viewer;
+    private Button btnAdd;
+    private Button btnAddExternal;
+    private Button btnRemove;
 
-	public JarListWizardPage(final String pageName) {
-		super(pageName);
-	}
+    public JarListWizardPage(final String pageName) {
+        super(pageName);
+    }
 
-	public void createControl(final Composite parent) {
-		setTitle("Select JARs");
-		final Composite composite = new Composite(parent, SWT.NONE);
+    public void createControl(final Composite parent) {
+        setTitle("Select JARs");
+        final Composite composite = new Composite(parent, SWT.NONE);
 
-		Label lblHint = new Label(composite, SWT.WRAP);
-		lblHint.setText("Selected files (hint: drag files from an external application into this list):");
+        Label lblHint = new Label(composite, SWT.WRAP);
+        lblHint.setText("Selected files (hint: drag files from an external application into this list):");
 
-		final Table table = new Table(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
-		viewer = new TableViewer(table);
-		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new ClassPathLabelProvider());
+        final Table table = new Table(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+        viewer = new TableViewer(table);
+        viewer.setContentProvider(new ArrayContentProvider());
+        viewer.setLabelProvider(new ClassPathLabelProvider());
 
-		btnAdd = new Button(composite, SWT.PUSH);
-		btnAdd.setText("Add");
-		btnAddExternal = new Button(composite, SWT.PUSH);
-		btnAddExternal.setText("Add External");
-		btnRemove = new Button(composite, SWT.PUSH);
-		btnRemove.setText("Remove");
+        btnAdd = new Button(composite, SWT.PUSH);
+        btnAdd.setText("Add");
+        btnAddExternal = new Button(composite, SWT.PUSH);
+        btnAddExternal.setText("Add External");
+        btnRemove = new Button(composite, SWT.PUSH);
+        btnRemove.setText("Remove");
 
-		viewer.setInput(paths);
-		update();
+        viewer.setInput(paths);
+        update();
 
-		// Listeners
-		ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
+        // Listeners
+        ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
             @Override
             public void dragEnter(DropTargetEvent event) {
                 super.dragEnter(event);
@@ -114,7 +114,7 @@ public class JarListWizardPage extends WizardPage {
 
             @Override
             public boolean performDrop(Object data) {
-                if(data instanceof String[]) {
+                if (data instanceof String[]) {
                     String[] newPaths = (String[]) data;
                     if (newPaths != null) {
                         List<IPath> added = new ArrayList<IPath>(newPaths.length);
@@ -136,96 +136,99 @@ public class JarListWizardPage extends WizardPage {
         };
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setSelectionFeedbackEnabled(false);
-        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance() }, dropAdapter);
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(final SelectionChangedEvent event) {
-				update();
-			}
-		});
-		btnAdd.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//IResource newFile = ResourcesPlugin.getWorkspace().getRoot();
-				//if(newFile != null) {
-					ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
-					dialog.setValidator(new ISelectionStatusValidator() {
-						public IStatus validate(Object[] selection) {
-							if (selection.length > 0 && selection[0] instanceof IFile) {
-								return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
-							}
-							return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, IStatus.ERROR, "", null); //$NON-NLS-1$
-						}
-					});
-					dialog.setAllowMultiple(true);
-					dialog.setTitle("JAR File Selection");
-					dialog.setMessage("Select one or more JAR files.");
-					dialog.addFilter(new FileExtensionFilter("jar")); //$NON-NLS-1$
-					dialog.setInput(ResourcesPlugin.getWorkspace());
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+            FileTransfer.getInstance()
+        }, dropAdapter);
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(final SelectionChangedEvent event) {
+                update();
+            }
+        });
+        btnAdd.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                // IResource newFile = ResourcesPlugin.getWorkspace().getRoot();
+                // if(newFile != null) {
+                ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
+                dialog.setValidator(new ISelectionStatusValidator() {
+                    public IStatus validate(Object[] selection) {
+                        if (selection.length > 0 && selection[0] instanceof IFile) {
+                            return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
+                        }
+                        return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, IStatus.ERROR, "", null); //$NON-NLS-1$
+                    }
+                });
+                dialog.setAllowMultiple(true);
+                dialog.setTitle("JAR File Selection");
+                dialog.setMessage("Select one or more JAR files.");
+                dialog.addFilter(new FileExtensionFilter("jar")); //$NON-NLS-1$
+                dialog.setInput(ResourcesPlugin.getWorkspace());
 
-					if(dialog.open() == Window.OK) {
-						Object[] files = dialog.getResult();
-						List<IPath> added = new ArrayList<IPath>(files.length);
-						for (Object file : files) {
-							added.add(((IResource) file).getFullPath().makeRelative());
-						}
-						if(!added.isEmpty()) {
-						    addToPaths(added);
-							viewer.add(added.toArray(new IPath[added.size()]));
-						}
-					}
-				//}
-				update();
-			}
-		});
-		btnAddExternal.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-				dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
-				String res = dialog.open();
-				if (res != null) {
-					IPath filterPath = new Path(dialog.getFilterPath());
+                if (dialog.open() == Window.OK) {
+                    Object[] files = dialog.getResult();
+                    List<IPath> added = new ArrayList<IPath>(files.length);
+                    for (Object file : files) {
+                        added.add(((IResource) file).getFullPath().makeRelative());
+                    }
+                    if (!added.isEmpty()) {
+                        addToPaths(added);
+                        viewer.add(added.toArray(new IPath[added.size()]));
+                    }
+                }
+                // }
+                update();
+            }
+        });
+        btnAddExternal.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
+                dialog.setFilterExtensions(new String[] {
+                    "*.jar"}); //$NON-NLS-1$
+                String res = dialog.open();
+                if (res != null) {
+                    IPath filterPath = new Path(dialog.getFilterPath());
 
-					String[] fileNames = dialog.getFileNames();
-					List<IPath> added = new ArrayList<IPath>(fileNames.length);
-					for (String fileName : fileNames) {
-						added.add(filterPath.append(fileName));
-					}
-					if(!added.isEmpty()) {
-					    addToPaths(added);
-						viewer.add(added.toArray(new IPath[added.size()]));
-					}
-				}
-				update();
-			}
-		});
-		btnRemove.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-			    removeFromPaths(((IStructuredSelection) viewer.getSelection()).toList());
-				viewer.remove(((IStructuredSelection) viewer.getSelection()).toArray());
-				update();
-			}
-		});
+                    String[] fileNames = dialog.getFileNames();
+                    List<IPath> added = new ArrayList<IPath>(fileNames.length);
+                    for (String fileName : fileNames) {
+                        added.add(filterPath.append(fileName));
+                    }
+                    if (!added.isEmpty()) {
+                        addToPaths(added);
+                        viewer.add(added.toArray(new IPath[added.size()]));
+                    }
+                }
+                update();
+            }
+        });
+        btnRemove.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removeFromPaths(((IStructuredSelection) viewer.getSelection()).toList());
+                viewer.remove(((IStructuredSelection) viewer.getSelection()).toArray());
+                update();
+            }
+        });
 
-		// Layout
-		composite.setLayout(new GridLayout(2, false));
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
-		btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnAddExternal.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		lblHint.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
+        // Layout
+        composite.setLayout(new GridLayout(2, false));
+        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+        btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        btnAddExternal.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        lblHint.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
 
-		setControl(composite);
-	}
+        setControl(composite);
+    }
 
     private void addToPaths(List<IPath> added) {
-	    List<IPath> oldPaths = new ArrayList<IPath>(paths.size());
-	    oldPaths.addAll(paths);
+        List<IPath> oldPaths = new ArrayList<IPath>(paths.size());
+        oldPaths.addAll(paths);
 
-	    paths.addAll(added);
-	    propertySupport.firePropertyChange(PROP_PATHS, oldPaths, paths);
-	    checkExistingBundles();
+        paths.addAll(added);
+        propertySupport.firePropertyChange(PROP_PATHS, oldPaths, paths);
+        checkExistingBundles();
     }
 
     private void removeFromPaths(List<IPath> removed) {
@@ -238,17 +241,17 @@ public class JarListWizardPage extends WizardPage {
     }
 
     @Override
-	public boolean isPageComplete() {
-		return !paths.isEmpty();
-	}
+    public boolean isPageComplete() {
+        return !paths.isEmpty();
+    }
 
-	private void update() {
-		btnRemove.setEnabled(!viewer.getSelection().isEmpty());
-		if (isCurrentPage()) {
-		    getContainer().updateButtons();
-		    getContainer().updateMessage();
-		}
-	}
+    private void update() {
+        btnRemove.setEnabled(!viewer.getSelection().isEmpty());
+        if (isCurrentPage()) {
+            getContainer().updateButtons();
+            getContainer().updateMessage();
+        }
+    }
 
     private void checkExistingBundles() {
         List<IPath> alreadyBundles = new LinkedList<IPath>();
@@ -290,11 +293,11 @@ public class JarListWizardPage extends WizardPage {
             warning = builder.toString();
         }
         setMessage(warning, IMessageProvider.WARNING);
-	}
+    }
 
-	public Collection<IPath> getPaths() {
-		return paths;
-	}
+    public Collection<IPath> getPaths() {
+        return paths;
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
@@ -311,6 +314,5 @@ public class JarListWizardPage extends WizardPage {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
-
 
 }

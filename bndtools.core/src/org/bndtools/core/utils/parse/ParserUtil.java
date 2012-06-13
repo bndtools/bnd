@@ -2,9 +2,8 @@ package org.bndtools.core.utils.parse;
 
 public class ParserUtil {
     /**
-     * This is used to deal with the trailing tilde characters introduced by the
-     * OSGiHeader.parseHeader method.
-     *
+     * This is used to deal with the trailing tilde characters introduced by the OSGiHeader.parseHeader method.
+     * 
      * @param pkgName
      * @return
      */

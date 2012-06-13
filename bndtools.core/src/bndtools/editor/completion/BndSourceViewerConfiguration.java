@@ -21,59 +21,47 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     Token T_DIRECTIVE;
     Token T_PROPERTY;
     Token T_COMPONENT;
-    
+
     static final String SINGLELINE_COMMENT_TYPE = "___slc";
-    static Properties   syntax                  = null;
+    static Properties syntax = null;
 
     class BndPartitionScanner extends RuleBasedPartitionScanner {
         public BndPartitionScanner() {
             IToken singleLineComment = new Token(SINGLELINE_COMMENT_TYPE);
 
-            IPredicateRule[] rules = new IPredicateRule[] { new EndOfLineRule(
-                    "#", singleLineComment), };
+            IPredicateRule[] rules = new IPredicateRule[] {
+                new EndOfLineRule("#", singleLineComment),
+            };
             setPredicateRules(rules);
         }
     }
 
-    BndScanner              scanner;
+    BndScanner scanner;
     MultiLineCommentScanner multiLineCommentScanner;
-    ISharedTextColors       colors;
+    ISharedTextColors colors;
 
     public BndSourceViewerConfiguration(ISharedTextColors colors) {
         this.colors = colors;
-        T_DEFAULT = new Token(new TextAttribute(colors.getColor(new RGB(0, 0,
-                0))));
-        T_MACRO = new Token(new TextAttribute(colors.getColor(new RGB(0, 255,
-                0)), null, SWT.BOLD));
-        T_ERROR = new Token(new TextAttribute(colors.getColor(new RGB(255, 0,
-                0)), null, SWT.BOLD));
-        T_COMMENT = new Token(new TextAttribute(colors.getColor(new RGB(128,
-                0, 0))));
-        T_INSTRUCTION = new Token(new TextAttribute(colors.getColor(new RGB(0,
-                0, 255)), null, SWT.BOLD));
-        T_OPTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0,
-                255))));
-        T_DIRECTIVE = new Token(new TextAttribute(colors.getColor(new RGB(60,
-                60, 255)), null, SWT.BOLD));
-        T_PROPERTY = new Token(new TextAttribute(colors.getColor(new RGB(60,
-                60, 255)), null, SWT.BOLD));
-        T_COMPONENT = new Token(new TextAttribute(colors.getColor(new RGB(60,
-                60, 255)), null, SWT.BOLD));
+        T_DEFAULT = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 0))));
+        T_MACRO = new Token(new TextAttribute(colors.getColor(new RGB(0, 255, 0)), null, SWT.BOLD));
+        T_ERROR = new Token(new TextAttribute(colors.getColor(new RGB(255, 0, 0)), null, SWT.BOLD));
+        T_COMMENT = new Token(new TextAttribute(colors.getColor(new RGB(128, 0, 0))));
+        T_INSTRUCTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255)), null, SWT.BOLD));
+        T_OPTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255))));
+        T_DIRECTIVE = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
+        T_PROPERTY = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
+        T_COMPONENT = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
     }
 
     @Override
-    public IPresentationReconciler getPresentationReconciler(
-            ISourceViewer sourceViewer) {
+    public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         PresentationReconciler reconciler = new PresentationReconciler();
-        configureReconciler(reconciler, IDocument.DEFAULT_CONTENT_TYPE,
-                getBndScanner());
-        configureReconciler(reconciler, SINGLELINE_COMMENT_TYPE,
-                getMultiLineCommentScanner());
+        configureReconciler(reconciler, IDocument.DEFAULT_CONTENT_TYPE, getBndScanner());
+        configureReconciler(reconciler, SINGLELINE_COMMENT_TYPE, getMultiLineCommentScanner());
         return reconciler;
     }
 
-    private static void configureReconciler(PresentationReconciler reconciler,
-            String partitionType, ITokenScanner scanner) {
+    private static void configureReconciler(PresentationReconciler reconciler, String partitionType, ITokenScanner scanner) {
         DefaultDamagerRepairer dr;
         dr = new DefaultDamagerRepairer(scanner);
         reconciler.setDamager(dr, partitionType);
@@ -103,28 +91,25 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     }
 
     @Override
-    public String[] getDefaultPrefixes(ISourceViewer sourceViewer,
-            String contentType) {
-        if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)
-                || SINGLELINE_COMMENT_TYPE.equals(contentType)) {
-            return new String[] { "#", "//" };
+    public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType) {
+        if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) || SINGLELINE_COMMENT_TYPE.equals(contentType)) {
+            return new String[] {
+                    "#", "//"
+            };
         }
         return null;
     }
 
     @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer,
-            String contentType) {
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         return new BndHover();
     }
 
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer viewer) {
         ContentAssistant assistant = new ContentAssistant();
-        assistant.setContentAssistProcessor(new BndCompletionProcessor(),
-                IDocument.DEFAULT_CONTENT_TYPE);
-        assistant.setContentAssistProcessor(new BndCompletionProcessor(),
-                SINGLELINE_COMMENT_TYPE);
+        assistant.setContentAssistProcessor(new BndCompletionProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
+        assistant.setContentAssistProcessor(new BndCompletionProcessor(), SINGLELINE_COMMENT_TYPE);
         assistant.enableAutoActivation(true);
         return assistant;
     }

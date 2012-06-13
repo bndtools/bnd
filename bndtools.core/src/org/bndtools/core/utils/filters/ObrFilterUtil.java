@@ -14,21 +14,19 @@ public class ObrFilterUtil {
                     filter.append(">=");
                     filter.append(version.getLow());
                     filter.append(")");
-                }
-                else {
+                } else {
                     filter.append("(!(").append(FILTER_VERSION);
                     filter.append("<=");
                     filter.append(version.getLow());
                     filter.append("))");
                 }
 
-                if ( version.includeHigh() ) {
+                if (version.includeHigh()) {
                     filter.append("(").append(FILTER_VERSION);
                     filter.append("<=");
                     filter.append(version.getHigh());
                     filter.append(")");
-                }
-                else {
+                } else {
                     filter.append("(!(").append(FILTER_VERSION);
                     filter.append(">=");
                     filter.append(version.getHigh());

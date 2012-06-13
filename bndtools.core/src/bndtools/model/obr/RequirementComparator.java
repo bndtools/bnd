@@ -8,7 +8,7 @@ public class RequirementComparator implements Comparator<Requirement> {
 
     public int compare(Requirement req1, Requirement req2) {
         int diff;
-        
+
         diff = ComparatorUtils.safeCompare(req1.getName(), req2.getName());
         if (diff != 0)
             return diff;

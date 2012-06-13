@@ -112,7 +112,6 @@ public class ResolveOperation implements IRunnableWithProgress {
             return;
         }
 
-
         // Load repository indexes
         List<Repository> repos = new LinkedList<Repository>();
         for (OBRIndexProvider prov : indexProviders) {
@@ -142,7 +141,10 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
 
-        repos.add(0, repoAdmin.getLocalRepository()); // BUG? Calling `resolver(Repository[])` excludes the local and system repos!
+        repos.add(0, repoAdmin.getLocalRepository()); // BUG? Calling
+                                                      // `resolver(Repository[])`
+                                                      // excludes the local
+                                                      // and system repos!
         repos.add(0, repoAdmin.getSystemRepository());
         Resolver resolver = repoAdmin.resolver(repos.toArray(new Repository[repos.size()]));
 
@@ -168,10 +170,12 @@ public class ResolveOperation implements IRunnableWithProgress {
             return;
         }
 
-        // HACK: add capabilities for usual framework services (not all frameworks declare these statically)
-        String[] frameworkServices = new String[] { "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        // HACK: add capabilities for usual framework services (not all
+        // frameworks declare these statically)
+        String[] frameworkServices = new String[] {
+                "org.osgi.service.packageadmin.PackageAdmin", "org.osgi.service.startlevel.StartLevel", "org.osgi.service.permissionadmin.PermissionAdmin"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         for (String frameworkService : frameworkServices) {
-            Map<String, String> props = new HashMap<String, String>();
+            Map<String,String> props = new HashMap<String,String>();
             props.put(ObrConstants.FILTER_SERVICE, frameworkService);
             resolver.addGlobalCapability(helper.capability(ObrConstants.REQUIREMENT_SERVICE, props));
         }
@@ -183,22 +187,23 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         // Add requirements
         List<bndtools.api.Requirement> requirements = model.getRunRequire();
-        if (requirements != null) for (bndtools.api.Requirement req : requirements) {
-            resolver.add(helper.requirement(req.getName(), req.getFilter()));
-        }
+        if (requirements != null)
+            for (bndtools.api.Requirement req : requirements) {
+                resolver.add(helper.requirement(req.getName(), req.getFilter()));
+            }
 
         boolean resolved = resolver.resolve();
 
         result = new ObrResolutionResult(resolver, resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()));
     }
 
-    private void addRepository(URL index, List<? super Repository> repos, File cacheDir) throws Exception {
+    private void addRepository(URL index, List< ? super Repository> repos, File cacheDir) throws Exception {
         URLConnector connector = getConnector();
 
         addRepository(index, new HashSet<URL>(), repos, Integer.MAX_VALUE, connector, cacheDir);
     }
 
-    private void addRepository(URL index, Set<URL> visited, List<? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
+    private void addRepository(URL index, Set<URL> visited, List< ? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
         if (visited.add(index)) {
             CachingURLResourceHandle handle = new CachingURLResourceHandle(index.toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
             handle.setReporter(Central.getWorkspace());
@@ -229,7 +234,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private static ObrResolutionResult createErrorResult(MultiStatus status) {
-        return new ObrResolutionResult(null, false, status, Collections.<Resource>emptyList(), Collections.<Resource>emptyList());
+        return new ObrResolutionResult(null, false, status, Collections.<Resource> emptyList(), Collections.<Resource> emptyList());
     }
 
     private void addJREPackageCapabilities(Resolver resolver, EE ee) throws IOException {
@@ -244,16 +249,17 @@ public class ResolveOperation implements IRunnableWithProgress {
             stream = pkgsResource.openStream();
             pkgProps.load(stream);
         } finally {
-            if (stream != null) IO.close(stream);
+            if (stream != null)
+                IO.close(stream);
         }
         String pkgsStr = pkgProps.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES);
 
         Parameters header = new Parameters(pkgsStr);
-        for (Entry<String, Attrs> entry : header.entrySet()) {
+        for (Entry<String,Attrs> entry : header.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
             String version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
 
-            Map<String, String> capabilityProps = new HashMap<String, String>();
+            Map<String,String> capabilityProps = new HashMap<String,String>();
             capabilityProps.put(ObrConstants.FILTER_PACKAGE, pkgName);
             if (version != null)
                 capabilityProps.put(ObrConstants.FILTER_VERSION, version);
@@ -263,12 +269,12 @@ public class ResolveOperation implements IRunnableWithProgress {
         }
     }
 
-    private void addSystemPackagesExtraCapabilities(Resolver resolver, Collection<? extends ExportedPackage> systemPackages) {
+    private void addSystemPackagesExtraCapabilities(Resolver resolver, Collection< ? extends ExportedPackage> systemPackages) {
         for (ExportedPackage clause : systemPackages) {
             String pkgName = clause.getName();
             String version = clause.getVersionString();
 
-            Map<String, String> capabilityProps = new HashMap<String, String>();
+            Map<String,String> capabilityProps = new HashMap<String,String>();
             capabilityProps.put(ObrConstants.FILTER_PACKAGE, pkgName);
             if (version != null)
                 capabilityProps.put(ObrConstants.FILTER_VERSION, version);
@@ -299,7 +305,8 @@ public class ResolveOperation implements IRunnableWithProgress {
                     } catch (IOException e) {
                         Plugin.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
                     } finally {
-                        if (stream != null) stream.close();
+                        if (stream != null)
+                            stream.close();
                     }
                 }
             }
@@ -326,9 +333,15 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     private List<OBRIndexProvider> loadIndexProviders() throws Exception {
         // Load the OBR providers into a map keyed on repo name
-        Map<String, OBRIndexProvider> repoMap = new LinkedHashMap<String, OBRIndexProvider>();
+        Map<String,OBRIndexProvider> repoMap = new LinkedHashMap<String,OBRIndexProvider>();
         for (OBRIndexProvider plugin : Central.getWorkspace().getPlugins(OBRIndexProvider.class)) {
-            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) { // filter out non-runtime repos nice and early
+            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) { // filter
+                                                                                  // out
+                                                                                  // non-runtime
+                                                                                  // repos
+                                                                                  // nice
+                                                                                  // and
+                                                                                  // early
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
                 repoMap.put(name, plugin);
             }
@@ -341,10 +354,12 @@ public class ResolveOperation implements IRunnableWithProgress {
             // Use the specified providers in the order that they are specified
             for (String name : includedRepoNames) {
                 OBRIndexProvider repo = repoMap.get(name);
-                if (repo != null) result.add(repo);
+                if (repo != null)
+                    result.add(repo);
             }
         } else {
-            // Take all the providers in the natural order offered by the Workspace plugins
+            // Take all the providers in the natural order offered by the
+            // Workspace plugins
             for (OBRIndexProvider repo : repoMap.values()) {
                 result.add(repo);
             }
@@ -361,7 +376,7 @@ public class ResolveOperation implements IRunnableWithProgress {
             return null;
         }
 
-        Entry<String, Attrs> entry = header.entrySet().iterator().next();
+        Entry<String,Attrs> entry = header.entrySet().iterator().next();
         VersionedClause clause = new VersionedClause(entry.getKey(), entry.getValue());
 
         String versionRange = clause.getVersionRange();
@@ -402,7 +417,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     }
 
     private Capability createEeCapability(EE ee) {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String,String> props = new HashMap<String,String>();
         props.put(ObrConstants.FILTER_EE, ee.getEEName());
 
         return helper.capability(ObrConstants.REQUIREMENT_EE, props);

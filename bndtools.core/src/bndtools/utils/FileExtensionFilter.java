@@ -47,11 +47,14 @@ public class FileExtensionFilter extends ViewerFilter {
      * Construct a filter from a single supported extension.
      */
     public FileExtensionFilter(String extension, boolean caseInsensitive) {
-        this(new String[] { extension }, caseInsensitive);
+        this(new String[] {
+            extension
+        }, caseInsensitive);
     }
 
     /**
      * Construct a case-insensitive filter from a list of supported extensions.
+     * 
      * @param extensions
      */
     public FileExtensionFilter(String[] extensions) {
@@ -60,6 +63,7 @@ public class FileExtensionFilter extends ViewerFilter {
 
     /**
      * Construct a case-insensitive filter from a single supported extension.
+     * 
      * @param extension
      */
     public FileExtensionFilter(String extension) {
@@ -89,8 +93,7 @@ public class FileExtensionFilter extends ViewerFilter {
                     if (select(viewer, parent, resources[i]))
                         return true;
                 }
-            } catch (CoreException e) {
-            }
+            } catch (CoreException e) {}
         }
         return false;
     }

@@ -17,8 +17,8 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
 
     private final Device device;
     private final Image defaultImg;
-    
-    private final Map<ImageDescriptor, Image> imgCache = new HashMap<ImageDescriptor, Image>();
+
+    private final Map<ImageDescriptor,Image> imgCache = new HashMap<ImageDescriptor,Image>();
 
     public ConfigElementLabelProvider(Device device, String defaultIconPath) {
         this.device = device;
@@ -55,7 +55,7 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
     public void dispose() {
         super.dispose();
         defaultImg.dispose();
-        for (Image cached: imgCache.values()) {
+        for (Image cached : imgCache.values()) {
             cached.dispose();
         }
     }

@@ -70,7 +70,7 @@ public class ProjectRunPage extends FormPage {
         ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
         debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         form.getToolBarManager().add(debugContrib);
-        
+
         ExportAction exportAction = new ExportAction(getEditorSite().getShell(), getEditor(), model);
         exportAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run_export.png"));
         exportAction.setText("Export");
@@ -78,7 +78,7 @@ public class ProjectRunPage extends FormPage {
         exportContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         if (exportAction.shouldEnable())
             form.getToolBarManager().add(exportContrib);
-        
+
         form.getToolBarManager().update(true);
 
         GridLayout gl;
@@ -112,14 +112,13 @@ public class ProjectRunPage extends FormPage {
         gd.widthHint = 50;
         gd.heightHint = 50;
         reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
-        
+
         AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(availableBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
         availableBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-        
 
         RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(runFwkPart);
@@ -147,6 +146,5 @@ public class ProjectRunPage extends FormPage {
         runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
         runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
     };
-
 
 }

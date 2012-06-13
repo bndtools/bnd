@@ -20,15 +20,15 @@ public class PluginDeclarationLabelProvider extends StyledCellLabelProvider {
     @Override
     public void update(ViewerCell cell) {
         IConfigurationElement element = (IConfigurationElement) cell.getElement();
-        
+
         boolean deprecated = element.getAttribute("deprecated") != null;
-        
+
         Styler mainStyler = deprecated ? new StrikeoutStyler(null) : null;
         StyledString label = new StyledString(element.getAttribute("name"), mainStyler);
-        
+
         Styler classStyle = deprecated ? new StrikeoutStyler(StyledString.QUALIFIER_STYLER) : StyledString.QUALIFIER_STYLER;
         label.append(" [" + element.getAttribute("class") + "]", classStyle);
-        
+
         cell.setText(label.toString());
         cell.setStyleRanges(label.getStyleRanges());
 

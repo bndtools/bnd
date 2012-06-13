@@ -35,14 +35,14 @@ import bndtools.Plugin;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
-    
+
     private final Image icon;
 
-	private final BndEditor formEditor;
-	private final String id;
-	private String lastLoaded;
+    private final BndEditor formEditor;
+    private final String id;
+    private String lastLoaded;
 
-	private int index;
+    private int index;
 
     private final PropertyChangeListener propChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -51,116 +51,115 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         }
     };
 
-	private Control control;
+    private Control control;
 
-	public BndSourceEditorPage(String id, BndEditor formEditor) {
-		this.id = id;
-		this.formEditor = formEditor;
-		setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
+    public BndSourceEditorPage(String id, BndEditor formEditor) {
+        this.id = id;
+        this.formEditor = formEditor;
+        setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
 
-		formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
-		ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
+        formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
+        ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
         icon = iconDescriptor.createImage();
-	}
+    }
 
-	@Override
-	public void dispose() {
-		this.formEditor.getBndModel().removePropertyChangeListener(propChangeListener);
-		super.dispose();
-		icon.dispose();
-	}
+    @Override
+    public void dispose() {
+        this.formEditor.getBndModel().removePropertyChangeListener(propChangeListener);
+        super.dispose();
+        icon.dispose();
+    }
 
-	public boolean canLeaveThePage() {
-		return true;
-	}
+    public boolean canLeaveThePage() {
+        return true;
+    }
 
-	public FormEditor getEditor() {
-		return formEditor;
-	}
+    public FormEditor getEditor() {
+        return formEditor;
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setIndex(int index) {
-		this.index = index;
-	}
+    public void setIndex(int index) {
+        this.index = index;
+    }
 
-	public int getIndex() {
-		return index;
-	}
+    public int getIndex() {
+        return index;
+    }
 
-	public IManagedForm getManagedForm() {
-		return null;
-	}
+    public IManagedForm getManagedForm() {
+        return null;
+    }
 
-	@Override
-	public void createPartControl(Composite parent) {
-		super.createPartControl(parent);
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
 
-		Control[] children = parent.getChildren();
-		control = children[children.length - 1];
-	}
+        Control[] children = parent.getChildren();
+        control = children[children.length - 1];
+    }
 
-	public Control getPartControl() {
-		return control;
-	}
+    public Control getPartControl() {
+        return control;
+    }
 
-	public void initialize(FormEditor formEditor) {
-	}
+    public void initialize(FormEditor formEditor) {}
 
-	public boolean isActive() {
-		return this.equals(formEditor.getActivePageInstance());
-	}
+    public boolean isActive() {
+        return this.equals(formEditor.getActivePageInstance());
+    }
 
-	public boolean isEditor() {
-		return true;
-	}
+    public boolean isEditor() {
+        return true;
+    }
 
-	public boolean selectReveal(Object object) {
-		if (object instanceof IMarker) {
-			IDE.gotoMarker(this, (IMarker) object);
-			return true;
-		}
-		return false;
-	}
+    public boolean selectReveal(Object object) {
+        if (object instanceof IMarker) {
+            IDE.gotoMarker(this, (IMarker) object);
+            return true;
+        }
+        return false;
+    }
 
-	public void setActive(boolean active) {
-		if(!active) {
-			commit(false);
-		}
-	}
+    public void setActive(boolean active) {
+        if (!active) {
+            commit(false);
+        }
+    }
 
-	void commit(boolean onSave) {
-		try {
-			// Only commit changes to the model if the document text has
-			// actually changed since we switched to the page; this prevents us
-			// losing selection in the Components and Imports tabs.
-			// We can't use the dirty flag for this because "undo" will clear
-			// the dirty flag.
-			IDocument doc = getDocument();
-			String currentContent = doc.get();
-			if(!currentContent.equals(lastLoaded))
-				formEditor.getBndModel().loadFrom(getDocument());
-		} catch (IOException e) {
-			Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
-		}
-	}
+    void commit(boolean onSave) {
+        try {
+            // Only commit changes to the model if the document text has
+            // actually changed since we switched to the page; this prevents us
+            // losing selection in the Components and Imports tabs.
+            // We can't use the dirty flag for this because "undo" will clear
+            // the dirty flag.
+            IDocument doc = getDocument();
+            String currentContent = doc.get();
+            if (!currentContent.equals(lastLoaded))
+                formEditor.getBndModel().loadFrom(getDocument());
+        } catch (IOException e) {
+            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+        }
+    }
 
-	void refresh() {
-		IDocument document = getDocument();
-		formEditor.getBndModel().saveChangesTo(document);
-	}
+    void refresh() {
+        IDocument document = getDocument();
+        formEditor.getBndModel().saveChangesTo(document);
+    }
 
-	private IDocument getDocument() {
-		IDocumentProvider docProvider = getDocumentProvider();
-		IEditorInput input = getEditorInput();
-		IDocument doc = docProvider.getDocument(input);
-		return doc;
-	}
-	
-	@Override
-	public Image getTitleImage() {
-	    return icon;
-	}
+    private IDocument getDocument() {
+        IDocumentProvider docProvider = getDocumentProvider();
+        IEditorInput input = getEditorInput();
+        IDocument doc = docProvider.getDocument(input);
+        return doc;
+    }
+
+    @Override
+    public Image getTitleImage() {
+        return icon;
+    }
 }

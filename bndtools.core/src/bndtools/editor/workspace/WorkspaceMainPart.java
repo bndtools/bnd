@@ -93,7 +93,8 @@ public class WorkspaceMainPart extends SectionPart {
             Composite container = (Composite) getSection().getClient();
 
             IFile buildFile = Central.getWorkspaceBuildFile();
-            if (buildFile == null) return;
+            if (buildFile == null)
+                return;
 
             if (!mainFile) {
                 ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);

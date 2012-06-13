@@ -110,6 +110,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
 
     private static class OBRResourcesLabelProvider extends StyledCellLabelProvider {
         private Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
+
         @Override
         public void update(ViewerCell cell) {
             Resource resource = (Resource) cell.getElement();
@@ -121,6 +122,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
             cell.setStyleRanges(string.getStyleRanges());
             cell.setImage(bundleImg);
         }
+
         @Override
         public void dispose() {
             super.dispose();
@@ -141,14 +143,13 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
         availableViewer.setContentProvider(new ArrayContentProvider());
         availableViewer.setLabelProvider(new OBRResourcesLabelProvider());
 
-
         // LISTENERS
         searchText.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                if(e.detail == SWT.CANCEL) {
+                if (e.detail == SWT.CANCEL) {
                     cancelSearch();
-                    availableViewer.setInput(Collections.<String>emptyList());
+                    availableViewer.setInput(Collections.<String> emptyList());
                     availableSummaryLabel.setText("");
                 } else {
                     doSearch(searchText.getText(), 0L);
@@ -199,7 +200,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
 
     void doAdd() {
         IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
-        for(Iterator<?> iterator = selection.iterator(); iterator.hasNext(); ) {
+        for (Iterator< ? > iterator = selection.iterator(); iterator.hasNext();) {
             Resource resource = (Resource) iterator.next();
             selectedResources.add(resource);
         }
@@ -239,10 +240,12 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
                     Arrays.sort(resources, new Comparator<Resource>() {
                         public int compare(Resource o1, Resource o2) {
                             String bsn1 = o1.getSymbolicName();
-                            if(bsn1 == null) bsn1 = "no-symbolic-name";
+                            if (bsn1 == null)
+                                bsn1 = "no-symbolic-name";
 
                             String bsn2 = o2.getSymbolicName();
-                            if(bsn2 == null) bsn2 = "no-symbolic-name";
+                            if (bsn2 == null)
+                                bsn2 = "no-symbolic-name";
 
                             return bsn1.compareToIgnoreCase(bsn2);
                         }
@@ -250,19 +253,23 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
 
                     Runnable displayOp = new Runnable() {
                         public void run() {
-                            if(!availableViewer.getControl().isDisposed()) {
+                            if (!availableViewer.getControl().isDisposed()) {
                                 availableViewer.setInput(resources != null ? resources : Collections.emptyList());
                             }
-                            if(!availableSummaryLabel.isDisposed()) {
-                                if(resources == null || resources.length == 0) availableSummaryLabel.setText("Nothing found.");
-                                else availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# One resource|1<{0} resources} found.", resources.length));
+                            if (!availableSummaryLabel.isDisposed()) {
+                                if (resources == null || resources.length == 0)
+                                    availableSummaryLabel.setText("Nothing found.");
+                                else
+                                    availableSummaryLabel.setText(MessageFormat.format("{0,choice,1# One resource|1<{0} resources} found.", resources.length));
                             }
                         }
                     };
 
                     Display display = availableViewer.getControl().getDisplay();
-                    if(display.getThread() == Thread.currentThread()) displayOp.run();
-                    else display.asyncExec(displayOp);
+                    if (display.getThread() == Thread.currentThread())
+                        displayOp.run();
+                    else
+                        display.asyncExec(displayOp);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -275,7 +282,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
 
     void cancelSearch() {
         try {
-            if(searchJob != null) {
+            if (searchJob != null) {
                 searchJob.cancel();
                 try {
                     searchJob.join();
@@ -290,12 +297,14 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
 
     private static class ResourceLabelProvider extends StyledCellLabelProvider {
         private final Image linkImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/link.png").createImage();
+
         @Override
         public void update(ViewerCell cell) {
             Resource resource = (Resource) cell.getElement();
             cell.setText(resource.getURI());
             cell.setImage(linkImg);
         }
+
         @Override
         public void dispose() {
             super.dispose();
@@ -319,7 +328,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.character == SWT.DEL) {
+                if (e.character == SWT.DEL) {
                     doRemove();
                 }
             }
@@ -348,7 +357,7 @@ public class RemoteRepositoryBundleSelectionPage extends WizardPage implements I
     }
 
     private void updateSelectedResources() {
-        if(selectedViewer != null && !selectedViewer.getControl().isDisposed()) {
+        if (selectedViewer != null && !selectedViewer.getControl().isDisposed()) {
             selectedViewer.setInput(selectedResources);
             selectedSummaryLabel.setText(MessageFormat.format("{0,choice,0#0 bundles|1#1 bundle|1<{0} bundles} to import.", selectedResources.size()));
             setPageComplete(!selectedResources.isEmpty());

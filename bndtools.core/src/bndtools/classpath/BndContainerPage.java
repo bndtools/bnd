@@ -36,14 +36,13 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 
-public class BndContainerPage extends WizardPage implements
-        IClasspathContainerPage, IClasspathContainerPageExtension {
+public class BndContainerPage extends WizardPage implements IClasspathContainerPage, IClasspathContainerPageExtension {
 
     // private Activator activator = Activator.getActivator();
 
-    private Table        table;
-    private Project      model;
-    private File         basedir;
+    private Table table;
+    private Project model;
+    private File basedir;
     private IJavaProject javaProject;
 
     /**
@@ -57,9 +56,8 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension#initialize(org.eclipse.jdt.core.IJavaProject,
-     *      org.eclipse.jdt.core.IClasspathEntry[])
+     * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension#initialize (org.eclipse.jdt.core.IJavaProject,
+     * org.eclipse.jdt.core.IClasspathEntry[])
      */
     public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
         javaProject = project;
@@ -69,14 +67,12 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
+     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets .Composite)
      */
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
         composite.setLayout(new FormLayout());
-        composite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_FILL
-                | GridData.HORIZONTAL_ALIGN_FILL));
+        composite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_FILL | GridData.HORIZONTAL_ALIGN_FILL));
         composite.setFont(parent.getFont());
 
         setControl(composite);
@@ -136,8 +132,7 @@ public class BndContainerPage extends WizardPage implements
 
             }
 
-            public void inputChanged(Viewer viewer, Object oldInput,
-                    Object newInput) {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 
             }
 
@@ -152,14 +147,14 @@ public class BndContainerPage extends WizardPage implements
             public String getColumnText(Object element, int columnIndex) {
                 Container c = (Container) element;
                 switch (columnIndex) {
-                case 0:
+                case 0 :
                     return c.getBundleSymbolicName();
-                case 1:
+                case 1 :
                     return c.getVersion();
-                case 2:
+                case 2 :
                     return c.getError();
-                case 3:
-                    return c.getFile() + " (" + (c.getFile()!=null && c.getFile().exists() ? "exists" : "?") + ")";
+                case 3 :
+                    return c.getFile() + " (" + (c.getFile() != null && c.getFile().exists() ? "exists" : "?") + ")";
                 }
                 return null;
             }
@@ -211,15 +206,12 @@ public class BndContainerPage extends WizardPage implements
                     ps.println();
                     ps.println("Export-Package:                    ");
                     ps.println("Private-Package:                   ");
-                    ps
-                            .println("Bundle-Name:                       ${Bundle-SymbolicName}");
+                    ps.println("Bundle-Name:                       ${Bundle-SymbolicName}");
                     ps.println("Bundle-Version:                    1.0");
                     ps.println();
                     ps.println("#Example buildpath");
-                    ps
-                            .println("-buildpath:                        osgi;                                        version=4.0, \\");
-                    ps
-                            .println("                                   com.springsource.junit;                      version=\"[3.8,4)\"");
+                    ps.println("-buildpath:                        osgi;                                        version=4.0, \\");
+                    ps.println("                                   com.springsource.junit;                      version=\"[3.8,4)\"");
                 } finally {
                     out.close();
                     ps.close();
@@ -239,7 +231,6 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#finish()
      */
     public boolean finish() {
@@ -248,7 +239,6 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     *
      * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#getSelection()
      */
     public IClasspathEntry getSelection() {
@@ -259,8 +249,7 @@ public class BndContainerPage extends WizardPage implements
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#setSelection(org.eclipse.jdt.core.IClasspathEntry)
+     * @see org.eclipse.jdt.ui.wizards.IClasspathContainerPage#setSelection(org.eclipse .jdt.core.IClasspathEntry)
      */
     public void setSelection(IClasspathEntry containerEntry) {
         if (containerEntry != null) {

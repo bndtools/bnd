@@ -8,16 +8,11 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
 
-
 public class JUnitLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                new OSGiJUnitLaunchTab(),
-                new SourceLookupTab(),
-                new JavaJRETab(),
-                new EnvironmentTab(),
-                new CommonTab(),
+                new OSGiJUnitLaunchTab(), new SourceLookupTab(), new JavaJRETab(), new EnvironmentTab(), new CommonTab(),
         };
         setTabs(tabs);
     }

@@ -31,7 +31,6 @@ import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.FileUtils;
 import bndtools.wizards.bndfile.JarListWizardPage;
 
-
 class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
 
     private final JarListWizardPage classPathPage = new JarListWizardPage("classPathPage");
@@ -49,7 +48,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
 
                 IPath firstPath = paths != null && !paths.isEmpty() ? paths.iterator().next() : null;
                 String name = firstPath != null ? firstPath.lastSegment() : "";
-                if(name.toLowerCase().endsWith(".jar"))
+                if (name.toLowerCase().endsWith(".jar"))
                     name = name.substring(0, name.length() - 4);
 
                 packageListPage.setProjectName(name);

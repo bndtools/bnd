@@ -25,165 +25,171 @@ import aQute.lib.osgi.Descriptors.PackageRef;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 
-	static final Object IMPORTS_PLACEHOLDER = "_1_imports_placeholder";
-	static final Object EXPORTS_PLACEHOLDER = "_3_exports_placeholder";
-	static final Object REQUIRED_PLACEHOLDER = "_2_requires_placeholder";
+    static final Object IMPORTS_PLACEHOLDER = "_1_imports_placeholder";
+    static final Object EXPORTS_PLACEHOLDER = "_3_exports_placeholder";
+    static final Object REQUIRED_PLACEHOLDER = "_2_requires_placeholder";
 
-	private final Set<String> exportNames = new HashSet<String>();
-	private ImportsExportsAnalysisResult importsAndExports = null;
+    private final Set<String> exportNames = new HashSet<String>();
+    private ImportsExportsAnalysisResult importsAndExports = null;
 
-	public Object[] getChildren(Object parentElement) {
-		Collection<?> result;
-		if(IMPORTS_PLACEHOLDER.equals(parentElement))
-			result = importsAndExports != null ? importsAndExports.imports : Collections.emptyList();
-		else if(EXPORTS_PLACEHOLDER.equals(parentElement))
-			result = importsAndExports != null ? importsAndExports.exports : Collections.emptyList();
-		else if(REQUIRED_PLACEHOLDER.equals(parentElement))
-		    result = importsAndExports != null ? importsAndExports.requiredBundles : Collections.emptyList();
-		else if(parentElement instanceof ExportPackage) {
-			ExportPackage exportPackage = (ExportPackage) parentElement;
-			List<PackageRef> uses = exportPackage.getUses();
-			List<ExportUsesPackage> temp = new ArrayList<ExportUsesPackage>(uses.size());
-			for (PackageRef pkg : uses) {
-				temp.add(new ExportUsesPackage(exportPackage, pkg.getFQN()));
-			}
-			result = temp;
-		} else if(parentElement instanceof ImportPackage) {
-			ImportPackage importPackage = (ImportPackage) parentElement;
-			Collection<? extends String> usedByNames = importPackage.getUsedBy();
-			List<ImportUsedByPackage> temp = new ArrayList<ImportUsedByPackage>(usedByNames.size());
-			for (String name : usedByNames) {
-				temp.add(new ImportUsedByPackage(importPackage, name));
-			}
-			result = temp;
-		} else if(parentElement instanceof ImportUsedByPackage) {
-			ImportUsedByPackage importUsedBy = (ImportUsedByPackage) parentElement;
-			Collection<Clazz> importingClasses = importUsedBy.importPackage.getImportingClasses(importUsedBy.usedByName);
-			if(importingClasses != null) {
-				List<ImportUsedByClass> temp = new ArrayList<ImportUsedByClass>(importingClasses.size());
-				for (Clazz clazz : importingClasses) {
-					temp.add(new ImportUsedByClass(importUsedBy, clazz));
-				}
-				result = temp;
-			} else {
-				result = Collections.emptyList();
-			}
-		} else {
-			result = Collections.emptyList();
-		}
-		return result.toArray(new Object[result.size()]);
-	}
+    public Object[] getChildren(Object parentElement) {
+        Collection< ? > result;
+        if (IMPORTS_PLACEHOLDER.equals(parentElement))
+            result = importsAndExports != null ? importsAndExports.imports : Collections.emptyList();
+        else if (EXPORTS_PLACEHOLDER.equals(parentElement))
+            result = importsAndExports != null ? importsAndExports.exports : Collections.emptyList();
+        else if (REQUIRED_PLACEHOLDER.equals(parentElement))
+            result = importsAndExports != null ? importsAndExports.requiredBundles : Collections.emptyList();
+        else if (parentElement instanceof ExportPackage) {
+            ExportPackage exportPackage = (ExportPackage) parentElement;
+            List<PackageRef> uses = exportPackage.getUses();
+            List<ExportUsesPackage> temp = new ArrayList<ExportUsesPackage>(uses.size());
+            for (PackageRef pkg : uses) {
+                temp.add(new ExportUsesPackage(exportPackage, pkg.getFQN()));
+            }
+            result = temp;
+        } else if (parentElement instanceof ImportPackage) {
+            ImportPackage importPackage = (ImportPackage) parentElement;
+            Collection< ? extends String> usedByNames = importPackage.getUsedBy();
+            List<ImportUsedByPackage> temp = new ArrayList<ImportUsedByPackage>(usedByNames.size());
+            for (String name : usedByNames) {
+                temp.add(new ImportUsedByPackage(importPackage, name));
+            }
+            result = temp;
+        } else if (parentElement instanceof ImportUsedByPackage) {
+            ImportUsedByPackage importUsedBy = (ImportUsedByPackage) parentElement;
+            Collection<Clazz> importingClasses = importUsedBy.importPackage.getImportingClasses(importUsedBy.usedByName);
+            if (importingClasses != null) {
+                List<ImportUsedByClass> temp = new ArrayList<ImportUsedByClass>(importingClasses.size());
+                for (Clazz clazz : importingClasses) {
+                    temp.add(new ImportUsedByClass(importUsedBy, clazz));
+                }
+                result = temp;
+            } else {
+                result = Collections.emptyList();
+            }
+        } else {
+            result = Collections.emptyList();
+        }
+        return result.toArray(new Object[result.size()]);
+    }
 
-	public Object getParent(Object element) {
-		if(element instanceof ImportUsedByPackage) {
-			return ((ImportUsedByPackage) element).importPackage;
-		}
+    public Object getParent(Object element) {
+        if (element instanceof ImportUsedByPackage) {
+            return ((ImportUsedByPackage) element).importPackage;
+        }
 
-		if(element instanceof ImportPackage)
-			return IMPORTS_PLACEHOLDER;
+        if (element instanceof ImportPackage)
+            return IMPORTS_PLACEHOLDER;
 
-		if(element instanceof ExportPackage)
-			return EXPORTS_PLACEHOLDER;
+        if (element instanceof ExportPackage)
+            return EXPORTS_PLACEHOLDER;
 
-		if(element instanceof RequiredBundle)
-		    return REQUIRED_PLACEHOLDER;
+        if (element instanceof RequiredBundle)
+            return REQUIRED_PLACEHOLDER;
 
-		return null;
-	}
+        return null;
+    }
 
-	public boolean hasChildren(Object element) {
-		if(IMPORTS_PLACEHOLDER.equals(element))
-			return importsAndExports.imports != null && !importsAndExports.imports.isEmpty();
+    public boolean hasChildren(Object element) {
+        if (IMPORTS_PLACEHOLDER.equals(element))
+            return importsAndExports.imports != null && !importsAndExports.imports.isEmpty();
 
-		if(EXPORTS_PLACEHOLDER.equals(element))
-			return importsAndExports.imports != null && !importsAndExports.exports.isEmpty();
+        if (EXPORTS_PLACEHOLDER.equals(element))
+            return importsAndExports.imports != null && !importsAndExports.exports.isEmpty();
 
-		if(REQUIRED_PLACEHOLDER.equals(element))
-		    return importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty();
+        if (REQUIRED_PLACEHOLDER.equals(element))
+            return importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty();
 
-		if(element instanceof ExportPackage) {
-			List<PackageRef> uses = ((ExportPackage) element).getUses();
-			return uses != null && !uses.isEmpty();
-		}
+        if (element instanceof ExportPackage) {
+            List<PackageRef> uses = ((ExportPackage) element).getUses();
+            return uses != null && !uses.isEmpty();
+        }
 
-		if(element instanceof ImportPackage) {
-			Collection<? extends String> usedBy = ((ImportPackage) element).getUsedBy();
-			return usedBy != null && !usedBy.isEmpty();
-		}
+        if (element instanceof ImportPackage) {
+            Collection< ? extends String> usedBy = ((ImportPackage) element).getUsedBy();
+            return usedBy != null && !usedBy.isEmpty();
+        }
 
-		if(element instanceof ImportUsedByPackage)
-			return true;
+        if (element instanceof ImportUsedByPackage)
+            return true;
 
-		return false;
-	}
+        return false;
+    }
 
-	public Object[] getElements(Object inputElement) {
-	    Object[] result;
-	    if(importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty()) {
-	        result = new Object[] { IMPORTS_PLACEHOLDER, REQUIRED_PLACEHOLDER, EXPORTS_PLACEHOLDER };
-	    } else {
-	        result = new Object[] { IMPORTS_PLACEHOLDER, EXPORTS_PLACEHOLDER };
-	    }
-	    return result;
-	}
+    public Object[] getElements(Object inputElement) {
+        Object[] result;
+        if (importsAndExports.requiredBundles != null && !importsAndExports.requiredBundles.isEmpty()) {
+            result = new Object[] {
+                    IMPORTS_PLACEHOLDER, REQUIRED_PLACEHOLDER, EXPORTS_PLACEHOLDER
+            };
+        } else {
+            result = new Object[] {
+                    IMPORTS_PLACEHOLDER, EXPORTS_PLACEHOLDER
+            };
+        }
+        return result;
+    }
 
-	public void dispose() {
-	}
+    public void dispose() {}
 
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		this.importsAndExports = (ImportsExportsAnalysisResult) newInput;
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        this.importsAndExports = (ImportsExportsAnalysisResult) newInput;
 
-		exportNames.clear();
-		if(importsAndExports != null) {
-			for (ExportPackage export : importsAndExports.exports) {
-				exportNames.add(export.getName());
-			}
-		}
-	}
+        exportNames.clear();
+        if (importsAndExports != null) {
+            for (ExportPackage export : importsAndExports.exports) {
+                exportNames.add(export.getName());
+            }
+        }
+    }
 
-	static class ImportUsedByPackage implements Comparable<ImportUsedByPackage> {
+    static class ImportUsedByPackage implements Comparable<ImportUsedByPackage> {
 
-		final ImportPackage importPackage;
-		final String usedByName;
+        final ImportPackage importPackage;
+        final String usedByName;
 
-		public ImportUsedByPackage(ImportPackage importPackage, String usedByName) {
-			this.importPackage = importPackage;
-			this.usedByName = usedByName;
-		}
+        public ImportUsedByPackage(ImportPackage importPackage, String usedByName) {
+            this.importPackage = importPackage;
+            this.usedByName = usedByName;
+        }
 
-		public int compareTo(ImportUsedByPackage other) {
-			return this.usedByName.compareTo(other.usedByName);
-		}
-	}
+        public int compareTo(ImportUsedByPackage other) {
+            return this.usedByName.compareTo(other.usedByName);
+        }
+    }
 
-	public static class ImportUsedByClass implements Comparable<ImportUsedByClass> {
+    public static class ImportUsedByClass implements Comparable<ImportUsedByClass> {
 
-		final ImportUsedByPackage importUsedBy;
-		final Clazz clazz;
+        final ImportUsedByPackage importUsedBy;
+        final Clazz clazz;
 
-		public ImportUsedByClass(ImportUsedByPackage importUsedBy, Clazz clazz) {
-			this.importUsedBy = importUsedBy;
-			this.clazz = clazz;
-		}
-		public int compareTo(ImportUsedByClass other) {
-			return this.clazz.getFQN().compareTo(other.clazz.getFQN());
-		}
-		public Clazz getClazz() {
-		    return clazz;
-		}
-	}
+        public ImportUsedByClass(ImportUsedByPackage importUsedBy, Clazz clazz) {
+            this.importUsedBy = importUsedBy;
+            this.clazz = clazz;
+        }
 
-	public static class ExportUsesPackage implements Comparable<ExportUsesPackage> {
+        public int compareTo(ImportUsedByClass other) {
+            return this.clazz.getFQN().compareTo(other.clazz.getFQN());
+        }
 
-		final ExportPackage exportPackage;
-		final String name;
+        public Clazz getClazz() {
+            return clazz;
+        }
+    }
 
-		public ExportUsesPackage(ExportPackage exportPackage, String name) {
-			this.exportPackage = exportPackage;
-			this.name = name;
-		}
-		public int compareTo(ExportUsesPackage other) {
-			return this.name.compareTo(other.name);
-		}
-	}
+    public static class ExportUsesPackage implements Comparable<ExportUsesPackage> {
+
+        final ExportPackage exportPackage;
+        final String name;
+
+        public ExportUsesPackage(ExportPackage exportPackage, String name) {
+            this.exportPackage = exportPackage;
+            this.name = name;
+        }
+
+        public int compareTo(ExportUsesPackage other) {
+            return this.name.compareTo(other.name);
+        }
+    }
 }

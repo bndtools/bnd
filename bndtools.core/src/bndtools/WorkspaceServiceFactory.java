@@ -15,7 +15,6 @@ public class WorkspaceServiceFactory implements ServiceFactory {
         }
     }
 
-    public void ungetService(Bundle bundle, ServiceRegistration registration, Object service) {
-    }
+    public void ungetService(Bundle bundle, ServiceRegistration registration, Object service) {}
 
 }

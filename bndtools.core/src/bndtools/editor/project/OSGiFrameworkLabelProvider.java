@@ -12,10 +12,9 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
-
 public class OSGiFrameworkLabelProvider extends LabelProvider {
 
-    private final Map<URI, Image> images = new HashMap<URI, Image>();
+    private final Map<URI,Image> images = new HashMap<URI,Image>();
 
     @Override
     public String getText(Object element) {
@@ -30,24 +29,22 @@ public class OSGiFrameworkLabelProvider extends LabelProvider {
         URI fwkIconURI = null;
         try {
             fwkIconURI = fwkIcon.toURI();
-        } catch (URISyntaxException e1) {
-        }
+        } catch (URISyntaxException e1) {}
 
         Image image = null;
 
         if (fwkIcon != null && fwkIconURI != null) {
-                image = images.get(fwkIconURI);
+            image = images.get(fwkIconURI);
             if (image == null) {
                 InputStream stream = null;
                 try {
                     stream = fwkIcon.openStream();
                     image = new Image(Display.getCurrent(), stream);
-                } catch (IOException e) {
-                } finally {
+                } catch (IOException e) {} finally {
                     try {
-                        if (stream != null) stream.close();
-                    } catch (IOException e) {
-                    }
+                        if (stream != null)
+                            stream.close();
+                    } catch (IOException e) {}
                 }
                 if (image != null)
                     images.put(fwkIconURI, image);

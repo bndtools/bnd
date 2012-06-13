@@ -34,66 +34,68 @@ import bndtools.builder.BndProjectNature;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
-	private final WizardPage previousPage;
+    private final WizardPage previousPage;
 
-	public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
-		super(pageOne);
-		this.previousPage = previousPage;
-	}
-	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if(!visible && getContainer().getCurrentPage() == previousPage) {
-			removeProvisonalProject();
-		}
-	}
-	@Override
-	public void configureJavaProject(IProgressMonitor monitor) throws CoreException,
-			InterruptedException {
-		super.configureJavaProject(monitor);
+    public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
+        super(pageOne);
+        this.previousPage = previousPage;
+    }
 
-		IProject project = getJavaProject().getProject();
-		IProjectDescription desc = project.getDescription();
-		String[] natures = desc.getNatureIds();
-		for (String nature : natures) {
-			if(BndProjectNature.NATURE_ID.equals(nature))
-				return;
-		}
-		String[] newNatures = new String[natures.length + 1];
-		System.arraycopy(natures, 0, newNatures, 0, natures.length);
-		newNatures[natures.length] = BndProjectNature.NATURE_ID;
-		desc.setNatureIds(newNatures);
-		project.setDescription(desc, null);
-	}
-	void doSetProjectDesc(final IProject project, final IProjectDescription desc) throws CoreException {
-		final IWorkspaceRunnable workspaceOp = new IWorkspaceRunnable() {
-			public void run(IProgressMonitor monitor) throws CoreException {
-				project.setDescription(desc, monitor);
-			}
-		};
-		try {
-			getContainer().run(true, true, new IRunnableWithProgress() {
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					try {
-						project.getWorkspace().run(workspaceOp, monitor);
-					} catch (CoreException e) {
-						throw new InvocationTargetException(e);
-					}
-				}
-			});
-		} catch (InvocationTargetException e) {
-			throw (CoreException) e.getTargetException();
-		} catch (InterruptedException e) {
-			throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Interrupted while adding Bnd OSGi Project nature to project.", e));
-		}
-	}
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (!visible && getContainer().getCurrentPage() == previousPage) {
+            removeProvisonalProject();
+        }
+    }
 
-	@Override
-	protected void initializeBuildPath(final IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
-	    IWorkspaceRunnable wsop = new IWorkspaceRunnable() {
+    @Override
+    public void configureJavaProject(IProgressMonitor monitor) throws CoreException, InterruptedException {
+        super.configureJavaProject(monitor);
+
+        IProject project = getJavaProject().getProject();
+        IProjectDescription desc = project.getDescription();
+        String[] natures = desc.getNatureIds();
+        for (String nature : natures) {
+            if (BndProjectNature.NATURE_ID.equals(nature))
+                return;
+        }
+        String[] newNatures = new String[natures.length + 1];
+        System.arraycopy(natures, 0, newNatures, 0, natures.length);
+        newNatures[natures.length] = BndProjectNature.NATURE_ID;
+        desc.setNatureIds(newNatures);
+        project.setDescription(desc, null);
+    }
+
+    void doSetProjectDesc(final IProject project, final IProjectDescription desc) throws CoreException {
+        final IWorkspaceRunnable workspaceOp = new IWorkspaceRunnable() {
+            public void run(IProgressMonitor monitor) throws CoreException {
+                project.setDescription(desc, monitor);
+            }
+        };
+        try {
+            getContainer().run(true, true, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        project.getWorkspace().run(workspaceOp, monitor);
+                    } catch (CoreException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw (CoreException) e.getTargetException();
+        } catch (InterruptedException e) {
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Interrupted while adding Bnd OSGi Project nature to project.", e));
+        }
+    }
+
+    @Override
+    protected void initializeBuildPath(final IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
+        IWorkspaceRunnable wsop = new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
                 IFile bndFile = javaProject.getProject().getFile(Project.BNDFILE);
-                if(!bndFile.exists())
+                if (!bndFile.exists())
                     bndFile.create(new ByteArrayInputStream(new byte[0]), false, monitor);
                 monitor.done();
             }
@@ -101,7 +103,7 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
         SubMonitor progress = SubMonitor.convert(monitor, 5);
         javaProject.getProject().getWorkspace().run(wsop, progress.newChild(1));
-	    super.initializeBuildPath(javaProject, progress.newChild(4));
-	}
+        super.initializeBuildPath(javaProject, progress.newChild(4));
+    }
 
 }

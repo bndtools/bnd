@@ -44,7 +44,7 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
 
     /**
      * Create the dialog.
-     *
+     * 
      * @param parentShell
      */
     public EnableSubBundlesDialog(Shell parentShell, Collection<String> allProperties, Collection<String> selectedProperties) {
@@ -59,7 +59,7 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the dialog.
-     *
+     * 
      * @param parent
      */
     @Override
@@ -80,15 +80,15 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
         btnEnableSubbundles.setSelection(enableSubBundles);
         new Label(container, SWT.NONE);
 
-                link = new Link(container, SWT.NONE);
-                link.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-                link.setText(Messages.EnableSubBundlesDialog_link_text);
-                link.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        getShell().notifyListeners(SWT.Help, new Event());
-                    }
-                });
+        link = new Link(container, SWT.NONE);
+        link.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        link.setText(Messages.EnableSubBundlesDialog_link_text);
+        link.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getShell().notifyListeners(SWT.Help, new Event());
+            }
+        });
 
         propsTable = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
         GridData gd_propsTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);

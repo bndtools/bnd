@@ -9,19 +9,15 @@ import org.eclipse.swt.widgets.Sash;
 
 /**
  * <p>
- * SWT's {@link SashForm} is moronic. There is no way to set the colour of just
- * the sashes... calling {@link #setBackground(Color)} results in setting the
- * background colour of the <b>entire</b> form area.
+ * SWT's {@link SashForm} is moronic. There is no way to set the colour of just the sashes... calling
+ * {@link #setBackground(Color)} results in setting the background colour of the <b>entire</b> form area.
  * </p>
- * 
  * <p>
- * This class has to use nasty hacks to give us access to the superclass fields
- * that we need to modify. It's a toss up between this and completely
- * reimplementing {@link SashForm}.
+ * This class has to use nasty hacks to give us access to the superclass fields that we need to modify. It's a toss up
+ * between this and completely reimplementing {@link SashForm}.
  * </p>
  * 
  * @author Neil Bartlett <njbartlett@gmail.com>
- * 
  */
 public class SashHighlightForm extends SashForm {
 

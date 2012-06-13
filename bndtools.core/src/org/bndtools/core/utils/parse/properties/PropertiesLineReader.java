@@ -12,9 +12,9 @@ public class PropertiesLineReader {
 
     private final IDocument document;
     private final int lineCount;
-    
+
     private int lineNum = 0;
-    
+
     private IRegion lastRegion = null;
     private String lastKey = null;
 
@@ -22,44 +22,45 @@ public class PropertiesLineReader {
         this.document = document;
         this.lineCount = document.getNumberOfLines();
     }
-    
+
     public PropertiesLineReader(String data) {
         this(new Document(data));
     }
-    
+
     public LineType next() throws Exception {
         int index = 0;
         char[] chars = null;
-        
+
         StringBuilder keyData = new StringBuilder();
         StringBuilder valueData = new StringBuilder();
         StringBuilder currentBuffer = keyData;
-        
+
         boolean started = false;
-        
+
         mainLoop: while (true) {
             if (chars == null)
                 chars = grabLine(false);
             if (chars == null)
                 return eof;
-            
+
             if (index >= chars.length)
                 break;
-            
+
             char c = chars[index];
             if (c == '\\') {
-                index ++;
+                index++;
                 if (index == chars.length) {
                     chars = grabLine(true);
                     index = 0;
-                    if (chars == null) break; // The last line ended with a backslash
+                    if (chars == null)
+                        break; // The last line ended with a backslash
                 }
-                
+
                 currentBuffer.append(chars[index]);
                 index++;
                 continue mainLoop;
             }
-            
+
             if (c == '=' || c == ':')
                 currentBuffer = valueData;
 
@@ -75,13 +76,13 @@ public class PropertiesLineReader {
                 started = true;
                 currentBuffer.append(c);
             }
-            
-            index ++;
+
+            index++;
         }
-        
+
         if (!started)
             return blank;
-        
+
         lastKey = keyData.toString();
         return entry;
     }
@@ -91,10 +92,10 @@ public class PropertiesLineReader {
             lastRegion = null;
             return null;
         }
-        
+
         IRegion lineInfo = document.getLineInformation(lineNum);
         char[] chars = document.get(lineInfo.getOffset(), lineInfo.getLength()).toCharArray();
-        
+
         if (continued) {
             int length = lastRegion.getLength();
             length += document.getLineDelimiter(lineNum - 1).length();
@@ -103,17 +104,17 @@ public class PropertiesLineReader {
         } else {
             lastRegion = lineInfo;
         }
-        
-        lineNum ++;
+
+        lineNum++;
         return chars;
     }
- 
+
     public IRegion region() {
         if (lastRegion == null)
             throw new IllegalStateException("Last region not available: either before start or after end of document.");
         return lastRegion;
     }
-    
+
     public String key() {
         if (lastKey == null)
             throw new IllegalStateException("Last key not available: either before state or after end of document, or last line type was not 'entry'.");

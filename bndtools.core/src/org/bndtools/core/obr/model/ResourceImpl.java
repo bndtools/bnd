@@ -36,200 +36,154 @@ import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.utils.version.VersionTable;
 import org.osgi.framework.Version;
 
-public class ResourceImpl implements Resource
-{
+public class ResourceImpl implements Resource {
 
-    private final Map<String, Object> m_map = new HashMap<String, Object>();
+    private final Map<String,Object> m_map = new HashMap<String,Object>();
     private final List<Capability> m_capList = new ArrayList<Capability>();
     private final List<Requirement> m_reqList = new ArrayList<Requirement>();
     private Repository m_repo;
-    private Map<String, String> m_uris;
+    private Map<String,String> m_uris;
     private transient int m_hash;
 
-    public ResourceImpl()
-    {
-    }
+    public ResourceImpl() {}
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (o instanceof Resource)
-        {
-            if (getSymbolicName() == null || getVersion() == null)
-            {
+    public boolean equals(Object o) {
+        if (o instanceof Resource) {
+            if (getSymbolicName() == null || getVersion() == null) {
                 return this == o;
             }
-            return getSymbolicName().equals(((Resource) o).getSymbolicName())
-                && getVersion().equals(((Resource) o).getVersion());
+            return getSymbolicName().equals(((Resource) o).getSymbolicName()) && getVersion().equals(((Resource) o).getVersion());
         }
         return false;
     }
 
     @Override
-    public int hashCode()
-    {
-        if (m_hash == 0)
-        {
-            if (getSymbolicName() == null || getVersion() == null)
-            {
-                m_hash =  super.hashCode();
-            }
-            else
-            {
+    public int hashCode() {
+        if (m_hash == 0) {
+            if (getSymbolicName() == null || getVersion() == null) {
+                m_hash = super.hashCode();
+            } else {
                 m_hash = getSymbolicName().hashCode() ^ getVersion().hashCode();
             }
         }
         return m_hash;
     }
 
-    public Repository getRepository()
-    {
+    public Repository getRepository() {
         return m_repo;
     }
 
-    public void setRepository(Repository repository)
-    {
+    public void setRepository(Repository repository) {
         this.m_repo = repository;
     }
 
-    public Map<String, Object> getProperties()
-    {
+    public Map<String,Object> getProperties() {
         convertURIs();
         return m_map;
     }
 
-    public String getPresentationName()
-    {
+    public String getPresentationName() {
         return (String) m_map.get(PRESENTATION_NAME);
     }
 
-    public String getSymbolicName()
-    {
+    public String getSymbolicName() {
         return (String) m_map.get(SYMBOLIC_NAME);
     }
 
-    public String getId()
-    {
+    public String getId() {
         return (String) m_map.get(ID);
     }
 
-    public Version getVersion()
-    {
+    public Version getVersion() {
         Version v = (Version) m_map.get(VERSION);
         v = (v == null) ? Version.emptyVersion : v;
         return v;
     }
 
-    public String getURI()
-    {
+    public String getURI() {
         convertURIs();
         return (String) m_map.get(Resource.URI);
     }
 
-    public Long getSize()
-    {
+    public Long getSize() {
         return ((Long) m_map.get(Resource.SIZE));
     }
 
-    public Requirement[] getRequirements()
-    {
+    public Requirement[] getRequirements() {
         return (Requirement[]) m_reqList.toArray(new Requirement[m_reqList.size()]);
     }
 
-    public void addRequire(Requirement req)
-    {
+    public void addRequire(Requirement req) {
         m_reqList.add(req);
     }
 
-    public Capability[] getCapabilities()
-    {
+    public Capability[] getCapabilities() {
         return (Capability[]) m_capList.toArray(new Capability[m_capList.size()]);
     }
 
-    public void addCapability(Capability cap)
-    {
+    public void addCapability(Capability cap) {
         m_capList.add(cap);
     }
 
-    public String[] getCategories()
-    {
+    public String[] getCategories() {
         @SuppressWarnings("unchecked")
         List<String> catList = (List<String>) m_map.get(CATEGORY);
-        if (catList == null)
-        {
+        if (catList == null) {
             return new String[0];
         }
         return (String[]) catList.toArray(new String[catList.size()]);
     }
 
-    public void addCategory(String category)
-    {
+    public void addCategory(String category) {
         @SuppressWarnings("unchecked")
         List<String> catList = (List<String>) m_map.get(CATEGORY);
-        if (catList == null)
-        {
+        if (catList == null) {
             catList = new ArrayList<String>();
             m_map.put(CATEGORY, catList);
         }
         catList.add(category);
     }
 
-    public boolean isLocal()
-    {
+    public boolean isLocal() {
         return false;
     }
 
     /**
      * Default setter method when setting parsed data from the XML file.
      **/
-    public Object put(Object key, Object value)
-    {
+    public Object put(Object key, Object value) {
         put(key.toString(), value.toString(), null);
         return null;
     }
 
-    public void put(String key, String value, String type)
-    {
+    public void put(String key, String value, String type) {
         key = key.toLowerCase();
         m_hash = 0;
-        if (Property.URI.equals(type) || URI.equals(key))
-        {
-            if (m_uris == null)
-            {
-                m_uris = new HashMap<String, String>();
+        if (Property.URI.equals(type) || URI.equals(key)) {
+            if (m_uris == null) {
+                m_uris = new HashMap<String,String>();
             }
             m_uris.put(key, value);
-        }
-        else if (Property.VERSION.equals(type) || VERSION.equals(key))
-        {
+        } else if (Property.VERSION.equals(type) || VERSION.equals(key)) {
             m_map.put(key, VersionTable.getVersion(value));
-        }
-        else if (Property.LONG.equals(type) || SIZE.equals(key))
-        {
+        } else if (Property.LONG.equals(type) || SIZE.equals(key)) {
             m_map.put(key, Long.valueOf(value));
-        }
-        else if (Property.SET.equals(type) || CATEGORY.equals(key))
-        {
+        } else if (Property.SET.equals(type) || CATEGORY.equals(key)) {
             StringTokenizer st = new StringTokenizer(value, ",");
             Set<String> s = new HashSet<String>();
-            while (st.hasMoreTokens())
-            {
+            while (st.hasMoreTokens()) {
                 s.add(st.nextToken().trim());
             }
             m_map.put(key, s);
-        }
-        else
-        {
+        } else {
             m_map.put(key, value);
         }
     }
 
-    private void convertURIs()
-    {
-        if (m_uris != null)
-        {
-            for (Iterator<String> it = m_uris.keySet().iterator(); it.hasNext();)
-            {
+    private void convertURIs() {
+        if (m_uris != null) {
+            for (Iterator<String> it = m_uris.keySet().iterator(); it.hasNext();) {
                 String key = (String) it.next();
                 String val = (String) m_uris.get(key);
                 m_map.put(key, resolveUri(val));
@@ -238,24 +192,17 @@ public class ResourceImpl implements Resource
         }
     }
 
-    private String resolveUri(String uri)
-    {
-        try
-        {
-            if (m_repo != null && m_repo.getURI() != null)
-            {
+    private String resolveUri(String uri) {
+        try {
+            if (m_repo != null && m_repo.getURI() != null) {
                 return new URI(m_repo.getURI()).resolve(uri).toString();
             }
-        }
-        catch (Throwable t)
-        {
-        }
+        } catch (Throwable t) {}
         return uri;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getId();
     }
 }

@@ -43,9 +43,10 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
     @Override
     public void dispose() {
         super.dispose();
-        if (model != null) for (String prop : subscribedProps) {
-            model.removePropertyChangeListener(prop, this);
-        }
+        if (model != null)
+            for (String prop : subscribedProps) {
+                model.removePropertyChangeListener(prop, this);
+            }
     }
 
     @Override
@@ -68,6 +69,5 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
             markStale();
         }
     }
-
 
 }

@@ -65,96 +65,97 @@ import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
 
-	private static final String PACKAGEINFO = "packageinfo";
+    private static final String PACKAGEINFO = "packageinfo";
 
     public ExportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Packages", new ExportedPackageLabelProvider());
-	}
+        super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Packages", new ExportedPackageLabelProvider());
+    }
 
-	@Override
-	protected Collection<ExportedPackage> generateClauses() {
-		return selectPackagesToAdd();
-	}
-	protected List<ExportedPackage> selectPackagesToAdd() {
-		List<ExportedPackage> added = null;
+    @Override
+    protected Collection<ExportedPackage> generateClauses() {
+        return selectPackagesToAdd();
+    }
 
-		final IPackageFilter filter = new IPackageFilter() {
-			public boolean select(String packageName) {
-				if(packageName.equals("java") || packageName.startsWith("java."))
-					return false;
+    protected List<ExportedPackage> selectPackagesToAdd() {
+        List<ExportedPackage> added = null;
 
-				// TODO: check already included patterns
+        final IPackageFilter filter = new IPackageFilter() {
+            public boolean select(String packageName) {
+                if (packageName.equals("java") || packageName.startsWith("java."))
+                    return false;
 
-				return true;
-			}
-		};
+                // TODO: check already included patterns
 
-		IFormPage page = (IFormPage) getManagedForm().getContainer();
-		IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
+                return true;
+            }
+        };
 
-		// Prepare the package lister from the Java project
-		IProject project = ResourceUtil.getResource(page.getEditorInput()).getProject();
-		IJavaProject javaProject = JavaCore.create(project);
+        IFormPage page = (IFormPage) getManagedForm().getContainer();
+        IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
 
-		IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
-		JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
+        // Prepare the package lister from the Java project
+        IProject project = ResourceUtil.getResource(page.getEditorInput()).getProject();
+        IJavaProject javaProject = JavaCore.create(project);
 
-		// Create and open the dialog
+        IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
+            javaProject
+        });
+        JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
+
+        // Create and open the dialog
         PackageSelectionDialog dialog = new PackageSelectionDialog(window.getShell(), packageLister, filter, "Select new packages to export from the bundle.");
-		dialog.setSourceOnly(true);
-		dialog.setMultipleSelection(true);
-		if(dialog.open() == Window.OK) {
-			Object[] results = dialog.getResult();
-			added = new LinkedList<ExportedPackage>();
+        dialog.setSourceOnly(true);
+        dialog.setMultipleSelection(true);
+        if (dialog.open() == Window.OK) {
+            Object[] results = dialog.getResult();
+            added = new LinkedList<ExportedPackage>();
 
-			// Select the results
-			for (Object result : results) {
-				String newPackageName = (String) result;
-				ExportedPackage newPackage = new ExportedPackage(newPackageName, new Attrs());
-				added.add(newPackage);
-			}
-		}
-		return added;
-	}
+            // Select the results
+            for (Object result : results) {
+                String newPackageName = (String) result;
+                ExportedPackage newPackage = new ExportedPackage(newPackageName, new Attrs());
+                added.add(newPackage);
+            }
+        }
+        return added;
+    }
 
-	@Override
-	protected void doAddClauses(Collection<? extends ExportedPackage> pkgs, int index, boolean select) {
-	    Map<String, File> missingPkgInfoDirs;
+    @Override
+    protected void doAddClauses(Collection< ? extends ExportedPackage> pkgs, int index, boolean select) {
+        Map<String,File> missingPkgInfoDirs;
         try {
             missingPkgInfoDirs = findSourcePackagesWithoutPackageInfo(pkgs);
         } catch (Exception e) {
-            ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null,
-                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
+            ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
             missingPkgInfoDirs = Collections.emptyMap();
         }
-	    Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
+        Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
 
-	    BndPreferences prefs = new BndPreferences();
-	    boolean noAskPackageInfo = prefs.getNoAskPackageInfo();
+        BndPreferences prefs = new BndPreferences();
+        boolean noAskPackageInfo = prefs.getNoAskPackageInfo();
 
-	    if(noAskPackageInfo || missingPkgInfoDirs.isEmpty()) {
-	        generatePkgInfoDirs.addAll(missingPkgInfoDirs.values());
-	    } else {
-	        PackageInfoDialog dlg = new PackageInfoDialog(getSection().getShell(), missingPkgInfoDirs);
-	        if (dlg.open() == Window.CANCEL)
-	            return;
-	        prefs.setNoAskPackageInfo(dlg.isDontAsk());
-	        generatePkgInfoDirs.addAll(dlg.getSelectedPackageDirs());
-	    }
+        if (noAskPackageInfo || missingPkgInfoDirs.isEmpty()) {
+            generatePkgInfoDirs.addAll(missingPkgInfoDirs.values());
+        } else {
+            PackageInfoDialog dlg = new PackageInfoDialog(getSection().getShell(), missingPkgInfoDirs);
+            if (dlg.open() == Window.CANCEL)
+                return;
+            prefs.setNoAskPackageInfo(dlg.isDontAsk());
+            generatePkgInfoDirs.addAll(dlg.getSelectedPackageDirs());
+        }
 
-	    try {
+        try {
             generatePackageInfos(generatePkgInfoDirs);
         } catch (CoreException e) {
             ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generated packageinfo files.", e));
         }
 
-		// Actually add the new exports
-		super.doAddClauses(pkgs, index, select);
-	}
+        // Actually add the new exports
+        super.doAddClauses(pkgs, index, select);
+    }
 
-
-    private Map<String, File> findSourcePackagesWithoutPackageInfo(Collection<? extends ExportedPackage> pkgs) throws Exception {
-        Map<String, File> result = new HashMap<String, File>();
+    private Map<String,File> findSourcePackagesWithoutPackageInfo(Collection< ? extends ExportedPackage> pkgs) throws Exception {
+        Map<String,File> result = new HashMap<String,File>();
 
         Collection<File> sourceDirs = getProject().getSourcePath();
         for (File sourceDir : sourceDirs) {
@@ -173,7 +174,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         return result;
     }
 
-    private static void generatePackageInfos(final Collection<? extends File> pkgDirs) throws CoreException {
+    private static void generatePackageInfos(final Collection< ? extends File> pkgDirs) throws CoreException {
         final IWorkspaceRunnable wsOperation = new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
                 SubMonitor progress = SubMonitor.convert(monitor, pkgDirs.size());
@@ -194,7 +195,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
                     }
                 }
 
-                if (!status.isOK()) throw new CoreException(status);
+                if (!status.isOK())
+                    throw new CoreException(status);
             }
         };
         IRunnableWithProgress uiOperation = new IRunnableWithProgress() {
@@ -215,18 +217,20 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         }
     }
 
-	@Override
-	protected ExportedPackage newHeaderClause(String text) {
-		return new ExportedPackage(text, new Attrs());
-	}
-	@Override
-	protected List<ExportedPackage> loadFromModel(BndEditModel model) {
-		return model.getExportedPackages();
-	}
-	@Override
-	protected void saveToModel(BndEditModel model, List<? extends ExportedPackage> clauses) {
-		model.setExportedPackages(clauses);
-	}
+    @Override
+    protected ExportedPackage newHeaderClause(String text) {
+        return new ExportedPackage(text, new Attrs());
+    }
+
+    @Override
+    protected List<ExportedPackage> loadFromModel(BndEditModel model) {
+        return model.getExportedPackages();
+    }
+
+    @Override
+    protected void saveToModel(BndEditModel model, List< ? extends ExportedPackage> clauses) {
+        model.setExportedPackages(clauses);
+    }
 
     Project getProject() {
         Project project = null;
@@ -239,6 +243,5 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         }
         return project;
     }
-
 
 }

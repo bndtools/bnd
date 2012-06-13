@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.model.importanalysis;
 
-
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 
@@ -20,36 +19,37 @@ import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUse
 
 public class ImportsAndExportsViewerSorter extends ViewerSorter {
 
-	@Override
-	public int category(Object element) {
-		if(element instanceof String)
-			return 0;
-		if(element instanceof HeaderClause)
-			return 1;
-		if(element instanceof ImportUsedByPackage)
-			return 2;
-		if(element instanceof ImportUsedByClass)
-			return 3;
+    @Override
+    public int category(Object element) {
+        if (element instanceof String)
+            return 0;
+        if (element instanceof HeaderClause)
+            return 1;
+        if (element instanceof ImportUsedByPackage)
+            return 2;
+        if (element instanceof ImportUsedByClass)
+            return 3;
 
-		return -1;
-	}
-	@Override
-	public int compare(Viewer viewer, Object e1, Object e2) {
-		int cat1 = category(e1);
-		int cat2 = category(e2);
+        return -1;
+    }
 
-		if (cat1 != cat2) {
-			return cat1 - cat2;
-		}
+    @Override
+    public int compare(Viewer viewer, Object e1, Object e2) {
+        int cat1 = category(e1);
+        int cat2 = category(e2);
 
-		if(e1 instanceof String && e2 instanceof String) {
-			String s1 = (String) e1;
-			String s2 = (String) e2;
-			return s1.compareTo(s2);
-		}
+        if (cat1 != cat2) {
+            return cat1 - cat2;
+        }
 
-		@SuppressWarnings("unchecked")
-		Comparable<Object> c1 = (Comparable<Object>) e1;
-		return c1.compareTo(e2);
-	}
+        if (e1 instanceof String && e2 instanceof String) {
+            String s1 = (String) e1;
+            String s2 = (String) e2;
+            return s1.compareTo(s2);
+        }
+
+        @SuppressWarnings("unchecked")
+        Comparable<Object> c1 = (Comparable<Object>) e1;
+        return c1.compareTo(e2);
+    }
 }

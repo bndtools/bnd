@@ -7,14 +7,12 @@ import org.eclipse.core.runtime.IPath;
  * A listener for phases in the Bndtools build lifecycle.
  * 
  * @author Neil Bartlett <njbartlett@gmail.com>
- * 
  */
 public interface BuildListener {
 
     /**
-     * Bndtools is starting to build the specified project. The corresponding
-     * bnd project model in the bnd workspace has yet been created, and may not
-     * exist.
+     * Bndtools is starting to build the specified project. The corresponding bnd project model in the bnd workspace has
+     * yet been created, and may not exist.
      * 
      * @param project
      */

@@ -44,35 +44,37 @@ import bndtools.utils.FileUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
-	protected final NewBndProjectWizardPageOne pageOne;
-	protected final NewJavaProjectWizardPageTwo pageTwo;
+    protected final NewBndProjectWizardPageOne pageOne;
+    protected final NewJavaProjectWizardPageTwo pageTwo;
 
-	AbstractNewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
-		super(pageOne, pageTwo);
-		setWindowTitle("New Bnd OSGi Project");
-		setNeedsProgressMonitor(true);
+    AbstractNewBndProjectWizard(NewBndProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
+        super(pageOne, pageTwo);
+        setWindowTitle("New Bnd OSGi Project");
+        setNeedsProgressMonitor(true);
 
-		this.pageOne = pageOne;
-		this.pageTwo = pageTwo;
-	}
+        this.pageOne = pageOne;
+        this.pageTwo = pageTwo;
+    }
 
-	@Override
-	public void addPages() {
-		addPage(pageOne);
-		addPage(pageTwo);
-	}
+    @Override
+    public void addPages() {
+        addPage(pageOne);
+        addPage(pageTwo);
+    }
 
-	/**
-	 * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-	 * @param monitor
-	 */
+    /**
+     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
+     * 
+     * @param monitor
+     */
     @SuppressWarnings("static-method")
-	protected BndEditModel generateBndModel(IProgressMonitor monitor) {
-	    return new BndEditModel();
-	}
+    protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+        return new BndEditModel();
+    }
 
     /**
      * Allows for an IProjectTemplate to modify the new Bnd project
+     * 
      * @param monitor
      */
     @SuppressWarnings("static-method")
@@ -81,10 +83,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     }
 
     /**
-     * Modify the newly generated Java project; this method is executed from
-     * within a workspace operation so is free to make workspace resource
-     * modifications.
-     *
+     * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to
+     * make workspace resource modifications.
+     * 
      * @throws CoreException
      */
     protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
@@ -107,7 +108,6 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             bndBndFile.create(bndInput, false, progress.newChild(1));
         }
 
-
         IFile buildXmlFile = project.getFile("build.xml");
         InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
         if (buildXmlFile.exists()) {
@@ -119,7 +119,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         BndProject proj = generateBndProject(project, progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
-        for (Map.Entry<String, URL> resource : proj.getResources().entrySet()) {
+        for (Map.Entry<String,URL> resource : proj.getResources().entrySet()) {
             importResource(project, resource.getKey(), resource.getValue(), progress.newChild(1));
         }
     }
@@ -142,7 +142,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));
         } finally {
             if (is != null) {
-                try{is.close();}catch(Exception e){}
+                try {
+                    is.close();
+                } catch (Exception e) {}
             }
         }
         return p;
@@ -177,12 +179,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                 });
                 result = true;
             } catch (InvocationTargetException e) {
-                ErrorDialog.openError(
-                        getShell(),
-                        "Error",
-                        "",
-                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).",
-                                Project.BNDFILE), e.getTargetException()));
+                ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).", Project.BNDFILE), e.getTargetException()));
                 result = false;
             } catch (InterruptedException e) {
                 // Shouldn't happen
@@ -193,12 +190,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             try {
                 IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
             } catch (PartInitException e) {
-                ErrorDialog.openError(
-                        getShell(),
-                        "Error",
-                        null,
-                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.",
-                                bndFile.getFullPath().toString()), e));
+                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath().toString()), e));
             }
         }
         return result;

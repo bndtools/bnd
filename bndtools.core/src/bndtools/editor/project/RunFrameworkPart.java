@@ -79,13 +79,11 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
             Plugin.logError("Error accessing bnd workspace.", e);
         }
 
-
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
         cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
         ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP, composite);
         eeDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
-        eeDecor.setDescriptionText("The runtime Java Virtual Machine will be required/assumed " +
-        		"\nto support this Execution Environment");
+        eeDecor.setDescriptionText("The runtime Java Virtual Machine will be required/assumed " + "\nto support this Execution Environment");
 
         eeViewer = new ComboViewer(cmbExecEnv);
         eeViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -140,12 +138,14 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         lblFramework.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         GridData gd;
         gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gd.widthHint = 20; gd.heightHint = 20;
+        gd.widthHint = 20;
+        gd.heightHint = 20;
         cmbFramework.setLayoutData(gd);
 
         lblExecEnv.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gd.widthHint = 20; gd.heightHint = 20;
+        gd.widthHint = 20;
+        gd.heightHint = 20;
         cmbExecEnv.setLayoutData(gd);
     }
 
@@ -161,7 +161,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     @Override
     public void dispose() {
         super.dispose();
-        if(model != null) {
+        if (model != null) {
             model.removePropertyChangeListener(BndConstants.RUNEE, this);
             model.removePropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
         }
@@ -172,7 +172,8 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         lock.modifyOperation(new Runnable() {
             public void run() {
                 selectedFramework = model.getRunFramework();
-                if (selectedFramework == null) selectedFramework = "";
+                if (selectedFramework == null)
+                    selectedFramework = "";
                 cmbFramework.setText(selectedFramework);
 
                 selectedEE = model.getEE();
@@ -197,7 +198,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     public void propertyChange(PropertyChangeEvent evt) {
         if (!committing) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
-            if(page.isActive()) {
+            if (page.isActive()) {
                 refresh();
             } else {
                 markStale();

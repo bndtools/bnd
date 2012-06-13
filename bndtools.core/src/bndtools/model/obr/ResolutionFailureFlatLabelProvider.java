@@ -21,11 +21,11 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
         cell.setImage(getIcon(requirement));
 
         StyledString label = getLabel(resource);
-        
+
         label.append(" requires ", StyledString.QUALIFIER_STYLER);
         if (requirement.isOptional())
             label.append("optional ", StyledString.QUALIFIER_STYLER);
-        
+
         label.append(getLabel(requirement));
 
         cell.setText(label.getString());
@@ -43,5 +43,5 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
         }
         return label;
     }
-    
+
 }

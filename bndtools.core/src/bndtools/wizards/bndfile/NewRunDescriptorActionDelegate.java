@@ -28,8 +28,7 @@ public class NewRunDescriptorActionDelegate implements IWorkbenchWindowActionDel
         }
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
     public void init(IWorkbenchWindow window) {
         this.window = window;

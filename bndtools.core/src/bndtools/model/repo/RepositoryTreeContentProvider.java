@@ -28,7 +28,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     private static final String CACHE_REPOSITORY = "cache";
 
     private final EnumSet<OBRResolutionMode> modes;
-    
+
     private boolean showRepos = true;
 
     public RepositoryTreeContentProvider() {
@@ -42,11 +42,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     public RepositoryTreeContentProvider(EnumSet<OBRResolutionMode> modes) {
         this.modes = modes;
     }
-    
+
     public void setShowRepos(boolean showRepos) {
         this.showRepos = showRepos;
     }
-    
+
     public boolean isShowRepos() {
         return showRepos;
     }
@@ -71,11 +71,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result.toArray(new Object[result.size()]);
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
     public Object[] getChildren(Object parentElement) {
         Object[] result = null;
@@ -128,7 +126,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 result.addAll(Arrays.asList(getRepositoryBundles(repoPlugin)));
         }
     }
-    
+
     void addCollection(Collection<Object> result, Collection<Object> inputs) {
         for (Object input : inputs) {
             if (input instanceof RepositoryPlugin) {
@@ -137,7 +135,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                     if (!supportsMode((OBRIndexProvider) repo))
                         continue;
                 }
-                
+
                 if (showRepos)
                     result.add(repo);
                 else
@@ -149,7 +147,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     boolean supportsMode(OBRIndexProvider provider) {
         Set<OBRResolutionMode> supportedModes = provider.getSupportedModes();
         for (OBRResolutionMode mode : modes) {
-            if (supportedModes.contains(mode)) return true;
+            if (supportedModes.contains(mode))
+                return true;
         }
         return false;
     }
@@ -157,7 +156,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     static ProjectBundle[] getProjectBundles(Project project) {
         ProjectBundle[] result = null;
         try {
-            Collection<? extends Builder> builders = project.getSubBuilders();
+            Collection< ? extends Builder> builders = project.getSubBuilders();
             result = new ProjectBundle[builders.size()];
 
             int i = 0;

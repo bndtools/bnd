@@ -32,9 +32,13 @@ public class ObrResolutionWizard extends Wizard {
     private static final String PATHS_EXTENSION = ".resolved";
 
     private final ObrResultsWizardPage resultsPage;
-    private final Comparator<Entry<String, String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
-        public int compare(Entry<String, String> e1, Entry<String, String> e2) {
-            // Reverse lexical ordering on keys
+    private final Comparator<Entry<String,String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
+        public int compare(Entry<String,String> e1, Entry<String,String> e2) {
+            // Reverse
+            // lexical
+            // ordering
+            // on
+            // keys
             return e2.getKey().compareTo(e1.getKey());
         }
     };

@@ -25,7 +25,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
     protected abstract ILaunchTabPiece[] createStack();
 
     private synchronized ILaunchTabPiece[] getStack() {
-        if(stack == null) {
+        if (stack == null) {
             stack = createStack();
         }
         return stack;
@@ -41,7 +41,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
     @Override
     protected boolean isDirty() {
         for (ILaunchTabPiece piece : getStack()) {
-            if(piece.isDirty())
+            if (piece.isDirty())
                 return true;
         }
         return false;
@@ -62,7 +62,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
     void checkValid() {
         for (ILaunchTabPiece piece : getStack()) {
             String error = piece.checkForError();
-            if(error != null) {
+            if (error != null) {
                 setErrorMessage(error);
                 return;
             }

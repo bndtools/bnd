@@ -49,130 +49,130 @@ import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.ModificationLock;
 
-public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractFormPart implements
-		IDetailsPage, PropertyChangeListener {
+public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractFormPart implements IDetailsPage, PropertyChangeListener {
 
-	private PkgPatternsListPart<C> listPart;
-	private final ModificationLock modifyLock = new ModificationLock();
-	protected List<C> selectedClauses = Collections.emptyList();
+    private PkgPatternsListPart<C> listPart;
+    private final ModificationLock modifyLock = new ModificationLock();
+    protected List<C> selectedClauses = Collections.emptyList();
 
-	private BndEditModel model;
+    private BndEditModel model;
 
-	private Composite mainComposite;
-	private Text txtName;
-	private Text txtVersion;
+    private Composite mainComposite;
+    private Text txtName;
+    private Text txtVersion;
 
-	private final String title;
+    private final String title;
 
-	public PkgPatternsDetailsPage(String title) {
-		this.title = title;
-	}
+    public PkgPatternsDetailsPage(String title) {
+        this.title = title;
+    }
 
-	public void createContents(Composite parent) {
-		FormToolkit toolkit = getManagedForm().getToolkit();
+    public void createContents(Composite parent) {
+        FormToolkit toolkit = getManagedForm().getToolkit();
 
-		FieldDecoration assistDecor = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
-		KeyStroke assistKeyStroke = null;
-		try {
-			assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
-		} catch (ParseException x) {
-			// Ignore
-		}
+        FieldDecoration assistDecor = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+        KeyStroke assistKeyStroke = null;
+        try {
+            assistKeyStroke = KeyStroke.getInstance("Ctrl+Space");
+        } catch (ParseException x) {
+            // Ignore
+        }
 
-		Section mainSection = toolkit.createSection(parent, Section.TITLE_BAR);
-		mainSection.setText(title);
+        Section mainSection = toolkit.createSection(parent, Section.TITLE_BAR);
+        mainSection.setText(title);
 
-		mainComposite = toolkit.createComposite(mainSection);
-		mainSection.setClient(mainComposite);
+        mainComposite = toolkit.createComposite(mainSection);
+        mainSection.setClient(mainComposite);
 
-		toolkit.createLabel(mainComposite, "Pattern:");
-		txtName = toolkit.createText(mainComposite, "", SWT.BORDER);
-		ControlDecoration decPattern = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, mainComposite);
-		decPattern.setImage(assistDecor.getImage());
-		decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
-		decPattern.setShowHover(true);
-		decPattern.setShowOnlyOnFocus(true);
+        toolkit.createLabel(mainComposite, "Pattern:");
+        txtName = toolkit.createText(mainComposite, "", SWT.BORDER);
+        ControlDecoration decPattern = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, mainComposite);
+        decPattern.setImage(assistDecor.getImage());
+        decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        decPattern.setShowHover(true);
+        decPattern.setShowOnlyOnFocus(true);
 
-		PkgPatternsProposalProvider proposalProvider = new PkgPatternsProposalProvider(new FormPartJavaSearchContext(this));
-		ContentProposalAdapter patternProposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
-		patternProposalAdapter.addContentProposalListener(proposalProvider);
-		patternProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);
-		patternProposalAdapter.setAutoActivationDelay(1000);
-		patternProposalAdapter.setLabelProvider(new PkgPatternProposalLabelProvider());
-		patternProposalAdapter.addContentProposalListener(new IContentProposalListener() {
-			public void proposalAccepted(IContentProposal proposal) {
-				PkgPatternProposal patternProposal = (PkgPatternProposal) proposal;
-				String toInsert = patternProposal.getContent();
-				int currentPos = txtName.getCaretPosition();
-				txtName.setSelection(patternProposal.getReplaceFromPos(), currentPos);
-				txtName.insert(toInsert);
-				txtName.setSelection(patternProposal.getCursorPosition());
-			}
-		});
+        PkgPatternsProposalProvider proposalProvider = new PkgPatternsProposalProvider(new FormPartJavaSearchContext(this));
+        ContentProposalAdapter patternProposalAdapter = new ContentProposalAdapter(txtName, new TextContentAdapter(), proposalProvider, assistKeyStroke, UIConstants.autoActivationCharacters());
+        patternProposalAdapter.addContentProposalListener(proposalProvider);
+        patternProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);
+        patternProposalAdapter.setAutoActivationDelay(1000);
+        patternProposalAdapter.setLabelProvider(new PkgPatternProposalLabelProvider());
+        patternProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+            public void proposalAccepted(IContentProposal proposal) {
+                PkgPatternProposal patternProposal = (PkgPatternProposal) proposal;
+                String toInsert = patternProposal.getContent();
+                int currentPos = txtName.getCaretPosition();
+                txtName.setSelection(patternProposal.getReplaceFromPos(), currentPos);
+                txtName.insert(toInsert);
+                txtName.setSelection(patternProposal.getCursorPosition());
+            }
+        });
 
-		toolkit.createLabel(mainComposite, "Version:");
-		txtVersion = toolkit.createText(mainComposite, "", SWT.BORDER);
+        toolkit.createLabel(mainComposite, "Version:");
+        txtVersion = toolkit.createText(mainComposite, "", SWT.BORDER);
 
-		/*
-		Section attribsSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
-		attribsSection.setText("Extra Attributes");
-		Composite attribsComposite = toolkit.createComposite(attribsSection);
-		*/
+        /*
+         * Section attribsSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.TWISTIE);
+         * attribsSection.setText("Extra Attributes"); Composite attribsComposite =
+         * toolkit.createComposite(attribsSection);
+         */
 
-		// Listeners
-		txtName.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if(!modifyLock.isUnderModification()) {
-					if(selectedClauses.size() == 1) {
-						selectedClauses.get(0).setName(txtName.getText());
-						if(listPart != null) {
-						    listPart.updateLabels(selectedClauses);
-						    listPart.validate();
-						}
-						markDirty();
-					}
-				}
-			}
-		});
-		txtVersion.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if(!modifyLock.isUnderModification()) {
-					String text = txtVersion.getText();
-					if(text.length() == 0)
-						text = null;
+        // Listeners
+        txtName.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    if (selectedClauses.size() == 1) {
+                        selectedClauses.get(0).setName(txtName.getText());
+                        if (listPart != null) {
+                            listPart.updateLabels(selectedClauses);
+                            listPart.validate();
+                        }
+                        markDirty();
+                    }
+                }
+            }
+        });
+        txtVersion.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    String text = txtVersion.getText();
+                    if (text.length() == 0)
+                        text = null;
 
-					for (HeaderClause clause : selectedClauses) {
-						clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
-					}
-					if(listPart != null) {
-    					listPart.updateLabels(selectedClauses);
-    					listPart.validate();
-					}
-					markDirty();
-				}
-			}
-		});
+                    for (HeaderClause clause : selectedClauses) {
+                        clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
+                    }
+                    if (listPart != null) {
+                        listPart.updateLabels(selectedClauses);
+                        listPart.validate();
+                    }
+                    markDirty();
+                }
+            }
+        });
 
-		// Layout
-		GridData gd;
+        // Layout
+        GridData gd;
 
-		parent.setLayout(new GridLayout());
-		mainSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		mainComposite.setLayout(new GridLayout(2, false));
+        parent.setLayout(new GridLayout());
+        mainSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        mainComposite.setLayout(new GridLayout(2, false));
 
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.horizontalIndent = 5;
-		gd.widthHint = 100;
-		txtName.setLayoutData(gd);
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        gd.horizontalIndent = 5;
+        gd.widthHint = 100;
+        txtName.setLayoutData(gd);
 
-		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-		gd.horizontalIndent = 5;
-		gd.widthHint = 100;
-		txtVersion.setLayoutData(gd);
-	}
-	protected final Composite getMainComposite() {
-		return mainComposite;
-	}
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        gd.horizontalIndent = 5;
+        gd.widthHint = 100;
+        txtVersion.setLayoutData(gd);
+    }
+
+    protected final Composite getMainComposite() {
+        return mainComposite;
+    }
 
     public void selectionChanged(IFormPart part, ISelection selection) {
         @SuppressWarnings("unchecked")
@@ -185,78 +185,81 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
             txtName.setFocus();
             txtName.setSelection(selectedClauses.get(0).getName().length());
         }
-	}
+    }
 
-	@Override
-	public void initialize(IManagedForm form) {
-		super.initialize(form);
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
 
-		this.model = (BndEditModel) form.getInput();
-		this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
-	}
-	@Override
-	public void dispose() {
-		super.dispose();
-		this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
-	}
-	@Override
-	public void refresh() {
-		super.refresh();
-		modifyLock.modifyOperation(new Runnable() {
-			public void run() {
-				if(selectedClauses.isEmpty()) {
-					txtName.setEnabled(false);
-					txtVersion.setEnabled(false);
-					txtVersion.setMessage("Empty Selection");
-				} else if(selectedClauses.size() == 1) {
-					txtName.setEnabled(true);
-					txtName.setText(selectedClauses.get(0).getName());
+        this.model = (BndEditModel) form.getInput();
+        this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+    }
 
-					String version = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
-					txtVersion.setEnabled(true);
-					txtVersion.setMessage("");
-					txtVersion.setText(version != null ? version : "");
-				} else {
-					txtName.setEnabled(false);
+    @Override
+    public void dispose() {
+        super.dispose();
+        this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
+    }
 
-					String firstVersion = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
-					boolean versionsDiffer = false;
-					for (C selectedClause : selectedClauses) {
-						String anotherVersion = selectedClause.getAttribs().get(Constants.VERSION_ATTRIBUTE);
-						if(firstVersion != null && !firstVersion.equals(anotherVersion)) {
-							versionsDiffer = true;
-							break;
-						}
-					}
-					if(versionsDiffer) {
-						txtVersion.setEnabled(true);
-						txtVersion.setText("");
-						txtVersion.setMessage("Multiple values; type to override all");
-					} else {
-						txtVersion.setEnabled(true);
-						txtVersion.setMessage("");
-						txtVersion.setText(firstVersion != null ? firstVersion : "");
-					}
-				}
-			}
-		});
-	}
+    @Override
+    public void refresh() {
+        super.refresh();
+        modifyLock.modifyOperation(new Runnable() {
+            public void run() {
+                if (selectedClauses.isEmpty()) {
+                    txtName.setEnabled(false);
+                    txtVersion.setEnabled(false);
+                    txtVersion.setMessage("Empty Selection");
+                } else if (selectedClauses.size() == 1) {
+                    txtName.setEnabled(true);
+                    txtName.setText(selectedClauses.get(0).getName());
 
-	@Override
-	public void commit(boolean onSave) {
-		super.commit(onSave);
-		if(listPart != null) listPart.commit(onSave);
-	}
+                    String version = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
+                    txtVersion.setEnabled(true);
+                    txtVersion.setMessage("");
+                    txtVersion.setText(version != null ? version : "");
+                } else {
+                    txtName.setEnabled(false);
 
-	public void propertyChange(PropertyChangeEvent evt) {
-//		Object container = getManagedForm().getContainer();
-	}
+                    String firstVersion = selectedClauses.get(0).getAttribs().get(Constants.VERSION_ATTRIBUTE);
+                    boolean versionsDiffer = false;
+                    for (C selectedClause : selectedClauses) {
+                        String anotherVersion = selectedClause.getAttribs().get(Constants.VERSION_ATTRIBUTE);
+                        if (firstVersion != null && !firstVersion.equals(anotherVersion)) {
+                            versionsDiffer = true;
+                            break;
+                        }
+                    }
+                    if (versionsDiffer) {
+                        txtVersion.setEnabled(true);
+                        txtVersion.setText("");
+                        txtVersion.setMessage("Multiple values; type to override all");
+                    } else {
+                        txtVersion.setEnabled(true);
+                        txtVersion.setMessage("");
+                        txtVersion.setText(firstVersion != null ? firstVersion : "");
+                    }
+                }
+            }
+        });
+    }
 
-	public void setListPart(PkgPatternsListPart<C> listPart) {
-	    this.listPart = listPart;
-	}
+    @Override
+    public void commit(boolean onSave) {
+        super.commit(onSave);
+        if (listPart != null)
+            listPart.commit(onSave);
+    }
 
-	protected PkgPatternsListPart<C> getListPart() {
+    public void propertyChange(PropertyChangeEvent evt) {
+        // Object container = getManagedForm().getContainer();
+    }
+
+    public void setListPart(PkgPatternsListPart<C> listPart) {
+        this.listPart = listPart;
+    }
+
+    protected PkgPatternsListPart<C> getListPart() {
         return listPart;
-	}
+    }
 }

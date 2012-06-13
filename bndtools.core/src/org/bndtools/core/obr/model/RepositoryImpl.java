@@ -27,8 +27,7 @@ import java.util.Set;
 import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.Resource;
 
-public class RepositoryImpl implements Repository
-{
+public class RepositoryImpl implements Repository {
     private String m_name = null;
     private long m_lastmodified = System.currentTimeMillis();
     private String m_uri = null;
@@ -36,29 +35,22 @@ public class RepositoryImpl implements Repository
     private Referral[] m_referrals = null;
     private Set<Resource> m_resourceSet = new HashSet<Resource>();
 
-    public RepositoryImpl()
-    {
-    }
+    public RepositoryImpl() {}
 
-    public RepositoryImpl(Resource[] resources)
-    {
+    public RepositoryImpl(Resource[] resources) {
         m_resources = resources;
     }
 
-    public String getURI()
-    {
+    public String getURI() {
         return m_uri;
     }
 
-    public void setURI(String uri)
-    {
+    public void setURI(String uri) {
         m_uri = uri;
     }
 
-    public Resource[] getResources()
-    {
-        if (m_resources == null)
-        {
+    public Resource[] getResources() {
+        if (m_resources == null) {
             m_resources = (Resource[]) m_resourceSet.toArray(new Resource[m_resourceSet.size()]);
             Arrays.sort(m_resources, new ResourceComparator());
 
@@ -66,11 +58,9 @@ public class RepositoryImpl implements Repository
         return m_resources;
     }
 
-    public void addResource(Resource resource)
-    {
+    public void addResource(Resource resource) {
         // Set resource's repository.
-        if (resource instanceof ResourceImpl)
-        {
+        if (resource instanceof ResourceImpl) {
             ((ResourceImpl) resource).setRepository(this);
         }
 
@@ -80,20 +70,17 @@ public class RepositoryImpl implements Repository
         m_resources = null;
     }
 
-    public Referral[] getReferrals()
-    {
+    public Referral[] getReferrals() {
         return m_referrals;
     }
 
-    public void addReferral(Referral referral) throws Exception
-    {
+    public void addReferral(Referral referral) throws Exception {
         // Add to resource array.
-        if (m_referrals == null)
-        {
-            m_referrals = new Referral[] { referral };
-        }
-        else
-        {
+        if (m_referrals == null) {
+            m_referrals = new Referral[] {
+                referral
+            };
+        } else {
             Referral[] newResources = new Referral[m_referrals.length + 1];
             System.arraycopy(m_referrals, 0, newResources, 0, m_referrals.length);
             newResources[m_referrals.length] = referral;
@@ -101,44 +88,33 @@ public class RepositoryImpl implements Repository
         }
     }
 
-    public String getName()
-    {
+    public String getName() {
         return m_name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         m_name = name;
     }
 
-    public long getLastModified()
-    {
+    public long getLastModified() {
         return m_lastmodified;
     }
 
-    public void setLastModified(long lastModified)
-    {
+    public void setLastModified(long lastModified) {
         m_lastmodified = lastModified;
     }
 
-    public void setLastModified(String s)
-    {
+    public void setLastModified(String s) {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss.SSS");
-        try
-        {
+        try {
             m_lastmodified = format.parse(s).getTime();
-        }
-        catch (ParseException ex)
-        {
-        }
+        } catch (ParseException ex) {}
     }
 
     /**
-     * Default setter method when setting parsed data from the XML file,
-     * which currently ignores everything.
+     * Default setter method when setting parsed data from the XML file, which currently ignores everything.
      **/
-    protected static Object put(Object key, Object value)
-    {
+    protected static Object put(Object key, Object value) {
         // Ignore everything for now.
         return null;
     }

@@ -70,18 +70,18 @@ import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
 
     private final String propertyName;
-	private Table table;
-	protected TableViewer viewer;
+    private Table table;
+    protected TableViewer viewer;
 
-	private BndEditModel model;
-	protected List<VersionedClause> bundles;
+    private BndEditModel model;
+    protected List<VersionedClause> bundles;
     protected ToolItem removeItemTool;
 
-	protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style);
-		this.propertyName = propertyName;
-		createSection(getSection(), toolkit);
-	}
+    protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
+        super(parent, toolkit, style);
+        this.propertyName = propertyName;
+        createSection(getSection(), toolkit);
+    }
 
     protected ToolItem createAddItemTool(ToolBar toolbar) {
         ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
@@ -129,20 +129,20 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         return new VersionedClauseLabelProvider();
     }
 
-	void createSection(Section section, FormToolkit toolkit) {
-		// Toolbar buttons
-		ToolBar toolbar = new ToolBar(section, SWT.FLAT);
-		section.setTextClient(toolbar);
-		fillToolBar(toolbar);
+    void createSection(Section section, FormToolkit toolkit) {
+        // Toolbar buttons
+        ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+        section.setTextClient(toolbar);
+        fillToolBar(toolbar);
 
-		Composite composite = toolkit.createComposite(section);
-		section.setClient(composite);
+        Composite composite = toolkit.createComposite(section);
+        section.setClient(composite);
 
-		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL);
+        table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL);
 
-		viewer = new TableViewer(table);
-		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(getLabelProvider());
+        viewer = new TableViewer(table);
+        viewer.setContentProvider(new ArrayContentProvider());
+        viewer.setLabelProvider(getLabelProvider());
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -158,79 +158,84 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 super.dragEnter(event);
                 event.detail = DND.DROP_COPY;
             }
+
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
-                if(FileTransfer.getInstance().isSupportedType(transferType)) {
+                if (FileTransfer.getInstance().isSupportedType(transferType)) {
                     return true;
-                } else if(ResourceTransfer.getInstance().isSupportedType(transferType)) {
+                } else if (ResourceTransfer.getInstance().isSupportedType(transferType)) {
                     return true;
                 } else {
                     ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
-                    if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+                    if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                         return false;
                     }
 
-                    Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
-                    while(iterator.hasNext()) {
+                    Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
+                    while (iterator.hasNext()) {
                         Object element = iterator.next();
-                        if(!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
+                        if (!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
                             return false;
                         }
                     }
                     return true;
                 }
             }
+
             @Override
             public boolean performDrop(Object data) {
-                if(data instanceof String[]) {
+                if (data instanceof String[]) {
                     return handleFileNameDrop((String[]) data);
-                } else if(data instanceof IResource[]) {
+                } else if (data instanceof IResource[]) {
                     return handleResourceDrop((IResource[]) data);
                 } else {
                     return handleSelectionDrop();
                 }
             }
+
             private boolean handleResourceDrop(IResource[] resources) {
                 File[] files = new File[resources.length];
-                for(int i = 0; i < resources.length; i++) {
+                for (int i = 0; i < resources.length; i++) {
                     files[i] = resources[i].getLocation().toFile();
                 }
                 return handleFileDrop(files);
             }
+
             private boolean handleFileNameDrop(String[] paths) {
                 File[] files = new File[paths.length];
-                for(int i = 0; i < paths.length; i++) {
+                for (int i = 0; i < paths.length; i++) {
                     files[i] = new File(paths[i]);
                 }
                 return handleFileDrop(files);
             }
+
             private boolean handleFileDrop(File[] files) {
-                if(files.length > 0) {
+                if (files.length > 0) {
                     BndPreferences prefs = new BndPreferences();
                     boolean hideWarning = prefs.getHideWarningExternalFile();
-                    if(!hideWarning) {
+                    if (!hideWarning) {
                         MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(getSection().getShell(), "Add External Files",
-                                "External files cannot be directly added to a project, they must be added to a local repository first.",
-                                "Do not show this warning again.", false, null, null);
-                        if(Window.CANCEL == dialog.getReturnCode()) return false;
-                        if(dialog.getToggleState()) {
+                                "External files cannot be directly added to a project, they must be added to a local repository first.", "Do not show this warning again.", false, null, null);
+                        if (Window.CANCEL == dialog.getReturnCode())
+                            return false;
+                        if (dialog.getToggleState()) {
                             prefs.setHideWarningExternalFile(true);
                         }
                     }
 
                     AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(null, files);
                     WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-                    if(Window.OK == dialog.open()) {
-                        List<Pair<String, String>> addingBundles = wizard.getSelectedBundles();
+                    if (Window.OK == dialog.open()) {
+                        List<Pair<String,String>> addingBundles = wizard.getSelectedBundles();
                         List<VersionedClause> addingClauses = new ArrayList<VersionedClause>(addingBundles.size());
 
-                        for(Pair<String, String> addingBundle : addingBundles) {
+                        for (Pair<String,String> addingBundle : addingBundles) {
                             Attrs attribs = new Attrs();
                             attribs.put(Constants.VERSION_ATTRIBUTE, addingBundle.getSecond());
                             addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
                         }
 
-                        if(!addingClauses.isEmpty()) {
+                        if (!addingClauses.isEmpty()) {
                             bundles.addAll(addingClauses);
                             viewer.add(addingClauses.toArray(new Object[addingClauses.size()]));
                             markDirty();
@@ -243,23 +248,23 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
             private boolean handleSelectionDrop() {
                 ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
-                if(selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+                if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                     return false;
                 }
                 List<VersionedClause> adding = new LinkedList<VersionedClause>();
-                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
-                while(iterator.hasNext()) {
+                Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
+                while (iterator.hasNext()) {
                     Object item = iterator.next();
-                    if(item instanceof RepositoryBundle) {
+                    if (item instanceof RepositoryBundle) {
                         VersionedClause newClause = RepositoryUtils.convertRepoBundle((RepositoryBundle) item);
                         adding.add(newClause);
-                    } else if(item instanceof RepositoryBundleVersion) {
+                    } else if (item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
                         VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion);
                         adding.add(newClause);
                     }
                 }
-                if(!adding.isEmpty()) {
+                if (!adding.isEmpty()) {
                     bundles.addAll(adding);
                     viewer.add(adding.toArray(new Object[adding.size()]));
                     markDirty();
@@ -269,39 +274,41 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         };
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
-		viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance() },
-		            dropAdapter);
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+                LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance()
+        }, dropAdapter);
 
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.character == SWT.DEL) {
+                if (e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {
+                } else if (e.character == '+') {
                     doAdd();
                 }
             }
         });
 
+        // Layout
+        GridLayout layout = new GridLayout(1, false);
+        layout.horizontalSpacing = 0;
+        layout.verticalSpacing = 0;
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        composite.setLayout(layout);
 
-		// Layout
-		GridLayout layout = new GridLayout(1, false);
-		layout.horizontalSpacing = 0; layout.verticalSpacing = 0;
-		layout.marginHeight = 0; layout.marginWidth = 0;
-		composite.setLayout(layout);
-
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 50;
-		gd.heightHint = getTableHeightHint();
-		table.setLayoutData(gd);
-	}
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 50;
+        gd.heightHint = getTableHeightHint();
+        table.setLayoutData(gd);
+    }
 
     private static boolean isRemovable(ISelection selection) {
         if (selection.isEmpty())
             return false;
 
         if (selection instanceof IStructuredSelection) {
-            List<?> list = ((IStructuredSelection) selection).toList();
+            List< ? > list = ((IStructuredSelection) selection).toList();
             for (Object object : list) {
                 if (!(object instanceof VersionedClause)) {
                     return false;
@@ -315,12 +322,12 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
     @SuppressWarnings("static-method")
     protected int getTableHeightHint() {
-	    return SWT.DEFAULT;
-	}
+        return SWT.DEFAULT;
+    }
 
-	protected List<VersionedClause> getBundles() {
-	    return bundles;
-	}
+    protected List<VersionedClause> getBundles() {
+        return bundles;
+    }
 
     protected void setBundles(List<VersionedClause> bundles) {
         this.bundles = bundles;
@@ -366,7 +373,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if (!selection.isEmpty()) {
-            Iterator<?> elements = selection.iterator();
+            Iterator< ? > elements = selection.iterator();
             List<Object> removed = new LinkedList<Object>();
             while (elements.hasNext()) {
                 Object element = elements.next();
@@ -381,14 +388,15 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         }
     }
 
-	@Override
-	public void commit(boolean onSave) {
-		super.commit(onSave);
-		saveToModel(model, bundles);
-	}
+    @Override
+    public void commit(boolean onSave) {
+        super.commit(onSave);
+        saveToModel(model, bundles);
+    }
 
-	protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
-	protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
+    protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
+
+    protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
     protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
@@ -411,24 +419,27 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         super.refresh();
     }
 
-	@Override
-	public void initialize(IManagedForm form) {
-		super.initialize(form);
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
 
-		model = (BndEditModel) form.getInput();
-		model.addPropertyChangeListener(propertyName, this);
-	}
-	@Override
-	public void dispose() {
-		super.dispose();
-		if(model != null) model.removePropertyChangeListener(propertyName, this);
-	}
-	public void propertyChange(PropertyChangeEvent evt) {
-		IFormPage page = (IFormPage) getManagedForm().getContainer();
-		if(page.isActive()) {
-			refresh();
-		} else {
-			markStale();
-		}
-	}
+        model = (BndEditModel) form.getInput();
+        model.addPropertyChangeListener(propertyName, this);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (model != null)
+            model.removePropertyChangeListener(propertyName, this);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        IFormPage page = (IFormPage) getManagedForm().getContainer();
+        if (page.isActive()) {
+            refresh();
+        } else {
+            markStale();
+        }
+    }
 }

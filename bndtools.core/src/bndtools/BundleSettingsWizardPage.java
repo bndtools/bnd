@@ -26,103 +26,98 @@ import org.osgi.framework.Version;
 
 public class BundleSettingsWizardPage extends WizardPage {
 
-	private final WizardNewFileCreationPage fileCreationPage;
+    private final WizardNewFileCreationPage fileCreationPage;
 
-	private Version version = null;
-	private String symbolicName = null;
+    private Version version = null;
+    private String symbolicName = null;
 
-	private Text txtSymbolicName;
-	private Text txtVersion;
-	@SuppressWarnings("unused")
+    private Text txtSymbolicName;
+    private Text txtVersion;
+    @SuppressWarnings("unused")
     private Text txtActivator;
 
+    protected BundleSettingsWizardPage(String pageName, WizardNewFileCreationPage fileCreationPage) {
+        super(pageName);
+        this.fileCreationPage = fileCreationPage;
+    }
 
-	protected BundleSettingsWizardPage(String pageName,
-			WizardNewFileCreationPage fileCreationPage) {
-		super(pageName);
-		this.fileCreationPage = fileCreationPage;
-	}
+    public void createControl(Composite parent) {
+        // Create controls
+        Composite composite = new Composite(parent, SWT.NONE);
 
-	public void createControl(Composite parent) {
-		// Create controls
-		Composite composite = new Composite(parent, SWT.NONE);
+        // Basic Group
+        Group grpBasic = new Group(composite, SWT.NONE);
+        grpBasic.setText("Basic Settings");
+        new Label(grpBasic, SWT.NONE).setText("Symbolic Name:");
+        txtSymbolicName = new Text(grpBasic, SWT.BORDER);
+        new Label(grpBasic, SWT.NONE).setText("Version:");
+        txtVersion = new Text(grpBasic, SWT.BORDER);
 
-		// Basic Group
-		Group grpBasic = new Group(composite, SWT.NONE);
-		grpBasic.setText("Basic Settings");
-		new Label(grpBasic, SWT.NONE).setText("Symbolic Name:");
-		txtSymbolicName = new Text(grpBasic, SWT.BORDER);
-		new Label(grpBasic, SWT.NONE).setText("Version:");
-		txtVersion = new Text(grpBasic, SWT.BORDER);
-		
-		// Activator Group
-		Group grpActivator = new Group(composite, SWT.NONE);
-		grpActivator.setText("Activator");
-		new Label(grpActivator, SWT.NONE).setText("Bundle Activator:");
-		txtActivator = new Text(grpActivator, SWT.SINGLE | SWT.LEAD | SWT.BORDER);
-		
-		// Load initial values
-		if (symbolicName != null) {
-			txtSymbolicName.setText(symbolicName);
-		}
-		if (version != null) {
-			txtVersion.setText(version.toString());
-		}
+        // Activator Group
+        Group grpActivator = new Group(composite, SWT.NONE);
+        grpActivator.setText("Activator");
+        new Label(grpActivator, SWT.NONE).setText("Bundle Activator:");
+        txtActivator = new Text(grpActivator, SWT.SINGLE | SWT.LEAD | SWT.BORDER);
 
-		setPageComplete(symbolicName != null && version != null);
+        // Load initial values
+        if (symbolicName != null) {
+            txtSymbolicName.setText(symbolicName);
+        }
+        if (version != null) {
+            txtVersion.setText(version.toString());
+        }
 
-		// Add listeners
-		ModifyListener modifyListener = new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateFields();
-			}
-		};
-		txtSymbolicName.addModifyListener(modifyListener);
-		txtVersion.addModifyListener(modifyListener);
+        setPageComplete(symbolicName != null && version != null);
 
-		// Layout
-		GridDataFactory horizontalFill = GridDataFactory
-				.createFrom(new GridData(SWT.FILL, SWT.FILL, true, false));
+        // Add listeners
+        ModifyListener modifyListener = new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                updateFields();
+            }
+        };
+        txtSymbolicName.addModifyListener(modifyListener);
+        txtVersion.addModifyListener(modifyListener);
 
-		composite.setLayout(new GridLayout(1, false));
-		grpBasic.setLayoutData(horizontalFill.create());
+        // Layout
+        GridDataFactory horizontalFill = GridDataFactory.createFrom(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		grpBasic.setLayout(new GridLayout(2, false));
-		txtSymbolicName.setLayoutData(horizontalFill.create());
-		txtVersion.setLayoutData(horizontalFill.create());
+        composite.setLayout(new GridLayout(1, false));
+        grpBasic.setLayoutData(horizontalFill.create());
 
-		// Set control
-		setControl(composite);
-	}
+        grpBasic.setLayout(new GridLayout(2, false));
+        txtSymbolicName.setLayoutData(horizontalFill.create());
+        txtVersion.setLayoutData(horizontalFill.create());
 
-	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if (visible) {
-			String fileName = fileCreationPage.getFileName();
-			if (fileName == null) {
-				txtSymbolicName.setText("");
-			} else {
-				if (fileName.endsWith(".bnd")) {
-					txtSymbolicName.setText(fileName.substring(0, fileName
-							.length()
-							- ".bnd".length()));
-				} else {
-					txtSymbolicName.setText(fileName);
-				}
-			}
-		}
-	}
+        // Set control
+        setControl(composite);
+    }
 
-	private void updateFields() {
-		String error = null;
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            String fileName = fileCreationPage.getFileName();
+            if (fileName == null) {
+                txtSymbolicName.setText("");
+            } else {
+                if (fileName.endsWith(".bnd")) {
+                    txtSymbolicName.setText(fileName.substring(0, fileName.length() - ".bnd".length()));
+                } else {
+                    txtSymbolicName.setText(fileName);
+                }
+            }
+        }
+    }
 
-		symbolicName = txtSymbolicName.getText();
-		if (symbolicName != null && symbolicName.length() > 0) {
-			if (symbolicName.charAt(symbolicName.length() - 1) == '.') {
-				symbolicName = null;
-				error = "Symbolic name must not terminate in a period.";
-			} else {
+    private void updateFields() {
+        String error = null;
+
+        symbolicName = txtSymbolicName.getText();
+        if (symbolicName != null && symbolicName.length() > 0) {
+            if (symbolicName.charAt(symbolicName.length() - 1) == '.') {
+                symbolicName = null;
+                error = "Symbolic name must not terminate in a period.";
+            } else {
                 for (int i = 0; i < symbolicName.length(); i++) {
                     if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.".indexOf(symbolicName.charAt(i)) == -1) { //$NON-NLS-1$
                         symbolicName = null;
@@ -130,33 +125,32 @@ public class BundleSettingsWizardPage extends WizardPage {
                         break;
                     }
                 }
-			}
-		} else {
-			symbolicName = null;
-		}
+            }
+        } else {
+            symbolicName = null;
+        }
 
-		try {
-			String versionStr = txtVersion.getText();
-			if (versionStr != null && versionStr.length() > 0) {
-				version = new Version(txtVersion.getText());
-			} else {
-				version = null;
-			}
-		} catch (IllegalArgumentException e) {
-			error = "Invalid version format";
-			version = null;
-		}
+        try {
+            String versionStr = txtVersion.getText();
+            if (versionStr != null && versionStr.length() > 0) {
+                version = new Version(txtVersion.getText());
+            } else {
+                version = null;
+            }
+        } catch (IllegalArgumentException e) {
+            error = "Invalid version format";
+            version = null;
+        }
 
-		setErrorMessage(error);
-		setPageComplete(error == null && symbolicName != null
-				&& version != null);
-	}
+        setErrorMessage(error);
+        setPageComplete(error == null && symbolicName != null && version != null);
+    }
 
-	public String getSymbolicName() {
-		return symbolicName;
-	}
+    public String getSymbolicName() {
+        return symbolicName;
+    }
 
-	public Version getVersion() {
-		return version;
-	}
+    public Version getVersion() {
+        return version;
+    }
 }

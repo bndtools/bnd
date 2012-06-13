@@ -16,7 +16,7 @@ public class AbstractRunDescriptionExportWizard extends Wizard implements IRunDe
         this.model = model;
         this.bndProject = bndProject;
     }
-    
+
     @Override
     public boolean performFinish() {
         return false;

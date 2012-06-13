@@ -42,13 +42,13 @@ public class CnfSetupWizard extends Wizard {
 
         addPage(confirmPage);
         addPage(templatePage);
-        
+
         importPage.setWizard(this);
-        
+
         confirmPage.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 decision = confirmPage.getDecision();
-                
+
                 if (confirmPage.isCreateInEclipseWorkspace())
                     operation = determineNecessaryOperation(true);
                 else
@@ -88,8 +88,7 @@ public class CnfSetupWizard extends Wizard {
                 next = operation.getType() == CnfSetupOperation.Type.Import ? importPage : templatePage;
             else
                 next = null;
-        }
-        else if (importPage == page)
+        } else if (importPage == page)
             next = operation.getType() == CnfSetupOperation.Type.Create ? templatePage : null;
 
         return next;
@@ -110,16 +109,14 @@ public class CnfSetupWizard extends Wizard {
     }
 
     /**
-     * Show the wizard if it needs to be shown (i.e. the cnf project does not
-     * exist and the preference to show the wizard has not been disabled). This
-     * method is safe to call from a non-UI thread.
-     *
+     * Show the wizard if it needs to be shown (i.e. the cnf project does not exist and the preference to show the
+     * wizard has not been disabled). This method is safe to call from a non-UI thread.
+     * 
      * @param overridePreference
-     *            If this parameter is {@code true} then the dialog will be
-     *            shown irrespective of the workspace preference.
-     *
-     * @return Whether any dialog or wizard was shown. The false return may be
-     *         used to decide whether to give the user alternative feedback.
+     *            If this parameter is {@code true} then the dialog will be shown irrespective of the workspace
+     *            preference.
+     * @return Whether any dialog or wizard was shown. The false return may be used to decide whether to give the user
+     *         alternative feedback.
      */
     public static boolean showIfNeeded(boolean overridePreference) {
         // Determine whether anything needs to be done...
@@ -153,27 +150,27 @@ public class CnfSetupWizard extends Wizard {
     private static void setDisabled(boolean disabled) {
         new BndPreferences().setHideInitCnfWizard(disabled);
     }
-    
+
     private static boolean isValidCnf(File dir) {
         if (!dir.isDirectory())
             return false;
-        
+
         File buildFile = new File(dir, Workspace.BUILDFILE);
         return buildFile.isFile();
     }
-    
+
     private static CnfSetupOperation determineNecessaryOperation(IPath externalLocation) {
         CnfSetupOperation result;
-        
+
         File file = externalLocation.toFile();
         if (isValidCnf(file))
             result = new CnfSetupOperation(CnfSetupOperation.Type.Import, externalLocation);
         else
             result = new CnfSetupOperation(CnfSetupOperation.Type.Create, externalLocation);
-        
+
         return result;
     }
-    
+
     private static CnfSetupOperation determineNecessaryOperation(boolean overridePreference) {
         if (!overridePreference && isDisabled())
             return CnfSetupOperation.NOTHING;
@@ -183,22 +180,22 @@ public class CnfSetupWizard extends Wizard {
 
         CnfSetupOperation operation = CnfSetupOperation.NOTHING;
         switch (info.getExistence()) {
-        case ImportedOpen:
+        case ImportedOpen :
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Nothing, location);
             break;
-        case ImportedClosed:
+        case ImportedClosed :
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Open, null);
             break;
-        case Exists:
+        case Exists :
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Import, location);
             break;
-        case None:
+        case None :
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Create, null);
             break;
         }
         return operation;
     }
-    
+
     @Override
     public boolean performFinish() {
         if (decision == CnfSetupDecision.NEVER) {
@@ -217,8 +214,7 @@ public class CnfSetupWizard extends Wizard {
             getContainer().run(false, false, new CnfSetupTask(operation, templatePage.getSelectedElement()));
             return true;
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.",
-                    e.getCause()));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating workspace configuration project.", e.getCause()));
         } catch (InterruptedException e) {
             // ignore
         }
@@ -231,8 +227,7 @@ public class CnfSetupWizard extends Wizard {
         if (hideWarning)
             return true;
 
-        MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(getShell(), Messages.CnfSetupNeverWarningTitle,
-                Messages.CnfSetupNeverWarning, Messages.DontShowMessageAgain, false, null, null);
+        MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(getShell(), Messages.CnfSetupNeverWarningTitle, Messages.CnfSetupNeverWarning, Messages.DontShowMessageAgain, false, null, null);
 
         if (dialog.getToggleState()) {
             prefs.setHideInitCnfAdvice(true);

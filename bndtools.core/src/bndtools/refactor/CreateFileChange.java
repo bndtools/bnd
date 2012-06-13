@@ -27,9 +27,13 @@ public class CreateFileChange extends ResourceChange {
 
     /**
      * Construct a CreateFileChange object.
-     * @param path The path of the new file.
-     * @param source Provides the content of the new file.
-     * @param updateFlags Flags for creation (for possible values see {@link IFile#create(InputStream, int, IProgressMonitor)}).
+     * 
+     * @param path
+     *            The path of the new file.
+     * @param source
+     *            Provides the content of the new file.
+     * @param updateFlags
+     *            Flags for creation (for possible values see {@link IFile#create(InputStream, int, IProgressMonitor)}).
      */
     public CreateFileChange(IPath path, InputStream source, int updateFlags, String encoding) {
         this.path = path;
@@ -65,16 +69,16 @@ public class CreateFileChange extends ResourceChange {
 
     @Override
     public RefactoringStatus isValid(IProgressMonitor pm) throws CoreException {
-        RefactoringStatus result= new RefactoringStatus();
-        IFile file= ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+        RefactoringStatus result = new RefactoringStatus();
+        IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
 
-        URI location= file.getLocationURI();
+        URI location = file.getLocationURI();
         if (location == null) {
             result.addFatalError(String.format("The location for file %s is unknown", path));
             return result;
         }
 
-        IFileInfo jFile= EFS.getStore(location).fetchInfo();
+        IFileInfo jFile = EFS.getStore(location).fetchInfo();
         if (jFile.exists()) {
             result.addFatalError(String.format("File %s already exists", path));
             return result;

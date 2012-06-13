@@ -17,8 +17,7 @@ public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
     @Override
     protected ILaunchTabPiece[] createStack() {
         return new ILaunchTabPiece[] {
-                new ProjectLaunchTabPiece(),
-                new JUnitTestParamsLaunchTabPiece()
+                new ProjectLaunchTabPiece(), new JUnitTestParamsLaunchTabPiece()
         };
     }
 

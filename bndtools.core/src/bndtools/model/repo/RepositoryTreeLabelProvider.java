@@ -27,9 +27,9 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
     final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
     final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-    
+
     private final boolean showRepoId;
-    
+
     public RepositoryTreeLabelProvider(boolean showRepoId) {
         this.showRepoId = showRepoId;
     }
@@ -59,7 +59,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                     image = remoteRepoImg;
                 else
                     image = localRepoImg;
-                
+
                 cell.setImage(image);
             }
         } else if (element instanceof Project) {
@@ -68,7 +68,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 StyledString label = new StyledString(project.getName());
                 if (showRepoId)
                     label.append("  [Workspace]", StyledString.QUALIFIER_STYLER);
-                
+
                 cell.setText(label.getString());
                 cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(projectImg);
@@ -102,7 +102,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             }
         }
     }
-    
+
     private static boolean isRemoteRepo(RepositoryPlugin repository) {
         List<URI> locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
@@ -112,7 +112,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 Plugin.getDefault().getLogger().logError("Unable to get repository index list", e);
             }
         }
-        
+
         for (URI location : locations) {
             try {
                 String protocol = location.toURL().getProtocol();
@@ -122,7 +122,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 return false;
             }
         }
-        
+
         return false;
     }
 

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.editor.imports;
 
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,23 +24,23 @@ import bndtools.utils.ModificationLock;
 
 public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPattern> {
 
-	private final ModificationLock modifyLock = new ModificationLock();
+    private final ModificationLock modifyLock = new ModificationLock();
 
-	private Button btnOptional;
+    private Button btnOptional;
 
-	public ImportPatternsDetailsPage() {
-		super("Import Pattern Details");
-	}
+    public ImportPatternsDetailsPage() {
+        super("Import Pattern Details");
+    }
 
-	@Override
-	public void createContents(Composite parent) {
-		super.createContents(parent);
+    @Override
+    public void createContents(Composite parent) {
+        super.createContents(parent);
 
-		Composite mainComposite = getMainComposite();
+        Composite mainComposite = getMainComposite();
 
-		FormToolkit toolkit = getManagedForm().getToolkit();
-		toolkit.createLabel(mainComposite, ""); // Spacer
-		btnOptional = toolkit.createButton(mainComposite, "Optional", SWT.CHECK);
+        FormToolkit toolkit = getManagedForm().getToolkit();
+        toolkit.createLabel(mainComposite, ""); // Spacer
+        btnOptional = toolkit.createButton(mainComposite, "Optional", SWT.CHECK);
 
         btnOptional.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -60,38 +59,39 @@ public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPatt
                 }
             }
         });
-	}
-	@Override
-	public void refresh() {
-		super.refresh();
-		modifyLock.modifyOperation(new Runnable() {
-			public void run() {
-				if(selectedClauses.isEmpty()) {
-					btnOptional.setEnabled(false);
-					btnOptional.setGrayed(false);
-				} else if(selectedClauses.size() == 1) {
-					btnOptional.setEnabled(true);
-					btnOptional.setGrayed(false);
-					btnOptional.setSelection(selectedClauses.get(0).isOptional());
-				} else {
-					btnOptional.setEnabled(true);
+    }
 
-					boolean differs = false;
-					boolean first = selectedClauses.get(0).isOptional();
-					for (ImportPattern pattern : selectedClauses) {
-						if(first != pattern.isOptional()) {
-							differs = true;
-							break;
-						}
-					}
-					if(differs) {
-						btnOptional.setGrayed(true);
-					} else {
-						btnOptional.setGrayed(false);
-						btnOptional.setSelection(first);
-					}
-				}
-			}
-		});
-	}
+    @Override
+    public void refresh() {
+        super.refresh();
+        modifyLock.modifyOperation(new Runnable() {
+            public void run() {
+                if (selectedClauses.isEmpty()) {
+                    btnOptional.setEnabled(false);
+                    btnOptional.setGrayed(false);
+                } else if (selectedClauses.size() == 1) {
+                    btnOptional.setEnabled(true);
+                    btnOptional.setGrayed(false);
+                    btnOptional.setSelection(selectedClauses.get(0).isOptional());
+                } else {
+                    btnOptional.setEnabled(true);
+
+                    boolean differs = false;
+                    boolean first = selectedClauses.get(0).isOptional();
+                    for (ImportPattern pattern : selectedClauses) {
+                        if (first != pattern.isOptional()) {
+                            differs = true;
+                            break;
+                        }
+                    }
+                    if (differs) {
+                        btnOptional.setGrayed(true);
+                    } else {
+                        btnOptional.setGrayed(false);
+                        btnOptional.setSelection(first);
+                    }
+                }
+            }
+        });
+    }
 }

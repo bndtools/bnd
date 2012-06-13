@@ -1,6 +1,5 @@
 package bndtools.preferences.ui;
 
-
 import java.text.MessageFormat;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -26,47 +25,46 @@ import bndtools.utils.ModificationLock;
 import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-    public BndPreferencePage() {
-    }
+    public BndPreferencePage() {}
 
     public static final String PAGE_ID = "bndtools.prefPages.basic";
 
-	private final ModificationLock lock = new ModificationLock();
+    private final ModificationLock lock = new ModificationLock();
 
-	private String enableSubs;
-	private boolean noAskPackageInfo = false;
-	private boolean noCheckCnf = false;
-	private boolean warnExistingLaunch = true;
-	private int buildLogging = 0;
+    private String enableSubs;
+    private boolean noAskPackageInfo = false;
+    private boolean noCheckCnf = false;
+    private boolean warnExistingLaunch = true;
+    private int buildLogging = 0;
 
-	@Override
-	protected Control createContents(Composite parent) {
-		Composite composite = new Composite(parent, SWT.NONE);
+    @Override
+    protected Control createContents(Composite parent) {
+        Composite composite = new Composite(parent, SWT.NONE);
 
-		// Create controls
-		Group cnfCheckGroup = new Group(composite, SWT.NONE);
-		cnfCheckGroup.setText("Configuration Project");
+        // Create controls
+        Group cnfCheckGroup = new Group(composite, SWT.NONE);
+        cnfCheckGroup.setText("Configuration Project");
 
-		final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
-		btnNoCheckCnf.setText(MessageFormat.format("Do not check for the Bnd Configuration project (\"{0}\").", Project.BNDCNF));
-		final Button btnCheckCnfNow = new Button(cnfCheckGroup, SWT.PUSH);
-		btnCheckCnfNow.setText("Check Now");
+        final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
+        btnNoCheckCnf.setText(MessageFormat.format("Do not check for the Bnd Configuration project (\"{0}\").", Project.BNDCNF));
+        final Button btnCheckCnfNow = new Button(cnfCheckGroup, SWT.PUSH);
+        btnCheckCnfNow.setText("Check Now");
 
-		Group enableSubBundlesGroup = new Group(composite, SWT.NONE);
-		enableSubBundlesGroup.setText(Messages.BndPreferencePage_titleSubBundles);
+        Group enableSubBundlesGroup = new Group(composite, SWT.NONE);
+        enableSubBundlesGroup.setText(Messages.BndPreferencePage_titleSubBundles);
 
-		final Button btnAlways = new Button(enableSubBundlesGroup, SWT.RADIO);
-		btnAlways.setText(Messages.BndPreferencePage_optionAlwaysEnable);
-		final Button btnNever = new Button(enableSubBundlesGroup, SWT.RADIO);
-		btnNever.setText(Messages.BndPreferencePage_optionNeverEnable);
-		Button btnPrompt = new Button(enableSubBundlesGroup, SWT.RADIO);
-		btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
+        final Button btnAlways = new Button(enableSubBundlesGroup, SWT.RADIO);
+        btnAlways.setText(Messages.BndPreferencePage_optionAlwaysEnable);
+        final Button btnNever = new Button(enableSubBundlesGroup, SWT.RADIO);
+        btnNever.setText(Messages.BndPreferencePage_optionNeverEnable);
+        Button btnPrompt = new Button(enableSubBundlesGroup, SWT.RADIO);
+        btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
 
-		Group exportsGroup = new Group(composite, SWT.NONE);
-		exportsGroup.setText( "Exported Source Packages");
+        Group exportsGroup = new Group(composite, SWT.NONE);
+        exportsGroup.setText("Exported Source Packages");
 
-		final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
-		btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
+        final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
+        btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
 
         Group grpLaunching = new Group(composite, SWT.NONE);
         grpLaunching.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -83,54 +81,56 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         lblBuildLogging.setText(Messages.BndPreferencePage_lblBuildLogging_text);
 
         final Combo cmbBuildLogging = new Combo(grpDebugging, SWT.READ_ONLY);
-        cmbBuildLogging.setItems(new String[] { "None", "Basic", "Full" });
+        cmbBuildLogging.setItems(new String[] {
+                "None", "Basic", "Full"
+        });
 
-		// Load Data
-		if(MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
-			btnAlways.setSelection(true);
-			btnNever.setSelection(false);
-			btnPrompt.setSelection(false);
-		} else if(MessageDialogWithToggle.NEVER.equals(enableSubs)) {
-			btnAlways.setSelection(false);
-			btnNever.setSelection(true);
-			btnPrompt.setSelection(false);
-		} else {
-			btnAlways.setSelection(false);
-			btnNever.setSelection(false);
-			btnPrompt.setSelection(true);
-		}
-		btnNoAskPackageInfo.setSelection(noAskPackageInfo);
-		btnNoCheckCnf.setSelection(noCheckCnf);
-		btnCheckCnfNow.setEnabled(!noCheckCnf);
-		btnWarnExistingLaunch.setSelection(warnExistingLaunch);
-		cmbBuildLogging.select(buildLogging);
+        // Load Data
+        if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
+            btnAlways.setSelection(true);
+            btnNever.setSelection(false);
+            btnPrompt.setSelection(false);
+        } else if (MessageDialogWithToggle.NEVER.equals(enableSubs)) {
+            btnAlways.setSelection(false);
+            btnNever.setSelection(true);
+            btnPrompt.setSelection(false);
+        } else {
+            btnAlways.setSelection(false);
+            btnNever.setSelection(false);
+            btnPrompt.setSelection(true);
+        }
+        btnNoAskPackageInfo.setSelection(noAskPackageInfo);
+        btnNoCheckCnf.setSelection(noCheckCnf);
+        btnCheckCnfNow.setEnabled(!noCheckCnf);
+        btnWarnExistingLaunch.setSelection(warnExistingLaunch);
+        cmbBuildLogging.select(buildLogging);
 
-		// Listeners
-		SelectionAdapter adapter = new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				lock.ifNotModifying(new Runnable() {
-					public void run() {
-						if(btnAlways.getSelection()) {
-							enableSubs = MessageDialogWithToggle.ALWAYS;
-						} else if(btnNever.getSelection()) {
-							enableSubs = MessageDialogWithToggle.NEVER;
-						} else {
-							enableSubs = MessageDialogWithToggle.PROMPT;
-						}
-					}
-				});
-			}
-		};
-		btnAlways.addSelectionListener(adapter);
-		btnNever.addSelectionListener(adapter);
-		btnPrompt.addSelectionListener(adapter);
-		btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				noAskPackageInfo = btnNoAskPackageInfo.getSelection();
-			}
-		});
+        // Listeners
+        SelectionAdapter adapter = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                lock.ifNotModifying(new Runnable() {
+                    public void run() {
+                        if (btnAlways.getSelection()) {
+                            enableSubs = MessageDialogWithToggle.ALWAYS;
+                        } else if (btnNever.getSelection()) {
+                            enableSubs = MessageDialogWithToggle.NEVER;
+                        } else {
+                            enableSubs = MessageDialogWithToggle.PROMPT;
+                        }
+                    }
+                });
+            }
+        };
+        btnAlways.addSelectionListener(adapter);
+        btnNever.addSelectionListener(adapter);
+        btnPrompt.addSelectionListener(adapter);
+        btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                noAskPackageInfo = btnNoAskPackageInfo.getSelection();
+            }
+        });
         btnNoCheckCnf.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -159,41 +159,41 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             }
         });
 
-		// Layout
-		GridLayout layout;
-		GridData gd;
+        // Layout
+        GridLayout layout;
+        GridData gd;
 
-		layout = new GridLayout(1, false);
-		composite.setLayout(layout);
+        layout = new GridLayout(1, false);
+        composite.setLayout(layout);
 
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		enableSubBundlesGroup.setLayoutData(gd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        enableSubBundlesGroup.setLayoutData(gd);
 
-		layout = new GridLayout(1, false);
-		enableSubBundlesGroup.setLayout(layout);
+        layout = new GridLayout(1, false);
+        enableSubBundlesGroup.setLayout(layout);
 
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-		exportsGroup.setLayoutData(gd);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        exportsGroup.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         cnfCheckGroup.setLayoutData(gd);
 
         layout = new GridLayout(1, false);
-		layout.verticalSpacing = 10;
-		exportsGroup.setLayout(layout);
+        layout.verticalSpacing = 10;
+        exportsGroup.setLayout(layout);
 
-		cnfCheckGroup.setLayout(new GridLayout(1, false));
-		gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
-		btnNoCheckCnf.setLayoutData(gd);
-		gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
-		btnCheckCnfNow.setLayoutData(gd);
+        cnfCheckGroup.setLayout(new GridLayout(1, false));
+        gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+        btnNoCheckCnf.setLayoutData(gd);
+        gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+        btnCheckCnfNow.setLayoutData(gd);
 
         grpDebugging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         grpDebugging.setLayout(new GridLayout(2, false));
         cmbBuildLogging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-		return composite;
-	}
+        return composite;
+    }
 
     @Override
     public boolean performOk() {

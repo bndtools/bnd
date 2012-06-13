@@ -23,11 +23,12 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
             Resource resource = (Resource) element;
             label = getLabel(resource);
             String uri = resource.getURI();
-            if (uri != null) label.append(" " + uri, StyledString.QUALIFIER_STYLER);
+            if (uri != null)
+                label.append(" " + uri, StyledString.QUALIFIER_STYLER);
             image = getBundleImage();
         } else if (element instanceof PotentialMatch) {
             PotentialMatch match = (PotentialMatch) element;
-            
+
             label = getLabel(match.getRequirement());
             Collection<Resource> matchedResources = match.getResources();
             if (matchedResources.isEmpty()) {
@@ -59,5 +60,5 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
         }
         return label;
     }
-    
+
 }

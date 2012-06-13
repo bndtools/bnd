@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.editor.pages;
 
-
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.jface.viewers.ISelection;
@@ -109,7 +108,9 @@ public class BundleContentPage extends FormPage {
 
         registerDetailsPages();
 
-        sashForm.setWeights(new int[] { 4,3,4 });
+        sashForm.setWeights(new int[] {
+                4, 3, 4
+        });
         sashForm.hookResizeListener();
 
         // Layout
@@ -169,17 +170,17 @@ public class BundleContentPage extends FormPage {
     }
 
     class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
-        public void selectionChanged(IFormPart part, ISelection selection) {
-        }
+        public void selectionChanged(IFormPart part, ISelection selection) {}
+
         public void createContents(Composite parent) {
             FormToolkit toolkit = getManagedForm().getToolkit();
-            //toolkit.createLabel(parent, "Nothing is selected");
+            // toolkit.createLabel(parent, "Nothing is selected");
 
             Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
             section.setText("Selection Details");
 
             section.setTitleBarBackground(greyTitleBarColour);
-            //section.setTitleBarBorderColor(greyTitleBarColour);
+            // section.setTitleBarBorderColor(greyTitleBarColour);
 
             Composite composite = toolkit.createComposite(section);
             Label label = toolkit.createLabel(composite, "Select one or more items to view or edit their details.", SWT.WRAP);

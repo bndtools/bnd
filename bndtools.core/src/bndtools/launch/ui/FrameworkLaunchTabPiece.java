@@ -65,8 +65,7 @@ public class FrameworkLaunchTabPiece extends AbstractLaunchTabPiece {
         return frameworkGroup;
     }
 
-    public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-    }
+    public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {}
 
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
         dynamicUpdate = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);

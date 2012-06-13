@@ -6,19 +6,19 @@ import java.util.List;
 import aQute.lib.osgi.Constants;
 import aQute.libg.qtokens.QuotedTokenizer;
 
-public class SimpleListConverter<R> implements Converter<List<R>, String> {
+public class SimpleListConverter<R> implements Converter<List<R>,String> {
 
-    private Converter<? extends R, ? super String> itemConverter;
+    private Converter< ? extends R, ? super String> itemConverter;
 
-    public static <R> Converter<List<R>, String> create(Converter<R, ? super String> itemConverter) {
+    public static <R> Converter<List<R>,String> create(Converter<R, ? super String> itemConverter) {
         return new SimpleListConverter<R>(itemConverter);
     }
 
-    public static Converter<List<String>, String> create() {
+    public static Converter<List<String>,String> create() {
         return new SimpleListConverter<String>(new NoopConverter<String>());
     }
 
-    private SimpleListConverter(Converter<? extends R, ? super String> itemConverter) {
+    private SimpleListConverter(Converter< ? extends R, ? super String> itemConverter) {
         this.itemConverter = itemConverter;
     }
 

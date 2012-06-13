@@ -79,16 +79,17 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         createActions();
 
         // LISTENERS
-        ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {;
+        ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
+            ;
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
                 boolean valid = false;
-                if(target instanceof RepositoryPlugin) {
+                if (target instanceof RepositoryPlugin) {
                     if (((RepositoryPlugin) target).canWrite()) {
                         if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
                             ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
                             if (selection instanceof IStructuredSelection) {
-                                for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
+                                for (Iterator< ? > iter = ((IStructuredSelection) selection).iterator(); iter.hasNext();) {
                                     Object element = iter.next();
                                     if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion) {
                                         valid = true;
@@ -103,22 +104,24 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                 }
                 return valid;
             }
+
             @Override
             public void dragEnter(DropTargetEvent event) {
                 super.dragEnter(event);
                 event.detail = DND.DROP_COPY;
             }
+
             @Override
             public boolean performDrop(Object data) {
                 boolean copied = false;
-                if(data instanceof String[]) {
+                if (data instanceof String[]) {
                     String[] paths = (String[]) data;
                     File[] files = new File[paths.length];
                     for (int i = 0; i < paths.length; i++) {
                         files[i] = new File(paths[i]);
                     }
                     copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), files);
-                } else if(data instanceof IResource[]) {
+                } else if (data instanceof IResource[]) {
                     IResource[] resources = (IResource[]) data;
                     File[] files = new File[resources.length];
                     for (int i = 0; i < resources.length; i++) {
@@ -136,8 +139,12 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
 
-        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer() }, dropAdapter);
-        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, new SelectionDragAdapter(viewer));
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+                FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
+        }, dropAdapter);
+        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+            LocalSelectionTransfer.getTransfer()
+        }, new SelectionDragAdapter(viewer));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
@@ -178,7 +185,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         viewer.setInput(RepositoryUtils.listRepositories(true));
 
         // LAYOUT
-        GridLayout layout = new GridLayout(1,false);
+        GridLayout layout = new GridLayout(1, false);
         layout.horizontalSpacing = 0;
         layout.verticalSpacing = 0;
         layout.marginWidth = 0;
@@ -193,11 +200,11 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
     private File[] convertSelectionToFiles(ISelection selection) {
         if (!(selection instanceof IStructuredSelection))
             return new File[0];
-        
+
         IStructuredSelection structSel = (IStructuredSelection) selection;
         List<File> files = new ArrayList<File>(structSel.size());
-        
-        for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
+
+        for (Iterator< ? > iter = structSel.iterator(); iter.hasNext();) {
             Object element = iter.next();
             if (element instanceof IFile)
                 files.add(((IFile) element).getLocation().toFile());
@@ -207,7 +214,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                     files.add(ifile.getLocation().toFile());
             }
         }
-        
+
         return files.toArray(new File[files.size()]);
     }
 
@@ -227,10 +234,12 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
 
     @Override
     protected void updatedFilter(String filterString) {
-        if(filterString == null || filterString.length() == 0) {
+        if (filterString == null || filterString.length() == 0) {
             viewer.setFilters(new ViewerFilter[0]);
         } else {
-            viewer.setFilters(new ViewerFilter[] { new RepositoryBsnFilter(filterString) });
+            viewer.setFilters(new ViewerFilter[] {
+                new RepositoryBsnFilter(filterString)
+            });
             viewer.expandToLevel(2);
         }
     }
@@ -261,9 +270,9 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 Object element = selection.getFirstElement();
-                if(element != null && element instanceof RepositoryPlugin) {
+                if (element != null && element instanceof RepositoryPlugin) {
                     RepositoryPlugin repo = (RepositoryPlugin) element;
-                    if(repo.canWrite()) {
+                    if (repo.canWrite()) {
                         AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(repo, new File[0]);
                         WizardDialog dialog = new WizardDialog(getViewSite().getShell(), wizard);
                         dialog.open();
@@ -298,10 +307,11 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
     }
 
     public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
-        if (viewer != null) SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-            public void run() {
-                viewer.refresh(repository);
-            }
-        });
+        if (viewer != null)
+            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                public void run() {
+                    viewer.refresh(repository);
+                }
+            });
     }
 }

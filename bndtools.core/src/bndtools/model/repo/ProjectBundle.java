@@ -13,32 +13,36 @@ import aQute.bnd.build.Project;
 import bndtools.Plugin;
 
 public class ProjectBundle implements IAdaptable {
-	private final Project project;
-	private final String bsn;
+    private final Project project;
+    private final String bsn;
 
-	ProjectBundle(Project project, String bsn) {
-		this.project = project;
-		this.bsn = bsn;
-	}
-	public Project getProject() {
-		return project;
-	}
-	public String getBsn() {
-		return bsn;
-	}
-	@Override
-	public String toString() {
-		return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
-	}
+    ProjectBundle(Project project, String bsn) {
+        this.project = project;
+        this.bsn = bsn;
+    }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public Project getProject() {
+        return project;
+    }
+
+    public String getBsn() {
+        return bsn;
+    }
+
+    @Override
+    public String toString() {
+        return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
+    }
+
+    public Object getAdapter(@SuppressWarnings("rawtypes")
+    Class adapter) {
         Object result = null;
 
-        if(IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
+        if (IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
             try {
                 File targetDir = project.getTarget();
                 File bundleFile = new File(targetDir, bsn + ".jar");
-                if(bundleFile.isFile()) {
+                if (bundleFile.isFile()) {
                     Path path = new Path(bundleFile.getAbsolutePath());
                     result = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
                 }

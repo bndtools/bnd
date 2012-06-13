@@ -26,13 +26,13 @@ import aQute.lib.collections.MultiMap;
 public class CollectionUtils {
     /**
      * Move the selected items down one position in the list.
-     *
+     * 
      * @param list
      *            The list of items, which will be altered in-place.
      * @param selectionIndexes
      *            The indexes of the items to be moved.
-     * @return Whether any items have been moved. For example, would return
-     *         false if the selected items were already at the bottom of the list.
+     * @return Whether any items have been moved. For example, would return false if the selected items were already at
+     *         the bottom of the list.
      */
     public static <T> boolean moveDown(List<T> list, int[] selectionIndexes) {
         boolean moved = false;
@@ -64,13 +64,13 @@ public class CollectionUtils {
 
     /**
      * Move the selected items up one position in the list.
-     *
+     * 
      * @param list
      *            The list of items, which will be altered in-place.
      * @param selectionIndexes
      *            The indexes of the items to be moved.
-     * @return Whether any items have been moved. For example, would return
-     *         false if the selected items were already at the top of the list.
+     * @return Whether any items have been moved. For example, would return false if the selected items were already at
+     *         the top of the list.
      */
     public static <T> boolean moveUp(List<T> list, int[] selectionIndexes) {
         boolean moved = false;
@@ -99,51 +99,54 @@ public class CollectionUtils {
         }
         return moved;
     }
-	private static boolean arrayContains(int[] array, int item) {
-		for (int i : array) {
-			if(i == item)
-				return true;
-		}
-		return false;
-	}
-	
-    public static <K, V> MultiMap<V, K> invertMultiMap(MultiMap<K, V> input) {
-        MultiMap<V, K> result = new MultiMap<V, K>();
-        
-        for (Entry<K, List<V>> inputEntry : input.entrySet()) {
+
+    private static boolean arrayContains(int[] array, int item) {
+        for (int i : array) {
+            if (i == item)
+                return true;
+        }
+        return false;
+    }
+
+    public static <K, V> MultiMap<V,K> invertMultiMap(MultiMap<K,V> input) {
+        MultiMap<V,K> result = new MultiMap<V,K>();
+
+        for (Entry<K,List<V>> inputEntry : input.entrySet()) {
             K inputKey = inputEntry.getKey();
             List<V> inputList = inputEntry.getValue();
             for (V inputVal : inputList) {
                 result.add(inputVal, inputKey);
             }
         }
-        
+
         return result;
     }
-	
-	public static <K,V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
-		Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
 
-		for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
-			K inputKey = inputEntry.getKey();
-			Collection<V> inputCollection = inputEntry.getValue();
+    public static <K, V> Map<V,Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
+        Map<V,Set<K>> result = new TreeMap<V,Set<K>>();
 
-			for (V inputValue : inputCollection) {
-				Set<K> resultSet = result.get(inputValue);
-				if(resultSet == null) {
-					resultSet = new TreeSet<K>();
-					result.put(inputValue, resultSet);
-				}
-				resultSet.add(inputKey);
-			}
-		}
+        for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
+            K inputKey = inputEntry.getKey();
+            Collection<V> inputCollection = inputEntry.getValue();
 
-		return result;
-	}
-	public static <T> List<T> asList(Object[] array) {
-		@SuppressWarnings("unchecked") List<T> list = (List<T>) Arrays.asList(array);
-		return list;
-	}
+            for (V inputValue : inputCollection) {
+                Set<K> resultSet = result.get(inputValue);
+                if (resultSet == null) {
+                    resultSet = new TreeSet<K>();
+                    result.put(inputValue, resultSet);
+                }
+                resultSet.add(inputKey);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> List<T> asList(Object[] array) {
+        @SuppressWarnings("unchecked")
+        List<T> list = (List<T>) Arrays.asList(array);
+        return list;
+    }
 
     public static <T> List<T> asList(Enumeration<T> enumeration) {
         List<T> result = new ArrayList<T>();
@@ -152,14 +155,14 @@ public class CollectionUtils {
         return result;
     }
 
-	public static <T> List<T> newArrayList(Object[] array) {
-		List<T> result = new ArrayList<T>(array.length);
-		for (Object obj : array) {
-			@SuppressWarnings("unchecked")
-			T item = (T) obj;
-			result.add(item);
-		}
-		return result;
-	}
+    public static <T> List<T> newArrayList(Object[] array) {
+        List<T> result = new ArrayList<T>(array.length);
+        for (Object obj : array) {
+            @SuppressWarnings("unchecked")
+            T item = (T) obj;
+            result.add(item);
+        }
+        return result;
+    }
 
 }

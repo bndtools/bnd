@@ -47,7 +47,7 @@ import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
 public class PluginPathPart extends SectionPart implements PropertyChangeListener {
-    
+
     private TableViewer viewer;
     private IBndModel model;
     private List<String> data;
@@ -55,6 +55,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
     /**
      * Create the SectionPart.
+     * 
      * @param parent
      * @param toolkit
      * @param style
@@ -69,18 +70,18 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
      */
     private void createClient(Section section, FormToolkit toolkit) {
         section.setText("Plugin Path");
-        
+
         createToolBar(section);
-        
+
         Table table = new Table(section, SWT.BORDER | SWT.FULL_SELECTION);
         toolkit.adapt(table);
         toolkit.paintBordersFor(table);
         section.setClient(table);
-        
+
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new PluginPathLabelProvider());
-        
+
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 boolean enable = !viewer.getSelection().isEmpty();
@@ -90,31 +91,32 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.character == SWT.DEL) {
+                if (e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {;
+                } else if (e.character == '+') {
+                    ;
                     doAdd();
                 }
             }
         });
 
     }
-    
+
     private void createToolBar(Section section) {
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
-        
+
         ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
         addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText("Add Path");
-        
+
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 doAdd();
             }
         });
-        
+
         removeItem = new ToolItem(toolbar, SWT.PUSH);
         removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
@@ -140,9 +142,10 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
     @Override
     public void dispose() {
         super.dispose();
-        if(model != null) model.removePropertyChangeListener(Constants.PLUGINPATH, this);
+        if (model != null)
+            model.removePropertyChangeListener(Constants.PLUGINPATH, this);
     }
-    
+
     @Override
     public void refresh() {
         List<String> modelData = model.getPluginPath();
@@ -153,7 +156,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         viewer.setInput(this.data);
         super.refresh();
     }
-    
+
     @Override
     public void commit(boolean onSave) {
         super.commit(onSave);
@@ -167,21 +170,22 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         else
             markStale();
     }
-    
+
     IFile getEditorFile() {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         IFile file = ResourceUtil.getFile(page.getEditorInput());
         return file;
     }
-    
+
     void doAdd() {
         FileDialog dialog = new FileDialog(getManagedForm().getForm().getShell(), SWT.OPEN | SWT.MULTI);
         try {
             File wsdir = Central.getWorkspace().getBase();
             File cnfdir = new File(wsdir, Workspace.CNFDIR);
             dialog.setFilterPath(cnfdir.getAbsolutePath());
-            dialog.setFilterExtensions(new String[] {"*.jar"}); //$NON-NLS-1$
-            
+            dialog.setFilterExtensions(new String[] {
+                "*.jar"}); //$NON-NLS-1$
+
             String res = dialog.open();
             if (res != null) {
                 File baseDir = new File(dialog.getFilterPath());
@@ -204,14 +208,14 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         }
 
     }
-    
+
     private static String makeWorkspaceRelative(File wsdir, File file) throws IOException {
         String wspath = wsdir.getCanonicalPath();
         String path = file.getCanonicalPath();
-        
+
         if (path.startsWith(wspath))
             path = "${workspace}" + path.substring(wspath.length());
-        
+
         return path;
     }
 
@@ -224,19 +228,19 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         if (!sel.isEmpty())
             markDirty();
     }
-    
+
     private static final class PluginPathLabelProvider extends StyledCellLabelProvider {
-        
+
         private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/jar_obj.gif").createImage();
-        
+
         @Override
         public void update(ViewerCell cell) {
             String path = (String) cell.getElement();
-            
+
             cell.setText(path);
             cell.setImage(jarImg);
         }
-        
+
         @Override
         public void dispose() {
             super.dispose();

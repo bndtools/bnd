@@ -25,8 +25,7 @@ import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.utils.filter.FilterImpl;
 import org.osgi.framework.InvalidSyntaxException;
 
-public class RequirementImpl implements Requirement
-{
+public class RequirementImpl implements Requirement {
     private static final Pattern REMOVE_LT = Pattern.compile("\\(([^<>=~()]*)<([^*=]([^\\\\\\*\\(\\)]|\\\\|\\*|\\(|\\))*)\\)");
     private static final Pattern REMOVE_GT = Pattern.compile("\\(([^<>=~()]*)>([^*=]([^\\\\\\*\\(\\)]|\\\\|\\*|\\(|\\))*)\\)");
     private static final Pattern REMOVE_NV = Pattern.compile("\\(version>=0.0.0\\)");
@@ -38,124 +37,96 @@ public class RequirementImpl implements Requirement
     private FilterImpl m_filter = null;
     private String m_comment = null;
 
-    public RequirementImpl()
-    {
-    }
+    public RequirementImpl() {}
 
-    public RequirementImpl(String name)
-    {
+    public RequirementImpl(String name) {
         setName(name);
     }
 
-    public String getName()
-    {
+    public String getName() {
         return m_name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         // Name of capabilities and requirements are interned for performances
-        // (with a very low memory consumption as there are only a handful of values)
+        // (with a very low memory consumption as there are only a handful of
+        // values)
         m_name = name.intern();
     }
 
-    public String getFilter()
-    {
+    public String getFilter() {
         return m_filter.toString();
     }
 
-    public void setFilter(String filter)
-    {
-        try
-        {
+    public void setFilter(String filter) {
+        try {
             String nf = REMOVE_LT.matcher(filter).replaceAll("(!($1>=$2))");
             nf = REMOVE_GT.matcher(nf).replaceAll("(!($1<=$2))");
             nf = REMOVE_NV.matcher(nf).replaceAll("");
             m_filter = FilterImpl.newInstance(nf, true);
-        }
-        catch (InvalidSyntaxException e)
-        {
+        } catch (InvalidSyntaxException e) {
             IllegalArgumentException ex = new IllegalArgumentException();
             ex.initCause(e);
             throw ex;
         }
     }
 
-    public boolean isSatisfied(Capability capability)
-    {
-        return m_name.equals(capability.getName()) && m_filter.matchCase(capability.getPropertiesAsMap())
-                && (m_filter.toString().indexOf("(mandatory:<*") >= 0 || capability.getPropertiesAsMap().get("mandatory:") == null);
+    public boolean isSatisfied(Capability capability) {
+        return m_name.equals(capability.getName()) && m_filter.matchCase(capability.getPropertiesAsMap()) && (m_filter.toString().indexOf("(mandatory:<*") >= 0 || capability.getPropertiesAsMap().get("mandatory:") == null);
     }
 
-    public boolean isExtend()
-    {
+    public boolean isExtend() {
         return m_extend;
     }
 
-    public void setExtend(boolean extend)
-    {
+    public void setExtend(boolean extend) {
         m_extend = extend;
     }
 
-    public boolean isMultiple()
-    {
+    public boolean isMultiple() {
         return m_multiple;
     }
 
-    public void setMultiple(boolean multiple)
-    {
+    public void setMultiple(boolean multiple) {
         m_multiple = multiple;
     }
 
-    public boolean isOptional()
-    {
+    public boolean isOptional() {
         return m_optional;
     }
 
-    public void setOptional(boolean optional)
-    {
+    public void setOptional(boolean optional) {
         m_optional = optional;
     }
 
-    public String getComment()
-    {
+    public String getComment() {
         return m_comment;
     }
 
-    public void addText(String s)
-    {
+    public void addText(String s) {
         m_comment = s;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (o instanceof Requirement)
-        {
+        if (o instanceof Requirement) {
             Requirement r = (Requirement) o;
-            return m_name.equals(r.getName()) &&
-                (m_optional == r.isOptional()) &&
-                (m_multiple == r.isMultiple()) &&
-                m_filter.toString().equals(r.getFilter()) &&
-                ((m_comment == r.getComment()) ||
-                    ((m_comment != null) && (m_comment.equals(r.getComment()))));
+            return m_name.equals(r.getName()) && (m_optional == r.isOptional()) && (m_multiple == r.isMultiple()) && m_filter.toString().equals(r.getFilter())
+                    && ((m_comment == r.getComment()) || ((m_comment != null) && (m_comment.equals(r.getComment()))));
         }
         return false;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return m_filter.toString().hashCode();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return m_name + ":" + getFilter();
     }
 }

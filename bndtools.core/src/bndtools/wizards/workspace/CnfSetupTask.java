@@ -52,6 +52,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     /**
      * Returns whether the workspace is configured for bnd (i.e. the cnf project exists).
+     * 
      * @return
      */
     static CnfInfo getWorkspaceCnfInfo() {
@@ -81,22 +82,22 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         switch (operation.getType()) {
-        case Import:
+        case Import :
             progress.setWorkRemaining(2);
             importCnf(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             rebuildWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             break;
-        case Open:
+        case Open :
             progress.setWorkRemaining(2);
             openProject(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             rebuildWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             break;
-        case Create:
+        case Create :
             progress.setWorkRemaining(2);
             createOrReplaceCnf(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             rebuildWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             break;
-        case Nothing:
+        case Nothing :
             break;
         }
     }
@@ -167,9 +168,10 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         List<String> subPaths = new LinkedList<String>();
         @SuppressWarnings("unchecked")
         Enumeration<String> entries = sourceBundle.getEntryPaths(sourcePath);
-        if (entries != null) while (entries.hasMoreElements()) {
-            subPaths.add(entries.nextElement());
-        }
+        if (entries != null)
+            while (entries.hasMoreElements()) {
+                subPaths.add(entries.nextElement());
+            }
         int work = subPaths.size();
         SubMonitor progress = SubMonitor.convert(monitor, work);
 
@@ -235,4 +237,3 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
     }
 
 }
-

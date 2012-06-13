@@ -26,26 +26,26 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
 
     private BndEditModel model;
     private String vmargs = null;
-	private Text textField;
+    private Text textField;
 
     public RunVMArgsPart(Composite parent, FormToolkit toolkit, int style) {
-	    super(parent, toolkit, style);
-	    createSection(getSection(), toolkit);
-	}
+        super(parent, toolkit, style);
+        createSection(getSection(), toolkit);
+    }
 
-	final void createSection(Section section, FormToolkit toolkit) {
-	    section.setText("VM Arguments");
+    final void createSection(Section section, FormToolkit toolkit) {
+        section.setText("VM Arguments");
 
-	    Composite composite = toolkit.createComposite(section);
+        Composite composite = toolkit.createComposite(section);
 
-	    textField = toolkit.createText(composite, "", SWT.MULTI | SWT.BORDER);
-	    textField.addModifyListener(new ModifyListener() {
+        textField = toolkit.createText(composite, "", SWT.MULTI | SWT.BORDER);
+        textField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
                     public void run() {
                         markDirty();
                         vmargs = textField.getText();
-                        if(vmargs.length() == 0)
+                        if (vmargs.length() == 0)
                             vmargs = null;
                         validate();
                     }
@@ -53,61 +53,60 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
             }
         });
 
-	    GridLayout layout = new GridLayout(1, false);
-	    layout.marginWidth = 0;
-	    layout.marginHeight = 0;
-	    composite.setLayout(layout);
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        composite.setLayout(layout);
 
-	    GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-	    gd.heightHint = 75;
-	    gd.widthHint = 50;
-	    textField.setLayoutData(gd);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.heightHint = 75;
+        gd.widthHint = 50;
+        textField.setLayoutData(gd);
 
-	    section.setClient(composite);
+        section.setClient(composite);
     }
 
-	void validate() {
-	}
+    void validate() {}
 
-	@Override
-	public void initialize(IManagedForm form) {
-	    super.initialize(form);
-	    model = (BndEditModel) form.getInput();
-	    model.addPropertyChangeListener(BndConstants.RUNVMARGS, this);
-	}
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
+        model = (BndEditModel) form.getInput();
+        model.addPropertyChangeListener(BndConstants.RUNVMARGS, this);
+    }
 
-	@Override
-	public void dispose() {
-	    super.dispose();
-	    if(model != null)
-	        model.removePropertyChangeListener(BndConstants.RUNVMARGS, this);
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (model != null)
+            model.removePropertyChangeListener(BndConstants.RUNVMARGS, this);
+    }
 
-	@Override
-	public void refresh() {
-	    lock.modifyOperation(new Runnable() {
+    @Override
+    public void refresh() {
+        lock.modifyOperation(new Runnable() {
             public void run() {
                 vmargs = model.getRunVMArgs();
-                if(vmargs == null)
+                if (vmargs == null)
                     vmargs = ""; //$NON-NLS-1$
                 textField.setText(vmargs);
                 validate();
             }
         });
-	}
+    }
 
-	@Override
-	public void commit(boolean onSave) {
-	    super.commit(onSave);
-	    model.setRunVMArgs(vmargs);
-	}
+    @Override
+    public void commit(boolean onSave) {
+        super.commit(onSave);
+        model.setRunVMArgs(vmargs);
+    }
 
-	public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if(page.isActive()) {
+        if (page.isActive()) {
             refresh();
         } else {
             markStale();
         }
-	}
+    }
 }

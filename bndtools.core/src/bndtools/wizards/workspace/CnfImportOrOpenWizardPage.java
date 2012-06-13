@@ -25,16 +25,16 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
     private CnfSetupOperation operation;
 
     private boolean suppressEvents = false;
-    
+
     private Text txtLocation;
     private Button btnImport;
     private Button btnReplace;
 
     private boolean shown = false;
 
-
     /**
      * Create the wizard.
+     * 
      * @param cnfPath
      */
     public CnfImportOrOpenWizardPage() {
@@ -43,9 +43,10 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
         setDescription("The bnd configuration project already exists, but is not open in Eclipse. Would you like to import it?");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
     }
-    
+
     /**
      * Create contents of the wizard.
+     * 
      * @param parent
      */
     public void createControl(Composite parent) {
@@ -130,7 +131,7 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return shown  && super.isPageComplete();
+        return shown && super.isPageComplete();
     }
 
     @Override
@@ -138,7 +139,7 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
         super.setVisible(visible);
 
         if (visible && !shown) {
-            shown  = true;
+            shown = true;
         }
     }
 

@@ -2,7 +2,7 @@ package bndtools.types;
 
 import java.io.Serializable;
 
-public class Pair<A,B> implements Serializable {
+public class Pair<A, B> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -11,11 +11,12 @@ public class Pair<A,B> implements Serializable {
 
     public Pair(A first, B second) {
         assert first != null && second != null : "both parameters must be non-null";
-        this.first = first; this.second = second;
+        this.first = first;
+        this.second = second;
     }
 
-    public static <A,B> Pair<A, B> newInstance(A first, B second) {
-        return new Pair<A, B>(first, second);
+    public static <A, B> Pair<A,B> newInstance(A first, B second) {
+        return new Pair<A,B>(first, second);
     }
 
     public A getFirst() {
@@ -49,7 +50,7 @@ public class Pair<A,B> implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         @SuppressWarnings("unchecked")
-        Pair<A, B> other = (Pair<A, B>) obj;
+        Pair<A,B> other = (Pair<A,B>) obj;
         if (first == null) {
             if (other.first != null)
                 return false;

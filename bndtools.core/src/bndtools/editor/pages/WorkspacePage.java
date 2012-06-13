@@ -68,7 +68,7 @@ public class WorkspacePage extends FormPage {
 
         WorkspaceMainPart linksPart = new WorkspaceMainPart(mainBuildFile, body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(linksPart);
-        
+
         PluginPathPart pluginPathPart = new PluginPathPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION | Section.TWISTIE);
         managedForm.addPart(pluginPathPart);
 
@@ -78,9 +78,9 @@ public class WorkspacePage extends FormPage {
         // Layout
         GridLayout layout = new GridLayout(1, false);
         body.setLayout(layout);
-        
+
         linksPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
-        
+
         pluginPathPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
         pluginPathPart.getSection().addExpansionListener(new ResizeExpansionAdapter(pluginPathPart.getSection()));
 

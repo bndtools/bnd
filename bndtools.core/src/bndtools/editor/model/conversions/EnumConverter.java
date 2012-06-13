@@ -1,6 +1,6 @@
 package bndtools.editor.model.conversions;
 
-public class EnumConverter<E extends Enum<E>> implements Converter<E, String> {
+public class EnumConverter<E extends Enum<E>> implements Converter<E,String> {
 
     private final Class<E> enumType;
     private final E defaultValue;

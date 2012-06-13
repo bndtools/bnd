@@ -19,24 +19,26 @@ import bndtools.model.clauses.HeaderClause;
 
 public class ImportPackage extends HeaderClause {
 
-	private final Collection<String> usedBy;
-	private final Map<String, ? extends Collection<Clazz>> classes;
-	private final boolean selfImport;
+    private final Collection<String> usedBy;
+    private final Map<String, ? extends Collection<Clazz>> classes;
+    private final boolean selfImport;
 
-	public ImportPackage(String name, boolean selfImport, Attrs attribs, Collection<String> usedBy, Map<String, ? extends Collection<Clazz>> classes) {
-		super(name, attribs);
-		this.selfImport = selfImport;
-		this.usedBy = usedBy;
-		this.classes = classes;
-	}
-	public boolean isSelfImport() {
-		return selfImport;
-	}
-	public Collection<String> getUsedBy() {
-		return usedBy;
-	};
+    public ImportPackage(String name, boolean selfImport, Attrs attribs, Collection<String> usedBy, Map<String, ? extends Collection<Clazz>> classes) {
+        super(name, attribs);
+        this.selfImport = selfImport;
+        this.usedBy = usedBy;
+        this.classes = classes;
+    }
 
-	public Collection<Clazz> getImportingClasses(String importingPackage) {
-		return classes.get(importingPackage);
-	}
+    public boolean isSelfImport() {
+        return selfImport;
+    }
+
+    public Collection<String> getUsedBy() {
+        return usedBy;
+    };
+
+    public Collection<Clazz> getImportingClasses(String importingPackage) {
+        return classes.get(importingPackage);
+    }
 }

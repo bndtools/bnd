@@ -48,19 +48,19 @@ import bndtools.utils.FileUtils;
 
 public class EmptyBndFileWizard extends Wizard implements INewWizard {
 
-	protected IStructuredSelection selection;
-	protected IWorkbench workbench;
+    protected IStructuredSelection selection;
+    protected IWorkbench workbench;
 
-	protected NewBndFileWizardPage mainPage;
+    protected NewBndFileWizardPage mainPage;
 
-	@Override
-	public void addPages() {
-		mainPage = new NewBndFileWizardPage("newFilePage", selection); //$NON-NLS-1$
-		mainPage.setFileExtension("bnd"); //$NON-NLS-1$
-		mainPage.setAllowExistingResources(false);
+    @Override
+    public void addPages() {
+        mainPage = new NewBndFileWizardPage("newFilePage", selection); //$NON-NLS-1$
+        mainPage.setFileExtension("bnd"); //$NON-NLS-1$
+        mainPage.setAllowExistingResources(false);
 
-		addPage(mainPage);
-	}
+        addPage(mainPage);
+    }
 
     @Override
     public boolean performFinish() {
@@ -73,7 +73,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
                         IWorkspace ws = ResourcesPlugin.getWorkspace();
                         ws.run(operation, monitor);
 
-                        if(monitor.isCanceled())
+                        if (monitor.isCanceled())
                             throw new InterruptedException();
                     } catch (CoreException e) {
                         throw new InvocationTargetException(e);
@@ -81,8 +81,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
                 }
             });
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-                    "An error occurred while enabling sub-bundles", e.getCause()));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "An error occurred while enabling sub-bundles", e.getCause()));
             return false;
         } catch (InterruptedException e) {
             return false;
@@ -104,71 +103,74 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
                 }
             }
         } catch (PartInitException e) {
-            ErrorDialog.openError(getShell(), Messages.EmptyBndFileWizard_errorTitleNewBndFile, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-                    Messages.EmptyBndFileWizard_errorOpeningBndEditor, e));
+            ErrorDialog.openError(getShell(), Messages.EmptyBndFileWizard_errorTitleNewBndFile, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.EmptyBndFileWizard_errorOpeningBndEditor, e));
         }
 
         return true;
-	}
-	/**
-	 * @param container
-	 * @return Whether it is okay to proceed with the wizard finish processing.
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	boolean enableSubBundles(IContainer container) throws CoreException, IOException {
-		// Read current setting for sub-bundles
-		IFile projectFile = container.getProject().getFile(Project.BNDFILE);
-		IDocument projectDoc = FileUtils.readFully(projectFile);
-		if(projectDoc == null)
-			projectDoc = new Document();
+    }
 
-		IPersistableBndModel model = new BndEditModel();
-		model.loadFrom(projectDoc);
-		Collection<String> subBndFiles = model.getSubBndFiles();
-		final boolean enableSubs;
+    /**
+     * @param container
+     * @return Whether it is okay to proceed with the wizard finish processing.
+     * @throws CoreException
+     * @throws IOException
+     */
+    boolean enableSubBundles(IContainer container) throws CoreException, IOException {
+        // Read current setting for sub-bundles
+        IFile projectFile = container.getProject().getFile(Project.BNDFILE);
+        IDocument projectDoc = FileUtils.readFully(projectFile);
+        if (projectDoc == null)
+            projectDoc = new Document();
 
-		// If -sub is unset, ask if it should be set to *.bnd
-		if(subBndFiles == null || subBndFiles.isEmpty()) {
-		    BndPreferences prefs = new BndPreferences();
-			String enableSubsPref = prefs.getEnableSubBundles();
+        IPersistableBndModel model = new BndEditModel();
+        model.loadFrom(projectDoc);
+        Collection<String> subBndFiles = model.getSubBndFiles();
+        final boolean enableSubs;
 
-			if(MessageDialogWithToggle.ALWAYS.equals(enableSubsPref)) {
-				enableSubs = true;
-			} else if(MessageDialogWithToggle.NEVER.equals(enableSubsPref)) {
-				enableSubs = false;
-			} else {
-				// Null, or any other value, implies "prompt"
-				MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoCancelQuestion(getShell(), Messages.EmptyBndFileWizard_titleSubBundlesNotEnabled, Messages.EmptyBndFileWizard_questionSubBundlesNotEnabled, Messages.EmptyBndFileWizard_selectAsDefault, false, null, null);
-				final int returnCode = dialog.getReturnCode();
-				if(returnCode == IDialogConstants.CANCEL_ID) {
-					return false;
-				}
-				enableSubs = returnCode == IDialogConstants.YES_ID;
+        // If -sub is unset, ask if it should be set to *.bnd
+        if (subBndFiles == null || subBndFiles.isEmpty()) {
+            BndPreferences prefs = new BndPreferences();
+            String enableSubsPref = prefs.getEnableSubBundles();
 
-				// Persist the selection if the toggle is on
-				if(dialog.getToggleState()) {
-					enableSubsPref = (returnCode == IDialogConstants.YES_ID) ? MessageDialogWithToggle.ALWAYS : MessageDialogWithToggle.NEVER;
-					prefs.setEnableSubBundles(enableSubsPref);
-				}
-			}
-		} else {
-			enableSubs = false;
-		}
+            if (MessageDialogWithToggle.ALWAYS.equals(enableSubsPref)) {
+                enableSubs = true;
+            } else if (MessageDialogWithToggle.NEVER.equals(enableSubsPref)) {
+                enableSubs = false;
+            } else {
+                // Null, or any other value, implies "prompt"
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoCancelQuestion(getShell(), Messages.EmptyBndFileWizard_titleSubBundlesNotEnabled, Messages.EmptyBndFileWizard_questionSubBundlesNotEnabled,
+                        Messages.EmptyBndFileWizard_selectAsDefault, false, null, null);
+                final int returnCode = dialog.getReturnCode();
+                if (returnCode == IDialogConstants.CANCEL_ID) {
+                    return false;
+                }
+                enableSubs = returnCode == IDialogConstants.YES_ID;
 
-		// Actually do it!
-		if(enableSubs) {
-			model.setSubBndFiles(Arrays.asList(new String[] { "*.bnd" })); //$NON-NLS-1$
-			model.saveChangesTo(projectDoc);
+                // Persist the selection if the toggle is on
+                if (dialog.getToggleState()) {
+                    enableSubsPref = (returnCode == IDialogConstants.YES_ID) ? MessageDialogWithToggle.ALWAYS : MessageDialogWithToggle.NEVER;
+                    prefs.setEnableSubBundles(enableSubsPref);
+                }
+            }
+        } else {
+            enableSubs = false;
+        }
 
-			FileUtils.writeFully(projectDoc, projectFile, true);
-		}
+        // Actually do it!
+        if (enableSubs) {
+            model.setSubBndFiles(Arrays.asList(new String[] {
+                "*.bnd"})); //$NON-NLS-1$
+            model.saveChangesTo(projectDoc);
 
-		return true;
-	}
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		this.workbench = workbench;
-		this.selection = selection;
-	}
+            FileUtils.writeFully(projectDoc, projectFile, true);
+        }
+
+        return true;
+    }
+
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        this.workbench = workbench;
+        this.selection = selection;
+    }
 
 }

@@ -11,12 +11,10 @@ public class ProgressReportingInputStream extends InputStream {
     private final IProgressMonitor monitor;
 
     /**
-     * Wrap an existing input stream with a progress-reporting input stream.
-     * Subsequently reading data from the wrapped stream will cause progress to
-     * be shown on the supplied progress monitor. NB: It is the caller's
-     * responsibility to call the {@code beginTask()} method of the progress
-     * monitor BEFORE any of the stream methods (e.g. {@code #read()} etc) are
-     * accessed.
+     * Wrap an existing input stream with a progress-reporting input stream. Subsequently reading data from the wrapped
+     * stream will cause progress to be shown on the supplied progress monitor. NB: It is the caller's responsibility to
+     * call the {@code beginTask()} method of the progress monitor BEFORE any of the stream methods (e.g.
+     * {@code #read()} etc) are accessed.
      * 
      * @param stream
      * @param monitor
@@ -29,28 +27,32 @@ public class ProgressReportingInputStream extends InputStream {
     @Override
     public int read() throws IOException {
         int result = stream.read();
-        if (result > 0) monitor.worked(1);
+        if (result > 0)
+            monitor.worked(1);
         return result;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
         int result = stream.read(b);
-        if (result > 0) monitor.worked(result);
+        if (result > 0)
+            monitor.worked(result);
         return result;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int result = stream.read(b, off, len);
-        if (result > 0) monitor.worked(result);
+        if (result > 0)
+            monitor.worked(result);
         return result;
     }
 
     @Override
     public long skip(long n) throws IOException {
         long result = stream.skip(n);
-        if (result > 0) monitor.worked((int) result);
+        if (result > 0)
+            monitor.worked((int) result);
         return result;
     }
 

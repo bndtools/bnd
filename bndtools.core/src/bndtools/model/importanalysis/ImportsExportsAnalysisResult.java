@@ -13,12 +13,11 @@ package bndtools.model.importanalysis;
 import java.util.Collection;
 
 public class ImportsExportsAnalysisResult {
-    final Collection<? extends ImportPackage> imports;
-    final Collection<? extends ExportPackage> exports;
-    final Collection<? extends RequiredBundle> requiredBundles;
+    final Collection< ? extends ImportPackage> imports;
+    final Collection< ? extends ExportPackage> exports;
+    final Collection< ? extends RequiredBundle> requiredBundles;
 
-    public ImportsExportsAnalysisResult(Collection<? extends ImportPackage> imports, Collection<? extends ExportPackage> exports,
-            Collection<? extends RequiredBundle> requiredBundles) {
+    public ImportsExportsAnalysisResult(Collection< ? extends ImportPackage> imports, Collection< ? extends ExportPackage> exports, Collection< ? extends RequiredBundle> requiredBundles) {
         this.imports = imports;
         this.exports = exports;
         this.requiredBundles = requiredBundles;

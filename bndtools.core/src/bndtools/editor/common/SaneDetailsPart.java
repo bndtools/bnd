@@ -23,15 +23,15 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
     private FormToolkit toolkit;
     private Composite parent;
 
-    private final Map<Class<?>, IDetailsPage> pageMap = new HashMap<Class<?>, IDetailsPage>(3);
-    private final Map<Class<?>, Control> controlCache = new HashMap<Class<?>, Control>(3);
+    private final Map<Class< ? >,IDetailsPage> pageMap = new HashMap<Class< ? >,IDetailsPage>(3);
+    private final Map<Class< ? >,Control> controlCache = new HashMap<Class< ? >,Control>(3);
     private IDetailsPage deselectedPage = null;
 
     private IDetailsPage currentPage = null;
     private ISelection currentSelection;
     private IFormPart masterPart;
 
-    public void registerPage(Class<?> clazz, IDetailsPage page) {
+    public void registerPage(Class< ? > clazz, IDetailsPage page) {
         pageMap.put(clazz, page);
         page.initialize(managedForm);
     }
@@ -47,8 +47,9 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         parent.setLayout(stack);
 
         deselectedPanel = toolkit.createComposite(parent);
-        //deselectedPanel.setBackground(new Color(parent.getDisplay(), 255, 0, 0));
-        if(deselectedPage != null)
+        // deselectedPanel.setBackground(new Color(parent.getDisplay(), 255, 0,
+        // 0));
+        if (deselectedPage != null)
             deselectedPage.createContents(deselectedPanel);
         stack.topControl = deselectedPanel;
     }
@@ -57,33 +58,31 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         masterPart = part;
         currentSelection = selection;
 
-        Class<?> clazz = null;
-        if(selection instanceof IStructuredSelection) {
+        Class< ? > clazz = null;
+        if (selection instanceof IStructuredSelection) {
             Object selected = ((IStructuredSelection) selection).getFirstElement();
-            if(selected != null)
+            if (selected != null)
                 clazz = selected.getClass();
         }
         showPage(clazz);
     }
 
-    void showPage(Class<?> clazz) {
+    void showPage(Class< ? > clazz) {
         IDetailsPage oldPage = currentPage;
 
-        currentPage = clazz != null
-            ? currentPage = pageMap.get(clazz)
-            : null;
+        currentPage = clazz != null ? currentPage = pageMap.get(clazz) : null;
 
         // Save data from old page
-        if(oldPage != null && oldPage.isDirty())
+        if (oldPage != null && oldPage.isDirty())
             oldPage.commit(false);
 
         // Show control
         Control control;
-        if(currentPage == null) {
+        if (currentPage == null) {
             control = deselectedPanel;
         } else {
             control = controlCache.get(clazz);
-            if(control == null) {
+            if (control == null) {
                 Composite composite = toolkit.createComposite(parent);
                 controlCache.put(clazz, composite);
                 currentPage.createContents(composite);
@@ -95,17 +94,17 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         parent.layout();
 
         // Refresh
-        if(currentPage != null && currentPage.isStale())
+        if (currentPage != null && currentPage.isStale())
             currentPage.refresh();
     }
 
     public void commit(boolean onSave) {
-        if(currentPage != null)
+        if (currentPage != null)
             currentPage.commit(onSave);
     }
 
     public void dispose() {
-        for (Class<?> key : pageMap.keySet()) {
+        for (Class< ? > key : pageMap.keySet()) {
             controlCache.remove(key);
             IDetailsPage page = pageMap.get(key);
             page.dispose();
@@ -126,12 +125,12 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
     }
 
     public void refresh() {
-        if(currentPage != null)
+        if (currentPage != null)
             currentPage.refresh();
     }
 
     public void setFocus() {
-        if(currentPage != null)
+        if (currentPage != null)
             currentPage.setFocus();
     }
 

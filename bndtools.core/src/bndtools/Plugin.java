@@ -44,39 +44,42 @@ import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
-	public static final String PLUGIN_ID = "bndtools.core";
-	public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
+    public static final String PLUGIN_ID = "bndtools.core";
+    public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
 
-	public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
+    public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
 
-	public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
+    public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
 
-	private static volatile Plugin plugin;
+    private static volatile Plugin plugin;
 
-	private BundleContext bundleContext;
-	private Activator bndActivator;
-	private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
+    private BundleContext bundleContext;
+    private Activator bndActivator;
+    private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
     private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
-    
+
     private volatile ScheduledExecutorService scheduler;
 
     private volatile Central central;
-    
+
     private final ILogger logger = new ILogger() {
         public void logError(String message, Throwable exception) {
             getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
         }
+
         public void logWarning(String message, Throwable exception) {
             getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, 0, message, exception));
         }
+
         public void logInfo(String message, Throwable exception) {
             getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, exception));
         }
+
         public void logStatus(IStatus status) {
             getLog().log(status);
         }
@@ -88,7 +91,7 @@ public class Plugin extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         this.bundleContext = context;
-        
+
         scheduler = Executors.newScheduledThreadPool(1);
 
         bndActivator = new Activator();
@@ -96,7 +99,7 @@ public class Plugin extends AbstractUIPlugin {
 
         indexerTracker = new IndexerTracker(context);
         indexerTracker.open();
-        
+
         resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
         resourceIndexerTracker.open();
 
@@ -116,13 +119,15 @@ public class Plugin extends AbstractUIPlugin {
         context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
     }
 
-	private void registerWorkspaceURLHandler(BundleContext context) {
-	    workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
-	    workspaceTracker.open();
+    private void registerWorkspaceURLHandler(BundleContext context) {
+        workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
+        workspaceTracker.open();
 
-	    Properties props = new Properties();
-	    props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] { WorkspaceURLStreamHandlerService.PROTOCOL });
-	    urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
+        Properties props = new Properties();
+        props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
+            WorkspaceURLStreamHandlerService.PROTOCOL
+        });
+        urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
     private void runStartupParticipants() {
@@ -155,10 +160,10 @@ public class Plugin extends AbstractUIPlugin {
         }
     }
 
-	private void unregisterWorkspaceURLHandler() {
-	    urlHandlerReg.unregister();
-	    workspaceTracker.close();
-	}
+    private void unregisterWorkspaceURLHandler() {
+        urlHandlerReg.unregister();
+        workspaceTracker.close();
+    }
 
     @Override
     public void stop(BundleContext context) throws Exception {
@@ -175,21 +180,20 @@ public class Plugin extends AbstractUIPlugin {
         scheduler.shutdown();
     }
 
-	public static Plugin getDefault() {
-		return plugin;
-	}
+    public static Plugin getDefault() {
+        return plugin;
+    }
 
-	public BundleContext getBundleContext() {
-		return bundleContext;
-	}
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 
-	public RepositoryModel getRepositoryModel() {
+    public RepositoryModel getRepositoryModel() {
         return repositoryModel;
     }
 
-    public static void report(boolean warnings, boolean acknowledge , Processor reporter, final String title, final String extra ) {
-        if (reporter.getErrors().size() > 0
-                || (warnings && reporter.getWarnings().size() > 0)) {
+    public static void report(boolean warnings, boolean acknowledge, Processor reporter, final String title, final String extra) {
+        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
             if (reporter.getErrors().size() > 0) {
@@ -217,9 +221,10 @@ public class Plugin extends AbstractUIPlugin {
             });
 
         } else {
-            message(title+ " : ok");
+            message(title + " : ok");
         }
     }
+
     public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
@@ -227,12 +232,14 @@ public class Plugin extends AbstractUIPlugin {
             }
         });
     }
+
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
             Display.getDefault().asyncExec(run);
         } else
             run.run();
     }
+
     public static void error(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
@@ -243,27 +250,28 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             public void run() {
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation",
-                        sb.toString(), s);
+                ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
     }
+
     static final AtomicBoolean busy = new AtomicBoolean(false);
+
     public void error(final String msg, final Throwable t) {
         Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             public void run() {
-            	if(!busy.compareAndSet(false, true)) {
-		            Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
-		            ErrorDialog.openError(null, "Errors during bundle generation",
-		                    msg + " " + t.getMessage(), s);
+                if (!busy.compareAndSet(false, true)) {
+                    Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                    ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
-		            busy.set(false);
-            	}
+                    busy.set(false);
+                }
             }
         });
     }
+
     public static void warning(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
@@ -273,16 +281,15 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             public void run() {
                 Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null,
-                        "Warnings during bundle generation", sb.toString(), s);
+                ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
     }
-    
+
     public ILogger getLogger() {
         return logger;
     }
-    
+
     /**
      * @deprecated Use {@link #getLogger() instead}
      * @param status
@@ -305,23 +312,23 @@ public class Plugin extends AbstractUIPlugin {
     public static void logError(String message, Throwable exception) {
         log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
     }
-    
+
     public Central getCentral() {
         return central;
     }
 
-	public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
-	}
+    public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
+        return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
+    }
 
     public BundleIndexer getBundleIndexer() {
         return indexerTracker;
     }
-    
+
     public ResourceIndexer getResourceIndexer() {
         return resourceIndexerTracker;
     }
-    
+
     public ScheduledExecutorService getScheduler() {
         return scheduler;
     }

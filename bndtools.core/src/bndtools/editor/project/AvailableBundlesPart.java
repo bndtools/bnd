@@ -42,18 +42,18 @@ import bndtools.utils.SelectionDragAdapter;
 import bndtools.views.RepositoryBsnFilter;
 
 public class AvailableBundlesPart extends BndEditorPart {
-    
+
     // Number of millis to wait for the user to stop typing in the filter box
     private static final long SEARCH_DELAY = 1000;
-    
+
     private String searchStr = "";
-    private ScheduledFuture<?> scheduledFilterUpdate = null;
-    
+    private ScheduledFuture< ? > scheduledFilterUpdate = null;
+
     private Text txtSearch;
     private TreeViewer viewer;
-    
+
     private Set<String> includedRepos;
-    
+
     private final ViewerFilter includedRepoFilter = new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -71,24 +71,26 @@ public class AvailableBundlesPart extends BndEditorPart {
             return select;
         }
     };
-    
-    
-    
+
     private final Runnable updateFilterTask = new Runnable() {
         public void run() {
             Display display = viewer.getControl().getDisplay();
-            
+
             final ViewerFilter[] filters;
             if (searchStr == null || searchStr.trim().length() == 0)
-                filters = new ViewerFilter[] { includedRepoFilter };
+                filters = new ViewerFilter[] {
+                    includedRepoFilter
+                };
             else
-                filters = new ViewerFilter[] { includedRepoFilter, new RepositoryBsnFilter(searchStr.trim()) };
+                filters = new ViewerFilter[] {
+                        includedRepoFilter, new RepositoryBsnFilter(searchStr.trim())
+                };
             Runnable update = new Runnable() {
                 public void run() {
                     viewer.setFilters(filters);
                 }
             };
-            
+
             if (display.getThread() == Thread.currentThread())
                 update.run();
             else
@@ -113,27 +115,29 @@ public class AvailableBundlesPart extends BndEditorPart {
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         container.setLayout(layout);
-        
+
         toolkit.createLabel(container, "Filter:");
-        
+
         txtSearch = toolkit.createText(container, "", SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL | SWT.BORDER);
         txtSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        
+
         Tree tree = toolkit.createTree(container, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-        
+
         viewer = new TreeViewer(tree);
         RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(OBRResolutionMode.runtime);
         contentProvider.setShowRepos(false);
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
-        viewer.setFilters(new ViewerFilter[] { includedRepoFilter });
-        
+        viewer.setFilters(new ViewerFilter[] {
+            includedRepoFilter
+        });
+
         txtSearch.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 if (scheduledFilterUpdate != null)
                     scheduledFilterUpdate.cancel(true);
-                
+
                 searchStr = txtSearch.getText();
                 scheduledFilterUpdate = Plugin.getDefault().getScheduler().schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
             }
@@ -144,13 +148,15 @@ public class AvailableBundlesPart extends BndEditorPart {
                 if (scheduledFilterUpdate != null)
                     scheduledFilterUpdate.cancel(true);
                 scheduledFilterUpdate = null;
-                
+
                 searchStr = txtSearch.getText();
                 updateFilterTask.run();
             }
         });
-        
-        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, new SelectionDragAdapter(viewer) {
+
+        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+            LocalSelectionTransfer.getTransfer()
+        }, new SelectionDragAdapter(viewer) {
             @Override
             public void dragStart(DragSourceEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -162,22 +168,25 @@ public class AvailableBundlesPart extends BndEditorPart {
                 }
             }
         });
-        
-        
+
         viewer.setInput(RepositoryUtils.listRepositories(true));
     }
-    
+
     void updatedFilter(String filterString) {
-        if(filterString == null || filterString.length() == 0) {
+        if (filterString == null || filterString.length() == 0) {
             viewer.setFilters(new ViewerFilter[0]);
         } else {
-            viewer.setFilters(new ViewerFilter[] { new RepositoryBsnFilter(filterString) });
+            viewer.setFilters(new ViewerFilter[] {
+                new RepositoryBsnFilter(filterString)
+            });
         }
     }
 
     @Override
     protected String[] getProperties() {
-        return new String[] { BndConstants.RUNREPOS };
+        return new String[] {
+            BndConstants.RUNREPOS
+        };
     }
 
     @Override

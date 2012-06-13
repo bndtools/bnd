@@ -27,27 +27,27 @@ import bndtools.api.ILogger;
 
 public class WorkspaceRepoProvider implements IndexProvider {
 
-    // Generate warnings if the index generation takes longer than this (millisecs)
+    // Generate warnings if the index generation takes longer than this
+    // (millisecs)
     private static final long WARNING_THRESHOLD_TIME = 1000;
 
     private final File indexFile;
     private final ResourceIndexer indexer;
     private final ILogger logger;
-    
+
     private Workspace workspace;
 
     @GuardedBy("this")
-    private final Map<Project, File[]> projectFileMap = new HashMap<Project, File[]>();
+    private final Map<Project,File[]> projectFileMap = new HashMap<Project,File[]>();
     @GuardedBy("this")
     private boolean initialised = false;
-
 
     public WorkspaceRepoProvider(File indexFile, ResourceIndexer indexer, ILogger logger) {
         this.indexer = indexer;
         this.indexFile = indexFile;
         this.logger = logger;
     }
-    
+
     public void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
     }
@@ -70,7 +70,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
         for (Project project : projects) {
             File targetDir = project.getTarget();
 
-            Collection<? extends Builder> builders = project.getSubBuilders();
+            Collection< ? extends Builder> builders = project.getSubBuilders();
             List<File> targetFileList = new ArrayList<File>(builders.size());
 
             for (Builder builder : builders) {
@@ -82,29 +82,30 @@ public class WorkspaceRepoProvider implements IndexProvider {
         }
         rebuildIndex();
     }
-    
+
     public synchronized void replaceProjectFiles(Project project, File[] files) throws Exception {
         projectFileMap.put(project, files);
 
-        // TODO: can we be more efficient than rebuilding the whole workspace index each time one project changes??
+        // TODO: can we be more efficient than rebuilding the whole workspace
+        // index each time one project changes??
         rebuildIndex();
     }
 
     public synchronized void rebuildIndex() throws Exception {
         long startingTime = System.currentTimeMillis();
-        
+
         Set<File> jars = gatherFiles();
-        
+
         String baseUrl = workspace.getBase().getCanonicalFile().toURI().toURL().toString();
-        
-        Map<String, String> config = new HashMap<String, String>();
+
+        Map<String,String> config = new HashMap<String,String>();
         config.put(ResourceIndexer.REPOSITORY_NAME, "Bndtools Workspace Repository");
         config.put(ResourceIndexer.ROOT_URL, baseUrl);
         config.put(ResourceIndexer.PRETTY, "true");
         config.put(ResourceIndexer.URL_TEMPLATE, baseUrl + "%p%f");
-        
+
         try {
-            
+
             indexer.index(jars, new FileOutputStream(indexFile), config);
         } finally {
             long timeTaken = System.currentTimeMillis() - startingTime;
@@ -117,7 +118,8 @@ public class WorkspaceRepoProvider implements IndexProvider {
         Set<File> jars = new HashSet<File>();
         for (File[] files : projectFileMap.values()) {
             for (File file : files) {
-                if (file.exists()) jars.add(file.getCanonicalFile());
+                if (file.exists())
+                    jars.add(file.getCanonicalFile());
             }
         }
         return jars;
@@ -131,7 +133,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
     public Set<ResolutionPhase> getSupportedPhases() {
         return EnumSet.allOf(ResolutionPhase.class);
     }
-    
+
     @Override
     public String toString() {
         return "<<Workspace>>";

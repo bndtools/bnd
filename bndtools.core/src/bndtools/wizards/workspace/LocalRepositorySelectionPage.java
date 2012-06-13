@@ -52,18 +52,18 @@ class LocalRepositorySelectionPage extends WizardPage {
         viewer.setContentProvider(new RepositoryTreeContentProvider());
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         viewer.setFilters(new ViewerFilter[] {
-                new ViewerFilter() {
-                    @Override
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        return (element instanceof RepositoryPlugin) && ((RepositoryPlugin) element).canWrite();
-                    }
+            new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return (element instanceof RepositoryPlugin) && ((RepositoryPlugin) element).canWrite();
                 }
+            }
         });
 
         try {
             Workspace workspace = Central.getWorkspace();
             viewer.setInput(workspace);
-            if(selectedRepository != null)
+            if (selectedRepository != null)
                 viewer.setSelection(new StructuredSelection(selectedRepository));
 
             validate(workspace);
@@ -85,10 +85,10 @@ class LocalRepositorySelectionPage extends WizardPage {
                 setSelectedRepository((RepositoryPlugin) selection.getFirstElement());
 
                 IWizardPage nextPage = getNextPage();
-                if(nextPage != null) getContainer().showPage(nextPage);
+                if (nextPage != null)
+                    getContainer().showPage(nextPage);
             }
         });
-
 
         setControl(table);
     }
@@ -96,12 +96,13 @@ class LocalRepositorySelectionPage extends WizardPage {
     private void validate(Workspace workspace) {
         String error = "No writeable local repositories are configured.";
         List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
-        if(plugins != null) for (RepositoryPlugin plugin : plugins) {
-            if(plugin.canWrite()) {
-                error = null;
-                break;
+        if (plugins != null)
+            for (RepositoryPlugin plugin : plugins) {
+                if (plugin.canWrite()) {
+                    error = null;
+                    break;
+                }
             }
-        }
         setErrorMessage(error);
     }
 

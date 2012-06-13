@@ -10,7 +10,6 @@
  ******************************************************************************/
 package bndtools.editor;
 
-
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -26,26 +25,27 @@ import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlinePage extends ContentOutlinePage {
 
-	private final BndEditModel model;
-	private final BndEditor editor;
+    private final BndEditModel model;
+    private final BndEditor editor;
 
-	public BndEditorContentOutlinePage(BndEditor editor, BndEditModel model) {
-		this.editor = editor;
-		this.model = model;
-	}
-	@Override
-	public void createControl(Composite parent) {
-		super.createControl(parent);
+    public BndEditorContentOutlinePage(BndEditor editor, BndEditModel model) {
+        this.editor = editor;
+        this.model = model;
+    }
 
-		TreeViewer viewer = getTreeViewer();
-		viewer.setAutoExpandLevel(2);
-		viewer.setContentProvider(new BndEditorContentOutlineProvider(viewer));
-		viewer.setLabelProvider(new BndEditorContentOutlineLabelProvider());
+    @Override
+    public void createControl(Composite parent) {
+        super.createControl(parent);
 
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-				Object element = selection.getFirstElement();
+        TreeViewer viewer = getTreeViewer();
+        viewer.setAutoExpandLevel(2);
+        viewer.setContentProvider(new BndEditorContentOutlineProvider(viewer));
+        viewer.setLabelProvider(new BndEditorContentOutlineLabelProvider());
+
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                Object element = selection.getFirstElement();
 
                 if (element instanceof String) {
                     if (BndEditorContentOutlineProvider.EXPORTS.equals(element)) {
@@ -59,29 +59,29 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
                     } else {
                         editor.setActivePage((String) element);
                     }
-				} else if(element instanceof ExportedPackage) {
+                } else if (element instanceof ExportedPackage) {
                     BundleContentPage contentsPage = (BundleContentPage) editor.setActivePage(BndEditor.CONTENT_PAGE);
                     if (contentsPage != null) {
                         contentsPage.setSelectedExport((ExportedPackage) element);
                     }
-				} else if(element instanceof PrivatePkg) {
+                } else if (element instanceof PrivatePkg) {
                     BundleContentPage contentsPage = (BundleContentPage) editor.setActivePage(BndEditor.CONTENT_PAGE);
                     if (contentsPage != null) {
                         contentsPage.setSelectedPrivatePkg(((PrivatePkg) element).pkg);
                     }
-				} else if(element instanceof ImportPattern) {
+                } else if (element instanceof ImportPattern) {
                     BundleContentPage contentsPage = (BundleContentPage) editor.setActivePage(BndEditor.CONTENT_PAGE);
-					if(contentsPage != null) {
-						contentsPage.setSelectedImport((ImportPattern) element);
-					}
-				} else if (element instanceof PluginClause) {
-				    WorkspacePage workspacePage = (WorkspacePage) editor.setActivePage(BndEditor.WORKSPACE_PAGE);
-				    if (workspacePage != null)
-				        workspacePage.setSelectedPlugin(((PluginClause) element).header);
-				}
-			}
-		});
+                    if (contentsPage != null) {
+                        contentsPage.setSelectedImport((ImportPattern) element);
+                    }
+                } else if (element instanceof PluginClause) {
+                    WorkspacePage workspacePage = (WorkspacePage) editor.setActivePage(BndEditor.WORKSPACE_PAGE);
+                    if (workspacePage != null)
+                        workspacePage.setSelectedPlugin(((PluginClause) element).header);
+                }
+            }
+        });
 
-		viewer.setInput(model);
-	}
+        viewer.setInput(model);
+    }
 }

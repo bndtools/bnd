@@ -43,8 +43,7 @@ public class RequiredObrIndexWizardPage extends WizardPage {
         this.urls = urls;
         this.checkedUrls = new ArrayList<String>(urls);
 
-        infoMessage = String.format("Project \"%s\" requires the following OBR repositories to satisfy its\n" +
-                                    "dependencies. Checked repository indexes will be added to the Workspace.", project.getName());
+        infoMessage = String.format("Project \"%s\" requires the following OBR repositories to satisfy its\n" + "dependencies. Checked repository indexes will be added to the Workspace.", project.getName());
     }
 
     public void setCheckedUrls(List<String> checkedUrls) {
@@ -104,7 +103,9 @@ public class RequiredObrIndexWizardPage extends WizardPage {
             }
         });
         viewer.addCheckStateListener(new ICheckStateListener() {
-            @SuppressWarnings({ "rawtypes", "unchecked" })
+            @SuppressWarnings({
+                    "rawtypes", "unchecked"
+            })
             public void checkStateChanged(CheckStateChangedEvent event) {
                 if (!programmaticChange) {
                     try {
@@ -171,7 +172,5 @@ public class RequiredObrIndexWizardPage extends WizardPage {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propSupport.removePropertyChangeListener(propertyName, listener);
     }
-
-
 
 }

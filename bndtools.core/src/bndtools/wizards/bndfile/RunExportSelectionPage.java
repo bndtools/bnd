@@ -26,16 +26,16 @@ import aQute.bnd.build.Project;
 import bndtools.api.IBndModel;
 
 public class RunExportSelectionPage extends WizardSelectionPage {
-    
+
     private final IConfigurationElement[] elements;
     private final IBndModel model;
     private final Project bndProject;
-    
-    private final Map<IConfigurationElement, IWizardNode> nodeCache = new HashMap<IConfigurationElement, IWizardNode>();
-    
+
+    private final Map<IConfigurationElement,IWizardNode> nodeCache = new HashMap<IConfigurationElement,IWizardNode>();
+
     private Table table;
     private TableViewer viewer;
-    
+
     protected RunExportSelectionPage(String pageName, IConfigurationElement[] elements, IBndModel model, Project bndProject) {
         super(pageName);
         setDescription("Select a wizard for exporting this Run Descriptor");
@@ -56,7 +56,7 @@ public class RunExportSelectionPage extends WizardSelectionPage {
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new ConfigElementLabelProvider(table.getDisplay(), null));
-        
+
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection sel = viewer.getSelection();
@@ -83,5 +83,5 @@ public class RunExportSelectionPage extends WizardSelectionPage {
 
         viewer.setInput(elements);
     }
-    
+
 }

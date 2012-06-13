@@ -58,10 +58,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
 
-	TreeViewer availableViewer;
-	Text selectionSearchTxt;
+    TreeViewer availableViewer;
+    Text selectionSearchTxt;
 
-	TableViewer selectedViewer;
+    TableViewer selectedViewer;
 
     Button addButton;
     Button removeButton;
@@ -72,14 +72,14 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             String search = selectionSearchTxt.getText().toLowerCase();
 
             String bsn = null;
-            if(element instanceof RepositoryBundle) {
+            if (element instanceof RepositoryBundle) {
                 bsn = ((RepositoryBundle) element).getBsn();
             } else if (element instanceof ProjectBundle) {
                 bsn = ((ProjectBundle) element).getBsn();
             }
 
-            if(bsn != null) {
-                if(search.length() > 0 && bsn.toLowerCase().indexOf(search) == -1) {
+            if (bsn != null) {
+                if (search.length() > 0 && bsn.toLowerCase().indexOf(search) == -1) {
                     return false;
                 }
                 return !selectedBundles.containsKey(bsn);
@@ -89,34 +89,36 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     };
 
     protected RepoBundleSelectionWizardPage() {
-		super("bundleSelectionPage");
-	}
+        super("bundleSelectionPage");
+    }
 
-	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
-	    for (VersionedClause clause : selectedBundles) {
+    public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
+        for (VersionedClause clause : selectedBundles) {
             this.selectedBundles.put(clause.getName(), clause);
         }
-	}
+    }
 
-	public List<VersionedClause> getSelectedBundles() {
-	    return new ArrayList<VersionedClause>(selectedBundles.values());
-	}
+    public List<VersionedClause> getSelectedBundles() {
+        return new ArrayList<VersionedClause>(selectedBundles.values());
+    }
 
-	Control createAvailableBundlesPanel(Composite parent) {
-	    Composite panel = new Composite(parent, SWT.NONE);
-	    new Label(panel, SWT.NONE).setText("Available Bundles:");
-	    selectionSearchTxt = new Text(panel, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-	    selectionSearchTxt.setMessage("filter bundle name");
+    Control createAvailableBundlesPanel(Composite parent) {
+        Composite panel = new Composite(parent, SWT.NONE);
+        new Label(panel, SWT.NONE).setText("Available Bundles:");
+        selectionSearchTxt = new Text(panel, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        selectionSearchTxt.setMessage("filter bundle name");
 
-	    final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
-	    availableViewer = new TreeViewer(availableTree);
-	    availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
-	    availableViewer.setContentProvider(new RepositoryTreeContentProvider());
-	    availableViewer.setAutoExpandLevel(2);
+        final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+        availableViewer = new TreeViewer(availableTree);
+        availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
+        availableViewer.setContentProvider(new RepositoryTreeContentProvider());
+        availableViewer.setAutoExpandLevel(2);
 
-	    availableViewer.setFilters(new ViewerFilter[] { alreadySelectedFilter });
+        availableViewer.setFilters(new ViewerFilter[] {
+            alreadySelectedFilter
+        });
 
-	    // Load data
+        // Load data
         try {
             refreshBundleList();
         } catch (Exception e) {
@@ -134,16 +136,19 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         });
         selectionSearchTxt.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                availableViewer.setFilters(new ViewerFilter[] { alreadySelectedFilter });
+                availableViewer.setFilters(new ViewerFilter[] {
+                    alreadySelectedFilter
+                });
             }
         });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            // Enable add button when a bundle or bundle version is selected on the left
+            // Enable add button when a bundle or bundle version is selected on
+            // the left
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
-                for(Iterator<?> iter = sel.iterator(); iter.hasNext(); ) {
+                for (Iterator< ? > iter = sel.iterator(); iter.hasNext();) {
                     Object element = iter.next();
-                    if(element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion || element instanceof ProjectBundle) {
+                    if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion || element instanceof ProjectBundle) {
                         addButton.setEnabled(true);
                         return;
                     }
@@ -157,8 +162,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
         });
 
-
-	    GridLayout layout;
+        GridLayout layout;
         GridData gd;
 
         layout = new GridLayout(1, false);
@@ -173,11 +177,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         availableTree.setLayoutData(gd);
 
         return panel;
-	}
+    }
 
-	Control createSelectedBundlesPanel(Composite parent) {
-	    Composite panel = new Composite(parent, SWT.NONE);
-	    new Label(panel, SWT.NONE).setText("Selected Bundles:");
+    Control createSelectedBundlesPanel(Composite parent) {
+        Composite panel = new Composite(parent, SWT.NONE);
+        new Label(panel, SWT.NONE).setText("Selected Bundles:");
         Table selectedTable = new Table(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 
         selectedViewer = new TableViewer(selectedTable);
@@ -199,7 +203,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
         });
 
-
         GridLayout layout;
         GridData gd;
 
@@ -212,48 +215,48 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         selectedTable.setLayoutData(gd);
 
         return panel;
-	}
+    }
 
-	public void createControl(Composite parent) {
-		// Create controls
-		Composite composite = new Composite(parent, SWT.NONE);
+    public void createControl(Composite parent) {
+        // Create controls
+        Composite composite = new Composite(parent, SWT.NONE);
 
-		Control leftPanel = createAvailableBundlesPanel(composite);
-		Composite middlePanel = new Composite(composite, SWT.NONE);
-		Control rightPanel = createSelectedBundlesPanel(composite);
+        Control leftPanel = createAvailableBundlesPanel(composite);
+        Composite middlePanel = new Composite(composite, SWT.NONE);
+        Control rightPanel = createSelectedBundlesPanel(composite);
 
-		addButton = new Button(middlePanel, SWT.PUSH);
-		addButton.setText("Add -->");
-		addButton.setEnabled(false);
+        addButton = new Button(middlePanel, SWT.PUSH);
+        addButton.setText("Add -->");
+        addButton.setEnabled(false);
 
-		removeButton = new Button(middlePanel, SWT.PUSH);
-		removeButton.setText("<-- Remove");
-		removeButton.setEnabled(false);
+        removeButton = new Button(middlePanel, SWT.PUSH);
+        removeButton.setText("<-- Remove");
+        removeButton.setEnabled(false);
 
-		addButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				doAdd();
-			}
-		});
-		removeButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				doRemove();
-			}
-		});
+        addButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doAdd();
+            }
+        });
+        removeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doRemove();
+            }
+        });
 
-		// LAYOUT
-		GridLayout layout;
+        // LAYOUT
+        GridLayout layout;
 
-		layout = new GridLayout(3, false);
-		layout.horizontalSpacing = 0;
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
-		composite.setLayout(layout);
+        layout = new GridLayout(3, false);
+        layout.horizontalSpacing = 0;
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        composite.setLayout(layout);
 
-		leftPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		middlePanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+        leftPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        middlePanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
         rightPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         layout = new GridLayout(1, false);
@@ -261,11 +264,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         layout.marginWidth = 0;
         middlePanel.setLayout(layout);
 
-		addButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, true));
-		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, true));
+        addButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, true));
+        removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, true));
 
-		setControl(composite);
-	}
+        setControl(composite);
+    }
 
     protected void refreshBundleList() throws Exception {
         Central.getWorkspace().refresh();
@@ -275,7 +278,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     void doAdd() {
         IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
         List<VersionedClause> adding = new ArrayList<VersionedClause>(selection.size());
-        for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
+        for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
             Object item = iter.next();
             if (item instanceof RepositoryBundle) {
                 adding.add(RepositoryUtils.convertRepoBundle((RepositoryBundle) item));
@@ -329,13 +332,13 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 class MapValuesContentProvider implements IStructuredContentProvider {
 
     public Object[] getElements(Object inputElement) {
-        Map<?, ?> map = (Map<?, ?>) inputElement;
+        Map< ? , ? > map = (Map< ? , ? >) inputElement;
 
-        Collection<?> values = map.values();
+        Collection< ? > values = map.values();
         return values.toArray(new Object[values.size()]);
     }
-    public void dispose() {
-    }
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
+
+    public void dispose() {}
+
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 }

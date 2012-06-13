@@ -13,12 +13,10 @@ public class OSGiLaunchTab extends GenericStackedLaunchTab {
 
     private Image image = null;
 
-
     @Override
     protected ILaunchTabPiece[] createStack() {
         return new ILaunchTabPiece[] {
-                new ProjectLaunchTabPiece(),
-                new FrameworkLaunchTabPiece()
+                new ProjectLaunchTabPiece(), new FrameworkLaunchTabPiece()
         };
     }
 

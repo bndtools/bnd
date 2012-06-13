@@ -58,7 +58,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     private final Image editImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png").createImage();
     private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
 
-    private final Map<String, IConfigurationElement> configElements = new HashMap<String, IConfigurationElement>();
+    private final Map<String,IConfigurationElement> configElements = new HashMap<String,IConfigurationElement>();
 
     private List<HeaderClause> data;
 
@@ -109,9 +109,10 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.character == SWT.DEL) {
+                if (e.character == SWT.DEL) {
                     doRemove();
-                } else if(e.character == '+') {;
+                } else if (e.character == '+') {
+                    ;
                     doAdd();
                 }
             }
@@ -196,7 +197,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     @Override
     public void dispose() {
         super.dispose();
-        if(model != null) model.removePropertyChangeListener(Constants.PLUGIN, this);
+        if (model != null)
+            model.removePropertyChangeListener(Constants.PLUGIN, this);
         editImg.dispose();
         refreshImg.dispose();
     }
@@ -220,7 +222,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if(page.isActive()) {
+        if (page.isActive()) {
             refresh();
         } else {
             markStale();
@@ -271,6 +273,5 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     public ISelectionProvider getSelectionProvider() {
         return viewer;
     }
-
 
 }

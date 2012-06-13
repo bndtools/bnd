@@ -26,15 +26,15 @@ import bndtools.Plugin;
 import bndtools.api.IBndModel;
 
 public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {
-    
+
     private final ExecutableJarWizardPage destinationPage = new ExecutableJarWizardPage();
 
     private Project bndProject;
-    
+
     public ExecutableJarExportWizard() {
         addPage(destinationPage);
     }
-    
+
     public void setBndModel(IBndModel model, Project bndProject) {
         this.bndProject = bndProject;
     }
@@ -46,25 +46,25 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             status = generateFolder(destinationPage.getFolderPath());
         else
             status = generateJar(destinationPage.getJarPath());
-        
+
         if (!status.isOK())
             ErrorDialog.openError(getShell(), "Error", null, status);
-        
+
         return status.isOK();
     }
 
     private IStatus generateFolder(String folderPath) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred during exporting.", null);
-        
+
         File folder = new File(folderPath);
         File bundleFolder = new File(folder, "bundles");
-        
+
         bundleFolder.mkdirs();
         if (!bundleFolder.exists()) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to create folder.", null));
             return status;
         }
-        
+
         ProjectLauncher launcher = null;
         try {
             launcher = bndProject.getProjectLauncher();
@@ -72,11 +72,11 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project launcher.", e));
             return status;
         }
-        
+
         // Init classpath and launch JAR
         generateLauncherJar(launcher, folder, status);
         copyRunBundles(launcher, folder, status);
-        
+
         return status;
     }
 
@@ -88,7 +88,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project launcher.", e));
         }
-        
+
         try {
             Jar jar = launcher.executable();
             jar.write(jarPath);
@@ -97,10 +97,10 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         }
         return status;
     }
-    
+
     private static void generateLauncherJar(ProjectLauncher launcher, File folder, MultiStatus status) {
         Jar launcherJar = new Jar("launch");
-        
+
         // Merge in the classpath JARs
         Collection<String> classpath = launcher.getClasspath();
         for (String classpathEntry : classpath) {
@@ -111,13 +111,12 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Failed to add classpath JAR '%s'.", classpathEntry), e));
             }
         }
-        
+
         // Set the Main-Class
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().putValue("Main-Class", "launch");
         launcherJar.setManifest(manifest);
         launcherJar.putResource("launch.class", new URLResource(ExecutableJarExportWizard.class.getResource("launch.clazz")));
-        
 
         try {
             launcherJar.write(new File(folder, "launch.jar"));
@@ -129,12 +128,12 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
     private static void copyRunBundles(ProjectLauncher launcher, File folder, MultiStatus status) {
         Collection<String> bundles = launcher.getRunBundles();
         List<String> names = new ArrayList<String>(bundles.size());
-        
+
         for (String bundle : bundles) {
             File bundleFile = new File(bundle);
             String name = "bundles/" + bundleFile.getName();
             File destFile = new File(folder, name);
-            
+
             try {
                 IO.copy(bundleFile, destFile);
                 names.add(name);
@@ -142,7 +141,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error copying run bundle: " + bundle, e));
             }
         }
-        
+
         try {
             Properties launcherProps = new Properties();
             launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
@@ -153,4 +152,3 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
     }
 
 }
-

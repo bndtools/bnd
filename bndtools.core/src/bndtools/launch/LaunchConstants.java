@@ -6,7 +6,7 @@ public interface LaunchConstants {
     public static String EXT_BNDRUN = ".bndrun";
 
     public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
-    public static String LAUNCH_ID_OSGI_JUNIT   = "bndtools.launch.junit";
+    public static String LAUNCH_ID_OSGI_JUNIT = "bndtools.launch.junit";
 
     public static String ATTR_LAUNCH_TARGET = "launchTarget";
     public static String ATTR_DYNAMIC_BUNDLES = "dynamicBundles";

@@ -23,7 +23,8 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         List<VersionedClause> newBuildPath = new ArrayList<VersionedClause>();
 
         List<VersionedClause> oldBuildPath = model.getBuildPath();
-        if (oldBuildPath != null) newBuildPath.addAll(oldBuildPath);
+        if (oldBuildPath != null)
+            newBuildPath.addAll(oldBuildPath);
 
         newBuildPath.add(createBundleRef("osgi.core", "[4.1,5)"));
         newBuildPath.add(createBundleRef("osgi.cmpn", null));
@@ -34,19 +35,25 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         model.setTestSuites(Arrays.asList(ALL_TEST_CASES_MACRO));
         model.setRunFramework("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
-        model.setPrivatePackages(Arrays.asList(new String[] { "org.example.tests" }));
-        model.setRunBundles(Arrays.asList(new VersionedClause[] { createBundleRef("org.mockito.mockito-all", null) }));
+        model.setPrivatePackages(Arrays.asList(new String[] {
+            "org.example.tests"
+        }));
+        model.setRunBundles(Arrays.asList(new VersionedClause[] {
+            createBundleRef("org.mockito.mockito-all", null)
+        }));
 
-        model.setSystemPackages(Arrays.asList(new ExportedPackage[] { new ExportedPackage("sun.reflect", new Attrs()) }));
+        model.setSystemPackages(Arrays.asList(new ExportedPackage[] {
+            new ExportedPackage("sun.reflect", new Attrs())
+        }));
         model.setRunVMArgs("-ea");
     }
 
-	static VersionedClause createBundleRef(String bsn, String version) {
-		Attrs attribs = new Attrs();
-		if (version != null)
-			attribs.put(Constants.VERSION_ATTRIBUTE, version);
-		return new VersionedClause(bsn, attribs);
-	}
+    static VersionedClause createBundleRef(String bsn, String version) {
+        Attrs attribs = new Attrs();
+        if (version != null)
+            attribs.put(Constants.VERSION_ATTRIBUTE, version);
+        return new VersionedClause(bsn, attribs);
+    }
 
     public void modifyInitialBndProject(IBndProject project) {
         URL testSrc = IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt");

@@ -11,5 +11,5 @@
 package bndtools.utils;
 
 public interface Predicate<T> {
-	boolean select(T item);
+    boolean select(T item);
 }

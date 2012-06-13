@@ -61,10 +61,10 @@ public class ResolutionFailurePanel {
     private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
 
     private SashHighlightForm sashForm;
-    
+
     private TableViewer processingErrorsViewer;
     private SashFormPanelMaximiser processingErrorsMaximiser;
-    
+
     private TreeViewer unresolvedViewer;
     private SashFormPanelMaximiser unresolvedMaximiser;
 
@@ -84,7 +84,7 @@ public class ResolutionFailurePanel {
         cmpProcessingErrors.setLayout(gl_processingErrors);
         Label lblProcessingErrors = new Label(cmpProcessingErrors, SWT.NONE);
         lblProcessingErrors.setText("Processing Errors:");
-        
+
         createProcessingErrorsToolBar(cmpProcessingErrors);
 
         Table tblProcessingErrors = new Table(cmpProcessingErrors, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
@@ -107,7 +107,7 @@ public class ResolutionFailurePanel {
                 ErrorDialog.openError(parent.getShell(), "Processing Errors", null, status);
             }
         });
-        
+
         Composite cmpUnresolved = new Composite(sashForm, SWT.NONE);
         GridLayout gl_unresolved = new GridLayout(2, false);
         gl_unresolved.marginRight = 7;
@@ -116,7 +116,7 @@ public class ResolutionFailurePanel {
         Label lblUnresolvedResources = new Label(cmpUnresolved, SWT.NONE);
         lblUnresolvedResources.setBounds(0, 0, 59, 14);
         lblUnresolvedResources.setText("Unresolved Requirements:");
-        
+
         createUnresolvedViewToolBar(cmpUnresolved);
 
         Tree treeUnresolved = new Tree(cmpUnresolved, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
@@ -129,7 +129,7 @@ public class ResolutionFailurePanel {
 
         return sashForm;
     }
-    
+
     public void setInput(ObrResolutionResult resolutionResult) {
         if (sashForm == null)
             throw new IllegalStateException("Control not created");
@@ -138,7 +138,7 @@ public class ResolutionFailurePanel {
 
         unresolvedViewer.setInput(resolutionResult != null ? resolutionResult.getResolver() : null);
         processingErrorsViewer.setInput(resolutionResult != null ? resolutionResult.getStatus() : null);
-        
+
         unresolvedViewer.expandToLevel(2);
     }
 
@@ -146,7 +146,7 @@ public class ResolutionFailurePanel {
         clipboardImg.dispose();
         treeViewImg.dispose();
         flatViewImg.dispose();
-        
+
         processingErrorsMaximiser.dispose();
         unresolvedMaximiser.dispose();
     }
@@ -154,7 +154,7 @@ public class ResolutionFailurePanel {
     private void createProcessingErrorsToolBar(Composite parent) {
         ToolBar toolbar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
         toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
-        
+
         processingErrorsMaximiser = new SashFormPanelMaximiser(sashForm);
         processingErrorsMaximiser.createToolItem(parent, toolbar);
     }
@@ -179,10 +179,10 @@ public class ResolutionFailurePanel {
         ToolItem toolErrorsToClipboard = new ToolItem(unresolvedToolBar, SWT.PUSH);
         toolErrorsToClipboard.setImage(clipboardImg);
         toolErrorsToClipboard.setToolTipText("Copy to Clipboard");
-        
+
         unresolvedMaximiser = new SashFormPanelMaximiser(sashForm);
         unresolvedMaximiser.createToolItem(parent, unresolvedToolBar);
-        
+
         SelectionListener modeListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -202,7 +202,7 @@ public class ResolutionFailurePanel {
                 copyUnresolvedToClipboard();
             }
         });
-        
+
     }
 
     private void setFailureViewMode() {
@@ -227,50 +227,45 @@ public class ResolutionFailurePanel {
 
     private void copyUnresolvedToClipboard() {
         StringBuilder builder = new StringBuilder();
-        
+
         Object input = unresolvedViewer.getInput();
         if (input == null)
             return;
-        
+
         ITreeContentProvider contentProvider = (ITreeContentProvider) unresolvedViewer.getContentProvider();
         Object[] roots = contentProvider.getElements(input);
-        
+
         ViewerSorter sorter = unresolvedViewer.getSorter();
         if (sorter != null)
             Arrays.sort(roots, new SorterComparatorAdapter(unresolvedViewer, sorter));
         for (Object root : roots) {
-            
+
             appendLabels(root, contentProvider, builder, 0);
         }
-        
-        /* TODO
-        if (result != null) {
-            StringBuilder buffer = new StringBuilder();
-            List<Reason> unresolved = result.getUnresolved();
 
-            if (unresolved != null) for (Iterator<Reason> iter = unresolved.iterator(); iter.hasNext(); ) {
-                Reason reason = iter.next();
-                buffer.append(unresolvedLabelProvider.getLabel(reason.getRequirement()).getString());
-                buffer.append('\t');
-                buffer.append(unresolvedLabelProvider.getLabel(reason.getResource()));
+        /*
+         * TODO if (result != null) { StringBuilder buffer = new StringBuilder(); List<Reason> unresolved =
+         * result.getUnresolved(); if (unresolved != null) for (Iterator<Reason> iter = unresolved.iterator();
+         * iter.hasNext(); ) { Reason reason = iter.next();
+         * buffer.append(unresolvedLabelProvider.getLabel(reason.getRequirement ()).getString()); buffer.append('\t');
+         * buffer.append(unresolvedLabelProvider .getLabel(reason.getResource())); if (iter.hasNext())
+         * buffer.append('\n'); } }
+         */
 
-                if (iter.hasNext())
-                    buffer.append('\n');
-            }
-
-        }
-        */
-        
         Clipboard clipboard = new Clipboard(sashForm.getDisplay());
         TextTransfer transfer = TextTransfer.getInstance();
-        clipboard.setContents(new Object[] { builder.toString() }, new Transfer[] { transfer });
+        clipboard.setContents(new Object[] {
+            builder.toString()
+        }, new Transfer[] {
+            transfer
+        });
         clipboard.dispose();
     }
-    
+
     private void appendLabels(Object unresolvedTreeElem, ITreeContentProvider contentProvider, StringBuilder builder, int indent) {
         for (int i = 0; i < indent; i++)
             builder.append("..");
-        
+
         builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
 
         Object[] children = contentProvider.getChildren(unresolvedTreeElem);
@@ -307,8 +302,8 @@ public class ResolutionFailurePanel {
         }
         return label;
     }
-    
-    private static String getClipboardContent(Resource resource) { 
+
+    private static String getClipboardContent(Resource resource) {
         String bsn;
         Version version;
         if (resource == null || resource.getId() == null) {
@@ -317,11 +312,12 @@ public class ResolutionFailurePanel {
         } else {
             bsn = resource.getSymbolicName();
             version = resource.getVersion();
-            if (version == null) version = Version.emptyVersion;
+            if (version == null)
+                version = Version.emptyVersion;
         }
         return bsn + " " + version;
     }
-    
+
     private static String getClipboardContent(org.apache.felix.bundlerepository.Requirement requirement) {
         return String.format("%s:%s\toptional=%s", requirement.getName(), requirement.getFilter(), requirement.isOptional());
     }

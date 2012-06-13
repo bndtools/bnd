@@ -31,88 +31,95 @@ import bndtools.model.clauses.ImportPattern;
 
 public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
-	private class FixMissingStarsAction extends Action {
-		public FixMissingStarsAction(String message) {
-			super(message);
-		}
-		@Override
+    private class FixMissingStarsAction extends Action {
+        public FixMissingStarsAction(String message) {
+            super(message);
+        }
+
+        @Override
         public void run() {
-			// Remove existing "*" patterns that are not in the last place
-			List<ImportPattern> toRemove = new LinkedList<ImportPattern>();
-			for (Iterator<ImportPattern> iter = getClauses().iterator(); iter.hasNext(); ) {
-				ImportPattern pattern = iter.next();
-				if(pattern.getName().equals("*") && iter.hasNext()) {
-					toRemove.add(pattern);
-				}
-			}
-			if(!toRemove.isEmpty()) {
-				doRemoveClauses(toRemove);
-			}
+            // Remove existing "*" patterns that are not in the last place
+            List<ImportPattern> toRemove = new LinkedList<ImportPattern>();
+            for (Iterator<ImportPattern> iter = getClauses().iterator(); iter.hasNext();) {
+                ImportPattern pattern = iter.next();
+                if (pattern.getName().equals("*") && iter.hasNext()) {
+                    toRemove.add(pattern);
+                }
+            }
+            if (!toRemove.isEmpty()) {
+                doRemoveClauses(toRemove);
+            }
 
-			// Add a "*" at the end, if not already present
-			List<ImportPattern> patterns = getClauses();
-			if(patterns.size() != 0 && !patterns.get(patterns.size() - 1).getName().equals("*")) {
-				ImportPattern starPattern = new ImportPattern("*", new Attrs());
-				ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
-			}
-		}
-	};
-	public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
-		super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports", new ImportPatternLabelProvider());
-	}
-	@Override
-	protected void doAddClauses(Collection<? extends ImportPattern> clauses, int index, boolean select) {
-		boolean appendStar = getClauses().isEmpty();
+            // Add a "*" at the end, if not already present
+            List<ImportPattern> patterns = getClauses();
+            if (patterns.size() != 0 && !patterns.get(patterns.size() - 1).getName().equals("*")) {
+                ImportPattern starPattern = new ImportPattern("*", new Attrs());
+                ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
+            }
+        }
+    };
 
-		super.doAddClauses(clauses, index, select);
+    public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
+        super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports", new ImportPatternLabelProvider());
+    }
 
-		if(appendStar) {
-			ImportPattern starPattern = new ImportPattern("*", new Attrs()); //$NON-NLS-1$
-			super.doAddClauses(Arrays.asList(starPattern), -1, false);
-		}
-	}
-	@Override
+    @Override
+    protected void doAddClauses(Collection< ? extends ImportPattern> clauses, int index, boolean select) {
+        boolean appendStar = getClauses().isEmpty();
+
+        super.doAddClauses(clauses, index, select);
+
+        if (appendStar) {
+            ImportPattern starPattern = new ImportPattern("*", new Attrs()); //$NON-NLS-1$
+            super.doAddClauses(Arrays.asList(starPattern), -1, false);
+        }
+    }
+
+    @Override
     public void validate() {
-		IMessageManager msgs = getManagedForm().getMessageManager();
-		msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);
+        IMessageManager msgs = getManagedForm().getMessageManager();
+        msgs.setDecorationPosition(SWT.TOP | SWT.RIGHT);
 
-		String noStarWarning = null;
-		String actionMessage = null;
-		List<ImportPattern> patterns = getClauses();
-		if(!patterns.isEmpty()) {
-			for(Iterator<ImportPattern> iter = patterns.iterator(); iter.hasNext();) {
-				ImportPattern pattern = iter.next();
-				if(pattern.getName().equals("*") && iter.hasNext()) {
-					noStarWarning = "The catch-all pattern \"*\" should be in the last position.";
-					actionMessage = "Move \"*\" pattern to the last position.";
-					break;
-				}
-			}
+        String noStarWarning = null;
+        String actionMessage = null;
+        List<ImportPattern> patterns = getClauses();
+        if (!patterns.isEmpty()) {
+            for (Iterator<ImportPattern> iter = patterns.iterator(); iter.hasNext();) {
+                ImportPattern pattern = iter.next();
+                if (pattern.getName().equals("*") && iter.hasNext()) {
+                    noStarWarning = "The catch-all pattern \"*\" should be in the last position.";
+                    actionMessage = "Move \"*\" pattern to the last position.";
+                    break;
+                }
+            }
 
-			if(noStarWarning == null) {
-				ImportPattern last = patterns.get(patterns.size() - 1);
-				if(!last.getName().equals("*")) {
-					noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
-					actionMessage = "Add missing \"*\" pattern.";
-				}
-			}
-		}
-		if(noStarWarning != null) {
-			msgs.addMessage("_warning_no_star", noStarWarning, new FixMissingStarsAction(actionMessage) , IMessageProvider.WARNING);
-		} else {
-			msgs.removeMessage("_warning_no_star");
-		}
-	}
-	@Override
-	protected ImportPattern newHeaderClause(String text) {
-		return new ImportPattern(text, new Attrs());
-	}
-	@Override
-	protected List<ImportPattern> loadFromModel(BndEditModel model) {
-		return model.getImportPatterns();
-	}
-	@Override
-	protected void saveToModel(BndEditModel model, List<? extends ImportPattern> clauses) {
-		model.setImportPatterns(clauses);
-	}
+            if (noStarWarning == null) {
+                ImportPattern last = patterns.get(patterns.size() - 1);
+                if (!last.getName().equals("*")) {
+                    noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
+                    actionMessage = "Add missing \"*\" pattern.";
+                }
+            }
+        }
+        if (noStarWarning != null) {
+            msgs.addMessage("_warning_no_star", noStarWarning, new FixMissingStarsAction(actionMessage), IMessageProvider.WARNING);
+        } else {
+            msgs.removeMessage("_warning_no_star");
+        }
+    }
+
+    @Override
+    protected ImportPattern newHeaderClause(String text) {
+        return new ImportPattern(text, new Attrs());
+    }
+
+    @Override
+    protected List<ImportPattern> loadFromModel(BndEditModel model) {
+        return model.getImportPatterns();
+    }
+
+    @Override
+    protected void saveToModel(BndEditModel model, List< ? extends ImportPattern> clauses) {
+        model.setImportPatterns(clauses);
+    }
 }

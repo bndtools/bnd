@@ -16,41 +16,40 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 
 public class BundleClassCompletionProposalComputer implements IJavaCompletionProposalComputer {
 
-	public List<ICompletionProposal> computeCompletionProposals(ContentAssistInvocationContext context, IProgressMonitor monitor) {
-		List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
+    public List<ICompletionProposal> computeCompletionProposals(ContentAssistInvocationContext context, IProgressMonitor monitor) {
+        List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
 
-		if(!(context instanceof JavaContentAssistInvocationContext)) {
-		    return Collections.emptyList();
-		}
+        if (!(context instanceof JavaContentAssistInvocationContext)) {
+            return Collections.emptyList();
+        }
 
-		try {
-			int offset = context.getInvocationOffset();
-			CharSequence prefix = context.computeIdentifierPrefix();
+        try {
+            int offset = context.getInvocationOffset();
+            CharSequence prefix = context.computeIdentifierPrefix();
 
-			result.add(new CompletionProposal("foobar", offset - prefix.length(), prefix.length(), offset - prefix.length() + 6));
-			result.add(new CompletionProposal("fizzbuzz", offset - prefix.length(), prefix.length(), offset - prefix.length() + 8));
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            result.add(new CompletionProposal("foobar", offset - prefix.length(), prefix.length(), offset - prefix.length() + 6));
+            result.add(new CompletionProposal("fizzbuzz", offset - prefix.length(), prefix.length(), offset - prefix.length() + 8));
+        } catch (BadLocationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	public List<IContextInformation> computeContextInformation(ContentAssistInvocationContext context, IProgressMonitor monitor) {
-		List<IContextInformation> result = new LinkedList<IContextInformation>();
+    public List<IContextInformation> computeContextInformation(ContentAssistInvocationContext context, IProgressMonitor monitor) {
+        List<IContextInformation> result = new LinkedList<IContextInformation>();
 
-		result.add(new ContextInformation("contextDisplayString", "informationDisplayString"));
+        result.add(new ContextInformation("contextDisplayString", "informationDisplayString"));
 
-		return result;
-	}
+        return result;
+    }
 
-	public String getErrorMessage() {
-		return null;
-	}
+    public String getErrorMessage() {
+        return null;
+    }
 
-	public void sessionStarted() {
-	}
-	public void sessionEnded() {
-	}
+    public void sessionStarted() {}
+
+    public void sessionEnded() {}
 }

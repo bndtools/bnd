@@ -27,7 +27,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
     private RepositoryPlugin repository;
     private final File[] files;
-    private List<Pair<String, String>> selectedBundles;
+    private List<Pair<String,String>> selectedBundles;
 
     private LocalRepositorySelectionPage repoSelectionPage;
     private AddFilesToRepositoryWizardPage fileSelectionPage;
@@ -44,7 +44,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
     @Override
     public void addPages() {
-        if(repository == null) {
+        if (repository == null) {
             addPage(repoSelectionPage);
             repoSelectionPage.addPropertyChangeListener(LocalRepositorySelectionPage.PROP_SELECTED_REPO, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -64,14 +64,15 @@ public class AddFilesToRepositoryWizard extends Wizard {
         for (File file : files) {
             Jar jar = null;
             try {
-                 jar = new Jar(file);
-                 jar.setDoNotTouchManifest();
+                jar = new Jar(file);
+                jar.setDoNotTouchManifest();
 
-                 Attributes mainAttribs = jar.getManifest().getMainAttributes();
-                 String bsn = BundleUtils.getBundleSymbolicName(mainAttribs);
-                 String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
-                 if(version == null) version = "0";
-                 selectedBundles.add(Pair.newInstance(bsn, version));
+                Attributes mainAttribs = jar.getManifest().getMainAttributes();
+                String bsn = BundleUtils.getBundleSymbolicName(mainAttribs);
+                String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
+                if (version == null)
+                    version = "0";
+                selectedBundles.add(Pair.newInstance(bsn, version));
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;
@@ -81,17 +82,16 @@ public class AddFilesToRepositoryWizard extends Wizard {
                 File newFile = repository.put(jar);
 
                 RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
-                if(refreshJob.needsToSchedule())
+                if (refreshJob.needsToSchedule())
                     refreshJob.schedule();
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
                 continue;
             }
 
-
         }
 
-        if(status.isOK()) {
+        if (status.isOK()) {
             return true;
         } else {
             ErrorDialog.openError(getShell(), "Error", null, status);
@@ -99,8 +99,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         }
     }
 
-    public List<Pair<String, String>> getSelectedBundles() {
+    public List<Pair<String,String>> getSelectedBundles() {
         return Collections.unmodifiableList(selectedBundles);
     }
 }
-

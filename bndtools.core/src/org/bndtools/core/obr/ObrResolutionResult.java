@@ -28,7 +28,7 @@ public class ObrResolutionResult {
         this.required = required;
         this.optional = optional;
     }
-    
+
     public Resolver getResolver() {
         return resolver;
     }
@@ -52,12 +52,12 @@ public class ObrResolutionResult {
     public Reason[] getReason(Resource resource) {
         if (resolver == null)
             return new Reason[0];
-        
+
         Reason[] reasons = resolver.getReason(resource);
-        
+
         if (reasons == null)
             reasons = new Reason[0];
-        
+
         // De-dupe. The resolver returns two copies of everything...?!
         Set<Reason> set = new TreeSet<Reason>(new ReasonComparator(new ResourceComparator(), new RequirementComparator()));
         for (Reason reason : reasons) {

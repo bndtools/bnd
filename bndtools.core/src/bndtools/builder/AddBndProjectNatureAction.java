@@ -22,34 +22,33 @@ import org.eclipse.ui.IWorkbenchPart;
 
 public class AddBndProjectNatureAction implements IObjectActionDelegate {
 
-	private ISelection selection;
-	@SuppressWarnings("unused")
+    private ISelection selection;
+    @SuppressWarnings("unused")
     private IWorkbenchPart targetPart;
 
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		this.targetPart = targetPart;
-	}
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        this.targetPart = targetPart;
+    }
 
-	public void run(IAction action) {
-		if(selection instanceof IStructuredSelection) {
-			Iterator<?> iter = ((IStructuredSelection) selection).iterator();
-			while(iter.hasNext()) {
-				Object element = iter.next();
-				@SuppressWarnings("unused")
+    public void run(IAction action) {
+        if (selection instanceof IStructuredSelection) {
+            Iterator< ? > iter = ((IStructuredSelection) selection).iterator();
+            while (iter.hasNext()) {
+                Object element = iter.next();
+                @SuppressWarnings("unused")
                 IProject project = null;
-				
-				if(element instanceof IProject)
-					project = null;
-				else if(element instanceof IAdaptable)
-					project = (IProject) ((IAdaptable) element).getAdapter(IProject.class);
-				
-				
-			}
-		}
-	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
-		this.selection = selection;
-	}
+                if (element instanceof IProject)
+                    project = null;
+                else if (element instanceof IAdaptable)
+                    project = (IProject) ((IAdaptable) element).getAdapter(IProject.class);
+
+            }
+        }
+    }
+
+    public void selectionChanged(IAction action, ISelection selection) {
+        this.selection = selection;
+    }
 
 }

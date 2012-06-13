@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class ComparatorUtils {
-    
+
     public static <T extends Comparable<T>> int safeCompare(T o1, T o2) {
         if (o1 == null) {
             if (o2 == null)
@@ -13,11 +13,11 @@ public class ComparatorUtils {
         }
         if (o2 == null)
             return 1;
-        
+
         return o1.compareTo(o2);
     }
 
-    public static <T> int safeCompare(T o1, T o2, Comparator<? super T> comparator) {
+    public static <T> int safeCompare(T o1, T o2, Comparator< ? super T> comparator) {
         if (o1 == null) {
             if (o2 == null)
                 return 0;
@@ -25,12 +25,11 @@ public class ComparatorUtils {
         }
         if (o2 == null)
             return 1;
-        
+
         return comparator.compare(o1, o2);
     }
-    
 
-    public static <T> int arrayCompare(T[] a1, T[] a2, Comparator<? super T> comparator) {
+    public static <T> int arrayCompare(T[] a1, T[] a2, Comparator< ? super T> comparator) {
         if (a1 == null) {
             if (a2 == null)
                 return 0;
@@ -38,10 +37,10 @@ public class ComparatorUtils {
         }
         if (a2 == null)
             return 1;
-        
+
         Arrays.sort(a1, comparator);
         Arrays.sort(a2, comparator);
-        
+
         int index = 0;
         while (index < a1.length || index < a2.length) {
             if (index >= a1.length) {

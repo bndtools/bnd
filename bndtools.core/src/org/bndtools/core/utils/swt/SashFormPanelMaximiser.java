@@ -17,7 +17,7 @@ public class SashFormPanelMaximiser {
 
     private final Image maximiseImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/maximize.png").createImage();
     private final Image restoreImg;
-    
+
     private final SashForm sashForm;
 
     /**

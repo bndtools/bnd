@@ -18,37 +18,44 @@ import bndtools.Plugin;
 
 public class RepositoryBundle implements IAdaptable {
 
-	private final RepositoryPlugin repo;
-	private final String bsn;
+    private final RepositoryPlugin repo;
+    private final String bsn;
 
-	RepositoryBundle(RepositoryPlugin repo, String bsn) {
-		this.repo = repo;
-		this.bsn = bsn;
-	}
-	public RepositoryPlugin getRepo() {
-		return repo;
-	}
-	public String getBsn() {
-		return bsn;
-	}
-	@Override
-	public String toString() {
-		return "RepositoryBundle [repo=" + repo + ", bsn=" + bsn + "]";
-	}
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    RepositoryBundle(RepositoryPlugin repo, String bsn) {
+        this.repo = repo;
+        this.bsn = bsn;
+    }
+
+    public RepositoryPlugin getRepo() {
+        return repo;
+    }
+
+    public String getBsn() {
+        return bsn;
+    }
+
+    @Override
+    public String toString() {
+        return "RepositoryBundle [repo=" + repo + ", bsn=" + bsn + "]";
+    }
+
+    public Object getAdapter(@SuppressWarnings("rawtypes")
+    Class adapter) {
         Object result = null;
 
-        if(IFile.class.equals(adapter)) { // || IResource.class.equals(adapter)) {
+        if (IFile.class.equals(adapter)) { // ||
+                                           // IResource.class.equals(adapter))
+                                           // {
             try {
                 File file = getFile();
-                if(file != null) {
+                if (file != null) {
                     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
                     result = root.getFileForLocation(new Path(file.getAbsolutePath()));
                 }
             } catch (Exception e) {
                 Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             }
-        } else if(File.class.equals(adapter)) {
+        } else if (File.class.equals(adapter)) {
             result = getFile();
         }
 
@@ -74,4 +81,3 @@ public class RepositoryBundle implements IAdaptable {
         }
     }
 }
-
