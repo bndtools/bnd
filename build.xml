@@ -12,6 +12,12 @@
 
         <target name="build">
                 <ant dir="biz.aQute.bnd" target="build"/>
+                <ant dir="biz.aQute.repository" target="build"/>
+        </target>
+
+        <target name="release">
+                <ant dir="biz.aQute.bnd" target="release"/>
+                <ant dir="biz.aQute.repository" target="release"/>
         </target>
 
 
