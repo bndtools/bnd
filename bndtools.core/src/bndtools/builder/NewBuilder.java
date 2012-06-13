@@ -65,6 +65,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private static final int LOG_NONE = 0;
 
     private Project model;
+    private BuildListeners listeners;
 
     private List<String> classpathErrors;
     private MultiStatus validationResults;
@@ -80,7 +81,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
 
         // Prepare build listeners
-        BuildListeners listeners = new BuildListeners();
+        listeners = new BuildListeners();
 
         // Prepare validations
         classpathErrors = new LinkedList<String>();
@@ -181,6 +182,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
                 Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
             }
+            
+            listeners.release();
+            model = null;
         }
     }
 
@@ -520,6 +524,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
             } else {
                 log(LOG_BASIC, "NOT REBUILDING: force=%b;stale=%b", force, stale);
                 built = new File[0];
+            }
+            
+            // Notify the build listeners
+            if (listeners != null && built.length > 0) {
+                IPath[] paths = new IPath[built.length];
+                for (int i = 0; i < built.length; i++)
+                    paths[i] = Central.toPath(built[i]);
+                listeners.fireBuiltBundles(getProject(), paths);
             }
 
             // Log rebuilt files
