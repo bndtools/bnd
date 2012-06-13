@@ -1,4 +1,4 @@
-package bndtools.launch.ui;
+package bndtools.launch.ui.internal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;

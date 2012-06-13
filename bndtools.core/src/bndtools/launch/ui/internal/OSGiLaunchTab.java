@@ -1,32 +1,29 @@
-package bndtools.launch.ui;
+package bndtools.launch.ui.internal;
 
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.launch.LaunchConstants;
+import bndtools.launch.ui.FrameworkLaunchTabPiece;
+import bndtools.launch.ui.GenericStackedLaunchTab;
+import bndtools.launch.ui.ILaunchTabPiece;
+import bndtools.launch.ui.ProjectLaunchTabPiece;
 
-public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
+public class OSGiLaunchTab extends GenericStackedLaunchTab {
 
     private Image image = null;
+
 
     @Override
     protected ILaunchTabPiece[] createStack() {
         return new ILaunchTabPiece[] {
                 new ProjectLaunchTabPiece(),
-                new JUnitTestParamsLaunchTabPiece()
+                new FrameworkLaunchTabPiece()
         };
     }
 
     public String getName() {
-        return "OSGi Tests";
-    }
-
-    @Override
-    public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        super.performApply(configuration);
-        configuration.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, false);
+        return "OSGi";
     }
 
     @Override

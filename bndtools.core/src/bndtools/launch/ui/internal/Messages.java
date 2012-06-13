@@ -1,9 +1,9 @@
-package bndtools.launch.ui;
+package bndtools.launch.ui.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "bndtools.launch.ui.messages"; //$NON-NLS-1$
+class Messages extends NLS {
+    private static final String BUNDLE_NAME = "bndtools.launch.ui.internal.messages"; //$NON-NLS-1$
     public static String JUnitTestParamsLaunchTabPiece_descStartingTimeout;
     public static String JUnitTestParamsLaunchTabPiece_errorTimeoutValue;
     public static String JUnitTestParamsLaunchTabPiece_labelKeepAlive;

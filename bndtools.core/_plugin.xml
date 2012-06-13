@@ -416,12 +416,12 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="bndtools.launch.ui.LaunchTabGroup"
+            class="bndtools.launch.ui.internal.LaunchTabGroup"
             id="aQute.bnd.launch.tabgroup"
             type="bndtools.launch">
       </launchConfigurationTabGroup>
       <launchConfigurationTabGroup
-            class="bndtools.launch.ui.JUnitLaunchTabGroup"
+            class="bndtools.launch.ui.internal.JUnitLaunchTabGroup"
             id="aQute.bnd.launch.junit.tabgroup"
             type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
@@ -762,13 +762,13 @@
    <extension point="org.eclipse.debug.core.statusHandlers">
       <statusHandler
          id="bndtools.core.debug.statusHandler"
-         class="bndtools.launch.ui.LaunchStatusHandler"
+         class="bndtools.launch.ui.internal.LaunchStatusHandler"
          plugin="bndtools.core"
          code="0"
       />
       <statusHandler
          id="bndtools.core.debug.junitStatusHandler"
-         class="bndtools.launch.ui.JUnitViewOpenerStatusHandler"
+         class="bndtools.launch.ui.internal.JUnitViewOpenerStatusHandler"
          plugin="bndtools.core"
          code="999"
       />

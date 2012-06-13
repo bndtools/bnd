@@ -37,6 +37,7 @@ Private-Package: bndtools,\
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
 	bndtools.editor.model,\
+	bndtools.launch.ui,\
 	bndtools.model.clauses,\
 	org.bndtools.build.api,\
 	org.bndtools.core.ui

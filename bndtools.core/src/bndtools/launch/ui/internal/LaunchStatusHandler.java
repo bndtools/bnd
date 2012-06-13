@@ -1,4 +1,4 @@
-package bndtools.launch.ui;
+package bndtools.launch.ui.internal;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
