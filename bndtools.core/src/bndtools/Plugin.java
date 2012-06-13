@@ -42,6 +42,7 @@ import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
+
     private static final ILogger logger = Logger.getLogger();
 
     public static final String PLUGIN_ID = "bndtools.core";

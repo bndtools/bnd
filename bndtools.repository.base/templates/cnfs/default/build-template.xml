@@ -94,11 +94,11 @@
 	-->
 	<target name="junit" depends="build">
 		<junit printsummary="true">
-			<classpath path="${project.buildpath}" />
+			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>
-			<batchtest todir="tmp" >
-				<fileset dir="${src}">
-					<include name="test/**.java"/>
+			<batchtest todir="${target}">
+				<fileset dir="test">
+					<include name="**.java"/>
 				</fileset>
 			</batchtest>
 		</junit>
@@ -116,9 +116,6 @@
 		<delete dir="bin"/>
 		<delete dir="bin_test"/>
 		<delete dir="${target}"/>
-
-		<delete dir="${workspacedir}/cnf/tmp"/>
-		<delete dir="${workspacedir}/cnf/p2target"/>
 	</target>
 
 	<!--

@@ -58,7 +58,6 @@ import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.url.URLConnector;
 import aQute.lib.deployer.repository.CachingUriResourceHandle;
-import aQute.lib.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
@@ -88,7 +87,6 @@ public class ResolveOperation implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) {
         @SuppressWarnings("unused")
         SubMonitor progress = SubMonitor.convert(monitor, Messages.ResolveOperation_progressLabel, 0);
-
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
         // Get the repositories
@@ -145,10 +143,8 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         RepositoryAdminImpl repoAdmin = new RepositoryAdminImpl(bundleContext, new Logger(Plugin.getDefault().getBundleContext()));
 
-        repos.add(0, repoAdmin.getLocalRepository()); // BUG? Calling
-                                                      // `resolver(Repository[])`
-                                                      // excludes the local
-                                                      // and system repos!
+        // BUG? Calling `resolver(Repository[])` excludes the local and system repos!
+        repos.add(0, repoAdmin.getLocalRepository());
         repos.add(0, repoAdmin.getSystemRepository());
         Resolver resolver = repoAdmin.resolver(repos.toArray(new Repository[repos.size()]));
 
@@ -209,7 +205,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     private void addRepository(URI index, Set<URI> visited, List< ? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
         if (visited.add(index)) {
-            CachingUriResourceHandle handle = new CachingUriResourceHandle(index.toURL().toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
+            CachingUriResourceHandle handle = new CachingUriResourceHandle(index.toURL().toExternalForm(), null, cacheDir, connector, CachingUriResourceHandle.CachingMode.PreferRemote);
             handle.setReporter(Central.getWorkspace());
             File file = handle.request();
 

@@ -1,5 +1,7 @@
 package org.bndtools.core.jobs.startup;
 
+import java.text.MessageFormat;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -33,10 +35,12 @@ public class KickBundles implements IStartupParticipant {
     }
 
     private static void kickBundle(String bsn) {
-        Bundle bindex = BundleUtils.findBundle(CONTEXT, bsn, null);
+        Bundle bundle = BundleUtils.findBundle(CONTEXT, bsn, null);
         try {
-            if (bindex != null)
-                bindex.start();
+            if (bundle != null)
+                bundle.start();
+            else
+                logger.logError(MessageFormat.format("Could not start bundle {0}: no such bundle.", bsn), null);
         } catch (BundleException e) {
             logger.logError("Unable to start BIndex bundle", e);
         }

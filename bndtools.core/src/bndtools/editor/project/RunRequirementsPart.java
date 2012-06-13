@@ -10,7 +10,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bndtools.core.obr.ObrResolutionJob;
+import org.bndtools.core.resolve.ResolveJob;
+import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
 import org.bndtools.core.utils.filters.ObrConstants;
@@ -86,7 +87,6 @@ import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
@@ -317,7 +317,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         final Shell parentShell = page.getEditor().getSite().getShell();
 
         // Create the wizard and pre-validate
-        final ObrResolutionJob job = new ObrResolutionJob(file, model);
+        final ResolveJob job = new ResolveJob(file, model);
         IStatus validation = job.validateBeforeRun();
         if (!validation.isOK()) {
             ErrorDialog errorDialog = new ErrorDialog(parentShell, "Validation Problem", null, validation, IStatus.ERROR | IStatus.WARNING) {
@@ -338,7 +338,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         // showing the result)
         final Runnable showResult = new Runnable() {
             public void run() {
-                ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
+                ResolutionWizard wizard = new ResolutionWizard(model, file, job.getResolutionResult());
                 WizardDialog dialog = new WizardDialog(parentShell, wizard);
                 dialog.open();
             }
