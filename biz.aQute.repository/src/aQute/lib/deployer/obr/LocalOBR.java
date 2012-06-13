@@ -14,7 +14,7 @@ import aQute.lib.deployer.repository.LocalIndexedRepo;
 public class LocalOBR extends LocalIndexedRepo implements OBRIndexProvider {
 
 	@Override
-	public void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		super.setProperties(Conversions.convertConfig(map));
 	}
 

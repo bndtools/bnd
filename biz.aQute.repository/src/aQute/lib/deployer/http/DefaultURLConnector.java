@@ -20,7 +20,7 @@ public class DefaultURLConnector implements URLConnector, Plugin {
 	private static final int RESPONSE_NOT_MODIFIED = 304;
 	
 	private boolean disableServerVerify = false;
-	private Reporter reporter = null;;
+	private Reporter reporter = null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)

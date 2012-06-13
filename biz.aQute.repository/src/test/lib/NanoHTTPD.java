@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.Vector;
 
-import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -116,7 +115,7 @@ public class NanoHTTPD
 	{
 		myOut.println( method + " '" + uri + "' " );
 
-		Enumeration e = header.propertyNames();
+		Enumeration<?> e = header.propertyNames();
 		while ( e.hasMoreElements())
 		{
 			String value = (String)e.nextElement();
@@ -282,6 +281,7 @@ public class NanoHTTPD
 		}
 		myThread = new Thread( new Runnable()
 			{
+				@SuppressWarnings("unused")
 				public void run()
 				{
 					try
@@ -315,6 +315,7 @@ public class NanoHTTPD
 	/**
 	 * Starts as a standalone file server and waits for Enter.
 	 */
+	@SuppressWarnings("unused")
 	public static void main( String[] args )
 	{
 		myOut.println( "NanoHTTPD 1.25 (C) 2001,2005-2011 Jarno Elonen and (C) 2010 Konstantinos Togias\n" +
@@ -687,7 +688,7 @@ public class NanoHTTPD
 		{
 			int matchcount = 0;
 			int matchbyte = -1;
-			Vector matchbytes = new Vector();
+			Vector<Object> matchbytes = new Vector<Object>();
 			for (int i=0; i<b.length; i++)
 			{
 				if (b[i] == boundary[matchcount])
@@ -848,7 +849,7 @@ public class NanoHTTPD
 
 				if ( header != null )
 				{
-					Enumeration e = header.keys();
+					Enumeration<?> e = header.keys();
 					while ( e.hasMoreElements())
 					{
 						String key = (String)e.nextElement();
@@ -904,9 +905,7 @@ public class NanoHTTPD
 				newUri += "%20";
 			else
 			{
-				newUri += URLEncoder.encode( tok );
-				// For Java 1.4 you'll want to use this instead:
-				// try { newUri += URLEncoder.encode( tok, "UTF-8" ); } catch ( java.io.UnsupportedEncodingException uee ) {}
+				 try { newUri += URLEncoder.encode( tok, "UTF-8" ); } catch ( java.io.UnsupportedEncodingException uee ) {}
 			}
 		}
 		return newUri;
@@ -1122,7 +1121,7 @@ public class NanoHTTPD
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
 	 */
-	private static Hashtable theMimeTypes = new Hashtable();
+	private static Hashtable<String,String> theMimeTypes = new Hashtable<String,String>();
 	static
 	{
 		StringTokenizer st = new StringTokenizer(

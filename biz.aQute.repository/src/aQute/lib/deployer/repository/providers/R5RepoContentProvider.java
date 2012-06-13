@@ -179,24 +179,28 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 						String name = reader.getAttributeValue(null, ATTR_NAME);
 						String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
 						String typeAttr = reader.getAttributeValue(null, ATTR_TYPE);
-						capReqBuilder.addAttribute(name, convertAttribute(valueStr, typeAttr));
+						if (capReqBuilder != null)
+							capReqBuilder.addAttribute(name, convertAttribute(valueStr, typeAttr));
 					} else if (TAG_DIRECTIVE.equals(localName)) {
 						String name = reader.getAttributeValue(null, ATTR_NAME);
 						String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
-						capReqBuilder.addDirective(name, valueStr);
+						if (capReqBuilder != null)
+							capReqBuilder.addDirective(name, valueStr);
 					}
 					break;
 				case END_ELEMENT:
 					localName = reader.getLocalName();
 					if (TAG_CAPABILITY.equals(localName)) {
-						resourceBuilder.addCapability(capReqBuilder.buildCapability());
+						if (resourceBuilder != null && capReqBuilder != null) resourceBuilder.addCapability(capReqBuilder.buildCapability());
 						capReqBuilder = null;
 					} else if (TAG_REQUIREMENT.equals(localName)) {
-						resourceBuilder.addRequirement(capReqBuilder.buildRequirement());
+						if (resourceBuilder != null && capReqBuilder != null) resourceBuilder.addRequirement(capReqBuilder.buildRequirement());
 						capReqBuilder = null;
 					} else if (TAG_RESOURCE.equals(localName)) {
-						R5Resource resource = resourceBuilder.build();
-						listener.processResource(resource);
+						if (resourceBuilder != null) {
+							R5Resource resource = resourceBuilder.build();
+							listener.processResource(resource);
+						}
 						resourceBuilder = null;
 					}
 					break;

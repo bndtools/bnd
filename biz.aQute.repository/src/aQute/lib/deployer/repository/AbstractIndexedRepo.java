@@ -259,9 +259,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 	
 	protected static File[] requestAll(ResourceHandle[] handles) throws IOException {
-		File[] result = (handles == null) ? new File[0] : new File[handles.length];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = handles[i].request();
+		File[] result;
+		if (handles == null)
+			result = new File[0];
+		else {
+			result = new File[handles.length];
+			for (int i = 0; i < result.length; i++) {
+				result[i] = handles[i].request();
+			}
 		}
 		return result;
 	}

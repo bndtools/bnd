@@ -39,7 +39,7 @@ import aQute.lib.deployer.repository.FixedIndexedRepo;
 public class OBR extends FixedIndexedRepo implements OBRIndexProvider{
 
 	@Override
-	public void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		super.setProperties(Conversions.convertConfig(map));
 	}
 

@@ -44,7 +44,7 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	private String locations;
 	protected File cacheDir;
 
-	public void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		super.setProperties(map);
 		
 		locations = map.get(PROP_LOCATIONS);
@@ -98,7 +98,7 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	}
 	
 	@Override
-	public String getName() {
+	public synchronized String getName() {
 		if (name != null && !name.equals(this.getClass().getName()))
 			return name;
 		

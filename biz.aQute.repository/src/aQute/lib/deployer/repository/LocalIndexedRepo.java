@@ -43,7 +43,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private final List<Pair<Jar, File>> newFilesInCoordination = new LinkedList<Pair<Jar,File>>();
 
 	@Override
-	public void setProperties(Map<String, String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		super.setProperties(map);
 		
 		// Load essential properties
