@@ -34,6 +34,7 @@ public class Baseline {
 
 	final Differ	differ;
 	final Reporter	bnd;
+	Diff diff;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -66,10 +67,11 @@ public class Baseline {
 	public Set<Info> baseline(Tree n, Parameters nExports, Tree o,
 			Parameters oExports, Instructions packageFilters)
 			throws Exception {
-		Diff diff = n.diff(o).get("<api>");
+		diff = n.diff(o);
+		Diff apiDiff = diff.get("<api>");
 		Set<Info> infos = Create.set();
 
-		for (Diff pdiff : diff.getChildren()) {
+		for (Diff pdiff : apiDiff.getChildren()) {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
 				continue;
 
@@ -139,6 +141,14 @@ public class Baseline {
 			}
 		}
 		return infos;
+	}
+
+	/**
+	 * Gets the generated diff
+	 * @return the diff
+	 */
+	public Diff getDiff() {
+		return diff;
 	}
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
