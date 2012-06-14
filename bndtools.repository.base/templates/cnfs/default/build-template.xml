@@ -24,7 +24,7 @@
 	<target name="init" unless="initialized">
 		<!-- Initialise some basic properties -->
 		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmm" timezone="UTC"/>
+			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC"/>
 		</tstamp>
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />

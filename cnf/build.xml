@@ -16,7 +16,7 @@
 
 	<target name="init" unless="initialized">
 		<tstamp>
-			<format property="NOW" pattern="yyMMdd-HHmm"/>
+			<format property="NOW" pattern="yyyyMMdd-HHmmss"/>
 		</tstamp>
 		
 		<dirname property="projectdir" file="${ant.file}" />
