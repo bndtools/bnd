@@ -319,7 +319,7 @@ public class MacroTest extends TestCase {
 		p.setProperty("b", "${a}");
 		p.setProperty("c", "${b}");
 
-		p.setProperty("d", "${tstamp;${format};${aug152008}}");
+		p.setProperty("d", "${tstamp;${format};UTC;${aug152008}}");
 		p.setProperty("format", "yyyy");
 		p.setProperty("aug152008", "1218810097322");
 
@@ -350,13 +350,15 @@ public class MacroTest extends TestCase {
 	}
 
 	public void testTstamp() {
-		// TODO Timezones
-		// String aug152008 = "1218810097322";
-		// Processor p = new Processor();
-		// Macro m = new Macro(p);
-		// assertEquals("200808151521", m.process("${tstamp;yyyyMMddHHmm;" +
-		// aug152008 + "}"));
-		// // assertEquals( "2008", m.process("${tstamp;yyyy}"));
+		String aug152008 = "1218810097322";
+		Processor p = new Processor();
+		Macro m = new Macro(p);
+		assertEquals("200808151421", m.process("${tstamp;yyyyMMddHHmm;UTC;" + aug152008 + "}"));
+		assertEquals("200808151521", m.process("${tstamp;yyyyMMddHHmm;GMT+01;" + aug152008 + "}"));
+		assertEquals("2008", m.process("${tstamp;yyyy;UTC;" + aug152008 + "}"));
+		
+		// Why Tokyo? Japan doesn't use daylight savings, so the test shouldn't break when clocks change.
+		assertEquals("200808152321", m.process("${tstamp;yyyyMMddHHmm;Asia/Tokyo;" + aug152008 + "}"));
 	}
 
 	public void testIsfile() {

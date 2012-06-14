@@ -545,17 +545,24 @@ public class Macro implements Replacer {
 	public String _tstamp(String args[]) {
 		String format = "yyyyMMddHHmm";
 		long now = System.currentTimeMillis();
+		TimeZone tz = TimeZone.getTimeZone("UTC");
 
 		if (args.length > 1) {
 			format = args[1];
-			if (args.length > 2) {
-				now = Long.parseLong(args[2]);
-				if (args.length > 3) {
-					domain.warning("Too many arguments for tstamp: " + Arrays.toString(args));
-				}
-			}
 		}
+		if (args.length > 2) {
+			tz = TimeZone.getTimeZone(args[2]);
+		}
+		if (args.length > 3) {
+			now = Long.parseLong(args[3]);
+		}
+		if (args.length > 4) {
+			domain.warning("Too many arguments for tstamp: " + Arrays.toString(args));
+		}
+
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		sdf.setTimeZone(tz);
+
 		return sdf.format(new Date(now));
 	}
 
