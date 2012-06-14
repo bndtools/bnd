@@ -14,16 +14,16 @@ eclipse-repo:     ${build}/eclipse-${eclipse-version}/repository.xml
 common-plugins: aQute.lib.deployer.obr.OBR;locations='file:${eclipse-repo}';name=Eclipse-${eclipse-version}
 
 # Local OBR
--plugin:\
-	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
-	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
-	${common-plugins}
+#-plugin:\
+#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
+#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
+#	${common-plugins}
 
 
 # Remote OBR
-#-plugin: aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/jars/repository.xml;name=Bnd Build Repository,\
-#	aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/bundles/repository.xml;name=Bnd Repository,\
-#	${common-plugins}
+-plugin: aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/jars/repository.xml;name=Bnd Build Repository,\
+	aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/bundles/repository.xml;name=Bnd Repository,\
+	${common-plugins}
 
 # Remote OBR / GIT plugin
 #-plugin:		bndtools.bndplugins.repo.git.GitOBRRepo;name='Bnd Build Repository';path:=${build}/repo/bndtools.bndplugins.repos/bndtools.bndplugins.repos-0.0.0.jar;\
