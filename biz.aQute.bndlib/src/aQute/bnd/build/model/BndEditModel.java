@@ -36,10 +36,10 @@ public class BndEditModel {
     public static final String LINE_SEPARATOR = " \\\n\t";
 	public static final String LIST_SEPARATOR = ",\\\n\t";
 
-	private static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
+	protected static final String ISO_8859_1 = "ISO-8859-1"; //$NON-NLS-1$
 
 	@SuppressWarnings("deprecation")
-    protected static final String[] KNOWN_PROPERTIES = new String[] {
+    protected static String[] KNOWN_PROPERTIES = new String[] {
 		Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION,
 		Constants.BUNDLE_ACTIVATOR,
