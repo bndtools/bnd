@@ -29,8 +29,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.service.IndexProvider;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
@@ -60,7 +59,7 @@ public class AvailableBundlesPart extends BndEditorPart {
             boolean select = false;
             if (element instanceof RepositoryBundle) {
                 RepositoryBundle repoBundle = (RepositoryBundle) element;
-                if (repoBundle.getRepo() instanceof OBRIndexProvider || repoBundle.getRepo() instanceof IndexProvider) {
+                if (repoBundle.getRepo() instanceof IndexProvider) {
                     if (includedRepos == null || includedRepos.contains(repoBundle.getRepo().getName())) {
                         select = true;
                     }
@@ -125,7 +124,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         viewer = new TreeViewer(tree);
-        RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(OBRResolutionMode.runtime);
+        RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
         contentProvider.setShowRepos(false);
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));

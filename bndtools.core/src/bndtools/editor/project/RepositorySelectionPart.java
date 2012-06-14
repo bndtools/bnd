@@ -41,9 +41,11 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.OBRIndexProvider;
 import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
@@ -281,8 +283,8 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     static boolean isAvailableRepo(Object repoObj) {
-        if (repoObj instanceof OBRIndexProvider) {
-            return ((OBRIndexProvider) repoObj).getSupportedModes().contains(OBRResolutionMode.runtime);
+        if (repoObj instanceof IndexProvider) {
+            return ((IndexProvider) repoObj).getSupportedPhases().contains(ResolutionPhase.runtime);
         }
         return false;
     }

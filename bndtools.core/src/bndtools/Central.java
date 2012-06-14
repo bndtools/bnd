@@ -203,7 +203,7 @@ public class Central {
         workspace.addBasicPlugin(new WorkspaceListener(workspace));
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
-        workspace.addBasicPlugin(new WrappingOBRIndexProvder(getWorkspaceObrProvider()));
+        workspace.addBasicPlugin(new WrappingIndexProvider(getWorkspaceObrProvider()));
         // workspace.addBasicPlugin(getWorkspaceRepoProvider());
 
         return workspace;
