@@ -70,8 +70,8 @@ public class BndEditModel {
 
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
-	private final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
-	private final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
+	protected final Map<String, Converter<? extends Object, String>> converters = new HashMap<String, Converter<? extends Object,String>>();
+	protected final Map<String, Converter<String, ? extends Object>> formatters = new HashMap<String, Converter<String, ? extends Object>>();
 //	private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
