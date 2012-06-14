@@ -1,9 +1,7 @@
 -dependson: bndtools.bndplugins
 
-version: ${master-version}
-
 Bundle-SymbolicName: bndtools.core;singleton:=true
-Bundle-Version: ${version}
+Bundle-Version: ${master-version}
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
