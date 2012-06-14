@@ -15,6 +15,10 @@ public class Conversions {
 		String location = map.get("location");
 		if (location != null)
 			map.put(FixedIndexedRepo.PROP_LOCATIONS, location);
+		
+		String mode = map.get("mode");
+		if (mode != null)
+			map.put(AbstractIndexedRepo.PROP_RESOLUTION_PHASE, mode);
 
 		return map;
 	}
