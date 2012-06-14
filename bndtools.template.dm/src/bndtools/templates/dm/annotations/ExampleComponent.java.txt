@@ -1,0 +1,19 @@
+package org.example;
+
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.osgi.service.log.LogService;
+
+@Component
+public class ExampleComponent {
+	@ServiceDependency
+	private volatile LogService m_log;
+	
+	public void start() {
+		m_log.log(LogService.LOG_INFO, "Component started.");
+	}
+	
+	public void stop() {
+		m_log.log(LogService.LOG_INFO, "Component stopped.");
+	}
+}

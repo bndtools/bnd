@@ -15,6 +15,7 @@ Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	templateDocs/=templateDocs,\
 
-Private-Package: bndtools.templates.dm
+Private-Package: bndtools.templates.dm,\
+	bndtools.templates.dm.annotations
 
 -removeheaders: Private-Package

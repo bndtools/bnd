@@ -5,6 +5,13 @@
       <template name="Component Development (Apache Felix Dependency Manager)"
          priority="100"
          class="bndtools.templates.dm.DependencyManagerTemplate"
-         doc="templateDocs/dependencyManagerTemplate.xml"/>
+         doc="templateDocs/dependencyManagerTemplate.xml" />
+   </extension>
+
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Component Development (Apache Felix Dependency Manager Annotations)"
+         priority="100"
+         class="bndtools.templates.dm.annotations.DependencyManagerAnnotationsTemplate"
+         doc="templateDocs/dependencyManagerAnnotationsTemplate.xml" />
    </extension>
 </plugin>
