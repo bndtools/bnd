@@ -1,6 +1,6 @@
 package aQute.bnd.service.diff;
 
-public interface Tree {
+public interface Tree extends Comparable<Tree>{
 
 	public class Data {
 		public String	name;

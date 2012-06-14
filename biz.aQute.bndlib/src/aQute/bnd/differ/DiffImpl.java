@@ -17,8 +17,8 @@ import aQute.bnd.service.diff.*;
 
 public class DiffImpl implements Diff, Comparable<DiffImpl> {
 
-	final Element				older;
-	final Element				newer;
+	final Tree				older;
+	final Tree				newer;
 	final Collection<DiffImpl>	children;
 	final Delta					delta;
 
@@ -64,22 +64,22 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 *            The older Element
 	 * @param types
 	 */
-	DiffImpl(Element newer, Element older) {
+	public DiffImpl(Tree newer, Tree older) {
 		assert newer != null || older != null;
 		this.older = older;
 		this.newer = newer;
 
 		// Either newer or older can be null, indicating remove or add
 		// so we have to be very careful.
-		Element[] newerChildren = newer == null ? Element.EMPTY : newer.children;
-		Element[] olderChildren = older == null ? Element.EMPTY : older.children;
+		Tree[] newerChildren = newer == null ? Element.EMPTY : newer.getChildren();
+		Tree[] olderChildren = older == null ? Element.EMPTY : older.getChildren();
 
 		int o = 0;
 		int n = 0;
 		List<DiffImpl> children = new ArrayList<DiffImpl>();
 		while (true) {
-			Element nw = n < newerChildren.length ? newerChildren[n] : null;
-			Element ol = o < olderChildren.length ? olderChildren[o] : null;
+			Tree nw = n < newerChildren.length ? newerChildren[n] : null;
+			Tree ol = o < olderChildren.length ? olderChildren[o] : null;
 			DiffImpl diff;
 
 			if (nw == null && ol == null)
@@ -152,9 +152,9 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 			for (DiffImpl child : children) {
 				Delta sub = child.getDelta(ignore);
 				if (sub == REMOVED)
-					sub = child.older.remove;
+					sub = child.older.ifRemoved();
 				else if (sub == ADDED)
-					sub = child.newer.add;
+					sub = child.newer.ifAdded();
 
 				// The escalate method is used to calculate the default
 				// transition in the

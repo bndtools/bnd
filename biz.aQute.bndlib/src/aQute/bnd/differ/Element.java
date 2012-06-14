@@ -20,7 +20,7 @@ import aQute.bnd.service.diff.*;
  * unnecessary.
  */
 
-class Element implements Comparable<Element>, Tree {
+class Element implements Tree {
 	final static Element[]	EMPTY	= new Element[0];
 	final Type				type;
 	final String			name;
@@ -94,11 +94,11 @@ class Element implements Comparable<Element>, Tree {
 		return comment;
 	}
 
-	public int compareTo(Element other) {
-		if (type == other.type)
-			return name.compareTo(other.name);
+	public int compareTo(Tree other) {
+		if (type == other.getType())
+			return name.compareTo(other.getName());
 		else
-			return type.compareTo(other.type);
+			return type.compareTo(other.getType());
 	}
 
 	public boolean equals(Object other) {
