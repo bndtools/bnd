@@ -42,8 +42,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.service.IndexProvider;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;

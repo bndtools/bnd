@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import org.bndtools.core.adapter.LegacyRepositoryAdapter;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -108,9 +107,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         List<URI> locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
             try {
-                @SuppressWarnings("rawtypes")
-                List raw = ((IndexProvider) repository).getIndexLocations();
-                locations = LegacyRepositoryAdapter.convertToUriList(raw);
+                locations = ((IndexProvider) repository).getIndexLocations();
             } catch (Exception e) {
                 Plugin.getDefault().getLogger().logError("Unable to get repository index list", e);
             }

@@ -5,11 +5,10 @@ plugindir: ${workspace}/cnf/plugins
 	${plugindir}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
 
 -plugin:\
-	aQute.lib.deployer.obr.LocalOBR; name='Release';      local=${workspace}/cnf/releaserepo,\
-	aQute.lib.deployer.FileRepo;     name=Build;          location=${workspace}/cnf/buildrepo;,\
-	aQute.lib.deployer.obr.LocalOBR; name='Local';        local=${workspace}/cnf/localrepo,\
-	aQute.lib.deployer.obr.OBR;      name='Bndtools Hub'; locations='http://bundles.bndtools.org/repository.xml',\
+	aQute.lib.deployer.repository.LocalIndexedRepo; name=Release;      local=${workspace}/cnf/releaserepo,\
+	aQute.lib.deployer.FileRepo;                    name=Build;        location=${workspace}/cnf/buildrepo,\
+	aQute.lib.deployer.repository.LocalIndexedRepo; name=Local;        local=${workspace}/cnf/localrepo,\
+	aQute.lib.deployer.repository.FixedIndexedRepo; name=Bndtools Hub; locations=http://bundles.bndtools.org/repository.xml,\
 	org.osgi.impl.bundle.bindex.BundleIndexerImpl
-
 
 -releaserepo: Release

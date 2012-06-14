@@ -28,7 +28,6 @@ import org.apache.felix.bundlerepository.Resource;
 import org.apache.felix.bundlerepository.impl.DataModelHelperImpl;
 import org.apache.felix.bundlerepository.impl.RepositoryAdminImpl;
 import org.apache.felix.utils.log.Logger;
-import org.bndtools.core.adapter.LegacyRepositoryAdapter;
 import org.bndtools.core.obr.model.PullParser;
 import org.bndtools.core.obr.model.Referral;
 import org.bndtools.core.obr.model.RepositoryImpl;
@@ -335,7 +334,7 @@ public class ResolveOperation implements IRunnableWithProgress {
     private List<IndexProvider> loadIndexProviders() throws Exception {
         // Load the OBR providers into a map keyed on repo name
         Map<String,IndexProvider> repoMap = new LinkedHashMap<String,IndexProvider>();
-        for (IndexProvider plugin : LegacyRepositoryAdapter.findIndexProviderPlugins(Central.getWorkspace())) {
+        for (IndexProvider plugin : Central.getWorkspace().getPlugins(IndexProvider.class)) {
             // Filter out non-runtime repos nice and early
             if (plugin.getSupportedPhases().contains(ResolutionPhase.runtime)) {
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();

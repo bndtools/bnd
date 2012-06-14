@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.bndtools.core.adapter.LegacyRepositoryAdapter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -101,13 +100,14 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
     private static Set<String> getInstalledUrls() throws Exception {
         Set<String> urls = new HashSet<String>();
 
-        List<IndexProvider> providers = LegacyRepositoryAdapter.findIndexProviderPlugins(Central.getWorkspace());
-        for (IndexProvider provider : providers) {
-            List<URI> indexes = provider.getIndexLocations();
-            for (URI index : indexes) {
-                urls.add(index.toString());
+        List<IndexProvider> providers = Central.getWorkspace().getPlugins(IndexProvider.class);
+        if (providers != null)
+            for (IndexProvider provider : providers) {
+                List<URI> indexes = provider.getIndexLocations();
+                for (URI index : indexes) {
+                    urls.add(index.toString());
+                }
             }
-        }
 
         return urls;
     }
