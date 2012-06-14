@@ -166,7 +166,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
         txtActivator.setMessage("Enter activator class name");
 
-        Label lblComponents = toolkit.createLabel(composite, "Enable Components:");
+        Label lblComponents = toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
         cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
@@ -190,7 +190,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         // Decorator for the Components combo
         ControlDecoration decorComponents = new ControlDecoration(cmbComponents, SWT.LEFT | SWT.CENTER, composite);
         decorComponents.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
-        decorComponents.setDescriptionText("Use Java annotations to detect Service Components.");
+        decorComponents.setDescriptionText("Use Java annotations to detect Declarative Service Components.");
         decorComponents.setShowOnlyOnFocus(false);
         decorComponents.setShowHover(true);
 
