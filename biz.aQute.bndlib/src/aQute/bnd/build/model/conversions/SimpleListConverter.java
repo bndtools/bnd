@@ -5,37 +5,37 @@ import java.util.*;
 import aQute.lib.osgi.*;
 import aQute.libg.qtokens.*;
 
-public class SimpleListConverter<R> implements Converter<List<R>, String> {
+public class SimpleListConverter<R> implements Converter<List<R>,String> {
 
-    private Converter<? extends R, ? super String> itemConverter;
+	private Converter< ? extends R, ? super String>	itemConverter;
 
-    public static <R> Converter<List<R>, String> create(Converter<R, ? super String> itemConverter) {
-        return new SimpleListConverter<R>(itemConverter);
-    }
+	public static <R> Converter<List<R>,String> create(Converter<R, ? super String> itemConverter) {
+		return new SimpleListConverter<R>(itemConverter);
+	}
 
-    public static Converter<List<String>, String> create() {
-        return new SimpleListConverter<String>(new NoopConverter<String>());
-    }
+	public static Converter<List<String>,String> create() {
+		return new SimpleListConverter<String>(new NoopConverter<String>());
+	}
 
-    private SimpleListConverter(Converter<? extends R, ? super String> itemConverter) {
-        this.itemConverter = itemConverter;
-    }
+	private SimpleListConverter(Converter< ? extends R, ? super String> itemConverter) {
+		this.itemConverter = itemConverter;
+	}
 
-    public List<R> convert(String input) throws IllegalArgumentException {
-        List<R> result = new ArrayList<R>();
+	public List<R> convert(String input) throws IllegalArgumentException {
+		List<R> result = new ArrayList<R>();
 
-        if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
-            return result;
+		if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
+			return result;
 
-        QuotedTokenizer qt = new QuotedTokenizer(input, ",");
-        String token = qt.nextToken();
+		QuotedTokenizer qt = new QuotedTokenizer(input, ",");
+		String token = qt.nextToken();
 
-        while (token != null) {
-            result.add(itemConverter.convert(token.trim()));
-            token = qt.nextToken();
-        }
+		while (token != null) {
+			result.add(itemConverter.convert(token.trim()));
+			token = qt.nextToken();
+		}
 
-        return result;
-    }
+		return result;
+	}
 
 }

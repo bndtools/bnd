@@ -2,25 +2,25 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.Map.Entry;
 
-public class PropertiesEntryFormatter implements Converter<String, Entry<String, String>> {
-    public String convert(Entry<String, String> entry) {
-        StringBuilder buffer = new StringBuilder();
+public class PropertiesEntryFormatter implements Converter<String,Entry<String,String>> {
+	public String convert(Entry<String,String> entry) {
+		StringBuilder buffer = new StringBuilder();
 
-        String name = entry.getKey();
-        buffer.append(name).append('=');
+		String name = entry.getKey();
+		buffer.append(name).append('=');
 
-        String value = entry.getValue();
-        if(value != null && value.length() > 0) {
-            int quotableIndex = value.indexOf(',');
-            if (quotableIndex == -1)
-                quotableIndex = value.indexOf('=');
+		String value = entry.getValue();
+		if (value != null && value.length() > 0) {
+			int quotableIndex = value.indexOf(',');
+			if (quotableIndex == -1)
+				quotableIndex = value.indexOf('=');
 
-            if (quotableIndex >= 0) {
-                buffer.append('\'').append(value).append('\'');
-            } else {
-                buffer.append(value);
-            }
-        }
-        return buffer.toString();
-    }
+			if (quotableIndex >= 0) {
+				buffer.append('\'').append(value).append('\'');
+			} else {
+				buffer.append(value);
+			}
+		}
+		return buffer.toString();
+	}
 }

@@ -11,24 +11,21 @@
 package aQute.bnd.build.model;
 
 public enum UpperVersionMatchType {
-	Exact("${@}"),
-	NextMicro("${version;==+;${@}}"),
-	NextMinor("${version;=+;${@}}"),
-	NextMajor("${version;+;${@}}");
-	
-	private final String representation;
-	
+	Exact("${@}"), NextMicro("${version;==+;${@}}"), NextMinor("${version;=+;${@}}"), NextMajor("${version;+;${@}}");
+
+	private final String	representation;
+
 	private UpperVersionMatchType(String representation) {
 		this.representation = representation;
 	}
-	
+
 	public String getRepresentation() {
 		return representation;
 	}
-	
-	public static UpperVersionMatchType parse(String string) throws IllegalArgumentException{
+
+	public static UpperVersionMatchType parse(String string) throws IllegalArgumentException {
 		for (UpperVersionMatchType type : UpperVersionMatchType.class.getEnumConstants()) {
-			if(type.getRepresentation().equals(string)) {
+			if (type.getRepresentation().equals(string)) {
 				return type;
 			}
 		}

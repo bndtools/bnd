@@ -2,7 +2,7 @@ package aQute.lib.properties;
 
 public class BadLocationException extends Exception {
 
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
 
 	public BadLocationException() {
 		super();

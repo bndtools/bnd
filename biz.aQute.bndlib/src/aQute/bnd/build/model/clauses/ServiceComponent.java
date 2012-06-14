@@ -26,39 +26,42 @@ import aQute.libg.header.Attrs;
 public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	// v1.0.0 attributes
-    // public final static String       COMPONENT_NAME                 = "name:";
-    public final static String       COMPONENT_FACTORY              = "factory:";
-    public final static String       COMPONENT_SERVICEFACTORY       = "servicefactory:";
-    public final static String       COMPONENT_IMMEDIATE            = "immediate:";
-    public final static String       COMPONENT_ENABLED              = "enabled:";
+	// public final static String COMPONENT_NAME = "name:";
+	public final static String		COMPONENT_FACTORY				= "factory:";
+	public final static String		COMPONENT_SERVICEFACTORY		= "servicefactory:";
+	public final static String		COMPONENT_IMMEDIATE				= "immediate:";
+	public final static String		COMPONENT_ENABLED				= "enabled:";
 
-    public final static String       COMPONENT_DYNAMIC              = "dynamic:";
-    public final static String       COMPONENT_MULTIPLE             = "multiple:";
-    public final static String       COMPONENT_PROVIDE              = "provide:";
-    public final static String       COMPONENT_OPTIONAL             = "optional:";
-    public final static String       COMPONENT_PROPERTIES           = "properties:";
-    // public final static String       COMPONENT_IMPLEMENTATION       = "implementation:";
+	public final static String		COMPONENT_DYNAMIC				= "dynamic:";
+	public final static String		COMPONENT_MULTIPLE				= "multiple:";
+	public final static String		COMPONENT_PROVIDE				= "provide:";
+	public final static String		COMPONENT_OPTIONAL				= "optional:";
+	public final static String		COMPONENT_PROPERTIES			= "properties:";
+	// public final static String COMPONENT_IMPLEMENTATION = "implementation:";
 
-    // v1.1.0 attributes
-    public final static String       COMPONENT_VERSION              = "version:";
-    public final static String       COMPONENT_CONFIGURATION_POLICY = "configuration-policy:";
-    public final static String       COMPONENT_MODIFIED             = "modified:";
-    public final static String       COMPONENT_ACTIVATE             = "activate:";
-    public final static String       COMPONENT_DEACTIVATE           = "deactivate:";
+	// v1.1.0 attributes
+	public final static String		COMPONENT_VERSION				= "version:";
+	public final static String		COMPONENT_CONFIGURATION_POLICY	= "configuration-policy:";
+	public final static String		COMPONENT_MODIFIED				= "modified:";
+	public final static String		COMPONENT_ACTIVATE				= "activate:";
+	public final static String		COMPONENT_DEACTIVATE			= "deactivate:";
 
-    private final static Pattern REFERENCE_PATTERN = Pattern.compile("([^(]+)(\\(.+\\))?");
+	private final static Pattern	REFERENCE_PATTERN				= Pattern.compile("([^(]+)(\\(.+\\))?");
 
 	public ServiceComponent(String name, Attrs attribs) {
 		super(name, attribs);
 	}
+
 	public boolean isPath() {
 		return name.indexOf('/') >= 0 || name.endsWith(".xml");
 	}
+
 	private Set<String> getStringSet(String attrib) {
 		List<String> list = getListAttrib(attrib);
 		return list != null ? new HashSet<String>(list) : new HashSet<String>();
 	}
-	public void setPropertiesMap(Map<String, String> properties) {
+
+	public void setPropertiesMap(Map<String,String> properties) {
 		List<String> strings = new ArrayList<String>(properties.size());
 		for (Entry<String,String> entry : properties.entrySet()) {
 			String line = new StringBuilder().append(entry.getKey()).append("=").append(entry.getValue()).toString();
@@ -66,17 +69,18 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		}
 		setListAttrib(COMPONENT_PROPERTIES, strings);
 	}
-	public Map<String, String> getPropertiesMap() {
-		Map<String,String> result = new LinkedHashMap<String, String>();
+
+	public Map<String,String> getPropertiesMap() {
+		Map<String,String> result = new LinkedHashMap<String,String>();
 
 		List<String> list = getListAttrib(COMPONENT_PROPERTIES);
-		if(list != null) {
+		if (list != null) {
 			for (String entryStr : list) {
 				String name;
 				String value;
 
 				int index = entryStr.lastIndexOf('=');
-				if(index == -1) {
+				if (index == -1) {
 					name = entryStr;
 					value = null;
 				} else {
@@ -90,11 +94,12 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 		return result;
 	}
-	public void setSvcRefs(List<? extends ComponentSvcReference> refs) {
+
+	public void setSvcRefs(List< ? extends ComponentSvcReference> refs) {
 		// First remove all existing references, i.e. non-directives
-		for(Iterator<String> iter = attribs.keySet().iterator(); iter.hasNext(); ) {
+		for (Iterator<String> iter = attribs.keySet().iterator(); iter.hasNext();) {
 			String name = iter.next();
-			if(!name.endsWith(":")) {
+			if (!name.endsWith(":")) {
 				iter.remove();
 			}
 		}
@@ -106,9 +111,9 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		for (ComponentSvcReference ref : refs) {
 			// Build the reference name with bind and unbind
 			String expandedRefName = ref.getName();
-			if(ref.getBind() != null) {
+			if (ref.getBind() != null) {
 				expandedRefName += "/" + ref.getBind();
-				if(ref.getUnbind() != null) {
+				if (ref.getUnbind() != null) {
 					expandedRefName += "/" + ref.getUnbind();
 				}
 			}
@@ -118,21 +123,23 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 			buffer.append(ref.getServiceClass());
 
 			// Add the target filter
-			if(ref.getTargetFilter() != null) {
+			if (ref.getTargetFilter() != null) {
 				buffer.append('(').append(ref.getTargetFilter()).append(')');
 			}
 
 			// Work out the cardinality suffix (i.e. *, +, ? org ~).
-			// Adding to the dynamic/multiple/optional lists for non-standard cases
+			// Adding to the dynamic/multiple/optional lists for non-standard
+			// cases
 			String cardinalitySuffix;
-			if(ref.isDynamic()) {
-				if(ref.isOptional()) {
-					if(ref.isMultiple()) //0..n dynamic
+			if (ref.isDynamic()) {
+				if (ref.isOptional()) {
+					if (ref.isMultiple()) // 0..n dynamic
 						cardinalitySuffix = "*";
-					else // 0..1 dynamic
+					else
+						// 0..1 dynamic
 						cardinalitySuffix = "?";
 				} else {
-					if(ref.isMultiple()) // 1..n dynamic
+					if (ref.isMultiple()) // 1..n dynamic
 						cardinalitySuffix = "+";
 					else { // 1..1 dynamic, not a normal combination
 						cardinalitySuffix = null;
@@ -140,8 +147,9 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 					}
 				}
 			} else {
-				if(ref.isOptional()) {
-					if(ref.isMultiple()) { // 0..n static, not a normal combination
+				if (ref.isOptional()) {
+					if (ref.isMultiple()) { // 0..n static, not a normal
+											// combination
 						cardinalitySuffix = null;
 						optional.add(ref.getName());
 						multiple.add(ref.getName());
@@ -149,7 +157,8 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 						cardinalitySuffix = "~";
 					}
 				} else {
-					if(ref.isMultiple()) { // 1..n static, not a normal combination
+					if (ref.isMultiple()) { // 1..n static, not a normal
+											// combination
 						multiple.add(ref.getName());
 						cardinalitySuffix = null;
 					} else { // 1..1 static
@@ -158,7 +167,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 				}
 			}
 
-			if(cardinalitySuffix != null)
+			if (cardinalitySuffix != null)
 				buffer.append(cardinalitySuffix);
 
 			// Write to the map
@@ -168,6 +177,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		setListAttrib(COMPONENT_MULTIPLE, multiple);
 		setListAttrib(COMPONENT_DYNAMIC, dynamic);
 	}
+
 	public List<ComponentSvcReference> getSvcRefs() {
 		List<ComponentSvcReference> result = new ArrayList<ComponentSvcReference>();
 
@@ -175,11 +185,11 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		Set<String> optionalSet = getStringSet(COMPONENT_OPTIONAL);
 		Set<String> multipleSet = getStringSet(COMPONENT_MULTIPLE);
 
-		for (Entry<String, String> entry : attribs.entrySet()) {
+		for (Entry<String,String> entry : attribs.entrySet()) {
 			String referenceName = entry.getKey();
 
 			// Skip directives
-			if(referenceName.endsWith(":"))//$NON-NLS-1$
+			if (referenceName.endsWith(":"))//$NON-NLS-1$
 				continue;
 
 			ComponentSvcReference svcRef = new ComponentSvcReference();
@@ -193,16 +203,14 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 				bind = parts[1];
 				if (parts.length > 2)
 					unbind = parts[2];
-			/*
-				else if (bind.startsWith("add"))
-					unbind = bind.replaceAll("add(.+)", "remove$1");
-				else
-					unbind = "un" + bind;
-			} else if (Character.isLowerCase(referenceName.charAt(0))) {
-				bind = "set" + Character.toUpperCase(referenceName.charAt(0))
-						+ referenceName.substring(1);
-				unbind = "un" + bind;
-			*/
+				/*
+				 * else if (bind.startsWith("add")) unbind =
+				 * bind.replaceAll("add(.+)", "remove$1"); else unbind = "un" +
+				 * bind; } else if
+				 * (Character.isLowerCase(referenceName.charAt(0))) { bind =
+				 * "set" + Character.toUpperCase(referenceName.charAt(0)) +
+				 * referenceName.substring(1); unbind = "un" + bind;
+				 */
 			}
 			svcRef.setName(referenceName);
 			svcRef.setBind(bind);
@@ -245,10 +253,12 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 		return result;
 	}
+
 	@Override
 	public ServiceComponent clone() {
 		return new ServiceComponent(this.name, new Attrs(this.attribs));
 	}
+
 	@Override
 	protected boolean newlinesBetweenAttributes() {
 		return true;

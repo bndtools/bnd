@@ -1,5 +1,5 @@
 package aQute.lib.properties;
 
 public enum LineType {
-    blank, comment, entry, eof
+	blank, comment, entry, eof
 }

@@ -2,11 +2,13 @@ package aQute.lib.properties;
 
 public class Document implements IDocument {
 
-	public final static String[] DELIMITERS= { "\r", "\n", "\r\n" };
-	
-	private LineTracker lineTracker = new LineTracker();
-	private ITextStore textStore = new CopyOnWriteTextStore(new GapTextStore());
-	
+	public final static String[]	DELIMITERS	= {
+			"\r", "\n", "\r\n"
+												};
+
+	private LineTracker				lineTracker	= new LineTracker();
+	private ITextStore				textStore	= new CopyOnWriteTextStore(new GapTextStore());
+
 	public Document(String text) {
 		setText(text);
 	}
@@ -30,28 +32,28 @@ public class Document implements IDocument {
 	public int getLength() {
 		return textStore.getLength();
 	}
-	
+
 	public void replace(int offset, int length, String text) throws BadLocationException {
 		textStore.replace(offset, length, text);
 		lineTracker.set(get());
 	}
-	
+
 	public char getChar(int pos) {
 		return textStore.get(pos);
 	}
-	
+
 	public void setText(String text) {
 		textStore.set(text);
 		lineTracker.set(text);
 	}
-	
+
 	public String get() {
 		return textStore.get(0, textStore.getLength());
 	}
-	
+
 	protected static class DelimiterInfo {
-		 		public int delimiterIndex;
-		 		public int delimiterLength;
-		 		public String delimiter;
- 	}
+		public int		delimiterIndex;
+		public int		delimiterLength;
+		public String	delimiter;
+	}
 }
