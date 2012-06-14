@@ -1,7 +1,6 @@
 package org.bndtools.core.jobs.newproject;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,12 +18,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.service.IndexProvider;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.service.OBRIndexProvider;
 
 public class RequiredObrCheckingJob extends WorkspaceJob {
 
@@ -102,13 +100,14 @@ public class RequiredObrCheckingJob extends WorkspaceJob {
     private static Set<String> getInstalledUrls() throws Exception {
         Set<String> urls = new HashSet<String>();
 
-        List<OBRIndexProvider> providers = Central.getWorkspace().getPlugins(OBRIndexProvider.class);
-        for (OBRIndexProvider provider : providers) {
-            Collection<URI> indexes = provider.getOBRIndexes();
-            for (URI index : indexes) {
-                urls.add(index.toString());
+        List<IndexProvider> providers = Central.getWorkspace().getPlugins(IndexProvider.class);
+        if (providers != null)
+            for (IndexProvider provider : providers) {
+                List<URI> indexes = provider.getIndexLocations();
+                for (URI index : indexes) {
+                    urls.add(index.toString());
+                }
             }
-        }
 
         return urls;
     }

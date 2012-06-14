@@ -9,38 +9,37 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
 import aQute.lib.osgi.Builder;
 import aQute.libg.version.Version;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private static final String CACHE_REPOSITORY = "cache";
+    private static final ILogger logger = Plugin.getDefault().getLogger();
 
-    private final EnumSet<OBRResolutionMode> modes;
-
+    private final EnumSet<ResolutionPhase> phases;
     private boolean showRepos = true;
 
     public RepositoryTreeContentProvider() {
-        this.modes = EnumSet.allOf(OBRResolutionMode.class);
+        this.phases = EnumSet.allOf(ResolutionPhase.class);
     }
 
-    public RepositoryTreeContentProvider(OBRResolutionMode mode) {
-        this.modes = EnumSet.of(mode);
+    public RepositoryTreeContentProvider(ResolutionPhase mode) {
+        this.phases = EnumSet.of(mode);
     }
 
-    public RepositoryTreeContentProvider(EnumSet<OBRResolutionMode> modes) {
-        this.modes = modes;
+    public RepositoryTreeContentProvider(EnumSet<ResolutionPhase> modes) {
+        this.phases = modes;
     }
 
     public void setShowRepos(boolean showRepos) {
@@ -110,14 +109,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         workspace.getErrors().clear();
         List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
         for (String error : workspace.getErrors()) {
-            Plugin.logError(error, null);
+            logger.logError(error, null);
         }
         for (RepositoryPlugin repoPlugin : repoPlugins) {
             if (CACHE_REPOSITORY.equals(repoPlugin.getName()))
                 continue;
-            if (repoPlugin instanceof OBRIndexProvider) {
-                OBRIndexProvider indexProvider = (OBRIndexProvider) repoPlugin;
-                if (!supportsMode(indexProvider))
+            if (repoPlugin instanceof IndexProvider) {
+                IndexProvider indexProvider = (IndexProvider) repoPlugin;
+                if (!supportsPhase(indexProvider))
                     continue;
             }
             if (showRepos)
@@ -131,8 +130,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         for (Object input : inputs) {
             if (input instanceof RepositoryPlugin) {
                 RepositoryPlugin repo = (RepositoryPlugin) input;
-                if (repo instanceof OBRIndexProvider) {
-                    if (!supportsMode((OBRIndexProvider) repo))
+                if (repo instanceof IndexProvider) {
+                    if (!supportsPhase((IndexProvider) repo))
                         continue;
                 }
 
@@ -144,10 +143,10 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         }
     }
 
-    boolean supportsMode(OBRIndexProvider provider) {
-        Set<OBRResolutionMode> supportedModes = provider.getSupportedModes();
-        for (OBRResolutionMode mode : modes) {
-            if (supportedModes.contains(mode))
+    boolean supportsPhase(IndexProvider provider) {
+        Set<ResolutionPhase> supportedPhases = provider.getSupportedPhases();
+        for (ResolutionPhase phase : phases) {
+            if (supportedPhases.contains(phase))
                 return true;
         }
         return false;
@@ -165,7 +164,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 result[i++] = bundle;
             }
         } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error querying sub-bundles for project %s.", project.getName()), e));
+            logger.logError(MessageFormat.format("Error querying sub-bundles for project {0}.", project.getName()), e);
         }
         return result;
     }
@@ -177,7 +176,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         try {
             versions = bundle.getRepo().versions(bundle.getBsn());
         } catch (Exception e) {
-            Plugin.logError(MessageFormat.format("Error querying versions for bundle {0} in repository {1}.", bundle.getBsn(), bundle.getRepo().getName()), e);
+            logger.logError(MessageFormat.format("Error querying versions for bundle {0} in repository {1}.", bundle.getBsn(), bundle.getRepo().getName()), e);
         }
         if (versions != null) {
             result = new RepositoryBundleVersion[versions.size()];
@@ -196,7 +195,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         try {
             bsns = repo.list(null);
         } catch (Exception e) {
-            Plugin.logError("Error querying repository " + repo.getName(), e);
+            logger.logError(MessageFormat.format("Error querying repository {0}.", repo.getName()), e);
         }
         if (bsns != null) {
             Collections.sort(bsns);

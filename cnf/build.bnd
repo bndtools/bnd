@@ -1,6 +1,6 @@
 # Master Version Settings
 base-version: 1.1.0.RC2
-master-version: ${base-version}-${tstamp;yyMMdd-HHmm}
+master-version: ${base-version}-${tstamp;yyyyMMdd-HHmmss}
 
 bndlib-version-base:    1.54
 bndlib-version-ceiling: 1.55
@@ -14,6 +14,6 @@ Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
 -make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 # Runtime Options and Variables
-junit:    junit.osgi;version=3.8;export="junit.framework;version=3.8"
--runpath: org.eclipse.osgi;version=3.5.1,\
+junit:    junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
+-runpath: org.eclipse.osgi;version=3.5.2,\
           ${junit}

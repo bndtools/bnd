@@ -32,9 +32,9 @@ import org.xml.sax.XMLReader;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Instruction;
@@ -48,7 +48,7 @@ import bndtools.bindex.CategoryInsertionContentFilter;
 import bndtools.types.Pair;
 
 @ThreadSafe
-public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider {
+public class WorkspaceObrProvider implements RepositoryPlugin, IndexProvider {
 
     private static final String RANGE_SNAPSHOT = "snapshot";
     private static final String RANGE_LATEST = "latest";
@@ -108,7 +108,7 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         return jars;
     }
 
-    public synchronized Collection<URI> getOBRIndexes() throws IOException {
+    public synchronized List<URI> getIndexLocations() throws IOException {
         regenerateIndex();
         return Collections.singletonList(indexFile.getAbsoluteFile().toURI());
     }
@@ -171,8 +171,8 @@ public class WorkspaceObrProvider implements RepositoryPlugin, OBRIndexProvider 
         }
     }
 
-    public Set<OBRResolutionMode> getSupportedModes() {
-        return EnumSet.allOf(OBRResolutionMode.class);
+    public Set<ResolutionPhase> getSupportedPhases() {
+        return EnumSet.allOf(ResolutionPhase.class);
     }
 
     public String getName() {

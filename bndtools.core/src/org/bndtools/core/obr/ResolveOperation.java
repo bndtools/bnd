@@ -45,11 +45,11 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.service.OBRIndexProvider;
-import aQute.bnd.service.OBRResolutionMode;
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.url.URLConnector;
 import aQute.lib.deployer.repository.CachingURLResourceHandle;
 import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
@@ -88,7 +88,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
         // Get the repositories
-        List<OBRIndexProvider> indexProviders;
+        List<IndexProvider> indexProviders;
         try {
             indexProviders = loadIndexProviders();
         } catch (Exception e) {
@@ -114,7 +114,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         // Load repository indexes
         List<Repository> repos = new LinkedList<Repository>();
-        for (OBRIndexProvider prov : indexProviders) {
+        for (IndexProvider prov : indexProviders) {
             String repoName;
             if (prov instanceof RepositoryPlugin) {
                 RepositoryPlugin repo = (RepositoryPlugin) prov;
@@ -131,7 +131,7 @@ public class ResolveOperation implements IRunnableWithProgress {
             }
 
             try {
-                for (URI indexUrl : prov.getOBRIndexes()) {
+                for (URI indexUrl : prov.getIndexLocations()) {
                     addRepository(indexUrl.toURL(), repos, cacheDir);
                 }
             } catch (Exception e) {
@@ -331,36 +331,31 @@ public class ResolveOperation implements IRunnableWithProgress {
         return result;
     }
 
-    private List<OBRIndexProvider> loadIndexProviders() throws Exception {
+    private List<IndexProvider> loadIndexProviders() throws Exception {
         // Load the OBR providers into a map keyed on repo name
-        Map<String,OBRIndexProvider> repoMap = new LinkedHashMap<String,OBRIndexProvider>();
-        for (OBRIndexProvider plugin : Central.getWorkspace().getPlugins(OBRIndexProvider.class)) {
-            if (plugin.getSupportedModes().contains(OBRResolutionMode.runtime)) { // filter
-                                                                                  // out
-                                                                                  // non-runtime
-                                                                                  // repos
-                                                                                  // nice
-                                                                                  // and
-                                                                                  // early
+        Map<String,IndexProvider> repoMap = new LinkedHashMap<String,IndexProvider>();
+        for (IndexProvider plugin : Central.getWorkspace().getPlugins(IndexProvider.class)) {
+            // Filter out non-runtime repos nice and early
+            if (plugin.getSupportedPhases().contains(ResolutionPhase.runtime)) {
                 String name = (plugin instanceof RepositoryPlugin) ? ((RepositoryPlugin) plugin).getName() : plugin.toString();
                 repoMap.put(name, plugin);
             }
         }
 
-        List<OBRIndexProvider> result = new ArrayList<OBRIndexProvider>(repoMap.size());
+        List<IndexProvider> result = new ArrayList<IndexProvider>(repoMap.size());
         List<String> includedRepoNames = model.getRunRepos();
 
         if (includedRepoNames != null) {
             // Use the specified providers in the order that they are specified
             for (String name : includedRepoNames) {
-                OBRIndexProvider repo = repoMap.get(name);
+                IndexProvider repo = repoMap.get(name);
                 if (repo != null)
                     result.add(repo);
             }
         } else {
             // Take all the providers in the natural order offered by the
             // Workspace plugins
-            for (OBRIndexProvider repo : repoMap.values()) {
+            for (IndexProvider repo : repoMap.values()) {
                 result.add(repo);
             }
         }
