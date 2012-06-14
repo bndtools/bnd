@@ -14,6 +14,7 @@ Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annota
 Export-Package: aQute.bnd.annotation.*,\
 	aQute.lib.osgi,\
 	aQute.bnd.build,\
+	aQute.bnd.differ,\
 	aQute.bnd.service.*,\
 	aQute.bnd.help.*,\
 	aQute.lib.collections,\
