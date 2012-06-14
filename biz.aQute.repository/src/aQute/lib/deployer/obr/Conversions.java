@@ -1,9 +1,9 @@
 package aQute.lib.deployer.obr;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.service.*;
-import aQute.lib.deployer.repository.*;
+import aQute.lib.deployer.repository.AbstractIndexedRepo;
+import aQute.lib.deployer.repository.FixedIndexedRepo;
 
 @SuppressWarnings("deprecation")
 public class Conversions {
@@ -23,22 +23,4 @@ public class Conversions {
 		return map;
 	}
 
-	public static final Set<OBRResolutionMode> convertResolutionPhases(Collection<ResolutionPhase> phases) {
-		Set<OBRResolutionMode> modes = new HashSet<OBRResolutionMode>();
-		for (ResolutionPhase phase : phases) {
-			OBRResolutionMode mode;
-			switch (phase) {
-				case build :
-					mode = OBRResolutionMode.build;
-					break;
-				case runtime :
-					mode = OBRResolutionMode.runtime;
-					break;
-				default :
-					throw new IllegalArgumentException("");
-			}
-			modes.add(mode);
-		}
-		return modes;
-	}
 }

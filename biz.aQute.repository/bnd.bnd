@@ -46,10 +46,10 @@ Private-Package: aQute.lib.io;-split-package:=first,\
 	org.osgi.service.indexer.impl.util,\
 	org.osgi.framework;-split-package:=first,\
 	aQute.libg.filerepo,\
-	aQute.libg.generics,\
+	aQute.libg.generics;-split-package:=first,\
 	aQute.libg.glob,\
 	aQute.libg.gzip,\
-	aQute.libg.tuple
+	aQute.libg.tuple;-split-package:=first
 
 # We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
 Import-Package:\

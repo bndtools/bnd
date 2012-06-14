@@ -1,31 +1,15 @@
 package aQute.lib.deployer.obr;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.service.*;
-import aQute.lib.deployer.repository.*;
+import aQute.lib.deployer.repository.LocalIndexedRepo;
 
 @SuppressWarnings("deprecation")
-public class LocalOBR extends LocalIndexedRepo implements OBRIndexProvider {
+public class LocalOBR extends LocalIndexedRepo {
 
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(Conversions.convertConfig(map));
-	}
-
-	public Collection<URI> getOBRIndexes() throws IOException {
-		try {
-			return getIndexLocations();
-		}
-		catch (Exception e) {
-			throw new IOException(e.toString());
-		}
-	}
-
-	public Set<OBRResolutionMode> getSupportedModes() {
-		return Conversions.convertResolutionPhases(supportedPhases);
 	}
 
 }

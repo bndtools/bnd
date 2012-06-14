@@ -1,11 +1,8 @@
 package aQute.lib.deployer.obr;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.service.*;
-import aQute.lib.deployer.repository.*;
+import aQute.lib.deployer.repository.FixedIndexedRepo;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
@@ -30,24 +27,11 @@ import aQute.lib.deployer.repository.*;
  * @author Neil Bartlett
  */
 @SuppressWarnings("deprecation")
-public class OBR extends FixedIndexedRepo implements OBRIndexProvider {
+public class OBR extends FixedIndexedRepo {
 
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(Conversions.convertConfig(map));
-	}
-
-	public Collection<URI> getOBRIndexes() throws IOException {
-		try {
-			return getIndexLocations();
-		}
-		catch (Exception e) {
-			throw new IOException(e.toString());
-		}
-	}
-
-	public Set<OBRResolutionMode> getSupportedModes() {
-		return Conversions.convertResolutionPhases(supportedPhases);
 	}
 
 }
