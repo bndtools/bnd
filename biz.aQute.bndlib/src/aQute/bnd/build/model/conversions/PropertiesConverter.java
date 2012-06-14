@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.conversions;
 
-import java.util.Map;
+import java.util.*;
 
-import aQute.libg.header.OSGiHeader;
+import aQute.libg.header.*;
 
 public class PropertiesConverter implements Converter<Map<String, String>, String> {
 

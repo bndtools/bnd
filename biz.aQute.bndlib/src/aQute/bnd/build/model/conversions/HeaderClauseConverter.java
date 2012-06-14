@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.conversions;
 
 import aQute.bnd.build.model.clauses.*;
-import aQute.lib.types.*;
 import aQute.libg.header.*;
+import aQute.libg.tuple.*;
 
 
 public class HeaderClauseConverter implements Converter<HeaderClause, Pair<String, Attrs>> {

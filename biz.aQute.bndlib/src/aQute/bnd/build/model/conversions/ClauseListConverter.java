@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import aQute.lib.osgi.*;
-import aQute.lib.types.*;
 import aQute.libg.header.*;
+import aQute.libg.tuple.*;
 
 public class ClauseListConverter<R> implements Converter<List<R>, String> {
 

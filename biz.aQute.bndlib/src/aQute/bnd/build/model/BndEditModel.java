@@ -20,8 +20,8 @@ import org.osgi.framework.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.lib.properties.*;
-import aQute.lib.types.*;
 import aQute.libg.header.*;
+import aQute.libg.tuple.*;
 import aQute.libg.version.Version;
 
 /**
@@ -277,7 +277,7 @@ public class BndEditModel {
         return null;
     }
 	
-	private static void updateDocument(IDocument document, String name, String value) {
+	protected static void updateDocument(IDocument document, String name, String value) {
 		String newEntry;
 		if(value != null) {
 			StringBuilder buffer = new StringBuilder();
@@ -587,7 +587,7 @@ public class BndEditModel {
     }
 
 
-    <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
+    protected <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
         R result;
         if (objectProperties.containsKey(name)) {
             @SuppressWarnings("unchecked")
@@ -605,7 +605,7 @@ public class BndEditModel {
         return result;
     }
 
-    <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
+    protected <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
         objectProperties.put(name, newValue);
         changesToSave.put(name, formatter.convert(newValue));
         propChangeSupport.firePropertyChange(name, oldValue, newValue);

@@ -1,6 +1,6 @@
 package aQute.bnd.build.model.conversions;
 
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class MapFormatter implements Converter<String, Map<String, String>> {

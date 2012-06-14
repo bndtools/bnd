@@ -1,7 +1,6 @@
 package aQute.bnd.build.model.conversions;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 public class CollectionFormatter<T> implements Converter<String, Collection<? extends T>> {
 

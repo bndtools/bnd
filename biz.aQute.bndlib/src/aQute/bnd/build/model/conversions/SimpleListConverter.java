@@ -1,10 +1,9 @@
 package aQute.bnd.build.model.conversions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import aQute.lib.osgi.Constants;
-import aQute.libg.qtokens.QuotedTokenizer;
+import aQute.lib.osgi.*;
+import aQute.libg.qtokens.*;
 
 public class SimpleListConverter<R> implements Converter<List<R>, String> {
 
