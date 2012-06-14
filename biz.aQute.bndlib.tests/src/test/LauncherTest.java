@@ -19,7 +19,7 @@ public class LauncherTest extends TestCase {
 	public void testCleanup() throws Exception {
 		Project project = getProject();
 		File target = project.getTarget();
-		IO.delete(target);
+		IO.deleteWithException(target);
 		project.clear();
 		assertNoProperties(target);
 		final ProjectLauncher l = project.getProjectLauncher();

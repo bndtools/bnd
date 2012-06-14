@@ -237,8 +237,8 @@ public class ProjectTest extends TestCase {
 		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
 		System.err.println(s);
-		assertTrue(s.contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0"));
-		assertTrue(s.contains("org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar"));
+		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.2.0"));
+		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
 		assertTrue(s.matches("<<[^>]+>>"));
@@ -263,7 +263,7 @@ public class ProjectTest extends TestCase {
 	public void testBump() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		tmp.mkdir();
 		assertTrue(tmp.isDirectory());
 
@@ -284,14 +284,14 @@ public class ProjectTest extends TestCase {
 			assertEquals("sometime", newv.getQualifier());
 		}
 		finally {
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		}
 	}
 
 	public void testBumpIncludeFile() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		tmp.mkdir();
 		assertTrue(tmp.isDirectory());
 
@@ -314,14 +314,14 @@ public class ProjectTest extends TestCase {
 			assertEquals(0, newv.getMicro());
 		}
 		finally {
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		}
 	}
 
 	public void testBumpSubBuilders() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		tmp.mkdir();
 		assertTrue(tmp.isDirectory());
 
@@ -342,7 +342,7 @@ public class ProjectTest extends TestCase {
 			}
 		}
 		finally {
-			IO.delete(tmp);
+			IO.deleteWithException(tmp);
 		}
 	}
 

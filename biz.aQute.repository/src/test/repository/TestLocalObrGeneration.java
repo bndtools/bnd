@@ -42,7 +42,7 @@ public class TestLocalObrGeneration extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		IO.delete(outputDir);
+		IO.deleteWithException(outputDir);
 
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());
@@ -55,15 +55,13 @@ public class TestLocalObrGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		Jar jar = new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
+		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		File deployedFile = repo.put(jar);
 
-		assertEquals(
-				new File(
-						"generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-						.getAbsolutePath(), deployedFile.getAbsolutePath());
-
-		File indexFile = new File("generated/testoutput/repository.xml");
+		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+			.getAbsolutePath(), deployedFile.getAbsolutePath());
+		
+		File indexFile = IO.getFile("generated/testoutput/repository.xml");
 		assertTrue(indexFile.exists());
 
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);

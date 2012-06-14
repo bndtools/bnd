@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.lib.io.IO;
+
 public class Sed {
 	final File					file;
 	final Replacer				macro;
@@ -62,22 +64,22 @@ public class Sed {
 				}
 				pw.println(line);
 			}
+        } finally {
+        	brdr.close();
 			pw.close();
-			if (output == null) {
-				if (backup) {
-					File bak = new File(file.getAbsolutePath() + ".bak");
-					file.renameTo(bak);
-				}
-				out.renameTo(file);
+        }
+        
+		if (output == null) {
+			if (backup) {
+				File bak = new File(file.getAbsolutePath() + ".bak");
+				IO.rename(file, bak);
 			}
+			IO.rename(out, file);
 		}
-		finally {
-			brdr.close();
-			pw.close();
-		}
+        
 		return actions;
 	}
-
+    
 	private String setReferences(Matcher m, String replace) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < replace.length(); i++) {

@@ -17,8 +17,8 @@ public class TestLocalIndexedRepo extends TestCase {
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = new File("generated/testoutput");
-		IO.delete(outputDir);
+		outputDir = new File("generated" + File.separator + "testoutput");
+		IO.deleteWithException(outputDir);
 		outputDir.mkdirs();
 
 		httpd = new NanoHTTPD(18081, new File("testdata"));

@@ -222,6 +222,10 @@ public class IO {
 		return sw.toString();
 	}
 
+	public static File getFile(String filename) {
+		return new File(filename.replace("/", File.separator));
+	}
+	
 	public static File getFile(File base, String file) {
 		File f = new File(file);
 		if (f.isAbsolute())
@@ -242,19 +246,62 @@ public class IO {
 		return new File(f, file).getAbsoluteFile();
 	}
 
+	/** Deletes the specified file.
+	 * Folders are recursively deleted.<br>
+	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
+	 * @param f file to be deleted
+	 */
 	public static void delete(File f) {
+		try {
+			deleteWithException(f);
+		} catch (IOException e) {
+			// Ignore a failed delete
+		}
+	}
+	
+	/** Deletes the specified file.
+	 * Folders are recursively deleted.<br>
+	 * Throws exception if any of the files could not be deleted.
+	 * @param f file to be deleted
+	 * @throws IOException if the file (or contents of a folder) could not be deleted
+	 */
+	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
+		if (!f.exists()) return;
 		if (f.getParentFile() == null)
 			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
 
+		boolean wasDeleted = true;
 		if (f.isDirectory()) {
 			File[] subs = f.listFiles();
-			for (File sub : subs)
-				delete(sub);
+			for (File sub : subs) {
+				try {
+					deleteWithException(sub);
+				} catch (IOException e) {
+					wasDeleted = false;
+				}
+			}
 		}
 
-		f.delete();
+		boolean fDeleted = f.delete();
+		if (!fDeleted || !wasDeleted) {
+			throw new IOException("Failed to delete " + f.getAbsoluteFile());
+		}
 	}
+
+    /** Deletes <code>to</code> file if it exists, and renames <code>from</code> file to <code>to</code>.<br>
+     * Throws exception the rename operation fails.
+     * @param from source file
+     * @param to destination file
+     * @throws IOException if the rename operation fails
+     */
+    public static void rename(File from, File to) throws IOException {
+    	IO.deleteWithException(to);
+    	
+    	boolean renamed = from.renameTo(to);
+    	if (!renamed) throw new IOException("Could not rename " + from.getAbsoluteFile() + " to " + to.getAbsoluteFile());
+    }
+
 
 	public static long drain(InputStream in) throws IOException {
 		long result = 0;

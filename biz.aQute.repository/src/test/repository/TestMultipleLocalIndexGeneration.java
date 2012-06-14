@@ -22,7 +22,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
 		outputDir = new File("generated/testoutput");
-		IO.delete(outputDir);
+		IO.deleteWithException(outputDir);
 		outputDir.mkdirs();
 
 		// Setup the repo
@@ -44,7 +44,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		IO.delete(outputDir);
+		IO.deleteWithException(outputDir);
 
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());

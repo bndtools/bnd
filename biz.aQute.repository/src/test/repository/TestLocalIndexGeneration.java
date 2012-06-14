@@ -45,15 +45,13 @@ public class TestLocalIndexGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		Jar jar = new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
+		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		File deployedFile = repo.put(jar);
 
-		assertEquals(
-				new File(
-						"generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-						.getAbsolutePath(), deployedFile.getAbsolutePath());
+		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+			.getAbsolutePath(), deployedFile.getAbsolutePath());
 
-		File indexFile = new File("generated/testoutput/index.xml.gz");
+		File indexFile = IO.getFile("generated/testoutput/index.xml.gz");
 		assertTrue(indexFile.exists());
 
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);

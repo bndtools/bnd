@@ -37,7 +37,7 @@ public class CommandResource extends WriteResource {
 		StringBuilder stdout = new StringBuilder();
 		try {
 			domain.trace("executing command %s", command);
-			Command cmd = new Command("sh -l");
+			Command cmd = new Command("sh");
 			cmd.inherit();
 			String oldpath = cmd.var("PATH");
 

@@ -262,16 +262,16 @@ public class MacroTest extends TestCase {
 	public void testWc() {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
-		String a = macro.process("${lsr;" + new File("src/test").getAbsolutePath() + ";*.java}");
+		String a = macro.process("${lsr;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
 		assertTrue(a.contains("MacroTest.java"));
 		assertTrue(a.contains("ManifestTest.java"));
 		assertTrue(a.contains(".classpath"));
-		assertFalse(a.contains("src/test/MacroTest.java"));
-		assertFalse(a.contains("src/test/ManifestTest.java"));
+		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "MacroTest.java"));
+		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "ManifestTest.java"));
 
-		String b = macro.process("${lsa;" + new File("src/test").getAbsolutePath() + ";*.java}");
-		assertTrue(b.contains("src/test/MacroTest.java"));
-		assertTrue(b.contains("src/test/ManifestTest.java"));
+		String b = macro.process("${lsa;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
+		assertTrue(b.contains("src" + File.separator + "test" + File.separator + "MacroTest.java"));
+		assertTrue(b.contains("src" + File.separator + "test" + File.separator + "ManifestTest.java"));
 	}
 
 	/**
