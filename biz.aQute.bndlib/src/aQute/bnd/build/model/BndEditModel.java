@@ -83,47 +83,47 @@ public class BndEditModel {
 	private final Map<String, String> changesToSave = new HashMap<String, String>();
 
 	// CONVERTERS
-    private Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
+	protected Converter<List<VersionedClause>, String> buildPathConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
         public VersionedClause convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
-    private Converter<List<VersionedClause>, String> buildPackagesConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
+	protected Converter<List<VersionedClause>, String> buildPackagesConverter = new ClauseListConverter<VersionedClause>(new Converter<VersionedClause, Pair<String, Attrs>>() {
         public VersionedClause convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new VersionedClause(input.getFirst(), input.getSecond());
         }
     });
-    private Converter<List<VersionedClause>, String> clauseListConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
-    private Converter<String, String> stringConverter = new NoopConverter<String>();
-    private Converter<Boolean, String> includedSourcesConverter = new Converter<Boolean,String>() {
+	protected Converter<List<VersionedClause>, String> clauseListConverter = new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
+	protected Converter<String, String> stringConverter = new NoopConverter<String>();
+	protected Converter<Boolean, String> includedSourcesConverter = new Converter<Boolean,String>() {
         public Boolean convert(String string) throws IllegalArgumentException {
             return Boolean.valueOf(string);
         }
     };
-    private Converter<VersionPolicy, String> versionPolicyConverter = new Converter<VersionPolicy,String>() {
+    protected Converter<VersionPolicy, String> versionPolicyConverter = new Converter<VersionPolicy,String>() {
         public VersionPolicy convert(String string) throws IllegalArgumentException {
             return VersionPolicy.parse(string);
         }
     };
-    Converter<List<String>, String> listConverter = SimpleListConverter.create();
-    Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
-    ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String, Attrs>>() {
+    protected Converter<List<String>, String> listConverter = SimpleListConverter.create();
+    protected Converter<List<HeaderClause>, String> headerClauseListConverter = new HeaderClauseListConverter();
+    protected ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage, Pair<String, Attrs>>() {
         public ExportedPackage convert(Pair<String, Attrs> input) {
             return new ExportedPackage(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Pair<String, Attrs>>() {
+    protected Converter<List<ServiceComponent>, String> serviceComponentConverter = new ClauseListConverter<ServiceComponent>(new Converter<ServiceComponent, Pair<String, Attrs>>() {
         public ServiceComponent convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new ServiceComponent(input.getFirst(), input.getSecond());
         }
     });
-    Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Pair<String, Attrs>>() {
+    protected Converter<List<ImportPattern>, String> importPatternConverter =  new ClauseListConverter<ImportPattern>(new Converter<ImportPattern, Pair<String, Attrs>>() {
         public ImportPattern convert(Pair<String, Attrs> input) throws IllegalArgumentException {
             return new ImportPattern(input.getFirst(), input.getSecond());
         }
     });
 
-    Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
+    protected Converter<Map<String, String>, String> propertiesConverter = new PropertiesConverter();
 
 //    Converter<List<Requirement>, String> requirementListConverter = SimpleListConverter.create(new Converter<Requirement, String>() {
 //        public Requirement convert(String input) throws IllegalArgumentException {
@@ -146,12 +146,12 @@ public class BndEditModel {
 //    Converter<ResolveMode, String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
     // FORMATTERS
-    Converter<String, Object> defaultFormatter = new DefaultFormatter();
-    Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
-    Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
-    Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR, (String) null);
-    Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter(), null);
-    Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
+    protected Converter<String, Object> defaultFormatter = new DefaultFormatter();
+    protected Converter<String, String> newlineEscapeFormatter = new NewlineEscapedStringFormatter();
+    protected Converter<String, Boolean> defaultFalseBoolFormatter = new DefaultBooleanFormatter(false);
+    protected Converter<String, Collection<?>> stringListFormatter = new CollectionFormatter<Object>(LIST_SEPARATOR, (String) null);
+    protected Converter<String, Collection<? extends HeaderClause>> headerClauseListFormatter = new CollectionFormatter<HeaderClause>(LIST_SEPARATOR, new HeaderClauseFormatter(), null);
+    protected Converter<String, Map<String, String>> propertiesFormatter = new MapFormatter(LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 //    Converter<String, Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String, Requirement>() {
 //        public String convert(Requirement input) throws IllegalArgumentException {
 //            return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
