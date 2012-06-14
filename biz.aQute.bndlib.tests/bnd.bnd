@@ -1,13 +1,13 @@
 -dependson: demo
 -nobundles: true
 
--buildpath: \
-	biz.aQute.bndlib;version=project,\
+-buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.cmpn;version=4.3.0,\
 	osgi.core;version=4.2.1,\
 	junit.osgi;version=3.8.2,\
-	ee.j2se;version='[1.5,1.6)'
+	ee.j2se;version='[1.5,1.6)',\
+	org.mockito.mockito-all;version=1.9.0
 
 -runtrace: true
 
