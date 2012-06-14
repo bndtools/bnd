@@ -1,4 +1,4 @@
-package aQute.lib.types;
+package aQute.libg.tuple;
 
 public class ComparablePair<A extends Comparable<A>, B> extends Pair<A, B> implements Comparable<Pair<A, ?>>{
 

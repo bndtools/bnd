@@ -38,8 +38,8 @@ public class Settings {
 
 	private void generate() throws NoSuchAlgorithmException {
 		Pair< ? extends PrivateKey, ? extends RSAPublicKey> pair = RSA.generate();
-		prefs.put(KEY_PRIVATE, Crypto.toString(pair.a));
-		prefs.put(KEY_PUBLIC, Crypto.toString(pair.b));
+		prefs.put(KEY_PRIVATE, Crypto.toString(pair.getFirst()));
+		prefs.put(KEY_PUBLIC, Crypto.toString(pair.getSecond()));
 		prefs.putBoolean(KEY_SET, true);
 	}
 
