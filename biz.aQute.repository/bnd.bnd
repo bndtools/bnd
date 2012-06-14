@@ -18,7 +18,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	ee.j2se;version=1.5.0,\
 	${jetty.libs}
 
-Bundle-Version: 1.0.0.${tstamp}
+Bundle-Version: 1.0.0.${tstamp;yyyyMMdd-HHmmss}
 
 Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.repository.LocalIndexedRepo,\
