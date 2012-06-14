@@ -75,8 +75,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private ScopedPreferenceStore projectPrefs;
 
     @Override
-    protected IProject[] build(int kind, @SuppressWarnings("rawtypes")
-    Map args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
         BndPreferences prefs = new BndPreferences();
         logLevel = prefs.getBuildLogging();
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
@@ -109,6 +108,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Main build section
         try {
+            IProject[] dependsOn = calculateDependsOn(model);
+
             // Clear errors and warnings
             model.clear();
 
@@ -122,7 +123,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 } else {
                     log(LOG_FULL, "classpaths did not need to change");
                 }
-                return calculateDependsOn();
+                return dependsOn;
             }
 
             // CASE 2: local Bnd file changed, or Eclipse asks for full build
@@ -138,11 +139,11 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model.refresh();
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
-                    return calculateDependsOn();
+                    return dependsOn;
                 } else {
                     log(LOG_FULL, "classpaths were not changed");
-                    rebuildIfLocalChanges();
-                    return calculateDependsOn();
+                    rebuildIfLocalChanges(dependsOn);
+                    return dependsOn;
                 }
             }
             // (NB: from now on the delta cannot be null, due to the check in
@@ -155,16 +156,16 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model.propertiesChanged();
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
-                    return calculateDependsOn();
+                    return dependsOn;
                 } else {
                     log(LOG_FULL, "classpaths were not changed");
                 }
             }
 
             // CASE 4: local file changes
-            builtAny = rebuildIfLocalChanges();
+            builtAny = rebuildIfLocalChanges(dependsOn);
 
-            return calculateDependsOn();
+            return dependsOn;
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
@@ -341,44 +342,59 @@ public class NewBuilder extends IncrementalProjectBuilder {
     /**
      * @return Whether any files were built
      */
-    private boolean rebuildIfLocalChanges() throws Exception {
+    private boolean rebuildIfLocalChanges(IProject[] dependsOn) throws Exception {
         log(LOG_FULL, "calculating local changes...");
 
         final Set<File> changedFiles = new HashSet<File>();
 
-        final IPath targetDirPath = calculateTargetDirPath(model);
+        final IPath projectPath = getProject().getFullPath();
+        final IPath targetDirFullPath = projectPath.append(calculateTargetDirPath(model));
         final Set<File> targetJars = findJarsInTarget();
 
         boolean force = false;
+        IResourceDelta delta;
 
-        IResourceDelta delta = getDelta(getProject());
-        if (delta != null) {
-            delta.accept(new IResourceDeltaVisitor() {
-                public boolean visit(IResourceDelta delta) throws CoreException {
-                    if (!isChangeDelta(delta))
-                        return false;
-
-                    IResource resource = delta.getResource();
-                    if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
-                        return true;
-
-                    if (resource.getType() == IResource.FOLDER) {
-                        IPath folderPath = resource.getProjectRelativePath();
-                        // ignore ALL files in target dir
-                        return !folderPath.equals(targetDirPath);
-                    }
-
-                    if (resource.getType() == IResource.FILE) {
-                        File file = resource.getLocation().toFile();
-                        changedFiles.add(file);
-                    }
-
+        IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
+            public boolean visit(IResourceDelta delta) throws CoreException {
+                if (!isChangeDelta(delta))
                     return false;
+
+                IResource resource = delta.getResource();
+                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
+                    return true;
+
+                if (resource.getType() == IResource.FOLDER) {
+                    IPath folderPath = resource.getFullPath();
+                    // ignore ALL files in target dir
+                    return !folderPath.equals(targetDirFullPath);
                 }
-            });
-            log(LOG_FULL, "%d local files (outside target) changed or removed: %s", changedFiles.size(), changedFiles);
+
+                if (resource.getType() == IResource.FILE) {
+                    File file = resource.getLocation().toFile();
+                    changedFiles.add(file);
+                }
+
+                return false;
+            }
+        };
+        // Get delta on local project
+        delta = getDelta(getProject());
+        if (delta != null) {
+            log(LOG_FULL, "%d files in local project (outside target) changed or removed: %s", changedFiles.size(), changedFiles);
+            delta.accept(deltaVisitor);
         } else {
             log(LOG_BASIC, "no info on local changes available");
+        }
+
+        // Get deltas on dependency projects
+        for (IProject depProject : dependsOn) {
+            delta = getDelta(depProject);
+            if (delta != null) {
+                delta.accept(deltaVisitor);
+                log(LOG_FULL, "%d files in dependency project '%s' changed or removed: %s", changedFiles.size(), depProject.getName(), changedFiles);
+            } else {
+                log(LOG_BASIC, "no info available on changes from project '%s'", depProject.getName());
+            }
         }
 
         // Process the sub-builders to determine whether a rebuild, force
@@ -608,7 +624,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private IProject[] calculateDependsOn() throws Exception {
+    private IProject[] calculateDependsOn(Project model) throws Exception {
         Collection<Project> dependsOn = model.getDependson();
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
@@ -625,7 +641,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 result.add(targetProj);
         }
 
-        log(LOG_FULL, "returning depends-on list: %s", result);
+        log(LOG_FULL, "Calculated depends-on list: %s", result);
         return result.toArray(new IProject[result.size()]);
     }
 
