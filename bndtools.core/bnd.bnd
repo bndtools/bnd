@@ -41,8 +41,7 @@ Export-Package: bndtools.api.*,\
 	org.bndtools.core.ui
 
 Include-Resource: plugin.xml=_plugin.xml,\
-	resources,\
-	${repo;bndtools.bndplugins.repos;latest}
+	resources
 	
 # Build and Run
 eclipse.deps: \
