@@ -14,7 +14,18 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
-
+	
+	/**
+	 * Test if you can add directories and files to the
+	 * classpath. Originally checked only for files
+	 */
+	
+	public void testAddDirToClasspath() throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project top = ws.getProject("p1");
+		top.addClasspath(top.getOutput());
+		assertTrue(top.check());
+	}
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */

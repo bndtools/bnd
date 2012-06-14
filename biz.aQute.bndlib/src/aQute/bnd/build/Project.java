@@ -2063,7 +2063,7 @@ public class Project extends Processor {
 	 */
 
 	public void addClasspath(File f) {
-		if (!f.isFile()) {
+		if (!f.isFile() && !f.isDirectory()) {
 			msgs.AddingNonExistentFileToClassPath_(f);
 		}
 		Container container = new Container(f);
