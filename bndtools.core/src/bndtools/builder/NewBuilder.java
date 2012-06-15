@@ -91,26 +91,26 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Initialise workspace OBR index (should only happen once)
         boolean builtAny = false;
 
-        // Get the initial project
-        IProject myProject = getProject();
-        Project model = null;
-        try {
-            model = Workspace.getProject(myProject.getLocation().toFile());
-        } catch (Exception e) {
-            clearBuildMarkers();
-            createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
-        }
-        if (model == null)
-            return null;
-        this.model = model;
-        model.setDelayRunDependencies(true);
-
-        // Main build section
         try {
             // Prepare build listeners
             listeners = new BuildListeners(logger);
-            listeners.fireBuildStarting(myProject);
 
+            // Get the initial project
+            IProject myProject = getProject();
+            listeners.fireBuildStarting(myProject);
+            Project model = null;
+            try {
+                model = Workspace.getProject(myProject.getLocation().toFile());
+            } catch (Exception e) {
+                clearBuildMarkers();
+                createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
+            }
+            if (model == null)
+                return null;
+            this.model = model;
+            model.setDelayRunDependencies(true);
+
+            // Main build section
             IProject[] dependsOn = calculateDependsOn(model);
 
             // Clear errors and warnings
