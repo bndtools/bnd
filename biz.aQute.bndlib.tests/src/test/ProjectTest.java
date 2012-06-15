@@ -16,6 +16,16 @@ import aQute.libg.version.*;
 public class ProjectTest extends TestCase {
 	
 	/**
+	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
+	 */
+	
+	public void testProjectReferringToItself() throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project top = ws.getProject("bug194");
+		top.addClasspath(top.getOutput());
+		assertTrue(top.check("Circular dependency context"));
+	}
+	/**
 	 * Test if you can add directories and files to the
 	 * classpath. Originally checked only for files
 	 */
