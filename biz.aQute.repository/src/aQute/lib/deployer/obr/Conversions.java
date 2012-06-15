@@ -5,7 +5,6 @@ import java.util.Map;
 import aQute.lib.deployer.repository.AbstractIndexedRepo;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
 
-@SuppressWarnings("deprecation")
 public class Conversions {
 
 	public static final Map<String,String> convertConfig(Map<String,String> map) {

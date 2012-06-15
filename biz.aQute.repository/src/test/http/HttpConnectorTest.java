@@ -88,7 +88,6 @@ public class HttpConnectorTest extends TestCase {
 		// Setup user role constraints
 		Constraint constraint = new Constraint();
 		constraint.setName(Constraint.__BASIC_AUTH);
-		;
 		constraint.setRoles(new String[] {
 			REQUIRED_ROLE
 		});
