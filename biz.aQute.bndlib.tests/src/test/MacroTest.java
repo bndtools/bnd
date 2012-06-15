@@ -158,6 +158,9 @@ public class MacroTest extends TestCase {
 	 */
 
 	public void testSystem() throws Exception {
+		// disable this test on windows
+		if (!"/".equals(File.separator)) return;
+		
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));

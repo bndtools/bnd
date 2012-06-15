@@ -43,6 +43,9 @@ public class BuilderTest extends BndTestCase {
 	 */
 
 	public void testOnTheFlySingle() throws Exception {
+		// disable this test on windows
+		if (!"/".equals(File.separator)) return;
+		
 		Builder b = new Builder();
 		b.setIncludeResource("test/ls;cmd='ls /etc | grep hosts'");
 		b.setProperty("-resourceonly", "true");
