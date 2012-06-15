@@ -18,12 +18,17 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.service.*,\
 	aQute.bnd.help.*,\
 	aQute.lib.collections,\
+	aQute.lib.properties,\
 	aQute.libg.reporter,\
 	aQute.libg.version,\
 	aQute.libg.sed,\
 	aQute.libg.header,\
 	aQute.libg.qtokens,\
-	aQute.libg.sax
+	aQute.libg.sax,\
+	aQute.libg.tuple,\
+	aQute.bnd.build.model,\
+	aQute.bnd.build.model.clauses,\
+	aQute.bnd.build.model.conversions
 
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE
