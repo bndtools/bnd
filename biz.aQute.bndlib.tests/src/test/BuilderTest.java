@@ -706,6 +706,24 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 	}
 
+	/**
+	 * #196 StringIndexOutOfBoundsException in Builder.getClasspathEntrySuffix
+	 * 
+	 * If a class path entry was changed the isInScope threw an exception
+	 * because it assumed all cpes were directories.
+	 * @throws Exception
+	 */
+	public void testInScopeClasspathEntry() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Export-Package", "aQute.bnd.*");
+		b.addClasspath(new File("bin"));
+		b.addClasspath(new File("jar/osgi.jar"));
+		
+		List<File> project = Arrays.asList(b.getFile("bin/aQute/bnd/build/Project.class"));
+		assertTrue(b.isInScope(project));
+		List<File> cpe = Arrays.asList(b.getFile("jar/osgi.jar"));
+		assertTrue(b.isInScope(cpe));
+	}
 	public void testInScopeExport() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "aQute.bnd.*");

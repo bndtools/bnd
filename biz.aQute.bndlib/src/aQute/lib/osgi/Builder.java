@@ -452,7 +452,7 @@ public class Builder extends Analyzer {
 		getInfo(verifier);
 	}
 
-	private void doExpand(Jar dot) throws IOException {
+	private void doExpand(Jar dot) {
 
 		// Build an index of the class path that we can then
 		// use destructively
@@ -1227,7 +1227,7 @@ public class Builder extends Analyzer {
 		return null;
 	}
 
-	public String _permissions(String args[]) throws IOException {
+	public String _permissions(String args[]) {
 		StringBuilder sb = new StringBuilder();
 
 		for (String arg : args) {
@@ -1265,7 +1265,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Check if the given resource is in scope of this bundle. That is, it
 	 * checks if the Include-Resource includes this resource or if it is a class
-	 * file it is on the class path and the Export-Pacakge or Private-Package
+	 * file it is on the class path and the Export-Package or Private-Package
 	 * include this resource.
 	 * 
 	 * @param f
@@ -1284,7 +1284,12 @@ public class Builder extends Analyzer {
 
 		for (File r : resources) {
 			String cpEntry = getClasspathEntrySuffix(r);
+
 			if (cpEntry != null) {
+
+				if (cpEntry.equals("")) // Meaning we actually have a CPE
+					return true;
+
 				String pack = Descriptors.getPackage(cpEntry);
 				Instruction i = matches(instructions, pack, null, r.getName());
 				if (i != null)
@@ -1325,20 +1330,26 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Answer the string of the resource that it has in the container.
+	 * Answer the string of the resource that it has in the container. It is
+	 * possible that the resource is a classpath entry. In that case an empty
+	 * string is returned.
 	 * 
 	 * @param resource
 	 *            The resource to look for
-	 * @return
+	 * @return A suffix on the classpath or "" if the resource is a class path
+	 *         entry
 	 * @throws Exception
 	 */
 	public String getClasspathEntrySuffix(File resource) throws Exception {
 		for (Jar jar : getClasspath()) {
 			File source = jar.getSource();
 			if (source != null) {
+
 				source = source.getCanonicalFile();
 				String sourcePath = source.getAbsolutePath();
 				String resourcePath = resource.getAbsolutePath();
+				if (sourcePath.equals(resourcePath))
+					return ""; // Matches a classpath entry
 
 				if (resourcePath.startsWith(sourcePath)) {
 					// Make sure that the path name is translated correctly
