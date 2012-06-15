@@ -1,6 +1,6 @@
 package bndtools.internal.ui;
 
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
@@ -12,10 +12,9 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Instruction;
-import aQute.lib.osgi.Instructions;
-import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.internal.decorator.ExportedPackageDecoratorJob;
 
 /**
  * A decorator for {@link IPackageFragment}s that adds an icon if the package is exported by the bundle manifest.
@@ -39,12 +38,16 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
 
-            Instructions exports = Central.getExportedPackageModel(project);
-            for (Entry<Instruction,Attrs> entry : exports.entrySet()) {
-                if (entry.getKey().matches(pkgName)) {
-                    decoration.addOverlay(plusIcon);
-                    break;
+            Set<Instruction> exports = Central.getExportedPackageModel(project);
+            if (exports != null) {
+                for (Instruction export : exports) {
+                    if (export.matches(pkgName)) {
+                        decoration.addOverlay(plusIcon);
+                        break;
+                    }
                 }
+            } else {
+                new ExportedPackageDecoratorJob(project, Plugin.getDefault().getLogger()).schedule();
             }
         }
     }

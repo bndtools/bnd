@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.JavaCore;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
-import aQute.lib.osgi.Instructions;
+import aQute.lib.osgi.Instruction;
 
 public class Central {
 
@@ -38,7 +38,7 @@ public class Central {
     static WorkspaceObrProvider workspaceObr = null;
     static WorkspaceRepoProvider workspaceRepo = null;
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
-    static final ConcurrentMap<String,Instructions> exportedPackageMap = new ConcurrentHashMap<String,Instructions>();
+    static final ConcurrentMap<String,Set<Instruction>> exportedPackageMap = new ConcurrentHashMap<String,Set<Instruction>>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -317,12 +317,12 @@ public class Central {
         return indexValid.compareAndSet(false, true);
     }
 
-    public static Instructions getExportedPackageModel(IProject project) {
+    public static Set<Instruction> getExportedPackageModel(IProject project) {
         String key = project.getFullPath().toPortableString();
         return exportedPackageMap.get(key);
     }
 
-    public static void setExportedPackageModel(IProject project, Instructions exportInstructions) {
+    public static void setExportedPackageModel(IProject project, Set<Instruction> exportInstructions) {
         String key = project.getFullPath().toPortableString();
         exportedPackageMap.put(key, exportInstructions);
     }
