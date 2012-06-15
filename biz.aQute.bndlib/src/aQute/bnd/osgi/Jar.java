@@ -108,7 +108,9 @@ public class Jar implements Closeable {
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		updateModified(resource.lastModified(), path);
+		if (resource != null) {
+			updateModified(resource.lastModified(), path);
+		}
 		while (path.startsWith("/"))
 			path = path.substring(1);
 
@@ -510,10 +512,10 @@ public class Jar implements Closeable {
 
 	private void writeResource(ZipOutputStream jout, Set<String> directories, String path, Resource resource)
 			throws Exception {
-		if (resource == null)
-			return;
 		try {
 			createDirectories(directories, jout, path);
+			if (resource == null)
+				return;
 			ZipEntry ze = new ZipEntry(path);
 			ze.setMethod(ZipEntry.DEFLATED);
 			long lastModified = resource.lastModified();

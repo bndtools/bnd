@@ -771,12 +771,16 @@ public class Builder extends Analyzer {
 		} else if (extra.containsKey("cmd")) {
 			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
 		} else if (extra.containsKey("literal")) {
-			String literal = extra.get("literal");
-			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
-			String x = extra.get("extra");
-			if (x != null)
-				r.setExtra(x);
-			jar.putResource(name, r);
+			String literal = (String) extra.get("literal");
+			if (literal.length() == 0 && name.endsWith("/")) {
+				jar.putResource(name, null);
+			} else {
+				Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
+				String x = extra.get("extra");
+				if (x != null)
+					r.setExtra(x);
+				jar.putResource(name, r);
+			}
 		} else {
 			File sourceFile;
 			String destinationPath;
