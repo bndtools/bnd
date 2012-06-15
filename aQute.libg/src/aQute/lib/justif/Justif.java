@@ -55,7 +55,7 @@ public class Justif {
 					if (r < sb.length()) {
 						char digit = sb.charAt(r);
 						if (Character.isDigit(digit)) {
-							sb.deleteCharAt(r--);
+							sb.deleteCharAt(r);
 
 							int column = (digit - '0');
 							if (column < tabs.length)
