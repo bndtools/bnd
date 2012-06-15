@@ -24,8 +24,6 @@ import aQute.libg.version.*;
 
 /**
  * This class is NOT threadsafe
- * 
- * @author aqute
  */
 
 public class Project extends Processor {
@@ -327,8 +325,8 @@ public class Project extends Processor {
 				if (cpe.getType() == Container.TYPE.PROJECT) {
 					projects.add(cpe.getProject());
 				}
-				if (bootclasspath != null && cpe.getBundleSymbolicName().startsWith("ee.")
-						|| cpe.getAttributes().containsKey("boot"))
+				if (bootclasspath != null
+						&& (cpe.getBundleSymbolicName().startsWith("ee.") || cpe.getAttributes().containsKey("boot")))
 					bootclasspath.add(cpe);
 				else
 					resultpath.add(cpe);
@@ -590,8 +588,7 @@ public class Project extends Processor {
 				if (result != null) {
 					if (result.getName().endsWith("lib"))
 						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null, attrs);
-					else
-						return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
+					return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
 				}
 			}
 			catch (Exception e) {
