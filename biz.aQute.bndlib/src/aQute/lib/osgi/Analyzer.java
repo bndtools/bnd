@@ -47,7 +47,7 @@ import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
-	static Properties								bndInfo;
+	static Manifest									bndInfo;
 
 	// Bundle parameters
 	private Jar										dot;
@@ -643,11 +643,11 @@ public class Analyzer extends Processor {
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
-		return getBndInfo("version", "1.42.1");
+		return getBndInfo("Bundle-Version", "<unknown>");
 	}
 
 	public long getBndLastModified() {
-		String time = getBndInfo("modified", "0");
+		String time = getBndInfo("Bnd-LastModified", "0");
 		try {
 			return Long.parseLong(time);
 		}
@@ -658,25 +658,18 @@ public class Analyzer extends Processor {
 	}
 
 	public String getBndInfo(String key, String defaultValue) {
-		synchronized (Analyzer.class) {
-			if (bndInfo == null) {
-				bndInfo = new Properties();
-				InputStream in = Analyzer.class.getResourceAsStream("bnd.info");
-				try {
-					if (in != null) {
-						bndInfo.load(in);
-						in.close();
-					}
-				}
-				catch (IOException ioe) {
-					warning("Could not read bnd.info in " + Analyzer.class.getPackage() + ioe);
-				}
-				finally {
-					IO.close(in);
-				}
+		if (bndInfo == null) {
+			try {
+				bndInfo = new Manifest(getClass().getResourceAsStream("META-INF/MANIFEST.MF"));
+			}
+			catch (Exception e) {
+				return defaultValue;
 			}
 		}
-		return bndInfo.getProperty(key, defaultValue);
+		String value = bndInfo.getMainAttributes().getValue(key);
+		if (value == null)
+			return defaultValue;
+		return value;
 	}
 
 	/**
@@ -1368,8 +1361,7 @@ public class Analyzer extends Processor {
 		if (map == null) {
 			classpathExports.put(packageRef, map = new Attrs());
 		}
-		for (@SuppressWarnings("unchecked")
-		Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+		for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 			String key = t.nextElement();
 			String value = map.get(key);
 			if (value == null) {

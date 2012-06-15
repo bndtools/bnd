@@ -105,8 +105,6 @@ public class Builder extends Analyzer {
 
 		if (getProperty(POM) != null)
 			dot.putResource("pom.xml", new PomResource(dot.getManifest()));
-
-		doBndInfo(dot);
 		
 		if (!isNoBundle())
 			doVerify(dot);
@@ -127,20 +125,6 @@ public class Builder extends Analyzer {
 		return dot;
 	}
 
-	/**
-	 * Make sure any bnd.info files are properly processed
-	 * 
-	 * @param jar
-	 */
-
-	private void doBndInfo(Jar jar) {
-		for (Entry<String,Resource> e : jar.getResources().entrySet()) {
-			if (e.getKey().endsWith("/bnd.info")) {
-				PreprocessResource pp = new PreprocessResource(this, e.getValue());
-				e.setValue(pp);
-			}
-		}
-	}
 
 	/**
 	 * Check if we need to calculate any checksums.
