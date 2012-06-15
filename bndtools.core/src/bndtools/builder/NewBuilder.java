@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,12 +41,19 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Instruction;
+import aQute.lib.osgi.Instructions;
+import aQute.libg.header.Attrs;
+import aQute.libg.header.Parameters;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -55,6 +63,7 @@ import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
 import bndtools.preferences.EclipseClasspathPreference;
 import bndtools.utils.Predicate;
+import bndtools.utils.SWTConcurrencyUtil;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
@@ -532,6 +541,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Clear errors & warnings before build
         model.clear();
 
+        // Get the set of exported packages for the project and remember
+        rememberExportedPackages();
+
         // Load Eclipse classpath containers
         model.clearClasspath();
         EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
@@ -801,6 +813,28 @@ public class NewBuilder extends IncrementalProjectBuilder {
             severity = IMarker.SEVERITY_INFO;
         }
         addClasspathMarker(status.getMessage(), severity);
+    }
+
+    private void rememberExportedPackages() {
+        try {
+            Collection< ? extends Builder> builders = model.getSubBuilders();
+
+            for (Builder builder : builders) {
+                Parameters exportClauses = new Parameters(builder.getProperty(Constants.EXPORT_PACKAGE));
+                Instructions exportInstructions = new Instructions(exportClauses);
+
+                Central.setExportedPackageModel(getProject(), exportInstructions);
+            }
+
+            Display display = PlatformUI.getWorkbench().getDisplay();
+            SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
+                public void run() {
+                    PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.exportedPackageDecorator");
+                }
+            });
+        } catch (Exception e) {
+            logger.logWarning("Error persisting exported package model.", e);
+        }
     }
 
     private void log(int level, String message, Object... args) {

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,14 +30,15 @@ import org.eclipse.jdt.core.JavaCore;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
+import aQute.lib.osgi.Instructions;
 
 public class Central {
 
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
     static WorkspaceRepoProvider workspaceRepo = null;
-
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
+    static final ConcurrentMap<String,Instructions> exportedPackageMap = new ConcurrentHashMap<String,Instructions>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -312,6 +315,16 @@ public class Central {
 
     public static boolean needsIndexing() {
         return indexValid.compareAndSet(false, true);
+    }
+
+    public static Instructions getExportedPackageModel(IProject project) {
+        String key = project.getFullPath().toPortableString();
+        return exportedPackageMap.get(key);
+    }
+
+    public static void setExportedPackageModel(IProject project, Instructions exportInstructions) {
+        String key = project.getFullPath().toPortableString();
+        exportedPackageMap.put(key, exportInstructions);
     }
 
 }
