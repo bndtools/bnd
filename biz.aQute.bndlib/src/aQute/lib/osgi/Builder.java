@@ -70,7 +70,6 @@ public class Builder extends Analyzer {
 		doIncludeResources(dot);
 		doWab(dot);
 
-		doBndInfo(dot);
 
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
@@ -107,6 +106,8 @@ public class Builder extends Analyzer {
 		if (getProperty(POM) != null)
 			dot.putResource("pom.xml", new PomResource(dot.getManifest()));
 
+		doBndInfo(dot);
+		
 		if (!isNoBundle())
 			doVerify(dot);
 
