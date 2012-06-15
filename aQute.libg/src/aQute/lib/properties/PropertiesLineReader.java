@@ -47,10 +47,9 @@ public class PropertiesLineReader {
 				if (index == chars.length) {
 					chars = grabLine(true);
 					index = 0;
-					if (chars == null)
+					if (chars == null || chars.length == 0)
 						break; // The last line ended with a backslash
 				}
-
 				currentBuffer.append(chars[index]);
 				index++;
 				continue mainLoop;
