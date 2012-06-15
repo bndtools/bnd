@@ -341,6 +341,23 @@
       </objectContribution>
       
    </extension>
+   
+   <!-- Contribute a LightweightDecorator for marking exported packages -->
+   <extension 
+	    point="org.eclipse.ui.decorators">
+		
+		<decorator
+			adaptable="true"
+			label="Bndtools OSGi Exported Package"
+			objectClass="org.eclipse.jdt.core.IPackageFragment"
+			state="true"
+			lightweight="true"
+			class="bndtools.internal.ui.ExportedPackageDecorator"
+			id="bndtools.exportedPackageDecorator"
+			location="TOP_LEFT"> 
+			<description>Marks Java packages that are exported with a '+' decoration</description>
+		</decorator>
+	</extension>
    <extension
          point="org.eclipse.core.resources.markers"
          id="bndproblem"

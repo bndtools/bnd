@@ -8,14 +8,20 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
 import bndtools.Plugin;
+import bndtools.api.ILogger;
+import bndtools.utils.Function;
 
 public class BuildListeners {
 
     private final List<BuildListener> listeners;
+    private final ServiceTracker listenerTracker;
 
-    public BuildListeners() {
+    public BuildListeners(ILogger logger) {
         IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildListeners");
         listeners = new ArrayList<BuildListener>(elements.length);
 
@@ -24,20 +30,44 @@ public class BuildListeners {
                 BuildListener listener = (BuildListener) elem.createExecutableExtension("class");
                 listeners.add(listener);
             } catch (Exception e) {
-                Plugin.logError("Unable to instantiate build listener: " + elem.getAttribute("name"), e);
+                logger.logError("Unable to instantiate build listener: " + elem.getAttribute("name"), e);
             }
         }
+
+        BundleContext context = FrameworkUtil.getBundle(BuildListeners.class).getBundleContext();
+
+        listenerTracker = new ServiceTracker(context, BuildListener.class.getName(), null);
+        listenerTracker.open();
     }
 
-    public void fireBuildStarting(IProject project) {
-        for (BuildListener listener : listeners) {
-            listener.buildStarting(project);
-        }
+    public void fireBuildStarting(final IProject project) {
+        forEachListener(new Function<BuildListener,Object>() {
+            public Object run(BuildListener listener) {
+                listener.buildStarting(project);
+                return null;
+            }
+        });
     }
 
-    public void fireBuiltBundles(IProject project, IPath[] paths) {
-        for (BuildListener listener : listeners) {
-            listener.builtBundles(project, paths);
+    public void fireBuiltBundles(final IProject project, final IPath[] paths) {
+        forEachListener(new Function<BuildListener,Object>() {
+            public Object run(BuildListener listener) {
+                listener.builtBundles(project, paths);
+                return null;
+            }
+        });
+    }
+
+    private void forEachListener(Function<BuildListener, ? extends Object> function) {
+        for (BuildListener listener : listeners)
+            function.run(listener);
+
+        Object[] services = listenerTracker.getServices();
+        if (services != null) {
+            for (Object service : services) {
+                if (service != null)
+                    function.run((BuildListener) service);
+            }
         }
     }
 
@@ -46,6 +76,7 @@ public class BuildListeners {
      */
     public void release() {
         listeners.clear();
+        listenerTracker.close();
     }
 
 }

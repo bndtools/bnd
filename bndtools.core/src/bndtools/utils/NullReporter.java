@@ -27,4 +27,8 @@ public class NullReporter implements Reporter {
         return false;
     }
 
+    public boolean isExceptions() {
+        return false;
+    }
+
 }

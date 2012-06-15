@@ -48,6 +48,7 @@ import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.preferences.BndPreferences;
@@ -63,6 +64,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private static final int LOG_FULL = 2;
     private static final int LOG_BASIC = 1;
     private static final int LOG_NONE = 0;
+
+    private final ILogger logger = Plugin.getDefault().getLogger();
 
     private Project model;
     private BuildListeners listeners;
@@ -80,9 +83,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         logLevel = prefs.getBuildLogging();
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
 
-        // Prepare build listeners
-        listeners = new BuildListeners();
-
         // Prepare validations
         classpathErrors = new LinkedList<String>();
         validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
@@ -93,7 +93,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Get the initial project
         IProject myProject = getProject();
-        listeners.fireBuildStarting(myProject);
         Project model = null;
         try {
             model = Workspace.getProject(myProject.getLocation().toFile());
@@ -108,6 +107,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Main build section
         try {
+            // Prepare build listeners
+            listeners = new BuildListeners(logger);
+            listeners.fireBuildStarting(myProject);
+
             IProject[] dependsOn = calculateDependsOn(model);
 
             // Clear errors and warnings
@@ -169,11 +172,12 @@ public class NewBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
+            listeners.release();
             if (!builtAny) {
                 try {
                     Central.getWorkspaceObrProvider().reset();
                 } catch (Exception e) {
-                    Plugin.logError("Error initialising workspace OBR provider", e);
+                    logger.logError("Error initialising workspace OBR provider", e);
                 }
             }
 
@@ -183,10 +187,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 for (String message : buildLog) {
                     builder.append("\n -> ").append(message);
                 }
-                Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
+                logger.logInfo(builder.toString(), null);
             }
 
-            listeners.release();
             model = null;
         }
     }
@@ -217,7 +220,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     boolean isCnfChanged() throws Exception {
         IProject cnfProject = WorkspaceUtils.findCnfProject();
         if (cnfProject == null) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd configuration project (cnf) is not available in the Eclipse workspace.", null));
+            logger.logError("Bnd configuration project (cnf) is not available in the Eclipse workspace.", null);
             return false;
         }
 
@@ -304,14 +307,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         for (Project dep : dependson) {
             File targetDir = dep.getTarget();
-            if (targetDir != null && !(targetDir.isDirectory())) // Does not
-                                                                 // exist...
-                                                                 // deleted?
+            // Does not exist... was it deleted?
+            if (targetDir != null && !(targetDir.isDirectory()))
                 return dep;
 
             IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
             if (project == null) {
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Dependency project '%s' from project '%s' is not in the Eclipse workspace.", dep.getName(), model.getName()), null));
+                logger.logWarning(String.format("Dependency project '%s' from project '%s' is not in the Eclipse workspace.", dep.getName(), model.getName()), null);
                 return null;
             }
 
@@ -435,7 +437,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             try {
                 jar.delete();
             } catch (Exception e) {
-                Plugin.logError("Error deleting target JAR: " + jar, e);
+                logger.logError("Error deleting target JAR: " + jar, e);
             }
         }
 
@@ -472,7 +474,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private enum Action {
         build, delete
-    };
+    }
 
     /**
      * @param force
@@ -519,7 +521,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         File[] built;
 
         // Validate
-        List<IValidator> validators = loadValidators();
+        List<IValidator> validators = loadValidators(logger);
         if (validators != null) {
             Collection< ? extends Builder> builders = model.getSubBuilders();
             for (Builder builder : builders) {
@@ -600,7 +602,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return built.length > 0;
     }
 
-    static List<IValidator> loadValidators() {
+    static List<IValidator> loadValidators(ILogger logger) {
         List<IValidator> validators = null;
         IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "validators");
         if (validatorElems != null && validatorElems.length > 0) {
@@ -609,7 +611,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 try {
                     validators.add((IValidator) elem.createExecutableExtension("class"));
                 } catch (Exception e) {
-                    Plugin.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
+                    logger.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
                 }
             }
         }
@@ -636,7 +638,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (Project project : dependsOn) {
             IProject targetProj = WorkspaceUtils.findOpenProject(wsroot, project);
             if (targetProj == null)
-                Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "No open project in workspace for Bnd '-dependson' dependency: " + project.getName(), null));
+                logger.logWarning("No open project in workspace for Bnd '-dependson' dependency: " + project.getName(), null);
             else
                 result.add(targetProj);
         }
@@ -710,7 +712,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 return true;
             return false;
         } catch (CoreException e) {
-            Plugin.logError("Error looking for project problem markers", e);
+            logger.logError("Error looking for project problem markers", e);
             return false;
         }
     }

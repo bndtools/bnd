@@ -1,5 +1,3 @@
--dependson: org.osgi.impl.bundle.bindex
-
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
 	bndtools.core;version=snapshot,\
@@ -10,11 +8,15 @@ Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
 
+plugins-dir=templates/cnfs/default/plugins
+
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
-	templates/=templates
+	templates/=templates,\
+	${plugins-dir}/biz.aQute.bnd/=${repo;biz.aQute.bnd;latest},\
+	${plugins-dir}/biz.aQute.repository/=${repo;biz.aQute.repository;latest}
 
 Private-Package: bndtools.templates
 
