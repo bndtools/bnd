@@ -733,13 +733,7 @@ public class bnd extends Processor {
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
 
-		File bndbnd = new File(projectDir, Project.BNDFILE);
-		Project project;
-		if (bndbnd.isFile()) {
-			project = new Project(ws, projectDir, bndbnd);
-			project.doIncludeFile(file, true, project.getProperties());
-		} else
-			project = new Project(ws, projectDir, file);
+		Project project = new Project(ws, projectDir, file);
 
 		project.setTrace(isTrace());
 		project.setPedantic(isPedantic());
@@ -922,7 +916,8 @@ public class bnd extends Processor {
 		Project project = getProject(options.project());
 
 		if (project == null) {
-
+			messages.NoProject();
+			return;
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -1087,9 +1082,6 @@ public class bnd extends Processor {
 	}
 
 	public void _buildx(buildxOptions options) throws Exception {
-		File output = null;
-		if (options.output() == null)
-			output = getFile(options.output());
 
 		// Create a build order
 
@@ -1132,10 +1124,10 @@ public class bnd extends Processor {
 			if (options.pom()) {
 				Resource r = new PomFromManifest(jar.getManifest());
 				jar.putResource("pom.xml", r);
-				String path = output.getName().replaceAll("\\.jar$", ".pom");
-				if (path.equals(output.getName()))
-					path = output.getName() + ".pom";
-				File pom = new File(output.getParentFile(), path);
+				String path = outputFile.getName().replaceAll("\\.jar$", ".pom");
+				if (path.equals(outputFile.getName()))
+					path = outputFile.getName() + ".pom";
+				File pom = new File(outputFile.getParentFile(), path);
 				OutputStream out = new FileOutputStream(pom);
 				try {
 					r.write(out);
@@ -1393,7 +1385,7 @@ public class bnd extends Processor {
 	 */
 
 	public void _repo(repoOptions opts) throws Exception {
-		new RepoCommand(this, opts);
+		new RepoCommand(this, opts).notify();
 	}
 
 	/**
@@ -1404,7 +1396,7 @@ public class bnd extends Processor {
 	}
 
 	public void _script(scriptOptions opts) throws Exception {
-		new ScriptCommand(this, opts);
+		new ScriptCommand(this, opts).notify();
 	}
 
 	/**
