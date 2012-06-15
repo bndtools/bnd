@@ -8,7 +8,6 @@ import org.apache.tools.ant.types.*;
 
 import aQute.lib.osgi.*;
 import aQute.libg.qtokens.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
 
 /**
@@ -22,7 +21,7 @@ import aQute.libg.version.*;
  * source which are used for info</li>
  * </ul>
  */
-public class WrapTask extends BaseTask implements Reporter {
+public class WrapTask extends BaseTask {
 	/**
 	 * List of jars to wrap
 	 */

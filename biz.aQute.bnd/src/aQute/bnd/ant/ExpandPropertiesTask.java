@@ -10,6 +10,7 @@ import aQute.lib.osgi.*;
 public class ExpandPropertiesTask extends BaseTask {
 	File	propertyFile;
 
+	@SuppressWarnings("cast")
 	public void execute() throws BuildException {
 		try {
 			if (propertyFile.exists()) {

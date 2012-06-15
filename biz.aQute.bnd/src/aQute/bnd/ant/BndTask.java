@@ -123,10 +123,9 @@ public class BndTask extends BaseTask {
 			Project project = Workspace.getProject(basedir);
 
 			Workspace ws = project.getWorkspace();
-			if (ws != null)
-				for (Property prop : workspaceProps) {
-					ws.setProperty(prop.getName(), prop.getValue());
-				}
+			for (Property prop : workspaceProps) {
+				ws.setProperty(prop.getName(), prop.getValue());
+			}
 
 			project.setProperty("in.ant", "true");
 			project.setProperty("environment", "ant");
@@ -177,6 +176,7 @@ public class BndTask extends BaseTask {
 	boolean		eclipse;
 	boolean		inherit		= true;
 
+	@SuppressWarnings("cast")
 	private void executeBackwardCompatible() throws BuildException {
 		try {
 			if (files == null)
@@ -198,7 +198,7 @@ public class BndTask extends BaseTask {
 				output = getProject().getBaseDir();
 
 			for (Iterator<File> f = files.iterator(); f.hasNext();) {
-				File file = (File) f.next();
+				File file = f.next();
 				Builder builder = new Builder();
 
 				builder.setPedantic(isPedantic());
@@ -314,7 +314,6 @@ public class BndTask extends BaseTask {
 		this.failok = failok;
 	}
 
-
 	boolean isPrint() {
 		return print;
 	}
@@ -329,7 +328,7 @@ public class BndTask extends BaseTask {
 
 	static File[]	EMPTY_FILES	= new File[0];
 
-	File[] toFiles(List<File> files, String what) throws IOException {
+	File[] toFiles(List<File> files, String what) {
 		return files.toArray(EMPTY_FILES);
 	}
 

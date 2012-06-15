@@ -965,7 +965,7 @@ public class Analyzer extends Processor {
 			PackageRef ep = i.next();
 			Attrs parameters = exports.get(ep);
 
-			String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
+			String noimport = parameters == null ? null : parameters.get(NO_IMPORT_DIRECTIVE);
 			if (noimport != null && noimport.equalsIgnoreCase("true"))
 				continue;
 
