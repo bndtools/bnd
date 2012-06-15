@@ -110,7 +110,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				}
 			}
 			try {
-				bundle = (Bundle) queue.remove(0);
+				bundle = queue.remove(0);
 				trace("received bundle to test: %s", bundle.getLocation());
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
@@ -134,7 +134,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		}
 	}
 
-	private void checkBundle(List<Bundle> queue, Bundle bundle) {
+	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		if (bundle.getState() == Bundle.ACTIVE) {
 			String testcases = (String) bundle.getHeaders().get("Test-Cases");
 			if (testcases != null) {

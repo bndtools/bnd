@@ -35,5 +35,5 @@ import aQute.libg.header.*;
  * @version $Revision: 1.2 $
  */
 public class About {
-
+	// Empty
 }

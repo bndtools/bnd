@@ -14,7 +14,6 @@ import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
-import aQute.lib.justif.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;

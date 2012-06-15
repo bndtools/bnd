@@ -651,7 +651,9 @@ public class Analyzer extends Processor {
 		try {
 			return Long.parseLong(time);
 		}
-		catch (Exception e) {}
+		catch (Exception e) {
+			// Ignore
+		}
 		return 0;
 	}
 
@@ -849,7 +851,7 @@ public class Analyzer extends Processor {
 	 * @param manifests
 	 * @throws Exception
 	 */
-	private void merge(Manifest result, Manifest old) throws IOException {
+	private void merge(Manifest result, Manifest old) {
 		if (old != null) {
 			for (Iterator<Map.Entry<Object,Object>> e = old.getMainAttributes().entrySet().iterator(); e.hasNext();) {
 				Map.Entry<Object,Object> entry = e.next();
@@ -1845,45 +1847,48 @@ public class Analyzer extends Processor {
 			String last = m.group(3);
 			String suffix = m.group(4);
 			return prefix + cleanupVersion(first) + "," + cleanupVersion(last) + suffix;
-		} else {
-			m = fuzzyVersion.matcher(version);
-			if (m.matches()) {
-				StringBuilder result = new StringBuilder();
-				String major = removeLeadingZeroes(m.group(1));
-				String minor = removeLeadingZeroes(m.group(3));
-				String micro = removeLeadingZeroes(m.group(5));
-				String qualifier = m.group(7);
+		}
 
-				if (major != null) {
-					result.append(major);
-					if (minor != null) {
+		m = fuzzyVersion.matcher(version);
+		if (m.matches()) {
+			StringBuilder result = new StringBuilder();
+			String major = removeLeadingZeroes(m.group(1));
+			String minor = removeLeadingZeroes(m.group(3));
+			String micro = removeLeadingZeroes(m.group(5));
+			String qualifier = m.group(7);
+
+			if (major != null) {
+				result.append(major);
+				if (minor != null) {
+					result.append(".");
+					result.append(minor);
+					if (micro != null) {
 						result.append(".");
-						result.append(minor);
-						if (micro != null) {
+						result.append(micro);
+						if (qualifier != null) {
 							result.append(".");
-							result.append(micro);
-							if (qualifier != null) {
-								result.append(".");
-								cleanupModifier(result, qualifier);
-							}
-						} else if (qualifier != null) {
-							result.append(".0.");
 							cleanupModifier(result, qualifier);
 						}
 					} else if (qualifier != null) {
-						result.append(".0.0.");
+						result.append(".0.");
 						cleanupModifier(result, qualifier);
 					}
-					return result.toString();
+				} else if (qualifier != null) {
+					result.append(".0.0.");
+					cleanupModifier(result, qualifier);
 				}
+				return result.toString();
 			}
 		}
 		return version;
 	}
 
 	private static String removeLeadingZeroes(String group) {
+		if (group == null)
+			return null;
+
 		int n = 0;
-		while (group != null && n < group.length() - 1 && group.charAt(n) == '0')
+		while (n < group.length() - 1 && group.charAt(n) == '0')
 			n++;
 		if (n == 0)
 			return group;
@@ -1918,17 +1923,17 @@ public class Analyzer extends Processor {
 				return s;
 
 			return getProperty(VERSIONPOLICY, DEFAULT_PROVIDER_POLICY);
-		} else {
-			String s = getProperty(CONSUMER_POLICY);
-			if (s != null)
-				return s;
-
-			s = getProperty(VERSIONPOLICY_USES);
-			if (s != null)
-				return s;
-
-			return getProperty(VERSIONPOLICY, DEFAULT_CONSUMER_POLICY);
 		}
+		String s = getProperty(CONSUMER_POLICY);
+		if (s != null)
+			return s;
+
+		s = getProperty(VERSIONPOLICY_USES);
+		if (s != null)
+			return s;
+
+		return getProperty(VERSIONPOLICY, DEFAULT_CONSUMER_POLICY);
+
 		// String vp = implemented ? getProperty(VERSIONPOLICY_IMPL) :
 		// getProperty(VERSIONPOLICY_USES);
 		//
@@ -2136,8 +2141,8 @@ public class Analyzer extends Processor {
 		boolean hex = args.length > 2 && args[2].equals("hex");
 		if (hex)
 			return Hex.toHexString(digester.digest().digest());
-		else
-			return Base64.encodeBase64(digester.digest().digest());
+
+		return Base64.encodeBase64(digester.digest().digest());
 	}
 
 	/**
@@ -2404,10 +2409,10 @@ public class Analyzer extends Processor {
 				error("Cannot write JAR file to %s due to %s", e, output, e.getMessage());
 			}
 			return true;
-		} else {
-			trace("Not modified %s", output);
-			return false;
 		}
+		trace("Not modified %s", output);
+		return false;
+
 	}
 
 	/**
