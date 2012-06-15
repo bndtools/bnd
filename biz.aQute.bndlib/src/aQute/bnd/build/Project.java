@@ -1377,36 +1377,42 @@ public class Project extends Processor {
 
 		files = null;
 		ProjectBuilder builder = getBuilder(null);
-		if (underTest)
-			builder.setProperty(Constants.UNDERTEST, "true");
-		Jar jars[] = builder.builds();
-		File[] files = new File[jars.length];
+		try {
+			if (underTest)
+				builder.setProperty(Constants.UNDERTEST, "true");
+			Jar jars[] = builder.builds();
+			File[] files = new File[jars.length];
 
-		for (int i = 0; i < jars.length; i++) {
-			Jar jar = jars[i];
-			files[i] = saveBuild(jar);
-		}
-		getInfo(builder);
-		builder.close();
-		if (isOk()) {
-			this.files = files;
+			getInfo(builder);
 
-			// Write out the filenames in the buildfiles file
-			// so we can get them later evenin another process
-			Writer fw = IO.writer(bfs);
-			try {
-				for (File f : files) {
-					fw.append(f.getAbsolutePath());
-					fw.append("\n");
+			if (isOk()) {
+				this.files = files;
+
+				for (int i = 0; i < jars.length; i++) {
+					Jar jar = jars[i];
+					files[i] = saveBuild(jar);
 				}
-			}
-			finally {
-				fw.close();
-			}
-			getWorkspace().changedFile(bfs);
-			return files;
-		} else
-			return null;
+
+				// Write out the filenames in the buildfiles file
+				// so we can get them later evenin another process
+				Writer fw = IO.writer(bfs);
+				try {
+					for (File f : files) {
+						fw.append(f.getAbsolutePath());
+						fw.append("\n");
+					}
+				}
+				finally {
+					fw.close();
+				}
+				getWorkspace().changedFile(bfs);
+				return files;
+			} else
+				return null;
+		}
+		finally {
+			builder.close();
+		}
 	}
 
 	/**
