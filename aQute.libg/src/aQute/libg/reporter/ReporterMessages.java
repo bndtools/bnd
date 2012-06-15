@@ -31,7 +31,7 @@ public class ReporterMessages {
 		}, new InvocationHandler() {
 
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-				if (reporter.isExceptions()) {
+				if (reporter.isExceptions() && args!=null) {
 					for (Object o : args) {
 						if (o instanceof Throwable)
 							((Throwable) o).printStackTrace();
