@@ -48,6 +48,7 @@ import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.preferences.BndPreferences;
@@ -63,6 +64,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private static final int LOG_FULL = 2;
     private static final int LOG_BASIC = 1;
     private static final int LOG_NONE = 0;
+
+    private final ILogger logger = Plugin.getDefault().getLogger();
 
     private Project model;
     private BuildListeners listeners;
@@ -80,9 +83,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         logLevel = prefs.getBuildLogging();
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
 
-        // Prepare build listeners
-        listeners = new BuildListeners();
-
         // Prepare validations
         classpathErrors = new LinkedList<String>();
         validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
@@ -93,7 +93,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Get the initial project
         IProject myProject = getProject();
-        listeners.fireBuildStarting(myProject);
         Project model = null;
         try {
             model = Workspace.getProject(myProject.getLocation().toFile());
@@ -108,6 +107,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Main build section
         try {
+            // Prepare build listeners
+            listeners = new BuildListeners(logger);
+            listeners.fireBuildStarting(myProject);
+
             IProject[] dependsOn = calculateDependsOn(model);
 
             // Clear errors and warnings
@@ -169,6 +172,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
+            listeners.release();
             if (!builtAny) {
                 try {
                     Central.getWorkspaceObrProvider().reset();
@@ -186,7 +190,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 Plugin.log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, builder.toString(), null));
             }
 
-            listeners.release();
             model = null;
         }
     }
