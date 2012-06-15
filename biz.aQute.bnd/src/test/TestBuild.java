@@ -9,7 +9,7 @@ public class TestBuild extends TestCase {
 
 	public void testBndBuild() throws Exception {
 		bnd.main(new String[] {
-			"-b", "/Ws/aQute/aQute.libsync", "ma.bndrun"
+			"version"
 		});
 		// bnd.main(new String[] {"-etb",
 		// "/Ws/osgi/master/osgi.ct/generated/osgi.ct.cmpn", "runtests",
