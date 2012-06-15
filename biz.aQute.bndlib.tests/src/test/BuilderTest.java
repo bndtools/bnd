@@ -931,24 +931,6 @@ public class BuilderTest extends BndTestCase {
 		assertEquals("[1.0,2)", s);
 	}
 
-	/*
-	 * Bnd must expand the bnd.info file in a package.
-	 */
-	public void testBndInfo() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test");
-		b.setProperty("a", "aaa");
-		Jar jar = b.build();
-
-		Resource r = jar.getResource("test/bnd.info");
-		Properties bndinfo = new Properties();
-		InputStream in = r.openInputStream();
-		bndinfo.load(in);
-		in.close();
-		assertEquals("aaa", bndinfo.getProperty("a"));
-		assertEquals("${b}", bndinfo.getProperty("b"));
-	}
 
 	public void testMultipleExport2() throws Exception {
 		File cp[] = {
