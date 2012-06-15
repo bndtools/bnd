@@ -14,6 +14,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.utils.Function;
 
 public class BuildListeners {
 
@@ -39,30 +40,33 @@ public class BuildListeners {
         listenerTracker.open();
     }
 
-    public void fireBuildStarting(IProject project) {
-        for (BuildListener listener : listeners) {
-            listener.buildStarting(project);
-        }
-
-        Object[] services = listenerTracker.getServices();
-        if (services != null)
-            for (Object service : services) {
-                if (service != null) {
-                    BuildListener listener = (BuildListener) service;
-                    listener.buildStarting(project);
-                }
+    public void fireBuildStarting(final IProject project) {
+        forEachListener(new Function<BuildListener,Object>() {
+            public Object run(BuildListener listener) {
+                listener.buildStarting(project);
+                return null;
             }
+        });
     }
 
-    public void fireBuiltBundles(IProject project, IPath[] paths) {
-        for (BuildListener listener : listeners) {
-            listener.builtBundles(project, paths);
-        }
-        Object[] services = listenerTracker.getServices();
-        for (Object service : services) {
-            if (service != null) {
-                BuildListener listener = (BuildListener) service;
+    public void fireBuiltBundles(final IProject project, final IPath[] paths) {
+        forEachListener(new Function<BuildListener,Object>() {
+            public Object run(BuildListener listener) {
                 listener.builtBundles(project, paths);
+                return null;
+            }
+        });
+    }
+
+    private void forEachListener(Function<BuildListener, ? extends Object> function) {
+        for (BuildListener listener : listeners)
+            function.run(listener);
+
+        Object[] services = listenerTracker.getServices();
+        if (services != null) {
+            for (Object service : services) {
+                if (service != null)
+                    function.run((BuildListener) service);
             }
         }
     }
