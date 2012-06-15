@@ -314,13 +314,6 @@ public class BndTask extends BaseTask {
 		this.failok = failok;
 	}
 
-	boolean isExceptions() {
-		return exceptions;
-	}
-
-	public void setExceptions(boolean exceptions) {
-		this.exceptions = exceptions;
-	}
 
 	boolean isPrint() {
 		return print;

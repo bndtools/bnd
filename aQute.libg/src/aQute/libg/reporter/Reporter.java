@@ -16,4 +16,6 @@ public interface Reporter {
 	List<String> getErrors();
 
 	boolean isPedantic();
+	
+	boolean isExceptions();
 }

@@ -18,6 +18,7 @@ public class BaseTask extends Task implements Reporter {
 	final List<Property>	properties		= new LinkedList<Property>();
 	final List<Property>	workspaceProps	= new LinkedList<Property>();
 	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
+	boolean					exceptions;
 
 	public void error(String s, Object... args) {
 		errors.add(String.format(s, args));
@@ -133,6 +134,14 @@ public class BaseTask extends Task implements Reporter {
 
 	public void addWsproperty(Property property) {
 		workspaceProps.add(property);
+	}
+
+	public boolean isExceptions() {
+		return exceptions;
+	}
+
+	public void setExceptions(boolean exceptions) {
+		this.exceptions = exceptions;
 	}
 
 }

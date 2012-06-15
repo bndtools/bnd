@@ -31,6 +31,12 @@ public class ReporterMessages {
 		}, new InvocationHandler() {
 
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
+				if (reporter.isExceptions()) {
+					for (Object o : args) {
+						if (o instanceof Throwable)
+							((Throwable) o).printStackTrace();
+					}
+				}
 				String format;
 				Message d = method.getAnnotation(Message.class);
 				if (d == null) {
