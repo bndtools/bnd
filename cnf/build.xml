@@ -27,6 +27,7 @@
 			</classpath>
 		</taskdef>
 
+		<echo message="Preparing in ${projectdir}"/>
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 		
 		<available property="dochecking" file="classycle.ddf"/>

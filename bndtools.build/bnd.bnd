@@ -7,8 +7,7 @@
 	bndtools.diff,\
 	bndtools.release,\
 	org.bndtools.embeddedrepo,\
-	org.bndtools.repos.obr,\
-	org.osgi.impl.bundle.bindex
+	org.bndtools.repos.obr
 
 Include-Resource:\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
