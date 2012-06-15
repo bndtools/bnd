@@ -5,6 +5,8 @@ import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
 
+import aQute.lib.converter.*;
+
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
 	Reader				reader;
@@ -76,6 +78,11 @@ public class Decoder implements Closeable {
 
 	public Object get() throws Exception {
 		return codec.decode(null, this);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T get(TypeReference<T> ref) throws Exception {
+		return (T) codec.decode(ref.getType(), this);
 	}
 
 	int read() throws Exception {

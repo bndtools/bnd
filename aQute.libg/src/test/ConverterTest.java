@@ -10,6 +10,7 @@ import aQute.lib.converter.*;
 import aQute.lib.converter.Converter.Hook;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
+import aQute.libg.map.*;
 import aQute.libg.version.*;
 
 @SuppressWarnings({
@@ -18,6 +19,25 @@ import aQute.libg.version.*;
 public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
+	
+	
+	public void testTypeRef() throws Exception {
+		Map<String,Integer> f;
+		Type type = (new TypeReference<Map<String,Integer>>() {}).getType();
+		assertTrue( type instanceof ParameterizedType);
+		ParameterizedType ptype  = (ParameterizedType) type; 
+		assertEquals( Map.class, ptype.getRawType());
+		assertEquals( String.class, ptype.getActualTypeArguments()[0]);
+		assertEquals( Integer.class, ptype.getActualTypeArguments()[1]);
+		
+		Map<Integer,String> m = MAP.$(1, "1").$(2,"2");
+		f = converter.convert(new TypeReference<Map<String,Integer>>(){}, m);
+		
+		assertEquals( f.get("1"),(Integer) 1);
+		assertEquals( f.get("2"),(Integer) 2);
+	}
+	
+	
 	public void hookTest() throws Exception {
 		Converter converter = new Converter().hook(File.class, new Hook() {
 

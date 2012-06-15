@@ -31,10 +31,15 @@ public class Converter {
 		return (T) convert((Type) type, o);
 	}
 
+	public <T> T convert(TypeReference<T> type, Object o) throws Exception {
+		return (T) convert( type.getType(), o);
+	}
+	
 	public Object convert(Type type, Object o) throws Exception {
 		if (o == null)
 			return null; // compatible with any
 
+		
 		Hook hook = hooks.get(type);
 		if (hook != null) {
 			Object value = hook.convert(type, o);
