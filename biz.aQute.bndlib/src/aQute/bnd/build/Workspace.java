@@ -242,7 +242,7 @@ public class Workspace extends Processor {
 		signal(this);
 	}
 
-	private void copy(InputStream in, OutputStream out) throws Exception {
+	void copy(InputStream in, OutputStream out) throws Exception {
 		byte data[] = new byte[10000];
 		int size = in.read(data);
 		while (size > 0) {
