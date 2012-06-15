@@ -45,12 +45,13 @@ public class BuildListeners {
         }
 
         Object[] services = listenerTracker.getServices();
-        for (Object service : services) {
-            if (service != null) {
-                BuildListener listener = (BuildListener) service;
-                listener.buildStarting(project);
+        if (services != null)
+            for (Object service : services) {
+                if (service != null) {
+                    BuildListener listener = (BuildListener) service;
+                    listener.buildStarting(project);
+                }
             }
-        }
     }
 
     public void fireBuiltBundles(IProject project, IPath[] paths) {
