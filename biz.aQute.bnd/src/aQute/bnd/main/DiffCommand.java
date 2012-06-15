@@ -147,12 +147,12 @@ public class DiffCommand {
 			if (all || options.api())
 				for (Tree packageDiff : n.get("<api>").getChildren()) {
 					if (packageFilters.matches(packageDiff.getName()))
-						show(pw, packageDiff, 0, !options.full());
+						show(pw, packageDiff, 0);
 				}
 			if (all || options.manifest())
-				show(pw, n.get("<manifest>"), 0, !options.full());
+				show(pw, n.get("<manifest>"), 0);
 			if (all || options.resources())
-				show(pw, n.get("<resources>"), 0, !options.full());
+				show(pw, n.get("<resources>"), 0);
 			pw.close();
 		}
 		finally {
@@ -190,7 +190,7 @@ public class DiffCommand {
 		return tag;
 	}
 
-	private static void show(PrintWriter out, Diff diff, int indent, boolean limited) {
+	public static void show(PrintWriter out, Diff diff, int indent, boolean limited) {
 		if (limited && (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() == Delta.IGNORED))
 			return;
 
@@ -207,14 +207,14 @@ public class DiffCommand {
 		}
 	}
 
-	private static void show(PrintWriter out, Tree tree, int indent, boolean limited) {
+	public static void show(PrintWriter out, Tree tree, int indent) {
 		for (int i = 0; i < indent; i++)
 			out.print(" ");
 
 		out.println(tree.toString());
 
 		for (Tree c : tree.getChildren()) {
-			show(out, c, indent + 1, limited);
+			show(out, c, indent + 1);
 		}
 	}
 

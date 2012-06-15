@@ -7,6 +7,17 @@ public interface Diff {
 		boolean contains(Diff diff);
 	}
 
+	class Data {
+
+		public Type		type;
+		public Delta	delta;
+		public String	name;
+		public Data[]	children;
+		public String	comment;
+	}
+
+	Data serialize();
+
 	Delta getDelta();
 
 	Delta getDelta(Ignore ignore);

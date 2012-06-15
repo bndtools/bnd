@@ -21,4 +21,6 @@ public interface BndMessages extends Messages {
 
 	ERROR ForProject_File_FailedToCreateExecutableException_(Project project, String path, Exception e);
 
+	ERROR NoSuchRepository_(String newer);
+
 }

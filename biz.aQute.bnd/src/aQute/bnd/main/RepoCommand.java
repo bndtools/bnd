@@ -4,21 +4,25 @@ import java.io.*;
 import java.util.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.differ.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
+import aQute.lib.json.*;
+import aQute.lib.justif.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
 
 public class RepoCommand {
+	final static JSONCodec	codec	= new JSONCodec();
 
 	@Description("Access to the repositories")
-	@Arguments(arg = "*")
 	interface repoOptions extends Options {
 		@Description("Add a file repository")
 		Collection<String> repo();
@@ -302,4 +306,89 @@ public class RepoCommand {
 			jar.close();
 		}
 	}
+
+	@Arguments(arg = {
+			"newer repo", "[older repo]"
+	})
+	interface diffOptions extends Options {
+		@Description("Serialize to JSON")
+		boolean json();
+
+		@Description("Show full diff tree (also equals)")
+		boolean full();
+
+		@Description("Formatted like diff")
+		boolean diff();
+
+		@Description("Both add and removes")
+		boolean all();
+
+		boolean remove();
+
+		boolean added();
+	}
+
+	public void _diff(diffOptions options) throws UnsupportedEncodingException, IOException, Exception {
+
+		List<String> _ = options._();
+		String newer = _.remove(0);
+		String older = _.size() > 0 ? _.remove(0) : null;
+
+		RepositoryPlugin rnewer = findRepo(newer);
+		RepositoryPlugin rolder = older == null ? null : findRepo(older);
+
+		if (rnewer == null) {
+			bnd.messages.NoSuchRepository_(newer);
+			return;
+		}
+		if (older != null && rolder == null) {
+			bnd.messages.NoSuchRepository_(newer);
+			return;
+		}
+
+		PrintWriter pw = new PrintWriter(new OutputStreamWriter(bnd.out, "UTF-8"));
+		Tree tNewer = RepositoryElement.getTree(rnewer);
+		if (rolder == null) {
+			if (options.json())
+				codec.enc().to(new OutputStreamWriter(bnd.out, "UTF-8")).put(tNewer.serialize()).flush();
+			else
+				DiffCommand.show(pw, tNewer, 0);
+		} else {
+			Tree tOlder = RepositoryElement.getTree(rolder);
+			Diff diff = new DiffImpl(tNewer, tOlder);
+			MultiMap<String,String> map = new MultiMap<String,String>();
+			for (Diff bsn : diff.getChildren()) {
+				
+				for (Diff version : bsn.getChildren()) {
+					if (version.getDelta() == Delta.UNCHANGED)
+						continue;
+					
+					if (options.remove() == false && options.added() == false
+							|| (options.remove() //
+							&& version.getDelta() == Delta.REMOVED)
+							|| (options.added() && version.getDelta() == Delta.ADDED)) {
+						
+						map.add(bsn.getName(), version.getName());						
+					}					
+				}
+			}
+			
+			if (options.json())
+				codec.enc().to(new OutputStreamWriter(bnd.out, "UTF-8")).put(map).flush();
+			else if (!options.diff())
+				bnd.printMultiMap(map);
+			else
+				DiffCommand.show(pw, diff, 0, !options.full());
+		}
+		pw.flush();
+	}
+
+	private RepositoryPlugin findRepo(String name) {
+		for (RepositoryPlugin repo : repos) {
+			if (repo.getName().equals(name))
+				return repo;
+		}
+		return null;
+	}
+
 }

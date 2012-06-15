@@ -222,4 +222,19 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return newer;
 	}
 
+	public Data serialize() {
+		Data data = new Data();
+		data.type = getType();
+		data.delta = delta;
+		data.name = getName();
+		data.children = new Data[children.size()];
+		
+		int i=0;		
+		for ( Diff d : children)
+			data.children[i++] = d.serialize();
+				
+		return data;
+	}
+
+
 }
