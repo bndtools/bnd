@@ -31,6 +31,7 @@ public class JUnitEclipseReport implements TestReporter {
 		if (socket == null) {
 			System.err.println("Cannot open the JUnit Port: " + port);
 			System.exit(-2);
+			return;
 		}
 
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));

@@ -23,8 +23,8 @@ import aQute.launcher.minifw.*;
  */
 public class Launcher implements ServiceListener {
 	private PrintStream					out;
-	private LauncherConstants			parms;
-	private Framework					systemBundle;
+	LauncherConstants					parms;
+	Framework							systemBundle;
 	private final Properties			properties;
 	private boolean						security;
 	private SimplePermissionPolicy		policy;
@@ -61,7 +61,8 @@ public class Launcher implements ServiceListener {
 				properties.load(in);
 			}
 			finally {
-				in.close();
+				if (in != null)
+					in.close();
 			}
 			Launcher target = new Launcher(properties, propertiesFile);
 			target.run(args);
@@ -249,7 +250,7 @@ public class Launcher implements ServiceListener {
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
 	 */
-	private void update() throws Exception {
+	void update() throws Exception {
 		trace("Updating framework with %s", parms.runbundles);
 
 		List<Bundle> tobestarted = new ArrayList<Bundle>();

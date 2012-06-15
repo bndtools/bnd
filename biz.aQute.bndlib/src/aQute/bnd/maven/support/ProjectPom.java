@@ -140,6 +140,7 @@ public class ProjectPom extends Pom {
 		System.err.println("Replce: " + in);
 		if (in == null) {
 			System.err.println("null??");
+			in = "<<???>>";
 		}
 		Matcher matcher = MACRO.matcher(in);
 		int last = 0;

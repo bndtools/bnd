@@ -289,6 +289,15 @@ public class Attrs implements Map<String,String> {
 					return Long.parseLong(s.trim());
 				case VERSION :
 					return Version.parseVersion(s);
+				case DOUBLE :
+					return Double.parseDouble(s.trim());
+					
+				case DOUBLES :
+				case LONGS :
+				case STRINGS :
+				case VERSIONS :
+					// Cannot happen since the sub is null
+					return null;
 			}
 			return null;
 		}

@@ -45,7 +45,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	class It implements ListIterator<T> {
 		int	n;
 
-		private It(int n) {
+		It(int n) {
 			this.n = n;
 		}
 

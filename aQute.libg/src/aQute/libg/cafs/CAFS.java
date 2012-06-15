@@ -339,7 +339,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		channel.force(false);
 	}
 
-	private short checksum(int flags, int compressedLength, int totalLength, byte[] sha1) {
+	short checksum(int flags, int compressedLength, int totalLength, byte[] sha1) {
 		CRC32 crc = new CRC32();
 		crc.update(flags);
 		crc.update(flags >> 8);

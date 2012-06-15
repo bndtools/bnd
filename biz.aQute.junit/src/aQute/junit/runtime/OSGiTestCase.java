@@ -66,8 +66,10 @@ public abstract class OSGiTestCase extends TestCase {
 			fail("Invalid filter syntax");
 		}
 
-		if (refs == null || refs.length == 0)
+		if (refs == null || refs.length == 0) {
 			fail(message);
+			return;
+		}
 
 		Object svcObj = context.getService(refs[0]);
 		if (svcObj == null)
@@ -169,6 +171,7 @@ public abstract class OSGiTestCase extends TestCase {
 			}
 			catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");
+				return null;
 			}
 		} else {
 			tracker = new ServiceTracker(context, service.getName(), null);

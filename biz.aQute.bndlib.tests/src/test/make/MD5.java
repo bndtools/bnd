@@ -24,7 +24,7 @@ public class MD5 implements MakePlugin {
 			throw new FileNotFoundException("No such file: " + source);
 	}
 
-	private byte[] md5(File f) throws Exception {
+	byte[] md5(File f) throws Exception {
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
 		InputStream in = new FileInputStream(f);
 		try {

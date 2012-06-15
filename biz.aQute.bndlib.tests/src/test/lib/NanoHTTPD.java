@@ -168,8 +168,6 @@ public class NanoHTTPD {
 	public static final String	MIME_PLAINTEXT	= "text/plain", MIME_HTML = "text/html",
 			MIME_DEFAULT_BINARY = "application/octet-stream", MIME_XML = "text/xml";
 
-	private static NanoHTTPD	nanoHTTPD;
-
 	// ==================================================
 	// Socket & server code
 	// ==================================================
@@ -231,7 +229,8 @@ public class NanoHTTPD {
 			}
 
 		try {
-			nanoHTTPD = new NanoHTTPD(port, wwwroot);
+			@SuppressWarnings("unused")
+			NanoHTTPD nanoHTTPD = new NanoHTTPD(port, wwwroot);
 		}
 		catch (IOException ioe) {
 			System.err.println("Couldn't start server:\n" + ioe);

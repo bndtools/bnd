@@ -158,7 +158,7 @@ public class MetaTypeReader extends WriteResource {
 		adt.addAttribute("min", min);
 		adt.addAttribute("description", description);
 
-		if (optionLabels != null) {
+		if (optionLabels != null && optionValues != null) {
 			for (int i = 0; i < optionLabels.length; i++) {
 				Tag option = new Tag(adt, "Option");
 				option.addAttribute("label", optionLabels[i]);

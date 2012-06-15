@@ -24,7 +24,7 @@ public class Filter {
 	final static int	GE			= 2;
 	final static int	APPROX		= 3;
 
-	private String		filter;
+	String		filter;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";

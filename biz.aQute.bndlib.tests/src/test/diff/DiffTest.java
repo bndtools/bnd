@@ -77,7 +77,7 @@ public class DiffTest extends TestCase {
 		show(diff, 0);
 	}
 
-	private abstract class SBB {}
+	abstract class SBB {}
 
 	public class CMP implements Comparable<Number> {
 
@@ -88,7 +88,7 @@ public class DiffTest extends TestCase {
 
 	}
 
-	public class SB extends SBB implements Appendable {
+	class SB extends SBB implements Appendable {
 
 		public SB append(char var0) throws IOException {
 			// TODO Auto-generated method stub

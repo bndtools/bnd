@@ -121,7 +121,7 @@ public class CalltreeResource extends WriteResource {
 														}
 													};
 
-	private static void xref(Map<Clazz.MethodDef,Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
+	static void xref(Map<Clazz.MethodDef,Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
 			Clazz.MethodDef reference) {
 		Set<Clazz.MethodDef> set = references.get(source);
 		if (set == null)

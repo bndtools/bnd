@@ -28,7 +28,7 @@ public class MavenEntry implements Closeable {
 	Properties					properties;
 	private boolean				propertiesChanged;
 	FutureTask<File>			artifact;
-	private String				artifactPath;
+	String						artifactPath;
 
 	/**
 	 * Constructor.
@@ -139,7 +139,7 @@ public class MavenEntry implements Closeable {
 	 * @return
 	 * @throws MalformedURLException
 	 */
-	private boolean download(URI repo, String path) throws MalformedURLException {
+	boolean download(URI repo, String path) throws MalformedURLException {
 		try {
 			URL url = toURL(repo, path);
 			System.err.println("Downloading " + repo + " path " + path + " url " + url);

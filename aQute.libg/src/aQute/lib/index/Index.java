@@ -21,7 +21,7 @@ public class Index implements Iterable<byte[]> {
 	final static int					MAGIC		= 0x494C4458;
 	final static int					KEYSIZE		= 4;
 
-	private FileChannel					file;
+	FileChannel					file;
 	final int							pageSize	= 4096;
 	final int							keySize;
 	final int							valueSize	= 8;

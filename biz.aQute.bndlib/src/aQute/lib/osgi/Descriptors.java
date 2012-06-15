@@ -59,7 +59,7 @@ public class Descriptors {
 		final String	fqn;
 		final boolean	java;
 
-		private PackageRef(String binaryName) {
+		PackageRef(String binaryName) {
 			this.binaryName = fqnToBinary(binaryName);
 			this.fqn = binaryToFQN(binaryName);
 			this.java = this.fqn.startsWith("java."); // &&
@@ -69,7 +69,7 @@ public class Descriptors {
 			// delegate anyway. So lost the understanding why I did it??
 		}
 
-		private PackageRef() {
+		PackageRef() {
 			this.binaryName = "";
 			this.fqn = ".";
 			this.java = false;
@@ -226,6 +226,11 @@ public class Descriptors {
 			return fqn.compareTo(other.getFQN());
 		}
 
+		@Override
+		public int hashCode() {
+			return super.hashCode();
+		}
+
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -299,6 +304,11 @@ public class Descriptors {
 				return 0;
 
 			return getFQN().compareTo(other.getFQN());
+		}
+
+		@Override
+		public int hashCode() {
+			return super.hashCode();
 		}
 
 	}
@@ -385,7 +395,7 @@ public class Descriptors {
 		final TypeRef[]	prototype;
 		final String	descriptor;
 
-		private Descriptor(String descriptor) {
+		Descriptor(String descriptor) {
 			this.descriptor = descriptor;
 			int index = 0;
 			List<TypeRef> types = Create.list();

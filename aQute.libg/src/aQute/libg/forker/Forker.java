@@ -64,7 +64,7 @@ public class Forker<T> {
 		/**
 		 * Cancel this job
 		 */
-		private void cancel() {
+		void cancel() {
 			if (!canceled.getAndSet(true)) {
 				synchronized (this) {
 					if (t != null)
@@ -166,7 +166,7 @@ public class Forker<T> {
 	 * 
 	 * @param done
 	 */
-	private void done(Job done) {
+	void done(Job done) {
 		synchronized (this) {
 			System.err.println("count = " + count);
 			executing.remove(done);
