@@ -51,6 +51,7 @@ import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.IValidator;
 import bndtools.classpath.BndContainerInitializer;
+import bndtools.internal.decorator.ExportedPackageDecoratorJob;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
 import bndtools.preferences.EclipseClasspathPreference;
@@ -91,26 +92,26 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Initialise workspace OBR index (should only happen once)
         boolean builtAny = false;
 
-        // Get the initial project
-        IProject myProject = getProject();
-        Project model = null;
-        try {
-            model = Workspace.getProject(myProject.getLocation().toFile());
-        } catch (Exception e) {
-            clearBuildMarkers();
-            createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
-        }
-        if (model == null)
-            return null;
-        this.model = model;
-        model.setDelayRunDependencies(true);
-
-        // Main build section
         try {
             // Prepare build listeners
             listeners = new BuildListeners(logger);
-            listeners.fireBuildStarting(myProject);
 
+            // Get the initial project
+            IProject myProject = getProject();
+            listeners.fireBuildStarting(myProject);
+            Project model = null;
+            try {
+                model = Workspace.getProject(myProject.getLocation().toFile());
+            } catch (Exception e) {
+                clearBuildMarkers();
+                createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
+            }
+            if (model == null)
+                return null;
+            this.model = model;
+            model.setDelayRunDependencies(true);
+
+            // Main build section
             IProject[] dependsOn = calculateDependsOn(model);
 
             // Clear errors and warnings
@@ -531,6 +532,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Clear errors & warnings before build
         model.clear();
+
+        // Update the exported packages for the project
+        new ExportedPackageDecoratorJob(getProject(), logger).schedule();
 
         // Load Eclipse classpath containers
         model.clearClasspath();
