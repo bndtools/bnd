@@ -1,8 +1,11 @@
 package bndtools.internal.decorator;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,13 +14,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Instruction;
-import aQute.lib.osgi.Instructions;
+import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Processor;
+import aQute.libg.header.Attrs;
 import aQute.libg.header.Parameters;
 import bndtools.Central;
 import bndtools.api.ILogger;
@@ -40,11 +45,34 @@ public class ExportedPackageDecoratorJob extends Job {
             Project model = Workspace.getProject(project.getLocation().toFile());
             Collection< ? extends Builder> builders = model.getSubBuilders();
 
-            Set<Instruction> allExports = new HashSet<Instruction>();
+            Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
+
             for (Builder builder : builders) {
-                Parameters exportClauses = new Parameters(builder.getProperty(Constants.EXPORT_PACKAGE));
-                Instructions exports = new Instructions(exportClauses);
-                allExports.addAll(exports.keySet());
+                Jar jar = builder.build();
+                try {
+                    String exportHeader = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+                    if (exportHeader != null) {
+                        Parameters parameters = new Parameters(exportHeader);
+                        for (Entry<String,Attrs> export : parameters.entrySet()) {
+                            Version version;
+                            String versionStr = export.getValue().get(Constants.VERSION_ATTRIBUTE);
+                            try {
+                                version = Version.parseVersion(versionStr);
+                                String pkgName = Processor.removeDuplicateMarker(export.getKey());
+                                SortedSet<Version> versions = allExports.get(pkgName);
+                                if (versions == null) {
+                                    versions = new TreeSet<Version>();
+                                    allExports.put(pkgName, versions);
+                                }
+                                versions.add(version);
+                            } catch (IllegalArgumentException e) {
+                                // Seems to be an invalid export, ignore it...
+                            }
+                        }
+                    }
+                } finally {
+                    jar.close();
+                }
             }
             Central.setExportedPackageModel(project, allExports);
 
@@ -61,5 +89,4 @@ public class ExportedPackageDecoratorJob extends Job {
 
         return Status.OK_STATUS;
     }
-
 }

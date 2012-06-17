@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,11 +27,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
-import aQute.lib.osgi.Instruction;
 
 public class Central {
 
@@ -38,7 +39,7 @@ public class Central {
     static WorkspaceObrProvider workspaceObr = null;
     static WorkspaceRepoProvider workspaceRepo = null;
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
-    static final ConcurrentMap<String,Set<Instruction>> exportedPackageMap = new ConcurrentHashMap<String,Set<Instruction>>();
+    static final ConcurrentMap<String,Map<String,SortedSet<Version>>> exportedPackageMap = new ConcurrentHashMap<String,Map<String,SortedSet<Version>>>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -317,14 +318,14 @@ public class Central {
         return indexValid.compareAndSet(false, true);
     }
 
-    public static Set<Instruction> getExportedPackageModel(IProject project) {
+    public static Map<String,SortedSet<Version>> getExportedPackageModel(IProject project) {
         String key = project.getFullPath().toPortableString();
         return exportedPackageMap.get(key);
     }
 
-    public static void setExportedPackageModel(IProject project, Set<Instruction> exportInstructions) {
+    public static void setExportedPackageModel(IProject project, Map<String,SortedSet<Version>> exports) {
         String key = project.getFullPath().toPortableString();
-        exportedPackageMap.put(key, exportInstructions);
+        exportedPackageMap.put(key, exports);
     }
 
 }
