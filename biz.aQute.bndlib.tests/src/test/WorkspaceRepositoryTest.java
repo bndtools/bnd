@@ -13,6 +13,9 @@ public class WorkspaceRepositoryTest extends TestCase {
 	Workspace			workspace;
 	WorkspaceRepository	repo;
 
+	public void testIMustBeUpdated() {
+		
+	}
 //	public void setUp() throws Exception {
 //		File tmp = new File("tmp-ws");
 //		if (tmp.exists())
