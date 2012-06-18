@@ -1277,6 +1277,11 @@ public class Project extends Processor {
 	 * Check if this project needs building. This is defined as:
 	 */
 	public boolean isStale() throws Exception {
+		if ( workspace.isOffline()) {
+			trace("working %s offline, so always stale", this);
+			return true;
+		}
+		
 		Set<Project> visited = new HashSet<Project>();
 		return isStale(visited);
 	}
@@ -1323,6 +1328,7 @@ public class Project extends Processor {
 					return true;
 			}
 		}
+		
 		return false;
 	}
 

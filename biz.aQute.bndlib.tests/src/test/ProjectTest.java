@@ -87,6 +87,7 @@ public class ProjectTest extends TestCase {
 
 	public void testIsStale() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+		ws.setOffline(false);
 		Project top = ws.getProject("p-stale");
 		assertNotNull(top);
 		top.build();

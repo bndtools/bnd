@@ -28,6 +28,7 @@ public class Workspace extends Processor {
 	final Map<String,Action>					commands	= newMap();
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
+	private boolean								offline		= true;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -188,6 +189,7 @@ public class Workspace extends Processor {
 		List<BndListener> listeners = getPlugins(BndListener.class);
 		for (BndListener l : listeners)
 			try {
+				offline = false;
 				l.changed(f);
 			}
 			catch (Exception e) {
@@ -360,4 +362,19 @@ public class Workspace extends Processor {
 		list.add(new CachedFileRepo());
 	}
 
+	/**
+	 * Return if we're in offline mode. Offline mode is defined as an
+	 * environment where nobody tells us the resources are out of date (refresh
+	 * or changed). This is currently defined as having bndlisteners.
+	 * 
+	 * @return
+	 */
+	public boolean isOffline() {
+		return offline;
+	}
+
+	public Workspace setOffline(boolean on) {
+		this.offline = on;
+		return this;
+	}
 }
