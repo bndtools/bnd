@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
 import aQute.libg.reporter.*;
 
@@ -35,7 +36,7 @@ public class Command {
 		return execute(in, stdout, stderr);
 	}
 
-	public int execute(InputStream in, Appendable stdout, Appendable stderr) throws Exception {
+	public int execute(final InputStream in, Appendable stdout, Appendable stderr) throws Exception {
 		if (reporter != null) {
 			reporter.trace("executing cmd: %s", arguments);
 		}
@@ -61,7 +62,8 @@ public class Command {
 		Thread hook = new Thread(r, arguments.toString());
 		Runtime.getRuntime().addShutdownHook(hook);
 		TimerTask timer = null;
-		OutputStream stdin = process.getOutputStream();
+		final OutputStream stdin = process.getOutputStream();
+		Thread rdInThread = null;
 
 		if (timeout != 0) {
 			timer = new TimerTask() {
@@ -73,6 +75,7 @@ public class Command {
 			Command.timer.schedule(timer, timeout);
 		}
 
+		final AtomicBoolean finished = new AtomicBoolean(false);
 		InputStream out = process.getInputStream();
 		try {
 			InputStream err = process.getErrorStream();
@@ -82,25 +85,43 @@ public class Command {
 				Collector cerr = new Collector(err, stderr);
 				cerr.start();
 
-				try {
-					int c = in.read();
-					while (c >= 0) {
-						stdin.write(c);
-						if (c == '\n')
-							stdin.flush();
-						c = in.read();
-					}
+				if (in != null) {
+					rdInThread = new Thread("Read Input Thread") {
+						public void run() {
+							try {
+								while (!finished.get()) {
+									int n = in.available();
+									if (n == 0) {
+										sleep(100);
+									}
+									else {
+										int c = in.read();
+										System.out.println((char)c);
+										stdin.write(c);
+										if (c == '\n')
+											stdin.flush();
+									}
+								}
+							}
+							catch (InterruptedIOException e) {
+								// Ignore here
+							}
+							catch (Exception e) {
+								// Who cares?
+							}
+							finally {
+								try {
+									stdin.close();
+								}
+								catch (Exception e) {
+									// ignore
+								}
+							}
+						}
+					};
+					rdInThread.setDaemon(true);
+					rdInThread.start();
 				}
-				catch (InterruptedIOException e) {
-					// Ignore here
-				}
-				catch (Exception e) {
-					// Who cares?
-				}
-				finally {
-					stdin.close();
-				}
-
 				if (reporter != null)
 					reporter.trace("exited process");
 
@@ -121,6 +142,7 @@ public class Command {
 		}
 
 		byte exitValue = (byte) process.waitFor();
+		finished.set(true);
 		if (reporter != null)
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue, stdout,
 					stderr, timedout);
