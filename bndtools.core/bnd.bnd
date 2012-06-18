@@ -69,7 +69,6 @@ eclipse.deps: \
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
-	org.eclipse.jdt.debug,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
 	org.eclipse.equinox.preferences,\
