@@ -1,5 +1,6 @@
 package bndtools.internal.decorator;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ import aQute.lib.osgi.Processor;
 import aQute.libg.header.Attrs;
 import aQute.libg.header.Parameters;
 import bndtools.Central;
+import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.utils.SWTConcurrencyUtil;
 
@@ -48,8 +50,9 @@ public class ExportedPackageDecoratorJob extends Job {
             Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
 
             for (Builder builder : builders) {
-                Jar jar = builder.build();
+                Jar jar = null;
                 try {
+                    jar = builder.build();
                     String exportHeader = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
                     if (exportHeader != null) {
                         Parameters parameters = new Parameters(exportHeader);
@@ -70,8 +73,11 @@ public class ExportedPackageDecoratorJob extends Job {
                             }
                         }
                     }
+                } catch (Exception e) {
+                    Plugin.getDefault().getLogger().logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
                 } finally {
-                    jar.close();
+                    if (jar != null)
+                        jar.close();
                 }
             }
             Central.setExportedPackageModel(project, allExports);
