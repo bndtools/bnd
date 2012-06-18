@@ -279,7 +279,6 @@ public class Workspace extends Processor {
 					if (in != null)
 						unzip(in, root);
 					else {
-						System.err.println("!!!! Couldn't find embedded-repo.jar in bundle ");
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
 				}

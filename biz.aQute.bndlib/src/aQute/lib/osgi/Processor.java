@@ -58,9 +58,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		properties = new Properties(parent);
 	}
 
-	public Processor(Processor parent) {
-		this(parent.properties);
-		this.parent = parent;
+	public Processor(Processor child) {
+		this(child.properties);
+		this.parent = child;
 	}
 
 	public void setParent(Processor processor) {

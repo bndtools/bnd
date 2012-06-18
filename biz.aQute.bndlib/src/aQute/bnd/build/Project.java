@@ -121,7 +121,8 @@ public class Project extends Processor {
 			builder = new ProjectBuilder(parent);
 
 		builder.setBase(getBase());
-
+		builder.setPedantic(isPedantic());
+		builder.setTrace(isTrace());
 		return builder;
 	}
 
@@ -1258,7 +1259,7 @@ public class Project extends Processor {
 		}
 
 		if (isStale()) {
-			trace("Building " + this);
+			trace("building " + this);
 			files = buildLocal(underTest);
 		}
 
