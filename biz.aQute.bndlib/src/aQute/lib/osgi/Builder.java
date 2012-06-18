@@ -283,6 +283,7 @@ public class Builder extends Analyzer {
 		Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
 		if (conditionals.isEmpty())
 			return null;
+		trace("do Conditional Package %s", conditionals);
 		Instructions instructions = new Instructions(conditionals);
 
 		Collection<PackageRef> referred = instructions.select(getReferred().keySet(), false);
@@ -294,7 +295,10 @@ public class Builder extends Analyzer {
 			for (Jar cpe : getClasspath()) {
 				Map<String,Resource> map = cpe.getDirectories().get(pref.getPath());
 				if (map != null) {
-					jar.addDirectory(map, false);
+					copy(jar, cpe, pref.getPath(), false);
+// Now use copy so that bnd.info is processed, next line should be 
+// removed in the future TODO
+//					jar.addDirectory(map, false);
 					break;
 				}
 			}
@@ -608,8 +612,18 @@ public class Builder extends Analyzer {
 	 * @param overwriteResource
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
+		trace("copy d=" + dest + " s=" + srce +" p="+ path);
 		dest.copy(srce, path, overwrite);
-
+		
+		// bnd.info sources must be preprocessed
+		String bndInfoPath = path + "/bnd.info";
+		Resource r = dest.getResource(bndInfoPath);
+		if ( r != null && !(r instanceof PreprocessResource)) {
+			trace("preprocessing bnd.info");
+			PreprocessResource pp = new PreprocessResource(this, r);
+			dest.putResource(bndInfoPath, pp);
+		}
+		
 		if (hasSources()) {
 			String srcPath = "OSGI-OPT/src/" + path;
 			Map<String,Resource> srcContents = srce.getDirectories().get(srcPath);

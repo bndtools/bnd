@@ -47,7 +47,7 @@ import aQute.libg.version.Version;
 
 public class Analyzer extends Processor {
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
-	static Manifest									bndInfo;
+	static Properties								bndInfo;
 
 	// Bundle parameters
 	private Jar										dot;
@@ -149,6 +149,7 @@ public class Analyzer extends Processor {
 			if (s != null) {
 				activator = getTypeRefFromFQN(s);
 				referTo(activator);
+				trace("activator %s %s", s, activator);
 			}
 
 			// Execute any plugins
@@ -643,11 +644,11 @@ public class Analyzer extends Processor {
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
-		return getBndInfo("Bundle-Version", "<unknown>");
+		return getBndInfo("version", "<unknown>");
 	}
 
 	public long getBndLastModified() {
-		String time = getBndInfo("Bnd-LastModified", "0");
+		String time = getBndInfo("lastmodified", "0");
 		try {
 			return Long.parseLong(time);
 		}
@@ -660,13 +661,24 @@ public class Analyzer extends Processor {
 	public String getBndInfo(String key, String defaultValue) {
 		if (bndInfo == null) {
 			try {
-				bndInfo = new Manifest(getClass().getResourceAsStream("META-INF/MANIFEST.MF"));
+				bndInfo = new Properties();
+				URL url = getClass().getResource("bnd.info");
+				if (url != null) {
+					InputStream in = url.openStream();
+					try {
+						bndInfo.load(in);
+					}
+					finally {
+						in.close();
+					}
+				}
 			}
 			catch (Exception e) {
+				e.printStackTrace();
 				return defaultValue;
 			}
 		}
-		String value = bndInfo.getMainAttributes().getValue(key);
+		String value = bndInfo.getProperty(key);
 		if (value == null)
 			return defaultValue;
 		return value;
