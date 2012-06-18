@@ -2515,50 +2515,58 @@ public class bnd extends Processor {
 		}
 		error("Could not locate version");
 	}
-	
+
 	/**
 	 * Show some key info of the project
 	 */
-	@Arguments(arg={})
+	@Arguments(arg = {})
 	@Description("Show key project variables")
 	interface infoOptions extends Options {
 		boolean runbundles();
+
 		boolean buildpath();
+
 		boolean dependsOn();
+
 		boolean sourcepath();
+
 		boolean classpath();
+
 		boolean vmpath();
+
 		String project();
 	}
+
 	public void _info(infoOptions options) throws Exception {
 		Project p = getProject(options.project());
-		if ( p == null) {
+		if (p == null) {
 			messages.NoProject();
 			return;
 		}
-		boolean any = options.runbundles() || options.buildpath() || options.classpath() || options.dependsOn() || options.vmpath();
-		
+		boolean any = options.runbundles() || options.buildpath() || options.classpath() || options.dependsOn()
+				|| options.vmpath();
+
 		MultiMap<String,Object> table = new MultiMap<String,Object>();
-		if ( any || options.runbundles()) {
+		if (any || options.runbundles()) {
 			table.addAll("Run", p.getRunbundles());
 		}
-		if ( any || options.buildpath()) {
+		if (any || options.buildpath()) {
 			table.addAll("Build", p.getBuildpath());
 		}
-		if ( any || options.buildpath()) {
+		if (any || options.buildpath()) {
 			table.addAll("Depends on", p.getDependson());
 		}
-		if ( any || options.sourcepath()) {
+		if (any || options.sourcepath()) {
 			table.addAll("Source", p.getSourcePath());
 		}
-		if ( any || options.classpath()) {
+		if (any || options.classpath()) {
 			table.addAll("Class path", p.getClasspath());
 		}
-		
-		if ( any || options.vmpath()) {
+
+		if (any || options.vmpath()) {
 			table.addAll("Run path", p.getRunpath());
 		}
-		
+
 		printMultiMap(table);
 	}
 }
