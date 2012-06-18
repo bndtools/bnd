@@ -128,7 +128,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p.isFailOk())
 			p.warning(string, args);
 		else {
-			String s = formatArrays(string, args);
+			String s = formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 		}
@@ -142,7 +142,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			p.warning(string + ": " + t, args);
 		else {
 			p.errors.add("Exception: " + t.getMessage());
-			String s = formatArrays(string, args);
+			String s = formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 		}
