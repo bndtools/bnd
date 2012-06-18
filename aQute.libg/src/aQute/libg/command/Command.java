@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
+import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 
 public class Command {
@@ -86,41 +87,43 @@ public class Command {
 				cerr.start();
 
 				if (in != null) {
-					rdInThread = new Thread("Read Input Thread") {
-						public void run() {
-							try {
-								while (!finished.get()) {
-									int n = in.available();
-									if (n == 0) {
-										sleep(100);
-									}
-									else {
-										int c = in.read();
-										System.out.println((char)c);
-										stdin.write(c);
-										if (c == '\n')
-											stdin.flush();
+					if (in == System.in) {
+						rdInThread = new Thread("Read Input Thread") {
+							public void run() {
+								try {
+									while (!finished.get()) {
+										int n = in.available();
+										if (n == 0) {
+											sleep(100);
+										} else {
+											int c = in.read();
+											if (c < 0) {
+												stdin.close();
+												return;
+											}
+											stdin.write(c);
+											if (c == '\n')
+												stdin.flush();
+										}
 									}
 								}
-							}
-							catch (InterruptedIOException e) {
-								// Ignore here
-							}
-							catch (Exception e) {
-								// Who cares?
-							}
-							finally {
-								try {
-									stdin.close();
+								catch (InterruptedIOException e) {
+									// Ignore here
 								}
 								catch (Exception e) {
-									// ignore
+									// Who cares?
+								}
+								finally {
+									IO.close(stdin);
 								}
 							}
-						}
-					};
-					rdInThread.setDaemon(true);
-					rdInThread.start();
+						};
+						rdInThread.setDaemon(true);
+						rdInThread.start();
+					} else {
+						IO.copy(in, stdin);
+						stdin.close();
+					}
 				}
 				if (reporter != null)
 					reporter.trace("exited process");
@@ -143,6 +146,12 @@ public class Command {
 
 		byte exitValue = (byte) process.waitFor();
 		finished.set(true);
+		if (rdInThread != null) {
+			if (in != null)
+				IO.close(in);
+			rdInThread.interrupt();
+		}
+
 		if (reporter != null)
 			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue, stdout,
 					stderr, timedout);
