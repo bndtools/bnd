@@ -4,7 +4,6 @@ import java.io.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
-import aQute.lib.osgi.*;
 
 public class TestSelfBuild extends TestCase {
 
@@ -15,10 +14,7 @@ public class TestSelfBuild extends TestCase {
 		project.action("build");
 
 		File files[] = project.build();
-		System.err.println(Processor.join(project.getErrors(), "\n"));
-		System.err.println(Processor.join(project.getWarnings(), "\n"));
-		assertEquals(0, project.getErrors().size());
-		assertEquals(0, project.getWarnings().size());
+		assertTrue(project.check("Imports that lack version ranges"));
 		assertNotNull(files);
 		assertEquals(1, files.length);
 	}
