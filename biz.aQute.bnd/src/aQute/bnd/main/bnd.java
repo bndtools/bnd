@@ -2223,6 +2223,8 @@ public class bnd extends Processor {
 			Workspace ws = Workspace.getWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
+				project.setTrace(isTrace());
+				project.setPedantic(isPedantic());
 				return project;
 			}
 		}
