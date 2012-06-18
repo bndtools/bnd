@@ -21,10 +21,11 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
+import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Packages;
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -52,16 +53,15 @@ public class ExportedPackageDecoratorJob extends Job {
             for (Builder builder : builders) {
                 Jar jar = null;
                 try {
-                    jar = builder.build();
-                    String exportHeader = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-                    if (exportHeader != null) {
-                        Parameters parameters = new Parameters(exportHeader);
-                        for (Entry<String,Attrs> export : parameters.entrySet()) {
+                    builder.build();
+                    Packages exports = builder.getExports();
+                    if (exports != null) {
+                        for (Entry<PackageRef,Attrs> export : exports.entrySet()) {
                             Version version;
                             String versionStr = export.getValue().get(Constants.VERSION_ATTRIBUTE);
                             try {
                                 version = Version.parseVersion(versionStr);
-                                String pkgName = Processor.removeDuplicateMarker(export.getKey());
+                                String pkgName = Processor.removeDuplicateMarker(export.getKey().getFQN());
                                 SortedSet<Version> versions = allExports.get(pkgName);
                                 if (versions == null) {
                                     versions = new TreeSet<Version>();

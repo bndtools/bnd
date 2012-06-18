@@ -1,6 +1,7 @@
 package bndtools.internal.ui;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -44,7 +45,10 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
                 Collection<Version> versions = exports.get(pkgName);
                 if (versions != null) {
                     decoration.addOverlay(plusIcon);
-                    decoration.addSuffix(" " + versions.toString());
+                    if (versions.isEmpty())
+                        decoration.addSuffix(" " + Collections.singletonList(Version.emptyVersion).toString());
+                    else
+                        decoration.addSuffix(" " + versions.toString());
                 }
             } else {
                 new ExportedPackageDecoratorJob(project, Plugin.getDefault().getLogger()).schedule();
