@@ -1,20 +1,31 @@
 package test;
 
-import java.io.File;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.build.WorkspaceRepository;
+import junit.framework.*;
+import aQute.bnd.build.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.libg.version.Version;
-import junit.framework.TestCase;
+import aQute.lib.io.*;
+import aQute.libg.version.*;
 
 public class WorkspaceRepositoryTest extends TestCase {
 	private WorkspaceRepository repo;
 	
 	public void setUp() throws Exception {
-		Workspace workspace = Workspace.getWorkspace("test/ws");
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.deleteWithException(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+		IO.copy(new File("test/ws"), tmp);
+
+		Workspace workspace = Workspace.getWorkspace(tmp);
 		repo = new WorkspaceRepository(workspace);
+	}
+	
+	public void tearDown() throws Exception {
+		IO.deleteWithException(new File("tmp-ws"));
 	}
 	
 	public void testListNoFilter() throws Exception {
