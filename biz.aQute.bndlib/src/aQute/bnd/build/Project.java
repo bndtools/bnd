@@ -998,6 +998,9 @@ public class Project extends Processor {
 					case LOWEST :
 						provider = versions.firstKey();
 						break;
+					case EXACT :
+						// TODO need to handle exact better
+						break;
 				}
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);

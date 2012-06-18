@@ -741,7 +741,7 @@ public class NanoHTTPD {
 	}
 
 	private int					myTcpPort;
-	private final ServerSocket	myServerSocket;
+	final ServerSocket	myServerSocket;
 	private Thread				myThread;
 	private File				myRootDir;
 
@@ -939,7 +939,7 @@ public class NanoHTTPD {
 			theMimeTypes.put(st.nextToken(), st.nextToken());
 	}
 
-	private static int							theBufferSize	= 16 * 1024;
+	static int							theBufferSize	= 16 * 1024;
 
 	// Change this if you want to log to somewhere else than stdout
 	protected static PrintStream				myOut			= System.out;
@@ -947,7 +947,7 @@ public class NanoHTTPD {
 	/**
 	 * GMT date formatter
 	 */
-	private static java.text.SimpleDateFormat	gmtFrmt;
+	static java.text.SimpleDateFormat	gmtFrmt;
 	static {
 		gmtFrmt = new java.text.SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 		gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));

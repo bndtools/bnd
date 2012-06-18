@@ -189,6 +189,9 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 					return files[0];
 				case HIGHEST :
 					return files[files.length - 1];
+				case EXACT :
+					// TODO exact version handing
+					break;
 			}
 		}
 		return null;

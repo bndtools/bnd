@@ -313,6 +313,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					return files[0];
 				case HIGHEST :
 					return files[files.length - 1];
+				case EXACT :
+					// TODO
+					break;
 			}
 		}
 		return null;

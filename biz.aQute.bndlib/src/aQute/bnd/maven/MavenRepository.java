@@ -185,6 +185,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 					return files[0];
 				case HIGHEST :
 					return files[files.length - 1];
+				case EXACT :
+					// TODO exact
+					break;
 			}
 		}
 		return null;

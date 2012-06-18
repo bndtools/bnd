@@ -9,7 +9,7 @@ import aQute.lib.osgi.*;
 
 public class Container {
 	public enum TYPE {
-		REPO, PROJECT, PROJECT_BUNDLE, EXTERNAL, LIBRARY, ERROR
+		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
 	}
 
 	final File					file;
