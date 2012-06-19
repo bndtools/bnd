@@ -38,7 +38,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		repo.setReporter(reporter);
 
 		assertEquals(1, repo.getIndexLocations().size());
-		assertEquals(new File(outputDir, "index.xml.gz").toURI().toURL(), repo.getIndexLocations().get(0));
+		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations().get(0));
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());
 	}
@@ -53,9 +53,9 @@ public class TestLocalIndexedRepo extends TestCase {
 		repo.setReporter(reporter);
 
 		assertEquals(3, repo.getIndexLocations().size());
-		assertEquals(new File(outputDir, "index.xml.gz").toURI().toURL(), repo.getIndexLocations().get(0));
-		assertEquals(new URL("http://localhost:18081/index1.xml"), repo.getIndexLocations().get(1));
-		assertEquals(new URL("http://localhost:18081/index2.xml"), repo.getIndexLocations().get(2));
+		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations().get(0));
+		assertEquals(new URI("http://localhost:18081/index1.xml"), repo.getIndexLocations().get(1));
+		assertEquals(new URI("http://localhost:18081/index2.xml"), repo.getIndexLocations().get(2));
 
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());

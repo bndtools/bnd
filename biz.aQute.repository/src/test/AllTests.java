@@ -14,10 +14,14 @@ public class AllTests {
 		suite.addTestSuite(HttpConnectorTest.class);
 		suite.addTestSuite(OBRTest.class);
 		suite.addTestSuite(TestFixedIndexedRepo.class);
+		suite.addTestSuite(TestLocalIndexedRepo.class);
 		suite.addTestSuite(TestCompressedObrRepo.class);
 		suite.addTestSuite(TestLocalIndexGeneration.class);
 		suite.addTestSuite(TestLocalObrGeneration.class);
 		suite.addTestSuite(TestObrRepo.class);
+		suite.addTestSuite(TestMultipleLocalIndexGeneration.class);
+		suite.addTestSuite(TestObrRecognition.class);
+		suite.addTestSuite(TestR5Recognition.class);
 		// $JUnit-END$
 		return suite;
 	}
