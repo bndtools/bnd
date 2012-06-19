@@ -51,7 +51,7 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
                         decoration.addSuffix(" " + versions.toString());
                 }
             } else {
-                new ExportedPackageDecoratorJob(project, Plugin.getDefault().getLogger()).schedule();
+                ExportedPackageDecoratorJob.scheduleForProject(project, Plugin.getDefault().getLogger());
             }
         }
     }

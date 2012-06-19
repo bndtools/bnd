@@ -7,11 +7,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -31,19 +34,34 @@ import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.utils.SWTConcurrencyUtil;
 
-public class ExportedPackageDecoratorJob extends Job {
+public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule {
+
+    private static final ConcurrentMap<String,ExportedPackageDecoratorJob> instances = new ConcurrentHashMap<String,ExportedPackageDecoratorJob>();
 
     private final IProject project;
     private final ILogger logger;
 
-    public ExportedPackageDecoratorJob(IProject project, ILogger logger) {
-        super("Update exported packages");
+    public static void scheduleForProject(IProject project, ILogger logger) {
+        ExportedPackageDecoratorJob job = new ExportedPackageDecoratorJob(project, logger);
+
+        if (instances.putIfAbsent(project.getFullPath().toPortableString(), job) == null) {
+            job.schedule(1000);
+        }
+    }
+
+    ExportedPackageDecoratorJob(IProject project, ILogger logger) {
+        super("Update exported packages: " + project.getName());
+
         this.project = project;
         this.logger = logger;
+
+        setRule(this);
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
+        instances.remove(project.getFullPath().toPortableString());
+
         try {
             Project model = Workspace.getProject(project.getLocation().toFile());
             Collection< ? extends Builder> builders = model.getSubBuilders();
@@ -95,4 +113,13 @@ public class ExportedPackageDecoratorJob extends Job {
 
         return Status.OK_STATUS;
     }
+
+    public boolean contains(ISchedulingRule rule) {
+        return this == rule;
+    }
+
+    public boolean isConflicting(ISchedulingRule rule) {
+        return rule instanceof ExportedPackageDecoratorJob;
+    }
+
 }
