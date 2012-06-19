@@ -662,7 +662,7 @@ public class Analyzer extends Processor {
 		if (bndInfo == null) {
 			try {
 				bndInfo = new Properties();
-				URL url = getClass().getResource("bnd.info");
+				URL url = Analyzer.class.getResource("bnd.info");
 				if (url != null) {
 					InputStream in = url.openStream();
 					try {
