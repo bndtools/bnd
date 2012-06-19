@@ -66,9 +66,8 @@ public class TestSAXFilters extends TestCase {
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE5.getBytes())));
 		merger.closeRootAndDocument();
 
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?><root><a/><a/></root>";
-		assertEquals(expected, output.toString().replaceAll("\\r\\n|\\n\\r|\\n|\\r", "\n"));
-
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>!<root><a/><a/></root>";
+		assertEquals(expected, output.toString().replaceAll("\\r?\\n", "!"));
 	}
 
 	public void testSelectionFilter() throws Exception {
