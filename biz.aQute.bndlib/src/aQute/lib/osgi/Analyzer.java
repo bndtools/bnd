@@ -139,7 +139,7 @@ public class Analyzer extends Processor {
 				for (String dir : current.getDirectories().keySet()) {
 					PackageRef packageRef = getPackageRef(dir);
 					Resource resource = current.getResource(dir + "/packageinfo");
-					setPackageInfo(packageRef, resource, classpathExports);
+					getExportVersionsFromPackageInfo(packageRef, resource, classpathExports);
 				}
 			}
 
@@ -1357,38 +1357,43 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	void setPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports) throws Exception {
+	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports) throws Exception {
 		if (r == null)
 			return;
 
 		Properties p = new Properties();
-		InputStream in = r.openInputStream();
 		try {
-			p.load(in);
-		}
-		finally {
-			in.close();
-		}
-		Attrs map = classpathExports.get(packageRef);
-		if (map == null) {
-			classpathExports.put(packageRef, map = new Attrs());
-		}
-		for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
-			String key = t.nextElement();
-			String value = map.get(key);
-			if (value == null) {
-				value = p.getProperty(key);
-
-				// Messy, to allow directives we need to
-				// allow the value to start with a ':' since we cannot
-				// encode this in a property name
-
-				if (value.startsWith(":")) {
-					key = key + ":";
-					value = value.substring(1);
-				}
-				map.put(key, value);
+			InputStream in = r.openInputStream();
+			try {
+				p.load(in);
 			}
+			finally {
+				in.close();
+			}
+			Attrs map = classpathExports.get(packageRef);
+			if (map == null) {
+				classpathExports.put(packageRef, map = new Attrs());
+			}
+			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+				String key = t.nextElement();
+				String value = map.get(key);
+				if (value == null) {
+					value = p.getProperty(key);
+
+					// Messy, to allow directives we need to
+					// allow the value to start with a ':' since we cannot
+					// encode this in a property name
+
+					if (value.startsWith(":")) {
+						key = key + ":";
+						value = value.substring(1);
+					}
+					map.put(key, value);
+				}
+			}
+		}
+		catch (Exception e) {
+			msgs.NoSuchFile_(r);
 		}
 	}
 
@@ -1640,7 +1645,7 @@ public class Analyzer extends Processor {
 						// to overlap
 						if (!packageRef.isMetaData()) {
 							Resource pinfo = jar.getResource(prefix + packageRef.getPath() + "/packageinfo");
-							setPackageInfo(packageRef, pinfo, classpathExports);
+							getExportVersionsFromPackageInfo(packageRef, pinfo, classpathExports);
 						}
 					}
 				}
@@ -1689,7 +1694,7 @@ public class Analyzer extends Processor {
 							contained.put(packageRef);
 							if (!packageRef.isMetaData()) {
 								Resource pinfo = jar.getResource(prefix + packageRef.getPath() + "/packageinfo");
-								setPackageInfo(packageRef, pinfo, classpathExports);
+								getExportVersionsFromPackageInfo(packageRef, pinfo, classpathExports);
 							}
 						}
 						if (info != null)
