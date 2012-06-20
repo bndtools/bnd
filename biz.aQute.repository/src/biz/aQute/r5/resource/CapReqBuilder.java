@@ -26,6 +26,10 @@ public class CapReqBuilder {
 		this.namespace = namespace;
 	}
 	
+	public String getNamespace() {
+		return namespace;
+	}
+	
 	public CapReqBuilder setResource(Resource resource) {
 		this.resource = resource;
 		return this;

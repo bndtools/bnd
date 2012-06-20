@@ -2,7 +2,7 @@
 <?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
 
 <repository lastmodified='20110425120125.066' name='Untitled'>
-  <resource id='name.njbartlett.osgi.emf.minimal/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='file:bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar' version='2.7.0.201104130744'>
+  <resource id='name.njbartlett.osgi.emf.minimal/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar' version='2.7.0.201104130744'>
     <size>
       2005961
     </size>
@@ -143,7 +143,7 @@
       Import package org.xml.sax.helpers
     </require>
   </resource>
-  <resource id='name.njbartlett.osgi.emf.minimal/2.6.1.v20100914-1218' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='file:bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar' version='2.6.1.v20100914-1218'>
+  <resource id='name.njbartlett.osgi.emf.minimal/2.6.1.v20100914-1218' presentationname='name.njbartlett.osgi.emf.minimal' symbolicname='name.njbartlett.osgi.emf.minimal' uri='bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar' version='2.6.1.v20100914-1218'>
     <size>
       2029922
     </size>
@@ -284,7 +284,7 @@
       Import package org.xml.sax.helpers
     </require>
   </resource>
-  <resource id='name.njbartlett.osgi.emf.xmi/2.5.0.v20100521-1846' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='file:bundles/name.njbartlett.osgi.emf.xmi-2.5.0.jar' version='2.5.0.v20100521-1846'>
+  <resource id='name.njbartlett.osgi.emf.xmi/2.5.0.v20100521-1846' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='bundles/name.njbartlett.osgi.emf.xmi-2.5.0.jar' version='2.5.0.v20100521-1846'>
     <size>
       357938
     </size>
@@ -364,7 +364,7 @@
       Import package org.xml.sax.helpers
     </require>
   </resource>
-  <resource id='name.njbartlett.osgi.emf.xmi/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='file:bundles/name.njbartlett.osgi.emf.xmi-2.7.0.jar' version='2.7.0.201104130744'>
+  <resource id='name.njbartlett.osgi.emf.xmi/2.7.0.201104130744' presentationname='name.njbartlett.osgi.emf.xmi' symbolicname='name.njbartlett.osgi.emf.xmi' uri='bundles/name.njbartlett.osgi.emf.xmi-2.7.0.jar' version='2.7.0.201104130744'>
     <size>
       362154
     </size>
@@ -444,7 +444,7 @@
       Import package org.xml.sax.helpers
     </require>
   </resource>
-  <resource id='org.apache.felix.shell/1.4.2' presentationname='Apache Felix Shell Service' symbolicname='org.apache.felix.shell' uri='file:bundles/org.apache.felix.shell-1.4.2.jar' version='1.4.2'>
+  <resource id='org.apache.felix.shell/1.4.2' presentationname='Apache Felix Shell Service' symbolicname='org.apache.felix.shell' uri='bundles/org.apache.felix.shell-1.4.2.jar' version='1.4.2'>
     <description>
       A simple OSGi command shell service.
     </description>
@@ -509,7 +509,7 @@
       Import package org.ungoverned.osgi.service.shell ;version=1.0.0
     </require>
   </resource>
-  <resource id='org.apache.felix.shell.tui/1.4.1' presentationname='Apache Felix Shell TUI' symbolicname='org.apache.felix.shell.tui' uri='file:bundles/org.apache.felix.shell.tui-1.4.1.jar' version='1.4.1'>
+  <resource id='org.apache.felix.shell.tui/1.4.1' presentationname='Apache Felix Shell TUI' symbolicname='org.apache.felix.shell.tui' uri='bundles/org.apache.felix.shell.tui-1.4.1.jar' version='1.4.1'>
     <description>
       A simple textual user interface for Felix' shell service.
     </description>

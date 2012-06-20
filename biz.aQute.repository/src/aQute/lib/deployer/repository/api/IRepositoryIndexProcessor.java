@@ -4,20 +4,17 @@ import java.net.URI;
 
 import org.osgi.resource.Resource;
 
-public interface IRepositoryListener {
+public interface IRepositoryIndexProcessor {
 
 	/**
 	 * Process an OBR resource descriptor from the index document, and possibly
 	 * request early termination of the parser.
 	 * 
 	 * @param resource
-	 *            The resource to be processed.
-	 * @param baseUri
-	 *            The base URI of the repository. Where Resources contain
-	 *            relative content URIs, those URIs are to be resolved relative
-	 *            to this base URI.
+	 *            The resource to be processed. The content URI of the resource
+	 *            must be a resolved, absolute URI.
 	 */
-	void processResource(Resource resource, URI baseUri);
+	void processResource(Resource resource);
 
 	/**
 	 * Process an OBR referral

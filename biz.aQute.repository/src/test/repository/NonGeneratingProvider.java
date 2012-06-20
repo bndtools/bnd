@@ -15,7 +15,7 @@ class NonGeneratingProvider implements IRepositoryContentProvider {
 		return "Nongenerating";
 	}
 
-	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryIndexProcessor listener, LogService log)
 			throws Exception {}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {

@@ -21,9 +21,9 @@ public interface IRepositoryContentProvider {
 	 * @param stream
 	 *            The stream that provides the index data.
 	 * @param baseUri
-	 * @param listener
+	 * @param processor
 	 */
-	void parseIndex(InputStream stream, URI baseUri, IRepositoryListener listener, LogService log) throws Exception;
+	void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor processor, LogService log) throws Exception;
 
 	/**
 	 * <p>

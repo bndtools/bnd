@@ -27,7 +27,7 @@ import aQute.libg.reporter.*;
  * 
  * @author njbartlett
  */
-public class CachingURLResourceHandle implements ResourceHandle {
+public class CachingUriResourceHandle implements ResourceHandle {
 
 	public static enum CachingMode {
 		/**
@@ -44,7 +44,9 @@ public class CachingURLResourceHandle implements ResourceHandle {
 
 	static final String FILE_SCHEME = "file";
 	static final String	FILE_PREFIX	= FILE_SCHEME + ":";
-	static final String	HTTP_SCHEME	= "http:";
+	
+	static final String HTTP_SCHEME = "http";
+	static final String	HTTP_PREFIX	= HTTP_SCHEME + ":";
 	static final String	UTF_8		= "UTF-8";
 
 	final File			cacheDir;
@@ -67,13 +69,32 @@ public class CachingURLResourceHandle implements ResourceHandle {
 
 	Reporter			reporter;
 
-	public CachingURLResourceHandle(String url, URI baseUrl, final File cacheDir, CachingMode mode)
-			throws IOException {
-		this(url, baseUrl, cacheDir, new DefaultURLConnector(), mode);
+	public CachingUriResourceHandle(URI uri, File cacheDir, CachingMode mode) throws IOException {
+		this(uri, cacheDir, new DefaultURLConnector(), mode);
+	}
+	
+	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, CachingMode mode) throws IOException {
+		this.cacheDir = cacheDir;
+		this.connector = connector;
+		this.mode = mode;
+
+		if (!uri.isAbsolute())
+			throw new IllegalArgumentException("Relative URIs are not permitted.");
+		
+		if (FILE_SCHEME.equals(uri.getScheme())) {
+			this.localFile = new File(uri.getPath());
+			this.url = uri.toURL();
+			this.cachedFile = null;
+			this.etagFile = null;
+		} else {
+			this.url = uri.toURL();
+			this.localFile = null;
+			this.cachedFile = mapRemoteURL(url);
+			this.etagFile = mapETag(cachedFile);
+		}
 	}
 
-	public CachingURLResourceHandle(String url, URI baseUrl, final File cacheDir, URLConnector connector,
-			CachingMode mode) throws IOException {
+	public CachingUriResourceHandle(String url, URI baseUrl, final File cacheDir, URLConnector connector, CachingMode mode) throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
 		this.mode = mode;
@@ -94,7 +115,7 @@ public class CachingURLResourceHandle implements ResourceHandle {
 				throw new FileNotFoundException("File URL " + this.url + " points at a non-existing file.");
 			this.cachedFile = null;
 			this.etagFile = null;
-		} else if (url.startsWith(HTTP_SCHEME)) {
+		} else if (url.startsWith(HTTP_PREFIX)) {
 			// HTTP URLs must be absolute
 			this.url = new URL(url);
 			this.localFile = null;
@@ -294,10 +315,6 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			if (reporter != null)
 				reporter.error("Failed to save ETag file %s (%s)", etagFile, e.getMessage());
 		}
-	}
-
-	public URL getResolvedUrl() {
-		return url;
 	}
 
 }

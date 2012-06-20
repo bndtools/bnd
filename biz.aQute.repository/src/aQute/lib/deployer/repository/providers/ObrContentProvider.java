@@ -5,6 +5,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import javax.xml.stream.*;
@@ -62,7 +63,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return INDEX_NAME;
 	}
 
-	public void parseIndex(InputStream stream, URI baseUri, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 			throws Exception {
 		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
@@ -91,7 +92,8 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 						String bsn = reader.getAttributeValue(null, ATTR_RESOURCE_SYMBOLIC_NAME);
 						String version = reader.getAttributeValue(null, ATTR_RESOURCE_VERSION);
 						String uri = reader.getAttributeValue(null, ATTR_RESOURCE_URI);
-						addBasicCapabilities(resourceBuilder, bsn, version, uri);
+						URI resolvedUri = resolveUri(uri, baseUri);
+						addBasicCapabilities(resourceBuilder, bsn, version, resolvedUri);
 					}
 					break;
 				case END_ELEMENT:
@@ -99,22 +101,34 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 					if (TAG_RESOURCE.equals(localName)) {
 						if (resourceBuilder != null) {
 							Resource resource = resourceBuilder.build();
-							listener.processResource(resource, baseUri);
+							listener.processResource(resource);
 						}
 					}
 			}
 		}
 	}
+	
+	private URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
+		URI resolved;
+		
+		URI resourceUri = new URI(uriStr);
+		if (resourceUri.isAbsolute())
+			resolved = resourceUri;
+		else
+			resolved = baseUri.resolve(resourceUri);
+		
+		return resolved;
+	}
 
-	private void addBasicCapabilities(ResourceBuilder builder, String bsn, String version, String uri) {
+	private void addBasicCapabilities(ResourceBuilder builder, String bsn, String version, URI resolvedUri) {
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)
 			.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 		
 		CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, "<unknown>")
-			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri);
+			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, "DUMMY")
+			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, resolvedUri);
 		
 		CapReqBuilder bundle = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE)
 			.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn)

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +23,12 @@ import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.BIndex2;
 import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.service.Registry;
 import aQute.lib.deployer.repository.api.CheckResult;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryListener;
+import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.lib.deployer.repository.api.Referral;
 import biz.aQute.r5.resource.CapReqBuilder;
 import biz.aQute.r5.resource.ResourceBuilder;
@@ -143,7 +145,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		}
 	}
 
-	public void parseIndex(InputStream stream, URI baseUri, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 			throws Exception {
 		XMLStreamReader reader = null;
 		try {
@@ -179,8 +181,16 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							String name = reader.getAttributeValue(null, ATTR_NAME);
 							String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
 							String typeAttr = reader.getAttributeValue(null, ATTR_TYPE);
-							if (capReqBuilder != null)
-								capReqBuilder.addAttribute(name, convertAttribute(valueStr, typeAttr));
+							if (capReqBuilder != null) {
+								// If the attribute is 'url' on the osgi.content namespace then resolve it relative to the base URI.
+								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace()) && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
+									URI resolvedUri = resolveUri(valueStr, baseUri);
+									capReqBuilder.addAttribute(name, resolvedUri);
+								} else {
+									Object convertedAttr = convertAttribute(valueStr, typeAttr);
+									capReqBuilder.addAttribute(name, convertedAttr);
+								}
+							}
 						} else if (TAG_DIRECTIVE.equals(localName)) {
 							String name = reader.getAttributeValue(null, ATTR_NAME);
 							String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
@@ -201,7 +211,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 						} else if (TAG_RESOURCE.equals(localName)) {
 							if (resourceBuilder != null) {
 								Resource resource = resourceBuilder.build();
-								listener.processResource(resource, baseUri);
+								listener.processResource(resource);
 								resourceBuilder = null;
 							}
 						}
@@ -217,6 +227,18 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 				catch (Exception e) {}
 			}
 		}
+	}
+
+	private URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
+		URI resolved;
+		
+		URI resourceUri = new URI(uriStr);
+		if (resourceUri.isAbsolute())
+			resolved = resourceUri;
+		else
+			resolved = baseUri.resolve(resourceUri);
+		
+		return resolved;
 	}
 
 	private static int parseInt(String value) {

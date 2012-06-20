@@ -13,7 +13,7 @@ import aQute.bnd.service.Registry;
 import aQute.lib.deployer.repository.api.CheckResult;
 import aQute.lib.deployer.repository.api.Decision;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryListener;
+import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
 
 class FailingGeneratingProvider implements IRepositoryContentProvider {
 
@@ -21,7 +21,7 @@ class FailingGeneratingProvider implements IRepositoryContentProvider {
 		return "Fail";
 	}
 
-	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryIndexProcessor listener, LogService log)
 			throws Exception {}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
