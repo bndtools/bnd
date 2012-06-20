@@ -18,7 +18,6 @@ import biz.aQute.r5.resource.CapReqBuilder;
 public class FindProvidersTest extends TestCase {
 
 	public void testPackageQuery() throws Exception {
-		/* TODO: disabled for now
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
@@ -32,9 +31,9 @@ public class FindProvidersTest extends TestCase {
 		Collection<Capability> caps = result.get(req);
 		Capability[] capsArray = new Capability[1];
 		capsArray = caps.toArray(capsArray );
-		Capability identityCap = capsArray[0].getResource().getCapabilities("osgi.wiring.package").get(0);
+		Capability identityCap = capsArray[0].getResource().getCapabilities("osgi.identity").get(0);
 		Object identityAttrValue = identityCap.getAttributes().get("osgi.identity");
-		assertEquals("org.example.c", identityAttrValue);
-		*/
+		assertEquals("dummybundle", identityAttrValue);
 	}
+
 }

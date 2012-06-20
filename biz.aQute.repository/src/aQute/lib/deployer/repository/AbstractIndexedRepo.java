@@ -98,9 +98,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private boolean												initialised						= false;
 
-	private final Map<String,Collection<Capability>>				capabilityMap					= new HashMap<String,Collection<Capability>>();
+	private final CapabilityIndex							capabilityIndex					= new CapabilityIndex();
 	private final Map<String,SortedMap<Version,Resource>>	bsnMap							= new HashMap<String,SortedMap<Version,Resource>>();
-	
+
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
 		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
@@ -114,6 +114,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private synchronized void clear() {
 		bsnMap.clear();
+		capabilityIndex.clear();
 	}
 
 	protected abstract List<URI> loadIndexes() throws Exception;
@@ -366,8 +367,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			throw new RuntimeException(e);
 		}
 		
-		// TODO Auto-generated method stub
-		return null;
+		Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
+		for (Requirement requirement : requirements) {
+			List<Capability> matches = new LinkedList<Capability>();
+			result.put(requirement, matches);
+
+			capabilityIndex.appendMatchingCapabilities(requirement, matches);
+		}
+		return result;
 	}
 
 	void addResourceToIndex(Resource resource) {
@@ -384,8 +391,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 		versionMap.put(version, resource);
 		
-		// Add capabilities to the capability map
-		
+		// Add capabilities to the capability index
+		capabilityIndex.addResource(resource);
 	}
 	
 	Capability getIdentityCapability(Resource resource) {
