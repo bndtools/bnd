@@ -1,29 +1,64 @@
 package aQute.lib.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 
-import org.osgi.service.log.*;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.IndexProvider;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RemoteRepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
+import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.service.url.*;
-import aQute.lib.deployer.http.*;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.deployer.http.DefaultURLConnector;
 import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
-import aQute.lib.deployer.repository.api.*;
-import aQute.lib.deployer.repository.providers.*;
-import aQute.lib.filter.*;
-import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.generics.*;
-import aQute.libg.gzip.*;
-import aQute.libg.reporter.*;
-import aQute.libg.version.*;
+import aQute.lib.deployer.repository.api.CheckResult;
+import aQute.lib.deployer.repository.api.Decision;
+import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
+import aQute.lib.deployer.repository.api.IRepositoryListener;
+import aQute.lib.deployer.repository.api.Referral;
+import aQute.lib.deployer.repository.providers.ObrContentProvider;
+import aQute.lib.deployer.repository.providers.R5RepoContentProvider;
+import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
+import aQute.lib.osgi.Jar;
+import aQute.libg.generics.Create;
+import aQute.libg.gzip.GZipUtils;
+import aQute.libg.reporter.Reporter;
+import aQute.libg.version.Version;
+import aQute.libg.version.VersionRange;
 
 /**
  * Abstract base class for indexed repositories.
@@ -64,17 +99,33 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private boolean												initialised						= false;
 
-	private final Map<String,SortedMap<Version,BaseResource>>	bsnMap							= new HashMap<String,SortedMap<Version,BaseResource>>();
+	private static class LocatedResource {
+
+		private final Resource	resource;
+		private final URI	baseUri;
+
+		LocatedResource(Resource resource, URI baseUri) {
+			this.resource = resource;
+			this.baseUri = baseUri;
+		}
+		
+		public URI getBaseUri() {
+			return baseUri;
+		}
+		
+		public Resource getResource() {
+			return resource;
+		}
+		
+	}
+
+	private final Map<String,SortedMap<Version,LocatedResource>>	bsnMap							= new HashMap<String,SortedMap<Version,LocatedResource>>();
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
 		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
 
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
-	}
-
-	protected void addResourceToIndex(BaseResource resource) {
-		addBundleSymbolicNameToIndex(resource);
 	}
 
 	public synchronized void reset() {
@@ -142,32 +193,29 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			final URLConnector connector = getConnector();
 			IRepositoryListener listener = new IRepositoryListener() {
 
-				public void processResource(BaseResource resource) {
-					addResourceToIndex(resource);
+				public void processResource(Resource resource, URI baseUri) {
+					addResourceToIndex(new LocatedResource(resource, baseUri));
 				}
 
-				public void processReferral(String fromUrl, Referral referral, int maxDepth, int currentDepth) {
+				public void processReferral(URI parentUri, Referral referral, int maxDepth, int currentDepth) {
 					try {
-						URL indexLocation = new URL(referral.getUrl());
+						URI indexLocation = new URI(referral.getUrl());
 						try {
 							CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(
-									indexLocation.toExternalForm(), null, getCacheDirectory(), connector,
+									indexLocation.toString(), null, getCacheDirectory(), connector,
 									CachingMode.PreferRemote);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getFile(), indexLocation.toString(), new FileInputStream(
-									indexHandle.request()), this);
+							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), this);
 						}
 						catch (Exception e) {
 							if (reporter != null)
-								reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s",
-										indexLocation, fromUrl, e);
+								reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
 						}
 
 					}
-					catch (MalformedURLException e) {
+					catch (URISyntaxException e) {
 						if (reporter != null)
-							reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(),
-									fromUrl, e);
+							reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri, e);
 					}
 				}
 
@@ -175,18 +223,16 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 			// Parse the indexes
 			for (URI indexLocation : indexLocations) {
-				URL indexLocationURL = indexLocation.toURL();
-				String indexLocationURLExt = indexLocationURL.toExternalForm();
 				try {
-					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocationURLExt, null, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					CachingURLResourceHandle indexHandle = new CachingURLResourceHandle(indexLocation.toString(), null, getCacheDirectory(), connector, CachingMode.PreferRemote);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexFile.getName(), indexLocationURLExt, indexStream, listener);
+					readIndex(indexFile.getName(), indexLocation, indexStream, listener);
 				}
 				catch (Exception e) {
 					if (reporter != null)
-						reporter.error("Unable to read index at URL '%s': %s", indexLocationURL, e);
+						reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
 
@@ -265,10 +311,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if ("project".equals(rangeStr))
 			return null;
 
-		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
+		SortedMap<Version,LocatedResource> versionMap = bsnMap.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
-		List<BaseResource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
+		List<LocatedResource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
 		List<ResourceHandle> handles = mapResourcesToHandles(resources);
 
 		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
@@ -319,7 +365,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	public List<Version> versions(String bsn) throws Exception {
 		init();
-		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
+		SortedMap<Version,LocatedResource> versionMap = bsnMap.get(bsn);
 		List<Version> list;
 		if (versionMap != null) {
 			list = new ArrayList<Version>(versionMap.size());
@@ -334,25 +380,49 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return name;
 	}
 
-	void addBundleSymbolicNameToIndex(BaseResource resource) {
-		String bsn = resource.getIdentity();
-		Version version;
-		String versionStr = resource.getVersion();
-		try {
-			version = new Version(versionStr);
-		}
-		catch (Exception e) {
-			version = new Version("0.0.0");
-		}
-		SortedMap<Version,BaseResource> versionMap = bsnMap.get(bsn);
+	void addResourceToIndex(LocatedResource resource) {
+		String id = getResourceIdentity(resource.getResource());
+		if (id == null)
+			return;
+		
+		Version version = getResourceVersion(resource.getResource());
+		SortedMap<Version,LocatedResource> versionMap = bsnMap.get(id);
 		if (versionMap == null) {
-			versionMap = new TreeMap<Version,BaseResource>();
-			bsnMap.put(bsn, versionMap);
+			versionMap = new TreeMap<Version,LocatedResource>();
+			bsnMap.put(id, versionMap);
 		}
 		versionMap.put(version, resource);
 	}
+	
+	Capability getIdentityCapability(Resource resource) {
+		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (identityCaps == null || identityCaps.isEmpty())
+			throw new IllegalArgumentException("Resource has no identity capability.");
+		return identityCaps.iterator().next();
+	}
+	
+	String getResourceIdentity(Resource resource) {
+		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+	}
 
-	private void readIndex(String name, String baseUrl, InputStream stream, IRepositoryListener listener)
+	Version getResourceVersion(Resource resource) {
+		try {
+			return Version.parseVersion((String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE));
+		}
+		catch (IllegalArgumentException e) {
+			return Version.emptyVersion;
+		}
+	}
+	
+	String getContentUrl(Resource resource) {
+		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
+		if (caps == null || caps.isEmpty())
+			throw new IllegalArgumentException("Resource has no content capability");
+
+		return (String) caps.iterator().next().getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+	}
+
+	private void readIndex(String name, URI baseUri, InputStream stream, IRepositoryListener listener)
 			throws Exception {
 		// Make sure we have a buffering stream
 		InputStream bufferedStream;
@@ -383,7 +453,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				if (reporter != null)
 					reporter.warning(
 							"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
-							provider.getName(), baseUrl, checkResult.getMessage());
+							provider.getName(), baseUri, checkResult.getMessage());
 				if (maybeSelectedProvider == null)
 					maybeSelectedProvider = provider;
 			}
@@ -405,20 +475,20 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		// Finally, parse the damn file.
 		try {
-			selectedProvider.parseIndex(bufferedStream, baseUrl, listener, logService);
+			selectedProvider.parseIndex(bufferedStream, baseUri, listener, logService);
 		}
 		finally {
 			IO.close(bufferedStream);
 		}
 	}
 
-	List<BaseResource> narrowVersionsByFilter(String pkgName, SortedMap<Version,BaseResource> versionMap, Filter filter) {
-		List<BaseResource> result = new ArrayList<BaseResource>(versionMap.size());
+	List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
+		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
 		Dictionary<String,String> dict = new Hashtable<String,String>();
 		dict.put("package", pkgName);
 
-		for (Entry<Version,BaseResource> entry : versionMap.entrySet()) {
+		for (Entry<Version,Resource> entry : versionMap.entrySet()) {
 			dict.put("version", entry.getKey().toString());
 			if (filter.match(dict))
 				result.add(entry.getValue());
@@ -427,11 +497,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	List<BaseResource> narrowVersionsByVersionRange(SortedMap<Version,BaseResource> versionMap, String rangeStr) {
-		List<BaseResource> result;
+	List<LocatedResource> narrowVersionsByVersionRange(SortedMap<Version,LocatedResource> versionMap, String rangeStr) {
+		List<LocatedResource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
-			result = Create.list(new BaseResource[] {
+			result = Create.list(new LocatedResource[] {
 				versionMap.get(highest)
 			});
 		} else {
@@ -441,8 +511,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			if (range != null && range.getLow() != null)
 				versionMap = versionMap.tailMap(range.getLow());
 
-			result = new ArrayList<BaseResource>(versionMap.size());
-			for (Entry<Version,BaseResource> entry : versionMap.entrySet()) {
+			result = new ArrayList<LocatedResource>(versionMap.size());
+			for (Entry<Version,LocatedResource> entry : versionMap.entrySet()) {
 				Version version = entry.getKey();
 				if (range == null || range.includes(version))
 					result.add(entry.getValue());
@@ -455,10 +525,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	List<ResourceHandle> mapResourcesToHandles(Collection<BaseResource> resources) throws Exception {
+	List<ResourceHandle> mapResourcesToHandles(Collection<LocatedResource> resources) throws Exception {
 		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
 
-		for (BaseResource resource : resources) {
+		for (LocatedResource resource : resources) {
 			ResourceHandle handle = mapResourceToHandle(resource);
 			if (handle != null)
 				result.add(handle);
@@ -467,13 +537,12 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	ResourceHandle mapResourceToHandle(BaseResource resource) throws Exception {
+	ResourceHandle mapResourceToHandle(LocatedResource resource) throws Exception {
 		ResourceHandle result = null;
 
 		CachingURLResourceHandle handle;
 		try {
-			handle = new CachingURLResourceHandle(resource.getContentUrl(), resource.getBaseUrl(), getCacheDirectory(),
-					getConnector(), CachingMode.PreferCache);
+			handle = new CachingURLResourceHandle(getContentUrl(resource.getResource()), resource.getBaseUri(), getCacheDirectory(), getConnector(), CachingMode.PreferCache);
 		}
 		catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
@@ -521,14 +590,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return builder.toString();
 	}
 
-	ResourceHandle findExactMatch(String identity, String version,
-			Map<String,SortedMap<Version,BaseResource>> resourceMap) throws Exception {
-		BaseResource resource;
+	ResourceHandle findExactMatch(String identity, String version, Map<String,SortedMap<Version,LocatedResource>> resourceMap) throws Exception {
+		LocatedResource resource;
 		VersionRange range = new VersionRange(version);
 		if (range.isRange())
 			return null;
 
-		SortedMap<Version,BaseResource> versions = resourceMap.get(identity);
+		SortedMap<Version,LocatedResource> versions = resourceMap.get(identity);
 		if (versions == null)
 			return null;
 
@@ -539,13 +607,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return mapResourceToHandle(resource);
 	}
 
-	BaseResource findVersion(Version version, SortedMap<Version,BaseResource> versions) {
+	LocatedResource findVersion(Version version, SortedMap<Version,LocatedResource> versions) {
 		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
 			return versions.get(version);
 		}
 
-		BaseResource latest = null;
-		for (Map.Entry<Version,BaseResource> entry : versions.entrySet()) {
+		LocatedResource latest = null;
+		for (Map.Entry<Version,LocatedResource> entry : versions.entrySet()) {
 			if (version.getMicro() == entry.getKey().getMicro() && version.getMinor() == entry.getKey().getMinor()
 					&& version.getMajor() == entry.getKey().getMajor()) {
 				latest = entry.getValue();

@@ -1,6 +1,7 @@
 package test.repository;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 
 import org.osgi.service.log.*;
@@ -14,7 +15,7 @@ class NonGeneratingProvider implements IRepositoryContentProvider {
 		return "Nongenerating";
 	}
 
-	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryListener listener, LogService log)
 			throws Exception {}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
@@ -25,7 +26,7 @@ class NonGeneratingProvider implements IRepositoryContentProvider {
 		return false;
 	}
 
-	public void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty,
+	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUrl, boolean pretty,
 			Registry registry, LogService log) throws Exception {
 		throw new UnsupportedOperationException("I told you I don't support this!");
 	}

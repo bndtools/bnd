@@ -1,6 +1,7 @@
 package aQute.lib.deployer.repository.api;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 
 import org.osgi.service.log.*;
@@ -19,10 +20,10 @@ public interface IRepositoryContentProvider {
 	 * 
 	 * @param stream
 	 *            The stream that provides the index data.
-	 * @param baseUrl
+	 * @param baseUri
 	 * @param listener
 	 */
-	void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log) throws Exception;
+	void parseIndex(InputStream stream, URI baseUri, IRepositoryListener listener, LogService log) throws Exception;
 
 	/**
 	 * <p>
@@ -60,8 +61,8 @@ public interface IRepositoryContentProvider {
 	 * @param repoName
 	 *            The name of the repository, which may be entered into the
 	 *            generated index.
-	 * @param rootUrl
-	 *            The root URL of the repository.
+	 * @param rootUri
+	 *            The URI of the repository.
 	 * @param pretty
 	 *            Hint to request "pretty printing", i.e. uncompressed, indented
 	 *            output.
@@ -73,7 +74,7 @@ public interface IRepositoryContentProvider {
 	 * @throws Exception
 	 *             If any other error unrecoverable occurs.
 	 */
-	void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty,
+	void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUri, boolean pretty,
 			Registry registry, LogService log) throws Exception;
 
 	/**

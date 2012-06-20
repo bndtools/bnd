@@ -42,7 +42,8 @@ public class CachingURLResourceHandle implements ResourceHandle {
 		PreferRemote;
 	}
 
-	static final String	FILE_SCHEME	= "file:";
+	static final String FILE_SCHEME = "file";
+	static final String	FILE_PREFIX	= FILE_SCHEME + ":";
 	static final String	HTTP_SCHEME	= "http:";
 	static final String	UTF_8		= "UTF-8";
 
@@ -66,27 +67,27 @@ public class CachingURLResourceHandle implements ResourceHandle {
 
 	Reporter			reporter;
 
-	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, CachingMode mode)
+	public CachingURLResourceHandle(String url, URI baseUrl, final File cacheDir, CachingMode mode)
 			throws IOException {
 		this(url, baseUrl, cacheDir, new DefaultURLConnector(), mode);
 	}
 
-	public CachingURLResourceHandle(String url, String baseUrl, final File cacheDir, URLConnector connector,
+	public CachingURLResourceHandle(String url, URI baseUrl, final File cacheDir, URLConnector connector,
 			CachingMode mode) throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
 		this.mode = mode;
 
-		if (url.startsWith(FILE_SCHEME)) {
+		if (url.startsWith(FILE_PREFIX)) {
 			// File URL may be relative or absolute
-			File file = new File(url.substring(FILE_SCHEME.length()));
+			File file = new File(url.substring(FILE_PREFIX.length()));
 			if (file.isAbsolute()) {
 				this.localFile = file;
 			} else {
-				if (baseUrl == null || !baseUrl.startsWith(FILE_SCHEME))
+				if (baseUrl == null || !FILE_SCHEME.equals(baseUrl.getScheme()))
 					throw new IllegalArgumentException(
 							"Relative file URLs cannot be resolved if the base URL is a non-file URL.");
-				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), file.toString());
+				this.localFile = resolveFile(baseUrl.getPath(), file.toString());
 			}
 			this.url = localFile.toURI().toURL();
 			if (!localFile.isFile() && !localFile.isDirectory())
@@ -107,13 +108,13 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			this.etagFile = mapETag(cachedFile);
 		} else {
 			// A path with no scheme means resolve relative to the base URL
-			if (baseUrl.startsWith(FILE_SCHEME)) {
-				this.localFile = resolveFile(baseUrl.substring(FILE_SCHEME.length()), url);
+			if (FILE_SCHEME.equals(baseUrl.getScheme())) {
+				this.localFile = resolveFile(baseUrl.getPath(), url);
 				this.url = localFile.toURI().toURL();
 				this.cachedFile = null;
 				this.etagFile = null;
 			} else {
-				URL base = new URL(baseUrl);
+				URL base = baseUrl.toURL();
 				this.url = new URL(base, url);
 				this.localFile = null;
 				this.cachedFile = mapRemoteURL(this.url);
@@ -121,7 +122,7 @@ public class CachingURLResourceHandle implements ResourceHandle {
 			}
 		}
 	}
-
+	
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}

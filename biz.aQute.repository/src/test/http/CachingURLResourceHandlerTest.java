@@ -1,6 +1,7 @@
 package test.http;
 
 import java.io.*;
+import java.net.URI;
 
 import junit.framework.*;
 import test.lib.*;
@@ -14,14 +15,14 @@ public class CachingURLResourceHandlerTest extends TestCase {
 
 	File						currentDir		= new File(System.getProperty("user.dir"));
 
-	public void testResolveAbsolute() throws IOException {
+	public void testResolveAbsolute() throws Exception {
 		CachingURLResourceHandle handle;
 
 		File testFile = new File(currentDir, "bnd.bnd").getAbsoluteFile();
 		String testUrl = testFile.toURI().toURL().toExternalForm();
 
 		// Ignore base
-		handle = new CachingURLResourceHandle(testUrl, "http://ignored", null, CachingMode.PreferCache);
+		handle = new CachingURLResourceHandle(testUrl, new URI("http://ignored"), null, CachingMode.PreferCache);
 		assertEquals(testUrl, handle.getResolvedUrl().toExternalForm());
 
 		// Base may be null
@@ -31,7 +32,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 
 	public void testLoadFromCache() throws Exception {
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/1"), CachingMode.PreferRemote);
 		File result = handle.request();
 
@@ -43,7 +44,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 
 	public void testFailedLoadFromRemote() throws Exception {
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/2"), CachingMode.PreferRemote);
 
 		try {
@@ -57,7 +58,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 
 	public void testLoadFromRemote() throws Exception {
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/3"), CachingMode.PreferRemote);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
@@ -84,7 +85,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		long cacheTimestamp = cached.lastModified();
 
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/4"), CachingMode.PreferRemote);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
@@ -107,7 +108,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		IO.copy(IO.stream("00000000"), etagFile);
 
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/5"), CachingMode.PreferRemote);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
@@ -131,7 +132,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		etagFile.delete();
 
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/6"), CachingMode.PreferCache);
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
@@ -149,7 +150,7 @@ public class CachingURLResourceHandlerTest extends TestCase {
 		long cachedTimestamp = cached.lastModified();
 
 		CachingURLResourceHandle handle = new CachingURLResourceHandle(
-				"http://localhost:18083/bundles/dummybundle.jar", "http://localhost:18083", new File(
+				"http://localhost:18083/bundles/dummybundle.jar", new URI("http://localhost:18083"), new File(
 						"testdata/httpcache/7"), CachingMode.PreferCache);
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {

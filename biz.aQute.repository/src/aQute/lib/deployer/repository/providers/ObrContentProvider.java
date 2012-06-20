@@ -4,13 +4,22 @@ import static aQute.lib.deployer.repository.api.Decision.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 
 import javax.xml.stream.*;
 import javax.xml.transform.stream.*;
 
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Resource;
 import org.osgi.service.bindex.*;
 import org.osgi.service.log.*;
+import org.osgi.service.repository.ContentNamespace;
+
+import biz.aQute.r5.resource.CapReqBuilder;
+import biz.aQute.r5.resource.ResourceBuilder;
 
 import aQute.bnd.service.*;
 import aQute.lib.deployer.repository.api.*;
@@ -53,15 +62,17 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return INDEX_NAME;
 	}
 
-	public void parseIndex(InputStream stream, String baseUrl, IRepositoryListener listener, LogService log)
+	public void parseIndex(InputStream stream, URI baseUri, IRepositoryListener listener, LogService log)
 			throws Exception {
 		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
 		inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 
-		StreamSource source = new StreamSource(stream, baseUrl);
+		StreamSource source = new StreamSource(stream, baseUri.toString());
 		XMLStreamReader reader = inputFactory.createXMLStreamReader(source);
+		
+		ResourceBuilder resourceBuilder = null;
 
 		while (reader.hasNext()) {
 			int type = reader.next();
@@ -73,16 +84,50 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 					if (TAG_REFERRAL.equals(localName)) {
 						Referral referral = new Referral(reader.getAttributeValue(null, ATTR_REFERRAL_URL),
 								parseInt(reader.getAttributeValue(null, ATTR_REFERRAL_DEPTH)));
-						listener.processReferral(baseUrl, referral, referral.getDepth(), 1);
+						listener.processReferral(baseUri, referral, referral.getDepth(), 1);
 					} else if (TAG_RESOURCE.equals(localName)) {
+						resourceBuilder = new ResourceBuilder();
+						
 						String bsn = reader.getAttributeValue(null, ATTR_RESOURCE_SYMBOLIC_NAME);
 						String version = reader.getAttributeValue(null, ATTR_RESOURCE_VERSION);
 						String uri = reader.getAttributeValue(null, ATTR_RESOURCE_URI);
-						listener.processResource(new ObrResource(baseUrl, bsn, version, uri));
+						addBasicCapabilities(resourceBuilder, bsn, version, uri);
 					}
 					break;
+				case END_ELEMENT:
+					localName = reader.getLocalName();
+					if (TAG_RESOURCE.equals(localName)) {
+						if (resourceBuilder != null) {
+							Resource resource = resourceBuilder.build();
+							listener.processResource(resource, baseUri);
+						}
+					}
 			}
 		}
+	}
+
+	private void addBasicCapabilities(ResourceBuilder builder, String bsn, String version, String uri) {
+		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
+			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)
+			.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		
+		CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
+			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, "<unknown>")
+			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri);
+		
+		CapReqBuilder bundle = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE)
+			.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn)
+			.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+		
+		CapReqBuilder host = new CapReqBuilder(HostNamespace.HOST_NAMESPACE)
+			.addAttribute(HostNamespace.HOST_NAMESPACE, bsn)
+			.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+		
+		builder.addCapability(identity)
+			.addCapability(content)
+			.addCapability(bundle)
+			.addCapability(host);
 	}
 
 	private static int parseInt(String value) {
@@ -174,7 +219,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return true;
 	}
 
-	public void generateIndex(Set<File> files, OutputStream output, String repoName, String rootUrl, boolean pretty,
+	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUri, boolean pretty,
 			Registry registry, LogService log) throws Exception {
 		if (!files.isEmpty()) {
 			BundleIndexer indexer = (registry != null) ? registry.getPlugin(BundleIndexer.class) : null;
@@ -184,43 +229,13 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			Map<String,String> config = new HashMap<String,String>();
 
 			config.put(BundleIndexer.REPOSITORY_NAME, repoName);
-			config.put(BundleIndexer.ROOT_URL, rootUrl);
+			config.put(BundleIndexer.ROOT_URL, rootUri.toString());
 
 			indexer.index(files, output, config);
 		} else {
 			String content = String.format(EMPTY_REPO_TEMPLATE, repoName);
 			IO.copy(IO.stream(content), output);
 		}
-	}
-
-}
-
-class ObrResource extends BaseResource {
-
-	private final String	bsn;
-	private final String	version;
-	private final String	contentUrl;
-
-	public ObrResource(String baseUrl, String bsn, String version, String contentUrl) {
-		super(baseUrl);
-		this.bsn = bsn;
-		this.version = version;
-		this.contentUrl = contentUrl;
-	}
-
-	@Override
-	public String getIdentity() {
-		return bsn;
-	}
-
-	@Override
-	public String getVersion() {
-		return version;
-	}
-
-	@Override
-	public String getContentUrl() {
-		return contentUrl;
 	}
 
 }

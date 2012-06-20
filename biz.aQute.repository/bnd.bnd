@@ -13,6 +13,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	org.osgi.impl.bundle.bindex,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0,\
+	osgi.r5,\
 	javax.xml.stream-1.0.1.jar;version=file,\
 	org.mockito.mockito-all,\
 	ee.j2se;version=1.5.0,\
