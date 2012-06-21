@@ -329,10 +329,7 @@ public class Syntax implements Constants {
 			new Syntax(
 					RUNVM,
 					"Additional arguments for the VM invokation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM",
-					"-runvm=-Xmax=30", null, null),
-			new Syntax(VERSIONPOLICY, "Provides a version policy to imports that are calculated from exports",
-					"-versionpolicy = \"[${version;==;${@}},${version;+;${@}})\"", null, null)
-
+					"-runvm=-Xmax=30", null, null)
 																	};
 
 	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();

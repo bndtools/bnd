@@ -246,22 +246,6 @@ public class VersionPolicyTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can get the version from the source and apply a specific
-	 * policy.
-	 */
-	public void testVersionPolicyImportedExportsWithPolicy() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
-		b.addClasspath(new File("bin"));
-		b.setProperty("-versionpolicy", "${range;[==,=+)}");
-		b.setProperty("Export-Package", "org.osgi.service.event");
-		b.setProperty("Private-Package", "test.refer");
-		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[1.0,1.1)", s);
-	}
-
-	/**
 	 * The default policy is truncate micro. Check if this is applied to the
 	 * import.
 	 */
@@ -272,20 +256,6 @@ public class VersionPolicyTest extends TestCase {
 		b.build();
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);
-	}
-
-	/**
-	 * See if we can apply a policy to an import where we get the version from
-	 * the source.
-	 */
-	public void testVersionPolicy() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
-		b.setProperty("-versionpolicy", "${range;[==,=+)}");
-		b.setProperty("Import-Package", "org.osgi.service.event");
-		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[1.0,1.1)", s);
 	}
 
 	/**

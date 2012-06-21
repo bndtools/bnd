@@ -1920,39 +1920,12 @@ public class Analyzer extends Processor {
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
 	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
-	@SuppressWarnings("deprecation")
 	public String getVersionPolicy(boolean implemented) {
 		if (implemented) {
-			String s = getProperty(PROVIDER_POLICY);
-			if (s != null)
-				return s;
-
-			s = getProperty(VERSIONPOLICY_IMPL);
-			if (s != null)
-				return s;
-
-			return getProperty(VERSIONPOLICY, DEFAULT_PROVIDER_POLICY);
+			return getProperty(PROVIDER_POLICY, DEFAULT_PROVIDER_POLICY);
 		}
-		String s = getProperty(CONSUMER_POLICY);
-		if (s != null)
-			return s;
 
-		s = getProperty(VERSIONPOLICY_USES);
-		if (s != null)
-			return s;
-
-		return getProperty(VERSIONPOLICY, DEFAULT_CONSUMER_POLICY);
-
-		// String vp = implemented ? getProperty(VERSIONPOLICY_IMPL) :
-		// getProperty(VERSIONPOLICY_USES);
-		//
-		// if (vp != null)
-		// return vp;
-		//
-		// if (implemented)
-		// return getProperty(VERSIONPOLICY_IMPL, "{$range;[==,=+}");
-		// else
-		// return getProperty(VERSIONPOLICY, "${range;[==,+)}");
+		return getProperty(CONSUMER_POLICY, DEFAULT_CONSUMER_POLICY);
 	}
 
 	/**

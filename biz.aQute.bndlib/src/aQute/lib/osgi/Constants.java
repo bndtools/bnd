@@ -129,14 +129,8 @@ public interface Constants {
 	String							TESTCONTINUOUS								= "-testcontinuous";
 	String							UNDERTEST									= "-undertest";
 	String							VERBOSE										= "-verbose";
-	@Deprecated
-	String							VERSIONPOLICY_IMPL							= "-versionpolicy-impl";
-	@Deprecated
-	String							VERSIONPOLICY_USES							= "-versionpolicy-uses";
 	String							PROVIDER_POLICY								= "-provider-policy";
 	String							CONSUMER_POLICY								= "-consumer-policy";
-	@Deprecated
-	String							VERSIONPOLICY								= "-versionpolicy";
 	String							WAB											= "-wab";
 	String							WABLIB										= "-wablib";
 	String							REQUIRE_BND									= "-require-bnd";
