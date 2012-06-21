@@ -115,11 +115,7 @@ public class BndEditModel implements IPersistableBndModel {
             return Boolean.valueOf(string);
         }
     };
-    private Converter<VersionPolicy,String> versionPolicyConverter = new Converter<VersionPolicy,String>() {
-        public VersionPolicy convert(String string) throws IllegalArgumentException {
-            return VersionPolicy.parse(string);
-        }
-    };
+
     Converter<List<String>,String> listConverter = SimpleListConverter.create();
     Converter<List<HeaderClause>,String> headerClauseListConverter = new HeaderClauseListConverter();
     ClauseListConverter<ExportedPackage> exportPackageConverter = new ClauseListConverter<ExportedPackage>(new Converter<ExportedPackage,Pair<String,Attrs>>() {
