@@ -121,9 +121,9 @@ public class Central {
                                     Project project = workspace.getProject(file.getName());
                                     changed.add(project);
                                 } else {
-                                    ; // Project not created yet, so we
-                                      // have
-                                      // no cached results
+                                    // Project not created yet, so we
+                                    // have
+                                    // no cached results
 
                                 }
                                 return false;

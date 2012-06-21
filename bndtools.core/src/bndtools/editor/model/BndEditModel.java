@@ -91,7 +91,7 @@ public class BndEditModel implements IPersistableBndModel {
     private final Map<String,Converter<String, ? extends Object>> formatters = new HashMap<String,Converter<String, ? extends Object>>();
 
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
-    private final Properties properties = new Properties();;
+    private final Properties properties = new Properties();
 
     private IResource bndResource;
     private boolean projectFile;

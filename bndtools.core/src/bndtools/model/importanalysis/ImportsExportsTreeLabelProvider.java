@@ -67,7 +67,7 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
         requiredBundleImg.dispose();
         requiredBundleSatisfiedImg.dispose();
         requiredBundleOptImg.dispose();
-    };
+    }
 
     @Override
     public void update(ViewerCell cell) {

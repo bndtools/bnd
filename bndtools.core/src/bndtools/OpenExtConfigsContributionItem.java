@@ -22,7 +22,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 
-    private static final IContributionItem[] EMPTY = new IContributionItem[0];;
+    private static final IContributionItem[] EMPTY = new IContributionItem[0];
     private static final ImageDescriptor extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");
 
     @Override

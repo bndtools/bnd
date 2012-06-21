@@ -94,7 +94,6 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
                 if (e.character == SWT.DEL) {
                     doRemove();
                 } else if (e.character == '+') {
-                    ;
                     doAdd();
                 }
             }

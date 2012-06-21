@@ -57,7 +57,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
                 ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
             }
         }
-    };
+    }
 
     public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports", new ImportPatternLabelProvider());

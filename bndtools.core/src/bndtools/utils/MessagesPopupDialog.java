@@ -131,7 +131,7 @@ public class MessagesPopupDialog extends PopupDialog {
                             close();
                             // part.getSite().getPage().activate(part);
                             part.setFocus();
-                        };
+                        }
                     });
                     fixLink.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
                 }

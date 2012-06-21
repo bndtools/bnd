@@ -148,7 +148,6 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
                 if (e.character == SWT.DEL) {
                     doRemovePackages();
                 } else if (e.character == '+') {
-                    ;
                     doAddPackages();
                 }
             }

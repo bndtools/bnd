@@ -112,7 +112,6 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
                 if (e.character == SWT.DEL) {
                     doRemove();
                 } else if (e.character == '+') {
-                    ;
                     doAdd();
                 }
             }
