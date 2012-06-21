@@ -79,7 +79,6 @@ public class BndEditModel implements IPersistableBndModel {
     @SuppressWarnings("deprecation")
     private static final String[] KNOWN_PROPERTIES = new String[] {
             Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.lib.osgi.Constants.PRIVATE_PACKAGE, aQute.lib.osgi.Constants.SOURCES,
-            aQute.lib.osgi.Constants.VERSIONPOLICY, aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.DSANNOTATIONS, aQute.lib.osgi.Constants.CLASSPATH, aQute.lib.osgi.Constants.BUILDPATH,
             aQute.lib.osgi.Constants.BUILDPACKAGES, aQute.lib.osgi.Constants.RUNBUNDLES, aQute.lib.osgi.Constants.RUNPROPERTIES, aQute.lib.osgi.Constants.SUB, BndConstants.RUNFRAMEWORK, aQute.lib.osgi.Constants.RUNVM,
             BndConstants.RUNVMARGS, BndConstants.TESTSUITES, aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH, BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RUNREPOS,
             BndConstants.RESOLVE_MODE
@@ -192,7 +191,6 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
         converters.put(BndConstants.OUTPUT, stringConverter);
         converters.put(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
-        converters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
         converters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
         converters.put(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
         converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
@@ -219,7 +217,6 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(Constants.BUNDLE_ACTIVATOR, newlineEscapeFormatter);
         formatters.put(BndConstants.OUTPUT, newlineEscapeFormatter);
         formatters.put(aQute.lib.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
-        formatters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, defaultFormatter);
         formatters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.CLASSPATH, stringListFormatter);
         formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
@@ -386,22 +383,6 @@ public class BndEditModel implements IPersistableBndModel {
     public void setIncludeSources(boolean includeSources) {
         boolean oldValue = isIncludeSources();
         doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, defaultFalseBoolFormatter);
-    }
-
-    @Deprecated
-    public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
-        return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
-    }
-
-    @Deprecated
-    public void setVersionPolicy(VersionPolicy versionPolicy) {
-        VersionPolicy oldValue;
-        try {
-            oldValue = getVersionPolicy();
-        } catch (IllegalArgumentException e) {
-            oldValue = null;
-        }
-        doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, defaultFormatter);
     }
 
     public List<String> getPrivatePackages() {
