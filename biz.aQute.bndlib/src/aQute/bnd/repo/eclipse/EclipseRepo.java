@@ -130,7 +130,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 		return false;
 	}
 
-	public File[] get(String bsn, String range) throws Exception {
+	private File[] get(String bsn, String range) throws Exception {
 		VersionRange r = new VersionRange(range);
 		Map<String,String> instances = index.get(bsn);
 		if (instances == null)

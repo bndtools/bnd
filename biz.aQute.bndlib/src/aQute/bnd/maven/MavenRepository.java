@@ -25,7 +25,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return false;
 	}
 
-	public File[] get(String bsn, String version) throws Exception {
+	private File[] get(String bsn, String version) throws Exception {
 		VersionRange range = new VersionRange("0");
 		if (version != null)
 			range = new VersionRange(version);

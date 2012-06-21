@@ -16,16 +16,6 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	Registry	registry;
 	Maven		maven;
 
-	public File[] get(String bsn, String range) throws Exception {
-		File f = get(bsn, range, Strategy.HIGHEST, null);
-		if (f == null)
-			return null;
-
-		return new File[] {
-			f
-		};
-	}
-
 	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
 		String groupId = null;
 

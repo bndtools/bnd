@@ -22,7 +22,7 @@ public class WorkspaceRepository implements RepositoryPlugin {
 		this.workspace = workspace;
 	}
 
-	public File[] get(String bsn, String range) throws Exception {
+	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
 		for (Project project : projects) {

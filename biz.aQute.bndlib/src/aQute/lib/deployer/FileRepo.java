@@ -56,7 +56,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Get a list of URLs to bundles that are constrained by the bsn and
 	 * versionRange.
 	 */
-	public File[] get(String bsn, String versionRange) throws Exception {
+	private File[] get(String bsn, String versionRange) throws Exception {
 		init();
 
 		// If the version is set to project, we assume it is not

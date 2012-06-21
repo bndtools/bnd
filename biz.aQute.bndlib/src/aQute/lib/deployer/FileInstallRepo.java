@@ -102,48 +102,4 @@ public class FileInstallRepo extends FileRepo {
 		}
 		return result;
 	}
-
-	@Override
-	public File[] get(String bsn, String versionRange) throws MalformedURLException {
-		// If the version is set to project, we assume it is not
-		// for us. A project repo will then get it.
-		if (versionRange != null && versionRange.equals("project"))
-			return null;
-
-		//
-		// The version range we are looking for can
-		// be null (for all) or a version range.
-		//
-		VersionRange range;
-		if (versionRange == null || versionRange.equals("latest")) {
-			range = new VersionRange("0");
-		} else
-			range = new VersionRange(versionRange);
-
-		//
-		// Iterator over all the versions for this BSN.
-		// Create a sorted map over the version as key
-		// and the file as URL as value. Only versions
-		// that match the desired range are included in
-		// this list.
-		//
-		File instances[] = getRoot().listFiles();
-		SortedMap<Version,File> versions = new TreeMap<Version,File>();
-		for (int i = 0; i < instances.length; i++) {
-			Matcher m = REPO_FILE.matcher(instances[i].getName());
-			if (m.matches() && m.group(1).equals(bsn)) {
-				String versionString = m.group(2);
-				Version version;
-				if (versionString.equals("latest"))
-					version = new Version(Integer.MAX_VALUE);
-				else
-					version = new Version(versionString);
-
-				if (range.includes(version))
-					versions.put(version, instances[i]);
-			}
-		}
-		return versions.values().toArray(new File[versions.size()]);
-	}
-
 }
