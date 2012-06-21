@@ -287,8 +287,6 @@ public class Syntax implements Constants {
 			new Syntax(NOUSES, "Do not calculate the uses: directive on exports", "-nouses=true", "true,false",
 					Verifier.TRUEORFALSEPATTERN),
 
-			new Syntax(NOPE, "Deprecated, use -nobundles. ", "-nope=true", "true,false", Verifier.TRUEORFALSEPATTERN),
-
 			new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right", "-nope=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
 
