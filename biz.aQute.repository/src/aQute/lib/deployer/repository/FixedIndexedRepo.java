@@ -33,8 +33,6 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 	private static final String	EMPTY_LOCATION	= "";
 
 	public static final String	PROP_LOCATIONS	= "locations";
-	@Deprecated
-	public static final String	PROP_CACHE		= "cache";
 
 	private String				locations;
 	protected File				cacheDir;
@@ -43,10 +41,6 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 		super.setProperties(map);
 
 		locations = map.get(PROP_LOCATIONS);
-
-		String cacheDirStr = map.get(PROP_CACHE);
-		if (cacheDirStr != null)
-			cacheDir = new File(cacheDirStr);
 	}
 
 	@Override

@@ -24,9 +24,9 @@ public class OBRTest extends TestCase {
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
 		File cacheDir = new File(tmpFile.getAbsolutePath() + ".dir");
-		config.put("cache", cacheDir.getAbsolutePath());
 
 		obr.setProperties(config);
+		obr.setCacheDirectory(cacheDir);
 
 		httpd = new NanoHTTPD(18080, new File("testdata/http"));
 	}
@@ -49,8 +49,8 @@ public class OBRTest extends TestCase {
 
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("location", new File("testdata/fullobr.xml").toURI().toString());
-		props.put("cache", this.obr.getCacheDirectory().getAbsolutePath());
 		obr2.setProperties(props);
+		obr2.setCacheDirectory(this.obr.getCacheDirectory());
 
 		Collection<URI> indexes = obr2.getIndexLocations();
 		assertEquals(1, indexes.size());
