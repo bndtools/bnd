@@ -18,13 +18,4 @@ public @interface Export {
 	Class< ? >[] exclude() default Object.class;
 
 	Class< ? >[] include() default Object.class;
-
-	/**
-	 * Use {@link @Version} annotation instead
-	 * 
-	 * @return
-	 */
-	@Deprecated()
-	String version() default "";
-
 }
