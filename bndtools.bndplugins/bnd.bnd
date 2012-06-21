@@ -1,13 +1,13 @@
 #project.bootclasspath=${repo;ee.j2se;[1.5,1.6)}
 
--buildpath:\
-	${bndlib},\
+-buildpath: ${bndlib},\
 	aQute.libg,\
 	com.jcraft.jsch,\
 	org.eclipse.jgit,\
 	junit.osgi,\
 	biz.aQute.repository,\
 	org.osgi.impl.bundle.bindex,\
+	osgi.r5,\
 	ee.j2se;version=${javac.ee}
 
 -sub: *.bnd
