@@ -22,7 +22,6 @@ public class Syntax implements Constants {
 
     static Syntax path_version = new Syntax(VERSION_ATTRIBUTE, "Specifies the range in the repository, project, or file", "version=project", "project,type", Pattern.compile("project|type|" + Verifier.VERSIONRANGE.toString()));
 
-    @SuppressWarnings("deprecation")
     static Syntax[] syntaxes = new Syntax[] {
             new Syntax(BUNDLE_ACTIVATIONPOLICY, "The Bundle-ActivationPolicy specifies how the framework should activate the bundle once started. ", "Bundle-ActivationPolicy: lazy", "lazy", Pattern.compile("lazy")),
 
