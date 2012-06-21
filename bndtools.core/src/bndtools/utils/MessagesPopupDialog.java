@@ -63,6 +63,7 @@ public class MessagesPopupDialog extends PopupDialog {
         return result;
     }
 
+    @SuppressWarnings("unused")
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);

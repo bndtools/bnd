@@ -62,6 +62,7 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
      * 
      * @param parent
      */
+    @SuppressWarnings("unused")
     @Override
     protected Control createDialogArea(Composite parent) {
         setMessage(Messages.EmptyBndFileWizard_questionSubBundlesNotEnabled);

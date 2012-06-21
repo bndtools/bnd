@@ -59,6 +59,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     private Text launchTargetTxt;
     private Button enableTraceBtn;
 
+    @SuppressWarnings("unused")
     public Control createControl(Composite parent) {
         Group projectGroup = new Group(parent, SWT.NONE);
         projectGroup.setText("Launch:");

@@ -69,6 +69,7 @@ public class PackageListWizardPage extends WizardPage {
         setMessage("The selected packages will be included in the bundle and provided as Exports.");
     }
 
+    @SuppressWarnings("unused")
     public void createControl(Composite parent) {
 
         Composite composite = new Composite(parent, SWT.NONE);
