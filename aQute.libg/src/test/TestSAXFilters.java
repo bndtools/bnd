@@ -66,8 +66,8 @@ public class TestSAXFilters extends TestCase {
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE5.getBytes())));
 		merger.closeRootAndDocument();
 
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>!<root><a/><a/></root>";
-		assertEquals(expected, output.toString().replaceAll("\\r?\\n", "!"));
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?><root><a/><a/></root>";
+		assertEquals(expected, stripLineBreaks(output.toString()));
 	}
 
 	public void testSelectionFilter() throws Exception {
@@ -83,6 +83,12 @@ public class TestSAXFilters extends TestCase {
 		reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE4.getBytes())));
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root c=\"3\"><a><b><c><d/></c></b></a></root>",
 				output.toString());
+	}
+	
+	// Line breaks in the XML (e.g. after a PI node) seem to vary across platforms and even Java versions
+	// on the same platform. Use this utility method to strip all LFs and CRs from an input string.
+	private String stripLineBreaks(String input) {
+		return input == null ? null : input.replaceAll("\\r?\\n", "");
 	}
 
 }
