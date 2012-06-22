@@ -27,8 +27,7 @@ Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.deployer.obr.LocalOBR,\
 	aQute.lib.deployer.http.HttpBasicAuthURLConnector
 
-Export-Package:\
-	aQute.lib.deployer.http,\
+Export-Package: aQute.lib.deployer.http,\
 	aQute.lib.deployer.obr,\
 	aQute.lib.deployer.repository,\
 	aQute.lib.deployer.repository.api,\
@@ -50,7 +49,11 @@ Private-Package: aQute.lib.io;-split-package:=first,\
 	aQute.libg.generics;-split-package:=first,\
 	aQute.libg.glob,\
 	aQute.libg.gzip,\
-	aQute.libg.tuple;-split-package:=first
+	aQute.libg.tuple;-split-package:=first,\
+	org.osgi.resource,\
+	biz.aQute.r5.resource,\
+	biz.aQute.r5.resource.filters,\
+	org.osgi.service.repository
 
 # We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
 Import-Package:\

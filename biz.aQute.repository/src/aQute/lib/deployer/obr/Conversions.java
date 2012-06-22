@@ -7,6 +7,10 @@ import aQute.lib.deployer.repository.FixedIndexedRepo;
 
 public class Conversions {
 
+	/** Converts legacy repository properties to new property names.
+	 * @param map
+	 * @return
+	 */
 	public static final Map<String,String> convertConfig(Map<String,String> map) {
 		if (!map.containsKey(AbstractIndexedRepo.PROP_REPO_TYPE))
 			map.put(AbstractIndexedRepo.PROP_REPO_TYPE, AbstractIndexedRepo.REPO_TYPE_OBR);

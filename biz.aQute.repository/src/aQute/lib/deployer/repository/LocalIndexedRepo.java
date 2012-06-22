@@ -31,12 +31,14 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
+	public static final String			PROP_OVERWRITE			= "overwrite";
 
 	private static final VersionRange	RANGE_ANY				= new VersionRange(Version.LOWEST.toString());
 
 	private FileRepo					storageRepo;
 	private boolean						readOnly;
 	private boolean						pretty					= false;
+	private boolean						overwrite				= true;
 	private File						storageDir;
 
 	// @GuardedBy("newFilesInCoordination")
@@ -57,6 +59,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 					localDirPath));
 		readOnly = "true".equalsIgnoreCase(map.get(PROP_READONLY));
 		pretty = "true".equalsIgnoreCase(map.get(PROP_PRETTY));
+		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
 
 		// Configure the storage repository
 		storageRepo = new FileRepo(storageDir);
@@ -174,6 +177,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		String fileName = String.format("%s-%d.%d.%d.jar", bsn, version.getMajor(), version.getMinor(),
 				version.getMicro());
 		File file = new File(dir, fileName);
+		
+		// check overwrite policy
+		if (!overwrite && file.exists()) return file;
+		
 		jar.write(file);
 
 		synchronized (newFilesInCoordination) {
