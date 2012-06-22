@@ -34,6 +34,6 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.core;version=4.1, \
 	ee.j2se;version='[1.5,1.6)'
 
-Bundle-Version: 1.56.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Version: 1.57.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\
 	*
