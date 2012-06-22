@@ -11,9 +11,10 @@ import aQute.lib.osgi.*;
 
 public class TestLocalIndexGeneration extends TestCase {
 
-	private Processor			reporter;
-	private LocalIndexedRepo	repo;
-	private File				outputDir;
+	private Processor				reporter;
+	private LocalIndexedRepo		repo;
+	private File					outputDir;
+	private HashMap<String,String>	config;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -24,7 +25,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
 		repo.setProperties(config);
@@ -59,6 +60,25 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertNotNull(files);
 		assertEquals(1, files.length);
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
+	}
+	
+	public void testOverwrite() throws Exception {
+		config.put("overwrite", "false");
+		repo.setProperties(config);
+		
+		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
+		File originalFile = repo.put(jar);
+		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+				.getAbsolutePath(), originalFile.getAbsolutePath());
+		int originalSize = jar.getResources().size();
+		
+		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
+		Jar dummyJar = new Jar(IO.getFile("testdata/bundles/dummybundle.jar"));
+		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
+		File duplicateFile = repo.put(newJar);
+		Jar jarFromRepo = new Jar(duplicateFile);
+		int fromRepoSize = jarFromRepo.getResources().size();
+		assertEquals("Number of resources should not have changed", originalSize, fromRepoSize);
 	}
 
 	public void testInvalidContentProvider() throws Exception {
