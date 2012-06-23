@@ -661,17 +661,18 @@ public class Analyzer extends Processor {
 	public String getBndInfo(String key, String defaultValue) {
 		if (bndInfo == null) {
 			try {
-				bndInfo = new Properties();
+				Properties bndInfoLocal = new Properties();
 				URL url = Analyzer.class.getResource("bnd.info");
 				if (url != null) {
 					InputStream in = url.openStream();
 					try {
-						bndInfo.load(in);
+						bndInfoLocal.load(in);
 					}
 					finally {
 						in.close();
 					}
 				}
+				bndInfo = bndInfoLocal;
 			}
 			catch (Exception e) {
 				e.printStackTrace();
