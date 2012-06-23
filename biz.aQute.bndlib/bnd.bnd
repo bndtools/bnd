@@ -13,6 +13,7 @@ Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
 Export-Package: aQute.bnd.annotation.*,\
 	aQute.lib.osgi,\
+	aQute.lib.osgi.resource,\
 	aQute.bnd.build,\
 	aQute.bnd.differ,\
 	aQute.bnd.service.*,\
@@ -37,7 +38,8 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.3,\
 	aQute.libg;version=project,\
-	osgi.core;version=4.1, \
+	osgi.core;version=4.1,\
+	osgi.r5,\
 	ee.j2se;version='[1.5,1.6)'
 
 Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}

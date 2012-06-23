@@ -19,12 +19,12 @@ import org.osgi.service.bindex.*;
 import org.osgi.service.log.*;
 import org.osgi.service.repository.ContentNamespace;
 
-import biz.aQute.r5.resource.CapReqBuilder;
-import biz.aQute.r5.resource.ResourceBuilder;
 
 import aQute.bnd.service.*;
 import aQute.lib.deployer.repository.api.*;
 import aQute.lib.io.*;
+import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.lib.osgi.resource.ResourceBuilder;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 

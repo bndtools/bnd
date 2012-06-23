@@ -13,8 +13,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 import aQute.lib.deployer.repository.FixedIndexedRepo;
+import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.libg.version.VersionRange;
-import biz.aQute.r5.resource.CapReqBuilder;
 
 public class FindProvidersTest extends TestCase {
 

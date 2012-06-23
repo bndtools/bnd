@@ -1,4 +1,4 @@
-package biz.aQute.r5.resource;
+package aQute.lib.osgi.resource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,11 +9,11 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.lib.osgi.resource.CapReq.MODE;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
+import aQute.libg.filters.SimpleFilter;
 import aQute.libg.version.VersionRange;
-import biz.aQute.r5.resource.CapReq.MODE;
-import biz.aQute.r5.resource.filters.AndFilter;
-import biz.aQute.r5.resource.filters.Filter;
-import biz.aQute.r5.resource.filters.SimpleFilter;
 
 public class CapReqBuilder {
 

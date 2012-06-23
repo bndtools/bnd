@@ -30,8 +30,8 @@ import aQute.lib.deployer.repository.api.CheckResult;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.lib.deployer.repository.api.Referral;
-import biz.aQute.r5.resource.CapReqBuilder;
-import biz.aQute.r5.resource.ResourceBuilder;
+import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.lib.osgi.resource.ResourceBuilder;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 

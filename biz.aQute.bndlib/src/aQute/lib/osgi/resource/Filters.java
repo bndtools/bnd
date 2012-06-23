@@ -1,10 +1,10 @@
-package biz.aQute.r5.resource;
+package aQute.lib.osgi.resource;
 
-import biz.aQute.r5.resource.filters.AndFilter;
-import biz.aQute.r5.resource.filters.Filter;
-import biz.aQute.r5.resource.filters.NotFilter;
-import biz.aQute.r5.resource.filters.Operator;
-import biz.aQute.r5.resource.filters.SimpleFilter;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
+import aQute.libg.filters.NotFilter;
+import aQute.libg.filters.Operator;
+import aQute.libg.filters.SimpleFilter;
 import aQute.libg.version.VersionRange;
 
 public class Filters {

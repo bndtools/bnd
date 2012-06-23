@@ -1,4 +1,4 @@
-package biz.aQute.r5.resource;
+package aQute.lib.osgi.resource;
 
 import java.util.LinkedList;
 import java.util.List;

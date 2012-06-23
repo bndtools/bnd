@@ -1,4 +1,4 @@
-package biz.aQute.r5.resource.filters;
+package aQute.libg.filters;
 
 public final class SimpleFilter extends Filter {
 

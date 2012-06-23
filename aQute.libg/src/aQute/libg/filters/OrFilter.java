@@ -1,15 +1,15 @@
-package biz.aQute.r5.resource.filters;
+package aQute.libg.filters;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public final class AndFilter extends Filter {
+public final class OrFilter extends Filter {
 	
 	private final List<Filter> children = new LinkedList<Filter>();
 	
-	public AndFilter addChild(Filter child) {
-		if (child instanceof AndFilter)
-			children.addAll(((AndFilter) child).children);
+	public OrFilter addChild(Filter child) {
+		if (child instanceof OrFilter)
+			children.addAll(((OrFilter) child).children);
 		else
 			children.add(child);
 		return this;
@@ -20,7 +20,7 @@ public final class AndFilter extends Filter {
 		if (children.isEmpty())
 			return;
 		
-		builder.append("(&");
+		builder.append("(|");
 		for (Filter child : children) {
 			child.append(builder);
 		}
