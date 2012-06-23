@@ -1,0 +1,18 @@
+-buildpath: osgi.core;version=4.2,\
+	osgi.cmpn,\
+	junit.osgi,\
+	org.mockito.mockito-all,\
+	org.osgi.impl.bundle.bindex2.lib;version=snapshot,\
+	org.osgi.impl.bundle.bindex2.lib;version=project,\
+	ee.j2se;version='[1.5,1.6)'
+
+Conditional-Package: org.example.tests.utils
+
+-runbundles: org.mockito.mockito-all,\
+	org.osgi.impl.bundle.bindex2.lib;version=latest,\
+	osgi.cmpn
+	
+-runvm: -ea
+-runfw: org.apache.felix.framework;version=4.0
+-runsystempackages: sun.reflect
+-sub: *.bnd

@@ -1,0 +1,3 @@
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+Private-Package: org.example.tests.osgi,\
+	testdata

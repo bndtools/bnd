@@ -1,0 +1,5 @@
+# Make sure this is NOT a bundle
+# -removeheaders: Bundle-SymbolicName, Bundle-ManifestVersion
+Private-Package: org.example.tests.standalone,\
+	testdata
+Import-Package: *;resolution:=optional

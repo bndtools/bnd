@@ -1,0 +1,45 @@
+# Build settings
+-buildpath:\
+	org.osgi.impl.bundle.bindex2.api;version=project,\
+	org.osgi.impl.bundle.bindex2.lib;version=project,\
+	de.kalpatec.pojosr.framework;version=0.1.8,\
+	osgi.cmpn;version=4.2,\
+	junit.osgi,\
+	ee.j2se;version='[1.5,1.6)'
+
+# Define Contents
+bindex-pkgs:\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util,\
+	org.osgi.service.indexer.osgi
+
+pojosr-pkgs: de.kalpatec.pojosr.*
+
+osgi-pkgs:\
+	org.osgi.framework,\
+	org.osgi.framework.hooks.bundle,\
+	org.osgi.framework.hooks.resolver,\
+	org.osgi.framework.hooks.service,\
+	org.osgi.framework.hooks.weaving,\
+	org.osgi.framework.launch,\
+	org.osgi.framework.startlevel,\
+	org.osgi.framework.wiring,\
+	org.osgi.service.packageadmin,\
+	org.osgi.service.startlevel,\
+	org.osgi.service.url,\
+	org.osgi.util.tracker;-split-package:=first
+
+Private-Package:\
+	org.osgi.impl.bundle.bindex.cli,\
+	org.osgi.service.indexer,\
+	org.osgi.service.log,\
+	${bindex-pkgs},\
+	${pojosr-pkgs},\
+	${osgi-pkgs},\
+
+# Main headers
+Bundle-Version: 0.0.1
+Bundle-Name: BIndex2: Repository Index Generator (Standalone)
+Main-Class: org.osgi.impl.bundle.bindex.cli.Index
+Bundle-Activator: org.osgi.service.indexer.osgi.Activator
