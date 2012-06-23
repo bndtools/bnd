@@ -6,7 +6,7 @@ repo:         ${workspace}/../repo
 # - uncomment 'Local OBR'
 
 
--pluginpath: ${workspace}/cnf/plugins/biz.aQute.repository/biz.aQute.repository-1.0.0.jar
+-pluginpath: ${workspace}/cnf/plugins/biz.aQute.repository/biz.aQute.repository-2.0.0.jar
 
 ## Eclipse SDK 3.5.2
 eclipse-repo: aQute.lib.deployer.obr.OBR;locations='file:${workspace}/cnf/eclipse-3.5.2/repository.xml';name=Eclipse SDK 3.5.2
