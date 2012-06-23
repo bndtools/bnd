@@ -38,11 +38,10 @@ public class BndEditModel {
 
 	protected static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
 
-	@SuppressWarnings("deprecation")
 	protected static String[]										KNOWN_PROPERTIES			= new String[] {
 			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
 			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
-			aQute.lib.osgi.Constants.SOURCES, aQute.lib.osgi.Constants.VERSIONPOLICY,
+			aQute.lib.osgi.Constants.SOURCES,
 			aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.CLASSPATH,
 			aQute.lib.osgi.Constants.BUILDPATH, aQute.lib.osgi.Constants.BUILDPACKAGES,
 			aQute.lib.osgi.Constants.RUNBUNDLES, aQute.lib.osgi.Constants.RUNPROPERTIES, aQute.lib.osgi.Constants.SUB,
@@ -67,7 +66,7 @@ public class BndEditModel {
 
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
 																										this);
-	private final Properties										properties					= new Properties();												;
+	private final Properties										properties					= new Properties();
 
 	private File													bndResource;
 	private boolean													projectFile;
@@ -221,7 +220,6 @@ public class BndEditModel {
 		converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
 		converters.put(aQute.lib.osgi.Constants.OUTPUT, stringConverter);
 		converters.put(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
-		converters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
 		converters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
 		converters.put(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
 		converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
@@ -248,7 +246,6 @@ public class BndEditModel {
 		formatters.put(Constants.BUNDLE_ACTIVATOR, newlineEscapeFormatter);
 		formatters.put(aQute.lib.osgi.Constants.OUTPUT, newlineEscapeFormatter);
 		formatters.put(aQute.lib.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
-		formatters.put(aQute.lib.osgi.Constants.VERSIONPOLICY, defaultFormatter);
 		formatters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.CLASSPATH, stringListFormatter);
 		formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
@@ -366,7 +363,6 @@ public class BndEditModel {
 	public List<String> getAllPropertyNames() {
 		List<String> result = new ArrayList<String>(properties.size());
 
-		@SuppressWarnings("unchecked")
 		Enumeration<String> names = (Enumeration<String>) properties.propertyNames();
 
 		while (names.hasMoreElements()) {
@@ -384,7 +380,6 @@ public class BndEditModel {
 
 	public void genericSet(String propertyName, Object value) {
 		Object oldValue = genericGet(propertyName);
-		@SuppressWarnings("unchecked")
 		Converter<String,Object> formatter = (Converter<String,Object>) formatters.get(propertyName);
 		if (formatter == null)
 			formatter = new DefaultFormatter();
@@ -430,23 +425,6 @@ public class BndEditModel {
 	public void setIncludeSources(boolean includeSources) {
 		boolean oldValue = isIncludeSources();
 		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, defaultFalseBoolFormatter);
-	}
-
-	@Deprecated
-	public VersionPolicy getVersionPolicy() throws IllegalArgumentException {
-		return doGetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, versionPolicyConverter);
-	}
-
-	@Deprecated
-	public void setVersionPolicy(VersionPolicy versionPolicy) {
-		VersionPolicy oldValue;
-		try {
-			oldValue = getVersionPolicy();
-		}
-		catch (IllegalArgumentException e) {
-			oldValue = null;
-		}
-		doSetObject(aQute.lib.osgi.Constants.VERSIONPOLICY, oldValue, versionPolicy, defaultFormatter);
 	}
 
 	public List<String> getPrivatePackages() {
@@ -668,7 +646,6 @@ public class BndEditModel {
 	protected <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;
 		if (objectProperties.containsKey(name)) {
-			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
 			result = temp;
 		} else if (changesToSave.containsKey(name)) {
