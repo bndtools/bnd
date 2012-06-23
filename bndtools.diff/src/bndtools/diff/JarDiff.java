@@ -667,7 +667,7 @@ public class JarDiff {
 			VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
 			try {
 				if (baselineRepository != null) {
-					File files =  baselineRepository.get(symbolicName, range.toString(), Strategy.EXACT, null);
+					File files =  baselineRepository.get(symbolicName, range.toString(), Strategy.LOWEST, null);
 					if (files != null) {
 						currentJar = new Jar(files);
 					}

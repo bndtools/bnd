@@ -62,7 +62,7 @@ public class RepositoryBundleVersion implements IAdaptable {
 
         File files = null;
         try {
-            files = bundle.getRepo().get(bundle.getBsn(), range.toString(), Strategy.EXACT, null);
+            files = bundle.getRepo().get(bundle.getBsn(), range.toString(), Strategy.HIGHEST, null);
         } catch (Exception e) {
             Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", bundle.getRepo().getName(), bundle.getBsn(), version), e);
         }
