@@ -29,5 +29,9 @@ public class Utils {
 	public static String decompress(String string) throws IOException {
 		return decompress(new ByteArrayInputStream(string.getBytes()));
 	}
+	
+	public static String decompress(byte[] byteArray) throws IOException {
+		return decompress(new ByteArrayInputStream(byteArray));
+	}
 
 }

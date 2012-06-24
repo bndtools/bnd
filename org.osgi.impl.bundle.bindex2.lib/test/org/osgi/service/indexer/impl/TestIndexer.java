@@ -124,7 +124,7 @@ public class TestIndexer extends TestCase {
 		indexer.index(files, out, config);
 		
 		String expected = Utils.readStream(new FileInputStream("testdata/packed.txt"));
-		assertEquals(expected, Utils.decompress(out.toString()));
+		assertEquals(expected, Utils.decompress(out.toByteArray()));
 	}
 	
 	public void testFullIndexPrettyPrint() throws Exception {
