@@ -1,7 +1,6 @@
 package org.osgi.service.indexer.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -12,8 +11,6 @@ import junit.framework.TestCase;
 import org.osgi.framework.Version;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
-import org.osgi.service.indexer.impl.BundleAnalyzer;
-import org.osgi.service.indexer.impl.JarResource;
 
 public class TestBundleAnalyzer extends TestCase {
 	
@@ -127,6 +124,35 @@ public class TestBundleAnalyzer extends TestCase {
 		assertEquals("org.apache.felix.framework", fwkCap.getAttributes().get("osgi.framework"));
 		assertEquals(new Version("4.0.2"), fwkCap.getAttributes().get("version"));
 		assertEquals("org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker", fwkCap.getDirectives().get("uses"));
+		assertEquals(new Version("4.3.0"), fwkCap.getAttributes().get("specification-version"));
+	}
+	
+	public void testOsgiFrameworkSpecificationVersions() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		
+		LinkedList<Capability> caps;
+		LinkedList<Requirement> reqs;
+		
+		caps = new LinkedList<Capability>();
+		reqs = new LinkedList<Requirement>();
+		a.analyzeResource(new JarResource(new File("testdata/org.apache.felix.framework-4.0.2.jar")), caps, reqs);
+		assertEquals(new Version("4.3.0"), findCaps("osgi.framework", caps).get(0).getAttributes().get("specification-version"));
+
+		caps = new LinkedList<Capability>();
+		reqs = new LinkedList<Requirement>();
+		a.analyzeResource(new JarResource(new File("testdata/org.eclipse.osgi_3.7.2.v20120110-1415.jar")), caps, reqs);
+		assertEquals(new Version("4.3.0"), findCaps("osgi.framework", caps).get(0).getAttributes().get("specification-version"));
+
+		caps = new LinkedList<Capability>();
+		reqs = new LinkedList<Requirement>();
+		a.analyzeResource(new JarResource(new File("testdata/org.apache.felix.framework-3.2.2.jar")), caps, reqs);
+		assertEquals(new Version("4.2.0"), findCaps("osgi.framework", caps).get(0).getAttributes().get("specification-version"));
+
+		caps = new LinkedList<Capability>();
+		reqs = new LinkedList<Requirement>();
+		a.analyzeResource(new JarResource(new File("testdata/org.eclipse.osgi_3.6.2.R36x_v20110210.jar")), caps, reqs);
+		assertEquals(new Version("4.2.0"), findCaps("osgi.framework", caps).get(0).getAttributes().get("specification-version"));
+		
 	}
 	
 	public void testNonOsgiFramework() throws Exception {
