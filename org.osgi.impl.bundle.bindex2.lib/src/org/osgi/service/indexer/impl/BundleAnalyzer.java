@@ -53,6 +53,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		doBREE(resource, requirements);
 		doCapabilities(resource, capabilities);
 		doRequirements(resource, requirements);
+		
+		doOsgiFramework(resource, capabilities);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -449,6 +451,17 @@ class BundleAnalyzer implements ResourceAnalyzer {
 				reqs.add(builder.buildRequirement());
 			}
 		});
+	}
+	
+	/**
+	 * Detects JARs that are OSGi Frameworks, using the presence of META-INF/services/org.osgi.framework.launch.FrameworkFactory
+	 */
+	private void doOsgiFramework(Resource resource, List<? super Capability> caps) throws Exception {
+		Resource fwkFactorySvc = resource.getChild("META-INF/services/org.osgi.framework.launch.FrameworkFactory");
+		if (fwkFactorySvc != null) {
+			Builder builder = new Builder().setNamespace("osgi.framework");
+			caps.add(builder.buildCapability());
+		}
 	}
 
 	private static void buildFromHeader(String headerStr, Yield<Builder> output) {

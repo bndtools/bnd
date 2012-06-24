@@ -1,6 +1,7 @@
 package org.osgi.service.indexer.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -109,6 +110,30 @@ public class TestBundleAnalyzer extends TestCase {
 		
 		Requirement req = findReqs("osgi.wiring.host", reqs).get(0);
 		assertEquals("(&(osgi.wiring.host=org.example.a)(bundle-version>=0.0.0))", req.getDirectives().get("filter"));
+	}
+	
+	public void testOsgiFramework() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		LinkedList<Capability> caps = new LinkedList<Capability>();
+		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		
+		a.analyzeResource(new JarResource(new File("testdata/org.apache.felix.framework-4.0.2.jar")), caps, reqs);
+		
+		List<Capability> fwkCaps = findCaps("osgi.framework", caps);
+		assertNotNull(fwkCaps);
+		assertEquals(1, fwkCaps.size());
+	}
+	
+	public void testNonOsgiFramework() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		LinkedList<Capability> caps = new LinkedList<Capability>();
+		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		
+		a.analyzeResource(new JarResource(new File("testdata/03-export.jar")), caps, reqs);
+		
+		List<Capability> fwkCaps = findCaps("osgi.framework", caps);
+		assertNotNull(fwkCaps);
+		assertEquals(0, fwkCaps.size());
 	}
 	
 	private static List<Capability> findCaps(String namespace, Collection<Capability> caps) {
