@@ -456,10 +456,22 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	/**
 	 * Detects JARs that are OSGi Frameworks, using the presence of META-INF/services/org.osgi.framework.launch.FrameworkFactory
 	 */
-	private void doOsgiFramework(Resource resource, List<? super Capability> caps) throws Exception {
+	private void doOsgiFramework(Resource resource, List<Capability> caps) throws Exception {
 		Resource fwkFactorySvc = resource.getChild("META-INF/services/org.osgi.framework.launch.FrameworkFactory");
 		if (fwkFactorySvc != null) {
 			Builder builder = new Builder().setNamespace("osgi.framework");
+
+			StringBuilder uses = new StringBuilder();
+			boolean first = true;
+			for (Capability cap : caps) {
+				if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
+					if (!first) uses.append(',');
+					String pkgName = (String) cap.getAttributes().get(Namespaces.NS_WIRING_PACKAGE);
+					uses.append(pkgName);
+					first = false;
+				}
+			}
+			builder.addDirective(Namespaces.DIRECTIVE_USES, uses.toString());
 			caps.add(builder.buildCapability());
 		}
 	}
