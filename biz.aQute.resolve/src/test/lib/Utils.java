@@ -1,4 +1,4 @@
-package test;
+package test.lib;
 
 import java.io.File;
 import java.net.URI;

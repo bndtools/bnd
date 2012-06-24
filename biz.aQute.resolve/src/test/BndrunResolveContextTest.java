@@ -1,6 +1,6 @@
 package test;
 
-import static test.Utils.*;
+import static test.lib.Utils.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -13,6 +13,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+
+import test.lib.MockRegistry;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.resource.CapReqBuilder;
