@@ -90,7 +90,7 @@ class CapReq implements Capability, Requirement {
 
 	@Override
 	public String toString() {
-		return mode + " [namespace=" + namespace + ", resource=" + resource + ", directives="
+		return mode + " [namespace=" + namespace + ", resource=" + System.identityHashCode(resource) + ", directives="
 				+ directives + ", attributes=" + attributes + "]";
 	}
 
