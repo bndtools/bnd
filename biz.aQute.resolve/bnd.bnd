@@ -1,0 +1,5 @@
+-buildpath: osgi.r5,\
+	junit.osgi,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.repository;version=snapshot,\
+	org.mockito.mockito-all

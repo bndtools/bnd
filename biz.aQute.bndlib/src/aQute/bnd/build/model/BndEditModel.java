@@ -50,9 +50,9 @@ public class BndEditModel {
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH,
+			aQute.lib.osgi.Constants.RUNREPOS,
 																								// BndConstants.RUNREQUIRE,
 																								// BndConstants.RUNEE,
-																								// BndConstants.RUNREPOS,
 																								// BndConstants.RESOLVE_MODE
 																								};
 
@@ -642,6 +642,15 @@ public class BndEditModel {
 		List<String> old = getPluginPath();
 		doSetObject(aQute.lib.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
 	}
+	
+    public List<String> getRunRepos() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
+    }
+
+    public void setRunRepos(List<String> repos) {
+        List<String> old = getRunRepos();
+        doSetObject(aQute.lib.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
+    }
 
 	protected <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;

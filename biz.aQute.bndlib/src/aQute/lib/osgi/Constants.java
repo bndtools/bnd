@@ -109,6 +109,7 @@ public interface Constants {
 	String							RUNPROPERTIES								= "-runproperties";
 	String							RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String							RUNBUNDLES									= "-runbundles";
+	String							RUNREPOS									= "-runrepos";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
 	String							RUNBUILDS									= "-runbuilds";
