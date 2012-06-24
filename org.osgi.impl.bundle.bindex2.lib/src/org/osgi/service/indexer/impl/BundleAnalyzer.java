@@ -155,7 +155,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		
 		File path = new File(location);
 		String fileName = path.getName();
-		String dir = path.getParentFile().getAbsoluteFile().toURI().toURL().toString();
+		String dir = path.getAbsoluteFile().getParentFile().toURI().toURL().toString();
 		
 		String result = location;
 		

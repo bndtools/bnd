@@ -4,6 +4,7 @@ import static org.example.tests.utils.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -37,6 +38,10 @@ public class TestCommandLine extends TestCase {
 	}
 	
 	private void execute(String[] args) throws Exception {
+		execute(args, false);
+	}
+	
+	private void execute(String[] args, boolean runInTempDir) throws Exception {
 		File jarFile = new File(BINDEX2_LIB_PATH);
 		
 		List<String> cmdLine = new LinkedList<String>();
@@ -46,14 +51,16 @@ public class TestCommandLine extends TestCase {
 		cmdLine.add(jarFile.getAbsolutePath());
 		
 		// set root URL
-		cmdLine.add("-d");
-		cmdLine.add(tempDir.getAbsolutePath());
+		if (!runInTempDir) {
+			cmdLine.add("-d");
+			cmdLine.add(tempDir.getAbsolutePath());
+		}
 		
 		for (String arg : args) {
 			cmdLine.add(arg);
 		}
 		
-		File runDir = new File("generated").getAbsoluteFile();
+		File runDir = runInTempDir ? tempDir : new File("generated").getAbsoluteFile();
 		System.out.println("Executing: " + cmdLine + " in directory " + runDir);
 		ProcessBuilder builder = new ProcessBuilder(cmdLine)
 			.directory(runDir)
@@ -79,6 +86,23 @@ public class TestCommandLine extends TestCase {
 		
 		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/expect-compact.xml"));
 		String actual = Utils.readStream(new GZIPInputStream(new FileInputStream("generated/index.xml.gz")));
+		assertEquals(expected, actual);
+	}
+	
+	public void testResourceInWorkingDir() throws Exception {
+		File tempFile = new File(tempDir, "01-bsn+version.jar");
+		Utils.copyFully(Utils.class.getResourceAsStream("/testdata/01-bsn+version.jar"), new FileOutputStream(tempFile));
+		
+		String[] args = new String[] {
+				"--noincrement",
+				"01-bsn+version.jar"
+		};
+		execute(args, true);
+		File outputFile = new File(tempDir, "index.xml.gz");
+		assertTrue(outputFile.exists());
+		
+		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/expect-workingdir.xml"));
+		String actual = Utils.readStream(new GZIPInputStream(new FileInputStream(outputFile)));
 		assertEquals(expected, actual);
 	}
 	

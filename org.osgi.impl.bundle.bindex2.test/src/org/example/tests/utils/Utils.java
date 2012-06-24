@@ -96,7 +96,6 @@ public class Utils {
 	
 	public static File copyToTempFile(File tempDir, String resourcePath) throws IOException {
 		File tempFile = new File(tempDir, resourcePath);
-		System.err.println("----> temp file: " + tempFile.getAbsolutePath());
 		
 		tempFile.deleteOnExit();
 		tempFile.getParentFile().mkdirs();
