@@ -122,9 +122,11 @@ public class TestBundleAnalyzer extends TestCase {
 		List<Capability> fwkCaps = findCaps("osgi.framework", caps);
 		assertNotNull(fwkCaps);
 		assertEquals(1, fwkCaps.size());
+		Capability fwkCap = fwkCaps.get(0);
 		
-		String uses = fwkCaps.get(0).getDirectives().get("uses");
-		assertEquals("org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker", uses);
+		assertEquals("org.apache.felix.framework", fwkCap.getAttributes().get("osgi.framework"));
+		assertEquals(new Version("4.0.2"), fwkCap.getAttributes().get("version"));
+		assertEquals("org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker", fwkCap.getDirectives().get("uses"));
 	}
 	
 	public void testNonOsgiFramework() throws Exception {

@@ -461,16 +461,29 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		if (fwkFactorySvc != null) {
 			Builder builder = new Builder().setNamespace("osgi.framework");
 
+			String identity = null;
+			Version version = null;
 			StringBuilder uses = new StringBuilder();
-			boolean first = true;
+			boolean firstPkg = true;
+			
 			for (Capability cap : caps) {
-				if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
-					if (!first) uses.append(',');
+				if (Namespaces.NS_IDENTITY.equals(cap.getNamespace())) {
+					identity = (String) cap.getAttributes().get(Namespaces.NS_IDENTITY);
+					version = (Version) cap.getAttributes().get(Namespaces.ATTR_VERSION);
+				} else if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
+					if (!firstPkg)
+						uses.append(',');
 					String pkgName = (String) cap.getAttributes().get(Namespaces.NS_WIRING_PACKAGE);
 					uses.append(pkgName);
-					first = false;
+					firstPkg = false;
 				}
 			}
+			
+			if (identity != null)
+				builder.addAttribute("osgi.framework", identity);
+			if (version != null)
+				builder.addAttribute(Namespaces.ATTR_VERSION, version);
+			
 			builder.addDirective(Namespaces.DIRECTIVE_USES, uses.toString());
 			caps.add(builder.buildCapability());
 		}
