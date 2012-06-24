@@ -651,10 +651,21 @@ public class BndEditModel {
         List<String> old = getRunRepos();
         doSetObject(aQute.lib.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
     }
+    
+    public String getRunFramework() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, stringConverter);
+    }
+
+    public void setRunFramework(String clause) {
+        String oldValue = getRunFramework();
+        doSetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
+    }
+
 
 	protected <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;
 		if (objectProperties.containsKey(name)) {
+			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
 			result = temp;
 		} else if (changesToSave.containsKey(name)) {

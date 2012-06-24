@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,7 +8,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -18,17 +18,18 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
-import test.MockRegistry;
-
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.Registry;
+import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.libg.filters.SimpleFilter;
 
 public class BndrunResolveContext extends ResolveContext {
 
-    private final List<Repository> repos = new LinkedList<Repository>();
-
     private final BndEditModel runModel;
     private final Registry registry;
+
+    private final List<Repository> repos = new LinkedList<Repository>();
+    private Resource frameworkResource = null;
 
     private boolean initialised = false;
 
@@ -41,12 +42,19 @@ public class BndrunResolveContext extends ResolveContext {
         if (initialised)
             return;
 
-        // Load repos.
+        loadRepositories();
+        findFramework();
+
+        initialised = true;
+    }
+
+    private void loadRepositories() {
         List<Repository> allRepos = registry.getPlugins(Repository.class);
 
         // Reorder or filter repos list if specified by the run model
         List<String> repoNames = runModel.getRunRepos();
         if (repoNames == null) {
+            // No filter, use all
             repos.addAll(allRepos);
         } else {
             // Map the repository names...
@@ -61,8 +69,23 @@ public class BndrunResolveContext extends ResolveContext {
                     repos.add(repo);
             }
         }
+    }
 
-        initialised = true;
+    private void findFramework() {
+        String frameworkName = runModel.getRunFramework();
+        SimpleFilter frameworkFilter = new SimpleFilter("osgi.framework", frameworkName);
+        Requirement frameworkReq = new CapReqBuilder("osgi.framework").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, frameworkFilter.toString()).buildSyntheticRequirement();
+
+        RepoLoop: for (Repository repo : repos) {
+            Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singletonList(frameworkReq));
+            Collection<Capability> frameworkCaps = providers.get(frameworkReq);
+            if (frameworkCaps != null) {
+                for (Capability frameworkCap : frameworkCaps) {
+                    frameworkResource = frameworkCap.getResource();
+                    break RepoLoop;
+                }
+            }
+        }
     }
 
     public void addRepository(Repository repo) {
@@ -71,7 +94,10 @@ public class BndrunResolveContext extends ResolveContext {
 
     @Override
     public Collection<Resource> getMandatoryResources() {
-        throw new UnsupportedOperationException("TODO");
+        init();
+        if (frameworkResource == null)
+            throw new IllegalStateException(MessageFormat.format("Could not find OSGi framework matching {0}.", runModel.getRunFramework()));
+        return Collections.singletonList(frameworkResource);
     }
 
     @Override

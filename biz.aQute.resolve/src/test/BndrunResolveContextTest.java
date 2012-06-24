@@ -4,6 +4,7 @@ import static test.Utils.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -109,6 +110,20 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo2/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
         resource = providers.get(1).getResource();
         assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+    }
+
+    public void testFrameworkIsMandatory() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework"); // ;version='[4,4.1)'
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        Collection<Resource> resources = context.getMandatoryResources();
+        assertEquals(1, resources.size());
+        Resource fwkResource = resources.iterator().next();
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
     }
 
 }
