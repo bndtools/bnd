@@ -11,15 +11,22 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
+import aQute.lib.deployer.repository.AbstractIndexedRepo;
 import aQute.lib.deployer.repository.FixedIndexedRepo;
 
 public class Utils {
 
     public static Repository createRepo(File index) {
+        return createRepo(index, null);
+    }
+
+    public static Repository createRepo(File index, String name) {
         FixedIndexedRepo repo = new FixedIndexedRepo();
 
         Map<String,String> props = new HashMap<String,String>();
         props.put(FixedIndexedRepo.PROP_LOCATIONS, index.toURI().toString());
+        if (name != null)
+            props.put(AbstractIndexedRepo.PROP_NAME, name);
         repo.setProperties(props);
 
         return repo;

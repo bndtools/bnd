@@ -1,21 +1,21 @@
 package test;
 
+import static test.Utils.*;
+
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
-import static test.Utils.*;
-import static org.mockito.Mockito.*;
+import junit.framework.TestCase;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import biz.aQute.resolve.BndrunResolveContext;
-import junit.framework.TestCase;
 
 public class BndrunResolveContextTest extends TestCase {
 
@@ -47,6 +47,67 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(1, providers.size());
         Resource resource = providers.get(0).getResource();
 
+        assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+    }
+
+    public void testProviderPreference() {
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
+
+        MockRegistry registry;
+        BndrunResolveContext context;
+        List<Capability> providers;
+        Resource resource;
+
+        // First try it with repo1 first
+        registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/repo2.index.xml")));
+
+        context = new BndrunResolveContext(new BndEditModel(), registry);
+        providers = context.findProviders(req);
+        assertEquals(2, providers.size());
+        resource = providers.get(0).getResource();
+        assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+        resource = providers.get(1).getResource();
+        assertEquals(new File("testdata/repo2/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+
+        // Now try it with repo2 first
+        registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo2.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
+
+        context = new BndrunResolveContext(new BndEditModel(), registry);
+        providers = context.findProviders(req);
+        assertEquals(2, providers.size());
+        resource = providers.get(0).getResource();
+        assertEquals(new File("testdata/repo2/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+        resource = providers.get(1).getResource();
+        assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+    }
+
+    public void testReorderRepositories() {
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
+
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo1.index.xml"), "Repository1"));
+        registry.addPlugin(createRepo(new File("testdata/repo2.index.xml"), "Repository2"));
+
+        BndrunResolveContext context;
+        List<Capability> providers;
+        Resource resource;
+        BndEditModel runModel;
+
+        runModel = new BndEditModel();
+        runModel.setRunRepos(Arrays.asList(new String[] {
+                "Repository2", "Repository1"
+        }));
+
+        context = new BndrunResolveContext(runModel, registry);
+        providers = context.findProviders(req);
+        assertEquals(2, providers.size());
+        resource = providers.get(0).getResource();
+        assertEquals(new File("testdata/repo2/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+        resource = providers.get(1).getResource();
         assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
     }
 

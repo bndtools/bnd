@@ -3,6 +3,7 @@ package biz.aQute.resolve;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,25 @@ public class BndrunResolveContext extends ResolveContext {
         if (initialised)
             return;
 
-        List<Repository> repoPlugins = registry.getPlugins(Repository.class);
-        for (Repository repo : repoPlugins) {
-            repos.add(repo);
+        // Load repos.
+        List<Repository> allRepos = registry.getPlugins(Repository.class);
+
+        // Reorder or filter repos list if specified by the run model
+        List<String> repoNames = runModel.getRunRepos();
+        if (repoNames == null) {
+            repos.addAll(allRepos);
+        } else {
+            // Map the repository names...
+            Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
+            for (Repository repo : allRepos)
+                repoNameMap.put(repo.toString(), repo);
+
+            // Create the result list
+            for (String repoName : repoNames) {
+                Repository repo = repoNameMap.get(repoName);
+                if (repo != null)
+                    repos.add(repo);
+            }
         }
 
         initialised = true;

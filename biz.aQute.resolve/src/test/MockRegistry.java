@@ -1,12 +1,14 @@
 package test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.Registry;
 
 public class MockRegistry implements Registry {
 
-    private final Set<Object> plugins = new HashSet<Object>();
+    private final List<Object> plugins = new LinkedList<Object>();
 
     public void addPlugin(Object plugin) {
         plugins.add(plugin);
