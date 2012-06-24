@@ -35,13 +35,19 @@ public class BIndex2 implements ResourceIndexer {
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
 	private final BundleAnalyzer bundleAnalyzer = new BundleAnalyzer();
+	private final OSGiFrameworkAnalyzer frameworkAnalyzer = new OSGiFrameworkAnalyzer();
+	
 	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
 	private LogService log;
 	
 	public BIndex2() {
 		try {
-			addAnalyzer(bundleAnalyzer, createFilter("(name=*.jar)"));
+			Filter allFilter = createFilter("(name=*.jar)");
+			
+			addAnalyzer(bundleAnalyzer, allFilter);
+			addAnalyzer(frameworkAnalyzer, allFilter);
+			
 		} catch (InvalidSyntaxException e) {
 			// Can't happen...?
 			throw new RuntimeException("Unexpected internal error compiling filter");
