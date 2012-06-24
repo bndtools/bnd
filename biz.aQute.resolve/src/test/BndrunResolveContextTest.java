@@ -128,4 +128,39 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
     }
 
+    public void testChooseHighestFrameworkVersion() {
+        MockRegistry registry;
+        BndEditModel runModel;
+        BndrunResolveContext context;
+        Collection<Resource> resources;
+        Resource fwkResource;
+
+        registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.0.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
+
+        context = new BndrunResolveContext(runModel, registry);
+        resources = context.getMandatoryResources();
+        assertEquals(1, resources.size());
+        fwkResource = resources.iterator().next();
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
+
+        // Try it the other way round
+        registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.0.index.xml")));
+
+        runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
+
+        context = new BndrunResolveContext(runModel, registry);
+        resources = context.getMandatoryResources();
+        assertEquals(1, resources.size());
+        fwkResource = resources.iterator().next();
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
+    }
+
 }

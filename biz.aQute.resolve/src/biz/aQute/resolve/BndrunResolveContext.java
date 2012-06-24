@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -37,6 +39,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private final List<Repository> repos = new LinkedList<Repository>();
     private Resource frameworkResource = null;
+    private Version frameworkResourceVersion = null;
 
     private boolean initialised = false;
 
@@ -102,13 +105,24 @@ public class BndrunResolveContext extends ResolveContext {
 
         Requirement frameworkReq = new CapReqBuilder("osgi.framework").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
 
-        RepoLoop: for (Repository repo : repos) {
+        for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singletonList(frameworkReq));
             Collection<Capability> frameworkCaps = providers.get(frameworkReq);
             if (frameworkCaps != null) {
                 for (Capability frameworkCap : frameworkCaps) {
-                    frameworkResource = frameworkCap.getResource();
-                    break RepoLoop;
+                    Version foundVersion;
+                    Object versionObj = frameworkCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                    if (versionObj instanceof Version)
+                        foundVersion = (Version) versionObj;
+                    else if (versionObj instanceof String)
+                        foundVersion = new Version((String) versionObj);
+                    else
+                        foundVersion = null;
+
+                    if (frameworkResourceVersion == null || (foundVersion != null && (foundVersion.compareTo(frameworkResourceVersion) > 0))) {
+                        frameworkResource = frameworkCap.getResource();
+                        frameworkResourceVersion = foundVersion;
+                    }
                 }
             }
         }
