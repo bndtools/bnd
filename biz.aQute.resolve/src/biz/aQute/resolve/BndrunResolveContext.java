@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -21,7 +22,13 @@ import org.osgi.service.resolver.ResolveContext;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.Registry;
 import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.lib.osgi.resource.Filters;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
 import aQute.libg.filters.SimpleFilter;
+import aQute.libg.header.Attrs;
+import aQute.libg.header.Parameters;
+import aQute.libg.version.VersionRange;
 
 public class BndrunResolveContext extends ResolveContext {
 
@@ -72,9 +79,28 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private void findFramework() {
-        String frameworkName = runModel.getRunFramework();
-        SimpleFilter frameworkFilter = new SimpleFilter("osgi.framework", frameworkName);
-        Requirement frameworkReq = new CapReqBuilder("osgi.framework").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, frameworkFilter.toString()).buildSyntheticRequirement();
+        String header = runModel.getRunFramework();
+        if (header == null)
+            return;
+
+        Parameters params = new Parameters(header);
+        if (params.size() > 1)
+            throw new IllegalArgumentException("Cannot specify more than one OSGi Framework.");
+        Entry<String,Attrs> entry = params.entrySet().iterator().next();
+        String identity = entry.getKey();
+
+        VersionRange version = null;
+        String versionStr = entry.getValue().get("version");
+        if (versionStr != null)
+            version = new VersionRange(versionStr);
+
+        Filter filter;
+        if (version == null)
+            filter = new SimpleFilter("osgi.framework", identity);
+        else
+            filter = new AndFilter().addChild(new SimpleFilter("osgi.framework", identity)).addChild(Filters.fromVersionRange(version));
+
+        Requirement frameworkReq = new CapReqBuilder("osgi.framework").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
 
         RepoLoop: for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singletonList(frameworkReq));

@@ -119,7 +119,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework"); // ;version='[4,4.1)'
+        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
         Collection<Resource> resources = context.getMandatoryResources();
