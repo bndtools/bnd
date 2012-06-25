@@ -665,7 +665,6 @@ public class BndEditModel {
 	protected <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;
 		if (objectProperties.containsKey(name)) {
-			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
 			result = temp;
 		} else if (changesToSave.containsKey(name)) {

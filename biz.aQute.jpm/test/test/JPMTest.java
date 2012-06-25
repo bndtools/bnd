@@ -42,7 +42,7 @@ public class JPMTest extends TestCase {
 		public String createService(ServiceData data) throws Exception {
 			return null;
 		}
-	};
+	}
 
 	public void testSimple() {
 		Reporter r = new ReporterAdapter();

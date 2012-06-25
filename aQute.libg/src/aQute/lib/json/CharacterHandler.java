@@ -8,7 +8,7 @@ public class CharacterHandler extends Handler {
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		Character c = (Character) object;
-		int v = (int) c.charValue();
+		int v = c.charValue();
 		app.append(v + "");
 	}
 

@@ -15,7 +15,7 @@ public class ProjectLaunchImplTest extends TestCase {
 		ProjectLauncherImpl launcher = new ProjectLauncherImpl(project);
 		launcher.prepare();
 
-		String arg = (String) launcher.getRunVM().iterator().next();
+		String arg = (String)launcher.getRunVM().iterator().next();
 		String propertiesPath = arg.substring("-Dlauncher.properties=".length());
 
 		Properties launchProps = new Properties();

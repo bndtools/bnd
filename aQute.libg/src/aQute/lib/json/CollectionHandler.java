@@ -48,7 +48,6 @@ public class CollectionHandler extends Handler {
 		app.append("]");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	Object decodeArray(Decoder r) throws Exception {
 		Collection<Object> c = (Collection<Object>) rawClass.newInstance();

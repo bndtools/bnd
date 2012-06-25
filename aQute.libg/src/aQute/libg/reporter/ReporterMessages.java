@@ -24,7 +24,6 @@ import aQute.libg.reporter.Messages.WARNING;
 
 public class ReporterMessages {
 
-	@SuppressWarnings("unchecked")
 	public static <T> T base(final Reporter reporter, Class<T> messages) {
 		return (T) Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
 			messages

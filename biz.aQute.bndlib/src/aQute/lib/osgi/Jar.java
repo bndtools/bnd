@@ -455,7 +455,7 @@ public class Jar implements Closeable {
 
 			for (Map.Entry< ? , ? > entry : org.getAttributes(name).entrySet()) {
 				String nice = clean((String) entry.getValue());
-				attrs.put((Attributes.Name) entry.getKey(), nice);
+				attrs.put(entry.getKey(), nice);
 			}
 		}
 		return result;

@@ -123,7 +123,7 @@ public class Tag {
 	 * Return the attribute value.
 	 */
 	public String getAttribute(String key) {
-		return (String) attributes.get(key);
+		return attributes.get(key);
 	}
 
 	/**
@@ -204,8 +204,8 @@ public class Tag {
 		pw.print(name);
 
 		for (Enumeration<String> e = attributes.keys(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
-			String value = escape((String) attributes.get(key));
+			String key = e.nextElement();
+			String value = escape(attributes.get(key));
 			pw.print(' ');
 			pw.print(key);
 			pw.print("=");

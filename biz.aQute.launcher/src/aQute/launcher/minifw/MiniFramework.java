@@ -35,8 +35,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 				long wait = deadline - System.currentTimeMillis();
 				if (wait <= 0)
 					return new FrameworkEvent(FrameworkEvent.WAIT_TIMEDOUT, this, null);
-			} else {
-				;
 			}
 			Thread.sleep(100);
 		}
@@ -122,13 +120,13 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	public Bundle getBundle(long id) {
 		Long l = new Long(id);
-		Bundle b = (Bundle) bundles.get(l);
+		Bundle b = bundles.get(l);
 		return b;
 	}
 
 	public Bundle[] getBundles() {
 		Bundle[] bs = new Bundle[bundles.size()];
-		return (Bundle[]) bundles.values().toArray(bs);
+		return bundles.values().toArray(bs);
 	}
 
 	public File getDataFile(String filename) {

@@ -162,7 +162,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		JarFile jar = new JarFile(new File(location));
 		try {
 			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
-				ZipEntry entry = (JarEntry) e.nextElement();
+				ZipEntry entry = e.nextElement();
 				paths.add(entry.getName());
 			}
 		}

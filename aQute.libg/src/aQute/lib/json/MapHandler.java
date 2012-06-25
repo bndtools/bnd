@@ -49,7 +49,6 @@ public class MapHandler extends Handler {
 		app.append("}");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';

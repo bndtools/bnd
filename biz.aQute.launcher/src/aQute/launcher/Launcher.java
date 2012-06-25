@@ -540,7 +540,7 @@ public class Launcher implements ServiceListener {
 			if (implementations.size() > 1)
 				error("Found more than one framework implementations: %s", implementations);
 
-			String implementation = (String) implementations.get(0);
+			String implementation = implementations.get(0);
 
 			Class< ? > clazz = loader.loadClass(implementation);
 			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
@@ -573,7 +573,7 @@ public class Launcher implements ServiceListener {
 		List<String> factories = new ArrayList<String>();
 
 		while (e.hasMoreElements()) {
-			URL url = (URL) e.nextElement();
+			URL url = e.nextElement();
 			trace("found META-INF/services in %s", url);
 
 			InputStream in = null;

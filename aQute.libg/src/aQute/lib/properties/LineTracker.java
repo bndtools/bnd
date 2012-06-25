@@ -38,7 +38,7 @@ public class LineTracker {
 
 			mid = (left + right) / 2;
 
-			line = (Line) fLines.get(mid);
+			line = fLines.get(mid);
 			if (offset < line.offset) {
 				if (left == mid)
 					right = left;
@@ -54,7 +54,7 @@ public class LineTracker {
 			}
 		}
 
-		line = (Line) fLines.get(left);
+		line = fLines.get(left);
 		if (line.offset > offset)
 			--left;
 		return left;
@@ -80,7 +80,7 @@ public class LineTracker {
 
 		int target = offset + length;
 
-		Line l = (Line) fLines.get(startLine);
+		Line l = fLines.get(startLine);
 
 		if (l.delimiter == null)
 			return 1;
@@ -106,7 +106,7 @@ public class LineTracker {
 		if (lines == 0 || lines == line)
 			return 0;
 
-		Line l = (Line) fLines.get(line);
+		Line l = fLines.get(line);
 		return l.length;
 	}
 
@@ -123,7 +123,7 @@ public class LineTracker {
 			if (lastLine < 0)
 				return 0;
 
-			Line l = (Line) fLines.get(lastLine);
+			Line l = fLines.get(lastLine);
 			return (l.delimiter != null ? lastLine + 1 : lastLine);
 		}
 
@@ -141,7 +141,7 @@ public class LineTracker {
 			int size = fLines.size();
 			if (size == 0)
 				return new Region(0, 0);
-			Line l = (Line) fLines.get(size - 1);
+			Line l = fLines.get(size - 1);
 			return (l.delimiter != null ? new Line(fTextLength, 0) : new Line(fTextLength - l.length, l.length));
 		}
 
@@ -161,11 +161,11 @@ public class LineTracker {
 			return new Line(0, 0);
 
 		if (line == lines) {
-			Line l = (Line) fLines.get(line - 1);
+			Line l = fLines.get(line - 1);
 			return new Line(l.offset + l.length, 0);
 		}
 
-		Line l = (Line) fLines.get(line);
+		Line l = fLines.get(line);
 		return (l.delimiter != null ? new Line(l.offset, l.length - l.delimiter.length()) : l);
 	}
 
@@ -182,13 +182,13 @@ public class LineTracker {
 			return 0;
 
 		if (line == lines) {
-			Line l = (Line) fLines.get(line - 1);
+			Line l = fLines.get(line - 1);
 			if (l.delimiter != null)
 				return l.offset + l.length;
 			throw new BadLocationException();
 		}
 
-		Line l = (Line) fLines.get(line);
+		Line l = fLines.get(line);
 		return l.offset;
 	}
 
@@ -201,7 +201,7 @@ public class LineTracker {
 		if (lines == 0)
 			return 1;
 
-		Line l = (Line) fLines.get(lines - 1);
+		Line l = fLines.get(lines - 1);
 		return (l.delimiter != null ? lines + 1 : lines);
 	}
 
@@ -251,7 +251,7 @@ public class LineTracker {
 		if (line == lines)
 			return null;
 
-		Line l = (Line) fLines.get(line);
+		Line l = fLines.get(line);
 		return l.delimiter;
 	}
 
@@ -338,7 +338,7 @@ public class LineTracker {
 		if (start < text.length()) {
 			if (insertPosition + count < fLines.size()) {
 				// there is a line below the current
-				Line l = (Line) fLines.get(insertPosition + count);
+				Line l = fLines.get(insertPosition + count);
 				int delta = text.length() - start;
 				l.offset -= delta;
 				l.length += delta;

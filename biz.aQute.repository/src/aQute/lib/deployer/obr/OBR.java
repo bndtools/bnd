@@ -26,7 +26,6 @@ import aQute.lib.deployer.repository.FixedIndexedRepo;
  * 
  * @author Neil Bartlett
  */
-@SuppressWarnings("deprecation")
 public class OBR extends FixedIndexedRepo {
 
 	@Override

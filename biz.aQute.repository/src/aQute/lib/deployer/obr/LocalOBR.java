@@ -4,7 +4,6 @@ import java.util.Map;
 
 import aQute.lib.deployer.repository.LocalIndexedRepo;
 
-@SuppressWarnings("deprecation")
 public class LocalOBR extends LocalIndexedRepo {
 
 	@Override

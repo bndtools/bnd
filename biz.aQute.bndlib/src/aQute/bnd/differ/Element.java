@@ -125,7 +125,7 @@ class Element implements Tree {
 	}
 
 	public Diff diff(Tree older) {
-		return new DiffImpl(this, (Element) older);
+		return new DiffImpl(this, older);
 	}
 
 	public Element get(String name) {

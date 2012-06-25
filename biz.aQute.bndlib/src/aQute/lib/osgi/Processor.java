@@ -338,7 +338,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				key = removeDuplicateMarker(key);
 
 				try {
-					Class< ? > c = (Class< ? >) loader.loadClass(key);
+					Class< ? > c = loader.loadClass(key);
 					Object plugin = c.newInstance();
 					customize(plugin, entry.getValue());
 					list.add(plugin);

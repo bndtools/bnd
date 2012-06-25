@@ -38,7 +38,6 @@ public class Syntax implements Constants {
 																							+ Verifier.VERSIONRANGE
 																									.toString()));
 
-	@SuppressWarnings("deprecation")
 	static Syntax[]							syntaxes				= new Syntax[] {
 			new Syntax(
 					BUNDLE_ACTIVATIONPOLICY,
