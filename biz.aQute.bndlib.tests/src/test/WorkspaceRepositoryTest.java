@@ -1,13 +1,8 @@
 package test;
 
-import java.io.*;
-import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.io.*;
-import aQute.libg.version.*;
 
 public class WorkspaceRepositoryTest extends TestCase {
 	Workspace			workspace;
