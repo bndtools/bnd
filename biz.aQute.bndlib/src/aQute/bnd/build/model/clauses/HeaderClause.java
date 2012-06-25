@@ -158,7 +158,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		if (attribs == null) {
 			if (other.attribs != null)
 				return false;
-		} else if (!attribs.equals(other.attribs))
+		} else if (!attribs.isEqual(other.attribs))
 			return false;
 		if (name == null) {
 			if (other.name != null)
