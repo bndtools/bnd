@@ -11,20 +11,20 @@ import javax.xml.transform.stream.*;
 public class Transform {
 	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
 
-	static Map<URL,Templates>	cache				= new ConcurrentHashMap<URL,Templates>();
+	static Map<URI,Templates>	cache				= new ConcurrentHashMap<URI,Templates>();
 
 	public static void transform(TransformerFactory transformerFactory, URL xslt, InputStream in, OutputStream out)
 			throws Exception {
 		if (xslt == null)
 			throw new IllegalArgumentException("No source template specified");
 
-		Templates templates = cache.get(xslt);
+		Templates templates = cache.get(xslt.toURI());
 		if (templates == null) {
 			InputStream xsltIn = xslt.openStream();
 			try {
 				templates = transformerFactory.newTemplates(new StreamSource(xsltIn));
 
-				cache.put(xslt, templates);
+				cache.put(xslt.toURI(), templates);
 			}
 			finally {
 				in.close();
