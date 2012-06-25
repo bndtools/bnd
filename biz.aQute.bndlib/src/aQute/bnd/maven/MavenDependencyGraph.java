@@ -14,7 +14,7 @@ public class MavenDependencyGraph {
 	final List<Artifact>				dependencies	= new ArrayList<Artifact>();
 	final List<URL>						repositories	= new ArrayList<URL>();
 	final XPath							xpath			= xpathFactory.newXPath();
-	final Map<URL,Artifact>				cache			= new HashMap<URL,Artifact>();
+	final Map<URI,Artifact>				cache			= new HashMap<URI,Artifact>();
 	Artifact							root;
 
 	enum Scope {
@@ -89,11 +89,11 @@ public class MavenDependencyGraph {
 			String path = getPath(repository.toString(), groupId, artifactId, version);
 
 			try {
-				URL url = new URL(path + ".pom");
+				URI url = new URL(path + ".pom").toURI();
 				if (cache.containsKey(url)) {
 					return cache.get(url);
 				}
-				return new Artifact(url);
+				return new Artifact(url.toURL());
 			}
 			catch (Exception e) {
 				System.err.println("Failed to get " + artifactId + " from " + repository);
