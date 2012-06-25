@@ -561,7 +561,7 @@ public class Analyzer extends Processor {
 		return value.trim();
 	}
 
-	public String _bsn(String args[]) {
+	public String _bsn(@SuppressWarnings("unused") String args[]) {
 		return getBsn();
 	}
 
@@ -2294,7 +2294,7 @@ public class Analyzer extends Processor {
 		return ees.first();
 	}
 
-	public String _ee(String args[]) {
+	public String _ee(@SuppressWarnings("unused") String args[]) {
 		return getLowestEE().getEE();
 	}
 

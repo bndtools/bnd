@@ -262,11 +262,11 @@ public class Macro implements Replacer {
 		return Processor.join(set, ",");
 	}
 
-	public String _pathseparator(String args[]) {
+	public String _pathseparator(@SuppressWarnings("unused") String args[]) {
 		return File.pathSeparator;
 	}
 
-	public String _separator(String args[]) {
+	public String _separator(@SuppressWarnings("unused") String args[]) {
 		return File.separator;
 	}
 
@@ -335,7 +335,7 @@ public class Macro implements Replacer {
 			return "";
 	}
 
-	public String _now(String args[]) {
+	public String _now(@SuppressWarnings("unused") String args[]) {
 		return new Date().toString();
 	}
 
@@ -611,7 +611,7 @@ public class Macro implements Replacer {
 		return Processor.join(result, ",");
 	}
 
-	public String _currenttime(String args[]) {
+	public String _currenttime(@SuppressWarnings("unused") String args[]) {
 		return Long.toString(System.currentTimeMillis());
 	}
 
@@ -849,7 +849,7 @@ public class Macro implements Replacer {
 		}
 	}
 
-	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {
+	public static void verifyCommand(String args[], @SuppressWarnings("unused") String help, Pattern[] patterns, int low, int high) {
 		String message = "";
 		if (args.length > high) {
 			message = "too many arguments";

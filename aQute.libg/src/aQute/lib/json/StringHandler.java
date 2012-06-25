@@ -103,7 +103,7 @@ public class StringHandler extends Handler {
 	 * @return
 	 * @throws Exception
 	 */
-	private Object collect(Decoder isr, char close) throws Exception {
+	private Object collect(Decoder isr, @SuppressWarnings("unused") char close) throws Exception {
 		boolean instring = false;
 		int level = 1;
 		StringBuilder sb = new StringBuilder();

@@ -128,7 +128,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
-	private String getFraction(long l, int i) {
+	private String getFraction(long l, @SuppressWarnings("unused") int i) {
 		return (l / 1000) + "." + (l % 1000);
 	}
 
@@ -151,7 +151,7 @@ public class JunitXmlReport implements TestReporter {
 		progress(name);
 	}
 
-	public void setTests(List<Test> flattened) {}
+	public void setTests(@SuppressWarnings("unused") List<Test> flattened) {}
 
 	// <testcase classname="test.AnalyzerTest" name="testMultilevelInheritance"
 	// time="0.772">
@@ -173,7 +173,7 @@ public class JunitXmlReport implements TestReporter {
 		errors++;
 	}
 
-	private void progress(String s) {}
+	private void progress(@SuppressWarnings("unused") String s) {}
 
 	private String getTrace(Throwable t) {
 		StringWriter sw = new StringWriter();

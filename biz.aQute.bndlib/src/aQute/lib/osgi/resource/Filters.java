@@ -13,7 +13,7 @@ public class Filters {
 		return fromVersionRange(range, "version");
 	}
 	
-	public static Filter fromVersionRange(VersionRange range, String versionAttr) {
+	public static Filter fromVersionRange(VersionRange range, @SuppressWarnings("unused") String versionAttr) {
 		if (range == null)
 			return null;
 		

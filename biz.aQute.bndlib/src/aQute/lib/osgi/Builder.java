@@ -247,7 +247,7 @@ public class Builder extends Analyzer {
 		changedFile(f);
 	}
 
-	protected void changedFile(File f) {}
+	protected void changedFile(@SuppressWarnings("unused") File f) {}
 
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
@@ -256,7 +256,7 @@ public class Builder extends Analyzer {
 	 * @return
 	 */
 
-	void sign(Jar jar) throws Exception {
+	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
 		String signing = getProperty("-sign");
 		if (signing == null)
 			return;
@@ -433,7 +433,7 @@ public class Builder extends Analyzer {
 		return sourcePath;
 	}
 
-	private void doVerify(Jar dot) throws Exception {
+	private void doVerify(@SuppressWarnings("unused") Jar dot) throws Exception {
 		Verifier verifier = new Verifier(this);
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
@@ -940,7 +940,7 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, String clause, Map<String,String> extra, String source, String destinationPath)
+	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source, String destinationPath)
 			throws Exception {
 		Jar src = getJarFromName(source, "Include-Resource " + source);
 		if (src != null) {
@@ -1412,7 +1412,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	public void doDiff(Jar dot) throws Exception {
+	public void doDiff(@SuppressWarnings("unused") Jar dot) throws Exception {
 		Parameters diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;

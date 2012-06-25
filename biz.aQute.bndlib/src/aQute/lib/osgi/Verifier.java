@@ -42,7 +42,7 @@ public class Verifier extends Processor {
 		String	name;
 		int		target;
 
-		EE(String name, int source, int target) {
+		EE(String name, @SuppressWarnings("unused") int source, int target) {
 			this.name = name;
 			this.target = target;
 		}
@@ -488,7 +488,7 @@ public class Verifier extends Processor {
 		}
 	}
 
-	private void verifyType(Attrs.Type type, String string) {
+	private void verifyType(@SuppressWarnings("unused") Attrs.Type type, @SuppressWarnings("unused") String string) {
 
 	}
 

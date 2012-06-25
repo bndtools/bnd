@@ -292,7 +292,7 @@ public class ConverterTest extends TestCase {
 		assertEquals("{a=1, b=2}", new TreeMap(gSemiMap.strings).toString());
 	}
 
-	void assertPrimitives(Object source) throws Exception {
+	void assertPrimitives(@SuppressWarnings("unused") Object source) throws Exception {
 		Class[] types = {
 				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
 		};

@@ -1,7 +1,7 @@
 package aQute.bnd.compatibility;
 
 public class GenericType {
-	public GenericType(Class<Object> class1) {
+	public GenericType(@SuppressWarnings("unused") Class<Object> class1) {
 		// TODO Auto-generated constructor stub
 	}
 

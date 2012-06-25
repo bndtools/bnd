@@ -629,7 +629,7 @@ class JavaElement {
 		elements.addAll(set);
 	}
 
-	private static void access(Collection<Element> children, int access, boolean deprecated) {
+	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused") boolean deprecated) {
 		if (!isPublic(access))
 			children.add(PROTECTED);
 		if (isAbstract(access))

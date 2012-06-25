@@ -423,7 +423,7 @@ public class Main extends ReporterAdapter {
 		jpm.gc();
 	}
 
-	public void _gc(GCOptions opts) throws Exception {
+	public void _gc(@SuppressWarnings("unused") GCOptions opts) throws Exception {
 		jpm.gc();
 	}
 
@@ -635,7 +635,7 @@ public class Main extends ReporterAdapter {
 	 * 
 	 * @throws Exception
 	 */
-	public void _init(Options opts) throws Exception {
+	public void _init(@SuppressWarnings("unused") Options opts) throws Exception {
 		String s = System.getProperty("java.class.path");
 		if (s == null || s.indexOf(File.pathSeparator) > 0) {
 			error("Cannot initialize because not clear what the command jar is from java.class.path: %s", s);
@@ -654,7 +654,7 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	public void _platform(platformOptions opts) {
+	public void _platform(@SuppressWarnings("unused") platformOptions opts) {
 		out.println(jpm);
 	}
 

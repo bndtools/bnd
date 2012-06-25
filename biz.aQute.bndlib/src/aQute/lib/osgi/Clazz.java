@@ -69,7 +69,7 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
-		public static JAVA getJava(int major, int minor) {
+		public static JAVA getJava(int major, @SuppressWarnings("unused") int minor) {
 			for (JAVA j : JAVA.values()) {
 				if (j.major == major)
 					return j;
@@ -629,7 +629,7 @@ public class Clazz {
 			pool[poolIndex] = intPool[poolIndex];
 	}
 
-	protected void pool(Object[] pool, int[] intPool) {}
+	protected void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
 
 	/**
 	 * @param in

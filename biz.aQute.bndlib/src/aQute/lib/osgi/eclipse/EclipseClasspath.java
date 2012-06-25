@@ -50,7 +50,7 @@ public class EclipseClasspath {
 	 * @throws IOException
 	 */
 
-	public EclipseClasspath(Reporter reporter, File workspace, File project, int options) throws Exception {
+	public EclipseClasspath(Reporter reporter, File workspace, File project, @SuppressWarnings("unused") int options) throws Exception {
 		this.project = project.getCanonicalFile();
 		this.workspace = workspace.getCanonicalFile();
 		this.reporter = reporter;

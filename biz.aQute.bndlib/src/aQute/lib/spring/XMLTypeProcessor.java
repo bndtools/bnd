@@ -16,7 +16,7 @@ public class XMLTypeProcessor implements AnalyzerPlugin {
 		return false;
 	}
 
-	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
+	protected List<XMLType> getTypes(@SuppressWarnings("unused") Analyzer analyzer) throws Exception {
 		return new ArrayList<XMLType>();
 	}
 

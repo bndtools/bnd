@@ -8,7 +8,7 @@ import aQute.libg.reporter.*;
 public class BndListener {
 	final AtomicInteger	inside	= new AtomicInteger();
 
-	public void changed(File file) {}
+	public void changed(@SuppressWarnings("unused") File file) {}
 
 	public void begin() {
 		inside.incrementAndGet();
@@ -22,7 +22,7 @@ public class BndListener {
 		return inside.get() != 0;
 	}
 
-	public void signal(Reporter reporter) {
+	public void signal(@SuppressWarnings("unused") Reporter reporter) {
 
 	}
 }

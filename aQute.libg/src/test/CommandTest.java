@@ -26,11 +26,11 @@ public class CommandTest extends TestCase {
 	}
 
 	static class X {
-		public void _cmda(xoptions opts) {
+		public void _cmda(@SuppressWarnings("unused") xoptions opts) {
 
 		}
 
-		public void _cmdb(xoptions opts) {
+		public void _cmdb(@SuppressWarnings("unused") xoptions opts) {
 
 		}
 	}
@@ -72,7 +72,7 @@ public class CommandTest extends TestCase {
 			return "a";
 		}
 
-		public void _c2(c2options x) {
+		public void _c2(@SuppressWarnings("unused") c2options x) {
 
 		}
 	}

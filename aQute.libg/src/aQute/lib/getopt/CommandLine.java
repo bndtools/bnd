@@ -308,7 +308,7 @@ public class CommandLine {
 	 * Provide a help text.
 	 */
 
-	public void help(Formatter f, Object target, String cmd, Class< ? extends Options> specification) {
+	public void help(Formatter f, @SuppressWarnings("unused") Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
 		Map<String,Method> options = getOptions(specification);

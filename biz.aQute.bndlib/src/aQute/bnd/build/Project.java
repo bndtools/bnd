@@ -55,7 +55,7 @@ public class Project extends Processor {
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
 
-	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
+	public Project(Workspace workspace, @SuppressWarnings("unused") File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
@@ -1665,7 +1665,7 @@ public class Project extends Processor {
 		return jar;
 	}
 
-	public String _project(String args[]) {
+	public String _project(@SuppressWarnings("unused") String args[]) {
 		return getBase().getAbsolutePath();
 	}
 
@@ -1754,7 +1754,7 @@ public class Project extends Processor {
 	/**
 	 * Run all before command plugins
 	 */
-	void before(Project p, String a) {
+	void before(@SuppressWarnings("unused") Project p, String a) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (CommandPlugin testPlugin : testPlugins) {
 			testPlugin.before(this, a);
@@ -1764,7 +1764,7 @@ public class Project extends Processor {
 	/**
 	 * Run all after command plugins
 	 */
-	void after(Project p, String a, Throwable t) {
+	void after(@SuppressWarnings("unused") Project p, String a, Throwable t) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (int i = testPlugins.size() - 1; i >= 0; i--) {
 			testPlugins.get(i).after(this, a, t);
@@ -1801,7 +1801,7 @@ public class Project extends Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void script(String type, String script) throws Exception {
+	public void script(@SuppressWarnings("unused") String type, String script) throws Exception {
 		// TODO check tyiping
 		List<Scripter> scripters = getPlugins(Scripter.class);
 		if (scripters.isEmpty()) {
@@ -1813,7 +1813,7 @@ public class Project extends Processor {
 		scripters.get(0).eval(x, new StringReader(script));
 	}
 
-	public String _repos(String args[]) throws Exception {
+	public String _repos(@SuppressWarnings("unused") String args[]) throws Exception {
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		List<String> names = new ArrayList<String>();
 		for (RepositoryPlugin rp : repos)
@@ -1907,7 +1907,7 @@ public class Project extends Processor {
 	 * @return null or the builder for a sub file.
 	 * @throws Exception
 	 */
-	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
+	public Container getDeliverable(String bsn, @SuppressWarnings("unused") Map<String,String> attrs) throws Exception {
 		Collection< ? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
 			if (sub.getBsn().equals(bsn))

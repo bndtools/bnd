@@ -75,13 +75,13 @@ public class ComponentTest extends TestCase {
 	static class TestReferenceOrdering {
 
 		@Reference(service = LogService.class)
-		void setA(ServiceReference ref) {}
+		void setA(@SuppressWarnings("unused") ServiceReference ref) {}
 
 		@Reference
-		void setC(LogService log) {}
+		void setC(@SuppressWarnings("unused") LogService log) {}
 
 		@Reference(service = LogService.class)
-		void setB(Map<String,Object> map) {}
+		void setB(@SuppressWarnings("unused") Map<String,Object> map) {}
 	}
 
 	public void testReferenceOrdering() throws Exception {
@@ -201,7 +201,7 @@ public class ComponentTest extends TestCase {
 	}, designate = Config.class, designateFactory = Config.class)
 	static class PropertiesAndConfig {
 		@Activate
-		protected void activate(ComponentContext c) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	public void testPropertiesAndConfig() throws Exception {
@@ -260,13 +260,13 @@ public class ComponentTest extends TestCase {
 	@Component(name = "protected")
 	static class PackageProtectedActivateMethod {
 		@Activate
-		protected void activatex(ComponentContext c) {}
+		protected void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "packageprivate")
 	static class PackagePrivateActivateMethod {
 		@Activate
-		void activatex(ComponentContext c) {}
+		void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "private")
@@ -286,13 +286,13 @@ public class ComponentTest extends TestCase {
 	@Component(name = "default-protected")
 	static class DefaultProtectedActivateMethod {
 		@Activate
-		protected void activate(ComponentContext c) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "public")
 	static class PublicActivateMethod {
 		@Activate
-		public void activatex(ComponentContext c) {}
+		public void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	public void testPackagePrivateActivateMethod() throws Exception {
@@ -352,7 +352,7 @@ public class ComponentTest extends TestCase {
 	static class Annotated {
 
 		@Reference
-		protected void setLog(LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -425,7 +425,7 @@ public class ComponentTest extends TestCase {
 	static class NoUnbind {
 
 		@Reference
-		protected void setLog(LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -451,7 +451,7 @@ public class ComponentTest extends TestCase {
 	static class ExplicitUnbind {
 
 		@Reference(unbind = "killLog")
-		protected void setLog(LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -482,7 +482,7 @@ public class ComponentTest extends TestCase {
 	static class NewActivateVersion {
 
 		@Activate
-		protected void activate(ComponentContext context) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext context) {}
 
 	}
 
@@ -497,7 +497,7 @@ public class ComponentTest extends TestCase {
 	static class NewBindVersion {
 
 		@Reference
-		protected void bind(ServiceReference ref, Map<String,Object> map) {}
+		protected void bind(@SuppressWarnings("unused") ServiceReference ref, @SuppressWarnings("unused") Map<String,Object> map) {}
 
 	}
 
@@ -529,12 +529,12 @@ public class ComponentTest extends TestCase {
 	static class SameRefName {
 
 		@Reference
-		protected void bind(LogService log) {
+		protected void bind(@SuppressWarnings("unused") LogService log) {
 
 		}
 
 		@Reference
-		protected void bind(EventAdmin event) {
+		protected void bind(@SuppressWarnings("unused") EventAdmin event) {
 
 		}
 	}
@@ -595,13 +595,13 @@ public class ComponentTest extends TestCase {
 	static class OldVersion {
 
 		@Activate
-		protected void activate(ComponentContext cc) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		protected void deactivate(ComponentContext cc) {}
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
-		protected void bindLog(LogService log) {
+		protected void bindLog(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -615,7 +615,7 @@ public class ComponentTest extends TestCase {
 
 		@Activate
 		// Is not allowed, must give an error
-		protected void whatever(String x) {}
+		protected void whatever(@SuppressWarnings("unused") String x) {}
 
 	}
 
@@ -645,7 +645,7 @@ public class ComponentTest extends TestCase {
 	static class ActivateWithMultipleArguments {
 
 		@Activate
-		protected void whatever(Map< ? , ? > map, ComponentContext cc, BundleContext bc, Map< ? , ? > x) {}
+		protected void whatever(@SuppressWarnings("unused") Map< ? , ? > map, @SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext bc, @SuppressWarnings("unused") Map< ? , ? > x) {}
 
 	}
 
@@ -673,7 +673,7 @@ public class ComponentTest extends TestCase {
 	static class MultipleArguments {
 
 		@Reference
-		protected void bindWithMap(LogService log, Map< ? , ? > map) {}
+		protected void bindWithMap(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused") Map< ? , ? > map) {}
 
 	}
 
@@ -681,7 +681,7 @@ public class ComponentTest extends TestCase {
 	static class ReferenceArgument {
 
 		@Reference(service = LogService.class)
-		protected void bindReference(ServiceReference ref) {}
+		protected void bindReference(@SuppressWarnings("unused") ServiceReference ref) {}
 
 	}
 
@@ -714,10 +714,10 @@ public class ComponentTest extends TestCase {
 	static class TypeVersusDetailed {
 
 		@Reference(type = '*')
-		protected void bind(LogService log) {}
+		protected void bind(@SuppressWarnings("unused") LogService log) {}
 
 		@Reference(multiple = true, optional = true, dynamic = true)
-		protected void bind2(LogService log) {}
+		protected void bind2(@SuppressWarnings("unused") LogService log) {}
 	}
 
 	public void testTypeVersusDetailed() throws Exception {
@@ -775,7 +775,7 @@ public class ComponentTest extends TestCase {
 	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.require)
 	static class MyComponent2 {
 		@Reference
-		protected void addLogMultiple(LogService log) {
+		protected void addLogMultiple(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -808,7 +808,7 @@ public class ComponentTest extends TestCase {
 	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.ignore)
 	static class MyComponent3 {
 		@Reference(unbind = "destroyX")
-		protected void putX(LogService log) {
+		protected void putX(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -856,7 +856,7 @@ public class ComponentTest extends TestCase {
 			this.log = log;
 		}
 
-		protected void unsetLog(LogService log) {
+		protected void unsetLog(@SuppressWarnings("unused") LogService log) {
 			this.log = null;
 		}
 

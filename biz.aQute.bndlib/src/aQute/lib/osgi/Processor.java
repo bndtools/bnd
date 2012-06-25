@@ -453,7 +453,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.clear();
 	}
 
-	public String _basedir(String args[]) {
+	public String _basedir(@SuppressWarnings("unused") String args[]) {
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
@@ -859,7 +859,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, boolean checkMultipleVersions)
+	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, @SuppressWarnings("unused") boolean checkMultipleVersions)
 			throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
@@ -961,7 +961,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return result;
 	}
 
-	public boolean updateModified(long time, String reason) {
+	public boolean updateModified(long time, @SuppressWarnings("unused") String reason) {
 		if (time > lastModified) {
 			lastModified = time;
 			return true;

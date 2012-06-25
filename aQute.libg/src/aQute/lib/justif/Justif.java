@@ -5,7 +5,7 @@ import java.util.*;
 public class Justif {
 	int[]	tabs;
 
-	public Justif(int width, int... tabs) {
+	public Justif(@SuppressWarnings("unused") int width, int... tabs) {
 		this.tabs = tabs;
 	}
 

@@ -7,7 +7,7 @@ import java.util.*;
 public class ArrayHandler extends Handler {
 	Type	componentType;
 
-	ArrayHandler(Class< ? > rawClass, Type componentType) {
+	ArrayHandler(@SuppressWarnings("unused") Class< ? > rawClass, Type componentType) {
 		this.componentType = componentType;
 	}
 

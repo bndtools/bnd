@@ -6,7 +6,7 @@ import test.genericinterf.c.*;
 public class A<T> implements B<C<T>> {
 	public T	field;
 
-	public <X> X foo(X x) {
+	public <X> X foo(@SuppressWarnings("unused") X x) {
 		return null;
 	}
 }

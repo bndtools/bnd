@@ -116,7 +116,7 @@ public class RepoCommand {
 	 */
 	interface reposOptions extends Options {}
 
-	public void _repos(reposOptions opts) {
+	public void _repos(@SuppressWarnings("unused") reposOptions opts) {
 		int n = 1;
 		for (RepositoryPlugin repo : repos) {
 			String location = "";

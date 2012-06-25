@@ -432,7 +432,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param pw
 		 * @param provides
 		 */
-		void provide(PrintWriter pw, String provides, boolean servicefactory, String impl) {
+		void provide(PrintWriter pw, String provides, boolean servicefactory, @SuppressWarnings("unused") String impl) {
 			if (provides != null) {
 				if (!servicefactory)
 					pw.println("  <service>");

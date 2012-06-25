@@ -291,7 +291,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addTest(Bundle tfw, TestSuite suite, Class< ? > clazz, TestResult testResult, final String method) {
+	private void addTest(@SuppressWarnings("unused") Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused") TestResult testResult, final String method) {
 		if (TestCase.class.isAssignableFrom(clazz)) {
 			if (method != null) {
 				suite.addTest(TestSuite.createTest(clazz, method));

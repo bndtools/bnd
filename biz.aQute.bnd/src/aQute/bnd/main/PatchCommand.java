@@ -95,7 +95,7 @@ public class PatchCommand {
 
 	}
 
-	public void _apply(applyOptions opts) throws Exception {
+	public void _apply(@SuppressWarnings("unused") applyOptions opts) throws Exception {
 		// List<String> arguments = opts._();
 		// Jar a = new Jar(bnd.getFile(arguments.remove(0)));
 		// Manifest am = a.getManifest();

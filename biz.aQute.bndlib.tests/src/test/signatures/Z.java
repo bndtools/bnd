@@ -10,7 +10,7 @@ interface Y<B> {}
 public class Z<C> extends X<String> implements Y<Integer> {
 
 	public class V<D> {
-		public <E> void fooLCO(E e, C c, D d) {}
+		public <E> void fooLCO(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") C c, @SuppressWarnings("unused") D d) {}
 	}
 
 	public abstract class U extends Z<String> implements Cloneable, Serializable {
@@ -20,7 +20,7 @@ public class Z<C> extends X<String> implements Y<Integer> {
 	// Constructors
 	public Z() {}
 
-	public Z(C c) {}
+	public Z(@SuppressWarnings("unused") C c) {}
 
 	// Fields
 	public X<Y<C>>				field;
@@ -31,24 +31,24 @@ public class Z<C> extends X<String> implements Y<Integer> {
 	public <T> void method() {}
 
 	// Test all possible declarations
-	public <E> void foo(E e) {}
+	public <E> void foo(@SuppressWarnings("unused") E e) {}
 
-	public <E extends InputStream & Cloneable> void fooCI(E e) {}
+	public <E extends InputStream & Cloneable> void fooCI(@SuppressWarnings("unused") E e) {}
 
-	public <E extends InputStream & Cloneable & Serializable> void fooCII(E e) {}
+	public <E extends InputStream & Cloneable & Serializable> void fooCII(@SuppressWarnings("unused") E e) {}
 
-	public <E extends Serializable & Cloneable> void fooII(E e) {}
+	public <E extends Serializable & Cloneable> void fooII(@SuppressWarnings("unused") E e) {}
 
-	public <E extends Cloneable> void fooI(E e) {}
+	public <E extends Cloneable> void fooI(@SuppressWarnings("unused") E e) {}
 
-	public <E extends InputStream> void fooC(E e) {}
+	public <E extends InputStream> void fooC(@SuppressWarnings("unused") E e) {}
 
-	public <E extends C> void fooP(E e) {}
+	public <E extends C> void fooP(@SuppressWarnings("unused") E e) {}
 
-	public <E, F> void foo(E e, F f) {}
+	public <E, F> void foo(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") F f) {}
 
 	// test with variable in signature
-	public <E> void fooLC(E e, C f) {}
+	public <E> void fooLC(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") C f) {}
 
 	// test wildcards
 	public Collection< ? >							wildcard_001;

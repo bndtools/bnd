@@ -821,8 +821,8 @@ public class MetatypeTest extends TestCase {
 				});
 	}
 
-	void assertAD(Document d, String mname, String name, String id, String min, String max, String deflt,
-			int cardinality, String type, String description, String[] optionvalues, String optionLabels[])
+	void assertAD(Document d, @SuppressWarnings("unused") String mname, String name, String id, String min, String max, String deflt,
+			int cardinality, String type, String description, @SuppressWarnings("unused") String[] optionvalues, @SuppressWarnings("unused") String optionLabels[])
 			throws XPathExpressionException {
 		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
 		assertEquals(id, xpath.evaluate("//OCD/AD[@id='" + id + "']/@id", d, XPathConstants.STRING));

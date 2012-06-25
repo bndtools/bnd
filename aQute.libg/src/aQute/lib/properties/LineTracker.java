@@ -355,7 +355,7 @@ public class LineTracker {
 	 * @see org.eclipse.jface.text.ILineTracker#replace(int, int,
 	 * java.lang.String)
 	 */
-	public final void replace(int position, int length, String text) throws BadLocationException {
+	public final void replace(@SuppressWarnings("unused") int position, @SuppressWarnings("unused") int length, @SuppressWarnings("unused") String text) throws BadLocationException {
 		throw new UnsupportedOperationException();
 	}
 

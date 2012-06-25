@@ -328,7 +328,7 @@ public class BndTask extends BaseTask {
 
 	static File[]	EMPTY_FILES	= new File[0];
 
-	File[] toFiles(List<File> files, String what) {
+	File[] toFiles(List<File> files, @SuppressWarnings("unused") String what) {
 		return files.toArray(EMPTY_FILES);
 	}
 

@@ -173,7 +173,7 @@ public class MavenDeployCmd extends Processor {
 		}
 	}
 
-	private void optional(Command command, String key, String value) {
+	private void optional(Command command, @SuppressWarnings("unused") String key, String value) {
 		if (value == null)
 			return;
 

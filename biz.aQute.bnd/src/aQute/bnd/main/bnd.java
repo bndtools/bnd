@@ -2058,7 +2058,7 @@ public class bnd extends Processor {
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(Tag report, File file, Document doc, XPath xpath) throws Exception {
+	private void doHtmlReport(@SuppressWarnings("unused") Tag report, File file, Document doc, @SuppressWarnings("unused") XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);

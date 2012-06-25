@@ -35,9 +35,9 @@ public class AnnotationsTest extends TestCase {
 		}
 
 		@Reference(type = '1')
-		protected void setPackageAdmin(PackageAdmin pa) {}
+		protected void setPackageAdmin(@SuppressWarnings("unused") PackageAdmin pa) {}
 
-		protected void unsetLog(LogService log) {
+		protected void unsetLog(@SuppressWarnings("unused") LogService log) {
 			this.log = null;
 		}
 	}
@@ -114,11 +114,11 @@ class Target implements Serializable {
 	}
 
 	@Reference
-	void setLog(LogService log) {
+	void setLog(@SuppressWarnings("unused") LogService log) {
 
 	}
 
-	void unsetLog(LogService log) {
+	void unsetLog(@SuppressWarnings("unused") LogService log) {
 
 	}
 }

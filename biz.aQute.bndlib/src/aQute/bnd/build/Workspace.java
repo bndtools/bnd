@@ -154,7 +154,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	public String _workspace(String args[]) {
+	public String _workspace(@SuppressWarnings("unused") String args[]) {
 		return getBase().getAbsolutePath();
 	}
 

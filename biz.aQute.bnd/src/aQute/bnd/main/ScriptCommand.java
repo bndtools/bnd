@@ -9,7 +9,7 @@ public class ScriptCommand {
 	// static ScriptEngineManager mgr = new ScriptEngineManager();
 	// static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 
-	public ScriptCommand(bnd bnd, scriptOptions opts) { // throws IOException,
+	public ScriptCommand(@SuppressWarnings("unused") bnd bnd, @SuppressWarnings("unused") scriptOptions opts) { // throws IOException,
 														// ScriptException {
 		// String f = opts.file();
 		// String s;

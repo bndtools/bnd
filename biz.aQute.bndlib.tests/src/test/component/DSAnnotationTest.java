@@ -78,11 +78,11 @@ public class DSAnnotationTest extends BndTestCase {
 		void modified() {}
 
 		@Reference
-		void xsetLogService(LogService log) {
+		void xsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
-		void unxsetLogService(LogService log) {
+		void unxsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
@@ -112,11 +112,11 @@ public class DSAnnotationTest extends BndTestCase {
 		void changed() {}
 
 		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, name = "foo", policy = ReferencePolicy.DYNAMIC, service = Object.class, target = "(objectclass=*)", unbind = "unset", updated = "updatedLogService", policyOption = ReferencePolicyOption.GREEDY)
-		void setLogService(LogService log) {
+		void setLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
-		void unset(Object log) {
+		void unset(@SuppressWarnings("unused") Object log) {
 
 		}
 
@@ -124,11 +124,11 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void unsetLogService(LogService log) {
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
-		void updatedLogService(Object log) {
+		void updatedLogService(@SuppressWarnings("unused") Object log) {
 
 		}
 
@@ -243,19 +243,19 @@ public class DSAnnotationTest extends BndTestCase {
 	public class Enums {
 
 		@Reference
-		void setA(LogService l) {}
+		void setA(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
-		void setB(LogService l) {}
+		void setB(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.RELUCTANT)
-		void setE(LogService l) {}
+		void setE(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC, policyOption = ReferencePolicyOption.RELUCTANT)
-		void setC(LogService l) {}
+		void setC(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
-		void setD(LogService l) {}
+		void setD(@SuppressWarnings("unused") LogService l) {}
 
 	}
 
@@ -306,32 +306,32 @@ public class DSAnnotationTest extends BndTestCase {
 	public class Methods {
 
 		@Reference(unbind = "-", updated = "-")
-		void setA(LogService l) {}
+		void setA(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedA(LogService l) {}
+		void updatedA(@SuppressWarnings("unused") LogService l) {}
 
-		void unsetA(LogService l) {}
+		void unsetA(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(unbind = "_B", updated = "__B")
-		void setB(LogService l) {}
+		void setB(@SuppressWarnings("unused") LogService l) {}
 
-		void _B(LogService l) {}
+		void _B(@SuppressWarnings("unused") LogService l) {}
 
-		void __B(LogService l) {}
+		void __B(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedB(LogService l) {}
+		void updatedB(@SuppressWarnings("unused") LogService l) {}
 
-		void unsetB(LogService l) {}
-
-		@Reference
-		void setC(LogService l) {}
-
-		void updatedC(LogService l) {}
-
-		void unsetC(LogService l) {}
+		void unsetB(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference
-		void setD(LogService l) {}
+		void setC(@SuppressWarnings("unused") LogService l) {}
+
+		void updatedC(@SuppressWarnings("unused") LogService l) {}
+
+		void unsetC(@SuppressWarnings("unused") LogService l) {}
+
+		@Reference
+		void setD(@SuppressWarnings("unused") LogService l) {}
 
 	}
 
@@ -379,14 +379,14 @@ public class DSAnnotationTest extends BndTestCase {
 	public class Top {
 
 		@Reference
-		void setLogService(LogService l) {}
+		void setLogService(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedLogService(ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
 
 		}
 
 		@Reference
-		protected void setPrivateLogService(LogService l) {
+		protected void setPrivateLogService(@SuppressWarnings("unused") LogService l) {
 
 		}
 
@@ -398,11 +398,11 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(name = "bottom")
 	public class Bottom extends Top {
-		void unsetLogService(LogService l, Map<Object,Object> map) {
+		void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void unsetPrivateLogService(ServiceReference ref) {
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference ref) {
 
 		}
 	}
@@ -449,12 +449,12 @@ public class DSAnnotationTest extends BndTestCase {
 		private void activate() {}
 
 		@Deactivate
-		protected void deactivate(ComponentContext ctx) {
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext ctx) {
 
 		}
 
 		@Modified
-		void modified(BundleContext context) {
+		void modified(@SuppressWarnings("unused") BundleContext context) {
 
 		}
 
@@ -464,11 +464,11 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		protected void unsetLogService(LogService l, Map<Object,Object> map) {
+		protected void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void updatedLogService(ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
 
 		}
 
@@ -506,12 +506,12 @@ public class DSAnnotationTest extends BndTestCase {
 		private void activate() {}
 
 		@Deactivate
-		protected void deactivate(ComponentContext ctx) {
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext ctx) {
 
 		}
 
 		@Modified
-		void modified(BundleContext context) {
+		void modified(@SuppressWarnings("unused") BundleContext context) {
 
 		}
 
@@ -521,11 +521,11 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		protected void unbindLogService(LogService l, Map<Object,Object> map) {
+		protected void unbindLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void updatedLogService(ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
 
 		}
 
