@@ -51,8 +51,8 @@ Private-Package: aQute.lib.io;-split-package:=first,\
 	aQute.libg.gzip,\
 	aQute.libg.tuple;-split-package:=first,\
 	org.osgi.resource,\
-	biz.aQute.r5.resource,\
-	biz.aQute.r5.resource.filters,\
+	aQute.libg.filters;-split-package:=first,\
+	aQute.lib.osgi.resource,\
 	org.osgi.service.repository
 
 # We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
