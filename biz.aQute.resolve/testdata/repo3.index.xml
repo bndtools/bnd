@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<repository increment='1340554249637' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
+<repository increment='1340620345555' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
   <resource>
     <capability namespace='osgi.identity'>
       <attribute name='osgi.identity' value='org.apache.felix.gogo.command'/>
@@ -125,9 +125,9 @@
       <attribute name='version' type='Version' value='1.5.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
-    <capability namespace='osgi.framework'>
-      <attribute name='osgi.framework' value='org.apache.felix.framework'/>
-      <attribute name='version' type='Version' value='4.0.2'/>
+    <capability namespace='osgi.contract'>
+      <attribute name='osgi.contract' value='OSGiFramework'/>
+      <attribute name='version' type='Version' value='4.3.0'/>
       <directive name='uses' value='org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker'/>
     </capability>
   </resource>

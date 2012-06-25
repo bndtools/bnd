@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -33,6 +34,8 @@ import aQute.libg.header.Parameters;
 import aQute.libg.version.VersionRange;
 
 public class BndrunResolveContext extends ResolveContext {
+
+    private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
 
     private final BndEditModel runModel;
     private final Registry registry;
@@ -86,6 +89,7 @@ public class BndrunResolveContext extends ResolveContext {
         if (header == null)
             return;
 
+        // Get the identity and version of the requested JAR
         Parameters params = new Parameters(header);
         if (params.size() > 1)
             throw new IllegalArgumentException("Cannot specify more than one OSGi Framework.");
@@ -97,35 +101,53 @@ public class BndrunResolveContext extends ResolveContext {
         if (versionStr != null)
             version = new VersionRange(versionStr);
 
-        Filter filter;
-        if (version == null)
-            filter = new SimpleFilter("osgi.framework", identity);
-        else
-            filter = new AndFilter().addChild(new SimpleFilter("osgi.framework", identity)).addChild(Filters.fromVersionRange(version));
+        // Construct a filter & requirement to find matches
+        Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
+        if (version != null)
+            filter = new AndFilter().addChild(filter).addChild(Filters.fromVersionRange(version));
+        Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
 
-        Requirement frameworkReq = new CapReqBuilder("osgi.framework").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
-
+        // Iterate over repos looking for matches
         for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singletonList(frameworkReq));
             Collection<Capability> frameworkCaps = providers.get(frameworkReq);
             if (frameworkCaps != null) {
                 for (Capability frameworkCap : frameworkCaps) {
-                    Version foundVersion;
-                    Object versionObj = frameworkCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-                    if (versionObj instanceof Version)
-                        foundVersion = (Version) versionObj;
-                    else if (versionObj instanceof String)
-                        foundVersion = new Version((String) versionObj);
-                    else
-                        foundVersion = null;
-
-                    if (frameworkResourceVersion == null || (foundVersion != null && (foundVersion.compareTo(frameworkResourceVersion) > 0))) {
-                        frameworkResource = frameworkCap.getResource();
-                        frameworkResourceVersion = foundVersion;
+                    if (findFrameworkContractCapability(frameworkCap.getResource()) != null) {
+                        Version foundVersion = toVersion(frameworkCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE));
+                        if (foundVersion != null) {
+                            if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
+                                frameworkResource = frameworkCap.getResource();
+                                frameworkResourceVersion = foundVersion;
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private Version toVersion(Object object) throws IllegalArgumentException {
+        if (object == null)
+            return null;
+
+        if (object instanceof Version)
+            return (Version) object;
+
+        if (object instanceof String)
+            return Version.parseVersion((String) object);
+
+        throw new IllegalArgumentException(MessageFormat.format("Cannot convert type {0} to Version.", object.getClass().getName()));
+    }
+
+    private Capability findFrameworkContractCapability(Resource resource) {
+        List<Capability> contractCaps = resource.getCapabilities(ContractNamespace.CONTRACT_NAMESPACE);
+        if (contractCaps != null)
+            for (Capability cap : contractCaps) {
+                if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes().get(ContractNamespace.CONTRACT_NAMESPACE)))
+                    return cap;
+            }
+        return null;
     }
 
     public void addRepository(Repository repo) {
