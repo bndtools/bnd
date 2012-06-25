@@ -78,11 +78,9 @@ public class Jar implements Closeable {
 		String name = f.getName();
 		if (name.equals("bin") || name.equals("src"))
 			return f.getParentFile().getName();
-		else {
-			if (name.endsWith(".jar"))
-				name = name.substring(0, name.length() - 4);
-			return name;
-		}
+		if (name.endsWith(".jar"))
+			name = name.substring(0, name.length() - 4);
+		return name;
 	}
 
 	public Jar(String string, InputStream resourceAsStream) throws IOException {

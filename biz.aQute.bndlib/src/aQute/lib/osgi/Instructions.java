@@ -109,11 +109,11 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public void putAll(Map< ? extends Instruction, ? extends Attrs> map) {
-		if (this.map == null)
+		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			else
-				this.map = new LinkedHashMap<Instruction,Attrs>();
+			this.map = new LinkedHashMap<Instruction,Attrs>();
+		}
 		this.map.putAll(map);
 	}
 
@@ -212,8 +212,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 			if (i.matches(value)) {
 				if (i.isNegated())
 					return false; // we deny this one explicitly
-				else
-					return true; // we allow it explicitly
+				return true; // we allow it explicitly
 			}
 		}
 		return false;

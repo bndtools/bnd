@@ -2010,10 +2010,9 @@ public class bnd extends Processor {
 					if (errors > 0) {
 						test.addAttribute("errors", errors);
 						return errors;
-					} else {
-						test.addAttribute("failed", "unknown reason");
-						return errors;
 					}
+					test.addAttribute("failed", "unknown reason");
+					return errors;
 			}
 		}
 		catch (Exception e) {
@@ -2231,8 +2230,8 @@ public class bnd extends Processor {
 
 		if (where.equals(Project.BNDFILE)) {
 			return null;
-		} else
-			error("Project not found: " + f);
+		}
+		error("Project not found: " + f);
 
 		return null;
 	}
@@ -2279,8 +2278,8 @@ public class bnd extends Processor {
 				in.close();
 			}
 			return;
-		} else
-			error("no conversion specified");
+		}
+		error("no conversion specified");
 	}
 
 	/**

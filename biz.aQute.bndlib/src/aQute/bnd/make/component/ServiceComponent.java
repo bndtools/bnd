@@ -169,11 +169,11 @@ public class ServiceComponent implements AnalyzerPlugin {
 			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
 					);
 
-			if (not.isEmpty())
+			if (not.isEmpty()) {
 				if ("*".equals(name))
 					return not;
-				else
-					error("Specified %s but could not find any class matching this pattern", name);
+				error("Specified %s but could not find any class matching this pattern", name);
+			}
 
 			for (Clazz c : not) {
 				if (c.getFormat().hasAnnotations())

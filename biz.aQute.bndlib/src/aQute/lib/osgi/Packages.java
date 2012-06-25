@@ -106,11 +106,11 @@ public class Packages implements Map<PackageRef,Attrs> {
 	}
 
 	public void putAll(Map< ? extends PackageRef, ? extends Attrs> map) {
-		if (this.map == null)
+		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			else
-				this.map = new LinkedHashMap<PackageRef,Attrs>();
+			this.map = new LinkedHashMap<PackageRef,Attrs>();
+		}
 		this.map.putAll(map);
 	}
 

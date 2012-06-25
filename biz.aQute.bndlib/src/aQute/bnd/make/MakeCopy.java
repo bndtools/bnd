@@ -20,23 +20,19 @@ public class MakeCopy implements MakePlugin {
 			if (content == null)
 				throw new IllegalArgumentException("No 'from' or 'content' field in copy " + argumentsOnMake);
 			return new EmbeddedResource(content.getBytes("UTF-8"), 0);
-		} else {
-
-			File f = builder.getFile(from);
-			if (f.isFile())
-				return new FileResource(f);
-			else {
-				try {
-					URL url = new URL(from);
-					return new URLResource(url);
-				}
-				catch (MalformedURLException mfue) {
-					// We ignore this
-				}
-				throw new IllegalArgumentException("Copy source does not exist " + from + " for destination "
-						+ destination);
-			}
 		}
+		File f = builder.getFile(from);
+		if (f.isFile())
+			return new FileResource(f);
+		try {
+			URL url = new URL(from);
+			return new URLResource(url);
+		}
+		catch (MalformedURLException mfue) {
+			// We ignore this
+		}
+		throw new IllegalArgumentException("Copy source does not exist " + from + " for destination "
+				+ destination);
 	}
 
 }

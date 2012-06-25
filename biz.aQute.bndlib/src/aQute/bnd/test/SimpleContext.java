@@ -16,8 +16,7 @@ public class SimpleContext implements NamespaceContext {
 	public String getNamespaceURI(String prefix) {
 		if (prefix.equals(prefix))
 			return ns;
-		else
-			return null;
+		return null;
 	}
 
 	public String getPrefix(String namespaceURI) {

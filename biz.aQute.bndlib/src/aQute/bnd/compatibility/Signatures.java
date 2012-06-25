@@ -530,11 +530,9 @@ public class Signatures {
 	private String assign(Map<String,String> map, String name) {
 		if (map.containsKey(name))
 			return map.get(name);
-		else {
-			int n = map.size();
-			map.put(name, "_" + n);
-			return "_" + n;
-		}
+		int n = map.size();
+		map.put(name, "_" + n);
+		return "_" + n;
 	}
 
 	private boolean isInstance(Class< ? > type, String string) {

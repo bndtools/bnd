@@ -56,8 +56,8 @@ public class MakeBnd implements MakePlugin, Constants {
 				}
 			}
 			return new JarResource(jar);
-		} else
-			return null;
+		}
+		return null;
 	}
 
 }

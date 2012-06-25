@@ -1127,8 +1127,7 @@ public class Clazz {
 		}
 		if (collect)
 			return new Annotation(name, elements, member, policy);
-		else
-			return null;
+		return null;
 	}
 
 	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect)
@@ -1572,8 +1571,7 @@ public class Clazz {
 	public int getAccess() {
 		if (innerAccess == -1)
 			return accessx;
-		else
-			return innerAccess;
+		return innerAccess;
 	}
 
 	public TypeRef getClassName() {

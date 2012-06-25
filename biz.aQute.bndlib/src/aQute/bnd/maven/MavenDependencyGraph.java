@@ -92,9 +92,8 @@ public class MavenDependencyGraph {
 				URL url = new URL(path + ".pom");
 				if (cache.containsKey(url)) {
 					return cache.get(url);
-				} else {
-					return new Artifact(url);
 				}
+				return new Artifact(url);
 			}
 			catch (Exception e) {
 				System.err.println("Failed to get " + artifactId + " from " + repository);

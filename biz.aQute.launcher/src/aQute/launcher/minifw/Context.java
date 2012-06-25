@@ -142,15 +142,14 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			int part = filePattern.indexOf('*');
 			if (part < 0) {
 				return path.indexOf(filePattern) >= 0;
-			} else {
-				String match = filePattern.substring(0, part);
-				int m = path.indexOf(match);
-				if (m < 0)
-					return false;
-
-				path = path.substring(m + match.length());
-				filePattern = filePattern.substring(part + 1);
 			}
+			String match = filePattern.substring(0, part);
+			int m = path.indexOf(match);
+			if (m < 0)
+				return false;
+
+			path = path.substring(m + match.length());
+			filePattern = filePattern.substring(part + 1);
 		} while (true);
 	}
 
@@ -196,8 +195,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		String v = ((String) getHeaders().get("Bundle-Version")).trim();
 		if (v == null)
 			return new Version("0");
-		else
-			return new Version(v);
+		return new Version(v);
 	}
 
 	public boolean hasPermission(Object permission) {

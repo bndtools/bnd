@@ -35,20 +35,19 @@ public class Service {
 		if (data.lock.exists()) {
 			if (!data.lock.canWrite()) {
 				return String.format("Cannot write lock %s", data.lock);
-			} else {
-				try {
-					send(getPort(), "STOP");
-					for (int i = 0; i < 20; i++) {
-						if (!data.lock.exists())
-							return null;
+			}
+			try {
+				send(getPort(), "STOP");
+				for (int i = 0; i < 20; i++) {
+					if (!data.lock.exists())
+						return null;
 
-						Thread.sleep(500);
-					}
-					return "Lock was not deleted by service in time (waited 10 secs)";
+					Thread.sleep(500);
 				}
-				finally {
-					data.lock.delete();
-				}
+				return "Lock was not deleted by service in time (waited 10 secs)";
+			}
+			finally {
+				data.lock.delete();
 			}
 		}
 		return "Not running";

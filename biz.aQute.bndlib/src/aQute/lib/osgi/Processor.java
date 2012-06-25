@@ -77,8 +77,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public Processor getTop() {
 		if (parent == null)
 			return this;
-		else
-			return parent.getTop();
+		return parent.getTop();
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
@@ -111,8 +110,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Processor p = current.get();
 		if (p == null)
 			return this;
-		else
-			return p;
+		return p;
 	}
 
 	public void warning(String string, Object... args) {
@@ -919,8 +917,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public Macro getReplacer() {
 		if (replacer == null)
 			return replacer = new Macro(this, getMacroDomains());
-		else
-			return replacer;
+		return replacer;
 	}
 
 	/**
@@ -1127,8 +1124,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String normalize(String f) {
 		if (f.startsWith(base.getAbsolutePath() + "/"))
 			return f.substring(base.getAbsolutePath().length() + 1);
-		else
-			return f;
+		return f;
 	}
 
 	public String normalize(File f) {

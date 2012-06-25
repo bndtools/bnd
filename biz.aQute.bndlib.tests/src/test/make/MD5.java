@@ -20,8 +20,8 @@ public class MD5 implements MakePlugin {
 					return md5(f);
 				}
 			};
-		} else
-			throw new FileNotFoundException("No such file: " + source);
+		}
+		throw new FileNotFoundException("No such file: " + source);
 	}
 
 	byte[] md5(File f) throws Exception {

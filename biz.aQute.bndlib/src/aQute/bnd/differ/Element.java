@@ -97,8 +97,7 @@ class Element implements Tree {
 	public int compareTo(Tree other) {
 		if (type == other.getType())
 			return name.compareTo(other.getName());
-		else
-			return type.compareTo(other.getType());
+		return type.compareTo(other.getType());
 	}
 
 	public boolean equals(Object other) {

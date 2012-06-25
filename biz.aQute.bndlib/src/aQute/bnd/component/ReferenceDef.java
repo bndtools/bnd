@@ -85,8 +85,7 @@ class ReferenceDef {
 		int n = a.compareTo(b);
 		if (n >= 0)
 			return a;
-		else
-			return b;
+		return b;
 	}
 
 	public String toString() {

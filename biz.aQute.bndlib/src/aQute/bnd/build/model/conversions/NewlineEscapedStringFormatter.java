@@ -21,11 +21,10 @@ public class NewlineEscapedStringFormatter implements Converter<String,String> {
 			if (newlineIndex == -1) {
 				result.append(input.substring(position));
 				break;
-			} else {
-				result.append(input.substring(position, newlineIndex));
-				result.append(BndEditModel.LINE_SEPARATOR);
-				position = newlineIndex + 1;
 			}
+			result.append(input.substring(position, newlineIndex));
+			result.append(BndEditModel.LINE_SEPARATOR);
+			position = newlineIndex + 1;
 		}
 
 		return result.toString();

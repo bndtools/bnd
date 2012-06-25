@@ -200,10 +200,10 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		if (getDelta() == other.getDelta()) {
 			if (getType() == other.getType()) {
 				return getName().compareTo(other.getName());
-			} else
-				return getType().compareTo(other.getType());
-		} else
-			return getDelta().compareTo(other.getDelta());
+			}
+			return getType().compareTo(other.getType());
+		}
+		return getDelta().compareTo(other.getDelta());
 	}
 
 	public Diff get(String name) {

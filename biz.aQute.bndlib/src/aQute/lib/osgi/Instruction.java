@@ -88,8 +88,8 @@ public class Instruction {
 							sb.append("(\\..*)?");
 							wildcards = true;
 							break loop;
-						} else
-							sb.append("\\.");
+						}
+						sb.append("\\.");
 
 						break;
 					case '*' :
@@ -130,8 +130,7 @@ public class Instruction {
 
 		if (literal)
 			return match.equals(value);
-		else
-			return getMatcher(value).matches();
+		return getMatcher(value).matches();
 	}
 
 	public boolean isNegated() {

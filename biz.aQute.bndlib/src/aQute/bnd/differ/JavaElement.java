@@ -297,12 +297,11 @@ class JavaElement {
 					Clazz c = analyzer.findClass(name);
 					if (c == null) {
 						return "Cannot load " + name;
-					} else {
-						Element s = classElement(c);
-						for (Element child : s.children) {
-							if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
-								members.add(child);
-							}
+					}
+					Element s = classElement(c);
+					for (Element child : s.children) {
+						if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
+							members.add(child);
 						}
 					}
 				}

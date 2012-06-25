@@ -79,8 +79,8 @@ public class FileInstallRepo extends FileRepo {
 		if (dirty) {
 			dirty = false;
 			return true;
-		} else
-			return false;
+		}
+		return false;
 	}
 
 	@Override

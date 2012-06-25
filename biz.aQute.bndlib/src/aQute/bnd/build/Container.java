@@ -106,8 +106,7 @@ public class Container {
 	public boolean equals(Object other) {
 		if (other instanceof Container)
 			return file.equals(((Container) other).file);
-		else
-			return false;
+		return false;
 	}
 
 	public int hashCode() {
@@ -126,8 +125,7 @@ public class Container {
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();
-		else
-			return getFile().getAbsolutePath();
+		return getFile().getAbsolutePath();
 	}
 
 	public Map<String,String> getAttributes() {

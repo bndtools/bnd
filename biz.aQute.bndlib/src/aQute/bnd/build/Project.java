@@ -1058,8 +1058,7 @@ public class Project extends Processor {
 		}
 		if (f.getName().endsWith("lib"))
 			return new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs);
-		else
-			return new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs);
+		return new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs);
 	}
 
 	/**
@@ -1367,8 +1366,8 @@ public class Project extends Processor {
 						rdr.close();
 						f.delete();
 						break;
-					} else
-						files.add(ff);
+					}
+					files.add(ff);
 				}
 				return this.files = files.toArray(new File[files.size()]);
 			}
@@ -1378,8 +1377,7 @@ public class Project extends Processor {
 		}
 		if (buildIfAbsent)
 			return files = buildLocal(false);
-		else
-			return files = null;
+		return files = null;
 	}
 
 	/**
@@ -1429,8 +1427,8 @@ public class Project extends Processor {
 				}
 				getWorkspace().changedFile(bfs);
 				return files;
-			} else
-				return null;
+			}
+			return null;
 		}
 		finally {
 			builder.close();
@@ -2041,19 +2039,18 @@ public class Project extends Processor {
 
 		if (newVersion.compareTo(oldVersion) == 0) {
 			return;
-		} else {
-			PrintWriter pw = IO.writer(file);
-			pw.println("version " + newVersion);
-			pw.flush();
-			pw.close();
-
-			String path = packageName.replace('.', '/') + "/packageinfo";
-			File binary = IO.getFile(getOutput(), path);
-			binary.getParentFile().mkdirs();
-			IO.copy(file, binary);
-
-			refresh();
 		}
+		PrintWriter pw = IO.writer(file);
+		pw.println("version " + newVersion);
+		pw.flush();
+		pw.close();
+
+		String path = packageName.replace('.', '/') + "/packageinfo";
+		File binary = IO.getFile(getOutput(), path);
+		binary.getParentFile().mkdirs();
+		IO.copy(file, binary);
+
+		refresh();
 	}
 
 	File getPackageInfoFile(String packageName) {

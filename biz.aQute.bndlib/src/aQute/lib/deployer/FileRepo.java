@@ -259,8 +259,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (dirty) {
 			dirty = false;
 			return true;
-		} else
-			return false;
+		}
+		return false;
 	}
 
 	public String getName() {
@@ -276,8 +276,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro() + ".jar");
 		if (version.exists())
 			return new Jar(version);
-		else
-			return null;
+		return null;
 	}
 
 	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
@@ -295,11 +294,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
 			if (file.isFile())
 				return file;
-			else {
-				file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
-				if (file.isFile())
-					return file;
-			}
+			file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
+			if (file.isFile())
+				return file;
 			return null;
 
 		}
