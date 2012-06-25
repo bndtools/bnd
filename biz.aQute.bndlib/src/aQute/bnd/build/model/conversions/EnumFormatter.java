@@ -9,7 +9,6 @@ package aQute.bnd.build.model.conversions;
  */
 public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 
-	private final Class<E>	enumType;
 	private final E			defaultValue;
 
 	/**
@@ -21,7 +20,7 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 	 * @return
 	 */
 	public static <E extends Enum<E>> EnumFormatter<E> create(Class<E> enumType) {
-		return new EnumFormatter<E>(enumType, null);
+		return new EnumFormatter<E>(null);
 	}
 
 	/**
@@ -34,11 +33,10 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 	 * @return
 	 */
 	public static <E extends Enum<E>> EnumFormatter<E> create(Class<E> enumType, E defaultValue) {
-		return new EnumFormatter<E>(enumType, defaultValue);
+		return new EnumFormatter<E>(defaultValue);
 	}
 
-	private EnumFormatter(Class<E> enumType, E defaultValue) {
-		this.enumType = enumType;
+	private EnumFormatter(E defaultValue) {
 		this.defaultValue = defaultValue;
 	}
 
