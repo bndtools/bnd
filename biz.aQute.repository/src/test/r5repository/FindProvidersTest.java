@@ -9,6 +9,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -35,6 +36,18 @@ public class FindProvidersTest extends TestCase {
 		Capability identityCap = capsArray[0].getResource().getCapabilities("osgi.identity").get(0);
 		Object identityAttrValue = identityCap.getAttributes().get("osgi.identity");
 		assertEquals("dummybundle", identityAttrValue);
+	}
+	
+	public void testTypedCapabilityAttribute() {
+		FixedIndexedRepo repo = new FixedIndexedRepo();
+		Map<String,String> props = new HashMap<String,String>();
+		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
+		repo.setProperties(props);
+		
+		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", new VersionRange("[1,2)")).buildSyntheticRequirement();
+		Map<Requirement,Collection<Capability>> result = repo.findProviders(Collections.singleton(req));
+		Capability id = result.get(req).iterator().next().getResource().getCapabilities("osgi.identity").get(0);
+		assertEquals(Version.class, id.getAttributes().get("version").getClass());
 	}
 
 	public void testReadGZippedStream() throws Exception {

@@ -8,12 +8,14 @@ import junit.framework.*;
 import test.lib.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.obr.*;
+import aQute.lib.osgi.Processor;
 import aQute.libg.version.*;
 
 public class OBRTest extends TestCase {
 
 	private OBR			obr;
 	private NanoHTTPD	httpd;
+	private Processor reporter;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -27,6 +29,9 @@ public class OBRTest extends TestCase {
 
 		obr.setProperties(config);
 		obr.setCacheDirectory(cacheDir);
+		
+		reporter = new Processor();
+		obr.setReporter(reporter);
 
 		httpd = new NanoHTTPD(18080, new File("testdata/http"));
 	}
@@ -69,6 +74,7 @@ public class OBRTest extends TestCase {
 
 	public void testGetLatest() throws Exception {
 		File[] files = obr.get("name.njbartlett.osgi.emf.minimal", "latest");
+		assertTrue(reporter.getErrors().isEmpty());
 
 		assertNotNull(files);
 		assertEquals(1, files.length);

@@ -407,12 +407,19 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 
 	Version getResourceVersion(Resource resource) {
-		try {
-			return Version.parseVersion((String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE));
+		Version result;
+		
+		Object versionObj = getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		if (versionObj == null) {
+			result = Version.emptyVersion;
+		} else if (versionObj instanceof org.osgi.framework.Version) {
+			org.osgi.framework.Version v = (org.osgi.framework.Version) versionObj;
+			result = new Version(v.getMajor(), v.getMinor(), v.getMicro(), v.getQualifier());
+		} else {
+			throw new IllegalArgumentException("Cannot convert to Version from type: " + versionObj.getClass());
 		}
-		catch (IllegalArgumentException e) {
-			return Version.emptyVersion;
-		}
+		
+		return result;
 	}
 	
 	URI getContentUrl(Resource resource) {

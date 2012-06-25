@@ -11,6 +11,7 @@ import java.util.*;
 import javax.xml.stream.*;
 import javax.xml.transform.stream.*;
 
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -90,7 +91,8 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 						resourceBuilder = new ResourceBuilder();
 						
 						String bsn = reader.getAttributeValue(null, ATTR_RESOURCE_SYMBOLIC_NAME);
-						String version = reader.getAttributeValue(null, ATTR_RESOURCE_VERSION);
+						String versionStr = reader.getAttributeValue(null, ATTR_RESOURCE_VERSION);
+						Version version = Version.parseVersion(versionStr);
 						String uri = reader.getAttributeValue(null, ATTR_RESOURCE_URI);
 						URI resolvedUri = resolveUri(uri, baseUri);
 						addBasicCapabilities(resourceBuilder, bsn, version, resolvedUri);
@@ -120,7 +122,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return resolved;
 	}
 
-	private void addBasicCapabilities(ResourceBuilder builder, String bsn, String version, URI resolvedUri) {
+	private void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri) {
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)

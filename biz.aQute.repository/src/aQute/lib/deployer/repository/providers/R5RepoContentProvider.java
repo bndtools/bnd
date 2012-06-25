@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -58,7 +60,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	private static final String	ATTR_NAME				= "name";
 	private static final String	ATTR_VALUE				= "value";
 	private static final String	ATTR_TYPE				= "type";
-
+	
 	public String getName() {
 		return NAME;
 	}
@@ -248,8 +250,8 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 
 	private Object convertAttribute(String value, String type) {
-		// TODO just treat everything as String for now
-		return value;
+		AttributeType attType = AttributeType.parseTypeName(type);
+		return attType.parseString(value);
 	}
 
 	public boolean supportsGeneration() {
