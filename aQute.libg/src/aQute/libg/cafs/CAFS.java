@@ -23,8 +23,8 @@ import aQute.libg.cryptography.*;
  * underlying idea in Git.
  */
 public class CAFS implements Closeable, Iterable<SHA1> {
-	final static byte[]	CAFS			= "CAFS".getBytes();
-	final static byte[]	CAFE			= "CAFE".getBytes();
+	final static byte[]	CAFS;
+	final static byte[]	CAFE;
 	final static String	INDEXFILE		= "index.idx";
 	final static String	STOREFILE		= "store.cafs";
 	final static String	ALGORITHM		= "SHA-1";
@@ -41,6 +41,15 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	Index				index;
 	RandomAccessFile	store;
 	FileChannel			channel;
+
+	static {
+		try {
+		CAFS = "CAFS".getBytes("UTF-8");
+		CAFE = "CAFE".getBytes("UTF-8");
+		} catch (Throwable e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
 	/**
 	 * Constructor for a Content Addressable File Store

@@ -291,10 +291,15 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	}
 
 	private String collectStackTrace(Throwable t) {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		PrintStream pps = new PrintStream(buffer);
-		t.printStackTrace(pps);
-		return buffer.toString();
+		try {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			PrintStream pps = new PrintStream(buffer, false, "UTF-8");
+			t.printStackTrace(pps);
+			return buffer.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e) {
+			return null;
+		}
 	}
 
 	String readETag() throws IOException {

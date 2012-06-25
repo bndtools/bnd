@@ -48,7 +48,7 @@ public class CommandResource extends WriteResource {
 				cmd.var("PATH", path);
 				domain.trace("PATH: %s", path);
 			}
-			OutputStreamWriter osw = new OutputStreamWriter(out);
+			OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
 			int result = cmd.execute(command, stdout, errors);
 			osw.append(stdout);
 			osw.flush();

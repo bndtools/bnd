@@ -61,7 +61,7 @@ public class DiffCommand {
 			if (fout == null)
 				pw = new PrintWriter(bnd.out);
 			else
-				pw = new PrintWriter(fout);
+				pw = new PrintWriter(fout, "UTF-8");
 
 			Instructions packageFilters = new Instructions(options.pack());
 
@@ -133,7 +133,7 @@ public class DiffCommand {
 		if (fout == null)
 			pw = new PrintWriter(bnd.out);
 		else
-			pw = new PrintWriter(fout);
+			pw = new PrintWriter(fout, "UTF-8");
 
 		Instructions packageFilters = new Instructions(options.pack());
 

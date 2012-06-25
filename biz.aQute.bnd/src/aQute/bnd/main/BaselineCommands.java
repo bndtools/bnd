@@ -58,10 +58,7 @@ public class BaselineCommands {
 		PrintStream out = null;
 
 		if (opts.fixup() != null) {
-			FileOutputStream fout;
-			File o = bnd.getFile(opts.fixup());
-			fout = new FileOutputStream(o);
-			out = new PrintStream(fout);
+			out = new PrintStream(bnd.getFile(opts.fixup()), "UTF-8");
 		}
 
 		File newer = bnd.getFile(args.get(0));

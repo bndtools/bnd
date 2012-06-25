@@ -131,10 +131,10 @@ public class Signer extends Processor {
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 			String name = entry.getKey();
 			if (!METAINFDIR.matcher(name).matches()) {
-				out.write("\r\n".getBytes());
-				out.write("Name: ".getBytes());
+				out.write("\r\n".getBytes("UTF-8"));
+				out.write("Name: ".getBytes("UTF-8"));
 				out.write(name.getBytes("UTF-8"));
-				out.write("\r\n".getBytes());
+				out.write("\r\n".getBytes("UTF-8"));
 
 				digest(algorithms, entry.getValue());
 				for (int a = 0; a < algorithms.length; a++) {
