@@ -16,7 +16,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.BndConstants;
+import aQute.lib.osgi.Constants;
 import bndtools.editor.model.BndEditModel;
 import bndtools.utils.ModificationLock;
 
@@ -72,14 +72,14 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
     public void initialize(IManagedForm form) {
         super.initialize(form);
         model = (BndEditModel) form.getInput();
-        model.addPropertyChangeListener(BndConstants.RUNVMARGS, this);
+        model.addPropertyChangeListener(Constants.RUNVM, this);
     }
 
     @Override
     public void dispose() {
         super.dispose();
         if (model != null)
-            model.removePropertyChangeListener(BndConstants.RUNVMARGS, this);
+            model.removePropertyChangeListener(Constants.RUNVM, this);
     }
 
     @Override

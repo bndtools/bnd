@@ -80,8 +80,7 @@ public class BndEditModel implements IPersistableBndModel {
     private static final String[] KNOWN_PROPERTIES = new String[] {
             Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.lib.osgi.Constants.PRIVATE_PACKAGE, aQute.lib.osgi.Constants.SOURCES,
             aQute.lib.osgi.Constants.BUILDPACKAGES, aQute.lib.osgi.Constants.RUNBUNDLES, aQute.lib.osgi.Constants.RUNPROPERTIES, aQute.lib.osgi.Constants.SUB, BndConstants.RUNFRAMEWORK, aQute.lib.osgi.Constants.RUNVM,
-            BndConstants.RUNVMARGS, BndConstants.TESTSUITES, aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH, BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RUNREPOS,
-            BndConstants.RESOLVE_MODE
+            aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH, BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RUNREPOS, BndConstants.RESOLVE_MODE
     };
 
     public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
@@ -196,8 +195,6 @@ public class BndEditModel implements IPersistableBndModel {
         converters.put(aQute.lib.osgi.Constants.SUB, listConverter);
         converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
         converters.put(aQute.lib.osgi.Constants.RUNVM, stringConverter);
-        converters.put(BndConstants.RUNVMARGS, stringConverter);
-        converters.put(BndConstants.TESTSUITES, listConverter);
         converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
         converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
         converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
@@ -222,8 +219,6 @@ public class BndEditModel implements IPersistableBndModel {
         formatters.put(aQute.lib.osgi.Constants.SUB, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
         formatters.put(aQute.lib.osgi.Constants.RUNVM, newlineEscapeFormatter);
-        formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
-        formatters.put(BndConstants.TESTSUITES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
         formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);

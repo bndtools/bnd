@@ -68,7 +68,6 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
-import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndEditModel;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
@@ -312,7 +311,6 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         super.initialize(form);
 
         this.model = (BndEditModel) form.getInput();
-        this.model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
         this.model.addPropertyChangeListener(Constants.TESTCASES, this);
     }
 
@@ -329,11 +327,9 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     @Override
     public void commit(boolean onSave) {
         try {
-            model.removePropertyChangeListener(BndConstants.TESTSUITES, this);
             model.removePropertyChangeListener(Constants.TESTCASES, this);
             model.setTestSuites(testSuites.isEmpty() ? null : testSuites);
         } finally {
-            model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
             model.addPropertyChangeListener(Constants.TESTCASES, this);
             super.commit(onSave);
         }
@@ -341,7 +337,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (BndConstants.TESTSUITES.equals(propertyName) || Constants.TESTCASES.equals(propertyName)) {
+        if (Constants.TESTCASES.equals(propertyName)) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
             if (page.isActive()) {
                 refresh();
