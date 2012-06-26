@@ -40,7 +40,7 @@ import aQute.lib.osgi.Jar;
 import aQute.libg.reporter.Reporter;
 import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.api.IReleaseParticipant.Scope;
@@ -85,7 +85,7 @@ public class ReleaseHelper {
 
 			IDocument document = FileUtils.readFully(resource);
 
-			final BndEditModel model = new BndEditModel();
+			final BndtoolsEditModel model = new BndtoolsEditModel();
 			model.loadFrom(document);
 
 			String savedVersion = model.getBundleVersionString();

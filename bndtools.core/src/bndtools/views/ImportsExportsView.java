@@ -67,8 +67,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
-import bndtools.model.clauses.HeaderClause;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;

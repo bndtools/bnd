@@ -13,8 +13,8 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
-import bndtools.model.clauses.HeaderClause;
 
 public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
