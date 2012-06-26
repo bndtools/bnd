@@ -31,6 +31,7 @@ javac 					= javac
 javac.debug				= on
 javac.source 			= 1.5
 javac.target 			= 1.5
+javac.ee				= '[1.5,1.6)'
 
 # default version policies
 #   -provider-policy =  ${range;[==,=+)}

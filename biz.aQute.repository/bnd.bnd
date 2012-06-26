@@ -16,7 +16,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	osgi.r5,\
 	javax.xml.stream-1.0.1.jar;version=file,\
 	org.mockito.mockito-all,\
-	ee.j2se;version=1.5.0,\
+	ee.j2se;version=${javac.ee},\
 	${jetty.libs}
 
 Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}

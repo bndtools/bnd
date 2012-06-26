@@ -9,7 +9,7 @@ Bundle-Version: 				0.0.5
 
 -buildpath: aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
-	ee.j2se;version=1.5.0,\
+	ee.j2se;version=${javac.ee},\
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0
 	

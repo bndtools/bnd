@@ -2,7 +2,7 @@
 	aQute.libg;version=project,\
 	osgi.core;version=4.2.1,\
 	junit.osgi;version=3.8.2,\
-	ee.j2se;version='[1.5,1.6)'
+	ee.j2se;version=${javac.ee}
 #	ee.minimum;version=1.2.1
 	
 	

@@ -4,7 +4,7 @@ Bundle-SymbolicName: demo
 
 -buildpath: osgi.core,\
 	ee.minimum;version=1.2.1,\
-	ee.j2se;version='[1.5,1.6)'
+	ee.j2se;version=${javac.ee}
 	
 	
 -testpath: \

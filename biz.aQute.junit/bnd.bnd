@@ -3,7 +3,7 @@
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.2.1,\
-	ee.j2se;version='[1.5,1.6)'
+	ee.j2se;version=${javac.ee}
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
