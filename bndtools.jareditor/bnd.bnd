@@ -4,7 +4,7 @@ Bundle-Version: ${master-version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource: resources
 
--buildpath: ee.j2se;version='[1.5,1.6)',\
+-buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\

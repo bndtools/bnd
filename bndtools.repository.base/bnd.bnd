@@ -1,5 +1,5 @@
 -buildpath:\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version=${javac.ee},\
 	bndtools.core;version=snapshot,\
 	osgi.core,\
 	${bndlib}

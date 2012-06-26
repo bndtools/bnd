@@ -79,7 +79,7 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: ee.j2se;version='[1.5,1.6)',\
+-buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
 	biz.aQute.repository;version=1.0.0,\
 	patricia-trie,\

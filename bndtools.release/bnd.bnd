@@ -18,7 +18,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version=${javac.ee},\
 	bndtools.diff;version=latest, \
 	bndtools.core;version=latest, \
 	${bndlib}, \
