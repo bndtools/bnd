@@ -217,6 +217,7 @@
 		<echo>javac.debug:            ${javac.debug}</echo>
 		<echo>javac.source:           ${javac.source}</echo>
 		<echo>javac.target:           ${javac.target}</echo>
+		<echo>javac.ee:               ${javac.ee}</echo>
 		<echo>p:                      ${p}</echo>
 		<echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
 		<echo>btool.analyse:          ${btool.analyse}</echo>
@@ -231,6 +232,7 @@
 		<echo>release.target:         ${release.target}</echo>
 		<echo>licensed repo:          ${licensed-repo}</echo>
 		<echo>repo:                   ${repo}</echo>
+		<echo>releaserepo:            ${releaserepo}</echo>
 		<echo>use.bnd:                ${use.bnd}</echo>
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>
