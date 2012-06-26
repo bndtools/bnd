@@ -15,7 +15,6 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import test.lib.MockRegistry;
-
 import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import biz.aQute.resolve.BndrunResolveContext;
@@ -163,4 +162,21 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
     }
 
+    public void testFrameworkCapabilitiesPreferredOverRepository() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+
+        Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))").buildSyntheticRequirement();
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        List<Capability> providers = context.findProviders(requirement);
+
+        assertEquals(2, providers.size());
+        assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
 }

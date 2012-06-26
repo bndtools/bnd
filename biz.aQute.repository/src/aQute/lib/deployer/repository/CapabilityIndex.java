@@ -14,7 +14,8 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-class CapabilityIndex {
+
+public class CapabilityIndex {
 
 	private final Map<String,List<Capability>>	capabilityMap	= new HashMap<String,List<Capability>>();
 

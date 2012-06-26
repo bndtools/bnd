@@ -41,10 +41,12 @@ public class BndrunResolveContext extends ResolveContext {
     private final Registry registry;
 
     private final List<Repository> repos = new LinkedList<Repository>();
-    private Resource frameworkResource = null;
-    private Version frameworkResourceVersion = null;
 
     private boolean initialised = false;
+
+    private Resource frameworkResource = null;
+    private Version frameworkResourceVersion = null;
+    private Repository frameworkResourceRepo;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry) {
         this.runModel = runModel;
@@ -62,9 +64,10 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private void loadRepositories() {
+        // Get the rest of the repositories from the plugin registry
         List<Repository> allRepos = registry.getPlugins(Repository.class);
 
-        // Reorder or filter repos list if specified by the run model
+        // Reorder/filter if specified by the run model
         List<String> repoNames = runModel.getRunRepos();
         if (repoNames == null) {
             // No filter, use all
@@ -119,6 +122,7 @@ public class BndrunResolveContext extends ResolveContext {
                             if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
                                 frameworkResource = frameworkCap.getResource();
                                 frameworkResourceVersion = foundVersion;
+                                frameworkResourceRepo = new SingletonResourceRepository(frameworkResource);
                             }
                         }
                     }
@@ -172,12 +176,27 @@ public class BndrunResolveContext extends ResolveContext {
         init();
         ArrayList<Capability> result = new ArrayList<Capability>();
 
+        // The selected OSGi framework always has the first chance to provide the capabilities
+        if (frameworkResourceRepo != null) {
+            Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
+            Collection<Capability> capabilities = providers.get(requirement);
+            if (capabilities != null) {
+                result.addAll(capabilities);
+                // scoreResource
+            }
+        }
+
         // int score = 0;
         for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
             Collection<Capability> capabilities = providers.get(requirement);
             if (capabilities != null) {
-                result.addAll(capabilities);
+                result.ensureCapacity(result.size() + capabilities.size());
+                for (Capability capability : capabilities) {
+                    // filter out OSGi frameworks
+                    if (findFrameworkContractCapability(capability.getResource()) == null)
+                        result.add(capability);
+                }
                 // for (Capability capability : capabilities)
                 // scoreResource(capability.getResource(), score);
             }
