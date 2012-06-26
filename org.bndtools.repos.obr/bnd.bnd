@@ -1,4 +1,5 @@
 -buildpath:\
+	ee.j2se;version=${javac.ee},\
 	org.apache.felix.bundlerepository;version=1.6.7,\
 	osgi.core;version=4.1
 
