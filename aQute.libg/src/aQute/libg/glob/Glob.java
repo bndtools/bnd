@@ -1,5 +1,6 @@
 package aQute.libg.glob;
 
+import java.util.*;
 import java.util.regex.*;
 
 public class Glob {
@@ -25,15 +26,6 @@ public class Glob {
 		line = line.trim();
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen);
-		// Remove beginning and ending * globs because they're useless
-		if (line.startsWith("*")) {
-			line = line.substring(1);
-			strLen--;
-		}
-		if (line.endsWith("*")) {
-			line = line.substring(0, strLen - 1);
-			strLen--;
-		}
 		boolean escaping = false;
 		int inCurlies = 0;
 		for (char currentChar : line.toCharArray()) {
@@ -105,5 +97,13 @@ public class Glob {
 			}
 		}
 		return sb.toString();
+	}
+
+	public void select(List<?> objects) {
+		for ( Iterator<?> i =objects.iterator(); i.hasNext(); ) {
+			String s = i.next().toString();
+			if ( !matcher(s).matches())
+				i.remove();
+		}
 	}
 }
