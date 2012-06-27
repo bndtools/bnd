@@ -110,6 +110,7 @@ public interface Constants {
 	String							RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String							RUNBUNDLES									= "-runbundles";
 	String							RUNREPOS									= "-runrepos";
+	String							RUNREQUIRE									= "-runrequire";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
 	String							RUNBUILDS									= "-runbuilds";
@@ -250,7 +251,6 @@ public interface Constants {
 	Charset							DEFAULT_CHARSET								= Charset.forName("UTF8");
 	String							VERSION_FILTER								= "version";
 	String							PROVIDER_TYPE_DIRECTIVE						= "x-provider-type:";
-
 	/**
 	 * Component constants
 	 */

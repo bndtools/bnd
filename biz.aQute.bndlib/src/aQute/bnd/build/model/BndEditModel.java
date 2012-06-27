@@ -5,6 +5,9 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.osgi.framework.*;
+import org.osgi.resource.Requirement;
+
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.lib.osgi.*;
@@ -34,13 +37,12 @@ public class BndEditModel {
 			aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.CLASSPATH,
 			aQute.lib.osgi.Constants.BUILDPATH, aQute.lib.osgi.Constants.BUILDPACKAGES,
 			aQute.lib.osgi.Constants.RUNBUNDLES, aQute.lib.osgi.Constants.RUNPROPERTIES, aQute.lib.osgi.Constants.SUB,
-			// BndConstants.RUNFRAMEWORK,
+			aQute.lib.osgi.Constants.RUNFRAMEWORK,
 			aQute.lib.osgi.Constants.RUNVM,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH,
-			aQute.lib.osgi.Constants.RUNREPOS,
-																								// BndConstants.RUNREQUIRE,
+			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRE,
 																								// BndConstants.RUNEE,
 																								// BndConstants.RESOLVE_MODE
 																								};
@@ -136,21 +138,9 @@ public class BndEditModel {
 																										});
 
 	protected Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
+	
+	protected Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
 
-	// Converter<List<Requirement>, String> requirementListConverter =
-	// SimpleListConverter.create(new Converter<Requirement, String>() {
-	// public Requirement convert(String input) throws IllegalArgumentException
-	// {
-	// int index = input.indexOf(":");
-	// if (index < 0)
-	// throw new IllegalArgumentException("Invalid format for OBR requirement");
-	//
-	// String name = input.substring(0, index);
-	// String filter = input.substring(index + 1);
-	//
-	// return new Requirement(name, filter);
-	// }
-	// });
 	// Converter<EE, String> eeConverter = new Converter<EE, String>() {
 	// public EE convert(String input) throws IllegalArgumentException {
 	// return EE.parse(input);
@@ -176,16 +166,9 @@ public class BndEditModel {
 																										LIST_SEPARATOR,
 																										new PropertiesEntryFormatter(),
 																										null);
-	// Converter<String, Collection<? extends Requirement>>
-	// requirementListFormatter = new
-	// CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String,
-	// Requirement>() {
-	// public String convert(Requirement input) throws IllegalArgumentException
-	// {
-	// return new
-	// StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
-	// }
-	// }, null);
+	
+	protected Converter<String,Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new RequirementFormatter(), null);
+	
 	// Converter<String, EE> eeFormatter = new Converter<String, EE>() {
 	// public String convert(EE input) throws IllegalArgumentException {
 	// return input != null ? input.getEEName() : null;
@@ -214,7 +197,7 @@ public class BndEditModel {
 		converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
 		converters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
 		converters.put(Constants.IMPORT_PACKAGE, importPatternConverter);
-		// converters.put(BndConstants.RUNFRAMEWORK, stringConverter);
+		converters.put(aQute.lib.osgi.Constants.RUNFRAMEWORK, stringConverter);
 		converters.put(aQute.lib.osgi.Constants.SUB, listConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNVM, stringConverter);
@@ -222,9 +205,9 @@ public class BndEditModel {
 		converters.put(aQute.lib.osgi.Constants.TESTSUITES, listConverter);
 		converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
 		converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
-		// converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
+		converters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListConverter);
 		// converters.put(BndConstants.RUNEE, new NoopConverter<String>());
-		// converters.put(BndConstants.RUNREPOS, listConverter);
+		converters.put(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
 		formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
@@ -240,7 +223,7 @@ public class BndEditModel {
 		formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
 		formatters.put(Constants.IMPORT_PACKAGE, headerClauseListFormatter);
-		// formatters.put(BndConstants.RUNFRAMEWORK, newlineEscapeFormatter);
+		formatters.put(aQute.lib.osgi.Constants.RUNFRAMEWORK, newlineEscapeFormatter);
 		formatters.put(aQute.lib.osgi.Constants.SUB, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNVM, newlineEscapeFormatter);
@@ -248,9 +231,9 @@ public class BndEditModel {
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
-		// formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
+		formatters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListFormatter);
 		// formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
-		// formatters.put(BndConstants.RUNREPOS, runReposFormatter);
+		formatters.put(aQute.lib.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 	}
 
@@ -648,6 +631,15 @@ public class BndEditModel {
     public void setRunFramework(String clause) {
         String oldValue = getRunFramework();
         doSetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
+    }
+    
+    public List<Requirement> getRunRequires() {
+    	return doGetObject(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListConverter);
+    }
+    
+    public void setRunRequires(List<Requirement> requires) {
+    	List<Requirement> oldValue = getRunRequires();
+    	doSetObject(aQute.lib.osgi.Constants.RUNREQUIRE, oldValue, requires, requirementListFormatter);
     }
 
 
