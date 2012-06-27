@@ -20,6 +20,21 @@ public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
 	
+	interface M {
+		String a();
+		int b();
+		int c();
+		double d();
+	}
+	public void testMap() throws Exception {
+		Map<String,String> map = MAP.$("a", "A").$("b", "2");
+		M m = converter.convert(M.class, map);
+		assertEquals("A", m.a());
+		assertEquals(2, m.b());
+		assertEquals(0, m.c());
+		assertEquals(0d, m.d());
+	}
+	
 	
 	public void testTypeRef() throws Exception {
 		Map<String,Integer> f;

@@ -32,14 +32,18 @@ public class Converter {
 	}
 
 	public <T> T convert(TypeReference<T> type, Object o) throws Exception {
-		return (T) convert( type.getType(), o);
+		return (T) convert(type.getType(), o);
 	}
-	
-	public Object convert(Type type, Object o) throws Exception {
-		if (o == null)
-			return null; // compatible with any
 
-		
+	public Object convert(Type type, Object o) throws Exception {
+		Class resultType = getRawClass(type);
+		if (o == null) {
+			if (resultType.isPrimitive()||  Number.class.isAssignableFrom(resultType)) 
+				return convert(type,0);
+
+			return null; // compatible with any
+		}
+
 		Hook hook = hooks.get(type);
 		if (hook != null) {
 			Object value = hook.convert(type, o);
@@ -47,7 +51,6 @@ public class Converter {
 				return value;
 		}
 
-		Class resultType = getRawClass(type);
 		Class< ? > actualType = o.getClass();
 
 		// We can always make a string
@@ -110,6 +113,10 @@ public class Converter {
 
 		if (resultType.isAssignableFrom(o.getClass()))
 			return o;
+
+		if (Map.class.isAssignableFrom(actualType) && resultType.isInterface()) {
+			return proxy(resultType, (Map) o);
+		}
 
 		// Simple type coercion
 
@@ -243,6 +250,8 @@ public class Converter {
 		return error("No conversion found for " + o.getClass() + " to " + type);
 	}
 
+
+
 	private Number number(Object o) {
 		if (o instanceof Number)
 			return (Number) o;
@@ -311,8 +320,9 @@ public class Converter {
 				result = new TreeMap();
 			else if (rawClass.isAssignableFrom(ConcurrentHashMap.class))
 				result = new ConcurrentHashMap();
-			else
+			else {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
+			}
 		} else
 			result = rawClass.newInstance();
 
@@ -420,5 +430,45 @@ public class Converter {
 	public Converter hook(Type type, Hook hook) {
 		this.hooks.put(type, hook);
 		return this;
+	}
+
+	/**
+	 * Convert a map to an interface.
+	 * 
+	 * @param interfc
+	 * @param properties
+	 * @return
+	 */
+	public <T> T proxy(Class<T> interfc, final Map< ? , ? > properties) {
+		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
+			interfc
+		}, new InvocationHandler() {
+
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				Object o = properties.get(method.getName());
+				if ( o == null)
+					o = properties.get(mangleMethodName(method.getName()));
+
+				return convert( method.getGenericReturnType(), o);
+			}
+
+		});
+	}
+
+	public static String mangleMethodName(String id) {
+		StringBuilder sb = new StringBuilder(id);
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
+			if (c == '$' || c == '_') {
+				if (twice)
+					sb.deleteCharAt(i + 1);
+				else if (c == '$')
+					sb.deleteCharAt(i--); // Remove dollars
+				else
+					sb.setCharAt(i, '.'); // Make _ into .
+			}
+		}
+		return sb.toString();
 	}
 }
