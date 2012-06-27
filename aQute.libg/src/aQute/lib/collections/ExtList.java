@@ -12,6 +12,22 @@ public class ExtList<T> extends ArrayList<T> {
 		}
 	}
 
+	public ExtList(int size) {
+		super(size);
+	}
+
+	public static ExtList<String> from(String s) {
+		// TODO make sure no \ before comma
+		return from(s, "\\s*,\\s*");
+	}
+	public static ExtList<String> from(String s, String delimeter) {
+		ExtList<String> result = new ExtList<String>();
+		String[] parts = s.split(delimeter);
+		for (String p : parts)
+			result.add(p);
+		return result;
+	}
+
 	public String join() {
 		return join(",");
 	}
