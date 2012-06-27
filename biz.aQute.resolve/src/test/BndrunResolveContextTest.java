@@ -5,6 +5,8 @@ import static test.lib.Utils.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -178,5 +180,24 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(2, providers.size());
         assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
         assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
+
+    public void testInputRequirementsAsMandatoryResource() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+
+        Requirement req = new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.gogo.command)").buildSyntheticRequirement();
+        runModel.setRunRequires(Collections.singletonList(req));
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        Collection<Resource> mandRes = context.getMandatoryResources();
+
+        assertEquals(2, mandRes.size());
+        Iterator<Resource> iter = mandRes.iterator();
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(iter.next()));
+        assertEquals("__INITIAL__", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
     }
 }

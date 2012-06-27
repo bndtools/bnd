@@ -15,6 +15,11 @@ public class ResourceBuilder {
 
 	private boolean					built			= false;
 
+	public ResourceBuilder addCapability(Capability capability) {
+		CapReqBuilder builder = CapReqBuilder.clone(capability);
+		return addCapability(builder);
+	}
+	
 	public ResourceBuilder addCapability(CapReqBuilder builder) {
 		if (built)
 			throw new IllegalStateException("Resource already built");
@@ -24,7 +29,12 @@ public class ResourceBuilder {
 
 		return this;
 	}
-
+	
+	public ResourceBuilder addRequirement(Requirement requirement) {
+		CapReqBuilder builder = CapReqBuilder.clone(requirement);
+		return addRequirement(builder);
+	}
+	
 	public ResourceBuilder addRequirement(CapReqBuilder builder) {
 		if (built)
 			throw new IllegalStateException("Resource already built");

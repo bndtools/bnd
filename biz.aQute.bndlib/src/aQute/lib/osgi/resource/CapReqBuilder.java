@@ -26,6 +26,20 @@ public class CapReqBuilder {
 		this.namespace = namespace;
 	}
 	
+	public static CapReqBuilder clone(Capability capability) {
+		CapReqBuilder builder = new CapReqBuilder(capability.getNamespace());
+		builder.addAttributes(capability.getAttributes());
+		builder.addDirectives(capability.getDirectives());
+		return builder;
+	}
+	
+	public static CapReqBuilder clone(Requirement requirement) {
+		CapReqBuilder builder = new CapReqBuilder(requirement.getNamespace());
+		builder.addAttributes(requirement.getAttributes());
+		builder.addDirectives(requirement.getDirectives());
+		return builder;
+	}
+	
 	public String getNamespace() {
 		return namespace;
 	}
@@ -39,9 +53,19 @@ public class CapReqBuilder {
 		attributes.put(name, value);
 		return this;
 	}
+	
+	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) {
+		this.attributes.putAll(attributes);
+		return this;
+	}
 
 	public CapReqBuilder addDirective(String name, String value) {
 		directives.put(name, value);
+		return this;
+	}
+	
+	public CapReqBuilder addDirectives(Map<? extends String, ? extends String> directives) {
+		this.directives.putAll(directives);
 		return this;
 	}
 	

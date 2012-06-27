@@ -26,6 +26,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.Registry;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
+import aQute.lib.osgi.resource.ResourceBuilder;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.SimpleFilter;
@@ -36,6 +37,7 @@ import aQute.libg.version.VersionRange;
 public class BndrunResolveContext extends ResolveContext {
 
     private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
+    private static final String IDENTITY_INITIAL_RESOURCE = "__INITIAL__";
 
     private final BndEditModel runModel;
     private final Registry registry;
@@ -48,6 +50,8 @@ public class BndrunResolveContext extends ResolveContext {
     private Version frameworkResourceVersion = null;
     private Repository frameworkResourceRepo;
 
+    private Resource inputRequirementsResource = null;
+
     public BndrunResolveContext(BndEditModel runModel, Registry registry) {
         this.runModel = runModel;
         this.registry = registry;
@@ -59,6 +63,7 @@ public class BndrunResolveContext extends ResolveContext {
 
         loadRepositories();
         findFramework();
+        constructInputRequirements();
 
         initialised = true;
     }
@@ -131,6 +136,23 @@ public class BndrunResolveContext extends ResolveContext {
         }
     }
 
+    private void constructInputRequirements() {
+        List<Requirement> requires = runModel.getRunRequires();
+        if (requires == null || requires.isEmpty()) {
+            inputRequirementsResource = null;
+        } else {
+            ResourceBuilder resBuilder = new ResourceBuilder();
+            CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
+            resBuilder.addCapability(identity);
+
+            for (Requirement req : requires) {
+                resBuilder.addRequirement(req);
+            }
+
+            inputRequirementsResource = resBuilder.build();
+        }
+    }
+
     private Version toVersion(Object object) throws IllegalArgumentException {
         if (object == null)
             return null;
@@ -163,7 +185,13 @@ public class BndrunResolveContext extends ResolveContext {
         init();
         if (frameworkResource == null)
             throw new IllegalStateException(MessageFormat.format("Could not find OSGi framework matching {0}.", runModel.getRunFramework()));
-        return Collections.singletonList(frameworkResource);
+
+        List<Resource> resources = new ArrayList<Resource>();
+        resources.add(frameworkResource);
+
+        if (inputRequirementsResource != null)
+            resources.add(inputRequirementsResource);
+        return resources;
     }
 
     @Override
