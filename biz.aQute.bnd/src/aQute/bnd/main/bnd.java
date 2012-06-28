@@ -2584,13 +2584,21 @@ public class bnd extends Processor {
 	@Arguments(arg = {
 			"pattern", "file..."
 	})
-	@Description("Grep the manifest of bundles/jar files")
+	@Description("Grep the manifest of bundles/jar files. ")
 	interface grepOptions extends Options {
+		
+		@Description("Search in exports")
 		boolean exports();
 
+		@Description("Search in imports")
 		boolean imports();
+		
+		@Description("Search in bsn")
+		boolean bsn();
 
+		@Description("Set header(s) to search, can be wildcarded. The default is all headers (*).")
 		Set<String> headers();
+		
 	}
 
 	public void _grep(grepOptions opts) throws Exception {
@@ -2617,6 +2625,8 @@ public class bnd extends Processor {
 		
 		if (opts.exports())
 			headers.add(Constants.EXPORT_PACKAGE);
+		if (opts.bsn())
+			headers.add(Constants.BUNDLE_SYMBOLICNAME);
 		if (opts.imports())
 			headers.add(Constants.IMPORT_PACKAGE);
 
