@@ -13,8 +13,8 @@ package bndtools.jareditor.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -168,7 +168,7 @@ public class JARContentTreePart extends AbstractFormPart {
         public void dispose() {}
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            entryMap = new LinkedHashMap<String,ZipTreeNode>();
+            entryMap = new TreeMap<String,ZipTreeNode>();
             if (newInput instanceof IFileEditorInput) {
                 JarFile jarFile = null;
                 try {
