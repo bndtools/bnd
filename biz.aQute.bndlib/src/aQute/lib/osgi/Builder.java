@@ -117,7 +117,6 @@ public class Builder extends Analyzer {
 		dot.setName(getBsn());
 
 		sign(dot);
-		doDigests(dot);
 		doSaveManifest(dot);
 
 		doDiff(dot); // check if need to diff this bundle
