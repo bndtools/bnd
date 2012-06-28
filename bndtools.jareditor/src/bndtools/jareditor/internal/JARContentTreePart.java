@@ -19,7 +19,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -171,19 +170,24 @@ public class JARContentTreePart extends AbstractFormPart {
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             entryMap = new LinkedHashMap<String,ZipTreeNode>();
             if (newInput instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) newInput).getFile();
+                JarFile jarFile = null;
                 try {
-                    File ioFile = new File(file.getLocationURI());
-                    JarFile jarFile = new JarFile(ioFile);
+                    File ioFile = new File(((IFileEditorInput) newInput).getFile().getLocationURI());
+                    jarFile = new JarFile(ioFile);
 
                     Enumeration<JarEntry> entries = jarFile.entries();
                     while (entries.hasMoreElements()) {
                         ZipTreeNode.addEntry(entryMap, entries.nextElement());
                     }
-                    jarFile.close();
                 } catch (IOException e) {
                     Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
                     ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
+                } finally {
+                    try {
+                        if (jarFile != null) {
+                            jarFile.close();
+                        }
+                    } catch (IOException e) {}
                 }
             }
         }
