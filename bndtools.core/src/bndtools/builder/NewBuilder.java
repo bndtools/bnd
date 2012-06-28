@@ -534,7 +534,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         model.clear();
 
         // Update the exported packages for the project
-        new ExportedPackageDecoratorJob(getProject(), logger).schedule();
+        ExportedPackageDecoratorJob.scheduleForProject(getProject(), logger);
 
         // Load Eclipse classpath containers
         model.clearClasspath();

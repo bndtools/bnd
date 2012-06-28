@@ -159,6 +159,7 @@ public class ResolutionFailurePanel {
         processingErrorsMaximiser.createToolItem(parent, toolbar);
     }
 
+    @SuppressWarnings("unused")
     private void createUnresolvedViewToolBar(final Composite parent) {
         ToolBar unresolvedToolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
         GridData gd_unresolvedToolBar = new GridData(SWT.RIGHT, SWT.FILL, true, false);

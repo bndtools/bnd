@@ -69,7 +69,6 @@ eclipse.deps: \
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
-	org.eclipse.jdt.debug,\
 	org.eclipse.jdt.debug.ui,\
 	org.eclipse.jdt.junit,\
 	org.eclipse.equinox.preferences,\
@@ -80,7 +79,7 @@ eclipse.deps: \
 	org.eclipse.core.expressions,\
 	org.eclipse.core.filesystem
 
--buildpath: ee.j2se;version='[1.5,1.6)',\
+-buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
 	biz.aQute.repository;version=1.0.0,\
 	patricia-trie,\

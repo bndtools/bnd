@@ -80,7 +80,6 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
 
         // LISTENERS
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
-            ;
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
                 boolean valid = false;
@@ -259,7 +258,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
             @Override
             public void run() {
                 viewer.setInput(RepositoryUtils.listRepositories(true));
-            };
+            }
         };
         refreshAction.setText("Refresh");
         refreshAction.setToolTipText("Refresh Repositories Tree");
@@ -280,7 +279,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                         viewer.refresh(repo);
                     }
                 }
-            };
+            }
         };
         addBundlesAction.setEnabled(false);
         addBundlesAction.setText("Add");

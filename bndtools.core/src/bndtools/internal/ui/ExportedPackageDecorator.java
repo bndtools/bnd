@@ -1,6 +1,8 @@
 package bndtools.internal.ui;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
@@ -10,8 +12,8 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Version;
 
-import aQute.lib.osgi.Instruction;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.internal.decorator.ExportedPackageDecoratorJob;
@@ -38,16 +40,18 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
 
-            Set<Instruction> exports = Central.getExportedPackageModel(project);
+            Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
             if (exports != null) {
-                for (Instruction export : exports) {
-                    if (export.matches(pkgName)) {
-                        decoration.addOverlay(plusIcon);
-                        break;
-                    }
+                Collection<Version> versions = exports.get(pkgName);
+                if (versions != null) {
+                    decoration.addOverlay(plusIcon);
+                    if (versions.isEmpty())
+                        decoration.addSuffix(" " + Collections.singletonList(Version.emptyVersion).toString());
+                    else
+                        decoration.addSuffix(" " + versions.toString());
                 }
             } else {
-                new ExportedPackageDecoratorJob(project, Plugin.getDefault().getLogger()).schedule();
+                ExportedPackageDecoratorJob.scheduleForProject(project, Plugin.getDefault().getLogger());
             }
         }
     }

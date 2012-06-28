@@ -36,7 +36,7 @@ public class ImportPackage extends HeaderClause {
 
     public Collection<String> getUsedBy() {
         return usedBy;
-    };
+    }
 
     public Collection<Clazz> getImportingClasses(String importingPackage) {
         return classes.get(importingPackage);

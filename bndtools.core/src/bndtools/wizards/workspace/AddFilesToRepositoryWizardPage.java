@@ -98,6 +98,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         }
     }
 
+    @SuppressWarnings("unused")
     public void createControl(Composite parent) {
         setTitle("Add Files to Repository");
 

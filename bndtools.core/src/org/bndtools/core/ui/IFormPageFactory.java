@@ -8,7 +8,7 @@ public interface IFormPageFactory {
 
     public static enum Mode {
         build, run, bundle, workspace
-    };
+    }
 
     IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException;
 

@@ -65,6 +65,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
      * 
      * @param parent
      */
+    @SuppressWarnings("unused")
     @Override
     protected Control createDialogArea(Composite parent) {
         setMessage(Messages.PackageInfoDialog_Message);

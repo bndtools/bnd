@@ -6,7 +6,7 @@ public class CnfInfo {
 
     static enum Existence {
         None, Exists, ImportedClosed, ImportedOpen
-    };
+    }
 
     private final Existence existence;
     private final IPath location;

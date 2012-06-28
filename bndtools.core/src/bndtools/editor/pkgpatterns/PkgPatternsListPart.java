@@ -171,7 +171,6 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
                 if (e.character == SWT.DEL) {
                     doRemoveSelectedClauses();
                 } else if (e.character == '+') {
-                    ;
                     doAddClausesAfterSelection(generateClauses());
                 }
             }
@@ -335,12 +334,12 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         }
         return selectionIndexes;
     }
+
     /*
      * void resetSelection(int[] selectedIndexes) { ArrayList<ImportPattern> selection = new
      * ArrayList<ImportPattern>(selectedIndexes.length); for (int index : selectedIndexes) {
      * selection.add(patterns.get(index)); } viewer.setSelection(new StructuredSelection(selection), true); }
      */
-    ;
 
     @Override
     public void initialize(IManagedForm form) {

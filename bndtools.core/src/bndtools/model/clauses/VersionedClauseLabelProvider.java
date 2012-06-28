@@ -29,5 +29,5 @@ public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
     public void dispose() {
         super.dispose();
         bundleImg.dispose();
-    };
+    }
 }

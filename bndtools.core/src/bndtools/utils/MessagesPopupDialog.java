@@ -63,6 +63,7 @@ public class MessagesPopupDialog extends PopupDialog {
         return result;
     }
 
+    @SuppressWarnings("unused")
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -131,7 +132,7 @@ public class MessagesPopupDialog extends PopupDialog {
                             close();
                             // part.getSite().getPage().activate(part);
                             part.setFocus();
-                        };
+                        }
                     });
                     fixLink.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
                 }

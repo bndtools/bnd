@@ -261,7 +261,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         getSite().getPage().removePartListener(partAdapter);
         super.dispose();
-    };
+    }
 
     public void setInput(File[] sourceFiles, Collection< ? extends ImportPackage> imports, Collection< ? extends ExportPackage> exports, Collection< ? extends RequiredBundle> requiredBundles) {
         selectedFiles = sourceFiles;

@@ -337,13 +337,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                                 public void run() {
                                     model.addPrivatePackage(packageName);
                                     addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
-                                };
+                                }
                             }, new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
                                 @Override
                                 public void run() {
                                     model.addExportedPackage(new ExportedPackage(packageName, null));
                                     addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
-                                };
+                                }
                             }
                     };
                 }

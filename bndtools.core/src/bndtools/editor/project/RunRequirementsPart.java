@@ -187,7 +187,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             @Override
             public void widgetSelected(SelectionEvent e) {
                 doAddBundle();
-            };
+            }
         });
 
         // Remove

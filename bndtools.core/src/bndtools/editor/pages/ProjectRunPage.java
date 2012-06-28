@@ -145,6 +145,6 @@ public class ProjectRunPage extends FormPage {
         managedForm.addPart(runBundlesPart);
         runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
         runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
-    };
+    }
 
 }

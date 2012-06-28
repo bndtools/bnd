@@ -74,7 +74,6 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
             }
         });
         txtVersion.addListener(SWT.Modify, new Listener() {
-            ;
             public void handleEvent(Event event) {
                 try {
                     version = Version.parseVersion(txtVersion.getText());

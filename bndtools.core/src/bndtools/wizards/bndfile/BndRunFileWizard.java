@@ -47,7 +47,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
             @Override
             protected InputStream getInitialContents() {
                 return getTemplateContents();
-            };
+            }
         };
         mainPage.setTitle("New Bnd Run Descriptor");
         mainPage.setFileExtension("bndrun"); //$NON-NLS-1$

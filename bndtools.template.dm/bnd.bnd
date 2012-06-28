@@ -1,7 +1,7 @@
 -dependson: bndtools.repository.base
 
 -buildpath:\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version=${javac.ee},\
 	bndtools.core;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	osgi.core,\
