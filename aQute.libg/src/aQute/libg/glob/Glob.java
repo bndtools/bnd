@@ -106,4 +106,13 @@ public class Glob {
 				i.remove();
 		}
 	}
+
+	public static Pattern toPattern(String s) {
+		try {
+			return Pattern.compile( convertGlobToRegEx(s));
+		} catch( Exception e) {
+			// ignore
+		}
+		return null;
+	}
 }
