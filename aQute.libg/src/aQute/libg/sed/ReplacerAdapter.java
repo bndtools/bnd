@@ -35,6 +35,20 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		this.domain = domain;
 	}
 
+	public ReplacerAdapter(final Map<String,String> domain) {
+		this(new Domain() {
+
+			public Map<String,String> getMap() {
+				return domain;
+			}
+
+			public Domain getParent() {
+				return null;
+			}
+			
+		});
+	}
+
 	public ReplacerAdapter target(Object target) {
 		assert target != null;
 		targets.add(target);
@@ -902,4 +916,24 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		this.reporter = reporter;
 	}
 
+	
+	public int _processors(String args[]) {
+		float multiplier = 1F;
+		if ( args.length > 1 )
+			multiplier = Float.parseFloat(args[1]);
+		
+		return (int) (Runtime.getRuntime().availableProcessors() * multiplier);
+	}
+	
+	public long _maxMemory(String args[]) {
+		return Runtime.getRuntime().maxMemory();
+	}
+	public long _freeMemory(String args[]) {
+		return Runtime.getRuntime().freeMemory();
+	}
+
+	public long _nanoTime(String args[]) {
+		return System.nanoTime();
+	}
+	
 }
