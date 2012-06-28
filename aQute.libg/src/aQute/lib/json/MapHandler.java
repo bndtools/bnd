@@ -21,6 +21,8 @@ public class MapHandler extends Handler {
 				rawClass = Hashtable.class;
 			else if (rawClass.isAssignableFrom(LinkedHashMap.class))
 				rawClass = LinkedHashMap.class;
+			else if (rawClass.isAssignableFrom(Dictionary.class))
+				rawClass = Hashtable.class;
 			else
 				throw new IllegalArgumentException("Unknown map interface: " + rawClass);
 		}

@@ -190,6 +190,8 @@ public class JSONCodec {
 						h = new CollectionHandler(rawClass, pt.getActualTypeArguments()[0]);
 					else if (Map.class.isAssignableFrom(rawClass))
 						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0], pt.getActualTypeArguments()[1]);
+					else if (Dictionary.class.isAssignableFrom(rawClass))
+						h = new MapHandler(Hashtable.class, pt.getActualTypeArguments()[0], pt.getActualTypeArguments()[1]);
 					else
 						throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 				}

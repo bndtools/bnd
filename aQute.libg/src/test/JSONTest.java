@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import junit.framework.*;
+import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
 import aQute.libg.map.*;
@@ -14,6 +15,16 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	
+	
+	public void testToDictionary() throws Exception {
+		Dictionary<String,String> dictionary = codec.dec().from("{\"x\":3, \"y\":\"\"}").get(new TypeReference<Dictionary<String,String>>(){});
+		assertEquals( "3", dictionary.get("x"));
+		assertEquals( "", dictionary.get("y"));
+	}
+	
+	
+	
 	/**
 	 * Test conversion of iterable
 	 * 
