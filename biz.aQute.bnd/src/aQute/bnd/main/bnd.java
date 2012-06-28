@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
+import java.util.jar.Attributes.Name;
 import java.util.regex.*;
 import java.util.zip.*;
 
@@ -37,6 +38,7 @@ import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
 import aQute.libg.generics.*;
+import aQute.libg.glob.*;
 import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
@@ -760,6 +762,9 @@ public class bnd extends Processor {
 	interface packageOptions extends Options {
 		@Description("Where to store the resulting file")
 		String output();
+
+		@Description("Profile name")
+		String profile();
 	}
 
 	public void _package(packageOptions opts) throws Exception {
@@ -800,6 +805,10 @@ public class bnd extends Processor {
 
 				Workspace ws = project.getWorkspace();
 				project = new Project(ws, getBase(), file);
+
+				String profile = opts.profile() == null ? "exec" : opts.profile();
+				project.getRunProperties().put("profile", profile);
+
 				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
 			}
 		}
@@ -1500,10 +1509,10 @@ public class bnd extends Processor {
 					err.println("[MANIFEST " + jar.getName() + "]");
 					printManifest(manifest);
 				}
-				err.println();
+				out.println();
 			}
 			if ((options & IMPEXP) != 0) {
-				err.println("[IMPEXP]");
+				out.println("[IMPEXP]");
 				Manifest m = jar.getManifest();
 				Domain domain = Domain.domain(m);
 
@@ -1525,43 +1534,43 @@ public class bnd extends Processor {
 			}
 
 			if ((options & (USES | USEDBY)) != 0) {
-				err.println();
+				out.println();
 				Analyzer analyzer = new Analyzer();
 				analyzer.setPedantic(isPedantic());
 				analyzer.setJar(jar);
 				analyzer.analyze();
 				if ((options & USES) != 0) {
-					err.println("[USES]");
+					out.println("[USES]");
 					printMultiMap(analyzer.getUses());
-					err.println();
+					out.println();
 				}
 				if ((options & USEDBY) != 0) {
-					err.println("[USEDBY]");
+					out.println("[USEDBY]");
 					printMultiMap(analyzer.getUses().transpose());
 				}
 			}
 
 			if ((options & COMPONENT) != 0) {
-				printComponents(err, jar);
+				printComponents(out, jar);
 			}
 
 			if ((options & METATYPE) != 0) {
-				printMetatype(err, jar);
+				printMetatype(out, jar);
 			}
 
 			if ((options & LIST) != 0) {
-				err.println("[LIST]");
+				out.println("[LIST]");
 				for (Map.Entry<String,Map<String,Resource>> entry : jar.getDirectories().entrySet()) {
 					String name = entry.getKey();
 					Map<String,Resource> contents = entry.getValue();
-					err.println(name);
+					out.println(name);
 					if (contents != null) {
 						for (String element : contents.keySet()) {
 							int n = element.lastIndexOf('/');
 							if (n > 0)
 								element = element.substring(n + 1);
-							err.print("  ");
-							err.print(element);
+							out.print("  ");
+							out.print(element);
 							String path = element;
 							if (name.length() != 0)
 								path = name + "/" + element;
@@ -1570,16 +1579,16 @@ public class bnd extends Processor {
 								String extra = r.getExtra();
 								if (extra != null) {
 
-									err.print(" extra='" + escapeUnicode(extra) + "'");
+									out.print(" extra='" + escapeUnicode(extra) + "'");
 								}
 							}
-							err.println();
+							out.println();
 						}
 					} else {
-						err.println(name + " <no contents>");
+						out.println(name + " <no contents>");
 					}
 				}
-				err.println();
+				out.println();
 			}
 		}
 		finally {
@@ -1726,7 +1735,7 @@ public class bnd extends Processor {
 	private void print(String msg, Map< ? , ? extends Map< ? , ? >> ports) {
 		if (ports.isEmpty())
 			return;
-		err.println(msg);
+		out.println(msg);
 		for (Entry< ? , ? extends Map< ? , ? >> entry : ports.entrySet()) {
 			Object key = entry.getKey();
 			Map< ? , ? > clause = Create.copy(entry.getValue());
@@ -1807,7 +1816,7 @@ public class bnd extends Processor {
 					sb.append(c);
 			}
 		}
-		err.print(sb);
+		out.print(sb);
 	}
 
 	/**
@@ -2567,5 +2576,87 @@ public class bnd extends Processor {
 		}
 
 		printMultiMap(table);
+	}
+
+	/**
+	 * Grep in jars
+	 */
+	@Arguments(arg = {
+			"pattern", "file..."
+	})
+	@Description("Grep the manifest of bundles/jar files")
+	interface grepOptions extends Options {
+		boolean exports();
+
+		boolean imports();
+
+		Set<String> headers();
+	}
+
+	public void _grep(grepOptions opts) throws Exception {
+		List<String> args = opts._();
+		String s = args.remove(0);
+		Pattern pattern = Glob.toPattern(s);
+		if (pattern == null) {
+			messages.InvalidGlobPattern_(s);
+			return;
+		}
+
+		if (args.isEmpty()) {
+			args = new ExtList<String>(getBase().list(new FilenameFilter() {
+
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".jar");
+				}
+			}));
+		}
+
+		Set<String> headers = opts.headers();
+		if ( headers == null)
+			headers = new TreeSet<String>();
+		
+		if (opts.exports())
+			headers.add(Constants.EXPORT_PACKAGE);
+		if (opts.imports())
+			headers.add(Constants.IMPORT_PACKAGE);
+
+		Instructions instructions = new Instructions(headers);
+
+		for (String fileName : args) {
+			File file = getFile(fileName);
+			if (!file.isFile()) {
+				messages.NoSuchFile_(file);
+				continue;
+			}
+
+			JarInputStream in = new JarInputStream(new FileInputStream(file));
+			try {
+				Manifest m = in.getManifest();
+				for (Object header : m.getMainAttributes().keySet()) {
+					Attributes.Name name = (Name) header;
+					if (instructions.isEmpty() || instructions.matches(name.toString())) {
+						String value = m.getMainAttributes().getValue(name);
+						Matcher matcher = pattern.matcher(value);
+						while (matcher.find()) {
+							int start = matcher.start() - 8;
+							if (start < 0)
+								start = 0;
+
+							int end = matcher.end() + 8;
+							if (end > value.length())
+								end = value.length();
+
+							out.printf("%40s : %20s ...%s[%s]%s...%n", fileName, name,
+									value.substring(start, matcher.start()),
+									value.substring(matcher.start(), matcher.end()),
+									value.substring(matcher.end(), end));
+						}
+					}
+				}
+			}
+			finally {
+				in.close();
+			}
+		}
 	}
 }

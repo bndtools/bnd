@@ -23,4 +23,6 @@ public interface BndMessages extends Messages {
 
 	ERROR NoSuchRepository_(String newer);
 
+	ERROR InvalidGlobPattern_(String pattern);
+
 }
