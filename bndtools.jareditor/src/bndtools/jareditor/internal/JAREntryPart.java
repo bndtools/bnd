@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,8 +34,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IPartSelectionListener;
@@ -182,45 +184,56 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
             displayJob.cancel();
 
         if (zipEntry != null && !zipEntry.isDirectory()) {
-            final IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
+            IEditorInput input = editor.getEditorInput();
             final Display display = text.getDisplay();
-            displayJob = new Job("Load zip content") {
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    File ioFile = new File(file.getLocationURI());
-                    ZipFile zipFile = null;
-                    try {
-                        zipFile = new ZipFile(ioFile);
-                        final StringWriter writer = new StringWriter();
-                        if (showAsText)
-                            readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
-                        else
-                            readAsHex(zipFile, zipEntry, writer, 1024 * 10, monitor);
+            final URI uri;
 
-                        display.asyncExec(new Runnable() {
-                            public void run() {
-                                setContent(writer.toString());
-                            }
-                        });
+            if (input instanceof IFileEditorInput) {
+                uri = ((IFileEditorInput) input).getFile().getLocationURI();
+            } else if (input instanceof IURIEditorInput) {
+                uri = ((IURIEditorInput) input).getURI();
+            } else {
+                uri = null;
+            }
 
-                        return Status.OK_STATUS;
-                    } catch (IOException e) {
-                        Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
-                        // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
-                        return status;
-                    } finally {
+            if (uri != null) {
+                displayJob = new Job("Load zip content") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        File ioFile = new File(uri);
+                        ZipFile zipFile = null;
                         try {
-                            if (zipFile != null)
-                                zipFile.close();
+                            zipFile = new ZipFile(ioFile);
+                            final StringWriter writer = new StringWriter();
+                            if (showAsText)
+                                readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
+                            else
+                                readAsHex(zipFile, zipEntry, writer, 1024 * 10, monitor);
+
+                            display.asyncExec(new Runnable() {
+                                public void run() {
+                                    setContent(writer.toString());
+                                }
+                            });
+
+                            return Status.OK_STATUS;
                         } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                            // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
+                            return status;
+                        } finally {
+                            try {
+                                if (zipFile != null)
+                                    zipFile.close();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            };
-
-            displayJob.schedule();
+                };
+                displayJob.schedule();
+            }
         } else {
             setContent("");
         }

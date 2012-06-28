@@ -12,6 +12,7 @@ package bndtools.jareditor.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,6 +38,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -169,10 +171,17 @@ public class JARContentTreePart extends AbstractFormPart {
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             entryMap = new TreeMap<String,ZipTreeNode>();
+            URI uri = null;
             if (newInput instanceof IFileEditorInput) {
+                uri = ((IFileEditorInput) newInput).getFile().getLocationURI();
+            } else if (newInput instanceof IURIEditorInput) {
+                uri = ((IURIEditorInput) newInput).getURI();
+            }
+
+            if (uri != null) {
                 JarFile jarFile = null;
                 try {
-                    File ioFile = new File(((IFileEditorInput) newInput).getFile().getLocationURI());
+                    File ioFile = new File(uri);
                     jarFile = new JarFile(ioFile);
 
                     Enumeration<JarEntry> entries = jarFile.entries();

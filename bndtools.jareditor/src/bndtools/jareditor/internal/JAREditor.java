@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -64,10 +65,13 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     @Override
     protected void setInput(IEditorInput input) {
         super.setInput(input);
+        String name = "unknown";
         if (input instanceof IFileEditorInput) {
-            String name = ((IFileEditorInput) input).getFile().getName();
-            setPartName(name);
+            name = ((IFileEditorInput) input).getFile().getName();
+        } else if (input instanceof IURIEditorInput) {
+            name = ((IURIEditorInput) input).getName();
         }
+        setPartName(name);
     }
 
     protected void updateContent(final IEditorInput input) {

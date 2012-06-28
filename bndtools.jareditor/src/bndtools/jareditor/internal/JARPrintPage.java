@@ -3,8 +3,8 @@ package bndtools.jareditor.internal;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.net.URI;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceResources;
@@ -12,7 +12,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 
@@ -47,11 +49,18 @@ public class JARPrintPage extends FormPage {
     }
 
     public void refresh() {
+        URI uri = null;
         try {
-            IFile wsFile = ((IFileEditorInput) getEditorInput()).getFile();
-            File file = wsFile.getLocation().toFile();
+            IEditorInput input = getEditorInput();
+            if (input instanceof IFileEditorInput) {
+                uri = ((IFileEditorInput) input).getFile().getLocationURI();
+            } else if (input instanceof IURIEditorInput) {
+                uri = ((IURIEditorInput) input).getURI();
+            }
 
-            text.setText(print(file));
+            if (uri != null) {
+                text.setText(print(new File(uri)));
+            }
         } catch (Exception e) {
             Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
         } finally {
