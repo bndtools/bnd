@@ -101,7 +101,7 @@ public class CommandLine {
 
 				// Handle vararg
 
-				if (pattern.equals("...")) {
+				if (pattern.contains("...")) {
 					i = Integer.MAX_VALUE;
 					break;
 				}
