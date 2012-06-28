@@ -40,8 +40,10 @@ import aQute.libg.classdump.*;
 import aQute.libg.generics.*;
 import aQute.libg.glob.*;
 import aQute.libg.header.*;
+import aQute.libg.qtokens.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 /**
  * Utility to make bundles. Should be areplace for jar and much more.
@@ -2586,19 +2588,19 @@ public class bnd extends Processor {
 	})
 	@Description("Grep the manifest of bundles/jar files. ")
 	interface grepOptions extends Options {
-		
+
 		@Description("Search in exports")
 		boolean exports();
 
 		@Description("Search in imports")
 		boolean imports();
-		
+
 		@Description("Search in bsn")
 		boolean bsn();
 
 		@Description("Set header(s) to search, can be wildcarded. The default is all headers (*).")
 		Set<String> headers();
-		
+
 	}
 
 	public void _grep(grepOptions opts) throws Exception {
@@ -2620,9 +2622,9 @@ public class bnd extends Processor {
 		}
 
 		Set<String> headers = opts.headers();
-		if ( headers == null)
+		if (headers == null)
 			headers = new TreeSet<String>();
-		
+
 		if (opts.exports())
 			headers.add(Constants.EXPORT_PACKAGE);
 		if (opts.bsn())
@@ -2645,21 +2647,24 @@ public class bnd extends Processor {
 				for (Object header : m.getMainAttributes().keySet()) {
 					Attributes.Name name = (Name) header;
 					if (instructions.isEmpty() || instructions.matches(name.toString())) {
-						String value = m.getMainAttributes().getValue(name);
-						Matcher matcher = pattern.matcher(value);
-						while (matcher.find()) {
-							int start = matcher.start() - 8;
-							if (start < 0)
-								start = 0;
+						String h = m.getMainAttributes().getValue(name);
+						QuotedTokenizer qt = new QuotedTokenizer(h, ",;=");
+						for (String value : qt.getTokenSet()) {
+							Matcher matcher = pattern.matcher(value);
+							while (matcher.find()) {
+								int start = matcher.start() - 8;
+								if (start < 0)
+									start = 0;
 
-							int end = matcher.end() + 8;
-							if (end > value.length())
-								end = value.length();
+								int end = matcher.end() + 8;
+								if (end > value.length())
+									end = value.length();
 
-							out.printf("%40s : %20s ...%s[%s]%s...%n", fileName, name,
-									value.substring(start, matcher.start()),
-									value.substring(matcher.start(), matcher.end()),
-									value.substring(matcher.end(), end));
+								out.printf("%40s : %20s ...%s[%s]%s...%n", fileName, name,
+										value.substring(start, matcher.start()),
+										value.substring(matcher.start(), matcher.end()),
+										value.substring(matcher.end(), end));
+							}
 						}
 					}
 				}
