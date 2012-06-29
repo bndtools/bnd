@@ -140,7 +140,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void progress(float progress, String format, Object... args) {
-		format = String.format("[%2d] %s", progress, format);
+		format = String.format("[%2d] %s", (int)progress, format);
 		trace(format, args);
 	}
 
