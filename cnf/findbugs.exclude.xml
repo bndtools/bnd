@@ -1,2 +1,7 @@
 <FindBugsFilter>
+	<Match>
+		<Class name="bndtools.jareditor.internal.Printer" />
+		<Method name="doPrint" />
+		<Bug pattern="WMI_WRONG_MAP_ITERATOR" />
+	</Match>
 </FindBugsFilter>
