@@ -7,8 +7,11 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.*;
 
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class BaseTask extends Task implements Reporter {
+	ReporterAdapter			reporter= new ReporterAdapter();
+	
 	List<String>			errors			= new ArrayList<String>();
 	List<String>			warnings		= new ArrayList<String>();
 	List<String>			progress		= new ArrayList<String>();
@@ -20,30 +23,6 @@ public class BaseTask extends Task implements Reporter {
 	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
 	boolean					exceptions;
 
-	public void error(String s, Object... args) {
-		errors.add(String.format(s, args));
-	}
-
-	public List<String> getErrors() {
-		return errors;
-	}
-
-	public List<String> getProgress() {
-		return progress;
-	}
-
-	public List<String> getWarnings() {
-		// TODO Auto-generated method stub
-		return warnings;
-	}
-
-	public void progress(String s, Object... args) {
-		progress.add(String.format(s, args));
-	}
-
-	public void warning(String s, Object... args) {
-		warnings.add(String.format(s, args));
-	}
 
 	protected boolean report() {
 		return report(this);
@@ -144,4 +123,35 @@ public class BaseTask extends Task implements Reporter {
 		this.exceptions = exceptions;
 	}
 
+	public Location getLocation(String msg) {
+		return reporter.getLocation(msg);
+	}
+
+	public boolean isOk() {
+		return reporter.isOk();
+	}
+
+	public SetLocation exception(Throwable t, String format, Object... args) {
+		return reporter.exception(t, format, args);
+	}
+
+	public SetLocation error(String s, Object... args) {
+		return reporter.error(s, args);
+	}
+
+	public List<String> getErrors() {
+		return reporter.getErrors();
+	}
+
+	public List<String> getWarnings() {
+		return reporter.getWarnings();
+	}
+
+	public void progress(float progress, String s, Object... args) {
+		reporter.progress(progress, s, args);
+	}
+
+	public SetLocation warning(String s, Object... args) {
+		return reporter.warning(s, args);
+	}
 }

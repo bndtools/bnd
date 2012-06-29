@@ -9,8 +9,8 @@ import aQute.bnd.service.diff.Diff.Ignore;
 import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 /**
  * This class maintains

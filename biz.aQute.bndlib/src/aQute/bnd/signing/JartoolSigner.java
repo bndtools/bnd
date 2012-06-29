@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'

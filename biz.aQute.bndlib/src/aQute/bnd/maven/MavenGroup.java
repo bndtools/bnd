@@ -3,7 +3,7 @@ package aQute.bnd.maven;
 import java.util.*;
 
 import aQute.bnd.service.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class MavenGroup implements BsnToMavenPath, Plugin {
 	String	groupId	= "";

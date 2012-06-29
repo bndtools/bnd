@@ -43,7 +43,6 @@ import aQute.libg.header.*;
 import aQute.libg.qtokens.*;
 import aQute.libg.reporter.*;
 import aQute.libg.version.*;
-import aQute.service.reporter.*;
 
 /**
  * Utility to make bundles. Should be areplace for jar and much more.

@@ -21,21 +21,16 @@ import java.util.*;
 
 import aQute.libg.reporter.Messages.ERROR;
 import aQute.libg.reporter.Messages.WARNING;
+import aQute.service.reporter.*;
 
 public class ReporterMessages {
 
-	public static <T> T base(final Reporter reporter, Class<T> messages) {
+	public static <T> T base(final Reporter reporter, Class<T> messages ) {
 		return (T) Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
 			messages
 		}, new InvocationHandler() {
 
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-				if (reporter.isExceptions() && args!=null) {
-					for (Object o : args) {
-						if (o instanceof Throwable)
-							((Throwable) o).printStackTrace();
-					}
-				}
 				String format;
 				Message d = method.getAnnotation(Message.class);
 				if (d == null) {

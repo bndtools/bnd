@@ -3,7 +3,7 @@ package aQute.bnd.test;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public abstract class BndTestCase extends TestCase {
 

@@ -1,19 +1,12 @@
 package aQute.bnd.build;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.util.*;
+import java.util.regex.*;
 
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Jar;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.bnd.service.*;
+import aQute.lib.osgi.*;
+import aQute.libg.version.*;
 
 public class WorkspaceRepository implements RepositoryPlugin {
 	private final Workspace	workspace;

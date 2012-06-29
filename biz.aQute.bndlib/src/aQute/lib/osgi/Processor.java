@@ -13,7 +13,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 
@@ -113,41 +113,64 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return p;
 	}
 
-	public void warning(String string, Object... args) {
+	public SetLocation warning(String string, Object... args) {
 		Processor p = current();
 		String s = formatArrays(string, args);
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 		p.signal();
+		return location(s);
 	}
 
-	public void error(String string, Object... args) {
+	public SetLocation error(String string, Object... args) {
 		Processor p = current();
-		if (p.isFailOk())
-			p.warning(string, args);
-		else {
-			String s = formatArrays(string, args == null ? new Object[0] : args);
-			if (!p.errors.contains(s))
-				p.errors.add(s);
+		try {
+			if (p.isFailOk())
+				return p.warning(string, args);
+			else {
+				String s = formatArrays(string, args == null ? new Object[0] : args);
+				if (!p.errors.contains(s))
+					p.errors.add(s);
+				return location(s);
+			}
 		}
-		p.signal();
+		finally {
+			p.signal();
+		}
 	}
 
-	public void error(String string, Throwable t, Object... args) {
+	public void progress(float progress, String format, Object... args) {
+		format = String.format("[%2d] %s", progress, format);
+		trace(format, args);
+	}
+
+	public void progress(String format, Object... args) {
+		progress(-1f, format, args);
+	}
+
+	public SetLocation exception(Throwable t, String format, Object... args) {
+		return error(format, t, args);
+	}
+
+	public SetLocation error(String string, Throwable t, Object... args) {
 		Processor p = current();
-
-		if (p.isFailOk())
-			p.warning(string + ": " + t, args);
-		else {
-			p.errors.add("Exception: " + t.getMessage());
-			String s = formatArrays(string, args == null ? new Object[0] : args);
-			if (!p.errors.contains(s))
-				p.errors.add(s);
+		try {
+			if (p.exceptions)
+				t.printStackTrace();
+			if (p.isFailOk()) {
+				return p.warning(string + ": " + t, args);
+			}
+			else {
+				p.errors.add("Exception: " + t.getMessage());
+				String s = formatArrays(string, args == null ? new Object[0] : args);
+				if (!p.errors.contains(s))
+					p.errors.add(s);
+				return location(s);
+			}
 		}
-		if (p.exceptions)
-			t.printStackTrace();
-
-		p.signal();
+		finally {
+			p.signal();
+		}
 	}
 
 	public void signal() {}
@@ -182,10 +205,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void removeClose(Closeable jar) {
 		assert jar != null;
 		toBeClosed.remove(jar);
-	}
-
-	public void progress(String s, Object... args) {
-		trace(s, args);
 	}
 
 	public boolean isPedantic() {
@@ -1584,4 +1603,64 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		return s + newExtension;
 	}
+
+	/**
+	 * Create a location object and add it to the locations
+	 * 
+	 * @param s
+	 * @return
+	 */
+	List<Location>	locations	= new ArrayList<Location>();
+
+	static class SetLocationImpl extends Location implements SetLocation {
+		public SetLocationImpl(String s) {
+			this.message = s;
+		}
+
+		public SetLocation file(String file) {
+			this.file = file;
+			return this;
+		}
+
+		public SetLocation header(String header) {
+			this.header = header;
+			return this;
+		}
+
+		public SetLocation context(String context) {
+			this.context = context;
+			return this;
+		}
+
+		public SetLocation method(String methodName) {
+			this.methodName = methodName;
+			return this;
+		}
+
+		public SetLocation line(int n) {
+			this.line = n;
+			return this;
+		}
+
+		public SetLocation reference(String reference) {
+			this.reference = reference;
+			return this;
+		}
+
+	}
+
+	private SetLocation location(String s) {
+		SetLocationImpl loc = new SetLocationImpl(s);
+		locations.add(loc);
+		return loc;
+	}
+
+	public Location getLocation(String msg) {
+		for (Location l : locations)
+			if (l.message == msg)
+				return l;
+
+		return null;
+	}
+
 }

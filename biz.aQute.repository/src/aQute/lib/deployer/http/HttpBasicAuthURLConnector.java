@@ -13,7 +13,7 @@ import aQute.lib.base64.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.libg.glob.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 

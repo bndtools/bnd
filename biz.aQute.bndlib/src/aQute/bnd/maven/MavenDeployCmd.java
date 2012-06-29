@@ -8,7 +8,7 @@ import aQute.bnd.build.*;
 import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class MavenDeployCmd extends Processor {
 

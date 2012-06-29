@@ -7,7 +7,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
 import aQute.lib.deployer.http.*;
 import aQute.lib.io.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * <p>

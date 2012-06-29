@@ -1,8 +1,8 @@
 package aQute.lib.deployer.obr;
 
-import java.util.Map;
+import java.util.*;
 
-import aQute.lib.deployer.repository.FixedIndexedRepo;
+import aQute.lib.deployer.repository.*;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations

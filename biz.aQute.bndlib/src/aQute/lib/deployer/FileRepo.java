@@ -9,8 +9,8 @@ import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
 	public final static String	LOCATION	= "location";
@@ -157,10 +157,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		reporter.trace("updating %s ", file.getAbsolutePath());
 		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
-			reporter.progress("updated " + file.getAbsolutePath());
+			reporter.progress(-1, "updated " + file.getAbsolutePath());
 			fireBundleAdded(jar, file);
 		} else {
-			reporter.progress("Did not update " + jar + " because repo has a newer version");
+			reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
 			reporter.trace("NOT Updating " + fName + " (repo is newer)");
 		}
 

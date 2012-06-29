@@ -7,7 +7,7 @@ import java.util.*;
 
 import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class DefaultURLConnector implements URLConnector, Plugin {
 

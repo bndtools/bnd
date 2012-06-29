@@ -8,7 +8,7 @@ import java.util.List;
 import junit.framework.*;
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class PluginTest extends TestCase {
 	static Processor	main	= new Processor();

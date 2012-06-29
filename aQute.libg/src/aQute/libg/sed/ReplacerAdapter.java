@@ -11,6 +11,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * Provide a macro Domain. This Domain can replace variables in strings based on

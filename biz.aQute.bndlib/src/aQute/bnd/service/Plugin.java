@@ -2,7 +2,7 @@ package aQute.bnd.service;
 
 import java.util.*;
 
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * An optional interface for plugins. If a plugin implements this interface then

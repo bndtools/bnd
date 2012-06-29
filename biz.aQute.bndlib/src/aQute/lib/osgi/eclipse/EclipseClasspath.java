@@ -9,7 +9,7 @@ import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * Parse the Eclipse project information for the classpath. Unfortunately, it is

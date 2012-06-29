@@ -3,7 +3,7 @@ package aQute.libg.header;
 import java.util.*;
 
 import aQute.lib.collections.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Parameters implements Map<String,Attrs> {
 	private LinkedHashMap<String,Attrs>	map;

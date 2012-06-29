@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import aQute.jpm.lib.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public abstract class Platform {
 	static Platform	platform;

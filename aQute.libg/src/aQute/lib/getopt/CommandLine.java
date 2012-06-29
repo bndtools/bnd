@@ -9,6 +9,7 @@ import aQute.configurable.*;
 import aQute.lib.justif.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 /**
  * Helps parsing command lines. This class takes target object, a primary

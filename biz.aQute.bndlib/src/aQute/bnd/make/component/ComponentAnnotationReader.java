@@ -10,7 +10,7 @@ import aQute.bnd.annotation.component.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Clazz.MethodDef;
 import aQute.lib.osgi.Descriptors.TypeRef;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class ComponentAnnotationReader extends ClassDataCollector {
 	String						EMPTY[]					= new String[0];

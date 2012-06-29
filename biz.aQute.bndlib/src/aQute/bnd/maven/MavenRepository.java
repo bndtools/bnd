@@ -6,8 +6,8 @@ import java.util.regex.*;
 
 import aQute.bnd.service.*;
 import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 

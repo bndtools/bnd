@@ -222,7 +222,7 @@ public class BndTask extends BaseTask {
 				Jar jars[] = builder.builds();
 
 				if (!failok && report() && report(builder)) {
-					throw new BuildException("bnd failed", new Location(file.getAbsolutePath()));
+					throw new BuildException("bnd failed", new org.apache.tools.ant.Location(file.getAbsolutePath()));
 				}
 
 				for (int i = 0; i < jars.length; i++) {

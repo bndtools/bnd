@@ -15,7 +15,7 @@ import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
 	public static final String					BUILDFILE	= "build.bnd";

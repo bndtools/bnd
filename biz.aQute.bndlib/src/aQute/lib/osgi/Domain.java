@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 /**
  * This class abstracts domains that have properties holding OSGi meta data. It

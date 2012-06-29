@@ -11,7 +11,7 @@ import java.util.zip.*;
 
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Jar implements Closeable {
 	public enum Compression {

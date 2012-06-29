@@ -10,7 +10,7 @@ import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 class ConstantValues {
 	public static final boolean	f		= false;

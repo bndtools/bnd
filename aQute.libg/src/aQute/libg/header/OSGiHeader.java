@@ -4,7 +4,7 @@ import java.util.*;
 
 import aQute.libg.generics.*;
 import aQute.libg.qtokens.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class OSGiHeader {
 

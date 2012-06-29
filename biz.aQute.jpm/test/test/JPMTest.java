@@ -6,6 +6,7 @@ import junit.framework.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.platform.*;
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class JPMTest extends TestCase {
 	File	cwd	= new File(System.getProperty("user.dir")).getAbsoluteFile();

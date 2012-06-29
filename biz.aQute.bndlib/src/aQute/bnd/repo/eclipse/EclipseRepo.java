@@ -10,8 +10,8 @@ import aQute.lib.io.*;
 import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 import aQute.libg.header.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 public class EclipseRepo implements Plugin, RepositoryPlugin {
 	File						root;

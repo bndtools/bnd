@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 import aQute.lib.io.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Command {
 

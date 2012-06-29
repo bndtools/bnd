@@ -5,10 +5,11 @@ Private-Package: aQute.bnd.*,\
 	aQute.lib.deployer.*,\
 	org.osgi.service.coordinator
 
-Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
+Export-Package: aQute.bnd.service.*,\
+	org.osgi.service.bindex,\
+	aQute.service.reporter
 Import-Package: org.apache.tools.ant.*;resolution:=optional,\
 	junit.framework;resolution:=optional;version='[3.8,4)',\
-	org.osgi.service.coordinator;resolution:=optional;version='[1.0,2.0)',\
 	*
 
 Main-Class: 					aQute.bnd.main.bnd

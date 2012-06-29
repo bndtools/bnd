@@ -14,8 +14,8 @@ import aQute.lib.data.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
 import aQute.libg.filerepo.*;
-import aQute.libg.reporter.*;
 import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 /**
  * JPM is the Java package manager. It manages a local repository in the user

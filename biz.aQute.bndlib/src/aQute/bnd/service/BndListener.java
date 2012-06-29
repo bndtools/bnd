@@ -3,7 +3,7 @@ package aQute.bnd.service;
 import java.io.*;
 import java.util.concurrent.atomic.*;
 
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class BndListener {
 	final AtomicInteger	inside	= new AtomicInteger();

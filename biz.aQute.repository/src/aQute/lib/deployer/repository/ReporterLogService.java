@@ -3,7 +3,7 @@ package aQute.lib.deployer.repository;
 import org.osgi.framework.*;
 import org.osgi.service.log.*;
 
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class ReporterLogService implements LogService {
 
