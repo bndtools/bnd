@@ -28,7 +28,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.libg.tuple,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
-	aQute.bnd.build.model.conversions
+	aQute.bnd.build.model.conversions, \
 	aQute.libg.sax, \
 	aQute.service.reporter
 
@@ -45,4 +45,5 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\
+	org.osgi.resource;resolution:=optional,\
 	*
