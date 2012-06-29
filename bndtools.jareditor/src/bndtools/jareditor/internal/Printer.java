@@ -267,6 +267,7 @@ public class Printer extends Processor {
                 else {
                     switch (justify) {
                     case -1 :
+                    default :
                         sb.append(s);
                         for (int j = 0; j < width - s.length(); j++)
                             sb.append(" ");

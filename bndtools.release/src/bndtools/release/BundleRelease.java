@@ -201,6 +201,10 @@ public class BundleRelease {
 						overlayKey = "micro_modify";
 						break;
 					}
+					case PackageInfo.CHANGE_CODE_NONE :
+					default : {
+						break;
+					}
 					}
 					if (overlayKey != null) {
 						return Activator.getDefault().getImageRegistry().get(baseImageKey + "_" + overlayKey);
@@ -259,6 +263,10 @@ public class BundleRelease {
 						}
 						break;
 					}
+					case PackageInfo.CHANGE_CODE_NONE :
+					default : {
+						break;
+					}
 					}
 					if (overlayKey != null) {
 						return Activator.getDefault().getImageRegistry().get(baseImageKey + "_" + overlayKey);
@@ -306,6 +314,12 @@ public class BundleRelease {
 						}
 						break;
 					}
+					case PackageInfo.CHANGE_CODE_VERSION_MISSING :
+					case PackageInfo.CHANGE_CODE_MODIFIED :
+					case PackageInfo.CHANGE_CODE_NONE :
+					default : {
+						break;
+					}
 					}
 					if (overlayKey != null) {
 						return Activator.getDefault().getImageRegistry().get(baseImageKey + "_" + overlayKey);
@@ -350,6 +364,12 @@ public class BundleRelease {
 						default:
 							break;
 						}
+						break;
+					}
+					case PackageInfo.CHANGE_CODE_VERSION_MISSING :
+					case PackageInfo.CHANGE_CODE_MODIFIED :
+					case PackageInfo.CHANGE_CODE_NONE :
+					default : {
 						break;
 					}
 					}
