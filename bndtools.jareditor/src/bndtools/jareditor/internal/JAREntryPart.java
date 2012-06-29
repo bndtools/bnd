@@ -208,7 +208,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                             if (showAsText)
                                 readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
                             else
-                                readAsHex(zipFile, zipEntry, writer, 1024 * 10, monitor);
+                                readAsHex(zipFile, zipEntry, writer, 1024 * 20, monitor);
 
                             display.asyncExec(new Runnable() {
                                 public void run() {
