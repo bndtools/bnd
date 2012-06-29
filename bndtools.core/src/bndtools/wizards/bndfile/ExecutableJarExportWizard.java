@@ -137,13 +137,21 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             }
         }
 
+        Properties launcherProps = new Properties();
+        launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
+
+        FileOutputStream fos = null;
         try {
-            Properties launcherProps = new Properties();
-            launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
-            launcherProps.store(new FileOutputStream(new File(folder, "launch.properties")), "launch.properties");
+            fos = new FileOutputStream(new File(folder, "launch.properties"));
+            launcherProps.store(fos, "launch.properties");
         } catch (IOException e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating launch properties file.", e));
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {}
         }
     }
-
 }
