@@ -1,10 +1,12 @@
 package bndtools.model.obr;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Requirement;
 
-public class RequirementComparator implements Comparator<Requirement> {
+public class RequirementComparator implements Comparator<Requirement>, Serializable {
+    private static final long serialVersionUID = 6340493264815422498L;
 
     public int compare(Requirement req1, Requirement req2) {
         int diff;
@@ -21,5 +23,4 @@ public class RequirementComparator implements Comparator<Requirement> {
 
         return diff;
     }
-
 }
